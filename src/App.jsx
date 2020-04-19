@@ -3,8 +3,11 @@ import { Route, Switch } from "react-router-dom";
 import "./App.css";
 import Header from "./components/Header";
 import LoginPage from "./pages/LoginPage";
+import ProjectsListPage from "./pages/ProjectListPage";
+import ProjectPage from "./pages/ProjectPage";
 import { AuthProvider } from "./contexts/auth.context";
 import PrivateRoute from "./components/PrivateRoute";
+import { routes } from "./constants";
 
 function App() {
   return (
@@ -13,7 +16,12 @@ function App() {
         <Header />
         <Switch>
           <Route exact path="/login" component={() => <LoginPage />} />
-          <PrivateRoute exact path="/" component={() => <h1>Home</h1>} />
+          <PrivateRoute exact path="/" component={() => <ProjectsListPage />} />
+          <PrivateRoute
+            exact
+            path={`${routes.PROJECT}/:id`}
+            component={() => <ProjectPage />}
+          />
         </Switch>
       </AuthProvider>
     </div>

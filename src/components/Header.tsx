@@ -29,7 +29,7 @@ const Header: FunctionComponent = () => {
               </Grid>
               <Grid item>
                 <Typography variant="h6" component={Link} to="/">
-                  Home
+                  Project list
                 </Typography>
               </Grid>
             </Grid>
