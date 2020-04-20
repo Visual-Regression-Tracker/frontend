@@ -1,8 +1,6 @@
 import { authService } from '../services'
 import { User } from '../types';
 
-export const API_URL = 'http://localhost:4200'
-
 export function authHeader() {
     // return authorization header with jwt token
     const userString = localStorage.getItem('user')

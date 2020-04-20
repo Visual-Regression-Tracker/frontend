@@ -1,5 +1,6 @@
-import { API_URL, handleResponse } from "../_helpers/service.helpers";
+import { handleResponse } from "../_helpers/service.helpers";
 import { User } from "../types/user";
+import { API_URL } from "../_config/api.config";
 
 export const authService = {
   login,

@@ -1,9 +1,9 @@
 import { Test } from "../types";
 import {
-  API_URL,
   handleResponse,
   authHeader,
 } from "../_helpers/service.helpers";
+import { API_URL } from "../_config/api.config";
 
 export const testsService = {
   getAll,
