@@ -15,11 +15,13 @@ import {
 import { useParams } from "react-router-dom";
 import { Build, Test } from "../types";
 import { buildsService, testsService } from "../services";
+import TestDetailsModal from "./TestDetailsModal";
 
 const ProjectPage = () => {
   const { id } = useParams();
-  const [builds, setBuilds] = useState([] as Build[]);
-  const [tests, setTests] = useState([] as Test[]);
+  const [builds, setBuilds] = useState<Build[]>([]);
+  const [tests, setTests] = useState<Test[]>([]);
+  const [selectedTest, setSelectedTest] = useState<Test | undefined>(undefined);
   const [selectedBuildId, setSelectedBuildId] = useState(0);
 
   useEffect(() => {
@@ -85,8 +87,12 @@ const ProjectPage = () => {
                   </TableRow>
                 </TableHead>
                 <TableBody>
-                  {tests.map((test, index) => (
-                    <TableRow key={test.id}>
+                  {tests.map((test) => (
+                    <TableRow
+                      key={test.id}
+                      hover
+                      onClick={() => setSelectedTest(test)}
+                    >
                       <TableCell>
                         <Typography>{test.name}</Typography>
                       </TableCell>
@@ -108,6 +114,13 @@ const ProjectPage = () => {
               </Table>
             </TableContainer>
           </Grid>
+
+          {selectedTest && (
+            <TestDetailsModal
+              test={selectedTest}
+              onClose={() => setSelectedTest(undefined)}
+            />
+          )}
         </Grid>
       </Grid>
     </Grid>
