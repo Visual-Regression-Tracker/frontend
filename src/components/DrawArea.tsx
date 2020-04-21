@@ -8,11 +8,11 @@ const DrawArea: FunctionComponent<{
   width: number;
   height: number;
   image: HTMLImageElement;
-  list: RectConfig[];
-}> = ({ width, height, image, list }) => {
+  ignoreAreas: RectConfig[];
+}> = ({ width, height, image, ignoreAreas }) => {
   const scale = Math.min(width / image.width, height / image.height);
 
-  const [rectangles, setRectangles] = React.useState(list);
+  const [rectangles, setRectangles] = React.useState(ignoreAreas);
   const [selectedId, selectShape] = React.useState<string>();
 
   const removeSelection = (event: KonvaEventObject<MouseEvent>) => {

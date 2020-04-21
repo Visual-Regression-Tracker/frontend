@@ -17,16 +17,11 @@ import { createStyles, makeStyles, Theme } from "@material-ui/core/styles";
 import useImage from "use-image";
 import { staticService } from "../services";
 import DrawArea from "../components/DrawArea";
-import { RectConfig } from "konva/types/shapes/Rect";
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
     appBar: {
       position: "relative",
-    },
-    title: {
-      marginLeft: theme.spacing(2),
-      flex: 1,
     },
   })
 );
@@ -51,23 +46,6 @@ const TestDetailsModal: FunctionComponent<IProps> = ({ test, onClose }) => {
   const [image] = useImage(staticService.getImage(test.imageUrl));
   const stageWidth = (window.innerWidth / 2) * 0.95;
   const stageHeigth = window.innerHeight;
-
-  const list: RectConfig[] = [
-    {
-      x: 10,
-      y: 10,
-      width: 100,
-      height: 100,
-      id: 'rect1'
-    },
-    {
-      x: 150,
-      y: 150,
-      width: 100,
-      height: 100,
-      id: 'rect2'
-    }
-  ];
   return (
     <Dialog
       fullScreen
@@ -82,7 +60,7 @@ const TestDetailsModal: FunctionComponent<IProps> = ({ test, onClose }) => {
           </IconButton>
           <Grid container justify="space-between">
             <Grid item>
-              <Typography variant="h6" className={classes.title}>
+              <Typography variant="h6">
                 {test.name}
               </Typography>
             </Grid>
@@ -108,7 +86,7 @@ const TestDetailsModal: FunctionComponent<IProps> = ({ test, onClose }) => {
               width={stageWidth}
               height={stageHeigth}
               image={baseline}
-              list={[]}
+              ignoreAreas={[]}
             />
           )}
         </Grid>
@@ -119,7 +97,7 @@ const TestDetailsModal: FunctionComponent<IProps> = ({ test, onClose }) => {
                   width={stageWidth}
                   height={stageHeigth}
                   image={diff}
-                  list={list}
+                  ignoreAreas={[]}
                 />
               )
             : image && (
@@ -127,7 +105,7 @@ const TestDetailsModal: FunctionComponent<IProps> = ({ test, onClose }) => {
                   width={stageWidth}
                   height={stageHeigth}
                   image={image}
-                  list={list}
+                  ignoreAreas={[]}
                 />
               )}
         </Grid>
