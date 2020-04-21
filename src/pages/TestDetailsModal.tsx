@@ -17,6 +17,7 @@ import { createStyles, makeStyles, Theme } from "@material-ui/core/styles";
 import useImage from "use-image";
 import { staticService } from "../services";
 import DrawArea from "../components/DrawArea";
+import { RectConfig } from "konva/types/shapes/Rect";
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -51,6 +52,22 @@ const TestDetailsModal: FunctionComponent<IProps> = ({ test, onClose }) => {
   const stageWidth = (window.innerWidth / 2) * 0.95;
   const stageHeigth = window.innerHeight;
 
+  const list: RectConfig[] = [
+    {
+      x: 10,
+      y: 10,
+      width: 100,
+      height: 100,
+      id: 'rect1'
+    },
+    {
+      x: 150,
+      y: 150,
+      width: 100,
+      height: 100,
+      id: 'rect2'
+    }
+  ];
   return (
     <Dialog
       fullScreen
@@ -63,7 +80,7 @@ const TestDetailsModal: FunctionComponent<IProps> = ({ test, onClose }) => {
           <IconButton edge="start" color="inherit" onClick={onClose}>
             <Close />
           </IconButton>
-          <Grid container justify='space-between'>
+          <Grid container justify="space-between">
             <Grid item>
               <Typography variant="h6" className={classes.title}>
                 {test.name}
@@ -91,22 +108,29 @@ const TestDetailsModal: FunctionComponent<IProps> = ({ test, onClose }) => {
               width={stageWidth}
               height={stageHeigth}
               image={baseline}
+              list={[]}
             />
           )}
         </Grid>
-        {isDiffShown ? (
-          <Grid item xs={6}>
-            {diff && (
-              <DrawArea width={stageWidth} height={stageHeigth} image={diff} />
-            )}
-          </Grid>
-        ) : (
-          <Grid item xs={6}>
-            {image && (
-              <DrawArea width={stageWidth} height={stageHeigth} image={image} />
-            )}
-          </Grid>
-        )}
+        <Grid item xs={6}>
+          {isDiffShown
+            ? diff && (
+                <DrawArea
+                  width={stageWidth}
+                  height={stageHeigth}
+                  image={diff}
+                  list={list}
+                />
+              )
+            : image && (
+                <DrawArea
+                  width={stageWidth}
+                  height={stageHeigth}
+                  image={image}
+                  list={list}
+                />
+              )}
+        </Grid>
       </Grid>
     </Dialog>
   );
