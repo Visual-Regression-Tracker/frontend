@@ -1,7 +1,7 @@
 import { RectConfig } from "konva/types/shapes/Rect";
 
 export interface Test {
-  id: number;
+  id: string;
   name: string;
   buildId: number;
   baselineUrl: string;

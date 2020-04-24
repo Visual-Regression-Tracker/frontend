@@ -9,7 +9,7 @@ export const testsService = {
   getAll,
 };
 
-function getAll(buildId: number): Promise<Test[]> {
+function getAll(buildId: string): Promise<Test[]> {
   const requestOptions = {
     method: "GET",
     headers: authHeader(),

@@ -1,5 +1,5 @@
 export interface Build {
-    id: number,
+    id: string,
     projectName: string,
     branchName: string,
     status: string,

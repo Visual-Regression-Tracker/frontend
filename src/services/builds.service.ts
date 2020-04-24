@@ -6,7 +6,7 @@ export const buildsService = {
   getAll,
 };
 
-function getAll(projectId: number): Promise<Build[]> {
+function getAll(projectId: string): Promise<Build[]> {
   const requestOptions = {
     method: "GET",
     headers: authHeader()

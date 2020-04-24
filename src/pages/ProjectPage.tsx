@@ -22,13 +22,14 @@ const ProjectPage = () => {
   const [builds, setBuilds] = useState<Build[]>([]);
   const [tests, setTests] = useState<Test[]>([]);
   const [selectedTest, setSelectedTest] = useState<Test | undefined>(undefined);
-  const [selectedBuildId, setSelectedBuildId] = useState(0);
+  const [selectedBuildId, setSelectedBuildId] = useState<string>();
 
   useEffect(() => {
-    const projectId = Number.parseInt(id as string);
-    buildsService.getAll(projectId).then((builds) => {
-      setBuilds(builds);
-    });
+    if (id) {
+      buildsService.getAll(id).then((builds) => {
+        setBuilds(builds);
+      });
+    }
   }, [id]);
 
   useEffect(() => {
@@ -36,14 +37,14 @@ const ProjectPage = () => {
   }, [builds]);
 
   useEffect(() => {
-    if (selectedBuildId !== 0) {
-      testsService.getAll(selectedBuildId).then((tests) => {
+    if (selectedBuildId) {
+      testsService.getAll(selectedBuildId).then((tests: Test[]) => {
         setTests(tests);
       });
     }
   }, [selectedBuildId]);
 
-  const handleListItemClick = (buildId: number) => {
+  const handleListItemClick = (buildId: string) => {
     setSelectedBuildId(buildId);
   };
 
