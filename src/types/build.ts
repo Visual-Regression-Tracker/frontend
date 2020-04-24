@@ -1,3 +1,5 @@
+import { Test } from "./test";
+
 export interface Build {
     id: string,
     projectName: string,
@@ -5,4 +7,5 @@ export interface Build {
     status: string,
     createdAt: Date,
     createdBy: string,
+    tests: Test[]
 }

@@ -12,25 +12,25 @@ import {
   TableRow,
   TableBody,
 } from "@material-ui/core";
-import { useParams } from "react-router-dom";
+import { useParams, Link, useHistory } from "react-router-dom";
 import { Build, Test } from "../types";
-import { buildsService, testsService } from "../services";
-import TestDetailsModal from "./TestDetailsModal";
+import { projectsService, buildsService } from "../services";
+import { routes } from "../constants";
 
 const ProjectPage = () => {
-  const { id } = useParams();
+  const history = useHistory();
+  const { projectId } = useParams();
   const [builds, setBuilds] = useState<Build[]>([]);
   const [tests, setTests] = useState<Test[]>([]);
-  const [selectedTest, setSelectedTest] = useState<Test | undefined>(undefined);
   const [selectedBuildId, setSelectedBuildId] = useState<string>();
 
   useEffect(() => {
-    if (id) {
-      buildsService.getAll(id).then((builds) => {
-        setBuilds(builds);
+    if (projectId) {
+      projectsService.getDetails(projectId).then((project) => {
+        setBuilds(project.builds);
       });
     }
-  }, [id]);
+  }, [projectId]);
 
   useEffect(() => {
     builds.length > 0 && setSelectedBuildId(builds[0].id);
@@ -38,15 +38,11 @@ const ProjectPage = () => {
 
   useEffect(() => {
     if (selectedBuildId) {
-      testsService.getAll(selectedBuildId).then((tests: Test[]) => {
-        setTests(tests);
+      buildsService.getDetails(selectedBuildId).then((build: Build) => {
+        setTests(build.tests);
       });
     }
   }, [selectedBuildId]);
-
-  const handleListItemClick = (buildId: string) => {
-    setSelectedBuildId(buildId);
-  };
 
   return (
     <Grid container>
@@ -57,17 +53,13 @@ const ProjectPage = () => {
               key={build.id}
               selected={selectedBuildId === build.id}
               button
-              onClick={() => {
-                handleListItemClick(build.id);
-              }}
+              onClick={() => setSelectedBuildId(build.id)}
             >
               <ListItemText
                 primary={`#${build.id}`}
                 secondary={`Date: ${build.createdAt}`}
               />
               <Typography>Branch: {build.branchName}</Typography>
-              <Typography>CreatedBy: {build.createdBy}</Typography>
-              <Typography></Typography>
             </ListItem>
           ))}
         </List>
@@ -92,7 +84,9 @@ const ProjectPage = () => {
                     <TableRow
                       key={test.id}
                       hover
-                      onClick={() => setSelectedTest(test)}
+                      onClick={() =>
+                        history.push(`${routes.TEST_DETAILS_PAGE}/${test.id}`)
+                      }
                     >
                       <TableCell>
                         <Typography>{test.name}</Typography>
@@ -115,13 +109,6 @@ const ProjectPage = () => {
               </Table>
             </TableContainer>
           </Grid>
-
-          {selectedTest && (
-            <TestDetailsModal
-              testDetails={selectedTest}
-              onClose={() => setSelectedTest(undefined)}
-            />
-          )}
         </Grid>
       </Grid>
     </Grid>

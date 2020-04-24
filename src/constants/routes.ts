@@ -4,7 +4,7 @@ export const routes = {
 
   // secured
   PROJECTS_PAGE: "/",
-  TESTS_PAGE: "/tests",
+  TEST_DETAILS_PAGE: "/test",
   PROFILE_PAGE: "/profile",
   PROJECT: "/project",
 };

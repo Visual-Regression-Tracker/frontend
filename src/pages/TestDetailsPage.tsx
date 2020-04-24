@@ -1,23 +1,18 @@
-import React, { FunctionComponent, useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
-  Dialog,
   AppBar,
   Toolbar,
-  IconButton,
   Typography,
   Button,
-  Slide,
   Grid,
   Switch,
 } from "@material-ui/core";
-import { Close } from "@material-ui/icons";
 import { Test } from "../types";
-import { TransitionProps } from "@material-ui/core/transitions/transition";
 import { createStyles, makeStyles, Theme } from "@material-ui/core/styles";
-import useImage from "use-image";
-import { staticService, testsService } from "../services";
+import { testsService } from "../services";
 import DrawArea from "../components/DrawArea";
 import { TestStatus } from "../types/testStatus";
+import { useParams } from "react-router-dom";
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -27,43 +22,39 @@ const useStyles = makeStyles((theme: Theme) =>
   })
 );
 
-interface IProps {
-  testDetails: Test;
-  onClose: () => void;
-}
-
-const Transition = React.forwardRef(function Transition(
-  props: TransitionProps & { children?: React.ReactElement },
-  ref: React.Ref<unknown>
-) {
-  return <Slide direction="up" ref={ref} {...props} />;
-});
-
-const TestDetailsModal: FunctionComponent<IProps> = ({
-  testDetails,
-  onClose,
-}) => {
+const TestDetailsModal = () => {
+  const { testId } = useParams();
   const classes = useStyles();
-  const [test, setTest] = useState(testDetails);
+  const [test, setTest] = useState<Test>({
+    id: "",
+    name: "",
+    buildId: 0,
+    baselineUrl: "",
+    imageUrl: "",
+    diffUrl: "",
+    os: "",
+    browser: "",
+    viewport: "",
+    device: "",
+    status: TestStatus.unresolved,
+    ignoreAreas: [],
+  });
   const [isDiffShown, setIsDiffShown] = useState(false);
-  const [baseline] = useImage(staticService.getImage(test.baselineUrl));
-  const [diff] = useImage(staticService.getImage(test.diffUrl));
-  const [image] = useImage(staticService.getImage(test.imageUrl));
   const stageWidth = (window.innerWidth / 2) * 0.95;
   const stageHeigth = window.innerHeight;
 
+  useEffect(() => {
+    if (testId) {
+      testsService.get(testId).then((test) => {
+        setTest(test);
+      });
+    }
+  }, [testId]);
+
   return (
-    <Dialog
-      fullScreen
-      open={!!test}
-      onClose={onClose}
-      TransitionComponent={Transition}
-    >
+    <React.Fragment>
       <AppBar className={classes.appBar}>
         <Toolbar>
-          <IconButton edge="start" color="inherit" onClick={onClose}>
-            <Close />
-          </IconButton>
           <Grid container justify="space-between">
             <Grid item>
               <Typography variant="h6">{test.name}</Typography>
@@ -98,46 +89,37 @@ const TestDetailsModal: FunctionComponent<IProps> = ({
                 </Button>
               </Grid>
             )}
-            <Grid item>
-              <Button autoFocus color="inherit" onClick={onClose}>
-                save
-              </Button>
-            </Grid>
           </Grid>
         </Toolbar>
       </AppBar>
       <Grid container>
         <Grid item xs={6}>
-          {baseline && (
+          <DrawArea
+            width={stageWidth}
+            height={stageHeigth}
+            imageUrl={test.baselineUrl}
+            ignoreAreas={[]}
+          />
+        </Grid>
+        <Grid item xs={6}>
+          {isDiffShown ? (
             <DrawArea
               width={stageWidth}
               height={stageHeigth}
-              image={baseline}
+              imageUrl={test.diffUrl}
+              ignoreAreas={[]}
+            />
+          ) : (
+            <DrawArea
+              width={stageWidth}
+              height={stageHeigth}
+              imageUrl={test.imageUrl}
               ignoreAreas={[]}
             />
           )}
         </Grid>
-        <Grid item xs={6}>
-          {isDiffShown
-            ? diff && (
-                <DrawArea
-                  width={stageWidth}
-                  height={stageHeigth}
-                  image={diff}
-                  ignoreAreas={[]}
-                />
-              )
-            : image && (
-                <DrawArea
-                  width={stageWidth}
-                  height={stageHeigth}
-                  image={image}
-                  ignoreAreas={[]}
-                />
-              )}
-        </Grid>
       </Grid>
-    </Dialog>
+    </React.Fragment>
   );
 };
 

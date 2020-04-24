@@ -5,6 +5,7 @@ import Header from "./components/Header";
 import LoginPage from "./pages/LoginPage";
 import ProjectsListPage from "./pages/ProjectListPage";
 import ProjectPage from "./pages/ProjectPage";
+import TestDetailsPage from "./pages/TestDetailsPage";
 import { AuthProvider } from "./contexts/auth.context";
 import PrivateRoute from "./components/PrivateRoute";
 import { routes } from "./constants";
@@ -19,8 +20,13 @@ function App() {
           <PrivateRoute exact path="/" component={() => <ProjectsListPage />} />
           <PrivateRoute
             exact
-            path={`${routes.PROJECT}/:id`}
+            path={`${routes.PROJECT}/:projectId`}
             component={() => <ProjectPage />}
+          />
+          <PrivateRoute
+            exact
+            path={`${routes.TEST_DETAILS_PAGE}/:testId`}
+            component={() => <TestDetailsPage />}
           />
         </Switch>
       </AuthProvider>

@@ -3,14 +3,17 @@ import { Stage, Layer, Image } from "react-konva";
 import { RectConfig } from "konva/types/shapes/Rect";
 import Rectangle from "./Rectangle";
 import { KonvaEventObject } from "konva/types/Node";
+import useImage from "use-image";
+import { staticService } from "../services";
 
 const DrawArea: FunctionComponent<{
   width: number;
   height: number;
-  image: HTMLImageElement;
+  imageUrl: string;
   ignoreAreas: RectConfig[];
-}> = ({ width, height, image, ignoreAreas }) => {
-  const scale = Math.min(width / image.width, height / image.height);
+}> = ({ width, height, imageUrl, ignoreAreas }) => {
+  const [image] = useImage(staticService.getImage(imageUrl));
+  const scale = image && Math.min(width / image.width, height / image.height);
 
   const [rectangles, setRectangles] = React.useState(ignoreAreas);
   const [selectedId, selectShape] = React.useState<string>();
@@ -24,11 +27,7 @@ const DrawArea: FunctionComponent<{
   };
 
   return (
-    <Stage
-      width={width}
-      height={height}
-      onMouseDown={removeSelection}
-    >
+    <Stage width={width} height={height} onMouseDown={removeSelection}>
       <Layer>
         <Image image={image} scaleX={scale} scaleY={scale} />
         {rectangles.map((rect, i) => {
