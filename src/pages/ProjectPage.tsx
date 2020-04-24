@@ -118,7 +118,7 @@ const ProjectPage = () => {
 
           {selectedTest && (
             <TestDetailsModal
-              test={selectedTest}
+              testDetails={selectedTest}
               onClose={() => setSelectedTest(undefined)}
             />
           )}

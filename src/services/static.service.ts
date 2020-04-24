@@ -5,5 +5,6 @@ export const staticService = {
 };
 
 function getImage(name: string): string {
-  return `${API_URL}/${name}`;
+  if (name) return `${API_URL}/${name}`;
+  return "https://i.ya-webdesign.com/images/no-image-png-1.png";
 }

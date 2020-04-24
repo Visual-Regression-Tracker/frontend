@@ -1,4 +1,5 @@
 import { RectConfig } from "konva/types/shapes/Rect";
+import { TestStatus } from "./testStatus";
 
 export interface Test {
   id: string;
@@ -11,6 +12,6 @@ export interface Test {
   browser: string;
   viewport: string;
   device: string;
-  status: string;
+  status: TestStatus;
   ignoreAreas: RectConfig[];
 }
