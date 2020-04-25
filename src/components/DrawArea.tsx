@@ -7,30 +7,35 @@ import useImage from "use-image";
 import { staticService } from "../services";
 import { IgnoreArea } from "../types/ignoreArea";
 
-const DrawArea: FunctionComponent<{
+interface IDrawArea {
   width: number;
   height: number;
   imageUrl: string;
   ignoreAreas: IgnoreArea[];
   setIgnoreAreas: (ignoreAreas: IgnoreArea[]) => void;
-}> = ({ width, height, imageUrl, ignoreAreas, setIgnoreAreas }) => {
+  selectedRectId: string | undefined;
+  setSelectedRectId: (id: string) => void;
+  onStageClick: (event: KonvaEventObject<MouseEvent>) => void;
+}
+const DrawArea: FunctionComponent<IDrawArea> = ({
+  width,
+  height,
+  imageUrl,
+  ignoreAreas,
+  setIgnoreAreas,
+  selectedRectId,
+  setSelectedRectId,
+  onStageClick,
+}) => {
   const [image] = useImage(staticService.getImage(imageUrl));
+
+  // fit image to canvas size
   const scale = image
     ? Math.min(width / image.width, height / image.height)
     : 1;
 
-  const [selectedId, selectShape] = React.useState<string>();
-
-  const removeSelection = (event: KonvaEventObject<MouseEvent>) => {
-    // deselect when clicked not on Rect
-    const isRectClicked = event.target.className === "Rect";
-    if (!isRectClicked) {
-      selectShape(undefined);
-    }
-  };
-  console.log(ignoreAreas);
   return (
-    <Stage width={width} height={height} onMouseDown={removeSelection}>
+    <Stage width={width} height={height} onMouseDown={onStageClick}>
       <Layer>
         <Image image={image} scaleX={scale} scaleY={scale} />
         {ignoreAreas.map((rect, i) => {
@@ -44,10 +49,8 @@ const DrawArea: FunctionComponent<{
                 width: rect.width * scale,
                 height: rect.height * scale,
               }}
-              isSelected={rect.id === selectedId}
-              onSelect={() => {
-                selectShape(rect.id);
-              }}
+              isSelected={rect.id === selectedRectId}
+              onSelect={() => setSelectedRectId(rect.id)}
               onChange={(newAttrs: RectConfig) => {
                 const rects = ignoreAreas.slice();
                 // transform scale to pixels

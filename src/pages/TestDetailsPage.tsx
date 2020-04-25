@@ -14,6 +14,7 @@ import DrawArea from "../components/DrawArea";
 import { TestStatus } from "../types/testStatus";
 import { useParams } from "react-router-dom";
 import { IgnoreArea } from "../types/ignoreArea";
+import { KonvaEventObject } from "konva/types/Node";
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -42,6 +43,16 @@ const TestDetailsModal = () => {
   });
   const [ignoreAreas, setIgnoreAreas] = React.useState<IgnoreArea[]>([]);
   const [isDiffShown, setIsDiffShown] = useState(false);
+  const [selectedRectId, setSelectedRectId] = React.useState<string>();
+
+  const removeSelection = (event: KonvaEventObject<MouseEvent>) => {
+    // deselect when clicked not on Rect
+    const isRectClicked = event.target.className === "Rect";
+    if (!isRectClicked) {
+      setSelectedRectId(undefined);
+    }
+  };
+
   const stageWidth = (window.innerWidth / 2) * 0.95;
   const stageHeigth = window.innerHeight;
 
@@ -53,6 +64,12 @@ const TestDetailsModal = () => {
       });
     }
   }, [testId]);
+
+  const deleteIgnoreArea = (id: string) => {
+    setIgnoreAreas(ignoreAreas.filter((area) => area.id !== id));
+    setSelectedRectId(undefined);
+  };
+
   return (
     <React.Fragment>
       <AppBar className={classes.appBar}>
@@ -95,6 +112,31 @@ const TestDetailsModal = () => {
               <Button
                 color="inherit"
                 onClick={() => {
+                  const newArea: IgnoreArea = {
+                    id: Date.now().toString(),
+                    x: 0,
+                    y: 0,
+                    width: 150,
+                    height: 100,
+                  };
+                  setIgnoreAreas([...ignoreAreas, newArea]);
+                }}
+              >
+                Add ignore area
+              </Button>
+              {selectedRectId && (
+                <Button
+                  color="secondary"
+                  onClick={() => deleteIgnoreArea(selectedRectId)}
+                >
+                  Delete ignore area
+                </Button>
+              )}
+            </Grid>
+            <Grid item>
+              <Button
+                color="inherit"
+                onClick={() => {
                   testsService.setIgnoreAreas(test.id, ignoreAreas);
                 }}
               >
@@ -112,6 +154,9 @@ const TestDetailsModal = () => {
             imageUrl={test.baselineUrl}
             ignoreAreas={[]}
             setIgnoreAreas={setIgnoreAreas}
+            selectedRectId={selectedRectId}
+            setSelectedRectId={setSelectedRectId}
+            onStageClick={removeSelection}
           />
         </Grid>
         <Grid item xs={6}>
@@ -122,6 +167,9 @@ const TestDetailsModal = () => {
               imageUrl={test.diffUrl}
               ignoreAreas={ignoreAreas}
               setIgnoreAreas={setIgnoreAreas}
+              selectedRectId={selectedRectId}
+              setSelectedRectId={setSelectedRectId}
+              onStageClick={removeSelection}
             />
           ) : (
             <DrawArea
@@ -130,6 +178,9 @@ const TestDetailsModal = () => {
               imageUrl={test.imageUrl}
               ignoreAreas={ignoreAreas}
               setIgnoreAreas={setIgnoreAreas}
+              selectedRectId={selectedRectId}
+              setSelectedRectId={setSelectedRectId}
+              onStageClick={removeSelection}
             />
           )}
         </Grid>
