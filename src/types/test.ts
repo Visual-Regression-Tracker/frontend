@@ -1,5 +1,5 @@
-import { RectConfig } from "konva/types/shapes/Rect";
 import { TestStatus } from "./testStatus";
+import { IgnoreArea } from "./ignoreArea";
 
 export interface Test {
   id: string;
@@ -13,5 +13,5 @@ export interface Test {
   viewport: string;
   device: string;
   status: TestStatus;
-  ignoreAreas: RectConfig[];
+  ignoreAreas: IgnoreArea[];
 }

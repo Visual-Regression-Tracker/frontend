@@ -13,6 +13,7 @@ import { testsService } from "../services";
 import DrawArea from "../components/DrawArea";
 import { TestStatus } from "../types/testStatus";
 import { useParams } from "react-router-dom";
+import { IgnoreArea } from "../types/ignoreArea";
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -39,6 +40,7 @@ const TestDetailsModal = () => {
     status: TestStatus.unresolved,
     ignoreAreas: [],
   });
+  const [ignoreAreas, setIgnoreAreas] = React.useState<IgnoreArea[]>([]);
   const [isDiffShown, setIsDiffShown] = useState(false);
   const stageWidth = (window.innerWidth / 2) * 0.95;
   const stageHeigth = window.innerHeight;
@@ -47,10 +49,10 @@ const TestDetailsModal = () => {
     if (testId) {
       testsService.get(testId).then((test) => {
         setTest(test);
+        setIgnoreAreas(test.ignoreAreas);
       });
     }
   }, [testId]);
-
   return (
     <React.Fragment>
       <AppBar className={classes.appBar}>
@@ -89,6 +91,16 @@ const TestDetailsModal = () => {
                 </Button>
               </Grid>
             )}
+            <Grid item>
+              <Button
+                color="inherit"
+                onClick={() => {
+                  testsService.setIgnoreAreas(test.id, ignoreAreas);
+                }}
+              >
+                Save
+              </Button>
+            </Grid>
           </Grid>
         </Toolbar>
       </AppBar>
@@ -99,6 +111,7 @@ const TestDetailsModal = () => {
             height={stageHeigth}
             imageUrl={test.baselineUrl}
             ignoreAreas={[]}
+            setIgnoreAreas={setIgnoreAreas}
           />
         </Grid>
         <Grid item xs={6}>
@@ -107,14 +120,16 @@ const TestDetailsModal = () => {
               width={stageWidth}
               height={stageHeigth}
               imageUrl={test.diffUrl}
-              ignoreAreas={[]}
+              ignoreAreas={ignoreAreas}
+              setIgnoreAreas={setIgnoreAreas}
             />
           ) : (
             <DrawArea
               width={stageWidth}
               height={stageHeigth}
               imageUrl={test.imageUrl}
-              ignoreAreas={[]}
+              ignoreAreas={ignoreAreas}
+              setIgnoreAreas={setIgnoreAreas}
             />
           )}
         </Grid>

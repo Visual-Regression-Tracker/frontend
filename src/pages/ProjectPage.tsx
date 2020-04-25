@@ -12,7 +12,7 @@ import {
   TableRow,
   TableBody,
 } from "@material-ui/core";
-import { useParams, Link, useHistory } from "react-router-dom";
+import { useParams, useHistory } from "react-router-dom";
 import { Build, Test } from "../types";
 import { projectsService, buildsService } from "../services";
 import { routes } from "../constants";
