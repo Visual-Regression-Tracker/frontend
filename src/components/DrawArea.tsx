@@ -29,13 +29,17 @@ const DrawArea: FunctionComponent<IDrawArea> = ({
 }) => {
   const [image] = useImage(staticService.getImage(imageUrl));
 
-  // fit image to canvas size
+  // fit image to available area size
   const scale = image
     ? Math.min(width / image.width, height / image.height)
     : 1;
 
+  // fit canvas to new image size
+  const stageWidth = image && image.width * scale;
+  const stageHeight = image && image.height * scale;
+
   return (
-    <Stage width={width} height={height} onMouseDown={onStageClick}>
+    <Stage width={stageWidth} height={stageHeight} onMouseDown={onStageClick}>
       <Layer>
         <Image image={image} scaleX={scale} scaleY={scale} />
         {ignoreAreas.map((rect, i) => {

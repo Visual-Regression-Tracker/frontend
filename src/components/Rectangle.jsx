@@ -23,6 +23,18 @@ const Rectangle = ({ shapeProps, isSelected, onSelect, onChange }) => {
         ref={shapeRef}
         {...shapeProps}
         draggable
+        dragBoundFunc={(pos) => {
+          const component = shapeRef.current;
+
+          const rectWidth = component.width() * component.scaleX();
+          const rectHeight = component.height() * component.scaleY();
+          const layerSize = component.getLayer().getSize();
+
+          return {
+            x: pos.x > 0 ? Math.min(layerSize.width - rectWidth, pos.x) : 0,
+            y: pos.y > 0 ? Math.min(layerSize.height - rectHeight, pos.y) : 0,
+          };
+        }}
         onDragEnd={(e) => {
           onChange({
             ...shapeProps,
