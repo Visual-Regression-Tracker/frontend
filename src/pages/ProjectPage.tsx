@@ -2,9 +2,6 @@ import React, { useEffect, useState } from "react";
 import {
   Grid,
   Typography,
-  List,
-  ListItem,
-  ListItemText,
   TableContainer,
   TableHead,
   TableCell,
@@ -20,6 +17,7 @@ import { useParams, useHistory } from "react-router-dom";
 import { Build, TestRun } from "../types";
 import { projectsService, buildsService, testsService } from "../services";
 import { routes } from "../constants";
+import BuildList from "../components/BuildList";
 
 const ProjectPage = () => {
   const history = useHistory();
@@ -29,7 +27,7 @@ const ProjectPage = () => {
   const [selectedBuildId, setSelectedBuildId] = useState<string>();
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
-
+  
   useEffect(() => {
     if (projectId) {
       projectsService.getDetails(projectId).then((project) => {
@@ -62,22 +60,12 @@ const ProjectPage = () => {
   return (
     <Grid container>
       <Grid item xs={3}>
-        <List>
-          {builds.map((build) => (
-            <ListItem
-              key={build.id}
-              selected={selectedBuildId === build.id}
-              button
-              onClick={() => setSelectedBuildId(build.id)}
-            >
-              <ListItemText
-                primary={`#${build.id}`}
-                secondary={`Date: ${build.createdAt}`}
-              />
-              <Typography>Branch: {build.branchName}</Typography>
-            </ListItem>
-          ))}
-        </List>
+        <BuildList
+          builds={builds}
+          setBuilds={setBuilds}
+          selectedBuildId={selectedBuildId}
+          setSelectedBuildId={setSelectedBuildId}
+        />
       </Grid>
       <Grid item xs={9}>
         <Grid container direction="column">
@@ -114,18 +102,11 @@ const ProjectPage = () => {
                         <Typography>{test.status}</Typography>
                       </TableCell>
                       <TableCell>
-                        <IconButton
-                          aria-label="more"
-                          aria-controls="long-menu"
-                          aria-haspopup="true"
-                          onClick={handleClick}
-                        >
+                        <IconButton onClick={handleClick}>
                           <MoreVert />
                         </IconButton>
                         <Menu
-                          id="long-menu"
                           anchorEl={anchorEl}
-                          keepMounted
                           open={open}
                           onClose={handleClose}
                         >
