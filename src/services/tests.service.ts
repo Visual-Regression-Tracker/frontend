@@ -8,6 +8,7 @@ export const testsService = {
   approve,
   reject,
   setIgnoreAreas,
+  remove,
 };
 
 function get(testId: string): Promise<TestRun> {
@@ -43,6 +44,15 @@ function reject(id: string): Promise<TestRun> {
   );
 }
 
+function remove(id: string): Promise<Number> {
+  const requestOptions = {
+    method: "DELETE",
+    headers: authHeader(),
+  };
+
+  return fetch(`${API_URL}/test/${id}`, requestOptions).then(handleResponse);
+}
+
 function setIgnoreAreas(
   variationId: string,
   ignoreAreas: IgnoreArea[]
@@ -53,7 +63,8 @@ function setIgnoreAreas(
     body: JSON.stringify(ignoreAreas),
   };
 
-  return fetch(`${API_URL}/test/ignoreArea/${variationId}`, requestOptions).then(
-    handleResponse
-  );
+  return fetch(
+    `${API_URL}/test/ignoreArea/${variationId}`,
+    requestOptions
+  ).then(handleResponse);
 }

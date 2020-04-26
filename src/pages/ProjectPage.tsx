@@ -11,10 +11,14 @@ import {
   Table,
   TableRow,
   TableBody,
+  IconButton,
+  Menu,
+  MenuItem,
 } from "@material-ui/core";
+import { MoreVert } from "@material-ui/icons";
 import { useParams, useHistory } from "react-router-dom";
 import { Build, TestRun } from "../types";
-import { projectsService, buildsService } from "../services";
+import { projectsService, buildsService, testsService } from "../services";
 import { routes } from "../constants";
 
 const ProjectPage = () => {
@@ -23,6 +27,8 @@ const ProjectPage = () => {
   const [builds, setBuilds] = useState<Build[]>([]);
   const [tests, setTests] = useState<TestRun[]>([]);
   const [selectedBuildId, setSelectedBuildId] = useState<string>();
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const open = Boolean(anchorEl);
 
   useEffect(() => {
     if (projectId) {
@@ -43,6 +49,15 @@ const ProjectPage = () => {
       });
     }
   }, [selectedBuildId]);
+
+  const handleClick = (event: React.MouseEvent<HTMLElement>) => {
+    event.stopPropagation();
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleClose = () => {
+    setAnchorEl(null);
+  };
 
   return (
     <Grid container>
@@ -77,17 +92,12 @@ const ProjectPage = () => {
                     <TableCell>Browser</TableCell>
                     <TableCell>Viewport</TableCell>
                     <TableCell>Status</TableCell>
+                    <TableCell></TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
                   {tests.map((test) => (
-                    <TableRow
-                      key={test.id}
-                      hover
-                      onClick={() =>
-                        history.push(`${routes.TEST_DETAILS_PAGE}/${test.id}`)
-                      }
-                    >
+                    <TableRow key={test.id} hover>
                       <TableCell>
                         <Typography>{test.testVariation.name}</Typography>
                       </TableCell>
@@ -102,6 +112,47 @@ const ProjectPage = () => {
                       </TableCell>
                       <TableCell>
                         <Typography>{test.status}</Typography>
+                      </TableCell>
+                      <TableCell>
+                        <IconButton
+                          aria-label="more"
+                          aria-controls="long-menu"
+                          aria-haspopup="true"
+                          onClick={handleClick}
+                        >
+                          <MoreVert />
+                        </IconButton>
+                        <Menu
+                          id="long-menu"
+                          anchorEl={anchorEl}
+                          keepMounted
+                          open={open}
+                          onClose={handleClose}
+                        >
+                          <MenuItem
+                            onClick={() =>
+                              history.push(
+                                `${routes.TEST_DETAILS_PAGE}/${test.id}`
+                              )
+                            }
+                          >
+                            Details
+                          </MenuItem>
+                          <MenuItem
+                            onClick={() => {
+                              testsService.remove(test.id).then((isRemoved) => {
+                                if (isRemoved) {
+                                  setTests(
+                                    tests.filter((item) => item.id !== test.id)
+                                  );
+                                }
+                                handleClose();
+                              });
+                            }}
+                          >
+                            Delete
+                          </MenuItem>
+                        </Menu>
                       </TableCell>
                     </TableRow>
                   ))}
