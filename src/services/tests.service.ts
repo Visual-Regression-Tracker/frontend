@@ -1,69 +1,59 @@
-import { Test } from "../types";
+import { TestRun } from "../types";
 import { handleResponse, authHeader } from "../_helpers/service.helpers";
 import { API_URL } from "../_config/api.config";
-import { RectConfig } from "konva/types/shapes/Rect";
+import { IgnoreArea } from "../types/ignoreArea";
 
 export const testsService = {
   get,
-  getAll,
   approve,
   reject,
   setIgnoreAreas,
 };
 
-function getAll(buildId: string): Promise<Test[]> {
+function get(testId: string): Promise<TestRun> {
   const requestOptions = {
     method: "GET",
     headers: authHeader(),
   };
 
-  return fetch(`${API_URL}/tests/${buildId}`, requestOptions).then(
+  return fetch(`${API_URL}/test/${testId}`, requestOptions).then(
     handleResponse
   );
 }
 
-function get(testId: string): Promise<Test> {
+function approve(id: string): Promise<TestRun> {
   const requestOptions = {
     method: "GET",
     headers: authHeader(),
   };
 
-  return fetch(`${API_URL}/tests/${testId}`, requestOptions).then(
+  return fetch(`${API_URL}/test/approve/${id}`, requestOptions).then(
     handleResponse
   );
 }
 
-function approve(id: string): Promise<Test> {
+function reject(id: string): Promise<TestRun> {
   const requestOptions = {
     method: "GET",
     headers: authHeader(),
   };
 
-  return fetch(`${API_URL}/tests/approve/${id}`, requestOptions).then(
-    handleResponse
-  );
-}
-
-function reject(id: string): Promise<Test> {
-  const requestOptions = {
-    method: "GET",
-    headers: authHeader(),
-  };
-
-  return fetch(`${API_URL}/tests/reject/${id}`, requestOptions).then(
+  return fetch(`${API_URL}/test/reject/${id}`, requestOptions).then(
     handleResponse
   );
 }
 
 function setIgnoreAreas(
-  testId: string,
-  ignoreAreas: RectConfig[]
-): Promise<Test> {
+  variationId: string,
+  ignoreAreas: IgnoreArea[]
+): Promise<TestRun> {
   const requestOptions = {
     method: "PUT",
     headers: { "Content-Type": "application/json", ...authHeader() },
-    body: JSON.stringify({ testId, ignoreAreas }),
+    body: JSON.stringify(ignoreAreas),
   };
 
-  return fetch(`${API_URL}/tests`, requestOptions).then(handleResponse);
+  return fetch(`${API_URL}/test/ignoreArea/${variationId}`, requestOptions).then(
+    handleResponse
+  );
 }

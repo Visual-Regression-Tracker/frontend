@@ -7,7 +7,7 @@ import {
   Grid,
   Switch,
 } from "@material-ui/core";
-import { Test } from "../types";
+import { TestRun } from "../types";
 import { createStyles, makeStyles, Theme } from "@material-ui/core/styles";
 import { testsService } from "../services";
 import DrawArea from "../components/DrawArea";
@@ -15,6 +15,7 @@ import { TestStatus } from "../types/testStatus";
 import { useParams } from "react-router-dom";
 import { IgnoreArea } from "../types/ignoreArea";
 import { KonvaEventObject } from "konva/types/Node";
+import { TestVariation } from "../types/testVariation";
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -27,18 +28,31 @@ const useStyles = makeStyles((theme: Theme) =>
 const TestDetailsModal = () => {
   const { testId } = useParams();
   const classes = useStyles();
-  const [test, setTest] = useState<Test>({
+  const [test, setTest] = useState<TestRun>({
+    id: "",
+    buildId: 0,
+    imageName: "",
+    diffName: "",
+    status: TestStatus.unresolved,
+    testVariation: {
+      id: "",
+      name: "",
+      baselineName: "",
+      os: "",
+      browser: "",
+      viewport: "",
+      device: "",
+      ignoreAreas: [],
+    },
+  });
+  const [variation, setVariation] = useState<TestVariation>({
     id: "",
     name: "",
-    buildId: 0,
-    baselineUrl: "",
-    imageUrl: "",
-    diffUrl: "",
+    baselineName: "",
     os: "",
     browser: "",
     viewport: "",
     device: "",
-    status: TestStatus.unresolved,
     ignoreAreas: [],
   });
   const [ignoreAreas, setIgnoreAreas] = React.useState<IgnoreArea[]>([]);
@@ -60,7 +74,8 @@ const TestDetailsModal = () => {
     if (testId) {
       testsService.get(testId).then((test) => {
         setTest(test);
-        setIgnoreAreas(test.ignoreAreas);
+        setVariation(test.testVariation);
+        setIgnoreAreas(test.testVariation.ignoreAreas);
       });
     }
   }, [testId]);
@@ -76,7 +91,7 @@ const TestDetailsModal = () => {
         <Toolbar>
           <Grid container justify="space-between">
             <Grid item>
-              <Typography variant="h6">{test.name}</Typography>
+              <Typography variant="h6">{variation.name}</Typography>
             </Grid>
             {test.status === TestStatus.unresolved && (
               <Grid item>
@@ -93,7 +108,10 @@ const TestDetailsModal = () => {
                 <Button
                   color="inherit"
                   onClick={() =>
-                    testsService.approve(test.id).then((test) => setTest(test))
+                    testsService.approve(test.id).then((test) => {
+                      setVariation(test.testVariation);
+                      setTest(test);
+                    })
                   }
                 >
                   Approve
@@ -137,7 +155,7 @@ const TestDetailsModal = () => {
               <Button
                 color="inherit"
                 onClick={() => {
-                  testsService.setIgnoreAreas(test.id, ignoreAreas);
+                  testsService.setIgnoreAreas(variation.id, ignoreAreas);
                 }}
               >
                 Save
@@ -151,7 +169,7 @@ const TestDetailsModal = () => {
           <DrawArea
             width={stageWidth}
             height={stageHeigth}
-            imageUrl={test.baselineUrl}
+            imageUrl={variation.baselineName}
             ignoreAreas={[]}
             setIgnoreAreas={setIgnoreAreas}
             selectedRectId={selectedRectId}
@@ -164,7 +182,7 @@ const TestDetailsModal = () => {
             <DrawArea
               width={stageWidth}
               height={stageHeigth}
-              imageUrl={test.diffUrl}
+              imageUrl={test.diffName}
               ignoreAreas={ignoreAreas}
               setIgnoreAreas={setIgnoreAreas}
               selectedRectId={selectedRectId}
@@ -175,7 +193,7 @@ const TestDetailsModal = () => {
             <DrawArea
               width={stageWidth}
               height={stageHeigth}
-              imageUrl={test.imageUrl}
+              imageUrl={test.imageName}
               ignoreAreas={ignoreAreas}
               setIgnoreAreas={setIgnoreAreas}
               selectedRectId={selectedRectId}

@@ -1,4 +1,4 @@
-import { Test } from "./test";
+import { TestRun } from "./testRun";
 
 export interface Build {
     id: string,
@@ -7,5 +7,5 @@ export interface Build {
     status: string,
     createdAt: Date,
     createdBy: string,
-    tests: Test[]
+    testRuns: TestRun[]
 }

@@ -1,17 +1,12 @@
-import { TestStatus } from "./testStatus";
 import { IgnoreArea } from "./ignoreArea";
 
-export interface Test {
+export interface TestVariation {
   id: string;
   name: string;
-  buildId: number;
-  baselineUrl: string;
-  imageUrl: string;
-  diffUrl: string;
+  baselineName: string;
   os: string;
   browser: string;
   viewport: string;
   device: string;
-  status: TestStatus;
   ignoreAreas: IgnoreArea[];
 }

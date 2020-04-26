@@ -13,7 +13,7 @@ import {
   TableBody,
 } from "@material-ui/core";
 import { useParams, useHistory } from "react-router-dom";
-import { Build, Test } from "../types";
+import { Build, TestRun } from "../types";
 import { projectsService, buildsService } from "../services";
 import { routes } from "../constants";
 
@@ -21,7 +21,7 @@ const ProjectPage = () => {
   const history = useHistory();
   const { projectId } = useParams();
   const [builds, setBuilds] = useState<Build[]>([]);
-  const [tests, setTests] = useState<Test[]>([]);
+  const [tests, setTests] = useState<TestRun[]>([]);
   const [selectedBuildId, setSelectedBuildId] = useState<string>();
 
   useEffect(() => {
@@ -38,8 +38,8 @@ const ProjectPage = () => {
 
   useEffect(() => {
     if (selectedBuildId) {
-      buildsService.getDetails(selectedBuildId).then((build: Build) => {
-        setTests(build.tests);
+      buildsService.getTestRuns(selectedBuildId).then((testRuns: TestRun[]) => {
+        setTests(testRuns);
       });
     }
   }, [selectedBuildId]);
@@ -89,16 +89,16 @@ const ProjectPage = () => {
                       }
                     >
                       <TableCell>
-                        <Typography>{test.name}</Typography>
+                        <Typography>{test.testVariation.name}</Typography>
                       </TableCell>
                       <TableCell>
-                        <Typography>{test.os}</Typography>
+                        <Typography>{test.testVariation.os}</Typography>
                       </TableCell>
                       <TableCell>
-                        <Typography>{test.browser}</Typography>
+                        <Typography>{test.testVariation.browser}</Typography>
                       </TableCell>
                       <TableCell>
-                        <Typography>{test.viewport}</Typography>
+                        <Typography>{test.testVariation.viewport}</Typography>
                       </TableCell>
                       <TableCell>
                         <Typography>{test.status}</Typography>
