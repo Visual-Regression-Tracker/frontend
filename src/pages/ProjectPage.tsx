@@ -27,7 +27,7 @@ const ProjectPage = () => {
   const [selectedBuildId, setSelectedBuildId] = useState<string>();
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
-  
+
   useEffect(() => {
     if (projectId) {
       projectsService.getDetails(projectId).then((project) => {
@@ -86,7 +86,11 @@ const ProjectPage = () => {
                 <TableBody>
                   {tests.map((test) => (
                     <TableRow key={test.id} hover>
-                      <TableCell>
+                      <TableCell
+                        onClick={() =>
+                          history.push(`${routes.TEST_DETAILS_PAGE}/${test.id}`)
+                        }
+                      >
                         <Typography>{test.testVariation.name}</Typography>
                       </TableCell>
                       <TableCell>
@@ -110,15 +114,7 @@ const ProjectPage = () => {
                           open={open}
                           onClose={handleClose}
                         >
-                          <MenuItem
-                            onClick={() =>
-                              history.push(
-                                `${routes.TEST_DETAILS_PAGE}/${test.id}`
-                              )
-                            }
-                          >
-                            Details
-                          </MenuItem>
+                          <MenuItem>Details</MenuItem>
                           <MenuItem
                             onClick={() => {
                               testsService.remove(test.id).then((isRemoved) => {

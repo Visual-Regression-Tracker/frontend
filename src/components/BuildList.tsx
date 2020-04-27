@@ -59,7 +59,7 @@ const BuildList: FunctionComponent<IBuildList> = ({
           />
           <Typography>Branch: {build.branchName}</Typography>
           <ListItemSecondaryAction className={classes.listItemSecondaryAction}>
-            <IconButton aria-label="Comments">
+            <IconButton>
               <Delete
                 onClick={() => {
                   buildsService.remove(build.id).then(isRemoved => {

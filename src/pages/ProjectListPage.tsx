@@ -1,32 +1,126 @@
 import React, { useEffect, useState } from "react";
-import { Grid, Typography, Card, CardActionArea } from "@material-ui/core";
+import {
+  Grid,
+  Typography,
+  Card,
+  CardActionArea,
+  IconButton,
+  CardContent,
+  CardActions,
+  Fab,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  TextField,
+  DialogActions,
+  Button,
+} from "@material-ui/core";
 import { projectsService } from "../services/projects.service";
 import { Project } from "../types";
 import { Link } from "react-router-dom";
 import { routes } from "../constants";
+import { Delete, Add } from "@material-ui/icons";
 
 const ProjectsListPage = () => {
-    const [projectList, setProjectList] = useState([] as Project[]);
+  const [projectList, setProjectList] = useState([] as Project[]);
+  const [createDialogOpen, setCreateDialogOpen] = React.useState(false);
+  const [newProjectName, setNewProjectName] = React.useState<string>("");
 
-    useEffect(() => {
-        projectsService.getAll().then(projects => setProjectList(projects))
-    }, []);
+  useEffect(() => {
+    projectsService.getAll().then((projects) => setProjectList(projects));
+  }, []);
 
-    return (
-        <Grid container direction='column' spacing={2}>
-            {projectList.map(project => (
-                <Grid item key={project.id}>
-                    <Card>
-                        <CardActionArea component={Link} to={`${routes.PROJECT}/${project.id}`}>
-                            <Typography>Name: {project.name}</Typography>
-                            <Typography>Updated: {project.updatedAt}</Typography>
-                        </CardActionArea>
+  const handleCreateClickOpen = () => {
+    setCreateDialogOpen(true);
+  };
 
-                    </Card>
-                </Grid>
-            ))}
+  const handleCreateClose = () => {
+    setCreateDialogOpen(false);
+  };
+
+  return (
+    <Grid container direction="column" spacing={2}>
+      <Grid item>
+        <Fab color="primary" aria-label="add">
+          <Add onClick={handleCreateClickOpen} />
+        </Fab>
+        <Dialog
+          open={createDialogOpen}
+          onClose={handleCreateClose}
+          aria-labelledby="form-dialog-title"
+        >
+          <DialogTitle id="form-dialog-title">Create Project</DialogTitle>
+          <DialogContent>
+            <TextField
+              autoFocus
+              margin="dense"
+              id="name"
+              label="Project name"
+              type="text"
+              fullWidth
+              value={newProjectName}
+              onChange={(event) => setNewProjectName(event.target.value)}
+            />
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={handleCreateClose} color="primary">
+              Cancel
+            </Button>
+            <Button
+              onClick={() => {
+                projectsService
+                  .create({
+                    name: newProjectName,
+                  })
+                  .then((project) => {
+                    setProjectList([project, ...projectList]);
+                    handleCreateClose();
+                  });
+              }}
+              color="primary"
+            >
+              Create
+            </Button>
+          </DialogActions>
+        </Dialog>
+      </Grid>
+      {projectList.map((project) => (
+        <Grid item key={project.id}>
+          <Card>
+            <CardContent>
+              <Typography>Key: {project.id}</Typography>
+            </CardContent>
+            <CardActionArea
+              component={Link}
+              to={`${routes.PROJECT}/${project.id}`}
+            >
+              <CardContent>
+                <Typography>Name: {project.name}</Typography>
+                <Typography>Updated: {project.updatedAt}</Typography>
+              </CardContent>
+            </CardActionArea>
+            <CardActions>
+              <IconButton>
+                <Delete
+                  onClick={(
+                    event: React.MouseEvent<SVGSVGElement, MouseEvent>
+                  ) => {
+                    projectsService.remove(project.id).then((isDeleted) => {
+                      if (isDeleted) {
+                        setProjectList(
+                          projectList.filter((p) => p.id !== project.id)
+                        );
+                      }
+                    });
+                  }}
+                />
+              </IconButton>
+            </CardActions>
+          </Card>
         </Grid>
-    );
+      ))}
+    </Grid>
+  );
 };
 
 export default ProjectsListPage;
