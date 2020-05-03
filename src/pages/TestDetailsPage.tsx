@@ -42,7 +42,7 @@ const TestDetailsModal = () => {
       browser: "",
       viewport: "",
       device: "",
-      ignoreAreas: [],
+      ignoreAreas: "[]",
     },
   });
   const [variation, setVariation] = useState<TestVariation>({
@@ -53,7 +53,7 @@ const TestDetailsModal = () => {
     browser: "",
     viewport: "",
     device: "",
-    ignoreAreas: [],
+    ignoreAreas: "[]",
   });
   const [ignoreAreas, setIgnoreAreas] = React.useState<IgnoreArea[]>([]);
   const [isDiffShown, setIsDiffShown] = useState(false);
@@ -75,7 +75,7 @@ const TestDetailsModal = () => {
       testsService.get(testId).then((test) => {
         setTest(test);
         setVariation(test.testVariation);
-        setIgnoreAreas(test.testVariation.ignoreAreas);
+        setIgnoreAreas(JSON.parse(test.testVariation.ignoreAreas));
       });
     }
   }, [testId]);

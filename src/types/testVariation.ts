@@ -8,5 +8,5 @@ export interface TestVariation {
   browser: string;
   viewport: string;
   device: string;
-  ignoreAreas: IgnoreArea[];
+  ignoreAreas: string;
 }
