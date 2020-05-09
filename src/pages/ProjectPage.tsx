@@ -30,9 +30,7 @@ const ProjectPage = () => {
 
   useEffect(() => {
     if (projectId) {
-      projectsService.getDetails(projectId).then((project) => {
-        setBuilds(project.builds);
-      });
+      projectsService.getBuilds(projectId).then((builds) => setBuilds(builds));
     }
   }, [projectId]);
 
