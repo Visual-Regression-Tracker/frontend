@@ -1,6 +1,6 @@
 {
   "name": "vrt-frontend",
-  "version": "0.1.0",
+  "version": "0.0.2",
   "private": true,
   "dependencies": {
     "@material-ui/core": "^4.9.11",
@@ -22,7 +22,7 @@
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
-    "docker:build_ui": "docker build -t visualregressiontracker/ui:0.0.1 -f ./Dockerfile ."
+    "docker:build_ui": "docker build -t visualregressiontracker/ui:$npm_package_version -f ./Dockerfile . && docker push visualregressiontracker/ui:$npm_package_version"
   },
   "eslintConfig": {
     "extends": "react-app"
