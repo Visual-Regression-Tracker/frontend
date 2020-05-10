@@ -6,6 +6,7 @@ import {
   TextField,
   CardActions,
   Button,
+  Typography,
 } from "@material-ui/core";
 import RegisterForm from "../components/RegisterForm";
 import { useHistory } from "react-router-dom";
@@ -57,6 +58,13 @@ const ProfilePage = () => {
       justify="center"
       style={{ minHeight: "60vh" }}
     >
+      <Grid item>
+        <Card variant="outlined">
+          <CardContent>
+            <Typography>apiKey: {user?.apiKey}</Typography>
+          </CardContent>
+        </Card>
+      </Grid>
       <Grid item>
         <form onSubmit={handleUserUpdateSubmit}>
           <Card variant="outlined">
