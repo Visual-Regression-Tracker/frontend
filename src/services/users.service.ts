@@ -1,4 +1,4 @@
-import { handleResponse } from "../_helpers/service.helpers";
+import { handleResponse, authHeader } from "../_helpers/service.helpers";
 import { User } from "../types/user";
 import { API_URL } from "../_config/api.config";
 
@@ -6,6 +6,7 @@ export const usersService = {
   login,
   logout,
   register,
+  update,
 };
 
 function login(email: string, password: string): Promise<User> {
@@ -31,6 +32,21 @@ function register(firstName: string, lastName: string, email: string, password: 
   };
 
   return fetch(`${API_URL}/users/register`, requestOptions)
+    .then(handleResponse)
+    .then((user) => {
+      setUserInLocalStorage(user)
+      return user;
+    });
+}
+
+function update({ id, firstName, lastName, email }: { id: string, firstName: string, lastName: string, email: string }): Promise<User> {
+  const requestOptions = {
+    method: "PUT",
+    headers: { "Content-Type": "application/json", ...authHeader() },
+    body: JSON.stringify({ firstName, lastName, email }),
+  };
+
+  return fetch(`${API_URL}/users/${id}`, requestOptions)
     .then(handleResponse)
     .then((user) => {
       setUserInLocalStorage(user)

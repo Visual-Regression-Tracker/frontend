@@ -7,13 +7,18 @@ import TestDetailsPage from "./pages/TestDetailsPage";
 import PrivateRoute from "./components/PrivateRoute";
 import { routes } from "./constants";
 import RegisterPage from "./pages/RegisterPage";
+import ProfilePage from "./pages/ProfilePage";
 
 function Router() {
-
   return (
     <Switch>
       <Route exact path={routes.LOGIN} component={() => <LoginPage />} />
       <Route exact path={routes.REGISTER} component={() => <RegisterPage />} />
+      <PrivateRoute
+        exact
+        path={routes.PROFILE_PAGE}
+        component={() => <ProfilePage />}
+      />
       <PrivateRoute
         exact
         path={routes.PROJECTS_PAGE}

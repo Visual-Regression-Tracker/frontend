@@ -94,9 +94,21 @@ async function login(dispatch: Dispatch, email: string, password: string) {
     });
 }
 
+async function update(dispatch: Dispatch, user: User) {
+  dispatch({ type: "request" });
+
+  usersService.update(user)
+    .then((user) => {
+      dispatch({ type: "success", payload: user });
+    })
+    .catch((error) => {
+      console.log(error.toString());
+    });
+}
+
 function logout(dispatch: Dispatch) {
   usersService.logout();
   dispatch({ type: "logout" });
 }
 
-export { AuthProvider, useAuthState, useAuthDispatch, login, logout };
+export { AuthProvider, useAuthState, useAuthDispatch, login, logout, update };

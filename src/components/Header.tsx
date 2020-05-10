@@ -15,6 +15,7 @@ import {
   useAuthDispatch,
   logout,
 } from "../contexts/auth.context";
+import { routes } from "../constants";
 
 const Header: FunctionComponent = () => {
   const [menuRef, setMenuRef] = React.useState<null | HTMLElement>(null);
@@ -35,7 +36,13 @@ const Header: FunctionComponent = () => {
       open={!!menuRef}
       onClose={handleMenuClose}
     >
-      <MenuItem onClick={handleMenuClose}>Profile</MenuItem>
+      <MenuItem
+        component={Link}
+        to={routes.PROFILE_PAGE}
+        onClick={handleMenuClose}
+      >
+        Profile
+      </MenuItem>
       <MenuItem
         onClick={() => {
           handleMenuClose();
