@@ -1,4 +1,5 @@
 import React, { useState, FormEvent } from "react";
+import { Link } from "react-router-dom";
 import {
   Button,
   Grid,
@@ -6,8 +7,10 @@ import {
   Card,
   CardContent,
   CardActions,
+  Typography,
 } from "@material-ui/core";
 import { useAuthDispatch, login } from "../contexts/auth.context";
+import { routes } from "../constants";
 
 const LoginForm = () => {
   const [email, setEmail] = useState("");
@@ -62,15 +65,22 @@ const LoginForm = () => {
           </Grid>
         </CardContent>
         <CardActions>
-          <Grid container justify="center">
-            <Button
-              type="submit"
-              color="primary"
-              variant="outlined"
-              data-testid="loginBtn"
-            >
-              Login
-            </Button>
+          <Grid container direction="column" justify="center" spacing={3}>
+            <Grid item>
+              <Button
+                type="submit"
+                color="primary"
+                variant="outlined"
+                data-testid="loginBtn"
+              >
+                Login
+              </Button>
+            </Grid>
+            <Grid item>
+              <Typography component={Link} to={routes.REGISTER}>
+                Create an account
+              </Typography>
+            </Grid>
           </Grid>
         </CardActions>
       </Card>
