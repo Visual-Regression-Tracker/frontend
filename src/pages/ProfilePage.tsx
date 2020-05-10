@@ -1,4 +1,4 @@
-import React, { useEffect, useState, FormEvent } from "react";
+import React, { useState, FormEvent } from "react";
 import {
   Grid,
   Card,
@@ -8,14 +8,11 @@ import {
   Button,
   Typography,
 } from "@material-ui/core";
-import RegisterForm from "../components/RegisterForm";
-import { useHistory } from "react-router-dom";
 import {
   useAuthState,
   useAuthDispatch,
   update,
 } from "../contexts/auth.context";
-import { routes } from "../constants";
 import { usersService } from "../services";
 
 const ProfilePage = () => {
