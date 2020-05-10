@@ -1,4 +1,4 @@
-import { authService } from '../services'
+import { usersService } from '../services'
 import { User } from '../types';
 
 export function authHeader() {
@@ -19,7 +19,7 @@ export function handleResponse(response: Response) {
         if (!response.ok) {
             if (response.status === 401) {
                 // auto logout if 401 response returned from api
-                authService.logout();
+                usersService.logout();
                 window.location.reload();
             }
 

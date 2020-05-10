@@ -9,6 +9,7 @@ import TestDetailsPage from "./pages/TestDetailsPage";
 import { AuthProvider } from "./contexts/auth.context";
 import PrivateRoute from "./components/PrivateRoute";
 import { routes } from "./constants";
+import RegisterPage from "./pages/RegisterPage";
 
 function App() {
   return (
@@ -16,8 +17,9 @@ function App() {
       <AuthProvider>
         <Header />
         <Switch>
-          <Route exact path="/login" component={() => <LoginPage />} />
-          <PrivateRoute exact path="/" component={() => <ProjectsListPage />} />
+          <Route exact path={routes.LOGIN} component={() => <LoginPage />} />
+          <Route exact path={routes.REGISTER} component={() => <RegisterPage />} />
+          <PrivateRoute exact path={routes.PROJECTS_PAGE} component={() => <ProjectsListPage />} />
           <PrivateRoute
             exact
             path={`${routes.PROJECT}/:projectId`}

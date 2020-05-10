@@ -1,17 +1,8 @@
-import React, { useEffect } from "react";
+import React from "react";
 import { Grid } from "@material-ui/core";
 import LoginForm from "../components/LoginForm";
-import { useHistory } from "react-router-dom";
-import { useAuthState } from "../contexts/auth.context";
 
 const LoginPage = () => {
-    const history = useHistory();
-    const { loggedIn } = useAuthState();
-
-    useEffect(() => {
-        if (loggedIn) history.push('/')
-    });
-    
     return (
         <Grid
             container

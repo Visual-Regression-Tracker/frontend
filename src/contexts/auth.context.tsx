@@ -1,6 +1,6 @@
 import * as React from "react";
 import { User } from "../types";
-import { authService } from "../services";
+import { usersService } from "../services";
 
 interface IRequestAction {
   type: "request";
@@ -81,7 +81,7 @@ function useAuthDispatch() {
 async function login(dispatch: Dispatch, email: string, password: string) {
   dispatch({ type: "request" });
 
-  authService
+  usersService
     .login(email, password)
     .then((user) => {
       dispatch({ type: "success", payload: user });
@@ -92,7 +92,7 @@ async function login(dispatch: Dispatch, email: string, password: string) {
 }
 
 function logout(dispatch: Dispatch) {
-  authService.logout();
+  usersService.logout();
   dispatch({ type: "logout" });
 }
 
