@@ -39,10 +39,19 @@ const ProfilePage = () => {
     }
   };
 
+  const handlePasswordUpdateSubmit = (event: FormEvent) => {
+    event.preventDefault();
+    if (user && password) {
+      usersService.changePassword(password).then((isChanged) => {
+        setPassword("");
+      });
+    }
+  };
+
   return (
     <Grid
       container
-      spacing={0}
+      spacing={4}
       direction="column"
       alignItems="center"
       justify="center"
@@ -101,6 +110,47 @@ const ProfilePage = () => {
                       onChange: (event) =>
                         setEmail((event.target as HTMLInputElement).value),
                       "data-testid": "email",
+                    }}
+                  />
+                </Grid>
+              </Grid>
+            </CardContent>
+            <CardActions>
+              <Grid container justify="center">
+                <Grid item>
+                  <Button
+                    type="submit"
+                    color="primary"
+                    variant="outlined"
+                    data-testid="submit"
+                  >
+                    Update
+                  </Button>
+                </Grid>
+              </Grid>
+            </CardActions>
+          </Card>
+        </form>
+      </Grid>
+      <Grid item>
+        <form onSubmit={handlePasswordUpdateSubmit}>
+          <Card variant="outlined">
+            <CardContent>
+              <Grid container spacing={2}>
+                <Grid item xs={12}>
+                  <TextField
+                    id="password"
+                    name="password"
+                    value={password}
+                    label={"New password"}
+                    type="password"
+                    variant="outlined"
+                    required
+                    fullWidth
+                    inputProps={{
+                      onChange: (event) =>
+                        setPassword((event.target as HTMLInputElement).value),
+                      "data-testid": "password",
                     }}
                   />
                 </Grid>

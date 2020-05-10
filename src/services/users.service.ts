@@ -7,6 +7,7 @@ export const usersService = {
   logout,
   register,
   update,
+  changePassword,
 };
 
 function login(email: string, password: string): Promise<User> {
@@ -52,6 +53,17 @@ function update({ id, firstName, lastName, email }: { id: string, firstName: str
       setUserInLocalStorage(user)
       return user;
     });
+}
+
+function changePassword(password: string): Promise<boolean> {
+  const requestOptions = {
+    method: "PUT",
+    headers: { "Content-Type": "application/json", ...authHeader() },
+    body: JSON.stringify({ password }),
+  };
+
+  return fetch(`${API_URL}/users/password`, requestOptions)
+    .then(handleResponse)
 }
 
 function setUserInLocalStorage(user: User) {
