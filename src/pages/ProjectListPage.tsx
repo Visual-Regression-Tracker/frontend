@@ -41,8 +41,8 @@ const ProjectsListPage = () => {
   return (
     <Grid container direction="column" spacing={2}>
       <Grid item>
-        <Fab color="primary" aria-label="add">
-          <Add onClick={handleCreateClickOpen} />
+        <Fab color="primary" aria-label="add" onClick={handleCreateClickOpen}>
+          <Add />
         </Fab>
         <Dialog
           open={createDialogOpen}
@@ -100,20 +100,18 @@ const ProjectsListPage = () => {
               </CardContent>
             </CardActionArea>
             <CardActions>
-              <IconButton>
-                <Delete
-                  onClick={(
-                    event: React.MouseEvent<SVGSVGElement, MouseEvent>
-                  ) => {
-                    projectsService.remove(project.id).then((isDeleted) => {
-                      if (isDeleted) {
-                        setProjectList(
-                          projectList.filter((p) => p.id !== project.id)
-                        );
-                      }
-                    });
-                  }}
-                />
+              <IconButton
+                onClick={(event: React.MouseEvent<HTMLElement>) => {
+                  projectsService.remove(project.id).then((isDeleted) => {
+                    if (isDeleted) {
+                      setProjectList(
+                        projectList.filter((p) => p.id !== project.id)
+                      );
+                    }
+                  });
+                }}
+              >
+                <Delete />
               </IconButton>
             </CardActions>
           </Card>

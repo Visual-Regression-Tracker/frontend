@@ -3,13 +3,14 @@ import { Grid } from "@material-ui/core";
 import RegisterForm from "../components/RegisterForm";
 import { useHistory } from "react-router-dom";
 import { useAuthState } from "../contexts/auth.context";
+import { routes } from "../constants";
 
 const RegisterPage = () => {
   const history = useHistory();
   const { loggedIn } = useAuthState();
 
   useEffect(() => {
-    if (loggedIn) history.push("/");
+    if (loggedIn) history.replace(routes.PROJECTS_PAGE);
   });
 
   return (

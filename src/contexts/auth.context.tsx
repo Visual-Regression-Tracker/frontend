@@ -45,7 +45,10 @@ function authReducer(state: State, action: IAction) {
         user: action.payload,
       };
     case "logout":
-      return initialState;
+      return {
+        loggedIn: false,
+        user: undefined,
+      };
     default:
       return state;
   }

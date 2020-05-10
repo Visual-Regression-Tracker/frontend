@@ -59,16 +59,16 @@ const BuildList: FunctionComponent<IBuildList> = ({
           />
           <Typography>Branch: {build.branchName}</Typography>
           <ListItemSecondaryAction className={classes.listItemSecondaryAction}>
-            <IconButton>
-              <Delete
-                onClick={() => {
-                  buildsService.remove(build.id).then(isRemoved => {
-                      if(isRemoved) {
-                        setBuilds(builds.filter(item => item.id !== build.id))
-                      }
-                  });
-                }}
-              />
+            <IconButton
+              onClick={() => {
+                buildsService.remove(build.id).then((isRemoved) => {
+                  if (isRemoved) {
+                    setBuilds(builds.filter((item) => item.id !== build.id));
+                  }
+                });
+              }}
+            >
+              <Delete />
             </IconButton>
           </ListItemSecondaryAction>
         </ListItem>
