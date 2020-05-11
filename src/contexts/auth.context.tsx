@@ -34,7 +34,7 @@ const initialState: State = {
   user: localStorageUser ? JSON.parse(localStorageUser) : undefined,
 };
 
-function authReducer(state: State, action: IAction) {
+function authReducer(state: State, action: IAction): State {
   switch (action.type) {
     case "request": {
       return { loggedIn: false, user: action.payload };

@@ -2,7 +2,6 @@ import React, { FunctionComponent } from "react";
 import {
   AppBar,
   Toolbar,
-  Typography,
   Grid,
   IconButton,
   Avatar,
@@ -16,11 +15,12 @@ import {
   logout,
 } from "../contexts/auth.context";
 import { routes } from "../constants";
+import ProjectSelect from "./ProjectSelect";
 
 const Header: FunctionComponent = () => {
   const [menuRef, setMenuRef] = React.useState<null | HTMLElement>(null);
   const { loggedIn, user } = useAuthState();
-  const dispatch = useAuthDispatch();
+  const authDispatch = useAuthDispatch();
 
   const handleMenuClose = () => {
     setMenuRef(null);
@@ -46,7 +46,7 @@ const Header: FunctionComponent = () => {
       <MenuItem
         onClick={() => {
           handleMenuClose();
-          logout(dispatch);
+          logout(authDispatch);
         }}
         data-testid="logoutBtn"
       >
@@ -67,11 +67,11 @@ const Header: FunctionComponent = () => {
                     <img src="/logo512.png" width="40" height="40" alt="logo" />
                   </Link>
                 </Grid>
-                <Grid item>
-                  <Typography variant="h6" component={Link} to="/">
-                    Project list
-                  </Typography>
-                </Grid>
+                {loggedIn && (
+                  <Grid item>
+                    <ProjectSelect />
+                  </Grid>
+                )}
               </Grid>
             </Grid>
             <Grid item>
