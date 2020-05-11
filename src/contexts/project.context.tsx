@@ -8,9 +8,19 @@ interface IRequestAction {
   payload?: undefined;
 }
 
-interface ISuccessAction {
-  type: "success";
+interface IGetction {
+  type: "get";
   payload: Project[];
+}
+
+interface ICreateAction {
+  type: "create";
+  payload: Project;
+}
+
+interface IDeleteAction {
+  type: "delete";
+  payload: string;
 }
 
 interface ISelectAction {
@@ -18,7 +28,12 @@ interface ISelectAction {
   payload: Project;
 }
 
-type IAction = IRequestAction | ISuccessAction | ISelectAction;
+type IAction =
+  | IRequestAction
+  | IGetction
+  | ICreateAction
+  | IDeleteAction
+  | ISelectAction;
 
 type Dispatch = (action: IAction) => void;
 type State = { projectList: Project[]; selectedProject: Project | undefined };
@@ -43,10 +58,20 @@ const initialState: State = {
 
 function projectReducer(state: State, action: IAction): State {
   switch (action.type) {
-    case "success":
+    case "get":
       return {
         ...state,
         projectList: action.payload,
+      };
+    case "create":
+      return {
+        ...state,
+        projectList: [action.payload, ...state.projectList],
+      };
+    case "delete":
+      return {
+        ...state,
+        projectList: state.projectList.filter((p) => p.id !== action.payload),
       };
     case "select":
       return {
@@ -99,7 +124,7 @@ async function getProjectList(dispatch: Dispatch) {
   projectsService
     .getAll()
     .then((projects) => {
-      dispatch({ type: "success", payload: projects });
+      dispatch({ type: "get", payload: projects });
 
       // select first project if non was before
       !localStorageSelectedProject &&
@@ -116,10 +141,40 @@ async function selectProject(dispatch: Dispatch, project: Project) {
   localStorage.setItem(localStorageSelectedProjectKey, JSON.stringify(project));
 }
 
+async function createProject(dispatch: Dispatch, project: { name: string }) {
+  dispatch({ type: "request" });
+
+  projectsService
+    .create(project)
+    .then((project: Project) => {
+      dispatch({ type: "create", payload: project });
+    })
+    .catch((error) => {
+      console.log(error.toString());
+    });
+}
+
+async function deleteProject(dispatch: Dispatch, id: string) {
+  dispatch({ type: "request" });
+
+  projectsService
+    .remove(id)
+    .then((isDeleted) => {
+      if (isDeleted) {
+        dispatch({ type: "delete", payload: id });
+      }
+    })
+    .catch((error) => {
+      console.log(error.toString());
+    });
+}
+
 export {
   ProjectProvider,
   useProjectState,
   useProjectDispatch,
-  //   getProjectList,
+  createProject,
+  getProjectList,
+  deleteProject,
   selectProject,
 };

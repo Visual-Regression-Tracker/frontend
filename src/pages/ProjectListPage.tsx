@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import {
   Grid,
   Typography,
@@ -15,20 +15,27 @@ import {
   DialogActions,
   Button,
 } from "@material-ui/core";
-import { projectsService } from "../services/projects.service";
-import { Project } from "../types";
+import {
+  useProjectState,
+  useProjectDispatch,
+  getProjectList,
+  deleteProject,
+  createProject,
+} from "../contexts/project.context";
 import { Link } from "react-router-dom";
 import { routes } from "../constants";
 import { Delete, Add } from "@material-ui/icons";
 
 const ProjectsListPage = () => {
-  const [projectList, setProjectList] = useState([] as Project[]);
+  const projectState = useProjectState();
+  const projectDispatch = useProjectDispatch();
+
   const [createDialogOpen, setCreateDialogOpen] = React.useState(false);
   const [newProjectName, setNewProjectName] = React.useState<string>("");
 
   useEffect(() => {
-    projectsService.getAll().then((projects) => setProjectList(projects));
-  }, []);
+    getProjectList(projectDispatch);
+  }, [projectDispatch]);
 
   const handleCreateClickOpen = () => {
     setCreateDialogOpen(true);
@@ -68,14 +75,12 @@ const ProjectsListPage = () => {
             </Button>
             <Button
               onClick={() => {
-                projectsService
-                  .create({
-                    name: newProjectName,
-                  })
-                  .then((project) => {
-                    setProjectList([project, ...projectList]);
-                    handleCreateClose();
-                  });
+                createProject(projectDispatch, {
+                  name: newProjectName,
+                }).then((project) => {
+                  setNewProjectName("");
+                  handleCreateClose();
+                });
               }}
               color="primary"
             >
@@ -84,7 +89,7 @@ const ProjectsListPage = () => {
           </DialogActions>
         </Dialog>
       </Grid>
-      {projectList.map((project) => (
+      {projectState.projectList.map((project) => (
         <Grid item key={project.id}>
           <Card>
             <CardContent>
@@ -102,13 +107,7 @@ const ProjectsListPage = () => {
             <CardActions>
               <IconButton
                 onClick={(event: React.MouseEvent<HTMLElement>) => {
-                  projectsService.remove(project.id).then((isDeleted) => {
-                    if (isDeleted) {
-                      setProjectList(
-                        projectList.filter((p) => p.id !== project.id)
-                      );
-                    }
-                  });
+                  deleteProject(projectDispatch, project.id);
                 }}
               >
                 <Delete />
