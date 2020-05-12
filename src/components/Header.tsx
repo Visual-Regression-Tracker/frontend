@@ -15,7 +15,6 @@ import {
   logout,
 } from "../contexts/auth.context";
 import { routes } from "../constants";
-import ProjectSelect from "./ProjectSelect";
 
 const Header: FunctionComponent = () => {
   const [menuRef, setMenuRef] = React.useState<null | HTMLElement>(null);
@@ -36,6 +35,13 @@ const Header: FunctionComponent = () => {
       open={!!menuRef}
       onClose={handleMenuClose}
     >
+      <MenuItem
+        component={Link}
+        to={routes.PROJECT_LIST_PAGE}
+        onClick={handleMenuClose}
+      >
+        Projects
+      </MenuItem>
       <MenuItem
         component={Link}
         to={routes.PROFILE_PAGE}
@@ -61,17 +67,12 @@ const Header: FunctionComponent = () => {
         <Toolbar>
           <Grid container justify="space-between">
             <Grid item>
-              <Grid container spacing={2}>
+              <Grid container>
                 <Grid item>
                   <Link to="/">
                     <img src="/logo512.png" width="40" height="40" alt="logo" />
                   </Link>
                 </Grid>
-                {loggedIn && (
-                  <Grid item>
-                    <ProjectSelect />
-                  </Grid>
-                )}
               </Grid>
             </Grid>
             <Grid item>

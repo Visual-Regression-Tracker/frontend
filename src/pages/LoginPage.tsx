@@ -10,7 +10,7 @@ const LoginPage = () => {
   const location = useLocation<{ from: string }>();
   const { loggedIn } = useAuthState();
   const { from } = location.state || {
-    from: { pathname: routes.PROJECTS_PAGE },
+    from: { pathname: routes.HOME },
   };
 
   useEffect(() => {

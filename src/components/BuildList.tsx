@@ -13,12 +13,12 @@ import {
 import { Delete } from "@material-ui/icons";
 import { Build } from "../types";
 import { buildsService } from "../services";
+import { useHistory } from "react-router-dom";
 
 interface IBuildList {
   builds: Build[];
   setBuilds: React.Dispatch<React.SetStateAction<Build[]>>;
   selectedBuildId: string | undefined;
-  setSelectedBuildId: React.Dispatch<React.SetStateAction<string | undefined>>;
 }
 
 const useStyles = makeStyles((theme: Theme) =>
@@ -38,9 +38,10 @@ const BuildList: FunctionComponent<IBuildList> = ({
   builds,
   setBuilds,
   selectedBuildId,
-  setSelectedBuildId,
 }) => {
   const classes = useStyles();
+  const history = useHistory();
+
   return (
     <List>
       {builds.map((build) => (
@@ -48,7 +49,11 @@ const BuildList: FunctionComponent<IBuildList> = ({
           key={build.id}
           selected={selectedBuildId === build.id}
           button
-          onClick={() => setSelectedBuildId(build.id)}
+          onClick={() => {
+            history.push({
+              search: "buildId=" + build.id,
+            });
+          }}
           classes={{
             container: classes.listItem,
           }}

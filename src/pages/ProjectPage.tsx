@@ -13,15 +13,26 @@ import {
   MenuItem,
 } from "@material-ui/core";
 import { MoreVert } from "@material-ui/icons";
-import { useParams, useHistory } from "react-router-dom";
+import { useParams, useHistory, useLocation } from "react-router-dom";
 import { Build, TestRun } from "../types";
 import { projectsService, buildsService, testsService } from "../services";
 import { routes } from "../constants";
 import BuildList from "../components/BuildList";
+import ProjectSelect from "../components/ProjectSelect";
+import qs from "qs";
+
+const getQueryParams = (guery: string) => {
+  const queryParams = qs.parse(guery, { ignoreQueryPrefix: true });
+  return {
+    buildId: queryParams.buildId as string,
+    testId: queryParams.testId as string,
+  };
+};
 
 const ProjectPage = () => {
   const history = useHistory();
   const { projectId } = useParams();
+  const location = useLocation();
   const [builds, setBuilds] = useState<Build[]>([]);
   const [tests, setTests] = useState<TestRun[]>([]);
   const [selectedBuildId, setSelectedBuildId] = useState<string>();
@@ -29,14 +40,19 @@ const ProjectPage = () => {
   const open = Boolean(anchorEl);
 
   useEffect(() => {
+    const queryParams = getQueryParams(location.search);
+    if (queryParams.buildId) {
+      setSelectedBuildId(queryParams.buildId);
+    } else if (builds.length > 0) {
+      setSelectedBuildId(builds[0].id);
+    }
+  }, [location.search, builds]);
+
+  useEffect(() => {
     if (projectId) {
       projectsService.getBuilds(projectId).then((builds) => setBuilds(builds));
     }
   }, [projectId]);
-
-  useEffect(() => {
-    builds.length > 0 && setSelectedBuildId(builds[0].id);
-  }, [builds]);
 
   useEffect(() => {
     if (selectedBuildId) {
@@ -58,12 +74,18 @@ const ProjectPage = () => {
   return (
     <Grid container>
       <Grid item xs={3}>
-        <BuildList
-          builds={builds}
-          setBuilds={setBuilds}
-          selectedBuildId={selectedBuildId}
-          setSelectedBuildId={setSelectedBuildId}
-        />
+        <Grid container direction="column">
+          <Grid item>
+            <ProjectSelect selectedId={projectId} />
+          </Grid>
+        </Grid>
+        <Grid item>
+          <BuildList
+            builds={builds}
+            setBuilds={setBuilds}
+            selectedBuildId={selectedBuildId}
+          />
+        </Grid>
       </Grid>
       <Grid item xs={9}>
         <Grid container direction="column">
@@ -87,6 +109,9 @@ const ProjectPage = () => {
                       <TableCell
                         onClick={() =>
                           history.push(`${routes.TEST_DETAILS_PAGE}/${test.id}`)
+                          // history.push({
+                          //   search: "testId=" + test.id,
+                          // })
                         }
                       >
                         <Typography>{test.testVariation.name}</Typography>

@@ -4,8 +4,9 @@ export const routes = {
   REGISTER: '/register',
 
   // secured
-  PROJECTS_PAGE: "/",
+  HOME: "/",
   TEST_DETAILS_PAGE: "/test",
   PROFILE_PAGE: "/profile",
-  PROJECT: "/project",
+  PROJECT_LIST_PAGE: "/projects",
+  // PROJECT: "/project",
 };

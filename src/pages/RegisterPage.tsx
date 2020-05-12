@@ -10,7 +10,7 @@ const RegisterPage = () => {
   const { loggedIn } = useAuthState();
 
   useEffect(() => {
-    if (loggedIn) history.replace(routes.PROJECTS_PAGE);
+    if (loggedIn) history.replace(routes.HOME);
   });
 
   return (

@@ -2,22 +2,14 @@ import React, { FunctionComponent } from "react";
 import { MenuItem, Select } from "@material-ui/core";
 import {
   useProjectState,
-  useProjectDispatch,
-  selectProject,
 } from "../contexts/project.context";
-import { Project } from "../types";
+import { useHistory } from "react-router-dom";
 
-const ProjectSelect: FunctionComponent = () => {
+const ProjectSelect: FunctionComponent<{
+  selectedId: string | undefined;
+}> = ({ selectedId }) => {
+  const history = useHistory();
   const projectState = useProjectState();
-  const projectDispatch = useProjectDispatch();
-
-  const [selectedProject, setSelectedProject] = React.useState<
-    Project | undefined
-  >(projectState.selectedProject);
-
-  React.useEffect(() => {
-    setSelectedProject(projectState.selectedProject);
-  }, [projectState.selectedProject]);
 
   const handleProjectSelect = (
     event: React.ChangeEvent<{ value: unknown }>
@@ -26,14 +18,14 @@ const ProjectSelect: FunctionComponent = () => {
       (p) => p.id === (event.target.value as string)
     );
     if (newSelectedProject) {
-      selectProject(projectDispatch, newSelectedProject);
+      history.push(newSelectedProject.id);
     }
   };
 
   return (
     <Select
       id="project-select"
-      value={selectedProject?.id}
+      value={selectedId}
       onChange={handleProjectSelect}
     >
       {projectState.projectList.map((project) => (

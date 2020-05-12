@@ -1,5 +1,5 @@
 import React from "react";
-import { Route, Switch } from "react-router-dom";
+import { Route, Switch, Redirect } from "react-router-dom";
 import LoginPage from "./pages/LoginPage";
 import ProjectsListPage from "./pages/ProjectListPage";
 import ProjectPage from "./pages/ProjectPage";
@@ -21,13 +21,18 @@ function Router() {
       />
       <PrivateRoute
         exact
-        path={routes.PROJECTS_PAGE}
+        path={routes.PROJECT_LIST_PAGE}
         component={() => <ProjectsListPage />}
       />
       <PrivateRoute
         exact
-        path={`${routes.PROJECT}/:projectId`}
+        path={`${routes.HOME}:projectId`}
         component={() => <ProjectPage />}
+      />
+      <PrivateRoute
+        exact
+        path={`${routes.HOME}`}
+        component={() => <Redirect to={routes.PROJECT_LIST_PAGE} />}
       />
       <PrivateRoute
         exact

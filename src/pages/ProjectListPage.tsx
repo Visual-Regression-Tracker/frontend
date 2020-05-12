@@ -23,7 +23,6 @@ import {
   createProject,
 } from "../contexts/project.context";
 import { Link } from "react-router-dom";
-import { routes } from "../constants";
 import { Delete, Add } from "@material-ui/icons";
 
 const ProjectsListPage = () => {
@@ -97,7 +96,7 @@ const ProjectsListPage = () => {
             </CardContent>
             <CardActionArea
               component={Link}
-              to={`${routes.PROJECT}/${project.id}`}
+              to={`${project.id}`}
             >
               <CardContent>
                 <Typography>Name: {project.name}</Typography>

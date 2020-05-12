@@ -23,20 +23,10 @@ interface IDeleteAction {
   payload: string;
 }
 
-interface ISelectAction {
-  type: "select";
-  payload: Project;
-}
-
-type IAction =
-  | IRequestAction
-  | IGetction
-  | ICreateAction
-  | IDeleteAction
-  | ISelectAction;
+type IAction = IRequestAction | IGetction | ICreateAction | IDeleteAction;
 
 type Dispatch = (action: IAction) => void;
-type State = { projectList: Project[]; selectedProject: Project | undefined };
+type State = { projectList: Project[] };
 
 type ProjectProviderProps = { children: React.ReactNode };
 
@@ -45,15 +35,8 @@ const ProjectDispatchContext = React.createContext<Dispatch | undefined>(
   undefined
 );
 
-const localStorageSelectedProjectKey = "selectedProject";
-const localStorageSelectedProject = localStorage.getItem(
-  localStorageSelectedProjectKey
-);
 const initialState: State = {
   projectList: [],
-  selectedProject: localStorageSelectedProject
-    ? JSON.parse(localStorageSelectedProject)
-    : undefined,
 };
 
 function projectReducer(state: State, action: IAction): State {
@@ -72,11 +55,6 @@ function projectReducer(state: State, action: IAction): State {
       return {
         ...state,
         projectList: state.projectList.filter((p) => p.id !== action.payload),
-      };
-    case "select":
-      return {
-        ...state,
-        selectedProject: action.payload,
       };
     default:
       return state;
@@ -125,20 +103,10 @@ async function getProjectList(dispatch: Dispatch) {
     .getAll()
     .then((projects) => {
       dispatch({ type: "get", payload: projects });
-
-      // select first project if non was before
-      !localStorageSelectedProject &&
-        projects.length > 0 &&
-        selectProject(dispatch, projects[0]);
     })
     .catch((error) => {
       console.log(error.toString());
     });
-}
-
-async function selectProject(dispatch: Dispatch, project: Project) {
-  dispatch({ type: "select", payload: project });
-  localStorage.setItem(localStorageSelectedProjectKey, JSON.stringify(project));
 }
 
 async function createProject(dispatch: Dispatch, project: { name: string }) {
@@ -176,5 +144,4 @@ export {
   createProject,
   getProjectList,
   deleteProject,
-  selectProject,
 };
