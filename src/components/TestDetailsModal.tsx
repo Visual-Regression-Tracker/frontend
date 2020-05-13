@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import {
   AppBar,
   Toolbar,
@@ -6,16 +6,18 @@ import {
   Button,
   Grid,
   Switch,
+  IconButton,
 } from "@material-ui/core";
 import { TestRun } from "../types";
 import { createStyles, makeStyles, Theme } from "@material-ui/core/styles";
 import { testsService } from "../services";
-import DrawArea from "../components/DrawArea";
+import DrawArea from "./DrawArea";
 import { TestStatus } from "../types/testStatus";
-import { useParams } from "react-router-dom";
+import { useHistory } from "react-router-dom";
 import { IgnoreArea } from "../types/ignoreArea";
 import { KonvaEventObject } from "konva/types/Node";
 import { TestVariation } from "../types/testVariation";
+import { Close } from "@material-ui/icons";
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -25,37 +27,20 @@ const useStyles = makeStyles((theme: Theme) =>
   })
 );
 
-const TestDetailsPage = () => {
-  const { testId } = useParams();
+const TestDetailsModal: React.FunctionComponent<{
+  details: TestRun;
+  updateTestRun: (testRun: TestRun) => void;
+}> = ({ details, updateTestRun }) => {
+  const history = useHistory();
   const classes = useStyles();
-  const [test, setTest] = useState<TestRun>({
-    id: "",
-    buildId: 0,
-    imageName: "",
-    diffName: "",
-    status: TestStatus.unresolved,
-    testVariation: {
-      id: "",
-      name: "",
-      baselineName: "",
-      os: "",
-      browser: "",
-      viewport: "",
-      device: "",
-      ignoreAreas: "[]",
-    },
-  });
-  const [variation, setVariation] = useState<TestVariation>({
-    id: "",
-    name: "",
-    baselineName: "",
-    os: "",
-    browser: "",
-    viewport: "",
-    device: "",
-    ignoreAreas: "[]",
-  });
-  const [ignoreAreas, setIgnoreAreas] = React.useState<IgnoreArea[]>([]);
+
+  const [testRun, setTestRun] = useState<TestRun>(details);
+  const [testVariation, setTestVariation] = useState<TestVariation>(
+    details.testVariation
+  );
+  const [ignoreAreas, setIgnoreAreas] = React.useState<IgnoreArea[]>(
+    JSON.parse(details.testVariation.ignoreAreas)
+  );
   const [isDiffShown, setIsDiffShown] = useState(false);
   const [selectedRectId, setSelectedRectId] = React.useState<string>();
 
@@ -67,22 +52,25 @@ const TestDetailsPage = () => {
     }
   };
 
-  const stageWidth = (window.innerWidth / 2) * 0.95;
+  const stageWidth = (window.innerWidth / 2) * 0.9;
   const stageHeigth = window.innerHeight;
-
-  useEffect(() => {
-    if (testId) {
-      testsService.get(testId).then((test) => {
-        setTest(test);
-        setVariation(test.testVariation);
-        setIgnoreAreas(JSON.parse(test.testVariation.ignoreAreas));
-      });
-    }
-  }, [testId]);
 
   const deleteIgnoreArea = (id: string) => {
     setIgnoreAreas(ignoreAreas.filter((area) => area.id !== id));
     setSelectedRectId(undefined);
+  };
+
+  const handleClose = () => {
+    updateTestRun({
+      ...testRun,
+      testVariation: {
+        ...testVariation,
+        ignoreAreas: JSON.stringify(ignoreAreas),
+      },
+    });
+    history.push({
+      search: `buildId=${testRun.buildId}`,
+    });
   };
 
   return (
@@ -91,9 +79,9 @@ const TestDetailsPage = () => {
         <Toolbar>
           <Grid container justify="space-between">
             <Grid item>
-              <Typography variant="h6">{variation.name}</Typography>
+              <Typography variant="h6">{testVariation.name}</Typography>
             </Grid>
-            {test.status === TestStatus.unresolved && (
+            {testRun.status === TestStatus.unresolved && (
               <Grid item>
                 <Switch
                   checked={isDiffShown}
@@ -102,15 +90,15 @@ const TestDetailsPage = () => {
                 />
               </Grid>
             )}
-            {(test.status === TestStatus.unresolved ||
-              test.status === TestStatus.new) && (
+            {(testRun.status === TestStatus.unresolved ||
+              testRun.status === TestStatus.new) && (
               <Grid item>
                 <Button
                   color="inherit"
                   onClick={() =>
-                    testsService.approve(test.id).then((test) => {
-                      setVariation(test.testVariation);
-                      setTest(test);
+                    testsService.approve(testRun.id).then((test) => {
+                      setTestVariation(test.testVariation);
+                      setTestRun(test);
                     })
                   }
                 >
@@ -119,7 +107,9 @@ const TestDetailsPage = () => {
                 <Button
                   color="secondary"
                   onClick={() =>
-                    testsService.reject(test.id).then((test) => setTest(test))
+                    testsService
+                      .reject(testRun.id)
+                      .then((test) => setTestRun(test))
                   }
                 >
                   Reject
@@ -155,11 +145,16 @@ const TestDetailsPage = () => {
               <Button
                 color="inherit"
                 onClick={() => {
-                  testsService.setIgnoreAreas(variation.id, ignoreAreas);
+                  testsService.setIgnoreAreas(testVariation.id, ignoreAreas);
                 }}
               >
                 Save
               </Button>
+            </Grid>
+            <Grid item>
+              <IconButton color="inherit" onClick={handleClose}>
+                <Close />
+              </IconButton>
             </Grid>
           </Grid>
         </Toolbar>
@@ -169,7 +164,7 @@ const TestDetailsPage = () => {
           <DrawArea
             width={stageWidth}
             height={stageHeigth}
-            imageUrl={variation.baselineName}
+            imageUrl={testVariation.baselineName}
             ignoreAreas={[]}
             setIgnoreAreas={setIgnoreAreas}
             selectedRectId={selectedRectId}
@@ -182,7 +177,7 @@ const TestDetailsPage = () => {
             <DrawArea
               width={stageWidth}
               height={stageHeigth}
-              imageUrl={test.diffName}
+              imageUrl={testRun.diffName}
               ignoreAreas={ignoreAreas}
               setIgnoreAreas={setIgnoreAreas}
               selectedRectId={selectedRectId}
@@ -193,7 +188,7 @@ const TestDetailsPage = () => {
             <DrawArea
               width={stageWidth}
               height={stageHeigth}
-              imageUrl={test.imageName}
+              imageUrl={testRun.imageName}
               ignoreAreas={ignoreAreas}
               setIgnoreAreas={setIgnoreAreas}
               selectedRectId={selectedRectId}
@@ -207,4 +202,4 @@ const TestDetailsPage = () => {
   );
 };
 
-export default TestDetailsPage;
+export default TestDetailsModal;

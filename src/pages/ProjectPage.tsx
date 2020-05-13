@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Grid } from "@material-ui/core";
+import { Grid, Dialog } from "@material-ui/core";
 import { useParams, useLocation } from "react-router-dom";
 import { Build, TestRun } from "../types";
 import { projectsService, buildsService, testsService } from "../services";
@@ -7,6 +7,7 @@ import BuildList from "../components/BuildList";
 import ProjectSelect from "../components/ProjectSelect";
 import qs from "qs";
 import TestRunList from "../components/TestRunList";
+import TestDetailsModal from "../components/TestDetailsModal";
 
 const getQueryParams = (guery: string) => {
   const queryParams = qs.parse(guery, { ignoreQueryPrefix: true });
@@ -23,6 +24,7 @@ const ProjectPage = () => {
   const [testRuns, setTestRuns] = useState<TestRun[]>([]);
   const [selectedBuildId, setSelectedBuildId] = useState<string>();
   const [selectedTestdId, setSelectedTestId] = useState<string>();
+  const [selectedTestRun, setSelectedTestRun] = useState<TestRun>();
 
   useEffect(() => {
     const queryParams = getQueryParams(location.search);
@@ -33,10 +35,13 @@ const ProjectPage = () => {
     }
     if (queryParams.testId) {
       setSelectedTestId(queryParams.testId);
+      const testRun = testRuns.find((t) => t.id === queryParams.testId);
+      setSelectedTestRun(testRun);
     } else {
-      setSelectedTestId(undefined)
+      setSelectedTestId(undefined);
+      setSelectedTestRun(undefined);
     }
-  }, [location.search, builds]);
+  }, [location.search, builds, testRuns]);
 
   useEffect(() => {
     if (projectId) {
@@ -51,6 +56,16 @@ const ProjectPage = () => {
       });
     }
   }, [selectedBuildId]);
+
+  const updateTestRun = (testRun: TestRun) => {
+    const updated = testRuns.map((t) => {
+      if (t.id === testRun.id) {
+        return testRun;
+      }
+      return t;
+    });
+    setTestRuns(updated);
+  };
 
   return (
     <Grid container>
@@ -83,6 +98,14 @@ const ProjectPage = () => {
                 })
               }
             />
+            {selectedTestRun && (
+              <Dialog open={true} fullScreen style={{ margin: "40px" }}>
+                <TestDetailsModal
+                  details={selectedTestRun}
+                  updateTestRun={updateTestRun}
+                />
+              </Dialog>
+            )}
           </Grid>
         </Grid>
       </Grid>

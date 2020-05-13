@@ -14,6 +14,7 @@ import {
 import { MoreVert } from "@material-ui/icons";
 import { useHistory } from "react-router-dom";
 import { TestRun } from "../types";
+import { routes } from "../constants";
 
 const TestRunList: React.FunctionComponent<{
   items: TestRun[];
@@ -78,7 +79,13 @@ const TestRunList: React.FunctionComponent<{
                   <MoreVert />
                 </IconButton>
                 <Menu anchorEl={anchorEl} open={open} onClose={handleClose}>
-                  <MenuItem>Details</MenuItem>
+                  <MenuItem
+                    onClick={() =>
+                      history.push(`${routes.TEST_DETAILS_PAGE}/${test.id}`)
+                    }
+                  >
+                    Details
+                  </MenuItem>
                   <MenuItem
                     onClick={() => {
                       handleRemove(test.id);
