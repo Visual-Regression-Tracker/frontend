@@ -33,7 +33,6 @@ const TestDetailsModal: React.FunctionComponent<{
 }> = ({ details, updateTestRun }) => {
   const history = useHistory();
   const classes = useStyles();
-
   const [testRun, setTestRun] = useState<TestRun>(details);
   const [testVariation, setTestVariation] = useState<TestVariation>(
     details.testVariation
@@ -43,6 +42,12 @@ const TestDetailsModal: React.FunctionComponent<{
   );
   const [isDiffShown, setIsDiffShown] = useState(false);
   const [selectedRectId, setSelectedRectId] = React.useState<string>();
+
+  React.useEffect(() => {
+    setTestRun(details)
+    setTestVariation(details.testVariation)
+    setIgnoreAreas(JSON.parse(details.testVariation.ignoreAreas))
+  }, [details])
 
   const removeSelection = (event: KonvaEventObject<MouseEvent>) => {
     // deselect when clicked not on Rect

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
-import { Grid, Dialog } from "@material-ui/core";
-import { useParams, useLocation } from "react-router-dom";
+import { Grid, Dialog, IconButton } from "@material-ui/core";
+import { useParams, useLocation, useHistory } from "react-router-dom";
 import { Build, TestRun } from "../types";
 import { projectsService, buildsService, testsService } from "../services";
 import BuildList from "../components/BuildList";
@@ -8,6 +8,7 @@ import ProjectSelect from "../components/ProjectSelect";
 import qs from "qs";
 import TestRunList from "../components/TestRunList";
 import TestDetailsModal from "../components/TestDetailsModal";
+import { NavigateBefore, NavigateNext } from "@material-ui/icons";
 
 const getQueryParams = (guery: string) => {
   const queryParams = qs.parse(guery, { ignoreQueryPrefix: true });
@@ -17,14 +18,37 @@ const getQueryParams = (guery: string) => {
   };
 };
 
+const styles: {
+  modal: React.CSSProperties;
+  button: React.CSSProperties;
+  icon: React.CSSProperties;
+} = {
+  modal: {
+    margin: 40,
+  },
+  button: {
+    width: 64,
+    height: 64,
+    padding: 0,
+    position: "fixed",
+    top: "50%",
+    zIndex: 4000,
+  },
+  icon: {
+    width: 64,
+    height: 64,
+  },
+};
+
 const ProjectPage = () => {
   const { projectId } = useParams();
   const location = useLocation();
+  const history = useHistory();
   const [builds, setBuilds] = useState<Build[]>([]);
   const [testRuns, setTestRuns] = useState<TestRun[]>([]);
   const [selectedBuildId, setSelectedBuildId] = useState<string>();
   const [selectedTestdId, setSelectedTestId] = useState<string>();
-  const [selectedTestRun, setSelectedTestRun] = useState<TestRun>();
+  const [selectedTestRunIndex, setSelectedTestRunIndex] = useState<number>();
 
   useEffect(() => {
     const queryParams = getQueryParams(location.search);
@@ -35,13 +59,13 @@ const ProjectPage = () => {
     }
     if (queryParams.testId) {
       setSelectedTestId(queryParams.testId);
-      const testRun = testRuns.find((t) => t.id === queryParams.testId);
-      setSelectedTestRun(testRun);
+      const index = testRuns.findIndex((t) => t.id === queryParams.testId);
+      setSelectedTestRunIndex(index);
     } else {
       setSelectedTestId(undefined);
-      setSelectedTestRun(undefined);
+      setSelectedTestRunIndex(undefined);
     }
-  }, [location.search, builds, testRuns]);
+  }, [location.search, builds, testRuns, selectedTestRunIndex]);
 
   useEffect(() => {
     if (projectId) {
@@ -98,14 +122,49 @@ const ProjectPage = () => {
                 })
               }
             />
-            {selectedTestRun && (
-              <Dialog open={true} fullScreen style={{ margin: "40px" }}>
-                <TestDetailsModal
-                  details={selectedTestRun}
-                  updateTestRun={updateTestRun}
-                />
-              </Dialog>
-            )}
+            {selectedTestRunIndex !== undefined &&
+              testRuns[selectedTestRunIndex] && (
+                <Dialog open={true} fullScreen style={styles.modal}>
+                  <TestDetailsModal
+                    details={testRuns[selectedTestRunIndex]}
+                    updateTestRun={updateTestRun}
+                  />
+                  {selectedTestRunIndex + 1 < testRuns.length && (
+                    <IconButton
+                      color="secondary"
+                      style={{
+                        ...styles.button,
+                        right: 0,
+                      }}
+                      onClick={() => {
+                        const next = testRuns[selectedTestRunIndex + 1];
+                        history.push({
+                          search: `buildId=${next.buildId}&testId=${next.id}`,
+                        });
+                      }}
+                    >
+                      <NavigateNext style={styles.icon} />
+                    </IconButton>
+                  )}
+                  {selectedTestRunIndex > 0 && (
+                    <IconButton
+                      color="secondary"
+                      style={{
+                        ...styles.button,
+                        left: 0,
+                      }}
+                      onClick={() => {
+                        const prev = testRuns[selectedTestRunIndex - 1];
+                        history.push({
+                          search: `buildId=${prev.buildId}&testId=${prev.id}`,
+                        });
+                      }}
+                    >
+                      <NavigateBefore style={styles.icon} />
+                    </IconButton>
+                  )}
+                </Dialog>
+              )}
           </Grid>
         </Grid>
       </Grid>
