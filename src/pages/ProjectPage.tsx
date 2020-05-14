@@ -126,7 +126,7 @@ const ProjectPage = () => {
               testRuns[selectedTestRunIndex] && (
                 <Dialog open={true} fullScreen style={styles.modal}>
                   <TestDetailsModal
-                    details={testRuns[selectedTestRunIndex]}
+                    testRun={testRuns[selectedTestRunIndex]}
                     updateTestRun={updateTestRun}
                   />
                   {selectedTestRunIndex + 1 < testRuns.length && (

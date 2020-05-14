@@ -57,7 +57,6 @@ const TestRunList: React.FunctionComponent<{
                       search: `buildId=${test.buildId}&testId=${test.id}`,
                     });
                   }
-                  // () => history.push(`${routes.TEST_DETAILS_PAGE}/${test.id}`)
                 }
               >
                 <Typography>{test.testVariation.name}</Typography>

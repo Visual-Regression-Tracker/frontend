@@ -2,6 +2,7 @@ import { TestRun } from "../types";
 import { handleResponse, authHeader } from "../_helpers/service.helpers";
 import { API_URL } from "../_config/api.config";
 import { IgnoreArea } from "../types/ignoreArea";
+import { TestVariation } from "../types/testVariation";
 
 export const testsService = {
   get,
@@ -56,7 +57,7 @@ function remove(id: string): Promise<Number> {
 function setIgnoreAreas(
   variationId: string,
   ignoreAreas: IgnoreArea[]
-): Promise<TestRun> {
+): Promise<TestVariation> {
   const requestOptions = {
     method: "PUT",
     headers: { "Content-Type": "application/json", ...authHeader() },

@@ -16,7 +16,6 @@ import { TestStatus } from "../types/testStatus";
 import { useHistory } from "react-router-dom";
 import { IgnoreArea } from "../types/ignoreArea";
 import { KonvaEventObject } from "konva/types/Node";
-import { TestVariation } from "../types/testVariation";
 import { Close } from "@material-ui/icons";
 
 const useStyles = makeStyles((theme: Theme) =>
@@ -28,26 +27,24 @@ const useStyles = makeStyles((theme: Theme) =>
 );
 
 const TestDetailsModal: React.FunctionComponent<{
-  details: TestRun;
+  testRun: TestRun;
   updateTestRun: (testRun: TestRun) => void;
-}> = ({ details, updateTestRun }) => {
+}> = ({ testRun, updateTestRun }) => {
   const history = useHistory();
   const classes = useStyles();
-  const [testRun, setTestRun] = useState<TestRun>(details);
-  const [testVariation, setTestVariation] = useState<TestVariation>(
-    details.testVariation
+
+  const [isDiffShown, setIsDiffShown] = useState(
+    testRun.status === TestStatus.unresolved
   );
-  const [ignoreAreas, setIgnoreAreas] = React.useState<IgnoreArea[]>(
-    JSON.parse(details.testVariation.ignoreAreas)
-  );
-  const [isDiffShown, setIsDiffShown] = useState(false);
   const [selectedRectId, setSelectedRectId] = React.useState<string>();
 
+  const [ignoreAreas, setIgnoreAreas] = React.useState<IgnoreArea[]>(
+    JSON.parse(testRun.testVariation.ignoreAreas)
+  );
+
   React.useEffect(() => {
-    setTestRun(details)
-    setTestVariation(details.testVariation)
-    setIgnoreAreas(JSON.parse(details.testVariation.ignoreAreas))
-  }, [details])
+    setIgnoreAreas(JSON.parse(testRun.testVariation.ignoreAreas));
+  }, [testRun]);
 
   const removeSelection = (event: KonvaEventObject<MouseEvent>) => {
     // deselect when clicked not on Rect
@@ -66,13 +63,6 @@ const TestDetailsModal: React.FunctionComponent<{
   };
 
   const handleClose = () => {
-    updateTestRun({
-      ...testRun,
-      testVariation: {
-        ...testVariation,
-        ignoreAreas: JSON.stringify(ignoreAreas),
-      },
-    });
     history.push({
       search: `buildId=${testRun.buildId}`,
     });
@@ -84,7 +74,7 @@ const TestDetailsModal: React.FunctionComponent<{
         <Toolbar>
           <Grid container justify="space-between">
             <Grid item>
-              <Typography variant="h6">{testVariation.name}</Typography>
+              <Typography variant="h6">{testRun.testVariation.name}</Typography>
             </Grid>
             {testRun.status === TestStatus.unresolved && (
               <Grid item>
@@ -101,9 +91,8 @@ const TestDetailsModal: React.FunctionComponent<{
                 <Button
                   color="inherit"
                   onClick={() =>
-                    testsService.approve(testRun.id).then((test) => {
-                      setTestVariation(test.testVariation);
-                      setTestRun(test);
+                    testsService.approve(testRun.id).then((testRun) => {
+                      updateTestRun(testRun);
                     })
                   }
                 >
@@ -114,7 +103,7 @@ const TestDetailsModal: React.FunctionComponent<{
                   onClick={() =>
                     testsService
                       .reject(testRun.id)
-                      .then((test) => setTestRun(test))
+                      .then((testRun) => updateTestRun(testRun))
                   }
                 >
                   Reject
@@ -150,7 +139,14 @@ const TestDetailsModal: React.FunctionComponent<{
               <Button
                 color="inherit"
                 onClick={() => {
-                  testsService.setIgnoreAreas(testVariation.id, ignoreAreas);
+                  testsService
+                    .setIgnoreAreas(testRun.testVariation.id, ignoreAreas)
+                    .then((testVariation) =>
+                      updateTestRun({
+                        ...testRun,
+                        testVariation,
+                      })
+                    );
                 }}
               >
                 Save
@@ -169,7 +165,7 @@ const TestDetailsModal: React.FunctionComponent<{
           <DrawArea
             width={stageWidth}
             height={stageHeigth}
-            imageUrl={testVariation.baselineName}
+            imageUrl={testRun.testVariation.baselineName}
             ignoreAreas={[]}
             setIgnoreAreas={setIgnoreAreas}
             selectedRectId={selectedRectId}
