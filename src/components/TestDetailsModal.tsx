@@ -19,6 +19,7 @@ import { useHistory, Prompt } from "react-router-dom";
 import { IgnoreArea } from "../types/ignoreArea";
 import { KonvaEventObject } from "konva/types/Node";
 import { Close, Add, Delete, Save } from "@material-ui/icons";
+import TestStatusChip from "./TestStatusChip";
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -76,7 +77,7 @@ const TestDetailsModal: React.FunctionComponent<{
 
   return (
     <React.Fragment>
-       <Prompt
+      <Prompt
         when={!isIgnoreAreasSaved()}
         message={`You have unsaved changes that will be lost`}
       />
@@ -130,6 +131,31 @@ const TestDetailsModal: React.FunctionComponent<{
       </AppBar>
       <Box m={1}>
         <Grid container>
+          <Grid item>
+            <Paper variant="outlined">
+              <Grid container spacing={2}>
+                <Grid item>
+                  <Typography>OS: {testRun.testVariation.os}</Typography>
+                </Grid>
+                <Grid item>
+                  <Typography>
+                    Browser: {testRun.testVariation.browser}
+                  </Typography>
+                </Grid>
+                <Grid item>
+                  <Typography>
+                    Viewport: {testRun.testVariation.viewport}
+                  </Typography>
+                </Grid>
+                <Grid item>
+                  <Typography>
+                    Status:
+                    <TestStatusChip status={testRun.status} />
+                  </Typography>
+                </Grid>
+              </Grid>
+            </Paper>
+          </Grid>
           <Grid item>
             <Paper variant="outlined">
               <Grid container justify="center">
