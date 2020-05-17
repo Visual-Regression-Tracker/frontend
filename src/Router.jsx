@@ -3,7 +3,6 @@ import { Route, Switch, Redirect } from "react-router-dom";
 import LoginPage from "./pages/LoginPage";
 import ProjectsListPage from "./pages/ProjectListPage";
 import ProjectPage from "./pages/ProjectPage";
-import TestDetailsPage from "./pages/TestDetailsPage";
 import PrivateRoute from "./components/PrivateRoute";
 import { routes } from "./constants";
 import RegisterPage from "./pages/RegisterPage";
@@ -33,11 +32,6 @@ function Router() {
         exact
         path={`${routes.HOME}`}
         component={() => <Redirect to={routes.PROJECT_LIST_PAGE} />}
-      />
-      <PrivateRoute
-        exact
-        path={`${routes.TEST_DETAILS_PAGE}/:testId`}
-        component={() => <TestDetailsPage />}
       />
     </Switch>
   );
