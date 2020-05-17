@@ -14,7 +14,7 @@ import {
 import { MoreVert } from "@material-ui/icons";
 import { useHistory } from "react-router-dom";
 import { TestRun } from "../types";
-import { routes } from "../constants";
+import TestStatusChip from "./TestStatusChip";
 
 const TestRunList: React.FunctionComponent<{
   items: TestRun[];
@@ -51,13 +51,11 @@ const TestRunList: React.FunctionComponent<{
           {items.map((test) => (
             <TableRow key={test.id} hover selected={test.id === selectedId}>
               <TableCell
-                onClick={
-                  () => {
-                    history.push({
-                      search: `buildId=${test.buildId}&testId=${test.id}`,
-                    });
-                  }
-                }
+                onClick={() => {
+                  history.push({
+                    search: `buildId=${test.buildId}&testId=${test.id}`,
+                  });
+                }}
               >
                 <Typography>{test.testVariation.name}</Typography>
               </TableCell>
@@ -71,7 +69,7 @@ const TestRunList: React.FunctionComponent<{
                 <Typography>{test.testVariation.viewport}</Typography>
               </TableCell>
               <TableCell>
-                <Typography>{test.status}</Typography>
+                <TestStatusChip status={test.status} />
               </TableCell>
               <TableCell>
                 <IconButton onClick={handleClick}>
@@ -79,9 +77,12 @@ const TestRunList: React.FunctionComponent<{
                 </IconButton>
                 <Menu anchorEl={anchorEl} open={open} onClose={handleClose}>
                   <MenuItem
-                    onClick={() =>
-                      history.push(`${routes.TEST_DETAILS_PAGE}/${test.id}`)
-                    }
+                    onClick={() => {
+                      history.push({
+                        search: `buildId=${test.buildId}&testId=${test.id}`,
+                      });
+                      handleClose();
+                    }}
                   >
                     Details
                   </MenuItem>
