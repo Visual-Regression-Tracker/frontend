@@ -9,6 +9,7 @@ import {
   makeStyles,
   Theme,
   createStyles,
+  Chip,
 } from "@material-ui/core";
 import { Delete } from "@material-ui/icons";
 import { Build } from "../types";
@@ -62,7 +63,7 @@ const BuildList: FunctionComponent<IBuildList> = ({
             primary={`#${build.id}`}
             secondary={`Date: ${build.createdAt}`}
           />
-          <Typography>Branch: {build.branchName}</Typography>
+          <Chip size="small" label={build.branchName} />
           <ListItemSecondaryAction className={classes.listItemSecondaryAction}>
             <IconButton
               onClick={() => {
