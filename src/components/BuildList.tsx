@@ -3,7 +3,6 @@ import {
   List,
   ListItem,
   ListItemText,
-  Typography,
   ListItemSecondaryAction,
   IconButton,
   makeStyles,

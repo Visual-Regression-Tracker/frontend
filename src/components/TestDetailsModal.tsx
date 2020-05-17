@@ -7,16 +7,18 @@ import {
   Grid,
   Switch,
   IconButton,
+  Paper,
+  Box,
 } from "@material-ui/core";
 import { TestRun } from "../types";
 import { createStyles, makeStyles, Theme } from "@material-ui/core/styles";
 import { testsService } from "../services";
 import DrawArea from "./DrawArea";
 import { TestStatus } from "../types/testStatus";
-import { useHistory } from "react-router-dom";
+import { useHistory, Prompt } from "react-router-dom";
 import { IgnoreArea } from "../types/ignoreArea";
 import { KonvaEventObject } from "konva/types/Node";
-import { Close } from "@material-ui/icons";
+import { Close, Add, Delete, Save } from "@material-ui/icons";
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -68,8 +70,16 @@ const TestDetailsModal: React.FunctionComponent<{
     });
   };
 
+  const isIgnoreAreasSaved = () => {
+    return testRun.testVariation.ignoreAreas === JSON.stringify(ignoreAreas);
+  };
+
   return (
     <React.Fragment>
+       <Prompt
+        when={!isIgnoreAreasSaved()}
+        message={`You have unsaved changes that will be lost`}
+      />
       <AppBar className={classes.appBar}>
         <Toolbar>
           <Grid container justify="space-between">
@@ -111,48 +121,6 @@ const TestDetailsModal: React.FunctionComponent<{
               </Grid>
             )}
             <Grid item>
-              <Button
-                color="inherit"
-                onClick={() => {
-                  const newArea: IgnoreArea = {
-                    id: Date.now().toString(),
-                    x: 0,
-                    y: 0,
-                    width: 150,
-                    height: 100,
-                  };
-                  setIgnoreAreas([...ignoreAreas, newArea]);
-                }}
-              >
-                Add ignore area
-              </Button>
-              {selectedRectId && (
-                <Button
-                  color="secondary"
-                  onClick={() => deleteIgnoreArea(selectedRectId)}
-                >
-                  Delete ignore area
-                </Button>
-              )}
-            </Grid>
-            <Grid item>
-              <Button
-                color="inherit"
-                onClick={() => {
-                  testsService
-                    .setIgnoreAreas(testRun.testVariation.id, ignoreAreas)
-                    .then((testVariation) =>
-                      updateTestRun({
-                        ...testRun,
-                        testVariation,
-                      })
-                    );
-                }}
-              >
-                Save
-              </Button>
-            </Grid>
-            <Grid item>
               <IconButton color="inherit" onClick={handleClose}>
                 <Close />
               </IconButton>
@@ -160,6 +128,64 @@ const TestDetailsModal: React.FunctionComponent<{
           </Grid>
         </Toolbar>
       </AppBar>
+      <Box m={1}>
+        <Grid container>
+          <Grid item>
+            <Paper variant="outlined">
+              <Grid container justify="center">
+                <Grid item xs={12}>
+                  <Typography variant="subtitle1" align="center">
+                    Ignore areas
+                  </Typography>
+                </Grid>
+                <Grid item>
+                  <IconButton
+                    onClick={() => {
+                      const newArea: IgnoreArea = {
+                        id: Date.now().toString(),
+                        x: 0,
+                        y: 0,
+                        width: 150,
+                        height: 100,
+                      };
+                      setIgnoreAreas([...ignoreAreas, newArea]);
+                    }}
+                  >
+                    <Add />
+                  </IconButton>
+                </Grid>
+                <Grid item>
+                  <IconButton
+                    disabled={!selectedRectId}
+                    onClick={() =>
+                      selectedRectId && deleteIgnoreArea(selectedRectId)
+                    }
+                  >
+                    <Delete />
+                  </IconButton>
+                </Grid>
+                <Grid item>
+                  <IconButton
+                    disabled={isIgnoreAreasSaved()}
+                    onClick={() => {
+                      testsService
+                        .setIgnoreAreas(testRun.testVariation.id, ignoreAreas)
+                        .then((testVariation) =>
+                          updateTestRun({
+                            ...testRun,
+                            testVariation,
+                          })
+                        );
+                    }}
+                  >
+                    <Save />
+                  </IconButton>
+                </Grid>
+              </Grid>
+            </Paper>
+          </Grid>
+        </Grid>
+      </Box>
       <Grid container>
         <Grid item xs={6}>
           <DrawArea
