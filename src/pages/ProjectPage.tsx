@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Grid, Dialog, IconButton } from "@material-ui/core";
+import { Grid, Dialog, IconButton, Box } from "@material-ui/core";
 import { useParams, useLocation, useHistory } from "react-router-dom";
 import { Build, TestRun } from "../types";
 import { projectsService, buildsService, testsService } from "../services";
@@ -9,6 +9,7 @@ import qs from "qs";
 import TestRunList from "../components/TestRunList";
 import TestDetailsModal from "../components/TestDetailsModal";
 import { NavigateBefore, NavigateNext } from "@material-ui/icons";
+import Filters from "../components/Filters";
 
 const getQueryParams = (guery: string) => {
   const queryParams = qs.parse(guery, { ignoreQueryPrefix: true });
@@ -50,6 +51,14 @@ const ProjectPage = () => {
   const [selectedTestdId, setSelectedTestId] = useState<string>();
   const [selectedTestRunIndex, setSelectedTestRunIndex] = useState<number>();
 
+  // filter
+  const [query, setQuery] = React.useState("");
+  const [os, setOs] = React.useState("");
+  const [browser, setBrowser] = React.useState("");
+  const [viewport, setViewport] = React.useState("");
+  const [testStatus, setTestStatus] = React.useState("");
+  const [filteredTestRuns, setFilteredTestRuns] = React.useState<TestRun[]>([]);
+
   useEffect(() => {
     const queryParams = getQueryParams(location.search);
     if (queryParams.buildId) {
@@ -81,6 +90,19 @@ const ProjectPage = () => {
     }
   }, [selectedBuildId]);
 
+  useEffect(() => {
+    setFilteredTestRuns(
+      testRuns.filter(
+        (t) =>
+          t.testVariation.name.includes(query) && // by query
+          (os ? t.testVariation.os === os : true) && // by OS
+          (viewport ? t.testVariation.viewport === viewport : true) && // by viewport
+          (testStatus ? t.status === testStatus : true) && // by status
+          (browser ? t.testVariation.browser === browser : true) // by browser
+      )
+    );
+  }, [query, os, browser, viewport, testStatus, testRuns]);
+
   const updateTestRun = (testRun: TestRun) => {
     const updated = testRuns.map((t) => {
       if (t.id === testRun.id) {
@@ -109,10 +131,21 @@ const ProjectPage = () => {
       </Grid>
       <Grid item xs={9}>
         <Grid container direction="column">
-          <Grid item>Pannel</Grid>
+          <Grid item>
+            <Box m={2}>
+              <Filters
+                testRuns={testRuns}
+                queryState={[query, setQuery]}
+                osState={[os, setOs]}
+                browserState={[browser, setBrowser]}
+                viewportState={[viewport, setViewport]}
+                testStatusState={[testStatus, setTestStatus]}
+              />
+            </Box>
+          </Grid>
           <Grid item>
             <TestRunList
-              items={testRuns}
+              items={filteredTestRuns}
               selectedId={selectedTestdId}
               handleRemove={(id: string) =>
                 testsService.remove(id).then((isRemoved) => {
