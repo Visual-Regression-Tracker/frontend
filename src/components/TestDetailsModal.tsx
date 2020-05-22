@@ -148,10 +148,8 @@ const TestDetailsModal: React.FunctionComponent<{
                   </Typography>
                 </Grid>
                 <Grid item>
-                  <Typography>
-                    Status:
-                    <TestStatusChip status={testRun.status} />
-                  </Typography>
+                  <Typography display='inline'>Status: </Typography>
+                  <TestStatusChip status={testRun.status} />
                 </Grid>
               </Grid>
             </Paper>
