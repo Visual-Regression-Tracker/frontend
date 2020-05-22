@@ -6,6 +6,8 @@ export interface TestRun {
   buildId: number;
   imageName: string;
   diffName: string;
+  diffPercent: number;
+  diffTollerancePercent: number;
   status: TestStatus;
   testVariation: TestVariation;
 }
