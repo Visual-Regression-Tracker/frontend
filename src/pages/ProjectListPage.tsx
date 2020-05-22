@@ -3,7 +3,6 @@ import {
   Grid,
   Typography,
   Card,
-  CardActionArea,
   IconButton,
   CardContent,
   CardActions,
@@ -115,14 +114,17 @@ const ProjectsListPage = () => {
             <Card>
               <CardContent>
                 <Typography>Key: {project.id}</Typography>
+                <Typography>Name: {project.name}</Typography>
+                <Typography>Updated: {project.updatedAt}</Typography>
               </CardContent>
-              <CardActionArea component={Link} to={`${project.id}`}>
-                <CardContent>
-                  <Typography>Name: {project.name}</Typography>
-                  <Typography>Updated: {project.updatedAt}</Typography>
-                </CardContent>
-              </CardActionArea>
               <CardActions>
+                <Button
+                  color="primary"
+                  component={Link}
+                  to={`${project.id}`}
+                >
+                  Builds
+                </Button>
                 <Button
                   color="primary"
                   component={Link}
