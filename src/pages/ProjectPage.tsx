@@ -10,6 +10,7 @@ import TestRunList from "../components/TestRunList";
 import TestDetailsModal from "../components/TestDetailsModal";
 import { NavigateBefore, NavigateNext } from "@material-ui/icons";
 import Filters from "../components/Filters";
+import { buildTestRunLocation } from "../_helpers/route.helpers";
 
 const getQueryParams = (guery: string) => {
   const queryParams = qs.parse(guery, { ignoreQueryPrefix: true });
@@ -171,9 +172,7 @@ const ProjectPage = () => {
                       }}
                       onClick={() => {
                         const next = testRuns[selectedTestRunIndex + 1];
-                        history.push({
-                          search: `buildId=${next.buildId}&testId=${next.id}`,
-                        });
+                        history.push(buildTestRunLocation(next));
                       }}
                     >
                       <NavigateNext style={styles.icon} />
@@ -188,9 +187,7 @@ const ProjectPage = () => {
                       }}
                       onClick={() => {
                         const prev = testRuns[selectedTestRunIndex - 1];
-                        history.push({
-                          search: `buildId=${prev.buildId}&testId=${prev.id}`,
-                        });
+                        history.push(buildTestRunLocation(prev));
                       }}
                     >
                       <NavigateBefore style={styles.icon} />
