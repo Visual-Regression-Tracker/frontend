@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Grid, Dialog, IconButton, Box } from "@material-ui/core";
+import { Grid, Dialog, IconButton, Box, Typography } from "@material-ui/core";
 import { useParams, useLocation, useHistory } from "react-router-dom";
 import { Build, TestRun } from "../types";
 import { projectsService, buildsService, testsService } from "../services";
@@ -119,6 +119,7 @@ const ProjectPage = () => {
       <Grid item xs={3}>
         <Grid container direction="column">
           <Grid item>
+            <Typography display="inline">Project: </Typography>
             <ProjectSelect selectedId={projectId} />
           </Grid>
         </Grid>
