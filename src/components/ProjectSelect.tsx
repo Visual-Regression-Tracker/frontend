@@ -1,8 +1,6 @@
 import React, { FunctionComponent } from "react";
 import { MenuItem, Select } from "@material-ui/core";
-import {
-  useProjectState,
-} from "../contexts/project.context";
+import { useProjectState } from "../contexts/project.context";
 import { useHistory } from "react-router-dom";
 
 const ProjectSelect: FunctionComponent<{
@@ -23,17 +21,21 @@ const ProjectSelect: FunctionComponent<{
   };
 
   return (
-    <Select
-      id="project-select"
-      value={selectedId}
-      onChange={handleProjectSelect}
-    >
-      {projectState.projectList.map((project) => (
-        <MenuItem key={project.id} value={project.id}>
-          {project.name}
-        </MenuItem>
-      ))}
-    </Select>
+    <React.Fragment>
+      {projectState.projectList.length > 0 && (
+        <Select
+          id="project-select"
+          value={selectedId}
+          onChange={handleProjectSelect}
+        >
+          {projectState.projectList.map((project) => (
+            <MenuItem key={project.id} value={project.id}>
+              {project.name}
+            </MenuItem>
+          ))}
+        </Select>
+      )}
+    </React.Fragment>
   );
 };
 
