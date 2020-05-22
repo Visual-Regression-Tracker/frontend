@@ -148,6 +148,16 @@ const TestDetailsModal: React.FunctionComponent<{
                   </Typography>
                 </Grid>
                 <Grid item>
+                  <Typography>
+                    Diff: {testRun.diffPercent}%
+                  </Typography>
+                </Grid>
+                <Grid item>
+                  <Typography>
+                    Diff tollerance: {testRun.diffTollerancePercent}%
+                  </Typography>
+                </Grid>
+                <Grid item>
                   <Typography display='inline'>Status: </Typography>
                   <TestStatusChip status={testRun.status} />
                 </Grid>
