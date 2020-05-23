@@ -6,8 +6,54 @@ import { IgnoreArea } from "../types/ignoreArea";
 const ENDPOINT_URL = "/test-runs"
 
 export const testRunService = {
-  setIgnoreAreas
+  get,
+  remove,
+  approve,
+  reject,
+  setIgnoreAreas,
 };
+
+function get(testId: string): Promise<TestRun> {
+  const requestOptions = {
+    method: "GET",
+    headers: authHeader(),
+  };
+
+  return fetch(`${API_URL}${ENDPOINT_URL}/${testId}`, requestOptions).then(
+    handleResponse
+  );
+}
+
+function remove(id: string): Promise<Number> {
+  const requestOptions = {
+    method: "DELETE",
+    headers: authHeader(),
+  };
+
+  return fetch(`${API_URL}${ENDPOINT_URL}/${id}`, requestOptions).then(handleResponse);
+}
+
+function approve(id: string): Promise<TestRun> {
+  const requestOptions = {
+    method: "GET",
+    headers: authHeader(),
+  };
+
+  return fetch(`${API_URL}${ENDPOINT_URL}/approve/${id}`, requestOptions).then(
+    handleResponse
+  );
+}
+
+function reject(id: string): Promise<TestRun> {
+  const requestOptions = {
+    method: "GET",
+    headers: authHeader(),
+  };
+
+  return fetch(`${API_URL}${ENDPOINT_URL}/reject/${id}`, requestOptions).then(
+    handleResponse
+  );
+}
 
 function setIgnoreAreas(
   id: string,

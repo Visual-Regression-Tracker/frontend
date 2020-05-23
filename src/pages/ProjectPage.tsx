@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Grid, Dialog, IconButton, Box, Typography } from "@material-ui/core";
 import { useParams, useLocation, useHistory } from "react-router-dom";
 import { Build, TestRun } from "../types";
-import { projectsService, buildsService, testsService } from "../services";
+import { projectsService, buildsService, testRunService } from "../services";
 import BuildList from "../components/BuildList";
 import ProjectSelect from "../components/ProjectSelect";
 import qs from "qs";
@@ -150,7 +150,7 @@ const ProjectPage = () => {
               items={filteredTestRuns}
               selectedId={selectedTestdId}
               handleRemove={(id: string) =>
-                testsService.remove(id).then((isRemoved) => {
+                testRunService.remove(id).then((isRemoved) => {
                   if (isRemoved) {
                     setTestRuns(testRuns.filter((item) => item.id !== id));
                   }

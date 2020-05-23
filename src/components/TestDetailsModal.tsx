@@ -12,11 +12,7 @@ import {
 } from "@material-ui/core";
 import { TestRun } from "../types";
 import { createStyles, makeStyles, Theme } from "@material-ui/core/styles";
-import {
-  testsService,
-  testRunService,
-  testVariationService,
-} from "../services";
+import { testRunService, testVariationService } from "../services";
 import DrawArea from "./DrawArea";
 import { TestStatus } from "../types/testStatus";
 import { useHistory, Prompt } from "react-router-dom";
@@ -106,7 +102,7 @@ const TestDetailsModal: React.FunctionComponent<{
                 <Button
                   color="inherit"
                   onClick={() =>
-                    testsService.approve(testRun.id).then((testRun) => {
+                    testRunService.approve(testRun.id).then((testRun) => {
                       updateTestRun(testRun);
                     })
                   }
@@ -116,7 +112,7 @@ const TestDetailsModal: React.FunctionComponent<{
                 <Button
                   color="secondary"
                   onClick={() =>
-                    testsService
+                    testRunService
                       .reject(testRun.id)
                       .then((testRun) => updateTestRun(testRun))
                   }
