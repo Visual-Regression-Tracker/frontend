@@ -49,7 +49,7 @@ function update({ id, firstName, lastName, email }: { id: string, firstName: str
     body: JSON.stringify({ firstName, lastName, email }),
   };
 
-  return fetch(`${API_URL}${ENDPOINT_URL}/${id}`, requestOptions)
+  return fetch(`${API_URL}${ENDPOINT_URL}`, requestOptions)
     .then(handleResponse)
     .then((user) => {
       setUserInLocalStorage(user)
