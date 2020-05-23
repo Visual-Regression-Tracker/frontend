@@ -95,11 +95,11 @@ const ProjectPage = () => {
     setFilteredTestRuns(
       testRuns.filter(
         (t) =>
-          t.testVariation.name.includes(query) && // by query
-          (os ? t.testVariation.os === os : true) && // by OS
-          (viewport ? t.testVariation.viewport === viewport : true) && // by viewport
+          t.name.includes(query) && // by query
+          (os ? t.os === os : true) && // by OS
+          (viewport ? t.viewport === viewport : true) && // by viewport
           (testStatus ? t.status === testStatus : true) && // by status
-          (browser ? t.testVariation.browser === browser : true) // by browser
+          (browser ? t.browser === browser : true) // by browser
       )
     );
   }, [query, os, browser, viewport, testStatus, testRuns]);

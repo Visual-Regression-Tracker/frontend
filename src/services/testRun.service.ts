@@ -1,26 +1,18 @@
-import { TestVariation } from "../types";
+import { TestRun } from "../types";
 import { handleResponse, authHeader } from "../_helpers/service.helpers";
 import { API_URL } from "../_config/api.config";
 import { IgnoreArea } from "../types/ignoreArea";
 
-export const testVariationService = {
-  get,
+const ENDPOINT_URL = "/test-runs"
+
+export const testRunService = {
   setIgnoreAreas
 };
 
-function get(projectId: String): Promise<TestVariation[]> {
-  const requestOptions = {
-    method: "GET",
-    headers: authHeader(),
-  };
-
-  return fetch(`${API_URL}/test-variations?projectId=${projectId}`, requestOptions).then(handleResponse);
-}
-
 function setIgnoreAreas(
-  variationId: string,
+  id: string,
   ignoreAreas: IgnoreArea[]
-): Promise<TestVariation> {
+): Promise<TestRun> {
   const requestOptions = {
     method: "PUT",
     headers: { "Content-Type": "application/json", ...authHeader() },
@@ -28,7 +20,7 @@ function setIgnoreAreas(
   };
 
   return fetch(
-    `${API_URL}/test-variations/ignoreArea/${variationId}`,
+    `${API_URL}${ENDPOINT_URL}/ignoreArea/${id}`,
     requestOptions
   ).then(handleResponse);
 }

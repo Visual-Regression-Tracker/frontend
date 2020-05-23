@@ -12,7 +12,11 @@ import {
 } from "@material-ui/core";
 import { TestRun } from "../types";
 import { createStyles, makeStyles, Theme } from "@material-ui/core/styles";
-import { testsService } from "../services";
+import {
+  testsService,
+  testRunService,
+  testVariationService,
+} from "../services";
 import DrawArea from "./DrawArea";
 import { TestStatus } from "../types/testStatus";
 import { useHistory, Prompt } from "react-router-dom";
@@ -42,11 +46,11 @@ const TestDetailsModal: React.FunctionComponent<{
   const [selectedRectId, setSelectedRectId] = React.useState<string>();
 
   const [ignoreAreas, setIgnoreAreas] = React.useState<IgnoreArea[]>(
-    JSON.parse(testRun.testVariation.ignoreAreas)
+    JSON.parse(testRun.ignoreAreas)
   );
 
   React.useEffect(() => {
-    setIgnoreAreas(JSON.parse(testRun.testVariation.ignoreAreas));
+    setIgnoreAreas(JSON.parse(testRun.ignoreAreas));
   }, [testRun]);
 
   const removeSelection = (event: KonvaEventObject<MouseEvent>) => {
@@ -72,7 +76,7 @@ const TestDetailsModal: React.FunctionComponent<{
   };
 
   const isIgnoreAreasSaved = () => {
-    return testRun.testVariation.ignoreAreas === JSON.stringify(ignoreAreas);
+    return testRun.ignoreAreas === JSON.stringify(ignoreAreas);
   };
 
   return (
@@ -85,7 +89,7 @@ const TestDetailsModal: React.FunctionComponent<{
         <Toolbar>
           <Grid container justify="space-between">
             <Grid item>
-              <Typography variant="h6">{testRun.testVariation.name}</Typography>
+              <Typography variant="h6">{testRun.name}</Typography>
             </Grid>
             {testRun.status === TestStatus.unresolved && (
               <Grid item>
@@ -135,22 +139,16 @@ const TestDetailsModal: React.FunctionComponent<{
             <Paper variant="outlined">
               <Grid container spacing={2}>
                 <Grid item>
-                  <Typography>OS: {testRun.testVariation.os}</Typography>
+                  <Typography>OS: {testRun.os}</Typography>
                 </Grid>
                 <Grid item>
-                  <Typography>
-                    Browser: {testRun.testVariation.browser}
-                  </Typography>
+                  <Typography>Browser: {testRun.browser}</Typography>
                 </Grid>
                 <Grid item>
-                  <Typography>
-                    Viewport: {testRun.testVariation.viewport}
-                  </Typography>
+                  <Typography>Viewport: {testRun.viewport}</Typography>
                 </Grid>
                 <Grid item>
-                  <Typography>
-                    Diff: {testRun.diffPercent}%
-                  </Typography>
+                  <Typography>Diff: {testRun.diffPercent}%</Typography>
                 </Grid>
                 <Grid item>
                   <Typography>
@@ -158,7 +156,7 @@ const TestDetailsModal: React.FunctionComponent<{
                   </Typography>
                 </Grid>
                 <Grid item>
-                  <Typography display='inline'>Status: </Typography>
+                  <Typography display="inline">Status: </Typography>
                   <TestStatusChip status={testRun.status} />
                 </Grid>
               </Grid>
@@ -202,14 +200,16 @@ const TestDetailsModal: React.FunctionComponent<{
                   <IconButton
                     disabled={isIgnoreAreasSaved()}
                     onClick={() => {
-                      testsService
-                        .setIgnoreAreas(testRun.testVariation.id, ignoreAreas)
-                        .then((testVariation) =>
-                          updateTestRun({
-                            ...testRun,
-                            testVariation,
-                          })
-                        );
+                      // update in test run
+                      testRunService
+                        .setIgnoreAreas(testRun.id, ignoreAreas)
+                        .then((testRun) => updateTestRun(testRun));
+
+                      // update in variation
+                      testVariationService.setIgnoreAreas(
+                        testRun.testVariationId,
+                        ignoreAreas
+                      );
                     }}
                   >
                     <Save />
@@ -225,7 +225,7 @@ const TestDetailsModal: React.FunctionComponent<{
           <DrawArea
             width={stageWidth}
             height={stageHeigth}
-            imageUrl={testRun.testVariation.baselineName}
+            imageUrl={testRun.baselineName}
             ignoreAreas={[]}
             setIgnoreAreas={setIgnoreAreas}
             selectedRectId={selectedRectId}

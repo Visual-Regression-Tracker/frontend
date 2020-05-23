@@ -1,14 +1,11 @@
 import { TestRun } from "../types";
 import { handleResponse, authHeader } from "../_helpers/service.helpers";
 import { API_URL } from "../_config/api.config";
-import { IgnoreArea } from "../types/ignoreArea";
-import { TestVariation } from "../types/testVariation";
 
 export const testsService = {
   get,
   approve,
   reject,
-  setIgnoreAreas,
   remove,
 };
 
@@ -52,20 +49,4 @@ function remove(id: string): Promise<Number> {
   };
 
   return fetch(`${API_URL}/test/${id}`, requestOptions).then(handleResponse);
-}
-
-function setIgnoreAreas(
-  variationId: string,
-  ignoreAreas: IgnoreArea[]
-): Promise<TestVariation> {
-  const requestOptions = {
-    method: "PUT",
-    headers: { "Content-Type": "application/json", ...authHeader() },
-    body: JSON.stringify(ignoreAreas),
-  };
-
-  return fetch(
-    `${API_URL}/test/ignoreArea/${variationId}`,
-    requestOptions
-  ).then(handleResponse);
 }
