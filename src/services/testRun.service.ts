@@ -6,22 +6,20 @@ import { IgnoreArea } from "../types/ignoreArea";
 const ENDPOINT_URL = "/test-runs"
 
 export const testRunService = {
-  get,
+  getList,
   remove,
   approve,
   reject,
   setIgnoreAreas,
 };
 
-function get(testId: string): Promise<TestRun> {
+function getList(buildId: string): Promise<TestRun[]> {
   const requestOptions = {
     method: "GET",
     headers: authHeader(),
   };
 
-  return fetch(`${API_URL}${ENDPOINT_URL}/${testId}`, requestOptions).then(
-    handleResponse
-  );
+  return fetch(`${API_URL}${ENDPOINT_URL}?buildId=${buildId}`, requestOptions).then(handleResponse);
 }
 
 function remove(id: string): Promise<Number> {

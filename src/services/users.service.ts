@@ -2,6 +2,8 @@ import { handleResponse, authHeader } from "../_helpers/service.helpers";
 import { User } from "../types/user";
 import { API_URL } from "../_config/api.config";
 
+const ENDPOINT_URL = "/users"
+
 export const usersService = {
   login,
   logout,
@@ -17,7 +19,7 @@ function login(email: string, password: string): Promise<User> {
     body: JSON.stringify({ email, password }),
   };
 
-  return fetch(`${API_URL}/users/login`, requestOptions)
+  return fetch(`${API_URL}${ENDPOINT_URL}/login`, requestOptions)
     .then(handleResponse)
     .then((user) => {
       setUserInLocalStorage(user)
@@ -32,7 +34,7 @@ function register(firstName: string, lastName: string, email: string, password: 
     body: JSON.stringify({ firstName, lastName, email, password }),
   };
 
-  return fetch(`${API_URL}/users/register`, requestOptions)
+  return fetch(`${API_URL}${ENDPOINT_URL}/register`, requestOptions)
     .then(handleResponse)
     .then((user) => {
       setUserInLocalStorage(user)
@@ -47,7 +49,7 @@ function update({ id, firstName, lastName, email }: { id: string, firstName: str
     body: JSON.stringify({ firstName, lastName, email }),
   };
 
-  return fetch(`${API_URL}/users/${id}`, requestOptions)
+  return fetch(`${API_URL}${ENDPOINT_URL}/${id}`, requestOptions)
     .then(handleResponse)
     .then((user) => {
       setUserInLocalStorage(user)
@@ -62,7 +64,7 @@ function changePassword(password: string): Promise<boolean> {
     body: JSON.stringify({ password }),
   };
 
-  return fetch(`${API_URL}/users/password`, requestOptions)
+  return fetch(`${API_URL}${ENDPOINT_URL}/password`, requestOptions)
     .then(handleResponse)
 }
 

@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Grid, Dialog, IconButton, Box, Typography } from "@material-ui/core";
 import { useParams, useLocation, useHistory } from "react-router-dom";
 import { Build, TestRun } from "../types";
-import { projectsService, buildsService, testRunService } from "../services";
+import { buildsService, testRunService } from "../services";
 import BuildList from "../components/BuildList";
 import ProjectSelect from "../components/ProjectSelect";
 import qs from "qs";
@@ -79,14 +79,14 @@ const ProjectPage = () => {
 
   useEffect(() => {
     if (projectId) {
-      projectsService.getBuilds(projectId).then((builds) => setBuilds(builds));
+      buildsService.getList(projectId).then((builds) => setBuilds(builds));
     }
   }, [projectId]);
 
   useEffect(() => {
     if (selectedBuildId) {
-      buildsService.get(selectedBuildId).then((build) => {
-        setTestRuns(build.testRuns);
+      testRunService.getList(selectedBuildId).then((testRuns) => {
+        setTestRuns(testRuns);
       });
     }
   }, [selectedBuildId]);

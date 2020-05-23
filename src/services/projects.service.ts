@@ -1,9 +1,8 @@
-import { Project, Build } from "../types";
+import { Project } from "../types";
 import { handleResponse, authHeader } from "../_helpers/service.helpers";
 import { API_URL } from "../_config/api.config";
 
 export const projectsService = {
-  getBuilds,
   getAll,
   remove,
   create,
@@ -16,17 +15,6 @@ function getAll(): Promise<Project[]> {
   };
 
   return fetch(`${API_URL}/projects`, requestOptions).then(handleResponse);
-}
-
-function getBuilds(id: string): Promise<Build[]> {
-  const requestOptions = {
-    method: "GET",
-    headers: authHeader(),
-  };
-
-  return fetch(`${API_URL}/projects/${id}`, requestOptions).then(
-    handleResponse
-  );
 }
 
 function remove(id: string): Promise<number> {

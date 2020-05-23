@@ -3,6 +3,8 @@ import { handleResponse, authHeader } from "../_helpers/service.helpers";
 import { API_URL } from "../_config/api.config";
 import { IgnoreArea } from "../types/ignoreArea";
 
+const ENDPOINT_URL = "/test-variations"
+
 export const testVariationService = {
   get,
   setIgnoreAreas
@@ -14,7 +16,7 @@ function get(projectId: String): Promise<TestVariation[]> {
     headers: authHeader(),
   };
 
-  return fetch(`${API_URL}/test-variations?projectId=${projectId}`, requestOptions).then(handleResponse);
+  return fetch(`${API_URL}${ENDPOINT_URL}?projectId=${projectId}`, requestOptions).then(handleResponse);
 }
 
 function setIgnoreAreas(
@@ -28,7 +30,7 @@ function setIgnoreAreas(
   };
 
   return fetch(
-    `${API_URL}/test-variations/ignoreArea/${variationId}`,
+    `${API_URL}${ENDPOINT_URL}/ignoreArea/${variationId}`,
     requestOptions
   ).then(handleResponse);
 }
