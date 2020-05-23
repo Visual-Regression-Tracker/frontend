@@ -85,8 +85,8 @@ const ProjectPage = () => {
 
   useEffect(() => {
     if (selectedBuildId) {
-      buildsService.getTestRuns(selectedBuildId).then((testRuns: TestRun[]) => {
-        setTestRuns(testRuns);
+      buildsService.get(selectedBuildId).then((build) => {
+        setTestRuns(build.testRuns);
       });
     }
   }, [selectedBuildId]);

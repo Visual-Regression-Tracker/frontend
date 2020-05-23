@@ -1,13 +1,13 @@
-import { TestRun } from "../types";
+import { Build } from "../types";
 import { handleResponse, authHeader } from "../_helpers/service.helpers";
 import { API_URL } from "../_config/api.config";
 
 export const buildsService = {
-  getTestRuns,
+  get,
   remove,
 };
 
-function getTestRuns(id: string): Promise<TestRun[]> {
+function get(id: string): Promise<Build> {
   const requestOptions = {
     method: "GET",
     headers: authHeader(),
