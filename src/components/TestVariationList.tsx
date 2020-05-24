@@ -7,8 +7,12 @@ import {
   CardContent,
   Typography,
   makeStyles,
+  CardActions,
+  Button,
 } from "@material-ui/core";
 import { staticService } from "../services";
+import { Link } from "react-router-dom";
+import { routes } from "../constants";
 
 interface IProps {
   items: TestVariation[];
@@ -51,6 +55,15 @@ const TestVariationList: React.FunctionComponent<IProps> = ({ items }) => {
                 </Grid>
               </Grid>
             </CardContent>
+            <CardActions>
+              <Button
+                color="primary"
+                component={Link}
+                to={`${routes.VARIATION_DETAILS_PAGE}/${t.id}`}
+              >
+                History
+              </Button>
+            </CardActions>
           </Card>
         </Grid>
       ))}

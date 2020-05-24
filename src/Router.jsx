@@ -7,7 +7,8 @@ import PrivateRoute from "./components/PrivateRoute";
 import { routes } from "./constants";
 import RegisterPage from "./pages/RegisterPage";
 import ProfilePage from "./pages/ProfilePage";
-import TestVariationPage from "./pages/TestVariationPage";
+import TestVariationListPage from "./pages/TestVariationListPage";
+import TestVariationDetailsPage from "./pages/TestVariationDetailsPage";
 
 function Router() {
   return (
@@ -32,7 +33,12 @@ function Router() {
       <PrivateRoute
         exact
         path={`${routes.VARIATION_LIST_PAGE}/:projectId`}
-        component={() => <TestVariationPage />}
+        component={() => <TestVariationListPage />}
+      />
+      <PrivateRoute
+        exact
+        path={`${routes.VARIATION_DETAILS_PAGE}/:testVariationId`}
+        component={() => <TestVariationDetailsPage />}
       />
       <PrivateRoute
         exact

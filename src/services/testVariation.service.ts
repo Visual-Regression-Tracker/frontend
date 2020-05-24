@@ -6,17 +6,27 @@ import { IgnoreArea } from "../types/ignoreArea";
 const ENDPOINT_URL = "/test-variations"
 
 export const testVariationService = {
-  get,
+  getList,
+  getDetails,
   setIgnoreAreas
 };
 
-function get(projectId: String): Promise<TestVariation[]> {
+function getList(projectId: String): Promise<TestVariation[]> {
   const requestOptions = {
     method: "GET",
     headers: authHeader(),
   };
 
   return fetch(`${API_URL}${ENDPOINT_URL}?projectId=${projectId}`, requestOptions).then(handleResponse);
+}
+
+function getDetails(id: String): Promise<TestVariation> {
+  const requestOptions = {
+    method: "GET",
+    headers: authHeader(),
+  };
+
+  return fetch(`${API_URL}${ENDPOINT_URL}/${id}`, requestOptions).then(handleResponse);
 }
 
 function setIgnoreAreas(

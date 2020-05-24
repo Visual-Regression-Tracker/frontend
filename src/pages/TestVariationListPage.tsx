@@ -6,7 +6,7 @@ import { testVariationService } from "../services";
 import { Container, Box, Grid, Typography } from "@material-ui/core";
 import ProjectSelect from "../components/ProjectSelect";
 
-const TestVariationPage: React.FunctionComponent = () => {
+const TestVariationListPage: React.FunctionComponent = () => {
   const { projectId } = useParams();
   const [testVariations, setTestVariations] = React.useState<TestVariation[]>(
     []
@@ -14,7 +14,7 @@ const TestVariationPage: React.FunctionComponent = () => {
 
   React.useEffect(() => {
     if (projectId) {
-      testVariationService.get(projectId).then((testVariations) => {
+      testVariationService.getList(projectId).then((testVariations) => {
         setTestVariations(testVariations);
       });
     }
@@ -39,4 +39,4 @@ const TestVariationPage: React.FunctionComponent = () => {
   );
 };
 
-export default TestVariationPage;
+export default TestVariationListPage;

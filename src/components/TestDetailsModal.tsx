@@ -36,9 +36,7 @@ const TestDetailsModal: React.FunctionComponent<{
   const history = useHistory();
   const classes = useStyles();
 
-  const [isDiffShown, setIsDiffShown] = useState(
-    testRun.status === TestStatus.unresolved
-  );
+  const [isDiffShown, setIsDiffShown] = useState(!!testRun.diffName);
   const [selectedRectId, setSelectedRectId] = React.useState<string>();
 
   const [ignoreAreas, setIgnoreAreas] = React.useState<IgnoreArea[]>(
@@ -87,15 +85,13 @@ const TestDetailsModal: React.FunctionComponent<{
             <Grid item>
               <Typography variant="h6">{testRun.name}</Typography>
             </Grid>
-            {testRun.status === TestStatus.unresolved && (
-              <Grid item>
-                <Switch
-                  checked={isDiffShown}
-                  onChange={() => setIsDiffShown(!isDiffShown)}
-                  name="Show diff"
-                />
-              </Grid>
-            )}
+            <Grid item>
+              <Switch
+                checked={isDiffShown}
+                onChange={() => setIsDiffShown(!isDiffShown)}
+                name="Show diff"
+              />
+            </Grid>
             {(testRun.status === TestStatus.unresolved ||
               testRun.status === TestStatus.new) && (
               <Grid item>
