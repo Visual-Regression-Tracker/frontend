@@ -61,7 +61,8 @@ const TestVariationDetailsPage: React.FunctionComponent = () => {
                       <Button
                         color="primary"
                         component={Link}
-                        to={buildTestRunUrl(testVariation, baseline.testRun)}
+                        disabled={!baseline.testRun}
+                        to={baseline.testRun && buildTestRunUrl(testVariation, baseline.testRun)}
                       >
                         {baseline.createdAt}
                       </Button>
