@@ -7,5 +7,6 @@ export const routes = {
   HOME: "/",
   PROFILE_PAGE: "/profile",
   PROJECT_LIST_PAGE: "/projects",
-  // PROJECT: "/project",
+  VARIATION_LIST_PAGE: "/variations",
+  VARIATION_DETAILS_PAGE: "/variations/details",
 };

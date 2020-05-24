@@ -1,5 +1,4 @@
 import { TestStatus } from "./testStatus";
-import { TestVariation } from "./testVariation";
 
 export interface TestRun {
   id: string;
@@ -9,5 +8,12 @@ export interface TestRun {
   diffPercent: number;
   diffTollerancePercent: number;
   status: TestStatus;
-  testVariation: TestVariation;
+  testVariationId: string;
+  name: string;
+  baselineName: string;
+  os: string;
+  browser: string;
+  viewport: string;
+  device: string;
+  ignoreAreas: string;
 }

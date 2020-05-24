@@ -63,16 +63,16 @@ const TestRunList: React.FunctionComponent<{
                     history.push(buildTestRunLocation(test));
                   }}
                 >
-                  <Typography>{test.testVariation.name}</Typography>
+                  <Typography>{test.name}</Typography>
                 </TableCell>
                 <TableCell>
-                  <Typography>{test.testVariation.os}</Typography>
+                  <Typography>{test.os}</Typography>
                 </TableCell>
                 <TableCell>
-                  <Typography>{test.testVariation.browser}</Typography>
+                  <Typography>{test.browser}</Typography>
                 </TableCell>
                 <TableCell>
-                  <Typography>{test.testVariation.viewport}</Typography>
+                  <Typography>{test.viewport}</Typography>
                 </TableCell>
                 <TableCell>
                   <TestStatusChip status={test.status} />

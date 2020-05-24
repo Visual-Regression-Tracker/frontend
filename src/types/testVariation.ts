@@ -1,4 +1,4 @@
-import { IgnoreArea } from "./ignoreArea";
+import { Baseline } from "./baseline";
 
 export interface TestVariation {
   id: string;
@@ -9,4 +9,6 @@ export interface TestVariation {
   viewport: string;
   device: string;
   ignoreAreas: string;
+  projectId: string;
+  baselines: Baseline[]
 }

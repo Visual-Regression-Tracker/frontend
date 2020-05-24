@@ -35,15 +35,15 @@ const Filters: React.FunctionComponent<IProps> = ({
   const [testStatus, setTestStatus] = testStatusState;
 
   const osList = testRuns
-    .map((t) => t.testVariation.os)
+    .map((t) => t.os)
     .filter((v, i, array) => v && array.indexOf(v) === i);
 
   const browserList = testRuns
-    .map((t) => t.testVariation.browser)
+    .map((t) => t.browser)
     .filter((v, i, array) => v && array.indexOf(v) === i);
 
   const viewportList = testRuns
-    .map((t) => t.testVariation.viewport)
+    .map((t) => t.viewport)
     .filter((v, i, array) => v && array.indexOf(v) === i);
 
   const testStatusList = testRuns

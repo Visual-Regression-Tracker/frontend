@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from "react";
-import { Grid, Dialog, IconButton, Box } from "@material-ui/core";
+import { Grid, Dialog, IconButton, Box, Typography } from "@material-ui/core";
 import { useParams, useLocation, useHistory } from "react-router-dom";
 import { Build, TestRun } from "../types";
-import { projectsService, buildsService, testsService } from "../services";
+import { buildsService, testRunService } from "../services";
 import BuildList from "../components/BuildList";
 import ProjectSelect from "../components/ProjectSelect";
 import qs from "qs";
@@ -79,13 +79,13 @@ const ProjectPage = () => {
 
   useEffect(() => {
     if (projectId) {
-      projectsService.getBuilds(projectId).then((builds) => setBuilds(builds));
+      buildsService.getList(projectId).then((builds) => setBuilds(builds));
     }
   }, [projectId]);
 
   useEffect(() => {
     if (selectedBuildId) {
-      buildsService.getTestRuns(selectedBuildId).then((testRuns: TestRun[]) => {
+      testRunService.getList(selectedBuildId).then((testRuns) => {
         setTestRuns(testRuns);
       });
     }
@@ -95,11 +95,11 @@ const ProjectPage = () => {
     setFilteredTestRuns(
       testRuns.filter(
         (t) =>
-          t.testVariation.name.includes(query) && // by query
-          (os ? t.testVariation.os === os : true) && // by OS
-          (viewport ? t.testVariation.viewport === viewport : true) && // by viewport
+          t.name.includes(query) && // by query
+          (os ? t.os === os : true) && // by OS
+          (viewport ? t.viewport === viewport : true) && // by viewport
           (testStatus ? t.status === testStatus : true) && // by status
-          (browser ? t.testVariation.browser === browser : true) // by browser
+          (browser ? t.browser === browser : true) // by browser
       )
     );
   }, [query, os, browser, viewport, testStatus, testRuns]);
@@ -119,6 +119,7 @@ const ProjectPage = () => {
       <Grid item xs={3}>
         <Grid container direction="column">
           <Grid item>
+            <Typography display="inline">Project: </Typography>
             <ProjectSelect selectedId={projectId} />
           </Grid>
         </Grid>
@@ -149,7 +150,7 @@ const ProjectPage = () => {
               items={filteredTestRuns}
               selectedId={selectedTestdId}
               handleRemove={(id: string) =>
-                testsService.remove(id).then((isRemoved) => {
+                testRunService.remove(id).then((isRemoved) => {
                   if (isRemoved) {
                     setTestRuns(testRuns.filter((item) => item.id !== id));
                   }

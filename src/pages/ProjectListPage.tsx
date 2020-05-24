@@ -3,7 +3,6 @@ import {
   Grid,
   Typography,
   Card,
-  CardActionArea,
   IconButton,
   CardContent,
   CardActions,
@@ -27,6 +26,7 @@ import {
 } from "../contexts/project.context";
 import { Link } from "react-router-dom";
 import { Delete, Add } from "@material-ui/icons";
+import { routes } from "../constants";
 
 const ProjectsListPage = () => {
   const theme = useTheme();
@@ -114,14 +114,24 @@ const ProjectsListPage = () => {
             <Card>
               <CardContent>
                 <Typography>Key: {project.id}</Typography>
+                <Typography>Name: {project.name}</Typography>
+                <Typography>Updated: {project.updatedAt}</Typography>
               </CardContent>
-              <CardActionArea component={Link} to={`${project.id}`}>
-                <CardContent>
-                  <Typography>Name: {project.name}</Typography>
-                  <Typography>Updated: {project.updatedAt}</Typography>
-                </CardContent>
-              </CardActionArea>
               <CardActions>
+                <Button
+                  color="primary"
+                  component={Link}
+                  to={`${project.id}`}
+                >
+                  Builds
+                </Button>
+                <Button
+                  color="primary"
+                  component={Link}
+                  to={`${routes.VARIATION_LIST_PAGE}/${project.id}`}
+                >
+                  Variations
+                </Button>
                 <IconButton
                   onClick={(event: React.MouseEvent<HTMLElement>) => {
                     deleteProject(projectDispatch, project.id);
