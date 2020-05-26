@@ -11,7 +11,6 @@ import {
   Box,
 } from "@material-ui/core";
 import { TestRun } from "../types";
-import { createStyles, makeStyles, Theme } from "@material-ui/core/styles";
 import { testRunService, testVariationService } from "../services";
 import DrawArea from "./DrawArea";
 import { TestStatus } from "../types/testStatus";
@@ -20,21 +19,13 @@ import { IgnoreArea } from "../types/ignoreArea";
 import { KonvaEventObject } from "konva/types/Node";
 import { Close, Add, Delete, Save } from "@material-ui/icons";
 import TestStatusChip from "./TestStatusChip";
-
-const useStyles = makeStyles((theme: Theme) =>
-  createStyles({
-    appBar: {
-      position: "relative",
-    },
-  })
-);
+import ImageDetails from "./ImageDetails";
 
 const TestDetailsModal: React.FunctionComponent<{
   testRun: TestRun;
   updateTestRun: (testRun: TestRun) => void;
 }> = ({ testRun, updateTestRun }) => {
   const history = useHistory();
-  const classes = useStyles();
 
   const [isDiffShown, setIsDiffShown] = useState(!!testRun.diffName);
   const [selectedRectId, setSelectedRectId] = React.useState<string>();
@@ -79,7 +70,7 @@ const TestDetailsModal: React.FunctionComponent<{
         when={!isIgnoreAreasSaved()}
         message={`You have unsaved changes that will be lost`}
       />
-      <AppBar className={classes.appBar}>
+      <AppBar position="sticky">
         <Toolbar>
           <Grid container justify="space-between">
             <Grid item>
@@ -214,6 +205,9 @@ const TestDetailsModal: React.FunctionComponent<{
       </Box>
       <Grid container>
         <Grid item xs={6}>
+          <Box m={1}>
+            <ImageDetails type="Baseline" imageName={testRun.baselineName} />
+          </Box>
           <DrawArea
             width={stageWidth}
             height={stageHeigth}
@@ -227,27 +221,37 @@ const TestDetailsModal: React.FunctionComponent<{
         </Grid>
         <Grid item xs={6}>
           {isDiffShown ? (
-            <DrawArea
-              width={stageWidth}
-              height={stageHeigth}
-              imageUrl={testRun.diffName}
-              ignoreAreas={ignoreAreas}
-              setIgnoreAreas={setIgnoreAreas}
-              selectedRectId={selectedRectId}
-              setSelectedRectId={setSelectedRectId}
-              onStageClick={removeSelection}
-            />
+            <React.Fragment>
+              <Box m={1}>
+                <ImageDetails type="Diff" imageName={testRun.diffName} />
+              </Box>
+              <DrawArea
+                width={stageWidth}
+                height={stageHeigth}
+                imageUrl={testRun.diffName}
+                ignoreAreas={ignoreAreas}
+                setIgnoreAreas={setIgnoreAreas}
+                selectedRectId={selectedRectId}
+                setSelectedRectId={setSelectedRectId}
+                onStageClick={removeSelection}
+              />
+            </React.Fragment>
           ) : (
-            <DrawArea
-              width={stageWidth}
-              height={stageHeigth}
-              imageUrl={testRun.imageName}
-              ignoreAreas={ignoreAreas}
-              setIgnoreAreas={setIgnoreAreas}
-              selectedRectId={selectedRectId}
-              setSelectedRectId={setSelectedRectId}
-              onStageClick={removeSelection}
-            />
+            <React.Fragment>
+              <Box m={1}>
+                <ImageDetails type="Image" imageName={testRun.imageName} />
+              </Box>
+              <DrawArea
+                width={stageWidth}
+                height={stageHeigth}
+                imageUrl={testRun.imageName}
+                ignoreAreas={ignoreAreas}
+                setIgnoreAreas={setIgnoreAreas}
+                selectedRectId={selectedRectId}
+                setSelectedRectId={setSelectedRectId}
+                onStageClick={removeSelection}
+              />
+            </React.Fragment>
           )}
         </Grid>
       </Grid>

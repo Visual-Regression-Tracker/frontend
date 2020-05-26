@@ -1,7 +1,7 @@
 export enum TestStatus {
-    new = 'new',
-    ok = 'ok',
-    unresolved = 'unresolved',
-    failed = 'failed',
-  }
-  
+  new = "new",
+  ok = "ok",
+  unresolved = "unresolved",
+  failed = "failed",
+  approved = "approved",
+}
