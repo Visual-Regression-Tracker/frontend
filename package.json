@@ -21,9 +21,7 @@
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
-    "test": "react-scripts test",
-    "eject": "react-scripts eject",
-    "docker:build_ui": "docker build -t visualregressiontracker/ui:$npm_package_version -f ./Dockerfile . && docker push visualregressiontracker/ui:$npm_package_version"
+    "test": "react-scripts test"
   },
   "eslintConfig": {
     "extends": "react-app"
