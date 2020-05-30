@@ -49,6 +49,7 @@ const TestRunList: React.FunctionComponent<{
             <TableRow>
               <TableCell>Name</TableCell>
               <TableCell>OS</TableCell>
+              <TableCell>Device</TableCell>
               <TableCell>Browser</TableCell>
               <TableCell>Viewport</TableCell>
               <TableCell>Status</TableCell>
@@ -67,6 +68,9 @@ const TestRunList: React.FunctionComponent<{
                 </TableCell>
                 <TableCell>
                   <Typography>{test.os}</Typography>
+                </TableCell>
+                <TableCell>
+                  <Typography>{test.device}</Typography>
                 </TableCell>
                 <TableCell>
                   <Typography>{test.browser}</Typography>
