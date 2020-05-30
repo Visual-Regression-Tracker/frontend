@@ -55,6 +55,7 @@ const ProjectPage = () => {
   // filter
   const [query, setQuery] = React.useState("");
   const [os, setOs] = React.useState("");
+  const [device, setDevice] = React.useState("");
   const [browser, setBrowser] = React.useState("");
   const [viewport, setViewport] = React.useState("");
   const [testStatus, setTestStatus] = React.useState("");
@@ -97,12 +98,13 @@ const ProjectPage = () => {
         (t) =>
           t.name.includes(query) && // by query
           (os ? t.os === os : true) && // by OS
+          (device ? t.device === device : true) && // by device
           (viewport ? t.viewport === viewport : true) && // by viewport
           (testStatus ? t.status === testStatus : true) && // by status
           (browser ? t.browser === browser : true) // by browser
       )
     );
-  }, [query, os, browser, viewport, testStatus, testRuns]);
+  }, [query, os, device, browser, viewport, testStatus, testRuns]);
 
   const updateTestRun = (testRun: TestRun) => {
     const updated = testRuns.map((t) => {
@@ -139,6 +141,7 @@ const ProjectPage = () => {
                 testRuns={testRuns}
                 queryState={[query, setQuery]}
                 osState={[os, setOs]}
+                deviceState={[device, setDevice]}
                 browserState={[browser, setBrowser]}
                 viewportState={[viewport, setViewport]}
                 testStatusState={[testStatus, setTestStatus]}

@@ -18,6 +18,11 @@ export const TestVariationDetails: React.FunctionComponent<IProps> = ({
             <Typography>OS: {testVariation.os}</Typography>
           </Grid>
         )}
+        {testVariation.device && (
+          <Grid item>
+            <Typography>Device: {testVariation.device}</Typography>
+          </Grid>
+        )}
         {testVariation.browser && (
           <Grid item>
             <Typography>Browser: {testVariation.browser}</Typography>

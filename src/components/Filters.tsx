@@ -15,6 +15,7 @@ interface IProps {
   testRuns: TestRun[];
   queryState: [string, React.Dispatch<React.SetStateAction<string>>];
   osState: [string, React.Dispatch<React.SetStateAction<string>>];
+  deviceState: [string, React.Dispatch<React.SetStateAction<string>>];
   browserState: [string, React.Dispatch<React.SetStateAction<string>>];
   viewportState: [string, React.Dispatch<React.SetStateAction<string>>];
   testStatusState: [string, React.Dispatch<React.SetStateAction<string>>];
@@ -24,18 +25,24 @@ const Filters: React.FunctionComponent<IProps> = ({
   testRuns,
   queryState,
   osState,
+  deviceState,
   browserState,
   viewportState,
   testStatusState,
 }) => {
   const [query, setQuery] = queryState;
   const [os, setOs] = osState;
+  const [device, setDevice] = deviceState;
   const [browser, setBrowser] = browserState;
   const [viewport, setViewport] = viewportState;
   const [testStatus, setTestStatus] = testStatusState;
 
   const osList = testRuns
     .map((t) => t.os)
+    .filter((v, i, array) => v && array.indexOf(v) === i);
+
+  const deviceList = testRuns
+    .map((t) => t.device)
     .filter((v, i, array) => v && array.indexOf(v) === i);
 
   const browserList = testRuns
@@ -52,7 +59,7 @@ const Filters: React.FunctionComponent<IProps> = ({
 
   return (
     <React.Fragment>
-      <Grid container spacing={2} alignItems='flex-end'>
+      <Grid container spacing={2} alignItems="flex-end">
         <Grid item xs>
           <TextField
             fullWidth
@@ -86,6 +93,30 @@ const Filters: React.FunctionComponent<IProps> = ({
                 {osList.map((os) => (
                   <MenuItem key={os} value={os}>
                     {os}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+          </Grid>
+        )}
+        {deviceList.length > 0 && (
+          <Grid item xs>
+            <FormControl fullWidth>
+              <InputLabel shrink id="filter_device">
+                Device
+              </InputLabel>
+              <Select
+                id="filter_device"
+                value={device}
+                displayEmpty
+                onChange={(event) => setDevice(event.target.value as string)}
+              >
+                <MenuItem value="">
+                  <em>All</em>
+                </MenuItem>
+                {deviceList.map((device) => (
+                  <MenuItem key={device} value={device}>
+                    {device}
                   </MenuItem>
                 ))}
               </Select>

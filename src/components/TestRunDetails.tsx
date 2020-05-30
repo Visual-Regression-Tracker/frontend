@@ -16,6 +16,11 @@ export const TestRunDetails: React.FunctionComponent<IProps> = ({
           <Typography>OS: {testRun.os}</Typography>
         </Grid>
       )}
+       {testRun.device && (
+        <Grid item>
+          <Typography>Device: {testRun.device}</Typography>
+        </Grid>
+      )}
       {testRun.browser && (
         <Grid item>
           <Typography>Browser: {testRun.browser}</Typography>
