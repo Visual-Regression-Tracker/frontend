@@ -5,7 +5,6 @@ import {
   Grid,
   CardMedia,
   CardContent,
-  Typography,
   makeStyles,
   CardActions,
   Button,
@@ -13,6 +12,7 @@ import {
 import { staticService } from "../services";
 import { Link } from "react-router-dom";
 import { routes } from "../constants";
+import { TestVariationDetails } from "./TestVariationDetails";
 
 interface IProps {
   items: TestVariation[];
@@ -42,19 +42,7 @@ const TestVariationList: React.FunctionComponent<IProps> = ({ items }) => {
               title={t.name}
             />
             <CardContent>
-              <Typography>{t.name}</Typography>
-
-              <Grid container spacing={2}>
-                <Grid item>
-                  <Typography>OS: {t.os}</Typography>
-                </Grid>
-                <Grid item>
-                  <Typography>Browser: {t.browser}</Typography>
-                </Grid>
-                <Grid item>
-                  <Typography>Viewport: {t.viewport}</Typography>
-                </Grid>
-              </Grid>
+              <TestVariationDetails testVariation={t} />
             </CardContent>
             <CardActions>
               <Button

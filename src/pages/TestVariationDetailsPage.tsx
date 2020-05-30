@@ -6,7 +6,6 @@ import {
   Container,
   Box,
   Grid,
-  Typography,
   Card,
   CardMedia,
   makeStyles,
@@ -14,6 +13,7 @@ import {
   Button,
 } from "@material-ui/core";
 import { buildTestRunUrl } from "../_helpers/route.helpers";
+import { TestVariationDetails } from "../components/TestVariationDetails";
 
 const useStyles = makeStyles({
   media: {
@@ -41,18 +41,8 @@ const TestVariationDetailsPage: React.FunctionComponent = () => {
         <Box mt={2}>
           {testVariation && (
             <Grid container direction="column" spacing={2}>
-              <Typography>{testVariation.name}</Typography>
-
-              <Grid container spacing={2}>
-                <Grid item>
-                  <Typography>OS: {testVariation.os}</Typography>
-                </Grid>
-                <Grid item>
-                  <Typography>Browser: {testVariation.browser}</Typography>
-                </Grid>
-                <Grid item>
-                  <Typography>Viewport: {testVariation.viewport}</Typography>
-                </Grid>
+              <Grid item>
+                <TestVariationDetails testVariation={testVariation} />
               </Grid>
               {testVariation.baselines.map((baseline) => (
                 <Grid item key={baseline.id}>
@@ -62,7 +52,10 @@ const TestVariationDetailsPage: React.FunctionComponent = () => {
                         color="primary"
                         component={Link}
                         disabled={!baseline.testRun}
-                        to={baseline.testRun && buildTestRunUrl(testVariation, baseline.testRun)}
+                        to={
+                          baseline.testRun &&
+                          buildTestRunUrl(testVariation, baseline.testRun)
+                        }
                       >
                         {baseline.createdAt}
                       </Button>

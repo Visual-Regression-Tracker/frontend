@@ -18,8 +18,8 @@ import { useHistory, Prompt } from "react-router-dom";
 import { IgnoreArea } from "../types/ignoreArea";
 import { KonvaEventObject } from "konva/types/Node";
 import { Close, Add, Delete, Save } from "@material-ui/icons";
-import TestStatusChip from "./TestStatusChip";
 import ImageDetails from "./ImageDetails";
+import { TestRunDetails } from "./TestRunDetails";
 
 const TestDetailsModal: React.FunctionComponent<{
   testRun: TestRun;
@@ -120,29 +120,7 @@ const TestDetailsModal: React.FunctionComponent<{
         <Grid container>
           <Grid item>
             <Paper variant="outlined">
-              <Grid container spacing={2}>
-                <Grid item>
-                  <Typography>OS: {testRun.os}</Typography>
-                </Grid>
-                <Grid item>
-                  <Typography>Browser: {testRun.browser}</Typography>
-                </Grid>
-                <Grid item>
-                  <Typography>Viewport: {testRun.viewport}</Typography>
-                </Grid>
-                <Grid item>
-                  <Typography>Diff: {testRun.diffPercent}%</Typography>
-                </Grid>
-                <Grid item>
-                  <Typography>
-                    Diff tollerance: {testRun.diffTollerancePercent}%
-                  </Typography>
-                </Grid>
-                <Grid item>
-                  <Typography display="inline">Status: </Typography>
-                  <TestStatusChip status={testRun.status} />
-                </Grid>
-              </Grid>
+              <TestRunDetails testRun={testRun} />
             </Paper>
           </Grid>
           <Grid item>
