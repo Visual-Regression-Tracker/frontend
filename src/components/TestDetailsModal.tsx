@@ -67,9 +67,15 @@ const TestDetailsModal: React.FunctionComponent<{
   const [stageInitPos, setStageInitPos] = React.useState(defaultStagePos);
   const [stageOffset, setStageOffset] = React.useState(defaultStagePos);
 
-  const [baseline] = useImage(staticService.getImage(testRun.baselineName));
-  const [image] = useImage(staticService.getImage(testRun.imageName));
-  const [diff] = useImage(staticService.getImage(testRun.diffName));
+  const [baseline] = useImage(
+    testRun.baselineName && staticService.getImage(testRun.baselineName)
+  );
+  const [image] = useImage(
+    testRun.imageName && staticService.getImage(testRun.imageName)
+  );
+  const [diff] = useImage(
+    testRun.diffName && staticService.getImage(testRun.diffName)
+  );
 
   const [isDiffShown, setIsDiffShown] = useState(!!testRun.diffName);
   const [selectedRectId, setSelectedRectId] = React.useState<string>();
@@ -77,10 +83,6 @@ const TestDetailsModal: React.FunctionComponent<{
   const [ignoreAreas, setIgnoreAreas] = React.useState<IgnoreArea[]>(
     JSON.parse(testRun.ignoreAreas)
   );
-
-  React.useEffect(() => {
-    setIgnoreAreas(JSON.parse(testRun.ignoreAreas));
-  }, [testRun]);
 
   const removeSelection = (event: KonvaEventObject<MouseEvent>) => {
     // deselect when clicked not on Rect
@@ -122,6 +124,15 @@ const TestDetailsModal: React.FunctionComponent<{
     setStagePos(defaultStagePos);
     setStageOffset(defaultStagePos);
   };
+
+  React.useEffect(() => {
+    setIgnoreAreas(JSON.parse(testRun.ignoreAreas));
+  }, [testRun]);
+
+  React.useEffect(() => {
+    fitStageToScreen();
+    // eslint-disable-next-line
+  }, [image]);
 
   return (
     <React.Fragment>
@@ -266,7 +277,7 @@ const TestDetailsModal: React.FunctionComponent<{
                   </IconButton>
                 </Grid>
                 <Grid item>
-                  <IconButton onClick={() => fitStageToScreen()}>
+                  <IconButton onClick={fitStageToScreen}>
                     <FullscreenExit />
                   </IconButton>
                 </Grid>
@@ -277,7 +288,7 @@ const TestDetailsModal: React.FunctionComponent<{
       </Box>
       <Grid container>
         <Grid item xs={6} className={classes.imageContainer}>
-          <Grid container>
+          <Grid container direction="column">
             <Grid item>
               <ImageDetails type="Baseline" imageName={testRun.baselineName} />
             </Grid>
@@ -298,7 +309,7 @@ const TestDetailsModal: React.FunctionComponent<{
           </Grid>
         </Grid>
         <Grid item xs={6} className={classes.imageContainer}>
-          <Grid container>
+          <Grid container direction="column">
             {isDiffShown ? (
               <React.Fragment>
                 <Grid item>
