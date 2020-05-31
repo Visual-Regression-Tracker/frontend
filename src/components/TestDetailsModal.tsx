@@ -12,7 +12,11 @@ import {
   makeStyles,
 } from "@material-ui/core";
 import { TestRun } from "../types";
-import { testRunService, testVariationService } from "../services";
+import {
+  testRunService,
+  testVariationService,
+  staticService,
+} from "../services";
 import DrawArea from "./DrawArea";
 import { TestStatus } from "../types/testStatus";
 import { useHistory, Prompt } from "react-router-dom";
@@ -25,10 +29,12 @@ import {
   Save,
   ZoomIn,
   ZoomOut,
-  Clear,
+  Fullscreen,
+  FullscreenExit,
 } from "@material-ui/icons";
 import ImageDetails from "./ImageDetails";
 import { TestRunDetails } from "./TestRunDetails";
+import useImage from "use-image";
 
 const useStyles = makeStyles((theme) => ({
   imageContainer: {
@@ -37,8 +43,14 @@ const useStyles = makeStyles((theme) => ({
   canvasContainer: {
     overflow: "hidden",
     margin: theme.spacing(1),
+    padding: theme.spacing(1),
   },
 }));
+
+const defaultStagePos = {
+  x: 0,
+  y: 0,
+};
 
 const TestDetailsModal: React.FunctionComponent<{
   testRun: TestRun;
@@ -51,18 +63,13 @@ const TestDetailsModal: React.FunctionComponent<{
   const stageHeigth = window.innerHeight;
   const stageScaleBy = 1.2;
   const [stageScale, setStageScale] = React.useState(1);
-  const [stagePos, setStagePos] = React.useState({
-    x: 0,
-    y: 0,
-  });
-  const [stageInitPos, setStageInitPos] = React.useState({
-    x: 0,
-    y: 0,
-  });
-  const [stageOffset, setStageOffset] = React.useState({
-    x: 0,
-    y: 0,
-  });
+  const [stagePos, setStagePos] = React.useState(defaultStagePos);
+  const [stageInitPos, setStageInitPos] = React.useState(defaultStagePos);
+  const [stageOffset, setStageOffset] = React.useState(defaultStagePos);
+
+  const [baseline] = useImage(staticService.getImage(testRun.baselineName));
+  const [image] = useImage(staticService.getImage(testRun.imageName));
+  const [diff] = useImage(staticService.getImage(testRun.diffName));
 
   const [isDiffShown, setIsDiffShown] = useState(!!testRun.diffName);
   const [selectedRectId, setSelectedRectId] = React.useState<string>();
@@ -96,6 +103,24 @@ const TestDetailsModal: React.FunctionComponent<{
 
   const isIgnoreAreasSaved = () => {
     return testRun.ignoreAreas === JSON.stringify(ignoreAreas);
+  };
+
+  const setOriginalSize = () => {
+    setStageScale(1);
+    resetPositioin();
+  };
+
+  const fitStageToScreen = () => {
+    const scale = image
+      ? Math.min(stageWidth / image.width, stageHeigth / image.height)
+      : 1;
+    setStageScale(scale);
+    resetPositioin();
+  };
+
+  const resetPositioin = () => {
+    setStagePos(defaultStagePos);
+    setStageOffset(defaultStagePos);
   };
 
   return (
@@ -236,20 +261,13 @@ const TestDetailsModal: React.FunctionComponent<{
                   </IconButton>
                 </Grid>
                 <Grid item>
-                  <IconButton
-                    onClick={() => {
-                      setStageScale(1);
-                      setStagePos({
-                        x: 0,
-                        y: 0,
-                      });
-                      setStageOffset({
-                        x: 0,
-                        y: 0,
-                      });
-                    }}
-                  >
-                    <Clear />
+                  <IconButton onClick={() => setOriginalSize()}>
+                    <Fullscreen />
+                  </IconButton>
+                </Grid>
+                <Grid item>
+                  <IconButton onClick={() => fitStageToScreen()}>
+                    <FullscreenExit />
                   </IconButton>
                 </Grid>
               </Grid>
@@ -265,9 +283,7 @@ const TestDetailsModal: React.FunctionComponent<{
             </Grid>
             <Grid item className={classes.canvasContainer}>
               <DrawArea
-                width={stageWidth}
-                height={stageHeigth}
-                imageUrl={testRun.baselineName}
+                image={baseline}
                 ignoreAreas={[]}
                 setIgnoreAreas={setIgnoreAreas}
                 selectedRectId={selectedRectId}
@@ -290,9 +306,7 @@ const TestDetailsModal: React.FunctionComponent<{
                 </Grid>
                 <Grid item className={classes.canvasContainer}>
                   <DrawArea
-                    width={stageWidth}
-                    height={stageHeigth}
-                    imageUrl={testRun.diffName}
+                    image={diff}
                     ignoreAreas={ignoreAreas}
                     setIgnoreAreas={setIgnoreAreas}
                     selectedRectId={selectedRectId}
@@ -312,9 +326,7 @@ const TestDetailsModal: React.FunctionComponent<{
                 </Grid>
                 <Grid item className={classes.canvasContainer}>
                   <DrawArea
-                    width={stageWidth}
-                    height={stageHeigth}
-                    imageUrl={testRun.imageName}
+                    image={image}
                     ignoreAreas={ignoreAreas}
                     setIgnoreAreas={setIgnoreAreas}
                     selectedRectId={selectedRectId}
