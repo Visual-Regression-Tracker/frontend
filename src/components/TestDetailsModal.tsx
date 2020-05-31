@@ -9,6 +9,7 @@ import {
   IconButton,
   Paper,
   Box,
+  makeStyles,
 } from "@material-ui/core";
 import { TestRun } from "../types";
 import { testRunService, testVariationService } from "../services";
@@ -29,10 +30,21 @@ import {
 import ImageDetails from "./ImageDetails";
 import { TestRunDetails } from "./TestRunDetails";
 
+const useStyles = makeStyles((theme) => ({
+  imageContainer: {
+    overflow: "hidden",
+  },
+  canvasContainer: {
+    overflow: "hidden",
+    margin: theme.spacing(1),
+  },
+}));
+
 const TestDetailsModal: React.FunctionComponent<{
   testRun: TestRun;
   updateTestRun: (testRun: TestRun) => void;
 }> = ({ testRun, updateTestRun }) => {
+  const classes = useStyles();
   const history = useHistory();
 
   const stageWidth = (window.innerWidth / 2) * 0.9;
@@ -246,67 +258,77 @@ const TestDetailsModal: React.FunctionComponent<{
         </Grid>
       </Box>
       <Grid container>
-        <Grid item xs={6}>
-          <Box m={1}>
-            <ImageDetails type="Baseline" imageName={testRun.baselineName} />
-          </Box>
-          <DrawArea
-            width={stageWidth}
-            height={stageHeigth}
-            imageUrl={testRun.baselineName}
-            ignoreAreas={[]}
-            setIgnoreAreas={setIgnoreAreas}
-            selectedRectId={selectedRectId}
-            setSelectedRectId={setSelectedRectId}
-            onStageClick={removeSelection}
-            stageScaleState={[stageScale, setStageScale]}
-            stagePosState={[stagePos, setStagePos]}
-            stageInitPosState={[stageInitPos, setStageInitPos]}
-            stageOffsetState={[stageOffset, setStageOffset]}
-          />
+        <Grid item xs={6} className={classes.imageContainer}>
+          <Grid container>
+            <Grid item>
+              <ImageDetails type="Baseline" imageName={testRun.baselineName} />
+            </Grid>
+            <Grid item className={classes.canvasContainer}>
+              <DrawArea
+                width={stageWidth}
+                height={stageHeigth}
+                imageUrl={testRun.baselineName}
+                ignoreAreas={[]}
+                setIgnoreAreas={setIgnoreAreas}
+                selectedRectId={selectedRectId}
+                setSelectedRectId={setSelectedRectId}
+                onStageClick={removeSelection}
+                stageScaleState={[stageScale, setStageScale]}
+                stagePosState={[stagePos, setStagePos]}
+                stageInitPosState={[stageInitPos, setStageInitPos]}
+                stageOffsetState={[stageOffset, setStageOffset]}
+              />
+            </Grid>
+          </Grid>
         </Grid>
-        <Grid item xs={6}>
-          {isDiffShown ? (
-            <React.Fragment>
-              <Box m={1}>
-                <ImageDetails type="Diff" imageName={testRun.diffName} />
-              </Box>
-              <DrawArea
-                width={stageWidth}
-                height={stageHeigth}
-                imageUrl={testRun.diffName}
-                ignoreAreas={ignoreAreas}
-                setIgnoreAreas={setIgnoreAreas}
-                selectedRectId={selectedRectId}
-                setSelectedRectId={setSelectedRectId}
-                onStageClick={removeSelection}
-                stageScaleState={[stageScale, setStageScale]}
-                stagePosState={[stagePos, setStagePos]}
-                stageInitPosState={[stageInitPos, setStageInitPos]}
-                stageOffsetState={[stageOffset, setStageOffset]}
-              />
-            </React.Fragment>
-          ) : (
-            <React.Fragment>
-              <Box m={1}>
-                <ImageDetails type="Image" imageName={testRun.imageName} />
-              </Box>
-              <DrawArea
-                width={stageWidth}
-                height={stageHeigth}
-                imageUrl={testRun.imageName}
-                ignoreAreas={ignoreAreas}
-                setIgnoreAreas={setIgnoreAreas}
-                selectedRectId={selectedRectId}
-                setSelectedRectId={setSelectedRectId}
-                onStageClick={removeSelection}
-                stageScaleState={[stageScale, setStageScale]}
-                stagePosState={[stagePos, setStagePos]}
-                stageInitPosState={[stageInitPos, setStageInitPos]}
-                stageOffsetState={[stageOffset, setStageOffset]}
-              />
-            </React.Fragment>
-          )}
+        <Grid item xs={6} className={classes.imageContainer}>
+          <Grid container>
+            {isDiffShown ? (
+              <React.Fragment>
+                <Grid item>
+                  <ImageDetails type="Diff" imageName={testRun.diffName} />
+                </Grid>
+                <Grid item className={classes.canvasContainer}>
+                  <DrawArea
+                    width={stageWidth}
+                    height={stageHeigth}
+                    imageUrl={testRun.diffName}
+                    ignoreAreas={ignoreAreas}
+                    setIgnoreAreas={setIgnoreAreas}
+                    selectedRectId={selectedRectId}
+                    setSelectedRectId={setSelectedRectId}
+                    onStageClick={removeSelection}
+                    stageScaleState={[stageScale, setStageScale]}
+                    stagePosState={[stagePos, setStagePos]}
+                    stageInitPosState={[stageInitPos, setStageInitPos]}
+                    stageOffsetState={[stageOffset, setStageOffset]}
+                  />
+                </Grid>
+              </React.Fragment>
+            ) : (
+              <React.Fragment>
+                <Grid item>
+                  <ImageDetails type="Image" imageName={testRun.imageName} />
+                </Grid>
+                <Grid item className={classes.canvasContainer}>
+                  <DrawArea
+                    width={stageWidth}
+                    height={stageHeigth}
+                    imageUrl={testRun.imageName}
+                    ignoreAreas={ignoreAreas}
+                    setIgnoreAreas={setIgnoreAreas}
+                    selectedRectId={selectedRectId}
+                    setSelectedRectId={setSelectedRectId}
+                    onStageClick={removeSelection}
+                    stageScaleState={[stageScale, setStageScale]}
+                    stagePosState={[stagePos, setStagePos]}
+                    stageInitPosState={[stageInitPos, setStageInitPos]}
+                    stageOffsetState={[stageOffset, setStageOffset]}
+                  />
+                </Grid>
+              </React.Fragment>
+            )}
+          </Grid>
         </Grid>
       </Grid>
     </React.Fragment>
