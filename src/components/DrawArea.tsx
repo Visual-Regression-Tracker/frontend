@@ -67,7 +67,7 @@ const DrawArea: FunctionComponent<IDrawArea> = ({
         transform: `translate3d(${stagePos.x}px, ${stagePos.y}px, 0px)`,
       }}
       onMouseMove={(event) => {
-        if (isDrag) {
+        if (isDrag && !selectedRectId) {
           event.preventDefault();
           setStagePos({
             x: event.clientX - stageInitPos.x,
@@ -77,10 +77,6 @@ const DrawArea: FunctionComponent<IDrawArea> = ({
         }
       }}
       onMouseUp={(event) => {
-        setIsDrag(false);
-        setStageInitPos(stagePos);
-      }}
-      onMouseLeave={(event) => {
         setIsDrag(false);
         setStageInitPos(stagePos);
       }}
