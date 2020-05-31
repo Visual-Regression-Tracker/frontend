@@ -39,7 +39,15 @@ const TestDetailsModal: React.FunctionComponent<{
   const stageHeigth = window.innerHeight;
   const stageScaleBy = 1.2;
   const [stageScale, setStageScale] = React.useState(1);
-  const [stagePosition, setStagePosition] = React.useState({
+  const [stagePos, setStagePos] = React.useState({
+    x: 0,
+    y: 0,
+  });
+  const [stageInitPos, setStageInitPos] = React.useState({
+    x: 0,
+    y: 0,
+  });
+  const [stageOffset, setStageOffset] = React.useState({
     x: 0,
     y: 0,
   });
@@ -219,7 +227,11 @@ const TestDetailsModal: React.FunctionComponent<{
                   <IconButton
                     onClick={() => {
                       setStageScale(1);
-                      setStagePosition({
+                      setStagePos({
+                        x: 0,
+                        y: 0,
+                      });
+                      setStageOffset({
                         x: 0,
                         y: 0,
                       });
@@ -248,7 +260,9 @@ const TestDetailsModal: React.FunctionComponent<{
             setSelectedRectId={setSelectedRectId}
             onStageClick={removeSelection}
             stageScaleState={[stageScale, setStageScale]}
-            stagePosState={[stagePosition, setStagePosition]}
+            stagePosState={[stagePos, setStagePos]}
+            stageInitPosState={[stageInitPos, setStageInitPos]}
+            stageOffsetState={[stageOffset, setStageOffset]}
           />
         </Grid>
         <Grid item xs={6}>
@@ -267,7 +281,9 @@ const TestDetailsModal: React.FunctionComponent<{
                 setSelectedRectId={setSelectedRectId}
                 onStageClick={removeSelection}
                 stageScaleState={[stageScale, setStageScale]}
-                stagePosState={[stagePosition, setStagePosition]}
+                stagePosState={[stagePos, setStagePos]}
+                stageInitPosState={[stageInitPos, setStageInitPos]}
+                stageOffsetState={[stageOffset, setStageOffset]}
               />
             </React.Fragment>
           ) : (
@@ -285,7 +301,9 @@ const TestDetailsModal: React.FunctionComponent<{
                 setSelectedRectId={setSelectedRectId}
                 onStageClick={removeSelection}
                 stageScaleState={[stageScale, setStageScale]}
-                stagePosState={[stagePosition, setStagePosition]}
+                stagePosState={[stagePos, setStagePos]}
+                stageInitPosState={[stageInitPos, setStageInitPos]}
+                stageOffsetState={[stageOffset, setStageOffset]}
               />
             </React.Fragment>
           )}
