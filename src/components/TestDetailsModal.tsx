@@ -17,7 +17,15 @@ import { TestStatus } from "../types/testStatus";
 import { useHistory, Prompt } from "react-router-dom";
 import { IgnoreArea } from "../types/ignoreArea";
 import { KonvaEventObject } from "konva/types/Node";
-import { Close, Add, Delete, Save } from "@material-ui/icons";
+import {
+  Close,
+  Add,
+  Delete,
+  Save,
+  ZoomIn,
+  ZoomOut,
+  Clear,
+} from "@material-ui/icons";
 import ImageDetails from "./ImageDetails";
 import { TestRunDetails } from "./TestRunDetails";
 
@@ -26,6 +34,15 @@ const TestDetailsModal: React.FunctionComponent<{
   updateTestRun: (testRun: TestRun) => void;
 }> = ({ testRun, updateTestRun }) => {
   const history = useHistory();
+
+  const stageWidth = (window.innerWidth / 2) * 0.9;
+  const stageHeigth = window.innerHeight;
+  const stageScaleBy = 1.2;
+  const [stageScale, setStageScale] = React.useState(1);
+  const [stagePosition, setStagePosition] = React.useState({
+    x: 0,
+    y: 0,
+  });
 
   const [isDiffShown, setIsDiffShown] = useState(!!testRun.diffName);
   const [selectedRectId, setSelectedRectId] = React.useState<string>();
@@ -45,9 +62,6 @@ const TestDetailsModal: React.FunctionComponent<{
       setSelectedRectId(undefined);
     }
   };
-
-  const stageWidth = (window.innerWidth / 2) * 0.9;
-  const stageHeigth = window.innerHeight;
 
   const deleteIgnoreArea = (id: string) => {
     setIgnoreAreas(ignoreAreas.filter((area) => area.id !== id));
@@ -179,6 +193,44 @@ const TestDetailsModal: React.FunctionComponent<{
               </Grid>
             </Paper>
           </Grid>
+          <Grid item>
+            <Paper variant="outlined">
+              <Grid container justify="center">
+                <Grid item xs={12}>
+                  <Typography variant="subtitle1" align="center">
+                    Scale
+                  </Typography>
+                </Grid>
+                <Grid item>
+                  <IconButton
+                    onClick={() => setStageScale(stageScale * stageScaleBy)}
+                  >
+                    <ZoomIn />
+                  </IconButton>
+                </Grid>
+                <Grid item>
+                  <IconButton
+                    onClick={() => setStageScale(stageScale / stageScaleBy)}
+                  >
+                    <ZoomOut />
+                  </IconButton>
+                </Grid>
+                <Grid item>
+                  <IconButton
+                    onClick={() => {
+                      setStageScale(1);
+                      setStagePosition({
+                        x: 0,
+                        y: 0,
+                      });
+                    }}
+                  >
+                    <Clear />
+                  </IconButton>
+                </Grid>
+              </Grid>
+            </Paper>
+          </Grid>
         </Grid>
       </Box>
       <Grid container>
@@ -195,6 +247,8 @@ const TestDetailsModal: React.FunctionComponent<{
             selectedRectId={selectedRectId}
             setSelectedRectId={setSelectedRectId}
             onStageClick={removeSelection}
+            stageScaleState={[stageScale, setStageScale]}
+            stagePosState={[stagePosition, setStagePosition]}
           />
         </Grid>
         <Grid item xs={6}>
@@ -212,6 +266,8 @@ const TestDetailsModal: React.FunctionComponent<{
                 selectedRectId={selectedRectId}
                 setSelectedRectId={setSelectedRectId}
                 onStageClick={removeSelection}
+                stageScaleState={[stageScale, setStageScale]}
+                stagePosState={[stagePosition, setStagePosition]}
               />
             </React.Fragment>
           ) : (
@@ -228,6 +284,8 @@ const TestDetailsModal: React.FunctionComponent<{
                 selectedRectId={selectedRectId}
                 setSelectedRectId={setSelectedRectId}
                 onStageClick={removeSelection}
+                stageScaleState={[stageScale, setStageScale]}
+                stagePosState={[stagePosition, setStagePosition]}
               />
             </React.Fragment>
           )}

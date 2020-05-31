@@ -16,6 +16,11 @@ interface IDrawArea {
   selectedRectId: string | undefined;
   setSelectedRectId: (id: string) => void;
   onStageClick: (event: KonvaEventObject<MouseEvent>) => void;
+  stagePosState: [
+    { x: number; y: number },
+    React.Dispatch<React.SetStateAction<{ x: number; y: number }>>
+  ];
+  stageScaleState: [number, React.Dispatch<React.SetStateAction<number>>];
 }
 const DrawArea: FunctionComponent<IDrawArea> = ({
   width,
@@ -26,7 +31,11 @@ const DrawArea: FunctionComponent<IDrawArea> = ({
   selectedRectId,
   setSelectedRectId,
   onStageClick,
+  stageScaleState,
+  stagePosState,
 }) => {
+  const [stagePos, setStatePos] = stagePosState;
+  const [stageScale, setStageScale] = stageScaleState;
   const [image] = useImage(staticService.getImage(imageUrl));
 
   // fit image to available area size
@@ -37,9 +46,23 @@ const DrawArea: FunctionComponent<IDrawArea> = ({
   // fit canvas to new image size
   const stageWidth = image && image.width * scale;
   const stageHeight = image && image.height * scale;
-
   return (
-    <Stage width={stageWidth} height={stageHeight} onMouseDown={onStageClick}>
+    <Stage
+      x={stagePos.x}
+      y={stagePos.y}
+      width={stageWidth}
+      height={stageHeight}
+      onMouseDown={onStageClick}
+      scaleX={stageScale}
+      scaleY={stageScale}
+      draggable={true}
+      onDragEnd={(event: KonvaEventObject<DragEvent>) => {
+        console.log(event.target.getType());
+        if (event.target.getType() === "Stage") {
+          setStatePos({ x: event.target.x(), y: event.target.y() });
+        }
+      }}
+    >
       <Layer>
         <Image image={image} scaleX={scale} scaleY={scale} />
         {ignoreAreas.map((rect, i) => {
