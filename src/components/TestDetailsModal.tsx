@@ -19,7 +19,7 @@ import {
 } from "../services";
 import DrawArea from "./DrawArea";
 import { TestStatus } from "../types/testStatus";
-import { useHistory, Prompt } from "react-router-dom";
+import { useHistory, Prompt, Link } from "react-router-dom";
 import { IgnoreArea } from "../types/ignoreArea";
 import { KonvaEventObject } from "konva/types/Node";
 import {
@@ -35,6 +35,7 @@ import {
 import ImageDetails from "./ImageDetails";
 import { TestRunDetails } from "./TestRunDetails";
 import useImage from "use-image";
+import { routes } from "../constants";
 
 const useStyles = makeStyles((theme) => ({
   imageContainer: {
@@ -294,7 +295,23 @@ const TestDetailsModal: React.FunctionComponent<{
         <Grid item xs={6} className={classes.imageContainer}>
           <Grid container direction="column">
             <Grid item>
-              <ImageDetails type="Baseline" imageName={testRun.baselineName} />
+              <Grid container spacing={2}>
+                <Grid item>
+                  <ImageDetails
+                    type="Baseline"
+                    imageName={testRun.baselineName}
+                  />
+                </Grid>
+                <Grid item>
+                  <Button
+                    color="primary"
+                    component={Link}
+                    to={`${routes.VARIATION_DETAILS_PAGE}/${testRun.testVariationId}`}
+                  >
+                    History
+                  </Button>
+                </Grid>
+              </Grid>
             </Grid>
             <Grid item className={classes.canvasBackground}>
               <div className={classes.canvasContainer}>
