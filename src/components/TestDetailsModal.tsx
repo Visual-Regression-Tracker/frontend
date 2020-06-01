@@ -36,6 +36,7 @@ import ImageDetails from "./ImageDetails";
 import { TestRunDetails } from "./TestRunDetails";
 import useImage from "use-image";
 import { routes } from "../constants";
+import { NoImagePlaceholder } from "./NoImageAvailable";
 
 const useStyles = makeStyles((theme) => ({
   imageContainer: {
@@ -313,31 +314,35 @@ const TestDetailsModal: React.FunctionComponent<{
                 </Grid>
               </Grid>
             </Grid>
-            <Grid item className={classes.canvasBackground}>
-              <div className={classes.canvasContainer}>
-                <DrawArea
-                  image={baseline}
-                  ignoreAreas={[]}
-                  setIgnoreAreas={setIgnoreAreas}
-                  selectedRectId={selectedRectId}
-                  setSelectedRectId={setSelectedRectId}
-                  onStageClick={removeSelection}
-                  stageScaleState={[stageScale, setStageScale]}
-                  stagePosState={[stagePos, setStagePos]}
-                  stageInitPosState={[stageInitPos, setStageInitPos]}
-                  stageOffsetState={[stageOffset, setStageOffset]}
-                />
-              </div>
-            </Grid>
+            {testRun.baselineName ? (
+              <Grid item className={classes.canvasBackground}>
+                <div className={classes.canvasContainer}>
+                  <DrawArea
+                    image={baseline}
+                    ignoreAreas={[]}
+                    setIgnoreAreas={setIgnoreAreas}
+                    selectedRectId={selectedRectId}
+                    setSelectedRectId={setSelectedRectId}
+                    onStageClick={removeSelection}
+                    stageScaleState={[stageScale, setStageScale]}
+                    stagePosState={[stagePos, setStagePos]}
+                    stageInitPosState={[stageInitPos, setStageInitPos]}
+                    stageOffsetState={[stageOffset, setStageOffset]}
+                  />
+                </div>
+              </Grid>
+            ) : (
+              <NoImagePlaceholder />
+            )}
           </Grid>
         </Grid>
         <Grid item xs={6} className={classes.imageContainer}>
-          <Grid container direction="column">
-            {isDiffShown ? (
-              <React.Fragment>
-                <Grid item>
-                  <ImageDetails type="Diff" imageName={testRun.diffName} />
-                </Grid>
+          {isDiffShown ? (
+            <Grid container direction="column">
+              <Grid item>
+                <ImageDetails type="Diff" imageName={testRun.diffName} />
+              </Grid>
+              {testRun.diffName ? (
                 <Grid item className={classes.canvasBackground}>
                   <div className={classes.canvasContainer}>
                     <DrawArea
@@ -354,12 +359,16 @@ const TestDetailsModal: React.FunctionComponent<{
                     />
                   </div>
                 </Grid>
-              </React.Fragment>
-            ) : (
-              <React.Fragment>
-                <Grid item>
-                  <ImageDetails type="Image" imageName={testRun.imageName} />
-                </Grid>
+              ) : (
+                <NoImagePlaceholder />
+              )}
+            </Grid>
+          ) : (
+            <Grid container direction="column">
+              <Grid item>
+                <ImageDetails type="Image" imageName={testRun.imageName} />
+              </Grid>
+              {testRun.imageName ? (
                 <Grid item className={classes.canvasBackground}>
                   <div className={classes.canvasContainer}>
                     <DrawArea
@@ -376,9 +385,11 @@ const TestDetailsModal: React.FunctionComponent<{
                     />
                   </div>
                 </Grid>
-              </React.Fragment>
-            )}
-          </Grid>
+              ) : (
+                <NoImagePlaceholder />
+              )}
+            </Grid>
+          )}
         </Grid>
       </Grid>
     </React.Fragment>
