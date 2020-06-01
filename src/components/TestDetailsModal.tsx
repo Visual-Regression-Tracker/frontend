@@ -43,7 +43,7 @@ const useStyles = makeStyles((theme) => ({
     overflow: "hidden",
   },
   canvasBackground: {
-    width: '100%',
+    width: "100%",
     backgroundColor: "#f5f5f5",
   },
   canvasContainer: {
@@ -317,7 +317,12 @@ const TestDetailsModal: React.FunctionComponent<{
             </Grid>
             {testRun.baselineName ? (
               <Grid item className={classes.canvasBackground}>
-                <div className={classes.canvasContainer}>
+                <div
+                  className={classes.canvasContainer}
+                  style={{
+                    height: baseline && baseline?.height * stageScale,
+                  }}
+                >
                   <DrawArea
                     image={baseline}
                     ignoreAreas={[]}
@@ -344,7 +349,13 @@ const TestDetailsModal: React.FunctionComponent<{
                 <ImageDetails type="Diff" imageName={testRun.diffName} />
               </Grid>
               {testRun.diffName ? (
-                <Grid item className={classes.canvasBackground}>
+                <Grid
+                  item
+                  className={classes.canvasBackground}
+                  style={{
+                    height: diff && diff?.height * stageScale,
+                  }}
+                >
                   <div className={classes.canvasContainer}>
                     <DrawArea
                       image={diff}
@@ -371,7 +382,12 @@ const TestDetailsModal: React.FunctionComponent<{
               </Grid>
               {testRun.imageName ? (
                 <Grid item className={classes.canvasBackground}>
-                  <div className={classes.canvasContainer}>
+                  <div
+                    className={classes.canvasContainer}
+                    style={{
+                      height: image && image?.height * stageScale,
+                    }}
+                  >
                     <DrawArea
                       image={image}
                       ignoreAreas={ignoreAreas}
