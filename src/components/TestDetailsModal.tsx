@@ -43,13 +43,14 @@ const useStyles = makeStyles((theme) => ({
     overflow: "hidden",
   },
   canvasBackground: {
+    width: '100%',
     backgroundColor: "#f5f5f5",
   },
   canvasContainer: {
     overflow: "hidden",
     backgroundColor: "white",
     padding: theme.spacing(1),
-    margin: theme.spacing(1),
+    margin: theme.spacing(0.5),
   },
 }));
 
