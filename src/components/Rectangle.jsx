@@ -63,6 +63,18 @@ const Rectangle = ({ shapeProps, isSelected, onSelect, onChange }) => {
             height: Math.max(node.height() * scaleY),
           });
         }}
+        onMouseOver={(event) => {
+          document.body.style.cursor = "pointer";
+        }}
+        onMouseDown={(event) => {
+          document.body.style.cursor = "grabbing";
+        }}
+        onMouseUp={(event) => {
+          document.body.style.cursor = "grab";
+        }}
+        onMouseLeave={(event) => {
+          document.body.style.cursor = "default";
+        }}
       />
       {isSelected && (
         <Transformer

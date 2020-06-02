@@ -85,7 +85,21 @@ const DrawArea: FunctionComponent<IDrawArea> = ({
         }}
       >
         <Layer>
-          <Image image={image} />
+          <Image
+            image={image}
+            onMouseOver={(event) => {
+              document.body.style.cursor = "grab";
+            }}
+            onMouseDown={(event) => {
+              document.body.style.cursor = "grabbing";
+            }}
+            onMouseUp={(event) => {
+              document.body.style.cursor = "grab";
+            }}
+            onMouseLeave={(event) => {
+              document.body.style.cursor = "default";
+            }}
+          />
           {ignoreAreas.map((rect, i) => {
             return (
               <Rectangle
