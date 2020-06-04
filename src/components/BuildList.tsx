@@ -11,15 +11,12 @@ import {
   Chip,
 } from "@material-ui/core";
 import { Delete } from "@material-ui/icons";
-import { Build } from "../types";
-import { buildsService } from "../services";
 import { useHistory } from "react-router-dom";
-
-interface IBuildList {
-  builds: Build[];
-  setBuilds: React.Dispatch<React.SetStateAction<Build[]>>;
-  selectedBuildId: string | undefined;
-}
+import {
+  useBuildState,
+  useBuildDispatch,
+  deleteBuild,
+} from "../contexts/build.context";
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -34,17 +31,15 @@ const useStyles = makeStyles((theme: Theme) =>
   })
 );
 
-const BuildList: FunctionComponent<IBuildList> = ({
-  builds,
-  setBuilds,
-  selectedBuildId,
-}) => {
+const BuildList: FunctionComponent = () => {
   const classes = useStyles();
   const history = useHistory();
+  const { buildList, selectedBuildId } = useBuildState();
+  const buildDispatch = useBuildDispatch();
 
   return (
     <List>
-      {builds.map((build) => (
+      {buildList.map((build) => (
         <ListItem
           key={build.id}
           selected={selectedBuildId === build.id}
@@ -66,11 +61,7 @@ const BuildList: FunctionComponent<IBuildList> = ({
           <ListItemSecondaryAction className={classes.listItemSecondaryAction}>
             <IconButton
               onClick={() => {
-                buildsService.remove(build.id).then((isRemoved) => {
-                  if (isRemoved) {
-                    setBuilds(builds.filter((item) => item.id !== build.id));
-                  }
-                });
+                deleteBuild(buildDispatch, build.id);
               }}
             >
               <Delete />

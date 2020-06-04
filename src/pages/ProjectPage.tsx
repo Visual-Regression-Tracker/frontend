@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { Grid, Dialog, IconButton, Box, Typography } from "@material-ui/core";
 import { useParams, useLocation, useHistory } from "react-router-dom";
-import { Build, TestRun } from "../types";
-import { buildsService, testRunService } from "../services";
+import { TestRun } from "../types";
+import { testRunService } from "../services";
 import BuildList from "../components/BuildList";
 import ProjectSelect from "../components/ProjectSelect";
 import qs from "qs";
@@ -11,6 +11,12 @@ import TestDetailsModal from "../components/TestDetailsModal";
 import { NavigateBefore, NavigateNext } from "@material-ui/icons";
 import Filters from "../components/Filters";
 import { buildTestRunLocation } from "../_helpers/route.helpers";
+import {
+  useBuildState,
+  useBuildDispatch,
+  getBuildList,
+  selectBuild,
+} from "../contexts/build.context";
 
 const getQueryParams = (guery: string) => {
   const queryParams = qs.parse(guery, { ignoreQueryPrefix: true });
@@ -46,9 +52,9 @@ const ProjectPage = () => {
   const { projectId } = useParams();
   const location = useLocation();
   const history = useHistory();
-  const [builds, setBuilds] = useState<Build[]>([]);
+  const { buildList, selectedBuildId } = useBuildState();
+  const buildDispatch = useBuildDispatch();
   const [testRuns, setTestRuns] = useState<TestRun[]>([]);
-  const [selectedBuildId, setSelectedBuildId] = useState<string>();
   const [selectedTestdId, setSelectedTestId] = useState<string>();
   const [selectedTestRunIndex, setSelectedTestRunIndex] = useState<number>();
 
@@ -64,9 +70,9 @@ const ProjectPage = () => {
   useEffect(() => {
     const queryParams = getQueryParams(location.search);
     if (queryParams.buildId) {
-      setSelectedBuildId(queryParams.buildId);
-    } else if (builds.length > 0) {
-      setSelectedBuildId(builds[0].id);
+      selectBuild(buildDispatch, queryParams.buildId);
+    } else if (buildList.length > 0) {
+      selectBuild(buildDispatch, buildList[0].id);
     }
     if (queryParams.testId) {
       setSelectedTestId(queryParams.testId);
@@ -76,13 +82,19 @@ const ProjectPage = () => {
       setSelectedTestId(undefined);
       setSelectedTestRunIndex(undefined);
     }
-  }, [location.search, builds, testRuns, selectedTestRunIndex]);
+  }, [
+    location.search,
+    buildList,
+    testRuns,
+    selectedTestRunIndex,
+    buildDispatch,
+  ]);
 
   useEffect(() => {
     if (projectId) {
-      buildsService.getList(projectId).then((builds) => setBuilds(builds));
+      getBuildList(buildDispatch, projectId);
     }
-  }, [projectId]);
+  }, [projectId, buildDispatch]);
 
   useEffect(() => {
     if (selectedBuildId) {
@@ -126,11 +138,7 @@ const ProjectPage = () => {
           </Grid>
         </Grid>
         <Grid item>
-          <BuildList
-            builds={builds}
-            setBuilds={setBuilds}
-            selectedBuildId={selectedBuildId}
-          />
+          <BuildList />
         </Grid>
       </Grid>
       <Grid item xs={9}>
