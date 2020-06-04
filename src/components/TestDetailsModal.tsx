@@ -84,7 +84,7 @@ const TestDetailsModal: React.FunctionComponent<{
     testRun.diffName && staticService.getImage(testRun.diffName)
   );
 
-  const [isDiffShown, setIsDiffShown] = useState(!!testRun.diffName);
+  const [isDiffShown, setIsDiffShown] = useState(false);
   const [selectedRectId, setSelectedRectId] = React.useState<string>();
 
   const [ignoreAreas, setIgnoreAreas] = React.useState<IgnoreArea[]>(
@@ -140,6 +140,10 @@ const TestDetailsModal: React.FunctionComponent<{
     fitStageToScreen();
     // eslint-disable-next-line
   }, [image]);
+
+  React.useEffect(() => {
+    setIsDiffShown(!!testRun.diffName);
+  }, [testRun.diffName]);
 
   return (
     <React.Fragment>
@@ -241,7 +245,12 @@ const TestDetailsModal: React.FunctionComponent<{
                       // update in test run
                       testRunService
                         .setIgnoreAreas(testRun.id, ignoreAreas)
-                        .then((testRun) => updateTestRun(testRun));
+                        .then(() =>
+                          // recalculate diff
+                          testRunService
+                            .recalculateDiff(testRun.id)
+                            .then((testRun) => updateTestRun(testRun))
+                        );
 
                       // update in variation
                       testVariationService.setIgnoreAreas(
