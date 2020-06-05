@@ -1,6 +1,7 @@
-import * as React from "react";
-import { Build } from "../types";
+import React from "react";
+import { Build, TestRun } from "../types";
 import { buildsService } from "../services";
+import { TestStatus } from "../types/testStatus";
 
 interface IRequestAction {
   type: "request";
@@ -22,7 +23,23 @@ interface IDeleteAction {
   payload: string;
 }
 
-type IAction = IRequestAction | IGetAction | IDeleteAction | ISelectAction;
+interface IUpdateAction {
+  type: "update";
+  payload: TestRun;
+}
+
+interface IStatsAction {
+  type: "stats";
+  payload: string;
+}
+
+type IAction =
+  | IRequestAction
+  | IGetAction
+  | IDeleteAction
+  | ISelectAction
+  | IStatsAction
+  | IUpdateAction;
 
 type Dispatch = (action: IAction) => void;
 type State = {
@@ -48,6 +65,57 @@ function buildReducer(state: State, action: IAction): State {
       return {
         ...state,
         selectedBuildId: action.payload,
+      };
+    case "stats":
+      return {
+        ...state,
+        buildList: state.buildList.map((build) => {
+          if (build.id === action.payload) {
+            // reset stats
+            build.passedCount = 0;
+            build.unresolvedCount = 0;
+            build.failedCount = 0;
+
+            // calculate stats
+            build.testRuns.forEach((testRun) => {
+              switch (testRun.status) {
+                case TestStatus.approved:
+                case TestStatus.ok: {
+                  build.passedCount += 1;
+                  break;
+                }
+                case TestStatus.unresolved:
+                case TestStatus.new: {
+                  build.unresolvedCount += 1;
+                  break;
+                }
+                case TestStatus.failed: {
+                  build.failedCount += 1;
+                  break;
+                }
+              }
+            });
+          }
+          return build;
+        }),
+      };
+    case "update":
+      return {
+        ...state,
+        buildList: state.buildList.map((build) => {
+          if (build.id === action.payload.buildId) {
+            return {
+              ...build,
+              testRuns: build.testRuns.map((testRun) => {
+                if (testRun.id === action.payload.id) {
+                  return action.payload;
+                }
+                return testRun;
+              }),
+            };
+          }
+          return build;
+        }),
       };
     case "get":
       return {
@@ -99,6 +167,7 @@ async function getBuildList(dispatch: Dispatch, id: string) {
     .getList(id)
     .then((items) => {
       dispatch({ type: "get", payload: items });
+      items.forEach((build) => dispatch({ type: "stats", payload: build.id }));
     })
     .catch((error) => {
       console.log(error.toString());
@@ -124,6 +193,11 @@ async function selectBuild(dispatch: Dispatch, id: string) {
   dispatch({ type: "select", payload: id });
 }
 
+async function updateBuild(dispatch: Dispatch, testRun: TestRun) {
+  dispatch({ type: "update", payload: testRun });
+  dispatch({ type: "stats", payload: testRun.buildId });
+}
+
 export {
   BuildProvider,
   useBuildState,
@@ -131,4 +205,5 @@ export {
   getBuildList,
   deleteBuild,
   selectBuild,
+  updateBuild,
 };

@@ -2,7 +2,7 @@ import { TestStatus } from "./testStatus";
 
 export interface TestRun {
   id: string;
-  buildId: number;
+  buildId: string;
   imageName: string;
   diffName: string;
   diffPercent: number;
