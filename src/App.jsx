@@ -4,14 +4,17 @@ import Header from "./components/Header";
 import { AuthProvider } from "./contexts/auth.context";
 import { ProjectProvider } from "./contexts/project.context";
 import Router from "./Router";
+import { BuildProvider } from "./contexts/build.context";
 
 function App() {
   return (
     <div className="App">
       <AuthProvider>
         <ProjectProvider>
-          <Header />
-          <Router />
+          <BuildProvider>
+            <Header />
+            <Router />
+          </BuildProvider>
         </ProjectProvider>
       </AuthProvider>
     </div>

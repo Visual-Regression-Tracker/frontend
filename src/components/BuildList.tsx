@@ -9,17 +9,18 @@ import {
   Theme,
   createStyles,
   Chip,
+  Typography,
+  Grid,
 } from "@material-ui/core";
 import { Delete } from "@material-ui/icons";
-import { Build } from "../types";
-import { buildsService } from "../services";
 import { useHistory } from "react-router-dom";
-
-interface IBuildList {
-  builds: Build[];
-  setBuilds: React.Dispatch<React.SetStateAction<Build[]>>;
-  selectedBuildId: string | undefined;
-}
+import {
+  useBuildState,
+  useBuildDispatch,
+  deleteBuild,
+  selectBuild,
+} from "../contexts/build.context";
+import { BuildStatusChip } from "./BuildStatusChip";
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -34,22 +35,21 @@ const useStyles = makeStyles((theme: Theme) =>
   })
 );
 
-const BuildList: FunctionComponent<IBuildList> = ({
-  builds,
-  setBuilds,
-  selectedBuildId,
-}) => {
+const BuildList: FunctionComponent = () => {
   const classes = useStyles();
   const history = useHistory();
+  const { buildList, selectedBuildId } = useBuildState();
+  const buildDispatch = useBuildDispatch();
 
   return (
     <List>
-      {builds.map((build) => (
+      {buildList.map((build) => (
         <ListItem
           key={build.id}
           selected={selectedBuildId === build.id}
           button
           onClick={() => {
+            selectBuild(buildDispatch, build.id);
             history.push({
               search: "buildId=" + build.id,
             });
@@ -59,18 +59,39 @@ const BuildList: FunctionComponent<IBuildList> = ({
           }}
         >
           <ListItemText
-            primary={`#${build.id}`}
-            secondary={`Date: ${build.createdAt}`}
+            disableTypography
+            primary={
+              <Grid container>
+                <Grid item>
+                  <Typography variant="subtitle2">{`#${build.id}`}</Typography>
+                </Grid>
+              </Grid>
+            }
+            secondary={
+              <Grid container direction="column">
+                <Grid item>
+                  <Typography variant="caption" color="textPrimary">
+                    {build.createdAt}
+                  </Typography>
+                </Grid>
+                <Grid item>
+                  <Grid container justify="space-between">
+                    <Grid item>
+                      <Chip size="small" label={build.branchName} />
+                    </Grid>
+                    <Grid item>
+                      <BuildStatusChip status={build.status} />
+                    </Grid>
+                  </Grid>
+                </Grid>
+              </Grid>
+            }
           />
-          <Chip size="small" label={build.branchName} />
+
           <ListItemSecondaryAction className={classes.listItemSecondaryAction}>
             <IconButton
               onClick={() => {
-                buildsService.remove(build.id).then((isRemoved) => {
-                  if (isRemoved) {
-                    setBuilds(builds.filter((item) => item.id !== build.id));
-                  }
-                });
+                deleteBuild(buildDispatch, build.id);
               }}
             >
               <Delete />
