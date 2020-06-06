@@ -2,6 +2,7 @@ import React from "react";
 import { Build, TestRun } from "../types";
 import { buildsService } from "../services";
 import { TestStatus } from "../types/testStatus";
+import { BuildStatus } from "../types/buildStatus";
 
 interface IRequestAction {
   type: "request";
@@ -72,6 +73,7 @@ function buildReducer(state: State, action: IAction): State {
         buildList: state.buildList.map((build) => {
           if (build.id === action.payload) {
             // reset stats
+            build.status = BuildStatus.passed;
             build.passedCount = 0;
             build.unresolvedCount = 0;
             build.failedCount = 0;
@@ -95,6 +97,13 @@ function buildReducer(state: State, action: IAction): State {
                 }
               }
             });
+
+            if (build.failedCount > 0) {
+              build.status = BuildStatus.failed;
+            }
+            if (build.unresolvedCount > 0) {
+              build.status = BuildStatus.unresolved;
+            }
           }
           return build;
         }),
