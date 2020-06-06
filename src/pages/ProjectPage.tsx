@@ -69,11 +69,18 @@ const ProjectPage = () => {
 
   useEffect(() => {
     const queryParams = getQueryParams(location.search);
-    if (queryParams.buildId) {
-      selectBuild(buildDispatch, queryParams.buildId);
-    } else if (buildList.length > 0) {
-      selectBuild(buildDispatch, buildList[0].id);
+    if (!selectedBuildId) {
+      if (queryParams.buildId) {
+        selectBuild(buildDispatch, queryParams.buildId);
+      } else if (buildList.length > 0) {
+        selectBuild(buildDispatch, buildList[0].id);
+      }
     }
+    // eslint-disable-next-line
+  }, []);
+
+  useEffect(() => {
+    const queryParams = getQueryParams(location.search);
     if (queryParams.testId) {
       setSelectedTestId(queryParams.testId);
       const index = testRuns.findIndex((t) => t.id === queryParams.testId);
@@ -82,13 +89,7 @@ const ProjectPage = () => {
       setSelectedTestId(undefined);
       setSelectedTestRunIndex(undefined);
     }
-  }, [
-    location.search,
-    buildList,
-    testRuns,
-    selectedTestRunIndex,
-    buildDispatch,
-  ]);
+  }, [location.search, testRuns]);
 
   useEffect(() => {
     if (projectId) {

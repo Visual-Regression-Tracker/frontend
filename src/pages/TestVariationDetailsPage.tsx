@@ -14,6 +14,7 @@ import {
 } from "@material-ui/core";
 import { buildTestRunUrl } from "../_helpers/route.helpers";
 import { TestVariationDetails } from "../components/TestVariationDetails";
+import { selectBuild, useBuildDispatch } from "../contexts/build.context";
 
 const useStyles = makeStyles({
   media: {
@@ -24,6 +25,7 @@ const useStyles = makeStyles({
 
 const TestVariationDetailsPage: React.FunctionComponent = () => {
   const classes = useStyles();
+  const buildDispatch = useBuildDispatch();
   const { testVariationId } = useParams();
   const [testVariation, setTestVariation] = React.useState<TestVariation>();
 
@@ -52,6 +54,10 @@ const TestVariationDetailsPage: React.FunctionComponent = () => {
                         color="primary"
                         component={Link}
                         disabled={!baseline.testRun}
+                        onClick={() =>
+                          baseline.testRun &&
+                          selectBuild(buildDispatch, baseline.testRun.buildId)
+                        }
                         to={
                           baseline.testRun
                             ? buildTestRunUrl(testVariation, baseline.testRun)

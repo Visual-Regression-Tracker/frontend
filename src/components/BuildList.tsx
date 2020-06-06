@@ -18,6 +18,7 @@ import {
   useBuildState,
   useBuildDispatch,
   deleteBuild,
+  selectBuild,
 } from "../contexts/build.context";
 import { BuildStatusChip } from "./BuildStatusChip";
 
@@ -48,6 +49,7 @@ const BuildList: FunctionComponent = () => {
           selected={selectedBuildId === build.id}
           button
           onClick={() => {
+            selectBuild(buildDispatch, build.id);
             history.push({
               search: "buildId=" + build.id,
             });
