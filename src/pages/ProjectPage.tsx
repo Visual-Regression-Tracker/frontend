@@ -1,5 +1,12 @@
 import React, { useEffect, useState } from "react";
-import { Grid, Dialog, IconButton, Box, Typography } from "@material-ui/core";
+import {
+  Grid,
+  Dialog,
+  IconButton,
+  Box,
+  Typography,
+  makeStyles,
+} from "@material-ui/core";
 import { useParams, useLocation, useHistory } from "react-router-dom";
 import { TestRun } from "../types";
 import { testRunService } from "../services";
@@ -26,11 +33,7 @@ const getQueryParams = (guery: string) => {
   };
 };
 
-const styles: {
-  modal: React.CSSProperties;
-  button: React.CSSProperties;
-  icon: React.CSSProperties;
-} = {
+const useStyles = makeStyles((theme) => ({
   modal: {
     margin: 40,
   },
@@ -46,9 +49,18 @@ const styles: {
     width: 64,
     height: 64,
   },
-};
+  buildListContainer: {
+    maxHeight: "89vh",
+    overflow: "auto",
+  },
+  testRunContainer: {
+    maxHeight: "83vh",
+    overflow: "auto",
+  },
+}));
 
 const ProjectPage = () => {
+  const classes = useStyles();
   const { projectId } = useParams();
   const location = useLocation();
   const history = useHistory();
@@ -138,7 +150,7 @@ const ProjectPage = () => {
             <ProjectSelect selectedId={projectId} />
           </Grid>
         </Grid>
-        <Grid item>
+        <Grid item className={classes.buildListContainer}>
           <BuildList />
         </Grid>
       </Grid>
@@ -157,7 +169,7 @@ const ProjectPage = () => {
               />
             </Box>
           </Grid>
-          <Grid item>
+          <Grid item className={classes.testRunContainer}>
             <TestRunList
               items={filteredTestRuns}
               selectedId={selectedTestdId}
@@ -171,7 +183,7 @@ const ProjectPage = () => {
             />
             {selectedTestRunIndex !== undefined &&
               testRuns[selectedTestRunIndex] && (
-                <Dialog open={true} fullScreen style={styles.modal}>
+                <Dialog open={true} fullScreen className={classes.modal}>
                   <TestDetailsModal
                     testRun={testRuns[selectedTestRunIndex]}
                     updateTestRun={updateTestRun}
@@ -179,8 +191,8 @@ const ProjectPage = () => {
                   {selectedTestRunIndex + 1 < testRuns.length && (
                     <IconButton
                       color="secondary"
+                      className={classes.button}
                       style={{
-                        ...styles.button,
                         right: 0,
                       }}
                       onClick={() => {
@@ -188,14 +200,14 @@ const ProjectPage = () => {
                         history.push(buildTestRunLocation(next));
                       }}
                     >
-                      <NavigateNext style={styles.icon} />
+                      <NavigateNext className={classes.icon} />
                     </IconButton>
                   )}
                   {selectedTestRunIndex > 0 && (
                     <IconButton
                       color="secondary"
+                      className={classes.button}
                       style={{
-                        ...styles.button,
                         left: 0,
                       }}
                       onClick={() => {
@@ -203,7 +215,7 @@ const ProjectPage = () => {
                         history.push(buildTestRunLocation(prev));
                       }}
                     >
-                      <NavigateBefore style={styles.icon} />
+                      <NavigateBefore className={classes.icon} />
                     </IconButton>
                   )}
                 </Dialog>
