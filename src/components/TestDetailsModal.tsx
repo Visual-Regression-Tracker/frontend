@@ -37,7 +37,6 @@ import { TestRunDetails } from "./TestRunDetails";
 import useImage from "use-image";
 import { routes } from "../constants";
 import { NoImagePlaceholder } from "./NoImageAvailable";
-import { useBuildDispatch, updateBuild } from "../contexts/build.context";
 
 const useStyles = makeStyles((theme) => ({
   imageContainer: {
@@ -66,7 +65,6 @@ const TestDetailsModal: React.FunctionComponent<{
 }> = ({ testRun, updateTestRun }) => {
   const classes = useStyles();
   const history = useHistory();
-  const buildDispatch = useBuildDispatch();
 
   const stageWidth = (window.innerWidth / 2) * 0.9;
   const stageHeigth = window.innerHeight;
@@ -174,7 +172,6 @@ const TestDetailsModal: React.FunctionComponent<{
                   onClick={() =>
                     testRunService.approve(testRun.id).then((testRun) => {
                       updateTestRun(testRun);
-                      updateBuild(buildDispatch, testRun);
                     })
                   }
                 >
@@ -185,7 +182,6 @@ const TestDetailsModal: React.FunctionComponent<{
                   onClick={() =>
                     testRunService.reject(testRun.id).then((testRun) => {
                       updateTestRun(testRun);
-                      updateBuild(buildDispatch, testRun);
                     })
                   }
                 >

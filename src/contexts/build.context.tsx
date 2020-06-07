@@ -1,8 +1,6 @@
 import React from "react";
-import { Build, TestRun } from "../types";
+import { Build } from "../types";
 import { buildsService } from "../services";
-import { TestStatus } from "../types/testStatus";
-import { BuildStatus } from "../types/buildStatus";
 
 interface IRequestAction {
   type: "request";
@@ -24,23 +22,17 @@ interface IDeleteAction {
   payload: string;
 }
 
-interface IUpdateAction {
-  type: "update";
-  payload: TestRun;
-}
-
-interface IStatsAction {
-  type: "stats";
-  payload: string;
+interface IAddAction {
+  type: "add";
+  payload: Build;
 }
 
 type IAction =
   | IRequestAction
   | IGetAction
   | IDeleteAction
-  | ISelectAction
-  | IStatsAction
-  | IUpdateAction;
+  | IAddAction
+  | ISelectAction;
 
 type Dispatch = (action: IAction) => void;
 type State = {
@@ -67,65 +59,6 @@ function buildReducer(state: State, action: IAction): State {
         ...state,
         selectedBuildId: action.payload,
       };
-    case "stats":
-      return {
-        ...state,
-        buildList: state.buildList.map((build) => {
-          if (build.id === action.payload) {
-            // reset stats
-            build.status = BuildStatus.passed;
-            build.passedCount = 0;
-            build.unresolvedCount = 0;
-            build.failedCount = 0;
-
-            // calculate stats
-            build.testRuns.forEach((testRun) => {
-              switch (testRun.status) {
-                case TestStatus.approved:
-                case TestStatus.ok: {
-                  build.passedCount += 1;
-                  break;
-                }
-                case TestStatus.unresolved:
-                case TestStatus.new: {
-                  build.unresolvedCount += 1;
-                  break;
-                }
-                case TestStatus.failed: {
-                  build.failedCount += 1;
-                  break;
-                }
-              }
-            });
-
-            if (build.failedCount > 0) {
-              build.status = BuildStatus.failed;
-            }
-            if (build.unresolvedCount > 0) {
-              build.status = BuildStatus.unresolved;
-            }
-          }
-          return build;
-        }),
-      };
-    case "update":
-      return {
-        ...state,
-        buildList: state.buildList.map((build) => {
-          if (build.id === action.payload.buildId) {
-            return {
-              ...build,
-              testRuns: build.testRuns.map((testRun) => {
-                if (testRun.id === action.payload.id) {
-                  return action.payload;
-                }
-                return testRun;
-              }),
-            };
-          }
-          return build;
-        }),
-      };
     case "get":
       return {
         ...state,
@@ -135,6 +68,12 @@ function buildReducer(state: State, action: IAction): State {
       return {
         ...state,
         buildList: state.buildList.filter((p) => p.id !== action.payload),
+      };
+    case "add":
+      console.log(action.payload);
+      return {
+        ...state,
+        buildList: [action.payload, ...state.buildList],
       };
     default:
       return state;
@@ -176,7 +115,6 @@ async function getBuildList(dispatch: Dispatch, id: string) {
     .getList(id)
     .then((items) => {
       dispatch({ type: "get", payload: items });
-      items.forEach((build) => dispatch({ type: "stats", payload: build.id }));
     })
     .catch((error) => {
       console.log(error.toString());
@@ -202,9 +140,8 @@ async function selectBuild(dispatch: Dispatch, id: string) {
   dispatch({ type: "select", payload: id });
 }
 
-async function updateBuild(dispatch: Dispatch, testRun: TestRun) {
-  dispatch({ type: "update", payload: testRun });
-  dispatch({ type: "stats", payload: testRun.buildId });
+async function addBuild(dispatch: Dispatch, build: Build) {
+  dispatch({ type: "add", payload: build });
 }
 
 export {
@@ -214,5 +151,5 @@ export {
   getBuildList,
   deleteBuild,
   selectBuild,
-  updateBuild,
+  addBuild,
 };

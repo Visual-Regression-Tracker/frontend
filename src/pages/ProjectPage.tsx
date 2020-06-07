@@ -8,7 +8,7 @@ import {
   makeStyles,
 } from "@material-ui/core";
 import { useParams, useLocation, useHistory } from "react-router-dom";
-import { TestRun } from "../types";
+import { TestRun, Build } from "../types";
 import { testRunService } from "../services";
 import BuildList from "../components/BuildList";
 import ProjectSelect from "../components/ProjectSelect";
@@ -22,8 +22,10 @@ import {
   useBuildState,
   useBuildDispatch,
   getBuildList,
+  addBuild,
   selectBuild,
 } from "../contexts/build.context";
+import socketIOClient from "socket.io-client";
 
 const getQueryParams = (guery: string) => {
   const queryParams = qs.parse(guery, { ignoreQueryPrefix: true });
@@ -78,6 +80,23 @@ const ProjectPage = () => {
   const [viewport, setViewport] = React.useState("");
   const [testStatus, setTestStatus] = React.useState("");
   const [filteredTestRuns, setFilteredTestRuns] = React.useState<TestRun[]>([]);
+
+  useEffect(() => {
+    const socket = socketIOClient("http://127.0.0.1:4201");
+    socket.on("connect", (data: string) => {
+      console.log("Socket connected");
+    });
+
+    socket.on("build_created", function (build: Build) {
+      // console.log(build)
+      addBuild(buildDispatch, build);
+    });
+
+    socket.on("testRun_created", function (testRun: TestRun) {
+      // console.log(testRun)
+    });
+    // eslint-disable-next-line
+  }, []);
 
   useEffect(() => {
     const queryParams = getQueryParams(location.search);
