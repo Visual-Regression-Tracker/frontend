@@ -70,7 +70,6 @@ function buildReducer(state: State, action: IAction): State {
         buildList: state.buildList.filter((p) => p.id !== action.payload),
       };
     case "add":
-      console.log(action.payload);
       return {
         ...state,
         buildList: [action.payload, ...state.buildList],

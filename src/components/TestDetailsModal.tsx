@@ -37,6 +37,11 @@ import { TestRunDetails } from "./TestRunDetails";
 import useImage from "use-image";
 import { routes } from "../constants";
 import { NoImagePlaceholder } from "./NoImageAvailable";
+import {
+  useTestRunDispatch,
+  updateTestRun,
+  selectTestRun,
+} from "../contexts/testRun.context";
 
 const useStyles = makeStyles((theme) => ({
   imageContainer: {
@@ -61,10 +66,10 @@ const defaultStagePos = {
 
 const TestDetailsModal: React.FunctionComponent<{
   testRun: TestRun;
-  updateTestRun: (testRun: TestRun) => void;
-}> = ({ testRun, updateTestRun }) => {
+}> = ({ testRun }) => {
   const classes = useStyles();
   const history = useHistory();
+  const testRunDispatch = useTestRunDispatch();
 
   const stageWidth = (window.innerWidth / 2) * 0.9;
   const stageHeigth = window.innerHeight;
@@ -108,6 +113,7 @@ const TestDetailsModal: React.FunctionComponent<{
     history.push({
       search: `buildId=${testRun.buildId}`,
     });
+    selectTestRun(testRunDispatch, undefined);
   };
 
   const isIgnoreAreasSaved = () => {
@@ -171,7 +177,7 @@ const TestDetailsModal: React.FunctionComponent<{
                   color="inherit"
                   onClick={() =>
                     testRunService.approve(testRun.id).then((testRun) => {
-                      updateTestRun(testRun);
+                      updateTestRun(testRunDispatch, testRun);
                     })
                   }
                 >
@@ -181,7 +187,7 @@ const TestDetailsModal: React.FunctionComponent<{
                   color="secondary"
                   onClick={() =>
                     testRunService.reject(testRun.id).then((testRun) => {
-                      updateTestRun(testRun);
+                      updateTestRun(testRunDispatch, testRun);
                     })
                   }
                 >
@@ -249,7 +255,9 @@ const TestDetailsModal: React.FunctionComponent<{
                           // recalculate diff
                           testRunService
                             .recalculateDiff(testRun.id)
-                            .then((testRun) => updateTestRun(testRun))
+                            .then((testRun) =>
+                              updateTestRun(testRunDispatch, testRun)
+                            )
                         );
 
                       // update in variation

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import {
   Grid,
   Dialog,
@@ -9,7 +9,6 @@ import {
 } from "@material-ui/core";
 import { useParams, useLocation, useHistory } from "react-router-dom";
 import { TestRun, Build } from "../types";
-import { testRunService } from "../services";
 import BuildList from "../components/BuildList";
 import ProjectSelect from "../components/ProjectSelect";
 import qs from "qs";
@@ -26,6 +25,13 @@ import {
   selectBuild,
 } from "../contexts/build.context";
 import socketIOClient from "socket.io-client";
+import {
+  useTestRunState,
+  addTestRun,
+  useTestRunDispatch,
+  selectTestRun,
+  getTestRunList,
+} from "../contexts/testRun.context";
 
 const getQueryParams = (guery: string) => {
   const queryParams = qs.parse(guery, { ignoreQueryPrefix: true });
@@ -68,9 +74,12 @@ const ProjectPage = () => {
   const history = useHistory();
   const { buildList, selectedBuildId } = useBuildState();
   const buildDispatch = useBuildDispatch();
-  const [testRuns, setTestRuns] = useState<TestRun[]>([]);
-  const [selectedTestdId, setSelectedTestId] = useState<string>();
-  const [selectedTestRunIndex, setSelectedTestRunIndex] = useState<number>();
+  const {
+    testRuns,
+    selectedTestRunId,
+    selectedTestRunIndex,
+  } = useTestRunState();
+  const testRunDispatch = useTestRunDispatch();
 
   // filter
   const [query, setQuery] = React.useState("");
@@ -88,12 +97,14 @@ const ProjectPage = () => {
     });
 
     socket.on("build_created", function (build: Build) {
-      // console.log(build)
       addBuild(buildDispatch, build);
     });
 
     socket.on("testRun_created", function (testRun: TestRun) {
-      // console.log(testRun)
+      console.log(selectedBuildId)
+      if (testRun.buildId === selectedBuildId) {
+        addTestRun(testRunDispatch, testRun);
+      }
     });
     // eslint-disable-next-line
   }, []);
@@ -112,15 +123,10 @@ const ProjectPage = () => {
 
   useEffect(() => {
     const queryParams = getQueryParams(location.search);
-    if (queryParams.testId) {
-      setSelectedTestId(queryParams.testId);
-      const index = testRuns.findIndex((t) => t.id === queryParams.testId);
-      setSelectedTestRunIndex(index);
-    } else {
-      setSelectedTestId(undefined);
-      setSelectedTestRunIndex(undefined);
+    if (!selectedTestRunId && queryParams.testId) {
+      selectTestRun(testRunDispatch, queryParams.testId);
     }
-  }, [location.search, testRuns]);
+  }, [location.search, testRuns, selectedTestRunId, testRunDispatch]);
 
   useEffect(() => {
     if (projectId) {
@@ -130,11 +136,9 @@ const ProjectPage = () => {
 
   useEffect(() => {
     if (selectedBuildId) {
-      testRunService.getList(selectedBuildId).then((testRuns) => {
-        setTestRuns(testRuns);
-      });
+      getTestRunList(testRunDispatch, selectedBuildId);
     }
-  }, [selectedBuildId]);
+  }, [selectedBuildId, testRunDispatch]);
 
   useEffect(() => {
     setFilteredTestRuns(
@@ -149,16 +153,6 @@ const ProjectPage = () => {
       )
     );
   }, [query, os, device, browser, viewport, testStatus, testRuns]);
-
-  const updateTestRun = (testRun: TestRun) => {
-    const updated = testRuns.map((t) => {
-      if (t.id === testRun.id) {
-        return testRun;
-      }
-      return t;
-    });
-    setTestRuns(updated);
-  };
 
   return (
     <Grid container>
@@ -189,24 +183,11 @@ const ProjectPage = () => {
             </Box>
           </Grid>
           <Grid item className={classes.testRunContainer}>
-            <TestRunList
-              items={filteredTestRuns}
-              selectedId={selectedTestdId}
-              handleRemove={(id: string) =>
-                testRunService.remove(id).then((isRemoved) => {
-                  if (isRemoved) {
-                    setTestRuns(testRuns.filter((item) => item.id !== id));
-                  }
-                })
-              }
-            />
+            <TestRunList items={filteredTestRuns} />
             {selectedTestRunIndex !== undefined &&
               testRuns[selectedTestRunIndex] && (
                 <Dialog open={true} fullScreen className={classes.modal}>
-                  <TestDetailsModal
-                    testRun={testRuns[selectedTestRunIndex]}
-                    updateTestRun={updateTestRun}
-                  />
+                  <TestDetailsModal testRun={testRuns[selectedTestRunIndex]} />
                   {selectedTestRunIndex + 1 < testRuns.length && (
                     <IconButton
                       color="secondary"
@@ -217,6 +198,7 @@ const ProjectPage = () => {
                       onClick={() => {
                         const next = testRuns[selectedTestRunIndex + 1];
                         history.push(buildTestRunLocation(next));
+                        selectTestRun(testRunDispatch, next.id);
                       }}
                     >
                       <NavigateNext className={classes.icon} />
@@ -232,6 +214,7 @@ const ProjectPage = () => {
                       onClick={() => {
                         const prev = testRuns[selectedTestRunIndex - 1];
                         history.push(buildTestRunLocation(prev));
+                        selectTestRun(testRunDispatch, prev.id);
                       }}
                     >
                       <NavigateBefore className={classes.icon} />

@@ -5,6 +5,7 @@ import { AuthProvider } from "./contexts/auth.context";
 import { ProjectProvider } from "./contexts/project.context";
 import Router from "./Router";
 import { BuildProvider } from "./contexts/build.context";
+import { TestRunProvider } from "./contexts/testRun.context";
 
 function App() {
   return (
@@ -12,8 +13,10 @@ function App() {
       <AuthProvider>
         <ProjectProvider>
           <BuildProvider>
-            <Header />
-            <Router />
+            <TestRunProvider>
+              <Header />
+              <Router />
+            </TestRunProvider>
           </BuildProvider>
         </ProjectProvider>
       </AuthProvider>
