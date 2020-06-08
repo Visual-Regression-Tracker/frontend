@@ -19,7 +19,7 @@ import {
   useBuildDispatch,
   deleteBuild,
   selectBuild,
-} from "../contexts/build.context";
+} from "../contexts";
 import { BuildStatusChip } from "./BuildStatusChip";
 
 const useStyles = makeStyles((theme: Theme) =>

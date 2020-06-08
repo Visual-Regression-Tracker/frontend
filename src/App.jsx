@@ -1,11 +1,13 @@
 import React from "react";
 import "./App.css";
 import Header from "./components/Header";
-import { AuthProvider } from "./contexts/auth.context";
-import { ProjectProvider } from "./contexts/project.context";
+import {
+  AuthProvider,
+  ProjectProvider,
+  BuildProvider,
+  TestRunProvider,
+} from "./contexts";
 import Router from "./Router";
-import { BuildProvider } from "./contexts/build.context";
-import { TestRunProvider } from "./contexts/testRun.context";
 
 function App() {
   return (

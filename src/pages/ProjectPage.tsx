@@ -23,15 +23,13 @@ import {
   getBuildList,
   addBuild,
   selectBuild,
-} from "../contexts/build.context";
-import socketIOClient from "socket.io-client";
-import {
   useTestRunState,
   addTestRun,
   useTestRunDispatch,
   selectTestRun,
   getTestRunList,
-} from "../contexts/testRun.context";
+} from "../contexts";
+import socketIOClient from "socket.io-client";
 
 const getQueryParams = (guery: string) => {
   const queryParams = qs.parse(guery, { ignoreQueryPrefix: true });
@@ -81,6 +79,8 @@ const ProjectPage = () => {
   } = useTestRunState();
   const testRunDispatch = useTestRunDispatch();
 
+  const [socket, setSocket] = React.useState<SocketIOClient.Socket>();
+
   // filter
   const [query, setQuery] = React.useState("");
   const [os, setOs] = React.useState("");
@@ -90,43 +90,28 @@ const ProjectPage = () => {
   const [testStatus, setTestStatus] = React.useState("");
   const [filteredTestRuns, setFilteredTestRuns] = React.useState<TestRun[]>([]);
 
+  // init socket connection
   useEffect(() => {
     const socket = socketIOClient("http://127.0.0.1:4201");
-    socket.on("connect", (data: string) => {
-      console.log("Socket connected");
-    });
-
-    socket.on("build_created", function (build: Build) {
-      addBuild(buildDispatch, build);
-    });
-
-    socket.on("testRun_created", function (testRun: TestRun) {
-      console.log(selectedBuildId)
-      if (testRun.buildId === selectedBuildId) {
-        addTestRun(testRunDispatch, testRun);
-      }
-    });
-    // eslint-disable-next-line
+    setSocket(socket);
   }, []);
 
+  // subscribe on socket events
   useEffect(() => {
-    const queryParams = getQueryParams(location.search);
-    if (!selectedBuildId) {
-      if (queryParams.buildId) {
-        selectBuild(buildDispatch, queryParams.buildId);
-      } else if (buildList.length > 0) {
-        selectBuild(buildDispatch, buildList[0].id);
-      }
-    }
-    // eslint-disable-next-line
-  }, []);
+    if (socket) {
+      socket.removeAllListeners();
 
-  useEffect(() => {
-    const queryParams = getQueryParams(location.search);
-    if (!selectedTestRunId && queryParams.testId) {
-      selectTestRun(testRunDispatch, queryParams.testId);
+      socket.on("build_created", function (build: Build) {
+        addBuild(buildDispatch, build);
+      });
+
+      socket.on(`testRun_created`, function (testRun: TestRun) {
+        if (testRun.buildId === selectedBuildId) {
+          addTestRun(testRunDispatch, testRun);
+        }
+      });
     }
-  }, [location.search, testRuns, selectedTestRunId, testRunDispatch]);
+  }, [socket, selectedBuildId, buildDispatch, testRunDispatch]);
 
   useEffect(() => {
     if (projectId) {
@@ -139,6 +124,24 @@ const ProjectPage = () => {
       getTestRunList(testRunDispatch, selectedBuildId);
     }
   }, [selectedBuildId, testRunDispatch]);
+
+  useEffect(() => {
+    const queryParams = getQueryParams(location.search);
+    if (!selectedBuildId) {
+      if (queryParams.buildId) {
+        selectBuild(buildDispatch, queryParams.buildId);
+      } else if (buildList.length > 0) {
+        selectBuild(buildDispatch, buildList[0].id);
+      }
+    }
+  }, [buildDispatch, buildList, location.search, selectedBuildId]);
+
+  useEffect(() => {
+    const queryParams = getQueryParams(location.search);
+    if (!selectedTestRunId && queryParams.testId) {
+      selectTestRun(testRunDispatch, queryParams.testId);
+    }
+  }, [location.search, testRuns, selectedTestRunId, testRunDispatch]);
 
   useEffect(() => {
     setFilteredTestRuns(

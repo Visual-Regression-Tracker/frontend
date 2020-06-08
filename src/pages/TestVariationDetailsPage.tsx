@@ -1,5 +1,5 @@
 import React from "react";
-import { useParams, Link } from "react-router-dom";
+import { useParams, useHistory } from "react-router-dom";
 import { TestVariation } from "../types";
 import { testVariationService, staticService } from "../services";
 import {
@@ -14,7 +14,12 @@ import {
 } from "@material-ui/core";
 import { buildTestRunUrl } from "../_helpers/route.helpers";
 import { TestVariationDetails } from "../components/TestVariationDetails";
-import { selectBuild, useBuildDispatch } from "../contexts/build.context";
+import {
+  selectBuild,
+  useBuildDispatch,
+  useTestRunDispatch,
+  selectTestRun,
+} from "../contexts";
 
 const useStyles = makeStyles({
   media: {
@@ -25,7 +30,9 @@ const useStyles = makeStyles({
 
 const TestVariationDetailsPage: React.FunctionComponent = () => {
   const classes = useStyles();
+  const history = useHistory();
   const buildDispatch = useBuildDispatch();
+  const testRunDispatch = useTestRunDispatch();
   const { testVariationId } = useParams();
   const [testVariation, setTestVariation] = React.useState<TestVariation>();
 
@@ -52,17 +59,20 @@ const TestVariationDetailsPage: React.FunctionComponent = () => {
                     <CardActions>
                       <Button
                         color="primary"
-                        component={Link}
                         disabled={!baseline.testRun}
-                        onClick={() =>
-                          baseline.testRun &&
-                          selectBuild(buildDispatch, baseline.testRun.buildId)
-                        }
-                        to={
-                          baseline.testRun
-                            ? buildTestRunUrl(testVariation, baseline.testRun)
-                            : ""
-                        }
+                        onClick={() => {
+                          if (baseline.testRun) {
+                            selectBuild(
+                              buildDispatch,
+                              baseline.testRun.buildId
+                            );
+                            selectTestRun(testRunDispatch, baseline.testRun.id);
+
+                            history.push(
+                              buildTestRunUrl(testVariation, baseline.testRun)
+                            );
+                          }
+                        }}
                       >
                         {baseline.createdAt}
                       </Button>

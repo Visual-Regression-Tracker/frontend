@@ -21,7 +21,7 @@ import {
   useTestRunDispatch,
   deleteTestRun,
   selectTestRun,
-} from "../contexts/testRun.context";
+} from "../contexts";
 
 const TestRunList: React.FunctionComponent<{
   items: TestRun[];

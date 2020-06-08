@@ -41,7 +41,7 @@ import {
   useTestRunDispatch,
   updateTestRun,
   selectTestRun,
-} from "../contexts/testRun.context";
+} from "../contexts";
 
 const useStyles = makeStyles((theme) => ({
   imageContainer: {
@@ -366,14 +366,13 @@ const TestDetailsModal: React.FunctionComponent<{
                 <ImageDetails type="Diff" imageName={testRun.diffName} />
               </Grid>
               {testRun.diffName ? (
-                <Grid
-                  item
-                  className={classes.canvasBackground}
-                  style={{
-                    height: diff && diff?.height * stageScale,
-                  }}
-                >
-                  <div className={classes.canvasContainer}>
+                <Grid item className={classes.canvasBackground}>
+                  <div
+                    className={classes.canvasContainer}
+                    style={{
+                      height: diff && diff?.height * stageScale,
+                    }}
+                  >
                     <DrawArea
                       image={diff}
                       ignoreAreas={ignoreAreas}

@@ -13,7 +13,7 @@ import {
   useAuthState,
   useAuthDispatch,
   logout,
-} from "../contexts/auth.context";
+} from "../contexts";
 import { routes } from "../constants";
 
 const Header: FunctionComponent = () => {

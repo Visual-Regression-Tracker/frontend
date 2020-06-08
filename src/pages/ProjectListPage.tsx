@@ -23,7 +23,7 @@ import {
   getProjectList,
   deleteProject,
   createProject,
-} from "../contexts/project.context";
+} from "../contexts";
 import { Link } from "react-router-dom";
 import { Delete, Add } from "@material-ui/icons";
 import { routes } from "../constants";
