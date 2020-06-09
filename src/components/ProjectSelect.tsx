@@ -1,6 +1,6 @@
 import React, { FunctionComponent } from "react";
 import { MenuItem, Select } from "@material-ui/core";
-import { useProjectState } from "../contexts/project.context";
+import { useProjectState } from "../contexts";
 import { useHistory } from "react-router-dom";
 
 const ProjectSelect: FunctionComponent<{

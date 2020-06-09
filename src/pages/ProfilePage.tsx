@@ -12,7 +12,7 @@ import {
   useAuthState,
   useAuthDispatch,
   update,
-} from "../contexts/auth.context";
+} from "../contexts";
 import { usersService } from "../services";
 
 const ProfilePage = () => {

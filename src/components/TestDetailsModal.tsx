@@ -37,7 +37,11 @@ import { TestRunDetails } from "./TestRunDetails";
 import useImage from "use-image";
 import { routes } from "../constants";
 import { NoImagePlaceholder } from "./NoImageAvailable";
-import { useBuildDispatch, updateBuild } from "../contexts/build.context";
+import {
+  useTestRunDispatch,
+  updateTestRun,
+  selectTestRun,
+} from "../contexts";
 
 const useStyles = makeStyles((theme) => ({
   imageContainer: {
@@ -62,11 +66,10 @@ const defaultStagePos = {
 
 const TestDetailsModal: React.FunctionComponent<{
   testRun: TestRun;
-  updateTestRun: (testRun: TestRun) => void;
-}> = ({ testRun, updateTestRun }) => {
+}> = ({ testRun }) => {
   const classes = useStyles();
   const history = useHistory();
-  const buildDispatch = useBuildDispatch();
+  const testRunDispatch = useTestRunDispatch();
 
   const stageWidth = (window.innerWidth / 2) * 0.9;
   const stageHeigth = window.innerHeight;
@@ -110,6 +113,7 @@ const TestDetailsModal: React.FunctionComponent<{
     history.push({
       search: `buildId=${testRun.buildId}`,
     });
+    selectTestRun(testRunDispatch, undefined);
   };
 
   const isIgnoreAreasSaved = () => {
@@ -173,8 +177,7 @@ const TestDetailsModal: React.FunctionComponent<{
                   color="inherit"
                   onClick={() =>
                     testRunService.approve(testRun.id).then((testRun) => {
-                      updateTestRun(testRun);
-                      updateBuild(buildDispatch, testRun);
+                      updateTestRun(testRunDispatch, testRun);
                     })
                   }
                 >
@@ -184,8 +187,7 @@ const TestDetailsModal: React.FunctionComponent<{
                   color="secondary"
                   onClick={() =>
                     testRunService.reject(testRun.id).then((testRun) => {
-                      updateTestRun(testRun);
-                      updateBuild(buildDispatch, testRun);
+                      updateTestRun(testRunDispatch, testRun);
                     })
                   }
                 >
@@ -253,7 +255,9 @@ const TestDetailsModal: React.FunctionComponent<{
                           // recalculate diff
                           testRunService
                             .recalculateDiff(testRun.id)
-                            .then((testRun) => updateTestRun(testRun))
+                            .then((testRun) =>
+                              updateTestRun(testRunDispatch, testRun)
+                            )
                         );
 
                       // update in variation
@@ -362,14 +366,13 @@ const TestDetailsModal: React.FunctionComponent<{
                 <ImageDetails type="Diff" imageName={testRun.diffName} />
               </Grid>
               {testRun.diffName ? (
-                <Grid
-                  item
-                  className={classes.canvasBackground}
-                  style={{
-                    height: diff && diff?.height * stageScale,
-                  }}
-                >
-                  <div className={classes.canvasContainer}>
+                <Grid item className={classes.canvasBackground}>
+                  <div
+                    className={classes.canvasContainer}
+                    style={{
+                      height: diff && diff?.height * stageScale,
+                    }}
+                  >
                     <DrawArea
                       image={diff}
                       ignoreAreas={ignoreAreas}

@@ -16,12 +16,18 @@ import { useHistory } from "react-router-dom";
 import { TestRun } from "../types";
 import TestStatusChip from "./TestStatusChip";
 import { buildTestRunLocation } from "../_helpers/route.helpers";
+import {
+  useTestRunState,
+  useTestRunDispatch,
+  deleteTestRun,
+  selectTestRun,
+} from "../contexts";
 
 const TestRunList: React.FunctionComponent<{
   items: TestRun[];
-  selectedId: string | undefined;
-  handleRemove: (id: string) => {};
-}> = ({ items, selectedId, handleRemove }) => {
+}> = ({ items }) => {
+  const { selectedTestRunId } = useTestRunState();
+  const testRunDispatch = useTestRunDispatch();
   const history = useHistory();
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
   const [selectedTestRun, setSelectedTestRun] = React.useState<
@@ -58,10 +64,15 @@ const TestRunList: React.FunctionComponent<{
           </TableHead>
           <TableBody>
             {items.map((test) => (
-              <TableRow key={test.id} hover selected={test.id === selectedId}>
+              <TableRow
+                key={test.id}
+                hover
+                selected={test.id === selectedTestRunId}
+              >
                 <TableCell
                   onClick={() => {
                     history.push(buildTestRunLocation(test));
+                    selectTestRun(testRunDispatch, test.id)
                   }}
                 >
                   <Typography>{test.name}</Typography>
@@ -107,7 +118,7 @@ const TestRunList: React.FunctionComponent<{
           </MenuItem>
           <MenuItem
             onClick={() => {
-              handleRemove(selectedTestRun.id);
+              deleteTestRun(testRunDispatch, selectedTestRun.id);
               handleClose();
             }}
           >

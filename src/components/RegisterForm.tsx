@@ -7,7 +7,7 @@ import {
   CardContent,
   CardActions,
 } from "@material-ui/core";
-import { useAuthDispatch, login } from "../contexts/auth.context";
+import { useAuthDispatch, login } from "../contexts";
 import { usersService } from "../services";
 
 const RegisterForm = () => {

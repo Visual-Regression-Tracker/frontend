@@ -2,7 +2,7 @@ import React, { useEffect } from "react";
 import { Grid } from "@material-ui/core";
 import RegisterForm from "../components/RegisterForm";
 import { useHistory } from "react-router-dom";
-import { useAuthState } from "../contexts/auth.context";
+import { useAuthState } from "../contexts";
 import { routes } from "../constants";
 
 const RegisterPage = () => {

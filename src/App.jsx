@@ -1,10 +1,14 @@
 import React from "react";
 import "./App.css";
 import Header from "./components/Header";
-import { AuthProvider } from "./contexts/auth.context";
-import { ProjectProvider } from "./contexts/project.context";
+import {
+  AuthProvider,
+  ProjectProvider,
+  BuildProvider,
+  TestRunProvider,
+} from "./contexts";
 import Router from "./Router";
-import { BuildProvider } from "./contexts/build.context";
+import { SocketProvider } from "./contexts/socket.context";
 
 function App() {
   return (
@@ -12,8 +16,12 @@ function App() {
       <AuthProvider>
         <ProjectProvider>
           <BuildProvider>
-            <Header />
-            <Router />
+            <TestRunProvider>
+              <SocketProvider>
+                <Header />
+                <Router />
+              </SocketProvider>
+            </TestRunProvider>
           </BuildProvider>
         </ProjectProvider>
       </AuthProvider>

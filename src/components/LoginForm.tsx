@@ -9,7 +9,7 @@ import {
   CardActions,
   Typography,
 } from "@material-ui/core";
-import { useAuthDispatch, login } from "../contexts/auth.context";
+import { useAuthDispatch, login } from "../contexts";
 import { routes } from "../constants";
 
 const LoginForm = () => {
