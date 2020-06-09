@@ -91,9 +91,14 @@ function useSocketDispatch() {
 }
 
 function connect(dispatch: Dispatch) {
-  const socket = socketIOClient("http://127.0.0.1:4201");
-  dispatch({ type: "connect", payload: socket });
-  console.log("Socket connected");
+  const apiUrl = process.env.REACT_APP_API_URL;
+  if (apiUrl) {
+    const socket = socketIOClient(apiUrl);
+    dispatch({ type: "connect", payload: socket });
+    console.log("Socket connected");
+  } else {
+    console.log("API url is not provided: " + apiUrl);
+  }
 }
 
 export { SocketProvider, useSocketState, useSocketDispatch, connect };
