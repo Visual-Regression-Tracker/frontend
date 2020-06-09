@@ -8,7 +8,7 @@ import {
   makeStyles,
 } from "@material-ui/core";
 import { useParams, useLocation, useHistory } from "react-router-dom";
-import { TestRun, Build } from "../types";
+import { TestRun } from "../types";
 import BuildList from "../components/BuildList";
 import ProjectSelect from "../components/ProjectSelect";
 import qs from "qs";
@@ -21,15 +21,12 @@ import {
   useBuildState,
   useBuildDispatch,
   getBuildList,
-  addBuild,
   selectBuild,
   useTestRunState,
-  addTestRun,
   useTestRunDispatch,
   selectTestRun,
   getTestRunList,
 } from "../contexts";
-import socketIOClient from "socket.io-client";
 
 const getQueryParams = (guery: string) => {
   const queryParams = qs.parse(guery, { ignoreQueryPrefix: true });
@@ -79,8 +76,6 @@ const ProjectPage = () => {
   } = useTestRunState();
   const testRunDispatch = useTestRunDispatch();
 
-  const [socket, setSocket] = React.useState<SocketIOClient.Socket>();
-
   // filter
   const [query, setQuery] = React.useState("");
   const [os, setOs] = React.useState("");
@@ -89,29 +84,6 @@ const ProjectPage = () => {
   const [viewport, setViewport] = React.useState("");
   const [testStatus, setTestStatus] = React.useState("");
   const [filteredTestRuns, setFilteredTestRuns] = React.useState<TestRun[]>([]);
-
-  // init socket connection
-  useEffect(() => {
-    const socket = socketIOClient("http://127.0.0.1:4201");
-    setSocket(socket);
-  }, []);
-
-  // subscribe on socket events
-  useEffect(() => {
-    if (socket) {
-      socket.removeAllListeners();
-
-      socket.on("build_created", function (build: Build) {
-        addBuild(buildDispatch, build);
-      });
-
-      socket.on(`testRun_created`, function (testRun: TestRun) {
-        if (testRun.buildId === selectedBuildId) {
-          addTestRun(testRunDispatch, testRun);
-        }
-      });
-    }
-  }, [socket, selectedBuildId, buildDispatch, testRunDispatch]);
 
   useEffect(() => {
     if (projectId) {

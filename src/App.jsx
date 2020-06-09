@@ -8,6 +8,7 @@ import {
   TestRunProvider,
 } from "./contexts";
 import Router from "./Router";
+import { SocketProvider } from "./contexts/socket.context";
 
 function App() {
   return (
@@ -16,8 +17,10 @@ function App() {
         <ProjectProvider>
           <BuildProvider>
             <TestRunProvider>
-              <Header />
-              <Router />
+              <SocketProvider>
+                <Header />
+                <Router />
+              </SocketProvider>
             </TestRunProvider>
           </BuildProvider>
         </ProjectProvider>
