@@ -147,7 +147,7 @@ const ProjectPage = () => {
           <Grid item>
             <Box m={2}>
               <Filters
-                testRuns={testRuns}
+                items={testRuns}
                 queryState={[query, setQuery]}
                 osState={[os, setOs]}
                 deviceState={[device, setDevice]}

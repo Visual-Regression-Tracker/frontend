@@ -9,20 +9,20 @@ import {
   InputLabel,
 } from "@material-ui/core";
 import { Clear } from "@material-ui/icons";
-import { TestRun } from "../types";
+import { TestRun, TestVariation } from "../types";
 
 interface IProps {
-  testRuns: TestRun[];
+  items: (TestRun | TestVariation)[];
   queryState: [string, React.Dispatch<React.SetStateAction<string>>];
   osState: [string, React.Dispatch<React.SetStateAction<string>>];
   deviceState: [string, React.Dispatch<React.SetStateAction<string>>];
   browserState: [string, React.Dispatch<React.SetStateAction<string>>];
   viewportState: [string, React.Dispatch<React.SetStateAction<string>>];
-  testStatusState: [string, React.Dispatch<React.SetStateAction<string>>];
+  testStatusState?: [string, React.Dispatch<React.SetStateAction<string>>];
 }
 
 const Filters: React.FunctionComponent<IProps> = ({
-  testRuns,
+  items,
   queryState,
   osState,
   deviceState,
@@ -35,27 +35,31 @@ const Filters: React.FunctionComponent<IProps> = ({
   const [device, setDevice] = deviceState;
   const [browser, setBrowser] = browserState;
   const [viewport, setViewport] = viewportState;
-  const [testStatus, setTestStatus] = testStatusState;
+  const [testStatus, setTestStatus] = testStatusState
+    ? testStatusState
+    : [null, () => {}];
 
-  const osList = testRuns
+  const osList = items
     .map((t) => t.os)
     .filter((v, i, array) => v && array.indexOf(v) === i);
 
-  const deviceList = testRuns
+  const deviceList = items
     .map((t) => t.device)
     .filter((v, i, array) => v && array.indexOf(v) === i);
 
-  const browserList = testRuns
+  const browserList = items
     .map((t) => t.browser)
     .filter((v, i, array) => v && array.indexOf(v) === i);
 
-  const viewportList = testRuns
+  const viewportList = items
     .map((t) => t.viewport)
     .filter((v, i, array) => v && array.indexOf(v) === i);
 
-  const testStatusList = testRuns
-    .map((t) => t.status)
-    .filter((v, i, array) => v && array.indexOf(v) === i);
+  const testStatusList =
+    items.some((i) => (i as TestRun).status) &&
+    (items as TestRun[])
+      .map((t) => t.status)
+      .filter((v, i, array) => v && array.indexOf(v) === i);
 
   return (
     <React.Fragment>
@@ -171,7 +175,7 @@ const Filters: React.FunctionComponent<IProps> = ({
             </FormControl>
           </Grid>
         )}
-        {testStatusList.length > 0 && (
+        {testStatusList && testStatusList.length > 0 && (
           <Grid item xs>
             <FormControl fullWidth>
               <InputLabel shrink id="filter_testStatus">
