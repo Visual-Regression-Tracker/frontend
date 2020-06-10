@@ -5,7 +5,7 @@ import { TestVariation } from "../types";
 import { testVariationService } from "../services";
 import { Container, Box, Grid, Typography } from "@material-ui/core";
 import ProjectSelect from "../components/ProjectSelect";
-import { TestVariationFilters } from "../components/TestVariationFilters";
+import Filters from "../components/Filters";
 
 const TestVariationListPage: React.FunctionComponent = () => {
   const { projectId } = useParams();
@@ -53,7 +53,7 @@ const TestVariationListPage: React.FunctionComponent = () => {
             </Grid>
             <Grid item>
               <Box m={2}>
-                <TestVariationFilters
+                <Filters
                   items={testVariations}
                   queryState={[query, setQuery]}
                   osState={[os, setOs]}
