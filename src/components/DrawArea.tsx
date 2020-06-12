@@ -52,11 +52,10 @@ const DrawArea: FunctionComponent<IDrawArea> = ({
   const handleContentMousedown = (e: any) => {
     if (!isDrawMode) return;
 
-    // and set isDrawing to true
     const newArea: IgnoreArea = {
       id: Date.now().toString(),
-      x: e.evt.layerX / stageScale,
-      y: e.evt.layerY / stageScale,
+      x: (e.evt.layerX - stageOffset.x) / stageScale,
+      y: (e.evt.layerY - stageOffset.y) / stageScale,
       width: MIN_RECT_SIDE_PIXEL,
       height: MIN_RECT_SIDE_PIXEL,
     };
@@ -77,8 +76,8 @@ const DrawArea: FunctionComponent<IDrawArea> = ({
 
     if (isDrawing) {
       // update the current rectangle's width and height based on the mouse position + stage scale
-      const mouseX = e.evt.layerX / stageScale;
-      const mouseY = e.evt.layerY / stageScale;
+      const mouseX = (e.evt.layerX - stageOffset.x) / stageScale;
+      const mouseY = (e.evt.layerY - stageOffset.y) / stageScale;
 
       const newShapesList = ignoreAreas.map((i) => {
         if (i.id === selectedRectId) {

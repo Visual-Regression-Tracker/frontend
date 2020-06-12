@@ -218,6 +218,7 @@ const TestDetailsModal: React.FunctionComponent<{
                 </Grid>
                 <Grid item>
                   <ToggleButton
+                    value={"drawMode"}
                     selected={isDrawMode}
                     onClick={() => {
                       setIsDrawMode(!isDrawMode);
