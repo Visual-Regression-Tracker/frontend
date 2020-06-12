@@ -54,8 +54,8 @@ const DrawArea: FunctionComponent<IDrawArea> = ({
 
     const newArea: IgnoreArea = {
       id: Date.now().toString(),
-      x: (e.evt.layerX - stageOffset.x) / stageScale,
-      y: (e.evt.layerY - stageOffset.y) / stageScale,
+      x: Math.round((e.evt.layerX - stageOffset.x) / stageScale),
+      y: Math.round((e.evt.layerY - stageOffset.y) / stageScale),
       width: MIN_RECT_SIDE_PIXEL,
       height: MIN_RECT_SIDE_PIXEL,
     };
@@ -82,8 +82,8 @@ const DrawArea: FunctionComponent<IDrawArea> = ({
       const newShapesList = ignoreAreas.map((i) => {
         if (i.id === selectedRectId) {
           // new width and height
-          i.width = Math.max(mouseX - i.x, MIN_RECT_SIDE_PIXEL);
-          i.height = Math.max(mouseY - i.y, MIN_RECT_SIDE_PIXEL);
+          i.width = Math.max(Math.round(mouseX - i.x), MIN_RECT_SIDE_PIXEL);
+          i.height = Math.max(Math.round(mouseY - i.y), MIN_RECT_SIDE_PIXEL);
           return i;
         }
         return i;
