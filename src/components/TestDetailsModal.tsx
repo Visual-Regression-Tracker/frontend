@@ -11,6 +11,7 @@ import {
   Box,
   makeStyles,
 } from "@material-ui/core";
+import { ToggleButton } from "@material-ui/lab";
 import { TestRun } from "../types";
 import {
   testRunService,
@@ -37,11 +38,7 @@ import { TestRunDetails } from "./TestRunDetails";
 import useImage from "use-image";
 import { routes } from "../constants";
 import { NoImagePlaceholder } from "./NoImageAvailable";
-import {
-  useTestRunDispatch,
-  updateTestRun,
-  selectTestRun,
-} from "../contexts";
+import { useTestRunDispatch, updateTestRun, selectTestRun } from "../contexts";
 
 const useStyles = makeStyles((theme) => ({
   imageContainer: {
@@ -89,6 +86,7 @@ const TestDetailsModal: React.FunctionComponent<{
     testRun.diffName && staticService.getImage(testRun.diffName)
   );
 
+  const [isDrawMode, setIsDrawMode] = useState(false);
   const [isDiffShown, setIsDiffShown] = useState(false);
   const [selectedRectId, setSelectedRectId] = React.useState<string>();
 
@@ -219,20 +217,14 @@ const TestDetailsModal: React.FunctionComponent<{
                   </Typography>
                 </Grid>
                 <Grid item>
-                  <IconButton
+                  <ToggleButton
+                    selected={isDrawMode}
                     onClick={() => {
-                      const newArea: IgnoreArea = {
-                        id: Date.now().toString(),
-                        x: 0,
-                        y: 0,
-                        width: 150,
-                        height: 100,
-                      };
-                      setIgnoreAreas([...ignoreAreas, newArea]);
+                      setIsDrawMode(!isDrawMode);
                     }}
                   >
                     <Add />
-                  </IconButton>
+                  </ToggleButton>
                 </Grid>
                 <Grid item>
                   <IconButton
@@ -351,6 +343,7 @@ const TestDetailsModal: React.FunctionComponent<{
                     stagePosState={[stagePos, setStagePos]}
                     stageInitPosState={[stageInitPos, setStageInitPos]}
                     stageOffsetState={[stageOffset, setStageOffset]}
+                    drawModeState={[isDrawMode, setIsDrawMode]}
                   />
                 </div>
               </Grid>
@@ -384,6 +377,7 @@ const TestDetailsModal: React.FunctionComponent<{
                       stagePosState={[stagePos, setStagePos]}
                       stageInitPosState={[stageInitPos, setStageInitPos]}
                       stageOffsetState={[stageOffset, setStageOffset]}
+                      drawModeState={[isDrawMode, setIsDrawMode]}
                     />
                   </div>
                 </Grid>
@@ -415,6 +409,7 @@ const TestDetailsModal: React.FunctionComponent<{
                       stagePosState={[stagePos, setStagePos]}
                       stageInitPosState={[stageInitPos, setStageInitPos]}
                       stageOffsetState={[stageOffset, setStageOffset]}
+                      drawModeState={[isDrawMode, setIsDrawMode]}
                     />
                   </div>
                 </Grid>
