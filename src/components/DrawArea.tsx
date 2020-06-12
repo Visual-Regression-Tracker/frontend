@@ -1,7 +1,7 @@
 import React, { FunctionComponent } from "react";
 import { Stage, Layer, Image } from "react-konva";
 import { RectConfig } from "konva/types/shapes/Rect";
-import Rectangle from "./Rectangle";
+import Rectangle, { MIN_RECT_SIDE_PIXEL } from "./Rectangle";
 import { KonvaEventObject } from "konva/types/Node";
 import { IgnoreArea } from "../types/ignoreArea";
 
@@ -25,6 +25,7 @@ interface IDrawArea {
     React.Dispatch<React.SetStateAction<{ x: number; y: number }>>
   ];
   stageScaleState: [number, React.Dispatch<React.SetStateAction<number>>];
+  drawModeState: [boolean, React.Dispatch<React.SetStateAction<boolean>>];
 }
 const DrawArea: FunctionComponent<IDrawArea> = ({
   image,
@@ -37,6 +38,7 @@ const DrawArea: FunctionComponent<IDrawArea> = ({
   stageOffsetState,
   stageInitPosState,
   stagePosState,
+  drawModeState,
 }) => {
   const [stageInitPos, setStageInitPos] = stageInitPosState;
   const [stageOffset, setStageOffset] = stageOffsetState;
@@ -44,13 +46,59 @@ const DrawArea: FunctionComponent<IDrawArea> = ({
   const [stageScale] = stageScaleState;
   const [isDrag, setIsDrag] = React.useState(false);
 
+  const [isDrawMode, setIsDrawMode] = drawModeState;
+  const [isDrawing, setIsDrawing] = React.useState(isDrawMode);
+
+  const handleContentMousedown = (e: any) => {
+    if (!isDrawMode) return;
+
+    const newArea: IgnoreArea = {
+      id: Date.now().toString(),
+      x: Math.round((e.evt.layerX - stageOffset.x) / stageScale),
+      y: Math.round((e.evt.layerY - stageOffset.y) / stageScale),
+      width: MIN_RECT_SIDE_PIXEL,
+      height: MIN_RECT_SIDE_PIXEL,
+    };
+    setIgnoreAreas([...ignoreAreas, newArea]);
+    setSelectedRectId(newArea.id);
+    setIsDrawing(true);
+  };
+
+  const handleContentMouseup = (e: any) => {
+    if (isDrawing) {
+      setIsDrawing(!isDrawing);
+      setIsDrawMode(false);
+    }
+  };
+
+  const handleContentMouseMove = (e: any) => {
+    if (!isDrawMode) return;
+
+    if (isDrawing) {
+      // update the current rectangle's width and height based on the mouse position + stage scale
+      const mouseX = (e.evt.layerX - stageOffset.x) / stageScale;
+      const mouseY = (e.evt.layerY - stageOffset.y) / stageScale;
+
+      const newShapesList = ignoreAreas.map((i) => {
+        if (i.id === selectedRectId) {
+          // new width and height
+          i.width = Math.max(Math.round(mouseX - i.x), MIN_RECT_SIDE_PIXEL);
+          i.height = Math.max(Math.round(mouseY - i.y), MIN_RECT_SIDE_PIXEL);
+          return i;
+        }
+        return i;
+      });
+      setIgnoreAreas(newShapesList);
+    }
+  };
+
   return (
     <div
       style={{
         transform: `translate3d(${stagePos.x}px, ${stagePos.y}px, 0px)`,
       }}
       onMouseMove={(event) => {
-        if (isDrag && !selectedRectId) {
+        if (!isDrawMode && isDrag && !selectedRectId) {
           event.preventDefault();
           setStagePos({
             x: event.clientX - stageInitPos.x,
@@ -83,12 +131,15 @@ const DrawArea: FunctionComponent<IDrawArea> = ({
           transform: `scale(${stageScale})`,
           transformOrigin: "top left",
         }}
+        onContentMousedown={handleContentMousedown}
+        onContentMouseup={handleContentMouseup}
+        onContentMouseMove={handleContentMouseMove}
       >
         <Layer>
           <Image
             image={image}
             onMouseOver={(event) => {
-              document.body.style.cursor = "grab";
+              document.body.style.cursor = isDrawMode ? "crosshair" : "grab";
             }}
             onMouseDown={(event) => {
               document.body.style.cursor = "grabbing";
@@ -117,8 +168,12 @@ const DrawArea: FunctionComponent<IDrawArea> = ({
 
                   rects[i].x = Math.round(newAttrs.x || 0);
                   rects[i].y = Math.round(newAttrs.y || 0);
-                  rects[i].width = Math.round(newAttrs.width || 0);
-                  rects[i].height = Math.round(newAttrs.height || 0);
+                  rects[i].width = Math.round(
+                    newAttrs.width || MIN_RECT_SIDE_PIXEL
+                  );
+                  rects[i].height = Math.round(
+                    newAttrs.height || MIN_RECT_SIDE_PIXEL
+                  );
 
                   setIgnoreAreas(rects);
                 }}

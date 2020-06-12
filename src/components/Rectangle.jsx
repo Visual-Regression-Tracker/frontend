@@ -1,6 +1,8 @@
 import React from "react";
 import { Rect, Transformer } from "react-konva";
 
+export const MIN_RECT_SIDE_PIXEL = 5;
+
 const Rectangle = ({ shapeProps, isSelected, onSelect, onChange }) => {
   const shapeRef = React.useRef();
   const trRef = React.useRef();
@@ -59,8 +61,8 @@ const Rectangle = ({ shapeProps, isSelected, onSelect, onChange }) => {
             x: node.x(),
             y: node.y(),
             // set minimal value
-            width: Math.max(5, node.width() * scaleX),
-            height: Math.max(node.height() * scaleY),
+            width: Math.max(MIN_RECT_SIDE_PIXEL, node.width() * scaleX),
+            height: Math.max(MIN_RECT_SIDE_PIXEL, node.height() * scaleY),
           });
         }}
         onMouseOver={(event) => {
@@ -82,7 +84,10 @@ const Rectangle = ({ shapeProps, isSelected, onSelect, onChange }) => {
           rotateEnabled={false}
           boundBoxFunc={(oldBox, newBox) => {
             // limit resize
-            if (newBox.width < 5 || newBox.height < 5) {
+            if (
+              newBox.width < MIN_RECT_SIDE_PIXEL ||
+              newBox.height < MIN_RECT_SIDE_PIXEL
+            ) {
               return oldBox;
             }
             return newBox;
