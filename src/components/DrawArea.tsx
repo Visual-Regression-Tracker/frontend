@@ -49,27 +49,27 @@ const DrawArea: FunctionComponent<IDrawArea> = ({
   const [isDrawMode, setIsDrawMode] = drawModeState;
   const [isDrawing, setIsDrawing] = React.useState(isDrawMode);
 
-  const handleContentClick = (e: any) => {
+  const handleContentMousedown = (e: any) => {
     if (!isDrawMode) return;
-    // if we are drawing a shape, a click finishes the drawing
-    if (isDrawing) {
-      setIsDrawing(!isDrawing);
-      setIsDrawMode(false);
-      return;
-    }
 
-    // otherwise, add a new rectangle at the mouse position with 0 width and height,
     // and set isDrawing to true
     const newArea: IgnoreArea = {
       id: Date.now().toString(),
       x: e.evt.layerX / stageScale,
       y: e.evt.layerY / stageScale,
-      width: 0,
-      height: 0,
+      width: MIN_RECT_SIDE_PIXEL,
+      height: MIN_RECT_SIDE_PIXEL,
     };
     setIgnoreAreas([...ignoreAreas, newArea]);
     setSelectedRectId(newArea.id);
     setIsDrawing(true);
+  };
+
+  const handleContentMouseup = (e: any) => {
+    if (isDrawing) {
+      setIsDrawing(!isDrawing);
+      setIsDrawMode(false);
+    }
   };
 
   const handleContentMouseMove = (e: any) => {
@@ -132,14 +132,15 @@ const DrawArea: FunctionComponent<IDrawArea> = ({
           transform: `scale(${stageScale})`,
           transformOrigin: "top left",
         }}
-        onContentMousedown={handleContentClick}
+        onContentMousedown={handleContentMousedown}
+        onContentMouseup={handleContentMouseup}
         onContentMouseMove={handleContentMouseMove}
       >
         <Layer>
           <Image
             image={image}
             onMouseOver={(event) => {
-              document.body.style.cursor = "grab";
+              document.body.style.cursor = isDrawMode ? "crosshair" : "grab";
             }}
             onMouseDown={(event) => {
               document.body.style.cursor = "grabbing";

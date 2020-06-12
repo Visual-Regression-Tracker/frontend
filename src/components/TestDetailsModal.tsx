@@ -343,7 +343,7 @@ const TestDetailsModal: React.FunctionComponent<{
                     stagePosState={[stagePos, setStagePos]}
                     stageInitPosState={[stageInitPos, setStageInitPos]}
                     stageOffsetState={[stageOffset, setStageOffset]}
-                    drawModeState={[isDrawMode, setIsDrawMode]}
+                    drawModeState={[false, setIsDrawMode]}
                   />
                 </div>
               </Grid>
