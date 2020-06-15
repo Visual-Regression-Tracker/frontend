@@ -18,9 +18,8 @@ import {
   testVariationService,
   staticService,
 } from "../services";
-import DrawArea from "./DrawArea";
 import { TestStatus } from "../types/testStatus";
-import { useHistory, Prompt, Link } from "react-router-dom";
+import { useHistory, Prompt } from "react-router-dom";
 import { IgnoreArea } from "../types/ignoreArea";
 import { KonvaEventObject } from "konva/types/Node";
 import {
@@ -33,26 +32,15 @@ import {
   Fullscreen,
   FullscreenExit,
 } from "@material-ui/icons";
-import ImageDetails from "./ImageDetails";
 import { TestRunDetails } from "./TestRunDetails";
 import useImage from "use-image";
 import { routes } from "../constants";
-import { NoImagePlaceholder } from "./NoImageAvailable";
 import { useTestRunDispatch, updateTestRun, selectTestRun } from "../contexts";
+import { DrawArea } from "./DrawArea";
 
 const useStyles = makeStyles((theme) => ({
   imageContainer: {
     overflow: "hidden",
-  },
-  canvasBackground: {
-    width: "100%",
-    backgroundColor: "#f5f5f5",
-  },
-  canvasContainer: {
-    overflow: "hidden",
-    backgroundColor: "white",
-    padding: theme.spacing(1),
-    margin: theme.spacing(0.5),
   },
 }));
 
@@ -76,14 +64,8 @@ const TestDetailsModal: React.FunctionComponent<{
   const [stageInitPos, setStageInitPos] = React.useState(defaultStagePos);
   const [stageOffset, setStageOffset] = React.useState(defaultStagePos);
 
-  const [baseline] = useImage(
-    testRun.baselineName && staticService.getImage(testRun.baselineName)
-  );
   const [image] = useImage(
     testRun.imageName && staticService.getImage(testRun.imageName)
-  );
-  const [diff] = useImage(
-    testRun.diffName && staticService.getImage(testRun.diffName)
   );
 
   const [isDrawMode, setIsDrawMode] = useState(false);
@@ -202,11 +184,23 @@ const TestDetailsModal: React.FunctionComponent<{
         </Toolbar>
       </AppBar>
       <Box m={1}>
-        <Grid container>
+        <Grid container spacing={2}>
           <Grid item>
             <Paper variant="outlined">
               <TestRunDetails testRun={testRun} />
             </Paper>
+          </Grid>
+          <Grid item>
+            <Button
+              color="primary"
+              onClick={() => {
+                history.push(
+                  `${routes.VARIATION_DETAILS_PAGE}/${testRun.testVariationId}`
+                );
+              }}
+            >
+              Baseline history
+            </Button>
           </Grid>
           <Grid item>
             <Paper variant="outlined">
@@ -305,119 +299,52 @@ const TestDetailsModal: React.FunctionComponent<{
       </Box>
       <Grid container>
         <Grid item xs={6} className={classes.imageContainer}>
-          <Grid container direction="column">
-            <Grid item>
-              <Grid container spacing={2}>
-                <Grid item>
-                  <ImageDetails
-                    type="Baseline"
-                    imageName={testRun.baselineName}
-                  />
-                </Grid>
-                <Grid item>
-                  <Button
-                    color="primary"
-                    component={Link}
-                    to={`${routes.VARIATION_DETAILS_PAGE}/${testRun.testVariationId}`}
-                  >
-                    History
-                  </Button>
-                </Grid>
-              </Grid>
-            </Grid>
-            {testRun.baselineName ? (
-              <Grid item className={classes.canvasBackground}>
-                <div
-                  className={classes.canvasContainer}
-                  style={{
-                    height: baseline && baseline?.height * stageScale,
-                  }}
-                >
-                  <DrawArea
-                    image={baseline}
-                    ignoreAreas={[]}
-                    setIgnoreAreas={setIgnoreAreas}
-                    selectedRectId={selectedRectId}
-                    setSelectedRectId={setSelectedRectId}
-                    onStageClick={removeSelection}
-                    stageScaleState={[stageScale, setStageScale]}
-                    stagePosState={[stagePos, setStagePos]}
-                    stageInitPosState={[stageInitPos, setStageInitPos]}
-                    stageOffsetState={[stageOffset, setStageOffset]}
-                    drawModeState={[false, setIsDrawMode]}
-                  />
-                </div>
-              </Grid>
-            ) : (
-              <NoImagePlaceholder />
-            )}
-          </Grid>
+          <DrawArea
+            type="Baseline"
+            imageName={testRun.baselineName}
+            ignoreAreas={[]}
+            setIgnoreAreas={setIgnoreAreas}
+            selectedRectId={selectedRectId}
+            setSelectedRectId={setSelectedRectId}
+            onStageClick={removeSelection}
+            stageScaleState={[stageScale, setStageScale]}
+            stagePosState={[stagePos, setStagePos]}
+            stageInitPosState={[stageInitPos, setStageInitPos]}
+            stageOffsetState={[stageOffset, setStageOffset]}
+            drawModeState={[false, setIsDrawMode]}
+          />
         </Grid>
         <Grid item xs={6} className={classes.imageContainer}>
           {isDiffShown ? (
-            <Grid container direction="column">
-              <Grid item>
-                <ImageDetails type="Diff" imageName={testRun.diffName} />
-              </Grid>
-              {testRun.diffName ? (
-                <Grid item className={classes.canvasBackground}>
-                  <div
-                    className={classes.canvasContainer}
-                    style={{
-                      height: diff && diff?.height * stageScale,
-                    }}
-                  >
-                    <DrawArea
-                      image={diff}
-                      ignoreAreas={ignoreAreas}
-                      setIgnoreAreas={setIgnoreAreas}
-                      selectedRectId={selectedRectId}
-                      setSelectedRectId={setSelectedRectId}
-                      onStageClick={removeSelection}
-                      stageScaleState={[stageScale, setStageScale]}
-                      stagePosState={[stagePos, setStagePos]}
-                      stageInitPosState={[stageInitPos, setStageInitPos]}
-                      stageOffsetState={[stageOffset, setStageOffset]}
-                      drawModeState={[isDrawMode, setIsDrawMode]}
-                    />
-                  </div>
-                </Grid>
-              ) : (
-                <NoImagePlaceholder />
-              )}
-            </Grid>
+            <DrawArea
+              type="Diff"
+              imageName={testRun.diffName}
+              ignoreAreas={ignoreAreas}
+              setIgnoreAreas={setIgnoreAreas}
+              selectedRectId={selectedRectId}
+              setSelectedRectId={setSelectedRectId}
+              onStageClick={removeSelection}
+              stageScaleState={[stageScale, setStageScale]}
+              stagePosState={[stagePos, setStagePos]}
+              stageInitPosState={[stageInitPos, setStageInitPos]}
+              stageOffsetState={[stageOffset, setStageOffset]}
+              drawModeState={[isDrawMode, setIsDrawMode]}
+            />
           ) : (
-            <Grid container direction="column">
-              <Grid item>
-                <ImageDetails type="Image" imageName={testRun.imageName} />
-              </Grid>
-              {testRun.imageName ? (
-                <Grid item className={classes.canvasBackground}>
-                  <div
-                    className={classes.canvasContainer}
-                    style={{
-                      height: image && image?.height * stageScale,
-                    }}
-                  >
-                    <DrawArea
-                      image={image}
-                      ignoreAreas={ignoreAreas}
-                      setIgnoreAreas={setIgnoreAreas}
-                      selectedRectId={selectedRectId}
-                      setSelectedRectId={setSelectedRectId}
-                      onStageClick={removeSelection}
-                      stageScaleState={[stageScale, setStageScale]}
-                      stagePosState={[stagePos, setStagePos]}
-                      stageInitPosState={[stageInitPos, setStageInitPos]}
-                      stageOffsetState={[stageOffset, setStageOffset]}
-                      drawModeState={[isDrawMode, setIsDrawMode]}
-                    />
-                  </div>
-                </Grid>
-              ) : (
-                <NoImagePlaceholder />
-              )}
-            </Grid>
+            <DrawArea
+              type="Image"
+              imageName={testRun.imageName}
+              ignoreAreas={ignoreAreas}
+              setIgnoreAreas={setIgnoreAreas}
+              selectedRectId={selectedRectId}
+              setSelectedRectId={setSelectedRectId}
+              onStageClick={removeSelection}
+              stageScaleState={[stageScale, setStageScale]}
+              stagePosState={[stagePos, setStagePos]}
+              stageInitPosState={[stageInitPos, setStageInitPos]}
+              stageOffsetState={[stageOffset, setStageOffset]}
+              drawModeState={[isDrawMode, setIsDrawMode]}
+            />
           )}
         </Grid>
       </Grid>

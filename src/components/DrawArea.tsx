@@ -4,9 +4,31 @@ import { RectConfig } from "konva/types/shapes/Rect";
 import Rectangle, { MIN_RECT_SIDE_PIXEL } from "./Rectangle";
 import { KonvaEventObject } from "konva/types/Node";
 import { IgnoreArea } from "../types/ignoreArea";
+import { Grid, makeStyles } from "@material-ui/core";
+import useImage from "use-image";
+import { staticService } from "../services";
+import { NoImagePlaceholder } from "./NoImageAvailable";
+import ImageDetails from "./ImageDetails";
+
+const useStyles = makeStyles((theme) => ({
+  imageContainer: {
+    overflow: "hidden",
+  },
+  canvasBackground: {
+    width: "100%",
+    backgroundColor: "#f5f5f5",
+  },
+  canvasContainer: {
+    overflow: "hidden",
+    backgroundColor: "white",
+    padding: theme.spacing(1),
+    margin: theme.spacing(0.5),
+  },
+}));
 
 interface IDrawArea {
-  image: HTMLImageElement | undefined;
+  type: "Baseline" | "Image" | "Diff";
+  imageName: string;
   ignoreAreas: IgnoreArea[];
   setIgnoreAreas: (ignoreAreas: IgnoreArea[]) => void;
   selectedRectId: string | undefined;
@@ -27,8 +49,9 @@ interface IDrawArea {
   stageScaleState: [number, React.Dispatch<React.SetStateAction<number>>];
   drawModeState: [boolean, React.Dispatch<React.SetStateAction<boolean>>];
 }
-const DrawArea: FunctionComponent<IDrawArea> = ({
-  image,
+export const DrawArea: FunctionComponent<IDrawArea> = ({
+  type,
+  imageName,
   ignoreAreas,
   setIgnoreAreas,
   selectedRectId,
@@ -40,6 +63,7 @@ const DrawArea: FunctionComponent<IDrawArea> = ({
   stagePosState,
   drawModeState,
 }) => {
+  const classes = useStyles();
   const [stageInitPos, setStageInitPos] = stageInitPosState;
   const [stageOffset, setStageOffset] = stageOffsetState;
   const [stagePos, setStagePos] = stagePosState;
@@ -48,6 +72,7 @@ const DrawArea: FunctionComponent<IDrawArea> = ({
 
   const [isDrawMode, setIsDrawMode] = drawModeState;
   const [isDrawing, setIsDrawing] = React.useState(isDrawMode);
+  const [image] = useImage(staticService.getImage(imageName));
 
   const handleContentMousedown = (e: any) => {
     if (!isDrawMode) return;
@@ -93,97 +118,117 @@ const DrawArea: FunctionComponent<IDrawArea> = ({
   };
 
   return (
-    <div
-      style={{
-        transform: `translate3d(${stagePos.x}px, ${stagePos.y}px, 0px)`,
-      }}
-      onMouseMove={(event) => {
-        if (!isDrawMode && isDrag && !selectedRectId) {
-          event.preventDefault();
-          setStagePos({
-            x: event.clientX - stageInitPos.x,
-            y: event.clientY - stageInitPos.y,
-          });
-          setStageOffset(stagePos);
-        }
-      }}
-      onMouseUp={(event) => {
-        setIsDrag(false);
-        setStageInitPos(stagePos);
-      }}
-      onMouseLeave={(event) => {
-        setIsDrag(false);
-        setStageInitPos(stagePos);
-      }}
-      onMouseDown={(event) => {
-        setIsDrag(true);
-        setStageInitPos({
-          x: event.clientX - stageOffset.x,
-          y: event.clientY - stageOffset.y,
-        });
-      }}
-    >
-      <Stage
-        width={image && image.width}
-        height={image && image.height}
-        onMouseDown={onStageClick}
-        style={{
-          transform: `scale(${stageScale})`,
-          transformOrigin: "top left",
-        }}
-        onContentMousedown={handleContentMousedown}
-        onContentMouseup={handleContentMouseup}
-        onContentMouseMove={handleContentMouseMove}
-      >
-        <Layer>
-          <Image
-            image={image}
-            onMouseOver={(event) => {
-              document.body.style.cursor = isDrawMode ? "crosshair" : "grab";
-            }}
-            onMouseDown={(event) => {
-              document.body.style.cursor = "grabbing";
-            }}
-            onMouseUp={(event) => {
-              document.body.style.cursor = "grab";
-            }}
-            onMouseLeave={(event) => {
-              document.body.style.cursor = "default";
-            }}
-          />
-          {ignoreAreas.map((rect, i) => {
-            return (
-              <Rectangle
-                key={rect.id}
-                shapeProps={{
-                  x: rect.x,
-                  y: rect.y,
-                  width: rect.width,
-                  height: rect.height,
+    <React.Fragment>
+      <Grid container direction="column">
+        <Grid item>
+          <ImageDetails type={type} imageName={imageName} />
+        </Grid>
+        {imageName ? (
+          <Grid item className={classes.canvasBackground}>
+            <div
+              className={classes.canvasContainer}
+              style={{
+                height: image && image?.height * stageScale,
+              }}
+            >
+              <div
+                style={{
+                  transform: `translate3d(${stagePos.x}px, ${stagePos.y}px, 0px)`,
                 }}
-                isSelected={rect.id === selectedRectId}
-                onSelect={() => setSelectedRectId(rect.id)}
-                onChange={(newAttrs: RectConfig) => {
-                  const rects = ignoreAreas.slice();
-
-                  rects[i].x = Math.round(newAttrs.x || 0);
-                  rects[i].y = Math.round(newAttrs.y || 0);
-                  rects[i].width = Math.round(
-                    newAttrs.width || MIN_RECT_SIDE_PIXEL
-                  );
-                  rects[i].height = Math.round(
-                    newAttrs.height || MIN_RECT_SIDE_PIXEL
-                  );
-
-                  setIgnoreAreas(rects);
+                onMouseMove={(event) => {
+                  if (!isDrawMode && isDrag && !selectedRectId) {
+                    event.preventDefault();
+                    setStagePos({
+                      x: event.clientX - stageInitPos.x,
+                      y: event.clientY - stageInitPos.y,
+                    });
+                    setStageOffset(stagePos);
+                  }
                 }}
-              />
-            );
-          })}
-        </Layer>
-      </Stage>
-    </div>
+                onMouseUp={(event) => {
+                  setIsDrag(false);
+                  setStageInitPos(stagePos);
+                }}
+                onMouseLeave={(event) => {
+                  setIsDrag(false);
+                  setStageInitPos(stagePos);
+                }}
+                onMouseDown={(event) => {
+                  setIsDrag(true);
+                  setStageInitPos({
+                    x: event.clientX - stageOffset.x,
+                    y: event.clientY - stageOffset.y,
+                  });
+                }}
+              >
+                <Stage
+                  width={image && image.width}
+                  height={image && image.height}
+                  onMouseDown={onStageClick}
+                  style={{
+                    transform: `scale(${stageScale})`,
+                    transformOrigin: "top left",
+                  }}
+                  onContentMousedown={handleContentMousedown}
+                  onContentMouseup={handleContentMouseup}
+                  onContentMouseMove={handleContentMouseMove}
+                >
+                  <Layer>
+                    <Image
+                      image={image}
+                      onMouseOver={(event) => {
+                        document.body.style.cursor = isDrawMode
+                          ? "crosshair"
+                          : "grab";
+                      }}
+                      onMouseDown={(event) => {
+                        document.body.style.cursor = "grabbing";
+                      }}
+                      onMouseUp={(event) => {
+                        document.body.style.cursor = "grab";
+                      }}
+                      onMouseLeave={(event) => {
+                        document.body.style.cursor = "default";
+                      }}
+                    />
+                    {ignoreAreas.map((rect, i) => {
+                      return (
+                        <Rectangle
+                          key={rect.id}
+                          shapeProps={{
+                            x: rect.x,
+                            y: rect.y,
+                            width: rect.width,
+                            height: rect.height,
+                          }}
+                          isSelected={rect.id === selectedRectId}
+                          onSelect={() => setSelectedRectId(rect.id)}
+                          onChange={(newAttrs: RectConfig) => {
+                            const rects = ignoreAreas.slice();
+
+                            rects[i].x = Math.round(newAttrs.x || 0);
+                            rects[i].y = Math.round(newAttrs.y || 0);
+                            rects[i].width = Math.round(
+                              newAttrs.width || MIN_RECT_SIDE_PIXEL
+                            );
+                            rects[i].height = Math.round(
+                              newAttrs.height || MIN_RECT_SIDE_PIXEL
+                            );
+
+                            setIgnoreAreas(rects);
+                          }}
+                        />
+                      );
+                    })}
+                  </Layer>
+                </Stage>
+              </div>
+            </div>
+          </Grid>
+        ) : (
+          <NoImagePlaceholder />
+        )}
+      </Grid>
+    </React.Fragment>
   );
 };
-
-export default DrawArea;
