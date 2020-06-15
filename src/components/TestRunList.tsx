@@ -10,6 +10,7 @@ import {
   IconButton,
   Menu,
   MenuItem,
+  Box,
 } from "@material-ui/core";
 import { MoreVert } from "@material-ui/icons";
 import { useHistory } from "react-router-dom";
@@ -22,11 +23,13 @@ import {
   deleteTestRun,
   selectTestRun,
 } from "../contexts";
+import { Skeleton } from "@material-ui/lab";
+import { SkeletonList } from "./SkeletonList";
 
 const TestRunList: React.FunctionComponent<{
   items: TestRun[];
 }> = ({ items }) => {
-  const { selectedTestRunId } = useTestRunState();
+  const { selectedTestRunId, loading } = useTestRunState();
   const testRunDispatch = useTestRunDispatch();
   const history = useHistory();
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
@@ -49,59 +52,72 @@ const TestRunList: React.FunctionComponent<{
 
   return (
     <React.Fragment>
-      <TableContainer>
-        <Table>
-          <TableHead>
-            <TableRow>
-              <TableCell>Name</TableCell>
-              <TableCell>OS</TableCell>
-              <TableCell>Device</TableCell>
-              <TableCell>Browser</TableCell>
-              <TableCell>Viewport</TableCell>
-              <TableCell>Status</TableCell>
-              <TableCell></TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {items.map((test) => (
-              <TableRow
-                key={test.id}
-                hover
-                selected={test.id === selectedTestRunId}
-              >
-                <TableCell
-                  onClick={() => {
-                    history.push(buildTestRunLocation(test));
-                    selectTestRun(testRunDispatch, test.id)
-                  }}
-                >
-                  <Typography>{test.name}</Typography>
-                </TableCell>
-                <TableCell>
-                  <Typography>{test.os}</Typography>
-                </TableCell>
-                <TableCell>
-                  <Typography>{test.device}</Typography>
-                </TableCell>
-                <TableCell>
-                  <Typography>{test.browser}</Typography>
-                </TableCell>
-                <TableCell>
-                  <Typography>{test.viewport}</Typography>
-                </TableCell>
-                <TableCell>
-                  <TestStatusChip status={test.status} />
-                </TableCell>
-                <TableCell>
-                  <IconButton onClick={(event) => handleClick(event, test)}>
-                    <MoreVert />
-                  </IconButton>
-                </TableCell>
+      {loading ? (
+        <SkeletonList />
+      ) : (
+        <TableContainer>
+          <Table>
+            <TableHead>
+              <TableRow>
+                <TableCell>Name</TableCell>
+                <TableCell>OS</TableCell>
+                <TableCell>Device</TableCell>
+                <TableCell>Browser</TableCell>
+                <TableCell>Viewport</TableCell>
+                <TableCell>Status</TableCell>
+                <TableCell></TableCell>
               </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </TableContainer>
+            </TableHead>
+            {loading ? (
+              [...Array(10)].map((i) => (
+                <Box p={0.5}>
+                  <Skeleton variant="rect" height={100} />
+                </Box>
+              ))
+            ) : (
+              <TableBody>
+                {items.map((test) => (
+                  <TableRow
+                    key={test.id}
+                    hover
+                    selected={test.id === selectedTestRunId}
+                  >
+                    <TableCell
+                      onClick={() => {
+                        history.push(buildTestRunLocation(test));
+                        selectTestRun(testRunDispatch, test.id);
+                      }}
+                    >
+                      <Typography>{test.name}</Typography>
+                    </TableCell>
+                    <TableCell>
+                      <Typography>{test.os}</Typography>
+                    </TableCell>
+                    <TableCell>
+                      <Typography>{test.device}</Typography>
+                    </TableCell>
+                    <TableCell>
+                      <Typography>{test.browser}</Typography>
+                    </TableCell>
+                    <TableCell>
+                      <Typography>{test.viewport}</Typography>
+                    </TableCell>
+                    <TableCell>
+                      <TestStatusChip status={test.status} />
+                    </TableCell>
+                    <TableCell>
+                      <IconButton onClick={(event) => handleClick(event, test)}>
+                        <MoreVert />
+                      </IconButton>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            )}
+          </Table>
+        </TableContainer>
+      )}
+
       {selectedTestRun && (
         <Menu
           anchorEl={anchorEl}

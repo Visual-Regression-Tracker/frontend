@@ -63,6 +63,7 @@ type State = {
   selectedTestRunId: string | undefined;
   selectedTestRunIndex: number | undefined;
   testRuns: TestRun[];
+  loading: boolean;
 };
 
 type TestRunProviderProps = { children: React.ReactNode };
@@ -76,6 +77,7 @@ const initialState: State = {
   selectedTestRunId: undefined,
   selectedTestRunIndex: undefined,
   testRuns: [],
+  loading: false,
 };
 
 function testRunReducer(state: State, action: IAction): State {
@@ -92,10 +94,16 @@ function testRunReducer(state: State, action: IAction): State {
           (t) => t.id === action.payload
         ),
       };
+    case "request":
+      return {
+        ...state,
+        loading: true,
+      };
     case "get":
       return {
         ...state,
         testRuns: action.payload,
+        loading: false,
       };
     case "delete":
       return {
@@ -168,8 +176,6 @@ async function getTestRunList(dispatch: Dispatch, buildId: string) {
 }
 
 async function deleteTestRun(dispatch: Dispatch, id: string) {
-  dispatch({ type: "request" });
-
   testRunService
     .remove(id)
     .then((isDeleted) => {

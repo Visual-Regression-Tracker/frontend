@@ -21,6 +21,7 @@ import {
   selectBuild,
 } from "../contexts";
 import { BuildStatusChip } from "./BuildStatusChip";
+import { SkeletonList } from "./SkeletonList";
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -38,67 +39,73 @@ const useStyles = makeStyles((theme: Theme) =>
 const BuildList: FunctionComponent = () => {
   const classes = useStyles();
   const history = useHistory();
-  const { buildList, selectedBuildId } = useBuildState();
+  const { buildList, selectedBuildId, loading } = useBuildState();
   const buildDispatch = useBuildDispatch();
 
   return (
     <List>
-      {buildList.map((build) => (
-        <ListItem
-          key={build.id}
-          selected={selectedBuildId === build.id}
-          button
-          onClick={() => {
-            selectBuild(buildDispatch, build.id);
-            history.push({
-              search: "buildId=" + build.id,
-            });
-          }}
-          classes={{
-            container: classes.listItem,
-          }}
-        >
-          <ListItemText
-            disableTypography
-            primary={
-              <Grid container>
-                <Grid item>
-                  <Typography variant="subtitle2">{`#${build.id}`}</Typography>
+      {loading ? (
+        <SkeletonList />
+      ) : (
+        buildList.map((build) => (
+          <ListItem
+            key={build.id}
+            selected={selectedBuildId === build.id}
+            button
+            onClick={() => {
+              selectBuild(buildDispatch, build.id);
+              history.push({
+                search: "buildId=" + build.id,
+              });
+            }}
+            classes={{
+              container: classes.listItem,
+            }}
+          >
+            <ListItemText
+              disableTypography
+              primary={
+                <Grid container>
+                  <Grid item>
+                    <Typography variant="subtitle2">{`#${build.id}`}</Typography>
+                  </Grid>
                 </Grid>
-              </Grid>
-            }
-            secondary={
-              <Grid container direction="column">
-                <Grid item>
-                  <Typography variant="caption" color="textPrimary">
-                    {build.createdAt}
-                  </Typography>
-                </Grid>
-                <Grid item>
-                  <Grid container justify="space-between">
-                    <Grid item>
-                      <Chip size="small" label={build.branchName} />
-                    </Grid>
-                    <Grid item>
-                      <BuildStatusChip status={build.status} />
+              }
+              secondary={
+                <Grid container direction="column">
+                  <Grid item>
+                    <Typography variant="caption" color="textPrimary">
+                      {build.createdAt}
+                    </Typography>
+                  </Grid>
+                  <Grid item>
+                    <Grid container justify="space-between">
+                      <Grid item>
+                        <Chip size="small" label={build.branchName} />
+                      </Grid>
+                      <Grid item>
+                        <BuildStatusChip status={build.status} />
+                      </Grid>
                     </Grid>
                   </Grid>
                 </Grid>
-              </Grid>
-            }
-          />
+              }
+            />
 
-          <ListItemSecondaryAction className={classes.listItemSecondaryAction}>
-            <IconButton
-              onClick={() => {
-                deleteBuild(buildDispatch, build.id);
-              }}
+            <ListItemSecondaryAction
+              className={classes.listItemSecondaryAction}
             >
-              <Delete />
-            </IconButton>
-          </ListItemSecondaryAction>
-        </ListItem>
-      ))}
+              <IconButton
+                onClick={() => {
+                  deleteBuild(buildDispatch, build.id);
+                }}
+              >
+                <Delete />
+              </IconButton>
+            </ListItemSecondaryAction>
+          </ListItem>
+        ))
+      )}
     </List>
   );
 };
