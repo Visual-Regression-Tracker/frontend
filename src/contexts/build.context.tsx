@@ -38,6 +38,7 @@ type Dispatch = (action: IAction) => void;
 type State = {
   selectedBuildId: string | undefined;
   buildList: Build[];
+  loading: boolean;
 };
 
 type BuildProviderProps = { children: React.ReactNode };
@@ -50,6 +51,7 @@ const BuildDispatchContext = React.createContext<Dispatch | undefined>(
 const initialState: State = {
   selectedBuildId: undefined,
   buildList: [],
+  loading: false,
 };
 
 function buildReducer(state: State, action: IAction): State {
@@ -59,10 +61,16 @@ function buildReducer(state: State, action: IAction): State {
         ...state,
         selectedBuildId: action.payload,
       };
+    case "request":
+      return {
+        ...state,
+        loading: true,
+      };
     case "get":
       return {
         ...state,
         buildList: action.payload,
+        loading: false,
       };
     case "delete":
       return {
@@ -121,8 +129,6 @@ async function getBuildList(dispatch: Dispatch, id: string) {
 }
 
 async function deleteBuild(dispatch: Dispatch, id: string) {
-  dispatch({ type: "request" });
-
   buildsService
     .remove(id)
     .then((isDeleted) => {
