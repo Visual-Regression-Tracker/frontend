@@ -68,6 +68,7 @@ const Filters: React.FunctionComponent<IProps> = ({
           <DebounceInput
             fullWidth
             label="Name"
+            value={query}
             element={TextField}
             minLength={2}
             debounceTimeout={300}
