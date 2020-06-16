@@ -2,13 +2,12 @@ import React from "react";
 import {
   Grid,
   TextField,
-  IconButton,
   Select,
   MenuItem,
   FormControl,
   InputLabel,
+  Button,
 } from "@material-ui/core";
-import { Clear } from "@material-ui/icons";
 import { TestRun, TestVariation } from "../types";
 
 interface IProps {
@@ -70,13 +69,6 @@ const Filters: React.FunctionComponent<IProps> = ({
             label="Name"
             value={query}
             onChange={(event) => setQuery(event?.target.value)}
-            InputProps={{
-              endAdornment: (
-                <IconButton onClick={() => setQuery("")}>
-                  <Clear />
-                </IconButton>
-              ),
-            }}
           />
         </Grid>
         {osList.length > 0 && (
@@ -201,6 +193,22 @@ const Filters: React.FunctionComponent<IProps> = ({
             </FormControl>
           </Grid>
         )}
+        <Grid item>
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={() => {
+              setQuery("");
+              setOs("");
+              setDevice("");
+              setBrowser("");
+              setViewport("");
+              setTestStatus("");
+            }}
+          >
+            Reset
+          </Button>
+        </Grid>
       </Grid>
     </React.Fragment>
   );
