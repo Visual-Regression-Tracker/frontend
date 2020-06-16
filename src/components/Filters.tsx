@@ -9,6 +9,7 @@ import {
   Button,
 } from "@material-ui/core";
 import { TestRun, TestVariation } from "../types";
+import { DebounceInput } from "react-debounce-input";
 
 interface IProps {
   items: (TestRun | TestVariation)[];
@@ -64,10 +65,12 @@ const Filters: React.FunctionComponent<IProps> = ({
     <React.Fragment>
       <Grid container spacing={2} alignItems="flex-end">
         <Grid item xs>
-          <TextField
+          <DebounceInput
             fullWidth
             label="Name"
-            value={query}
+            element={TextField}
+            minLength={2}
+            debounceTimeout={300}
             onChange={(event) => setQuery(event?.target.value)}
           />
         </Grid>
