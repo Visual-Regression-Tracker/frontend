@@ -7,7 +7,7 @@ export const SkeletonList: React.FunctionComponent = () => {
   return (
     <React.Fragment>
       {list.map((i) => (
-        <Box p={0.5} key={i}>
+        <Box p={0.2} key={i}>
           <Skeleton variant="rect" height={80} />
         </Box>
       ))}
