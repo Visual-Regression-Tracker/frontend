@@ -37,6 +37,7 @@ import useImage from "use-image";
 import { routes } from "../constants";
 import { useTestRunDispatch, updateTestRun, selectTestRun } from "../contexts";
 import { DrawArea } from "./DrawArea";
+import { CommentsPopper } from "./CommentsPopper";
 
 const useStyles = makeStyles((theme) => ({
   imageContainer: {
@@ -201,6 +202,9 @@ const TestDetailsModal: React.FunctionComponent<{
             >
               Baseline history
             </Button>
+          </Grid>
+          <Grid item>
+            <CommentsPopper />
           </Grid>
           <Grid item>
             <Paper variant="outlined">
