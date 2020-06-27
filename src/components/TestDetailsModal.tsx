@@ -204,7 +204,7 @@ const TestDetailsModal: React.FunctionComponent<{
             </Button>
           </Grid>
           <Grid item>
-            <CommentsPopper />
+            <CommentsPopper text={testRun.comment}/>
           </Grid>
           <Grid item>
             <Paper variant="outlined">

@@ -10,5 +10,6 @@ export interface TestVariation {
   device: string;
   ignoreAreas: string;
   projectId: string;
-  baselines: Baseline[]
+  baselines: Baseline[];
+  comment: string;
 }
