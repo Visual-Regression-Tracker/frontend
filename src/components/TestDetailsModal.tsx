@@ -37,6 +37,7 @@ import useImage from "use-image";
 import { routes } from "../constants";
 import { useTestRunDispatch, updateTestRun, selectTestRun } from "../contexts";
 import { DrawArea } from "./DrawArea";
+import { CommentsPopper } from "./CommentsPopper";
 
 const useStyles = makeStyles((theme) => ({
   imageContainer: {
@@ -201,6 +202,22 @@ const TestDetailsModal: React.FunctionComponent<{
             >
               Baseline history
             </Button>
+          </Grid>
+          <Grid item>
+            <CommentsPopper
+              text={testRun.comment}
+              onSave={(comment) =>
+                Promise.all([
+                  // update in test run
+                  testRunService
+                    .setComment(testRun.id, comment)
+                    .then((testRun) => updateTestRun(testRunDispatch, testRun)),
+                  // update in variation
+                  testVariationService
+                    .setComment(testRun.testVariationId, comment),
+                ])
+              }
+            />
           </Grid>
           <Grid item>
             <Paper variant="outlined">
