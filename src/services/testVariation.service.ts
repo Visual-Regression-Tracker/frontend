@@ -3,12 +3,13 @@ import { handleResponse, authHeader } from "../_helpers/service.helpers";
 import { API_URL } from "../_config/api.config";
 import { IgnoreArea } from "../types/ignoreArea";
 
-const ENDPOINT_URL = "/test-variations"
+const ENDPOINT_URL = "/test-variations";
 
 export const testVariationService = {
   getList,
   getDetails,
-  setIgnoreAreas
+  setIgnoreAreas,
+  setComment,
 };
 
 function getList(projectId: String): Promise<TestVariation[]> {
@@ -17,7 +18,10 @@ function getList(projectId: String): Promise<TestVariation[]> {
     headers: authHeader(),
   };
 
-  return fetch(`${API_URL}${ENDPOINT_URL}?projectId=${projectId}`, requestOptions).then(handleResponse);
+  return fetch(
+    `${API_URL}${ENDPOINT_URL}?projectId=${projectId}`,
+    requestOptions
+  ).then(handleResponse);
 }
 
 function getDetails(id: String): Promise<TestVariation> {
@@ -26,7 +30,9 @@ function getDetails(id: String): Promise<TestVariation> {
     headers: authHeader(),
   };
 
-  return fetch(`${API_URL}${ENDPOINT_URL}/${id}`, requestOptions).then(handleResponse);
+  return fetch(`${API_URL}${ENDPOINT_URL}/${id}`, requestOptions).then(
+    handleResponse
+  );
 }
 
 function setIgnoreAreas(
@@ -43,4 +49,16 @@ function setIgnoreAreas(
     `${API_URL}${ENDPOINT_URL}/ignoreArea/${variationId}`,
     requestOptions
   ).then(handleResponse);
+}
+
+function setComment(id: string, comment: string): Promise<TestVariation> {
+  const requestOptions = {
+    method: "PUT",
+    headers: { "Content-Type": "application/json", ...authHeader() },
+    body: JSON.stringify({ comment }),
+  };
+
+  return fetch(`${API_URL}${ENDPOINT_URL}/comment/${id}`, requestOptions).then(
+    handleResponse
+  );
 }

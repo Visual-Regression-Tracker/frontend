@@ -11,5 +11,5 @@ export interface TestVariation {
   ignoreAreas: string;
   projectId: string;
   baselines: Baseline[];
-  comment: string;
+  comment?: string;
 }

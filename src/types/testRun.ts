@@ -16,5 +16,5 @@ export interface TestRun {
   viewport: string;
   device: string;
   ignoreAreas: string;
-  comment: string;
+  comment?: string;
 }

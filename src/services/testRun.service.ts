@@ -12,6 +12,7 @@ export const testRunService = {
   approve,
   reject,
   setIgnoreAreas,
+  setComment,
 };
 
 function getList(buildId: string): Promise<TestRun[]> {
@@ -85,4 +86,16 @@ function setIgnoreAreas(
     `${API_URL}${ENDPOINT_URL}/ignoreArea/${id}`,
     requestOptions
   ).then(handleResponse);
+}
+
+function setComment(id: string, comment: string): Promise<TestRun> {
+  const requestOptions = {
+    method: "PUT",
+    headers: { "Content-Type": "application/json", ...authHeader() },
+    body: JSON.stringify({ comment }),
+  };
+
+  return fetch(`${API_URL}${ENDPOINT_URL}/comment/${id}`, requestOptions).then(
+    handleResponse
+  );
 }

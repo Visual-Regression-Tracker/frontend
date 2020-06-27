@@ -26,16 +26,22 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 interface IProps {
-  text: string;
+  text: string | undefined;
+  onSave: (comment: string) => Promise<any>;
 }
 
-export const CommentsPopper: React.FunctionComponent<IProps> = ({ text }) => {
+export const CommentsPopper: React.FunctionComponent<IProps> = ({
+  text,
+  onSave,
+}) => {
   const classes = useStyles();
   const popupState = usePopupState({
     variant: "popper",
     popupId: "commentPopper",
   });
-  const [comment, setComment] = React.useState(text);
+  const [comment, setComment] = React.useState("");
+
+  React.useEffect(() => setComment(text ? text : ""), [text]);
 
   return (
     <React.Fragment>
@@ -77,7 +83,7 @@ export const CommentsPopper: React.FunctionComponent<IProps> = ({ text }) => {
                 />
                 <Button
                   onClick={() => {
-                    popupState.close();
+                    onSave(comment).then(() => popupState.close());
                   }}
                 >
                   Save

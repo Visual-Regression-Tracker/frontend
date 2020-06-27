@@ -204,7 +204,20 @@ const TestDetailsModal: React.FunctionComponent<{
             </Button>
           </Grid>
           <Grid item>
-            <CommentsPopper text={testRun.comment}/>
+            <CommentsPopper
+              text={testRun.comment}
+              onSave={(comment) =>
+                Promise.all([
+                  // update in test run
+                  testRunService
+                    .setComment(testRun.id, comment)
+                    .then((testRun) => updateTestRun(testRunDispatch, testRun)),
+                  // update in variation
+                  testVariationService
+                    .setComment(testRun.testVariationId, comment),
+                ])
+              }
+            />
           </Grid>
           <Grid item>
             <Paper variant="outlined">
