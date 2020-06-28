@@ -4,5 +4,6 @@ export interface Project {
   id: string;
   name: string;
   builds: Build[];
-  updatedAt: Date;
+  updatedAt: string;
+  createdAt: string;
 }

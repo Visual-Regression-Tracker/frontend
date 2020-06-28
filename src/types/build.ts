@@ -6,7 +6,7 @@ export interface Build {
   projectName: string;
   branchName: string;
   status: BuildStatus;
-  createdAt: Date;
+  createdAt: string;
   createdBy: string;
   testRuns: TestRun[];
 
