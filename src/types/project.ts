@@ -5,4 +5,5 @@ export interface Project {
   name: string;
   builds: Build[];
   updatedAt: string;
+  createdAt: string;
 }

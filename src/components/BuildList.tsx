@@ -22,7 +22,7 @@ import {
 } from "../contexts";
 import { BuildStatusChip } from "./BuildStatusChip";
 import { SkeletonList } from "./SkeletonList";
-import { formatDate } from "../_helpers/format.helper";
+import { formatDateTime } from "../_helpers/format.helper";
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -76,7 +76,7 @@ const BuildList: FunctionComponent = () => {
                 <Grid container direction="column">
                   <Grid item>
                     <Typography variant="caption" color="textPrimary">
-                      {formatDate(build.createdAt)}
+                      {formatDateTime(build.createdAt)}
                     </Typography>
                   </Grid>
                   <Grid item>

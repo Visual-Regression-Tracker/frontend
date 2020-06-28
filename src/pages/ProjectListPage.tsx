@@ -27,6 +27,7 @@ import {
 import { Link } from "react-router-dom";
 import { Delete, Add } from "@material-ui/icons";
 import { routes } from "../constants";
+import { formatDateTime } from "../_helpers/format.helper";
 
 const ProjectsListPage = () => {
   const theme = useTheme();
@@ -115,7 +116,7 @@ const ProjectsListPage = () => {
               <CardContent>
                 <Typography>Key: {project.id}</Typography>
                 <Typography>Name: {project.name}</Typography>
-                <Typography>Updated: {project.updatedAt}</Typography>
+                <Typography>Created: {formatDateTime(project.createdAt)}</Typography>
               </CardContent>
               <CardActions>
                 <Button
