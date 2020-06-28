@@ -5,7 +5,7 @@ export interface Baseline {
   baselineName: string;
   testRunId: string;
   testVariationId: string;
-  createdAt: Date;
-  updatedAt: Date;
+  createdAt: string;
+  updatedAt: string;
   testRun: TestRun;
 }
