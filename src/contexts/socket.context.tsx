@@ -1,6 +1,6 @@
 import * as React from "react";
 import socketIOClient from "socket.io-client";
-import { useBuildState, useBuildDispatch, addBuild } from "./build.context";
+import { useBuildState, useBuildDispatch, addBuild, updateBuild } from "./build.context";
 import { Build, TestRun } from "../types";
 import { useTestRunDispatch, addTestRun } from "./testRun.context";
 
@@ -55,6 +55,10 @@ function SocketProvider({ children }: SocketProviderProps) {
 
       state.socket.on("build_created", function (build: Build) {
         addBuild(buildDispatch, build);
+      });
+
+      state.socket.on("build_updated", function (build: Build) {
+        updateBuild(buildDispatch, build);
       });
 
       state.socket.on(`testRun_created`, function (testRun: TestRun) {
