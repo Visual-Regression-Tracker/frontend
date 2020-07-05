@@ -27,11 +27,17 @@ interface IAddAction {
   payload: Build;
 }
 
+interface IUpdateAction {
+  type: "update";
+  payload: Build;
+}
+
 type IAction =
   | IRequestAction
   | IGetAction
   | IDeleteAction
   | IAddAction
+  | IUpdateAction
   | ISelectAction;
 
 type Dispatch = (action: IAction) => void;
@@ -81,6 +87,16 @@ function buildReducer(state: State, action: IAction): State {
       return {
         ...state,
         buildList: [action.payload, ...state.buildList],
+      };
+    case "update":
+      return {
+        ...state,
+        buildList: state.buildList.map((p) => {
+          if (p.id === action.payload.id) {
+            return action.payload
+          }
+          return p;
+        }),
       };
     default:
       return state;
@@ -149,6 +165,10 @@ async function addBuild(dispatch: Dispatch, build: Build) {
   dispatch({ type: "add", payload: build });
 }
 
+async function updateBuild(dispatch: Dispatch, build: Build) {
+  dispatch({ type: "update", payload: build });
+}
+
 export {
   BuildProvider,
   useBuildState,
@@ -157,4 +177,5 @@ export {
   deleteBuild,
   selectBuild,
   addBuild,
+  updateBuild,
 };
