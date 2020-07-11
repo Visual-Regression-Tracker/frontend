@@ -116,6 +116,7 @@ const ProjectsListPage = () => {
               <CardContent>
                 <Typography>Key: {project.id}</Typography>
                 <Typography>Name: {project.name}</Typography>
+                <Typography>Main branch: {project.mainBranchName}</Typography>
                 <Typography>Created: {formatDateTime(project.createdAt)}</Typography>
               </CardContent>
               <CardActions>

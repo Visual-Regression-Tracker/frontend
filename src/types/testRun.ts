@@ -17,4 +17,6 @@ export interface TestRun {
   device: string;
   ignoreAreas: string;
   comment?: string;
+  branchName: string;
+  baselineBranchName: string;
 }

@@ -32,6 +32,7 @@ const useStyles = makeStyles((theme) => ({
 interface IDrawArea {
   type: "Baseline" | "Image" | "Diff";
   imageName: string;
+  branchName: string;
   ignoreAreas: IgnoreArea[];
   setIgnoreAreas: (ignoreAreas: IgnoreArea[]) => void;
   selectedRectId: string | undefined;
@@ -55,6 +56,7 @@ interface IDrawArea {
 export const DrawArea: FunctionComponent<IDrawArea> = ({
   type,
   imageName,
+  branchName,
   ignoreAreas,
   setIgnoreAreas,
   selectedRectId,
@@ -124,7 +126,7 @@ export const DrawArea: FunctionComponent<IDrawArea> = ({
     <React.Fragment>
       <Grid container direction="column">
         <Grid item>
-          <ImageDetails type={type} imageName={imageName} />
+          <ImageDetails type={type} branchName={branchName} imageName={imageName} />
         </Grid>
         {imageStatus === "loading" && (
           <Grid

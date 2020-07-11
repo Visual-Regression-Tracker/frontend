@@ -1,5 +1,5 @@
 import React from "react";
-import { Grid, Typography } from "@material-ui/core";
+import { Grid, Typography, Chip } from "@material-ui/core";
 import { TestVariation } from "../types";
 
 interface IProps {
@@ -33,6 +33,9 @@ export const TestVariationDetails: React.FunctionComponent<IProps> = ({
             <Typography>Viewport: {testVariation.viewport}</Typography>
           </Grid>
         )}
+        <Grid item>
+          <Chip size="small" label={testVariation.branchName} />
+        </Grid>
       </Grid>
     </Grid>
   );
