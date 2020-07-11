@@ -4,6 +4,7 @@ export interface TestVariation {
   id: string;
   name: string;
   baselineName: string;
+  branchName: string;
   os: string;
   browser: string;
   viewport: string;

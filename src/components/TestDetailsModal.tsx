@@ -319,6 +319,7 @@ const TestDetailsModal: React.FunctionComponent<{
           <DrawArea
             type="Baseline"
             imageName={testRun.baselineName}
+            branchName={testRun.baselineBranchName}
             ignoreAreas={[]}
             setIgnoreAreas={setIgnoreAreas}
             selectedRectId={selectedRectId}
@@ -336,6 +337,7 @@ const TestDetailsModal: React.FunctionComponent<{
             <DrawArea
               type="Diff"
               imageName={testRun.diffName}
+              branchName={testRun.branchName}
               ignoreAreas={ignoreAreas}
               setIgnoreAreas={setIgnoreAreas}
               selectedRectId={selectedRectId}
@@ -351,6 +353,7 @@ const TestDetailsModal: React.FunctionComponent<{
             <DrawArea
               type="Image"
               imageName={testRun.imageName}
+              branchName={testRun.branchName}
               ignoreAreas={ignoreAreas}
               setIgnoreAreas={setIgnoreAreas}
               selectedRectId={selectedRectId}
