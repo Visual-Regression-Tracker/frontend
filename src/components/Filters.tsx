@@ -19,6 +19,7 @@ interface IProps {
   browserState: [string, React.Dispatch<React.SetStateAction<string>>];
   viewportState: [string, React.Dispatch<React.SetStateAction<string>>];
   testStatusState?: [string, React.Dispatch<React.SetStateAction<string>>];
+  branchNameState?: [string, React.Dispatch<React.SetStateAction<string>>];
 }
 
 const Filters: React.FunctionComponent<IProps> = ({
@@ -29,6 +30,7 @@ const Filters: React.FunctionComponent<IProps> = ({
   browserState,
   viewportState,
   testStatusState,
+  branchNameState,
 }) => {
   const [query, setQuery] = queryState;
   const [os, setOs] = osState;
@@ -37,6 +39,9 @@ const Filters: React.FunctionComponent<IProps> = ({
   const [viewport, setViewport] = viewportState;
   const [testStatus, setTestStatus] = testStatusState
     ? testStatusState
+    : [null, () => {}];
+  const [branchName, setBranchName] = branchNameState
+    ? branchNameState
     : [null, () => {}];
 
   const osList = items
@@ -56,9 +61,16 @@ const Filters: React.FunctionComponent<IProps> = ({
     .filter((v, i, array) => v && array.indexOf(v) === i);
 
   const testStatusList =
+    testStatusState &&
     items.some((i) => (i as TestRun).status) &&
     (items as TestRun[])
       .map((t) => t.status)
+      .filter((v, i, array) => v && array.indexOf(v) === i);
+
+  const branchNameList =
+    branchNameState &&
+    items
+      .map((t) => t.branchName)
       .filter((v, i, array) => v && array.indexOf(v) === i);
 
   return (
@@ -189,6 +201,32 @@ const Filters: React.FunctionComponent<IProps> = ({
                   <em>All</em>
                 </MenuItem>
                 {testStatusList.map((item) => (
+                  <MenuItem key={item} value={item}>
+                    {item}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+          </Grid>
+        )}
+        {branchNameList && branchNameList.length > 0 && (
+          <Grid item xs>
+            <FormControl fullWidth>
+              <InputLabel shrink id="filter_branchName">
+                Branch
+              </InputLabel>
+              <Select
+                id="filter_branchName"
+                value={branchName}
+                displayEmpty
+                onChange={(event) =>
+                  setBranchName(event.target.value as string)
+                }
+              >
+                <MenuItem value="">
+                  <em>All</em>
+                </MenuItem>
+                {branchNameList.map((item) => (
                   <MenuItem key={item} value={item}>
                     {item}
                   </MenuItem>
