@@ -23,11 +23,13 @@ import {
   getProjectList,
   deleteProject,
   createProject,
+  updateProject,
 } from "../contexts";
 import { Link } from "react-router-dom";
-import { Delete, Add } from "@material-ui/icons";
+import { Delete, Add, Edit } from "@material-ui/icons";
 import { routes } from "../constants";
 import { formatDateTime } from "../_helpers/format.helper";
+import { ProjectModal } from "../components/ProjectModal";
 
 const ProjectsListPage = () => {
   const theme = useTheme();
@@ -35,22 +37,27 @@ const ProjectsListPage = () => {
   const projectDispatch = useProjectDispatch();
 
   const [createDialogOpen, setCreateDialogOpen] = React.useState(false);
-  const [newProjectName, setNewProjectName] = React.useState<string>("");
-  const [
-    newProjectMainBranchName,
-    setNewProjectMainBranchName,
-  ] = React.useState<string>("");
+  const [updateDialogOpen, setUpdateDialogOpen] = React.useState(false);
+  const [project, setProject] = React.useState<{
+    id: string;
+    name: string;
+    mainBranchName: string;
+  }>({
+    id: "",
+    name: "",
+    mainBranchName: "",
+  });
 
   useEffect(() => {
     getProjectList(projectDispatch);
   }, [projectDispatch]);
 
-  const handleCreateClickOpen = () => {
-    setCreateDialogOpen(true);
+  const toggleCreateDialogOpen = () => {
+    setCreateDialogOpen(!createDialogOpen);
   };
 
-  const handleCreateClose = () => {
-    setCreateDialogOpen(false);
+  const toggleUpdateDialogOpen = () => {
+    setUpdateDialogOpen(!updateDialogOpen);
   };
 
   return (
@@ -70,62 +77,44 @@ const ProjectsListPage = () => {
             <Fab
               color="primary"
               aria-label="add"
-              onClick={handleCreateClickOpen}
+              onClick={() => {
+                toggleCreateDialogOpen();
+                setProject({
+                  id: "",
+                  name: "",
+                  mainBranchName: "",
+                });
+              }}
             >
               <Add />
             </Fab>
           </Box>
 
-          <Dialog
+          <ProjectModal
             open={createDialogOpen}
-            onClose={handleCreateClose}
-            aria-labelledby="form-dialog-title"
-          >
-            <DialogTitle id="form-dialog-title">Create Project</DialogTitle>
-            <DialogContent>
-              <TextField
-                autoFocus
-                margin="dense"
-                id="name"
-                label="Project name"
-                type="text"
-                fullWidth
-                value={newProjectName}
-                onChange={(event) => setNewProjectName(event.target.value)}
-              />
-              <TextField
-                margin="dense"
-                id="branchName"
-                label="Main branch"
-                type="text"
-                fullWidth
-                value={newProjectMainBranchName}
-                onChange={(event) =>
-                  setNewProjectMainBranchName(event.target.value)
-                }
-              />
-            </DialogContent>
-            <DialogActions>
-              <Button onClick={handleCreateClose} color="primary">
-                Cancel
-              </Button>
-              <Button
-                onClick={() => {
-                  createProject(projectDispatch, {
-                    name: newProjectName,
-                    mainBranchName: newProjectMainBranchName,
-                  }).then((project) => {
-                    setNewProjectName("");
-                    setNewProjectMainBranchName("");
-                    handleCreateClose();
-                  });
-                }}
-                color="primary"
-              >
-                Create
-              </Button>
-            </DialogActions>
-          </Dialog>
+            title={"Create Project"}
+            submitButtonText={"Create"}
+            onCancel={toggleCreateDialogOpen}
+            projectState={[project, setProject]}
+            onSubmit={() =>
+              createProject(projectDispatch, project).then((project) => {
+                toggleCreateDialogOpen();
+              })
+            }
+          />
+
+          <ProjectModal
+            open={updateDialogOpen}
+            title={"Update Project"}
+            submitButtonText={"Update"}
+            onCancel={toggleUpdateDialogOpen}
+            projectState={[project, setProject]}
+            onSubmit={() =>
+              updateProject(projectDispatch, project).then((project) => {
+                toggleUpdateDialogOpen();
+              })
+            }
+          />
         </Grid>
         {projectState.projectList.map((project) => (
           <Grid item xs={4} key={project.id}>
@@ -151,10 +140,15 @@ const ProjectsListPage = () => {
                 </Button>
                 <IconButton
                   onClick={(event: React.MouseEvent<HTMLElement>) => {
-                    deleteProject(projectDispatch, project.id);
+                    toggleUpdateDialogOpen();
+                    setProject(project);
                   }}
-                  style={{
-                    marginLeft: "auto",
+                >
+                  <Edit />
+                </IconButton>
+                <IconButton
+                  onClick={(event: React.MouseEvent<HTMLElement>) => {
+                    deleteProject(projectDispatch, project.id);
                   }}
                 >
                   <Delete />

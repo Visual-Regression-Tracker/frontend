@@ -6,6 +6,7 @@ export const projectsService = {
   getAll,
   remove,
   create,
+  update,
 };
 
 function getAll(): Promise<Project[]> {
@@ -34,6 +35,20 @@ function create(project: {
 }): Promise<Project> {
   const requestOptions = {
     method: "POST",
+    headers: { "Content-Type": "application/json", ...authHeader() },
+    body: JSON.stringify(project),
+  };
+
+  return fetch(`${API_URL}/projects`, requestOptions).then(handleResponse);
+}
+
+function update(project: {
+  id: string;
+  name: string;
+  mainBranchName: string;
+}): Promise<Project> {
+  const requestOptions = {
+    method: "PUT",
     headers: { "Content-Type": "application/json", ...authHeader() },
     body: JSON.stringify(project),
   };
