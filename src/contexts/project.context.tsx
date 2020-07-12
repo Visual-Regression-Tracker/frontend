@@ -18,12 +18,22 @@ interface ICreateAction {
   payload: Project;
 }
 
+interface IUpdateAction {
+  type: "update";
+  payload: Project;
+}
+
 interface IDeleteAction {
   type: "delete";
   payload: string;
 }
 
-type IAction = IRequestAction | IGetction | ICreateAction | IDeleteAction;
+type IAction =
+  | IRequestAction
+  | IGetction
+  | ICreateAction
+  | IDeleteAction
+  | IUpdateAction;
 
 type Dispatch = (action: IAction) => void;
 type State = { projectList: Project[] };
@@ -50,6 +60,16 @@ function projectReducer(state: State, action: IAction): State {
       return {
         ...state,
         projectList: [action.payload, ...state.projectList],
+      };
+    case "update":
+      return {
+        ...state,
+        projectList: state.projectList.map((p) => {
+          if (p.id === action.payload.id) {
+            return action.payload;
+          }
+          return p;
+        }),
       };
     case "delete":
       return {
@@ -109,13 +129,32 @@ async function getProjectList(dispatch: Dispatch) {
     });
 }
 
-async function createProject(dispatch: Dispatch, project: { name: string }) {
+async function createProject(
+  dispatch: Dispatch,
+  project: { name: string; mainBranchName: string }
+) {
   dispatch({ type: "request" });
 
   projectsService
     .create(project)
     .then((project: Project) => {
       dispatch({ type: "create", payload: project });
+    })
+    .catch((error) => {
+      console.log(error.toString());
+    });
+}
+
+async function updateProject(
+  dispatch: Dispatch,
+  project: { id: string; name: string; mainBranchName: string }
+) {
+  dispatch({ type: "request" });
+
+  projectsService
+    .update(project)
+    .then((project: Project) => {
+      dispatch({ type: "update", payload: project });
     })
     .catch((error) => {
       console.log(error.toString());
@@ -142,6 +181,7 @@ export {
   useProjectState,
   useProjectDispatch,
   createProject,
+  updateProject,
   getProjectList,
   deleteProject,
 };
