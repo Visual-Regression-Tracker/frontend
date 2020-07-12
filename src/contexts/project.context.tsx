@@ -109,7 +109,10 @@ async function getProjectList(dispatch: Dispatch) {
     });
 }
 
-async function createProject(dispatch: Dispatch, project: { name: string }) {
+async function createProject(
+  dispatch: Dispatch,
+  project: { name: string; mainBranchName: string }
+) {
   dispatch({ type: "request" });
 
   projectsService

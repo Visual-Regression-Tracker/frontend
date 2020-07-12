@@ -28,7 +28,10 @@ function remove(id: string): Promise<number> {
   );
 }
 
-function create(project: { name: string }): Promise<Project> {
+function create(project: {
+  name: string;
+  mainBranchName: string;
+}): Promise<Project> {
   const requestOptions = {
     method: "POST",
     headers: { "Content-Type": "application/json", ...authHeader() },

@@ -36,6 +36,10 @@ const ProjectsListPage = () => {
 
   const [createDialogOpen, setCreateDialogOpen] = React.useState(false);
   const [newProjectName, setNewProjectName] = React.useState<string>("");
+  const [
+    newProjectMainBranchName,
+    setNewProjectMainBranchName,
+  ] = React.useState<string>("");
 
   useEffect(() => {
     getProjectList(projectDispatch);
@@ -89,6 +93,17 @@ const ProjectsListPage = () => {
                 value={newProjectName}
                 onChange={(event) => setNewProjectName(event.target.value)}
               />
+              <TextField
+                margin="dense"
+                id="branchName"
+                label="Main branch"
+                type="text"
+                fullWidth
+                value={newProjectMainBranchName}
+                onChange={(event) =>
+                  setNewProjectMainBranchName(event.target.value)
+                }
+              />
             </DialogContent>
             <DialogActions>
               <Button onClick={handleCreateClose} color="primary">
@@ -98,8 +113,10 @@ const ProjectsListPage = () => {
                 onClick={() => {
                   createProject(projectDispatch, {
                     name: newProjectName,
+                    mainBranchName: newProjectMainBranchName,
                   }).then((project) => {
                     setNewProjectName("");
+                    setNewProjectMainBranchName("");
                     handleCreateClose();
                   });
                 }}
@@ -117,14 +134,12 @@ const ProjectsListPage = () => {
                 <Typography>Key: {project.id}</Typography>
                 <Typography>Name: {project.name}</Typography>
                 <Typography>Main branch: {project.mainBranchName}</Typography>
-                <Typography>Created: {formatDateTime(project.createdAt)}</Typography>
+                <Typography>
+                  Created: {formatDateTime(project.createdAt)}
+                </Typography>
               </CardContent>
               <CardActions>
-                <Button
-                  color="primary"
-                  component={Link}
-                  to={`${project.id}`}
-                >
+                <Button color="primary" component={Link} to={`${project.id}`}>
                   Builds
                 </Button>
                 <Button
