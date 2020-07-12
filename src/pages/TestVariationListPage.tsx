@@ -19,6 +19,7 @@ const TestVariationListPage: React.FunctionComponent = () => {
   const [device, setDevice] = React.useState("");
   const [browser, setBrowser] = React.useState("");
   const [viewport, setViewport] = React.useState("");
+  const [branchName, setBranchName] = React.useState("");
   const [filteredItems, setFilteredItems] = React.useState<TestVariation[]>([]);
 
   React.useEffect(() => {
@@ -34,13 +35,14 @@ const TestVariationListPage: React.FunctionComponent = () => {
       testVariations.filter(
         (t) =>
           t.name.includes(query) && // by query
+          (branchName ? t.branchName === branchName : true) && // by branchName
           (os ? t.os === os : true) && // by OS
           (device ? t.device === device : true) && // by device
           (viewport ? t.viewport === viewport : true) && // by viewport
           (browser ? t.browser === browser : true) // by browser
       )
     );
-  }, [query, os, device, browser, viewport, testVariations]);
+  }, [query, branchName, os, device, browser, viewport, testVariations]);
 
   return (
     <React.Fragment>
@@ -60,6 +62,7 @@ const TestVariationListPage: React.FunctionComponent = () => {
                   deviceState={[device, setDevice]}
                   browserState={[browser, setBrowser]}
                   viewportState={[viewport, setViewport]}
+                  branchNameState={[branchName, setBranchName]}
                 />
               </Box>
             </Grid>
