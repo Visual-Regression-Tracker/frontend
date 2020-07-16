@@ -10,6 +10,8 @@ import {
   Paper,
   Box,
   makeStyles,
+  Chip,
+  Tooltip,
 } from "@material-ui/core";
 import { ToggleButton } from "@material-ui/lab";
 import { TestRun } from "../types";
@@ -154,26 +156,41 @@ const TestDetailsModal: React.FunctionComponent<{
             {(testRun.status === TestStatus.unresolved ||
               testRun.status === TestStatus.new) && (
               <Grid item>
-                <Button
-                  color="inherit"
-                  onClick={() =>
-                    testRunService.approve(testRun.id, testRun.merge).then((testRun) => {
-                      updateTestRun(testRunDispatch, testRun);
-                    })
-                  }
-                >
-                  Approve
-                </Button>
-                <Button
-                  color="secondary"
-                  onClick={() =>
-                    testRunService.reject(testRun.id).then((testRun) => {
-                      updateTestRun(testRunDispatch, testRun);
-                    })
-                  }
-                >
-                  Reject
-                </Button>
+                <Grid container spacing={2} alignItems="center">
+                  {testRun.merge && (
+                    <Grid item>
+                      <Tooltip title="Will replace target branch baseline if accepted">
+                        <Chip label="merge" color="secondary" size="small" />
+                      </Tooltip>
+                    </Grid>
+                  )}
+                  <Grid item>
+                    <Button
+                      color="inherit"
+                      onClick={() =>
+                        testRunService
+                          .approve(testRun.id, testRun.merge)
+                          .then((testRun) => {
+                            updateTestRun(testRunDispatch, testRun);
+                          })
+                      }
+                    >
+                      Approve
+                    </Button>
+                  </Grid>
+                  <Grid item>
+                    <Button
+                      color="secondary"
+                      onClick={() =>
+                        testRunService.reject(testRun.id).then((testRun) => {
+                          updateTestRun(testRunDispatch, testRun);
+                        })
+                      }
+                    >
+                      Reject
+                    </Button>
+                  </Grid>
+                </Grid>
               </Grid>
             )}
             <Grid item>
@@ -213,8 +230,10 @@ const TestDetailsModal: React.FunctionComponent<{
                     .setComment(testRun.id, comment)
                     .then((testRun) => updateTestRun(testRunDispatch, testRun)),
                   // update in variation
-                  testVariationService
-                    .setComment(testRun.testVariationId, comment),
+                  testVariationService.setComment(
+                    testRun.testVariationId,
+                    comment
+                  ),
                 ])
               }
             />
