@@ -160,7 +160,11 @@ const TestDetailsModal: React.FunctionComponent<{
                   {testRun.merge && (
                     <Grid item>
                       <Tooltip title="Will replace target branch baseline if accepted">
-                        <Chip label="merge" color="secondary" size="small" />
+                        <Chip
+                          label={`merge into: ${testRun.baselineBranchName}`}
+                          color="secondary"
+                          size="small"
+                        />
                       </Tooltip>
                     </Grid>
                   )}
