@@ -157,7 +157,7 @@ const TestDetailsModal: React.FunctionComponent<{
                 <Button
                   color="inherit"
                   onClick={() =>
-                    testRunService.approve(testRun.id).then((testRun) => {
+                    testRunService.approve(testRun.id, testRun.merge).then((testRun) => {
                       updateTestRun(testRunDispatch, testRun);
                     })
                   }

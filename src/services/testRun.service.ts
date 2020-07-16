@@ -50,15 +50,16 @@ function recalculateDiff(id: string): Promise<TestRun> {
   ).then(handleResponse);
 }
 
-function approve(id: string): Promise<TestRun> {
+function approve(id: string, merge: boolean): Promise<TestRun> {
   const requestOptions = {
     method: "GET",
     headers: authHeader(),
   };
 
-  return fetch(`${API_URL}${ENDPOINT_URL}/approve/${id}`, requestOptions).then(
-    handleResponse
-  );
+  return fetch(
+    `${API_URL}${ENDPOINT_URL}/approve?id=${id}&merge=${merge}`,
+    requestOptions
+  ).then(handleResponse);
 }
 
 function reject(id: string): Promise<TestRun> {
