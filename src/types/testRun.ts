@@ -19,4 +19,5 @@ export interface TestRun {
   comment?: string;
   branchName: string;
   baselineBranchName: string;
+  merge: boolean;
 }

@@ -1,4 +1,4 @@
-import { TestVariation } from "../types";
+import { TestVariation, Build } from "../types";
 import { handleResponse, authHeader } from "../_helpers/service.helpers";
 import { API_URL } from "../_config/api.config";
 import { IgnoreArea } from "../types/ignoreArea";
@@ -10,6 +10,7 @@ export const testVariationService = {
   getDetails,
   setIgnoreAreas,
   setComment,
+  merge,
 };
 
 function getList(projectId: String): Promise<TestVariation[]> {
@@ -30,7 +31,7 @@ function getDetails(id: String): Promise<TestVariation> {
     headers: authHeader(),
   };
 
-  return fetch(`${API_URL}${ENDPOINT_URL}/${id}`, requestOptions).then(
+  return fetch(`${API_URL}${ENDPOINT_URL}/details/${id}`, requestOptions).then(
     handleResponse
   );
 }
@@ -61,4 +62,16 @@ function setComment(id: string, comment: string): Promise<TestVariation> {
   return fetch(`${API_URL}${ENDPOINT_URL}/comment/${id}`, requestOptions).then(
     handleResponse
   );
+}
+
+function merge(projectId: String, branchName: String): Promise<Build> {
+  const requestOptions = {
+    method: "GET",
+    headers: authHeader(),
+  };
+
+  return fetch(
+    `${API_URL}${ENDPOINT_URL}/merge?projectId=${projectId}&branchName=${branchName}`,
+    requestOptions
+  ).then(handleResponse);
 }

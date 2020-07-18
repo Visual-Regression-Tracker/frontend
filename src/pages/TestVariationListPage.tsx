@@ -6,9 +6,10 @@ import { testVariationService } from "../services";
 import { Container, Box, Grid, Typography } from "@material-ui/core";
 import ProjectSelect from "../components/ProjectSelect";
 import Filters from "../components/Filters";
+import { TestVariationMergeForm } from "../components/TestVariationMergeForm";
 
 const TestVariationListPage: React.FunctionComponent = () => {
-  const { projectId } = useParams();
+  const { projectId = "" } = useParams();
   const [testVariations, setTestVariations] = React.useState<TestVariation[]>(
     []
   );
@@ -54,17 +55,23 @@ const TestVariationListPage: React.FunctionComponent = () => {
               <ProjectSelect selectedId={projectId} />
             </Grid>
             <Grid item>
-              <Box m={2}>
-                <Filters
-                  items={testVariations}
-                  queryState={[query, setQuery]}
-                  osState={[os, setOs]}
-                  deviceState={[device, setDevice]}
-                  browserState={[browser, setBrowser]}
-                  viewportState={[viewport, setViewport]}
-                  branchNameState={[branchName, setBranchName]}
-                />
-              </Box>
+              <TestVariationMergeForm
+                projectId={projectId}
+                items={Array.from(
+                  new Set(testVariations.map((t) => t.branchName))
+                )}
+              />
+            </Grid>
+            <Grid item>
+              <Filters
+                items={testVariations}
+                queryState={[query, setQuery]}
+                osState={[os, setOs]}
+                deviceState={[device, setDevice]}
+                browserState={[browser, setBrowser]}
+                viewportState={[viewport, setViewport]}
+                branchNameState={[branchName, setBranchName]}
+              />
             </Grid>
             <Grid item>
               <TestVariationList items={filteredItems} />
