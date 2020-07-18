@@ -8,14 +8,17 @@ import {
   makeStyles,
   CardActions,
   Button,
+  IconButton,
 } from "@material-ui/core";
 import { staticService } from "../services";
 import { Link } from "react-router-dom";
 import { routes } from "../constants";
 import { TestVariationDetails } from "./TestVariationDetails";
+import { Delete } from "@material-ui/icons";
 
 interface IProps {
   items: TestVariation[];
+  onDeleteClick: (id: string) => void;
 }
 
 const useStyles = makeStyles({
@@ -28,7 +31,10 @@ const useStyles = makeStyles({
   },
 });
 
-const TestVariationList: React.FunctionComponent<IProps> = ({ items }) => {
+const TestVariationList: React.FunctionComponent<IProps> = ({
+  items,
+  onDeleteClick,
+}) => {
   const classes = useStyles();
 
   return (
@@ -52,6 +58,13 @@ const TestVariationList: React.FunctionComponent<IProps> = ({ items }) => {
               >
                 History
               </Button>
+              <IconButton
+                onClick={(event: React.MouseEvent<HTMLElement>) =>
+                  onDeleteClick(t.id)
+                }
+              >
+                <Delete />
+              </IconButton>
             </CardActions>
           </Card>
         </Grid>
