@@ -45,6 +45,12 @@ const TestVariationListPage: React.FunctionComponent = () => {
     );
   }, [query, branchName, os, device, browser, viewport, testVariations]);
 
+  const handleDelete = (id: string) => {
+    testVariationService.remove(id).then((item) => {
+      setTestVariations(testVariations.filter((i) => i.id !== item.id));
+    });
+  };
+
   return (
     <React.Fragment>
       <Container>
@@ -74,7 +80,10 @@ const TestVariationListPage: React.FunctionComponent = () => {
               />
             </Grid>
             <Grid item>
-              <TestVariationList items={filteredItems} />
+              <TestVariationList
+                items={filteredItems}
+                onDeleteClick={handleDelete}
+              />
             </Grid>
           </Grid>
         </Box>

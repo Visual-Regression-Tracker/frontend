@@ -11,6 +11,7 @@ export const testVariationService = {
   setIgnoreAreas,
   setComment,
   merge,
+  remove,
 };
 
 function getList(projectId: String): Promise<TestVariation[]> {
@@ -74,4 +75,15 @@ function merge(projectId: String, branchName: String): Promise<Build> {
     `${API_URL}${ENDPOINT_URL}/merge?projectId=${projectId}&branchName=${branchName}`,
     requestOptions
   ).then(handleResponse);
+}
+
+function remove(id: String): Promise<TestVariation> {
+  const requestOptions = {
+    method: "DELETE",
+    headers: authHeader(),
+  };
+
+  return fetch(`${API_URL}${ENDPOINT_URL}/${id}`, requestOptions).then(
+    handleResponse
+  );
 }
