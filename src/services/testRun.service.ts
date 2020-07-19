@@ -15,7 +15,7 @@ export const testRunService = {
   setComment,
 };
 
-function getList(buildId: string): Promise<TestRun[]> {
+async function getList(buildId: string): Promise<TestRun[]> {
   const requestOptions = {
     method: "GET",
     headers: authHeader(),
@@ -27,7 +27,7 @@ function getList(buildId: string): Promise<TestRun[]> {
   ).then(handleResponse);
 }
 
-function remove(id: string): Promise<Number> {
+async function remove(id: string): Promise<TestRun> {
   const requestOptions = {
     method: "DELETE",
     headers: authHeader(),
@@ -38,7 +38,7 @@ function remove(id: string): Promise<Number> {
   );
 }
 
-function recalculateDiff(id: string): Promise<TestRun> {
+async function recalculateDiff(id: string): Promise<TestRun> {
   const requestOptions = {
     method: "GET",
     headers: authHeader(),
@@ -50,7 +50,7 @@ function recalculateDiff(id: string): Promise<TestRun> {
   ).then(handleResponse);
 }
 
-function approve(id: string, merge: boolean): Promise<TestRun> {
+async function approve(id: string, merge: boolean): Promise<TestRun> {
   const requestOptions = {
     method: "GET",
     headers: authHeader(),
@@ -62,7 +62,7 @@ function approve(id: string, merge: boolean): Promise<TestRun> {
   ).then(handleResponse);
 }
 
-function reject(id: string): Promise<TestRun> {
+async function reject(id: string): Promise<TestRun> {
   const requestOptions = {
     method: "GET",
     headers: authHeader(),
@@ -73,7 +73,7 @@ function reject(id: string): Promise<TestRun> {
   );
 }
 
-function setIgnoreAreas(
+async function setIgnoreAreas(
   id: string,
   ignoreAreas: IgnoreArea[]
 ): Promise<TestRun> {
@@ -89,7 +89,7 @@ function setIgnoreAreas(
   ).then(handleResponse);
 }
 
-function setComment(id: string, comment: string): Promise<TestRun> {
+async function setComment(id: string, comment: string): Promise<TestRun> {
   const requestOptions = {
     method: "PUT",
     headers: { "Content-Type": "application/json", ...authHeader() },

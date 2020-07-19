@@ -25,9 +25,11 @@ import { Delete, Add, Edit } from "@material-ui/icons";
 import { routes } from "../constants";
 import { formatDateTime } from "../_helpers/format.helper";
 import { ProjectModal } from "../components/ProjectModal";
+import { useSnackbar } from "notistack";
 
 const ProjectsListPage = () => {
   const theme = useTheme();
+  const { enqueueSnackbar } = useSnackbar();
   const projectState = useProjectState();
   const projectDispatch = useProjectDispatch();
 
@@ -44,8 +46,12 @@ const ProjectsListPage = () => {
   });
 
   useEffect(() => {
-    getProjectList(projectDispatch);
-  }, [projectDispatch]);
+    getProjectList(projectDispatch).catch((err) =>
+      enqueueSnackbar(err, {
+        variant: "error",
+      })
+    );
+  }, [projectDispatch, enqueueSnackbar]);
 
   const toggleCreateDialogOpen = () => {
     setCreateDialogOpen(!createDialogOpen);
@@ -92,9 +98,18 @@ const ProjectsListPage = () => {
             onCancel={toggleCreateDialogOpen}
             projectState={[project, setProject]}
             onSubmit={() =>
-              createProject(projectDispatch, project).then((project) => {
-                toggleCreateDialogOpen();
-              })
+              createProject(projectDispatch, project)
+                .then((project) => {
+                  toggleCreateDialogOpen();
+                  enqueueSnackbar(`${project.name} created`, {
+                    variant: "success",
+                  });
+                })
+                .catch((err) =>
+                  enqueueSnackbar(err, {
+                    variant: "error",
+                  })
+                )
             }
           />
 
@@ -105,9 +120,18 @@ const ProjectsListPage = () => {
             onCancel={toggleUpdateDialogOpen}
             projectState={[project, setProject]}
             onSubmit={() =>
-              updateProject(projectDispatch, project).then((project) => {
-                toggleUpdateDialogOpen();
-              })
+              updateProject(projectDispatch, project)
+                .then((project) => {
+                  toggleUpdateDialogOpen();
+                  enqueueSnackbar(`${project.name} updated`, {
+                    variant: "success",
+                  });
+                })
+                .catch((err) =>
+                  enqueueSnackbar(err, {
+                    variant: "error",
+                  })
+                )
             }
           />
         </Grid>
@@ -143,7 +167,17 @@ const ProjectsListPage = () => {
                 </IconButton>
                 <IconButton
                   onClick={(event: React.MouseEvent<HTMLElement>) => {
-                    deleteProject(projectDispatch, project.id);
+                    deleteProject(projectDispatch, project.id)
+                      .then((project) => {
+                        enqueueSnackbar(`${project.name} deleted`, {
+                          variant: "success",
+                        });
+                      })
+                      .catch((err) =>
+                        enqueueSnackbar(err, {
+                          variant: "error",
+                        })
+                      );
                   }}
                 >
                   <Delete />

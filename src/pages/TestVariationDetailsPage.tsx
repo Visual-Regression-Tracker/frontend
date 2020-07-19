@@ -20,6 +20,7 @@ import {
   useTestRunDispatch,
   selectTestRun,
 } from "../contexts";
+import { useSnackbar } from "notistack";
 
 const useStyles = makeStyles({
   media: {
@@ -31,6 +32,7 @@ const useStyles = makeStyles({
 const TestVariationDetailsPage: React.FunctionComponent = () => {
   const classes = useStyles();
   const history = useHistory();
+  const { enqueueSnackbar } = useSnackbar();
   const buildDispatch = useBuildDispatch();
   const testRunDispatch = useTestRunDispatch();
   const { testVariationId } = useParams();
@@ -38,11 +40,18 @@ const TestVariationDetailsPage: React.FunctionComponent = () => {
 
   React.useEffect(() => {
     if (testVariationId) {
-      testVariationService.getDetails(testVariationId).then((item) => {
-        setTestVariation(item);
-      });
+      testVariationService
+        .getDetails(testVariationId)
+        .then((item) => {
+          setTestVariation(item);
+        })
+        .catch((err) =>
+          enqueueSnackbar(err, {
+            variant: "error",
+          })
+        );
     }
-  }, [testVariationId]);
+  }, [testVariationId, enqueueSnackbar]);
 
   return (
     <React.Fragment>

@@ -93,7 +93,7 @@ function buildReducer(state: State, action: IAction): State {
         ...state,
         buildList: state.buildList.map((p) => {
           if (p.id === action.payload.id) {
-            return action.payload
+            return action.payload;
           }
           return p;
         }),
@@ -134,27 +134,16 @@ function useBuildDispatch() {
 async function getBuildList(dispatch: Dispatch, id: string) {
   dispatch({ type: "request" });
 
-  buildsService
-    .getList(id)
-    .then((items) => {
-      dispatch({ type: "get", payload: items });
-    })
-    .catch((error) => {
-      console.log(error.toString());
-    });
+  return buildsService.getList(id).then((items) => {
+    dispatch({ type: "get", payload: items });
+  });
 }
 
 async function deleteBuild(dispatch: Dispatch, id: string) {
-  buildsService
-    .remove(id)
-    .then((isDeleted) => {
-      if (isDeleted) {
-        dispatch({ type: "delete", payload: id });
-      }
-    })
-    .catch((error) => {
-      console.log(error.toString());
-    });
+  return buildsService.remove(id).then((build) => {
+    dispatch({ type: "delete", payload: id });
+    return build;
+  });
 }
 
 async function selectBuild(dispatch: Dispatch, id: string) {

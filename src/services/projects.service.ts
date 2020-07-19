@@ -18,7 +18,7 @@ function getAll(): Promise<Project[]> {
   return fetch(`${API_URL}/projects`, requestOptions).then(handleResponse);
 }
 
-function remove(id: string): Promise<number> {
+function remove(id: string): Promise<Project> {
   const requestOptions = {
     method: "DELETE",
     headers: authHeader(),

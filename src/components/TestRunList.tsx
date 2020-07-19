@@ -25,10 +25,12 @@ import {
 } from "../contexts";
 import { Skeleton } from "@material-ui/lab";
 import { SkeletonList } from "./SkeletonList";
+import { useSnackbar } from "notistack";
 
 const TestRunList: React.FunctionComponent<{
   items: TestRun[];
 }> = ({ items }) => {
+  const { enqueueSnackbar } = useSnackbar();
   const { selectedTestRunId, loading } = useTestRunState();
   const testRunDispatch = useTestRunDispatch();
   const history = useHistory();
@@ -134,7 +136,17 @@ const TestRunList: React.FunctionComponent<{
           </MenuItem>
           <MenuItem
             onClick={() => {
-              deleteTestRun(testRunDispatch, selectedTestRun.id);
+              deleteTestRun(testRunDispatch, selectedTestRun.id)
+                .then((testRun) => {
+                  enqueueSnackbar(`Deleted`, {
+                    variant: "success",
+                  });
+                })
+                .catch((err) =>
+                  enqueueSnackbar(err, {
+                    variant: "error",
+                  })
+                );
               handleClose();
             }}
           >

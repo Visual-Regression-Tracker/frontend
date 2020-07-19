@@ -3,6 +3,7 @@ import { Grid, Select, MenuItem, Button } from "@material-ui/core";
 import { testVariationService } from "../services";
 import { useHistory } from "react-router-dom";
 import { buildBuildPageUrl } from "../_helpers/route.helpers";
+import { useSnackbar } from "notistack";
 
 interface IProps {
   projectId: string;
@@ -14,13 +15,24 @@ export const TestVariationMergeForm: React.FunctionComponent<IProps> = ({
   items,
 }) => {
   const history = useHistory();
+  const { enqueueSnackbar } = useSnackbar();
   const [branch, setBranch] = React.useState("");
 
   const handleSubmit = (event: React.FormEvent) => {
     event.preventDefault();
-    testVariationService.merge(projectId, branch).then((build) => {
-      history.push(buildBuildPageUrl(projectId, build.id));
-    });
+    testVariationService
+      .merge(projectId, branch)
+      .then((build) => {
+        enqueueSnackbar(`Merge started in build: ${build.id}`, {
+          variant: "success",
+        });
+        history.push(buildBuildPageUrl(projectId, build.id));
+      })
+      .catch((err) =>
+        enqueueSnackbar(err, {
+          variant: "error",
+        })
+      );
   };
 
   return (

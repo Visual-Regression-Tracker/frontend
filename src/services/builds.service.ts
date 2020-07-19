@@ -20,7 +20,7 @@ function getList(projectId: string): Promise<Build[]> {
   );
 }
 
-function remove(id: string): Promise<number> {
+function remove(id: string): Promise<Build> {
   const requestOptions = {
     method: "DELETE",
     headers: authHeader(),

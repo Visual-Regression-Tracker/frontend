@@ -2,11 +2,6 @@ import * as React from "react";
 import { User } from "../types";
 import { usersService } from "../services";
 
-interface IRequestAction {
-  type: "request";
-  payload?: undefined;
-}
-
 interface ISuccessAction {
   type: "success";
   payload: User;
@@ -17,7 +12,7 @@ interface ILogoutAction {
   payload?: undefined;
 }
 
-type IAction = IRequestAction | ISuccessAction | ILogoutAction;
+type IAction = ISuccessAction | ILogoutAction;
 
 type Dispatch = (action: IAction) => void;
 type State = { loggedIn: boolean; user?: User };
@@ -36,9 +31,6 @@ const initialState: State = {
 
 function authReducer(state: State, action: IAction): State {
   switch (action.type) {
-    case "request": {
-      return { loggedIn: false, user: action.payload };
-    }
     case "success":
       return {
         loggedIn: true,
@@ -82,27 +74,27 @@ function useAuthDispatch() {
 }
 
 async function login(dispatch: Dispatch, email: string, password: string) {
-  dispatch({ type: "request" });
-
-  usersService
-    .login(email, password)
-    .then((user) => {
-      dispatch({ type: "success", payload: user });
-    })
-    .catch((error) => {
-      console.log(error.toString());
-    });
+  return usersService.login(email, password).then((user) => {
+    dispatch({ type: "success", payload: user });
+  });
 }
 
-async function update(dispatch: Dispatch, user: User) {
-  dispatch({ type: "request" });
-
-  usersService.update(user)
+async function update(
+  dispatch: Dispatch,
+  {
+    firstName,
+    lastName,
+    email,
+  }: { firstName: string; lastName: string; email: string }
+) {
+  return usersService
+    .update({
+      firstName,
+      lastName,
+      email,
+    })
     .then((user) => {
       dispatch({ type: "success", payload: user });
-    })
-    .catch((error) => {
-      console.log(error.toString());
     });
 }
 
