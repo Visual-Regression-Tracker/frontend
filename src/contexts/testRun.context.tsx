@@ -171,8 +171,6 @@ async function getTestRunList(dispatch: Dispatch, buildId: string) {
 }
 
 async function deleteTestRun(dispatch: Dispatch, id: string) {
-  dispatch({ type: "request" });
-
   return testRunService.remove(id).then((testRun) => {
     dispatch({ type: "delete", payload: id });
     return testRun;
