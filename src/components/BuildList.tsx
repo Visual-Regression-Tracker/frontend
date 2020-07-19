@@ -102,7 +102,7 @@ const BuildList: FunctionComponent = () => {
                 onClick={() => {
                   deleteBuild(buildDispatch, build.id)
                     .then((b) =>
-                      enqueueSnackbar(`${b.id} removed`, {
+                      enqueueSnackbar(`${b.id} deleted`, {
                         variant: "success",
                       })
                     )

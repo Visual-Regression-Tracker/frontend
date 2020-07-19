@@ -73,7 +73,6 @@ const ProjectPage = () => {
   const buildDispatch = useBuildDispatch();
   const {
     testRuns,
-    selectedTestRunId,
     selectedTestRunIndex,
   } = useTestRunState();
   const testRunDispatch = useTestRunDispatch();
@@ -109,21 +108,19 @@ const ProjectPage = () => {
 
   useEffect(() => {
     const queryParams = getQueryParams(location.search);
-    if (!selectedBuildId) {
-      if (queryParams.buildId) {
-        selectBuild(buildDispatch, queryParams.buildId);
-      } else if (buildList.length > 0) {
-        selectBuild(buildDispatch, buildList[0].id);
-      }
+    if (queryParams.buildId) {
+      selectBuild(buildDispatch, queryParams.buildId);
+    } else if (buildList.length > 0) {
+      selectBuild(buildDispatch, buildList[0].id);
     }
-  }, [buildDispatch, buildList, location.search, selectedBuildId]);
+  }, [buildDispatch, buildList, location.search]);
 
   useEffect(() => {
     const queryParams = getQueryParams(location.search);
-    if (!selectedTestRunId && queryParams.testId) {
+    if (queryParams.testId) {
       selectTestRun(testRunDispatch, queryParams.testId);
     }
-  }, [location.search, testRuns, selectedTestRunId, testRunDispatch]);
+  }, [location.search, testRuns, testRunDispatch]);
 
   useEffect(() => {
     setFilteredTestRuns(
