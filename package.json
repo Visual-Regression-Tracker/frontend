@@ -11,6 +11,7 @@
     "@testing-library/user-event": "^7.2.1",
     "konva": "^4.2.2",
     "material-ui-popup-state": "^1.6.1",
+    "notistack": "^0.9.17",
     "qs": "^6.9.4",
     "react": "^16.13.1",
     "react-debounce-input": "^3.2.2",
