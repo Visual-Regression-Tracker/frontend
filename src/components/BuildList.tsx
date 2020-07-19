@@ -23,6 +23,7 @@ import {
 import { BuildStatusChip } from "./BuildStatusChip";
 import { SkeletonList } from "./SkeletonList";
 import { formatDateTime } from "../_helpers/format.helper";
+import { useSnackbar } from "notistack";
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -42,6 +43,7 @@ const BuildList: FunctionComponent = () => {
   const history = useHistory();
   const { buildList, selectedBuildId, loading } = useBuildState();
   const buildDispatch = useBuildDispatch();
+  const { enqueueSnackbar } = useSnackbar();
 
   return (
     <List>
@@ -98,7 +100,17 @@ const BuildList: FunctionComponent = () => {
             >
               <IconButton
                 onClick={() => {
-                  deleteBuild(buildDispatch, build.id);
+                  deleteBuild(buildDispatch, build.id)
+                    .then((b) =>
+                      enqueueSnackbar(`${b.id} removed`, {
+                        variant: "success",
+                      })
+                    )
+                    .catch((err) =>
+                      enqueueSnackbar(err, {
+                        variant: "error",
+                      })
+                    );
                 }}
               >
                 <Delete />

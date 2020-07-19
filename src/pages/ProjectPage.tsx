@@ -27,6 +27,7 @@ import {
   selectTestRun,
   getTestRunList,
 } from "../contexts";
+import { useSnackbar } from "notistack";
 
 const getQueryParams = (guery: string) => {
   const queryParams = qs.parse(guery, { ignoreQueryPrefix: true });
@@ -67,6 +68,7 @@ const ProjectPage = () => {
   const { projectId } = useParams();
   const location = useLocation();
   const history = useHistory();
+  const { enqueueSnackbar } = useSnackbar();
   const { buildList, selectedBuildId } = useBuildState();
   const buildDispatch = useBuildDispatch();
   const {
@@ -87,9 +89,13 @@ const ProjectPage = () => {
 
   useEffect(() => {
     if (projectId) {
-      getBuildList(buildDispatch, projectId);
+      getBuildList(buildDispatch, projectId).catch((err) =>
+        enqueueSnackbar(err, {
+          variant: "error",
+        })
+      );
     }
-  }, [projectId, buildDispatch]);
+  }, [projectId, buildDispatch, enqueueSnackbar]);
 
   useEffect(() => {
     if (selectedBuildId) {
