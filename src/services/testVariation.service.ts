@@ -14,7 +14,7 @@ export const testVariationService = {
   remove,
 };
 
-function getList(projectId: String): Promise<TestVariation[]> {
+async function getList(projectId: String): Promise<TestVariation[]> {
   const requestOptions = {
     method: "GET",
     headers: authHeader(),
@@ -26,7 +26,7 @@ function getList(projectId: String): Promise<TestVariation[]> {
   ).then(handleResponse);
 }
 
-function getDetails(id: String): Promise<TestVariation> {
+async function getDetails(id: String): Promise<TestVariation> {
   const requestOptions = {
     method: "GET",
     headers: authHeader(),
@@ -37,7 +37,7 @@ function getDetails(id: String): Promise<TestVariation> {
   );
 }
 
-function setIgnoreAreas(
+async function setIgnoreAreas(
   variationId: string,
   ignoreAreas: IgnoreArea[]
 ): Promise<TestVariation> {
@@ -53,7 +53,7 @@ function setIgnoreAreas(
   ).then(handleResponse);
 }
 
-function setComment(id: string, comment: string): Promise<TestVariation> {
+async function setComment(id: string, comment: string): Promise<TestVariation> {
   const requestOptions = {
     method: "PUT",
     headers: { "Content-Type": "application/json", ...authHeader() },
@@ -65,7 +65,7 @@ function setComment(id: string, comment: string): Promise<TestVariation> {
   );
 }
 
-function merge(projectId: String, branchName: String): Promise<Build> {
+async function merge(projectId: String, branchName: String): Promise<Build> {
   const requestOptions = {
     method: "GET",
     headers: authHeader(),
@@ -77,7 +77,7 @@ function merge(projectId: String, branchName: String): Promise<Build> {
   ).then(handleResponse);
 }
 
-function remove(id: String): Promise<TestVariation> {
+async function remove(id: String): Promise<TestVariation> {
   const requestOptions = {
     method: "DELETE",
     headers: authHeader(),

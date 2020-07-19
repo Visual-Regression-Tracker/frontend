@@ -7,8 +7,10 @@ import { Container, Box, Grid, Typography } from "@material-ui/core";
 import ProjectSelect from "../components/ProjectSelect";
 import Filters from "../components/Filters";
 import { TestVariationMergeForm } from "../components/TestVariationMergeForm";
+import { useSnackbar } from "notistack";
 
 const TestVariationListPage: React.FunctionComponent = () => {
+  const { enqueueSnackbar } = useSnackbar();
   const { projectId = "" } = useParams();
   const [testVariations, setTestVariations] = React.useState<TestVariation[]>(
     []
@@ -25,11 +27,18 @@ const TestVariationListPage: React.FunctionComponent = () => {
 
   React.useEffect(() => {
     if (projectId) {
-      testVariationService.getList(projectId).then((testVariations) => {
-        setTestVariations(testVariations);
-      });
+      testVariationService
+        .getList(projectId)
+        .then((testVariations) => {
+          setTestVariations(testVariations);
+        })
+        .catch((err) =>
+          enqueueSnackbar(err, {
+            variant: "error",
+          })
+        );
     }
-  }, [projectId]);
+  }, [projectId, enqueueSnackbar]);
 
   React.useEffect(() => {
     setFilteredItems(
@@ -46,9 +55,19 @@ const TestVariationListPage: React.FunctionComponent = () => {
   }, [query, branchName, os, device, browser, viewport, testVariations]);
 
   const handleDelete = (id: string) => {
-    testVariationService.remove(id).then((item) => {
-      setTestVariations(testVariations.filter((i) => i.id !== item.id));
-    });
+    testVariationService
+      .remove(id)
+      .then((item) => {
+        setTestVariations(testVariations.filter((i) => i.id !== item.id));
+        enqueueSnackbar("Deleted", {
+          variant: "success",
+        });
+      })
+      .catch((err) =>
+        enqueueSnackbar(err, {
+          variant: "error",
+        })
+      );
   };
 
   return (

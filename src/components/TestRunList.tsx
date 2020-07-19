@@ -138,7 +138,7 @@ const TestRunList: React.FunctionComponent<{
             onClick={() => {
               deleteTestRun(testRunDispatch, selectedTestRun.id)
                 .then((testRun) => {
-                  enqueueSnackbar(`Removed`, {
+                  enqueueSnackbar(`Deleted`, {
                     variant: "success",
                   });
                 })

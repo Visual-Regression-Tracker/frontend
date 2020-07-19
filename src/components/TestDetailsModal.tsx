@@ -263,6 +263,16 @@ const TestDetailsModal: React.FunctionComponent<{
                     comment
                   ),
                 ])
+                  .then(() =>
+                    enqueueSnackbar("Comment updated", {
+                      variant: "success",
+                    })
+                  )
+                  .catch((err) =>
+                    enqueueSnackbar(err, {
+                      variant: "error",
+                    })
+                  )
               }
             />
           </Grid>
@@ -298,11 +308,21 @@ const TestDetailsModal: React.FunctionComponent<{
                 <Grid item>
                   <IconButton
                     disabled={isIgnoreAreasSaved()}
-                    onClick={() => {
-                      // update in test run
-                      testRunService
-                        .setIgnoreAreas(testRun.id, ignoreAreas)
-                        .then(() =>
+                    onClick={() =>
+                      Promise.all([
+                        // update in test run
+                        testRunService.setIgnoreAreas(testRun.id, ignoreAreas),
+                        // update in variation
+                        testVariationService.setIgnoreAreas(
+                          testRun.testVariationId,
+                          ignoreAreas
+                        ),
+                      ])
+                        .then(() => {
+                          enqueueSnackbar("Ignore areas are updated", {
+                            variant: "success",
+                          });
+
                           // recalculate diff
                           testRunService
                             .recalculateDiff(testRun.id)
@@ -313,30 +333,14 @@ const TestDetailsModal: React.FunctionComponent<{
                               enqueueSnackbar("Diff recalculated", {
                                 variant: "success",
                               })
-                            )
-                            .catch((err) =>
-                              enqueueSnackbar(err, {
-                                variant: "error",
-                              })
-                            )
-                        )
-                        .then(() =>
-                          enqueueSnackbar("Ignore areas are updated", {
-                            variant: "success",
-                          })
-                        )
+                            );
+                        })
                         .catch((err) =>
                           enqueueSnackbar(err, {
                             variant: "error",
                           })
-                        );
-
-                      // update in variation
-                      testVariationService.setIgnoreAreas(
-                        testRun.testVariationId,
-                        ignoreAreas
-                      );
-                    }}
+                        )
+                    }
                   >
                     <Save />
                   </IconButton>
