@@ -11,15 +11,21 @@ import {
 } from "@material-ui/core";
 import { useAuthDispatch, login } from "../contexts";
 import { routes } from "../constants";
+import { useSnackbar } from "notistack";
 
 const LoginForm = () => {
+  const { enqueueSnackbar } = useSnackbar();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const dispatch = useAuthDispatch();
 
   const handleSubmit = (event: FormEvent) => {
     event.preventDefault();
-    login(dispatch, email, password);
+    login(dispatch, email, password).catch((err) =>
+      enqueueSnackbar(err, {
+        variant: "error",
+      })
+    );
   };
 
   return (

@@ -42,7 +42,7 @@ function register(firstName: string, lastName: string, email: string, password: 
     });
 }
 
-function update({ id, firstName, lastName, email }: { id: string, firstName: string, lastName: string, email: string }): Promise<User> {
+function update({ firstName, lastName, email }: { firstName: string, lastName: string, email: string }): Promise<User> {
   const requestOptions = {
     method: "PUT",
     headers: { "Content-Type": "application/json", ...authHeader() },

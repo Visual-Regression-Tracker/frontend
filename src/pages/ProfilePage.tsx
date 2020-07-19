@@ -8,14 +8,12 @@ import {
   Button,
   Typography,
 } from "@material-ui/core";
-import {
-  useAuthState,
-  useAuthDispatch,
-  update,
-} from "../contexts";
+import { useAuthState, useAuthDispatch, update } from "../contexts";
 import { usersService } from "../services";
+import { useSnackbar } from "notistack";
 
 const ProfilePage = () => {
+  const { enqueueSnackbar } = useSnackbar();
   const { user } = useAuthState();
   const dispatch = useAuthDispatch();
   const [email, setEmail] = useState(user?.email);
@@ -26,23 +24,42 @@ const ProfilePage = () => {
   const handleUserUpdateSubmit = (event: FormEvent) => {
     event.preventDefault();
     if (user && firstName && lastName && email) {
-      usersService
-        .update({
-          id: user.id,
-          firstName,
-          lastName,
-          email,
-        })
-        .then((user) => update(dispatch, user));
+      update(dispatch, {
+        firstName,
+        lastName,
+        email,
+      })
+        .then(() =>
+          enqueueSnackbar("User updated", {
+            variant: "success",
+          })
+        )
+        .catch((err) =>
+          enqueueSnackbar(err, {
+            variant: "error",
+          })
+        );
     }
   };
 
   const handlePasswordUpdateSubmit = (event: FormEvent) => {
     event.preventDefault();
     if (user && password) {
-      usersService.changePassword(password).then((isChanged) => {
-        setPassword("");
-      });
+      usersService
+        .changePassword(password)
+        .then((isChanged) => {
+          setPassword("");
+        })
+        .then(() =>
+          enqueueSnackbar("Password updated", {
+            variant: "success",
+          })
+        )
+        .catch((err) =>
+          enqueueSnackbar(err, {
+            variant: "error",
+          })
+        );
     }
   };
 

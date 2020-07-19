@@ -9,8 +9,10 @@ import {
 } from "@material-ui/core";
 import { useAuthDispatch, login } from "../contexts";
 import { usersService } from "../services";
+import { useSnackbar } from "notistack";
 
 const RegisterForm = () => {
+  const { enqueueSnackbar } = useSnackbar();
   const [email, setEmail] = useState("");
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
@@ -21,7 +23,12 @@ const RegisterForm = () => {
     event.preventDefault();
     usersService
       .register(firstName, lastName, email, password)
-      .then(() => login(dispatch, email, password));
+      .then(() => login(dispatch, email, password))
+      .catch((err) =>
+        enqueueSnackbar(err, {
+          variant: "error",
+        })
+      );
   };
 
   return (
