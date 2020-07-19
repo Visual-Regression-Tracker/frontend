@@ -40,6 +40,7 @@ import { routes } from "../constants";
 import { useTestRunDispatch, updateTestRun, selectTestRun } from "../contexts";
 import { DrawArea } from "./DrawArea";
 import { CommentsPopper } from "./CommentsPopper";
+import { useSnackbar } from "notistack";
 
 const useStyles = makeStyles((theme) => ({
   imageContainer: {
@@ -57,6 +58,7 @@ const TestDetailsModal: React.FunctionComponent<{
 }> = ({ testRun }) => {
   const classes = useStyles();
   const history = useHistory();
+  const { enqueueSnackbar } = useSnackbar();
   const testRunDispatch = useTestRunDispatch();
 
   const stageWidth = (window.innerWidth / 2) * 0.9;
@@ -177,6 +179,16 @@ const TestDetailsModal: React.FunctionComponent<{
                           .then((testRun) => {
                             updateTestRun(testRunDispatch, testRun);
                           })
+                          .then(() =>
+                            enqueueSnackbar("Approved", {
+                              variant: "success",
+                            })
+                          )
+                          .catch((err) =>
+                            enqueueSnackbar(err, {
+                              variant: "error",
+                            })
+                          )
                       }
                     >
                       Approve
@@ -186,9 +198,21 @@ const TestDetailsModal: React.FunctionComponent<{
                     <Button
                       color="secondary"
                       onClick={() =>
-                        testRunService.reject(testRun.id).then((testRun) => {
-                          updateTestRun(testRunDispatch, testRun);
-                        })
+                        testRunService
+                          .reject(testRun.id)
+                          .then((testRun) => {
+                            updateTestRun(testRunDispatch, testRun);
+                          })
+                          .then(() =>
+                            enqueueSnackbar("Rejected", {
+                              variant: "success",
+                            })
+                          )
+                          .catch((err) =>
+                            enqueueSnackbar(err, {
+                              variant: "error",
+                            })
+                          )
                       }
                     >
                       Reject
@@ -285,6 +309,26 @@ const TestDetailsModal: React.FunctionComponent<{
                             .then((testRun) =>
                               updateTestRun(testRunDispatch, testRun)
                             )
+                            .then(() =>
+                              enqueueSnackbar("Diff recalculated", {
+                                variant: "success",
+                              })
+                            )
+                            .catch((err) =>
+                              enqueueSnackbar(err, {
+                                variant: "error",
+                              })
+                            )
+                        )
+                        .then(() =>
+                          enqueueSnackbar("Ignore areas are updated", {
+                            variant: "success",
+                          })
+                        )
+                        .catch((err) =>
+                          enqueueSnackbar(err, {
+                            variant: "error",
+                          })
                         );
 
                       // update in variation

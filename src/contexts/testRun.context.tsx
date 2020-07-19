@@ -165,27 +165,18 @@ function useTestRunDispatch() {
 async function getTestRunList(dispatch: Dispatch, buildId: string) {
   dispatch({ type: "request" });
 
-  testRunService
-    .getList(buildId)
-    .then((items) => {
-      dispatch({ type: "get", payload: items });
-    })
-    .catch((error) => {
-      console.log(error.toString());
-    });
+  return testRunService.getList(buildId).then((items) => {
+    dispatch({ type: "get", payload: items });
+  });
 }
 
 async function deleteTestRun(dispatch: Dispatch, id: string) {
-  testRunService
-    .remove(id)
-    .then((isDeleted) => {
-      if (isDeleted) {
-        dispatch({ type: "delete", payload: id });
-      }
-    })
-    .catch((error) => {
-      console.log(error.toString());
-    });
+  dispatch({ type: "request" });
+
+  return testRunService.remove(id).then((testRun) => {
+    dispatch({ type: "delete", payload: id });
+    return testRun;
+  });
 }
 
 async function selectTestRun(dispatch: Dispatch, id: string | undefined) {

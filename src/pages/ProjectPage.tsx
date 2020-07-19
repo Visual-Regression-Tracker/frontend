@@ -99,9 +99,13 @@ const ProjectPage = () => {
 
   useEffect(() => {
     if (selectedBuildId) {
-      getTestRunList(testRunDispatch, selectedBuildId);
+      getTestRunList(testRunDispatch, selectedBuildId).catch((err) =>
+        enqueueSnackbar(err, {
+          variant: "error",
+        })
+      );
     }
-  }, [selectedBuildId, testRunDispatch]);
+  }, [selectedBuildId, testRunDispatch, enqueueSnackbar]);
 
   useEffect(() => {
     const queryParams = getQueryParams(location.search);
