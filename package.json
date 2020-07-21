@@ -16,7 +16,7 @@
     "react": "^16.13.1",
     "react-debounce-input": "^3.2.2",
     "react-dom": "^16.13.1",
-    "react-konva": "^16.13.0-0",
+    "react-konva": "^16.13.0-3",
     "react-router-dom": "^5.2.0",
     "react-scripts": "3.4.1",
     "socket.io-client": "^2.3.0",
