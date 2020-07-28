@@ -4,27 +4,27 @@ import { useAuthState } from "../contexts";
 import { routes } from "../constants";
 
 const PrivateRoute: React.SFC<RouteProps> = ({
-    component: Component,
-    ...rest
+  component: Component,
+  ...rest
 }) => {
-    const { loggedIn } = useAuthState();
-    if (!Component) {
-        return null;
-    }
-    return (
-        <Route
-            {...rest}
-            render={(props) =>
-                loggedIn ? (
-                    <Component {...props} />
-                ) : (
-                        <Redirect
-                            to={{ pathname: routes.LOGIN, state: { from: props.location } }}
-                        />
-                    )
-            }
-        />
-    );
+  const { loggedIn } = useAuthState();
+  if (!Component) {
+    return null;
+  }
+  return (
+    <Route
+      {...rest}
+      render={(props) =>
+        loggedIn ? (
+          <Component {...props} />
+        ) : (
+          <Redirect
+            to={{ pathname: routes.LOGIN, state: { from: props.location } }}
+          />
+        )
+      }
+    />
+  );
 };
 
 export default PrivateRoute;

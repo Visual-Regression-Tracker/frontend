@@ -126,7 +126,11 @@ export const DrawArea: FunctionComponent<IDrawArea> = ({
     <React.Fragment>
       <Grid container direction="column">
         <Grid item>
-          <ImageDetails type={type} branchName={branchName} imageName={imageName} />
+          <ImageDetails
+            type={type}
+            branchName={branchName}
+            imageName={imageName}
+          />
         </Grid>
         {imageStatus === "loading" && (
           <Grid

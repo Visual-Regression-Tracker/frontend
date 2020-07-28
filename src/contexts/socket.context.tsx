@@ -1,6 +1,11 @@
 import * as React from "react";
 import socketIOClient from "socket.io-client";
-import { useBuildState, useBuildDispatch, addBuild, updateBuild } from "./build.context";
+import {
+  useBuildState,
+  useBuildDispatch,
+  addBuild,
+  updateBuild,
+} from "./build.context";
 import { Build, TestRun } from "../types";
 import { useTestRunDispatch, addTestRun } from "./testRun.context";
 

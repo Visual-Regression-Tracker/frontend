@@ -2,13 +2,6 @@ import { Project } from "../types";
 import { handleResponse, authHeader } from "../_helpers/service.helpers";
 import { API_URL } from "../_config/api.config";
 
-export const projectsService = {
-  getAll,
-  remove,
-  create,
-  update,
-};
-
 function getAll(): Promise<Project[]> {
   const requestOptions = {
     method: "GET",
@@ -55,3 +48,10 @@ function update(project: {
 
   return fetch(`${API_URL}/projects`, requestOptions).then(handleResponse);
 }
+
+export const projectsService = {
+  getAll,
+  remove,
+  create,
+  update,
+};

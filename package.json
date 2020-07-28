@@ -9,9 +9,12 @@
     "@testing-library/jest-dom": "^5.11.1",
     "@testing-library/react": "^10.4.7",
     "@testing-library/user-event": "^12.0.11",
+    "husky": "^4.2.5",
     "konva": "^7.0.3",
+    "lint-staged": "^10.2.11",
     "material-ui-popup-state": "^1.6.1",
     "notistack": "^0.9.17",
+    "prettier": "^2.0.5",
     "qs": "^6.9.4",
     "react": "^16.13.1",
     "react-debounce-input": "^3.2.2",
@@ -41,6 +44,16 @@
       "last 1 chrome version",
       "last 1 firefox version",
       "last 1 safari version"
+    ]
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "lint-staged"
+    }
+  },
+  "lint-staged": {
+    "src/**/*.{js,jsx,ts,tsx,json,css,scss,md}": [
+      "prettier --write"
     ]
   },
   "devDependencies": {

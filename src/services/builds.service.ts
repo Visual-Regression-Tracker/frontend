@@ -2,12 +2,7 @@ import { Build } from "../types";
 import { handleResponse, authHeader } from "../_helpers/service.helpers";
 import { API_URL } from "../_config/api.config";
 
-const ENDPOINT_URL = "/builds"
-
-export const buildsService = {
-  getList,
-  remove,
-};
+const ENDPOINT_URL = "/builds";
 
 function getList(projectId: string): Promise<Build[]> {
   const requestOptions = {
@@ -15,9 +10,10 @@ function getList(projectId: string): Promise<Build[]> {
     headers: authHeader(),
   };
 
-  return fetch(`${API_URL}${ENDPOINT_URL}?projectId=${projectId}`, requestOptions).then(
-    handleResponse
-  );
+  return fetch(
+    `${API_URL}${ENDPOINT_URL}?projectId=${projectId}`,
+    requestOptions
+  ).then(handleResponse);
 }
 
 function remove(id: string): Promise<Build> {
@@ -26,5 +22,12 @@ function remove(id: string): Promise<Build> {
     headers: authHeader(),
   };
 
-  return fetch(`${API_URL}${ENDPOINT_URL}/${id}`, requestOptions).then(handleResponse);
+  return fetch(`${API_URL}${ENDPOINT_URL}/${id}`, requestOptions).then(
+    handleResponse
+  );
 }
+
+export const buildsService = {
+  getList,
+  remove,
+};

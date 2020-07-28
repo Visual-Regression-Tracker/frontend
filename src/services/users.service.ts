@@ -2,15 +2,7 @@ import { handleResponse, authHeader } from "../_helpers/service.helpers";
 import { User } from "../types/user";
 import { API_URL } from "../_config/api.config";
 
-const ENDPOINT_URL = "/users"
-
-export const usersService = {
-  login,
-  logout,
-  register,
-  update,
-  changePassword,
-};
+const ENDPOINT_URL = "/users";
 
 function login(email: string, password: string): Promise<User> {
   const requestOptions = {
@@ -22,12 +14,17 @@ function login(email: string, password: string): Promise<User> {
   return fetch(`${API_URL}${ENDPOINT_URL}/login`, requestOptions)
     .then(handleResponse)
     .then((user) => {
-      setUserInLocalStorage(user)
+      setUserInLocalStorage(user);
       return user;
     });
 }
 
-function register(firstName: string, lastName: string, email: string, password: string): Promise<User> {
+function register(
+  firstName: string,
+  lastName: string,
+  email: string,
+  password: string
+): Promise<User> {
   const requestOptions = {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -37,12 +34,20 @@ function register(firstName: string, lastName: string, email: string, password: 
   return fetch(`${API_URL}${ENDPOINT_URL}/register`, requestOptions)
     .then(handleResponse)
     .then((user) => {
-      setUserInLocalStorage(user)
+      setUserInLocalStorage(user);
       return user;
     });
 }
 
-function update({ firstName, lastName, email }: { firstName: string, lastName: string, email: string }): Promise<User> {
+function update({
+  firstName,
+  lastName,
+  email,
+}: {
+  firstName: string;
+  lastName: string;
+  email: string;
+}): Promise<User> {
   const requestOptions = {
     method: "PUT",
     headers: { "Content-Type": "application/json", ...authHeader() },
@@ -52,7 +57,7 @@ function update({ firstName, lastName, email }: { firstName: string, lastName: s
   return fetch(`${API_URL}${ENDPOINT_URL}`, requestOptions)
     .then(handleResponse)
     .then((user) => {
-      setUserInLocalStorage(user)
+      setUserInLocalStorage(user);
       return user;
     });
 }
@@ -64,8 +69,9 @@ function changePassword(password: string): Promise<boolean> {
     body: JSON.stringify({ password }),
   };
 
-  return fetch(`${API_URL}${ENDPOINT_URL}/password`, requestOptions)
-    .then(handleResponse)
+  return fetch(`${API_URL}${ENDPOINT_URL}/password`, requestOptions).then(
+    handleResponse
+  );
 }
 
 function setUserInLocalStorage(user: User) {
@@ -76,3 +82,11 @@ function setUserInLocalStorage(user: User) {
 function logout() {
   localStorage.removeItem("user");
 }
+
+export const usersService = {
+  login,
+  logout,
+  register,
+  update,
+  changePassword,
+};
