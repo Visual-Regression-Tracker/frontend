@@ -1,7 +1,7 @@
 export const routes = {
   // open
-  LOGIN: '/login',
-  REGISTER: '/register',
+  LOGIN: "/login",
+  REGISTER: "/register",
 
   // secured
   HOME: "/",

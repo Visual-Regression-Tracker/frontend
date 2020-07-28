@@ -132,7 +132,7 @@ const ProjectsListPage = () => {
           <Grid item xs={4} key={project.id}>
             <Card>
               <CardContent>
-                <Typography>Key: {project.id}</Typography>
+                <Typography>Id: {project.id}</Typography>
                 <Typography>Name: {project.name}</Typography>
                 <Typography>Main branch: {project.mainBranchName}</Typography>
                 <Typography>

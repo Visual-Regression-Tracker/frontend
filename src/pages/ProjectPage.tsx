@@ -71,10 +71,7 @@ const ProjectPage = () => {
   const { enqueueSnackbar } = useSnackbar();
   const { buildList, selectedBuildId } = useBuildState();
   const buildDispatch = useBuildDispatch();
-  const {
-    testRuns,
-    selectedTestRunIndex,
-  } = useTestRunState();
+  const { testRuns, selectedTestRunIndex } = useTestRunState();
   const testRunDispatch = useTestRunDispatch();
 
   // filter

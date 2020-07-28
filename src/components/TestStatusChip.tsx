@@ -19,7 +19,7 @@ const TestStatusChip: React.FunctionComponent<{ status: TestStatus }> = ({
     default:
       color = undefined;
   }
-  return <Chip variant="outlined" color={color} label={status} size="small"/>;
+  return <Chip variant="outlined" color={color} label={status} size="small" />;
 };
 
 export default TestStatusChip;

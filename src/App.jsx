@@ -1,5 +1,5 @@
 import React from "react";
-import { SnackbarProvider } from 'notistack';
+import { SnackbarProvider } from "notistack";
 import "./App.css";
 import Header from "./components/Header";
 import {

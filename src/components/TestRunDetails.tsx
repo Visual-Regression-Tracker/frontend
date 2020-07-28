@@ -16,7 +16,7 @@ export const TestRunDetails: React.FunctionComponent<IProps> = ({
           <Typography>OS: {testRun.os}</Typography>
         </Grid>
       )}
-       {testRun.device && (
+      {testRun.device && (
         <Grid item>
           <Typography>Device: {testRun.device}</Typography>
         </Grid>

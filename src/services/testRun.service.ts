@@ -5,16 +5,6 @@ import { IgnoreArea } from "../types/ignoreArea";
 
 const ENDPOINT_URL = "/test-runs";
 
-export const testRunService = {
-  getList,
-  remove,
-  recalculateDiff,
-  approve,
-  reject,
-  setIgnoreAreas,
-  setComment,
-};
-
 async function getList(buildId: string): Promise<TestRun[]> {
   const requestOptions = {
     method: "GET",
@@ -100,3 +90,13 @@ async function setComment(id: string, comment: string): Promise<TestRun> {
     handleResponse
   );
 }
+
+export const testRunService = {
+  getList,
+  remove,
+  recalculateDiff,
+  approve,
+  reject,
+  setIgnoreAreas,
+  setComment,
+};
