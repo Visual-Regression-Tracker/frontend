@@ -8,9 +8,7 @@ import {
   CardActions,
   Fab,
   Button,
-  Container,
   Box,
-  useTheme,
 } from "@material-ui/core";
 import {
   useProjectState,
@@ -28,7 +26,6 @@ import { ProjectModal } from "../components/ProjectModal";
 import { useSnackbar } from "notistack";
 
 const ProjectsListPage = () => {
-  const theme = useTheme();
   const { enqueueSnackbar } = useSnackbar();
   const projectState = useProjectState();
   const projectDispatch = useProjectDispatch();
@@ -62,11 +59,7 @@ const ProjectsListPage = () => {
   };
 
   return (
-    <Container
-      style={{
-        marginTop: theme.spacing(4),
-      }}
-    >
+    <Box mt={2}>
       <Grid container spacing={2}>
         <Grid item xs={4}>
           <Box
@@ -187,7 +180,7 @@ const ProjectsListPage = () => {
           </Grid>
         ))}
       </Grid>
-    </Container>
+    </Box>
   );
 };
 
