@@ -4,6 +4,11 @@ import { API_URL } from "../_config/api.config";
 
 const ENDPOINT_URL = "/users";
 
+function setUserInLocalStorage(user: User) {
+  // store user details and jwt token in local storage to keep user logged in between page refreshes
+  localStorage.setItem("user", JSON.stringify(user));
+}
+
 function login(email: string, password: string): Promise<User> {
   const requestOptions = {
     method: "POST",
@@ -72,11 +77,6 @@ function changePassword(password: string): Promise<boolean> {
   return fetch(`${API_URL}${ENDPOINT_URL}/password`, requestOptions).then(
     handleResponse
   );
-}
-
-function setUserInLocalStorage(user: User) {
-  // store user details and jwt token in local storage to keep user logged in between page refreshes
-  localStorage.setItem("user", JSON.stringify(user));
 }
 
 function logout() {
