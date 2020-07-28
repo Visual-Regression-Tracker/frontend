@@ -9,11 +9,7 @@ import {
   MenuItem,
 } from "@material-ui/core";
 import { Link } from "react-router-dom";
-import {
-  useAuthState,
-  useAuthDispatch,
-  logout,
-} from "../contexts";
+import { useAuthState, useAuthDispatch, logout } from "../contexts";
 import { routes } from "../constants";
 
 const Header: FunctionComponent = () => {
@@ -65,15 +61,11 @@ const Header: FunctionComponent = () => {
     <React.Fragment>
       <AppBar position="static" color="default">
         <Toolbar>
-          <Grid container justify="space-between">
+          <Grid container justify="space-between" alignItems="center">
             <Grid item>
-              <Grid container>
-                <Grid item>
-                  <Link to="/">
-                    <img src="/logo512.png" width="40" height="40" alt="logo" />
-                  </Link>
-                </Grid>
-              </Grid>
+              <Link to="/">
+                <img src="/logo.png" width="60" height="60" alt="logo" />
+              </Link>
             </Grid>
             <Grid item>
               {loggedIn && (
