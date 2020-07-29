@@ -1,6 +1,6 @@
 import { handleResponse, authHeader } from "../_helpers/service.helpers";
 import { User } from "../types/user";
-import { API_URL } from "../_config/api.config";
+import { API_URL } from "../_config/env.config";
 
 const ENDPOINT_URL = "/users";
 

@@ -1,4 +1,4 @@
-import { API_URL } from "../_config/api.config";
+import { API_URL } from "../_config/env.config";
 
 function getImage(name: string): string {
   if (name) return `${API_URL}/${name}`;
