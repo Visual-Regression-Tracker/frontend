@@ -1,6 +1,6 @@
 import { TestVariation, Build } from "../types";
 import { handleResponse, authHeader } from "../_helpers/service.helpers";
-import { API_URL } from "../_config/api.config";
+import { API_URL } from "../_config/env.config";
 import { IgnoreArea } from "../types/ignoreArea";
 
 const ENDPOINT_URL = "/test-variations";

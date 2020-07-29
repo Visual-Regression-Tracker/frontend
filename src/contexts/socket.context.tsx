@@ -8,6 +8,7 @@ import {
 } from "./build.context";
 import { Build, TestRun } from "../types";
 import { useTestRunDispatch, addTestRun } from "./testRun.context";
+import { API_URL } from "../_config/env.config";
 
 interface IConnectAction {
   type: "connect";
@@ -100,13 +101,12 @@ function useSocketDispatch() {
 }
 
 function connect(dispatch: Dispatch) {
-  const apiUrl = process.env.REACT_APP_API_URL;
-  if (apiUrl) {
-    const socket = socketIOClient(apiUrl);
+  if (API_URL) {
+    const socket = socketIOClient(API_URL);
     dispatch({ type: "connect", payload: socket });
     console.log("Socket connected");
   } else {
-    console.log("API url is not provided: " + apiUrl);
+    console.log("API url is not provided");
   }
 }
 
