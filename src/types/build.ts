@@ -14,4 +14,5 @@ export interface Build {
   unresolvedCount: number;
   passedCount: number;
   failedCount: number;
+  isRunning: boolean;
 }

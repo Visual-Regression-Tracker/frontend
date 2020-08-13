@@ -11,19 +11,24 @@ import {
   Chip,
   Typography,
   Grid,
+  LinearProgress,
+  Menu,
+  MenuItem,
 } from "@material-ui/core";
-import { Delete } from "@material-ui/icons";
+import { MoreVert } from "@material-ui/icons";
 import { useHistory } from "react-router-dom";
 import {
   useBuildState,
   useBuildDispatch,
   deleteBuild,
   selectBuild,
+  stopBuild,
 } from "../contexts";
 import { BuildStatusChip } from "./BuildStatusChip";
 import { SkeletonList } from "./SkeletonList";
 import { formatDateTime } from "../_helpers/format.helper";
 import { useSnackbar } from "notistack";
+import { Build } from "../types";
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -45,81 +50,130 @@ const BuildList: FunctionComponent = () => {
   const buildDispatch = useBuildDispatch();
   const { enqueueSnackbar } = useSnackbar();
 
-  return (
-    <List>
-      {loading ? (
-        <SkeletonList />
-      ) : (
-        buildList.map((build) => (
-          <ListItem
-            key={build.id}
-            selected={selectedBuildId === build.id}
-            button
-            onClick={() => {
-              selectBuild(buildDispatch, build.id);
-              history.push({
-                search: "buildId=" + build.id,
-              });
-            }}
-            classes={{
-              container: classes.listItem,
-            }}
-          >
-            <ListItemText
-              disableTypography
-              primary={
-                <Grid container>
-                  <Grid item>
-                    <Typography variant="subtitle2">{`#${build.id}`}</Typography>
-                  </Grid>
-                </Grid>
-              }
-              secondary={
-                <Grid container direction="column">
-                  <Grid item>
-                    <Typography variant="caption" color="textPrimary">
-                      {formatDateTime(build.createdAt)}
-                    </Typography>
-                  </Grid>
-                  <Grid item>
-                    <Grid container justify="space-between">
-                      <Grid item>
-                        <Chip size="small" label={build.branchName} />
-                      </Grid>
-                      <Grid item>
-                        <BuildStatusChip status={build.status} />
-                      </Grid>
-                    </Grid>
-                  </Grid>
-                </Grid>
-              }
-            />
+  const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
+  const [menuBuild, setMenuBuild] = React.useState<Build>();
 
-            <ListItemSecondaryAction
-              className={classes.listItemSecondaryAction}
-            >
-              <IconButton
+  const handleMenuClick = (
+    event: React.MouseEvent<HTMLElement>,
+    build: Build
+  ) => {
+    event.stopPropagation();
+    setAnchorEl(event.currentTarget);
+    setMenuBuild(build);
+  };
+
+  const handleMenuClose = () => {
+    setMenuBuild(undefined);
+  };
+
+  return (
+    <React.Fragment>
+      <List>
+        {loading ? (
+          <SkeletonList />
+        ) : (
+          buildList.map((build) => (
+            <React.Fragment key={build.id}>
+              <ListItem
+                selected={selectedBuildId === build.id}
+                button
                 onClick={() => {
-                  deleteBuild(buildDispatch, build.id)
-                    .then((b) =>
-                      enqueueSnackbar(`${b.id} deleted`, {
-                        variant: "success",
-                      })
-                    )
-                    .catch((err) =>
-                      enqueueSnackbar(err, {
-                        variant: "error",
-                      })
-                    );
+                  selectBuild(buildDispatch, build.id);
+                  history.push({
+                    search: "buildId=" + build.id,
+                  });
+                }}
+                classes={{
+                  container: classes.listItem,
                 }}
               >
-                <Delete />
-              </IconButton>
-            </ListItemSecondaryAction>
-          </ListItem>
-        ))
+                <ListItemText
+                  disableTypography
+                  primary={
+                    <Grid container>
+                      <Grid item>
+                        <Typography variant="subtitle2">{`#${build.id}`}</Typography>
+                      </Grid>
+                    </Grid>
+                  }
+                  secondary={
+                    <Grid container direction="column">
+                      <Grid item>
+                        <Typography variant="caption" color="textPrimary">
+                          {formatDateTime(build.createdAt)}
+                        </Typography>
+                      </Grid>
+                      <Grid item>
+                        <Grid container justify="space-between">
+                          <Grid item>
+                            <Chip size="small" label={build.branchName} />
+                          </Grid>
+                          <Grid item>
+                            <BuildStatusChip status={build.status} />
+                          </Grid>
+                        </Grid>
+                      </Grid>
+                    </Grid>
+                  }
+                />
+
+                <ListItemSecondaryAction
+                  className={classes.listItemSecondaryAction}
+                >
+                  <IconButton
+                    onClick={(event) => handleMenuClick(event, build)}
+                  >
+                    <MoreVert />
+                  </IconButton>
+                </ListItemSecondaryAction>
+              </ListItem>
+              {build.isRunning && <LinearProgress />}
+            </React.Fragment>
+          ))
+        )}
+      </List>
+
+      {menuBuild && (
+        <Menu anchorEl={anchorEl} open={!!menuBuild} onClose={handleMenuClose}>
+          <MenuItem
+            onClick={() => {
+              stopBuild(buildDispatch, menuBuild.id)
+                .then((b) =>
+                  enqueueSnackbar(`${menuBuild.id} finished`, {
+                    variant: "success",
+                  })
+                )
+                .catch((err) =>
+                  enqueueSnackbar(err, {
+                    variant: "error",
+                  })
+                );
+              handleMenuClose();
+            }}
+          >
+            Stop
+          </MenuItem>
+          <MenuItem
+            onClick={() => {
+              deleteBuild(buildDispatch, menuBuild.id)
+                .then((b) =>
+                  enqueueSnackbar(`${menuBuild.id} deleted`, {
+                    variant: "success",
+                  })
+                )
+                .catch((err) =>
+                  enqueueSnackbar(err, {
+                    variant: "error",
+                  })
+                );
+              handleMenuClose();
+            }}
+          >
+            Delete
+          </MenuItem>
+        </Menu>
       )}
-    </List>
+    </React.Fragment>
   );
 };
 

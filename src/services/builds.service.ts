@@ -4,7 +4,7 @@ import { API_URL } from "../_config/env.config";
 
 const ENDPOINT_URL = "/builds";
 
-function getList(projectId: string): Promise<Build[]> {
+async function getList(projectId: string): Promise<Build[]> {
   const requestOptions = {
     method: "GET",
     headers: authHeader(),
@@ -16,9 +16,20 @@ function getList(projectId: string): Promise<Build[]> {
   ).then(handleResponse);
 }
 
-function remove(id: string): Promise<Build> {
+async function remove(id: string): Promise<Build> {
   const requestOptions = {
     method: "DELETE",
+    headers: authHeader(),
+  };
+
+  return fetch(`${API_URL}${ENDPOINT_URL}/${id}`, requestOptions).then(
+    handleResponse
+  );
+}
+
+async function stop(id: string): Promise<Build> {
+  const requestOptions = {
+    method: "PATCH",
     headers: authHeader(),
   };
 
@@ -30,4 +41,5 @@ function remove(id: string): Promise<Build> {
 export const buildsService = {
   getList,
   remove,
+  stop,
 };

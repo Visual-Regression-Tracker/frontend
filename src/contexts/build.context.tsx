@@ -146,6 +146,13 @@ async function deleteBuild(dispatch: Dispatch, id: string) {
   });
 }
 
+async function stopBuild(dispatch: Dispatch, id: string) {
+  return buildsService.stop(id).then((build) => {
+    dispatch({ type: "update", payload: build });
+    return build;
+  });
+}
+
 async function selectBuild(dispatch: Dispatch, id: string) {
   dispatch({ type: "select", payload: id });
 }
@@ -167,4 +174,5 @@ export {
   selectBuild,
   addBuild,
   updateBuild,
+  stopBuild,
 };
