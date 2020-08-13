@@ -51,7 +51,7 @@ const BuildList: FunctionComponent = () => {
   const { enqueueSnackbar } = useSnackbar();
 
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
-  const [menuBuild, setMenuBuild] = React.useState<Build>();
+  const [menuBuild, setMenuBuild] = React.useState<Build | null>();
 
   const handleMenuClick = (
     event: React.MouseEvent<HTMLElement>,
@@ -63,7 +63,7 @@ const BuildList: FunctionComponent = () => {
   };
 
   const handleMenuClose = () => {
-    setMenuBuild(undefined);
+    setMenuBuild(null);
   };
 
   return (
