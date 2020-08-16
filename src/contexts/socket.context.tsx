@@ -63,6 +63,10 @@ function SocketProvider({ children }: SocketProviderProps) {
         addBuild(buildDispatch, build);
       });
 
+      state.socket.on("build_finished", function (build: Build) {
+        updateBuild(buildDispatch, build);
+      });
+
       state.socket.on("build_updated", function (build: Build) {
         updateBuild(buildDispatch, build);
       });
