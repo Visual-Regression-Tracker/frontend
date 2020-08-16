@@ -135,24 +135,26 @@ const BuildList: FunctionComponent = () => {
 
       {menuBuild && (
         <Menu anchorEl={anchorEl} open={!!menuBuild} onClose={handleMenuClose}>
-          <MenuItem
-            onClick={() => {
-              stopBuild(buildDispatch, menuBuild.id)
-                .then((b) =>
-                  enqueueSnackbar(`${menuBuild.id} finished`, {
-                    variant: "success",
-                  })
-                )
-                .catch((err) =>
-                  enqueueSnackbar(err, {
-                    variant: "error",
-                  })
-                );
-              handleMenuClose();
-            }}
-          >
-            Stop
-          </MenuItem>
+          {menuBuild.isRunning && (
+            <MenuItem
+              onClick={() => {
+                stopBuild(buildDispatch, menuBuild.id)
+                  .then((b) =>
+                    enqueueSnackbar(`${menuBuild.id} finished`, {
+                      variant: "success",
+                    })
+                  )
+                  .catch((err) =>
+                    enqueueSnackbar(err, {
+                      variant: "error",
+                    })
+                  );
+                handleMenuClose();
+              }}
+            >
+              Stop
+            </MenuItem>
+          )}
           <MenuItem
             onClick={() => {
               deleteBuild(buildDispatch, menuBuild.id)
