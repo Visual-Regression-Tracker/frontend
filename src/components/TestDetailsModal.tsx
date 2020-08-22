@@ -385,31 +385,14 @@ const TestDetailsModal: React.FunctionComponent<{
           </Grid>
         </Grid>
       </Box>
-      <Grid container>
-        <Grid item xs={6} className={classes.imageContainer}>
-          <DrawArea
-            type="Baseline"
-            imageName={testRun.baselineName}
-            branchName={testRun.baselineBranchName}
-            ignoreAreas={[]}
-            setIgnoreAreas={setIgnoreAreas}
-            selectedRectId={selectedRectId}
-            setSelectedRectId={setSelectedRectId}
-            onStageClick={removeSelection}
-            stageScaleState={[stageScale, setStageScale]}
-            stagePosState={[stagePos, setStagePos]}
-            stageInitPosState={[stageInitPos, setStageInitPos]}
-            stageOffsetState={[stageOffset, setStageOffset]}
-            drawModeState={[false, setIsDrawMode]}
-          />
-        </Grid>
-        <Grid item xs={6} className={classes.imageContainer}>
-          {isDiffShown ? (
+      <Box overflow="auto">
+        <Grid container>
+          <Grid item xs={6} className={classes.imageContainer}>
             <DrawArea
-              type="Diff"
-              imageName={testRun.diffName}
-              branchName={testRun.branchName}
-              ignoreAreas={ignoreAreas}
+              type="Baseline"
+              imageName={testRun.baselineName}
+              branchName={testRun.baselineBranchName}
+              ignoreAreas={[]}
               setIgnoreAreas={setIgnoreAreas}
               selectedRectId={selectedRectId}
               setSelectedRectId={setSelectedRectId}
@@ -418,27 +401,46 @@ const TestDetailsModal: React.FunctionComponent<{
               stagePosState={[stagePos, setStagePos]}
               stageInitPosState={[stageInitPos, setStageInitPos]}
               stageOffsetState={[stageOffset, setStageOffset]}
-              drawModeState={[isDrawMode, setIsDrawMode]}
+              drawModeState={[false, setIsDrawMode]}
             />
-          ) : (
-            <DrawArea
-              type="Image"
-              imageName={testRun.imageName}
-              branchName={testRun.branchName}
-              ignoreAreas={ignoreAreas}
-              setIgnoreAreas={setIgnoreAreas}
-              selectedRectId={selectedRectId}
-              setSelectedRectId={setSelectedRectId}
-              onStageClick={removeSelection}
-              stageScaleState={[stageScale, setStageScale]}
-              stagePosState={[stagePos, setStagePos]}
-              stageInitPosState={[stageInitPos, setStageInitPos]}
-              stageOffsetState={[stageOffset, setStageOffset]}
-              drawModeState={[isDrawMode, setIsDrawMode]}
-            />
-          )}
+          </Grid>
+          <Grid item xs={6} className={classes.imageContainer}>
+            {isDiffShown ? (
+              <DrawArea
+                type="Diff"
+                imageName={testRun.diffName}
+                branchName={testRun.branchName}
+                ignoreAreas={ignoreAreas}
+                setIgnoreAreas={setIgnoreAreas}
+                selectedRectId={selectedRectId}
+                setSelectedRectId={setSelectedRectId}
+                onStageClick={removeSelection}
+                stageScaleState={[stageScale, setStageScale]}
+                stagePosState={[stagePos, setStagePos]}
+                stageInitPosState={[stageInitPos, setStageInitPos]}
+                stageOffsetState={[stageOffset, setStageOffset]}
+                drawModeState={[isDrawMode, setIsDrawMode]}
+              />
+            ) : (
+              <DrawArea
+                type="Image"
+                imageName={testRun.imageName}
+                branchName={testRun.branchName}
+                ignoreAreas={ignoreAreas}
+                setIgnoreAreas={setIgnoreAreas}
+                selectedRectId={selectedRectId}
+                setSelectedRectId={setSelectedRectId}
+                onStageClick={removeSelection}
+                stageScaleState={[stageScale, setStageScale]}
+                stagePosState={[stagePos, setStagePos]}
+                stageInitPosState={[stageInitPos, setStageInitPos]}
+                stageOffsetState={[stageOffset, setStageOffset]}
+                drawModeState={[isDrawMode, setIsDrawMode]}
+              />
+            )}
+          </Grid>
         </Grid>
-      </Grid>
+      </Box>
     </React.Fragment>
   );
 };
