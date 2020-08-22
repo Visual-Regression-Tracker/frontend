@@ -4,7 +4,7 @@ import { RectConfig } from "konva/types/shapes/Rect";
 import Rectangle, { MIN_RECT_SIDE_PIXEL } from "./Rectangle";
 import { KonvaEventObject } from "konva/types/Node";
 import { IgnoreArea } from "../types/ignoreArea";
-import { Grid, makeStyles, CircularProgress } from "@material-ui/core";
+import { Grid, makeStyles, CircularProgress, Box } from "@material-ui/core";
 import useImage from "use-image";
 import { staticService } from "../services";
 import { NoImagePlaceholder } from "./NoImageAvailable";
@@ -12,17 +12,24 @@ import ImageDetails from "./ImageDetails";
 
 const useStyles = makeStyles((theme) => ({
   imageContainer: {
-    overflow: "hidden",
+    // overflow: "hidden",
   },
-  canvasBackground: {
-    width: "100%",
-    backgroundColor: "#f5f5f5",
-  },
+  // canvasBackground: {
+  //   width: "100%",
+  //   backgroundColor: "#f5f5f5",
+  // },
   canvasContainer: {
-    overflow: "hidden",
+    overflow: "auto",
     backgroundColor: "white",
+    // padding: theme.spacing(0.5),
+    // margin: theme.spacing(0.5),
+    height: "100%",
+  },
+  imageDetailsContainer: {
+    position: "absolute",
+    backgroundColor: "white",
+    zIndex: 1,
     padding: theme.spacing(1),
-    margin: theme.spacing(0.5),
   },
   progressContainer: {
     minHeight: "300px",
@@ -124,132 +131,130 @@ export const DrawArea: FunctionComponent<IDrawArea> = ({
 
   return (
     <React.Fragment>
-      <Grid container direction="column">
-        <Grid item>
-          <ImageDetails
-            type={type}
-            branchName={branchName}
-            imageName={imageName}
-          />
-        </Grid>
-        {imageStatus === "loading" && (
-          <Grid
-            container
-            direction="column"
-            alignItems="center"
-            justify="center"
-            className={classes.progressContainer}
-          >
-            <Grid item>
-              <CircularProgress />
-            </Grid>
+      {imageStatus === "loading" && (
+        <Grid
+          container
+          direction="column"
+          alignItems="center"
+          justify="center"
+          className={classes.progressContainer}
+        >
+          <Grid item>
+            <CircularProgress />
           </Grid>
-        )}
-        {(!imageName || imageStatus === "failed") && <NoImagePlaceholder />}
-        {imageName && imageStatus === "loaded" && (
-          <Grid item className={classes.canvasBackground}>
-            <div
-              className={classes.canvasContainer}
+        </Grid>
+      )}
+      {(!imageName || imageStatus === "failed") && <NoImagePlaceholder />}
+      {imageName && imageStatus === "loaded" && (
+        <div
+          className={classes.canvasContainer}
+          style={
+            {
+              // height: image && image?.height * stageScale,
+            }
+          }
+        >
+          <div className={classes.imageDetailsContainer}>
+            <ImageDetails
+              type={type}
+              branchName={branchName}
+              imageName={imageName}
+            />
+          </div>
+          <div
+            style={{
+              transform: `translate3d(${stagePos.x}px, ${stagePos.y}px, 0px)`,
+            }}
+            onMouseMove={(event) => {
+              if (!isDrawMode && isDrag && !selectedRectId) {
+                event.preventDefault();
+                setStagePos({
+                  x: event.clientX - stageInitPos.x,
+                  y: event.clientY - stageInitPos.y,
+                });
+                setStageOffset(stagePos);
+              }
+            }}
+            onMouseUp={(event) => {
+              setIsDrag(false);
+              setStageInitPos(stagePos);
+            }}
+            onMouseLeave={(event) => {
+              setIsDrag(false);
+              setStageInitPos(stagePos);
+            }}
+            onMouseDown={(event) => {
+              setIsDrag(true);
+              setStageInitPos({
+                x: event.clientX - stageOffset.x,
+                y: event.clientY - stageOffset.y,
+              });
+            }}
+          >
+            <Stage
+              width={image && image.width}
+              height={image && image.height}
+              onMouseDown={onStageClick}
               style={{
-                height: image && image?.height * stageScale,
+                transform: `scale(${stageScale})`,
+                transformOrigin: "top left",
               }}
+              onContentMousedown={handleContentMousedown}
+              onContentMouseup={handleContentMouseup}
+              onContentMouseMove={handleContentMouseMove}
             >
-              <div
-                style={{
-                  transform: `translate3d(${stagePos.x}px, ${stagePos.y}px, 0px)`,
-                }}
-                onMouseMove={(event) => {
-                  if (!isDrawMode && isDrag && !selectedRectId) {
-                    event.preventDefault();
-                    setStagePos({
-                      x: event.clientX - stageInitPos.x,
-                      y: event.clientY - stageInitPos.y,
-                    });
-                    setStageOffset(stagePos);
-                  }
-                }}
-                onMouseUp={(event) => {
-                  setIsDrag(false);
-                  setStageInitPos(stagePos);
-                }}
-                onMouseLeave={(event) => {
-                  setIsDrag(false);
-                  setStageInitPos(stagePos);
-                }}
-                onMouseDown={(event) => {
-                  setIsDrag(true);
-                  setStageInitPos({
-                    x: event.clientX - stageOffset.x,
-                    y: event.clientY - stageOffset.y,
-                  });
-                }}
-              >
-                <Stage
-                  width={image && image.width}
-                  height={image && image.height}
-                  onMouseDown={onStageClick}
-                  style={{
-                    transform: `scale(${stageScale})`,
-                    transformOrigin: "top left",
+              <Layer>
+                <Image
+                  image={image}
+                  onMouseOver={(event) => {
+                    document.body.style.cursor = isDrawMode
+                      ? "crosshair"
+                      : "grab";
                   }}
-                  onContentMousedown={handleContentMousedown}
-                  onContentMouseup={handleContentMouseup}
-                  onContentMouseMove={handleContentMouseMove}
-                >
-                  <Layer>
-                    <Image
-                      image={image}
-                      onMouseOver={(event) => {
-                        document.body.style.cursor = isDrawMode
-                          ? "crosshair"
-                          : "grab";
+                  onMouseDown={(event) => {
+                    document.body.style.cursor = "grabbing";
+                  }}
+                  onMouseUp={(event) => {
+                    document.body.style.cursor = "grab";
+                  }}
+                  onMouseLeave={(event) => {
+                    document.body.style.cursor = "default";
+                  }}
+                />
+                {ignoreAreas.map((rect, i) => {
+                  return (
+                    <Rectangle
+                      key={rect.id}
+                      shapeProps={{
+                        x: rect.x,
+                        y: rect.y,
+                        width: rect.width,
+                        height: rect.height,
                       }}
-                      onMouseDown={(event) => {
-                        document.body.style.cursor = "grabbing";
-                      }}
-                      onMouseUp={(event) => {
-                        document.body.style.cursor = "grab";
-                      }}
-                      onMouseLeave={(event) => {
-                        document.body.style.cursor = "default";
+                      isSelected={rect.id === selectedRectId}
+                      onSelect={() => setSelectedRectId(rect.id)}
+                      onChange={(newAttrs: RectConfig) => {
+                        const rects = ignoreAreas.slice();
+
+                        rects[i].x = Math.round(newAttrs.x || 0);
+                        rects[i].y = Math.round(newAttrs.y || 0);
+                        rects[i].width = Math.round(
+                          newAttrs.width || MIN_RECT_SIDE_PIXEL
+                        );
+                        rects[i].height = Math.round(
+                          newAttrs.height || MIN_RECT_SIDE_PIXEL
+                        );
+
+                        setIgnoreAreas(rects);
                       }}
                     />
-                    {ignoreAreas.map((rect, i) => {
-                      return (
-                        <Rectangle
-                          key={rect.id}
-                          shapeProps={{
-                            x: rect.x,
-                            y: rect.y,
-                            width: rect.width,
-                            height: rect.height,
-                          }}
-                          isSelected={rect.id === selectedRectId}
-                          onSelect={() => setSelectedRectId(rect.id)}
-                          onChange={(newAttrs: RectConfig) => {
-                            const rects = ignoreAreas.slice();
-
-                            rects[i].x = Math.round(newAttrs.x || 0);
-                            rects[i].y = Math.round(newAttrs.y || 0);
-                            rects[i].width = Math.round(
-                              newAttrs.width || MIN_RECT_SIDE_PIXEL
-                            );
-                            rects[i].height = Math.round(
-                              newAttrs.height || MIN_RECT_SIDE_PIXEL
-                            );
-
-                            setIgnoreAreas(rects);
-                          }}
-                        />
-                      );
-                    })}
-                  </Layer>
-                </Stage>
-              </div>
-            </div>
-          </Grid>
-        )}
-      </Grid>
+                  );
+                })}
+              </Layer>
+            </Stage>
+          </div>
+        </div>
+      )}
     </React.Fragment>
   );
 };
