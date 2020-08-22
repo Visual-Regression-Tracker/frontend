@@ -9,7 +9,6 @@ import {
   IconButton,
   Paper,
   Box,
-  makeStyles,
   Chip,
   Tooltip,
 } from "@material-ui/core";
@@ -42,12 +41,6 @@ import { DrawArea } from "./DrawArea";
 import { CommentsPopper } from "./CommentsPopper";
 import { useSnackbar } from "notistack";
 
-const useStyles = makeStyles((theme) => ({
-  imageContainer: {
-    overflow: "hidden",
-  },
-}));
-
 const defaultStagePos = {
   x: 0,
   y: 0,
@@ -56,7 +49,6 @@ const defaultStagePos = {
 const TestDetailsModal: React.FunctionComponent<{
   testRun: TestRun;
 }> = ({ testRun }) => {
-  const classes = useStyles();
   const history = useHistory();
   const { enqueueSnackbar } = useSnackbar();
   const testRunDispatch = useTestRunDispatch();
@@ -387,7 +379,7 @@ const TestDetailsModal: React.FunctionComponent<{
       </Box>
       <Box overflow="auto">
         <Grid container>
-          <Grid item xs={6} className={classes.imageContainer}>
+          <Grid item xs={6}>
             <DrawArea
               type="Baseline"
               imageName={testRun.baselineName}
@@ -404,7 +396,7 @@ const TestDetailsModal: React.FunctionComponent<{
               drawModeState={[false, setIsDrawMode]}
             />
           </Grid>
-          <Grid item xs={6} className={classes.imageContainer}>
+          <Grid item xs={6}>
             {isDiffShown ? (
               <DrawArea
                 type="Diff"
