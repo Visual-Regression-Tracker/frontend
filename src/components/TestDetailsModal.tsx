@@ -66,8 +66,8 @@ const TestDetailsModal: React.FunctionComponent<{
   const { enqueueSnackbar } = useSnackbar();
   const testRunDispatch = useTestRunDispatch();
 
-  const stageWidth = (window.innerWidth / 2) * 0.9;
-  const stageHeigth = window.innerHeight;
+  const stageWidth = (window.innerWidth / 2) * 0.8;
+  const stageHeigth = window.innerHeight * 0.6;
   const stageScaleBy = 1.2;
   const [stageScale, setStageScale] = React.useState(1);
   const [stagePos, setStagePos] = React.useState(defaultStagePos);
@@ -117,7 +117,10 @@ const TestDetailsModal: React.FunctionComponent<{
 
   const fitStageToScreen = () => {
     const scale = image
-      ? Math.min(stageWidth / image.width, stageHeigth / image.height)
+      ? Math.min(
+          stageWidth < image.width ? stageWidth / image.width : 1,
+          stageHeigth < image.height ? stageHeigth / image.height : 1
+        )
       : 1;
     setStageScale(scale);
     resetPositioin();

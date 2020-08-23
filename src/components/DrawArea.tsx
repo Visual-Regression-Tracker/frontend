@@ -4,7 +4,7 @@ import { RectConfig } from "konva/types/shapes/Rect";
 import Rectangle, { MIN_RECT_SIDE_PIXEL } from "./Rectangle";
 import { KonvaEventObject } from "konva/types/Node";
 import { IgnoreArea } from "../types/ignoreArea";
-import { Grid, makeStyles, CircularProgress, Box } from "@material-ui/core";
+import { Grid, makeStyles, CircularProgress } from "@material-ui/core";
 import useImage from "use-image";
 import { staticService } from "../services";
 import { NoImagePlaceholder } from "./NoImageAvailable";
@@ -164,6 +164,7 @@ export const DrawArea: FunctionComponent<IDrawArea> = ({
           <div
             style={{
               transform: `translate3d(${stagePos.x}px, ${stagePos.y}px, 0px)`,
+              marginTop: "75px",
             }}
             onMouseMove={(event) => {
               if (!isDrawMode && isDrag && !selectedRectId) {
