@@ -11,6 +11,7 @@ import {
   Box,
   Chip,
   Tooltip,
+  makeStyles,
 } from "@material-ui/core";
 import { ToggleButton } from "@material-ui/lab";
 import { TestRun } from "../types";
@@ -46,15 +47,27 @@ const defaultStagePos = {
   y: 0,
 };
 
+const useStyles = makeStyles((theme) => ({
+  drawAreaContainer: {
+    width: "100%",
+    backgroundColor: "#f5f5f5",
+  },
+  drawAreaItem: {
+    padding: theme.spacing(0.5),
+    height: "100%",
+  },
+}));
+
 const TestDetailsModal: React.FunctionComponent<{
   testRun: TestRun;
 }> = ({ testRun }) => {
+  const classes = useStyles();
   const history = useHistory();
   const { enqueueSnackbar } = useSnackbar();
   const testRunDispatch = useTestRunDispatch();
 
-  const stageWidth = (window.innerWidth / 2) * 0.9;
-  const stageHeigth = window.innerHeight;
+  const stageWidth = (window.innerWidth / 2) * 0.8;
+  const stageHeigth = window.innerHeight * 0.6;
   const stageScaleBy = 1.2;
   const [stageScale, setStageScale] = React.useState(1);
   const [stagePos, setStagePos] = React.useState(defaultStagePos);
@@ -104,7 +117,10 @@ const TestDetailsModal: React.FunctionComponent<{
 
   const fitStageToScreen = () => {
     const scale = image
-      ? Math.min(stageWidth / image.width, stageHeigth / image.height)
+      ? Math.min(
+          stageWidth < image.width ? stageWidth / image.width : 1,
+          stageHeigth < image.height ? stageHeigth / image.height : 1
+        )
       : 1;
     setStageScale(scale);
     resetPositioin();
@@ -377,9 +393,13 @@ const TestDetailsModal: React.FunctionComponent<{
           </Grid>
         </Grid>
       </Box>
-      <Box overflow="auto">
-        <Grid container>
-          <Grid item xs={6}>
+      <Box
+        overflow="hidden"
+        minHeight="65%"
+        className={classes.drawAreaContainer}
+      >
+        <Grid container style={{ height: "100%" }}>
+          <Grid item xs={6} className={classes.drawAreaItem}>
             <DrawArea
               type="Baseline"
               imageName={testRun.baselineName}
@@ -396,7 +416,7 @@ const TestDetailsModal: React.FunctionComponent<{
               drawModeState={[false, setIsDrawMode]}
             />
           </Grid>
-          <Grid item xs={6}>
+          <Grid item xs={6} className={classes.drawAreaItem}>
             {isDiffShown ? (
               <DrawArea
                 type="Diff"
