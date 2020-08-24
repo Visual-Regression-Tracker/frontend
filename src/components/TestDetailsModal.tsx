@@ -24,16 +24,7 @@ import { TestStatus } from "../types/testStatus";
 import { useHistory, Prompt } from "react-router-dom";
 import { IgnoreArea } from "../types/ignoreArea";
 import { KonvaEventObject } from "konva/types/Node";
-import {
-  Close,
-  Add,
-  Delete,
-  Save,
-  ZoomIn,
-  ZoomOut,
-  Fullscreen,
-  FullscreenExit,
-} from "@material-ui/icons";
+import { Close, Add, Delete, Save } from "@material-ui/icons";
 import { TestRunDetails } from "./TestRunDetails";
 import useImage from "use-image";
 import { routes } from "../constants";
@@ -41,6 +32,7 @@ import { useTestRunDispatch, updateTestRun, selectTestRun } from "../contexts";
 import { DrawArea } from "./DrawArea";
 import { CommentsPopper } from "./CommentsPopper";
 import { useSnackbar } from "notistack";
+import { ScaleActionsSpeedDial } from "./ZoomSpeedDial";
 
 const defaultStagePos = {
   x: 0,
@@ -356,41 +348,6 @@ const TestDetailsModal: React.FunctionComponent<{
               </Grid>
             </Paper>
           </Grid>
-          <Grid item>
-            <Paper variant="outlined">
-              <Grid container justify="center">
-                <Grid item xs={12}>
-                  <Typography variant="subtitle1" align="center">
-                    Scale
-                  </Typography>
-                </Grid>
-                <Grid item>
-                  <IconButton
-                    onClick={() => setStageScale(stageScale * stageScaleBy)}
-                  >
-                    <ZoomIn />
-                  </IconButton>
-                </Grid>
-                <Grid item>
-                  <IconButton
-                    onClick={() => setStageScale(stageScale / stageScaleBy)}
-                  >
-                    <ZoomOut />
-                  </IconButton>
-                </Grid>
-                <Grid item>
-                  <IconButton onClick={() => setOriginalSize()}>
-                    <Fullscreen />
-                  </IconButton>
-                </Grid>
-                <Grid item>
-                  <IconButton onClick={fitStageToScreen}>
-                    <FullscreenExit />
-                  </IconButton>
-                </Grid>
-              </Grid>
-            </Paper>
-          </Grid>
         </Grid>
       </Box>
       <Box
@@ -453,6 +410,12 @@ const TestDetailsModal: React.FunctionComponent<{
           </Grid>
         </Grid>
       </Box>
+      <ScaleActionsSpeedDial
+        onZoomInClick={() => setStageScale(stageScale * stageScaleBy)}
+        onZoomOutClick={() => setStageScale(stageScale / stageScaleBy)}
+        onOriginalSizeClick={setOriginalSize}
+        onFitIntoScreenClick={fitStageToScreen}
+      />
     </React.Fragment>
   );
 };
