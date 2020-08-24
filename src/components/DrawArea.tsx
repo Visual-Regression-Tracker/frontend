@@ -11,18 +11,9 @@ import { NoImagePlaceholder } from "./NoImageAvailable";
 import ImageDetails from "./ImageDetails";
 
 const useStyles = makeStyles((theme) => ({
-  imageContainer: {
-    // overflow: "hidden",
-  },
-  // canvasBackground: {
-  //   width: "100%",
-  //   backgroundColor: "#f5f5f5",
-  // },
   canvasContainer: {
     overflow: "auto",
     backgroundColor: "white",
-    // padding: theme.spacing(0.5),
-    // margin: theme.spacing(0.5),
     height: "100%",
   },
   imageDetailsContainer: {
@@ -146,14 +137,7 @@ export const DrawArea: FunctionComponent<IDrawArea> = ({
       )}
       {(!imageName || imageStatus === "failed") && <NoImagePlaceholder />}
       {imageName && imageStatus === "loaded" && (
-        <div
-          className={classes.canvasContainer}
-          style={
-            {
-              // height: image && image?.height * stageScale,
-            }
-          }
-        >
+        <div className={classes.canvasContainer}>
           <div className={classes.imageDetailsContainer}>
             <ImageDetails
               type={type}
@@ -163,6 +147,7 @@ export const DrawArea: FunctionComponent<IDrawArea> = ({
           </div>
           <div
             style={{
+              height: image && image?.height * stageScale,
               transform: `translate3d(${stagePos.x}px, ${stagePos.y}px, 0px)`,
               marginTop: "75px",
             }}
