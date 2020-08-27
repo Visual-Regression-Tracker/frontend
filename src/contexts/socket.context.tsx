@@ -76,6 +76,12 @@ function SocketProvider({ children }: SocketProviderProps) {
           addTestRun(testRunDispatch, testRun);
         }
       });
+
+      state.socket.on(`testRun_deleted`, function (testRun: TestRun) {
+        if (testRun.buildId === selectedBuildId) {
+          testRunDispatch({ type: "delete", payload: testRun.id });
+        }
+      });
     }
   }, [state.socket, selectedBuildId, buildDispatch, testRunDispatch]);
 

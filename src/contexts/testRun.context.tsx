@@ -186,7 +186,6 @@ async function setTestRunIndex(dispatch: Dispatch, index: string | undefined) {
 }
 
 async function addTestRun(dispatch: Dispatch, testRun: TestRun) {
-  dispatch({ type: "delete", payload: testRun.id });
   dispatch({ type: "add", payload: testRun });
 }
 
