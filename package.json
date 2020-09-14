@@ -69,7 +69,6 @@
     "@visual-regression-tracker/agent-cypress": "^4.2.3",
     "cypress": "^5.1.0",
     "cypress-react-unit-test": "^4.11.2",
-    "git-branch": "^2.0.1",
     "ts-loader": "^8.0.3"
   }
 }
