@@ -17,5 +17,5 @@ jobs:
 
       - name: Cypress run
         uses: cypress-io/github-action@v1.16.1
-        with:
-          env: visualRegressionTracker='{"apiUrl":"http://68.183.221.18:4200","project":"VRT","apiKey":${{ secrets.VRT_API_KEY }},"branchName":"master","enableSoftAssert":false}'
+        # with:
+          # env: visualRegressionTracker='{"apiUrl":"http://68.183.221.18:4200","project":"VRT","apiKey":${{ secrets.VRT_API_KEY }},"branchName":"master","enableSoftAssert":false}'
