@@ -14,7 +14,7 @@
       "project": "VRT",
       "apiKey": "SECRET",
       "branchName": "master",
-      "enableSoftAssert": true
+      "enableSoftAssert": false
     }
   }
 }
