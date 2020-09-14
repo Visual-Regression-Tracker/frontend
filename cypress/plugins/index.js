@@ -13,7 +13,5 @@ module.exports = async (on, config) => {
     config.env.visualRegressionTracker.branchName = config.env.VRT_BRANCH_NAME;
   }
   addVisualRegressionTrackerPlugin(on, config);
-
-  console.log(config);
   return config;
 };
