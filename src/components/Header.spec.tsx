@@ -1,7 +1,4 @@
 /* global cy */
-/// <reference types="cypress" />
-/// <reference types="@visual-regression-tracker/agent-cypress/dist" />
-
 import React from "react";
 import { mount } from "cypress-react-unit-test";
 import Header from "./Header";

@@ -6,6 +6,10 @@
       "dom.iterable",
       "esnext"
     ],
+    "types": [
+      "cypress",
+      "@visual-regression-tracker/agent-cypress/dist",
+    ],
     "allowJs": true,
     "skipLibCheck": true,
     "esModuleInterop": true,
