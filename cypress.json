@@ -1,0 +1,20 @@
+{
+  "video": false,
+  "screenshotOnRunFailure": false,
+  "retries": {
+    "runMode": 1,
+    "openMode": 3
+  },
+  "experimentalComponentTesting": true,
+  "componentFolder": "src",
+  "testFiles": "**/*.spec.*",
+  "env": {
+    "visualRegressionTracker": {
+      "apiUrl": "http://localhost:4200",
+      "project": "VRT",
+      "apiKey": "FMH3EN5ET1MZ0MNHYQYWX1VG4CRS",
+      "branchName": "master",
+      "enableSoftAssert": true
+    }
+  }
+}
