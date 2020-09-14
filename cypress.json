@@ -12,7 +12,7 @@
     "visualRegressionTracker": {
       "apiUrl": "http://localhost:4200",
       "project": "VRT",
-      "apiKey": "FMH3EN5ET1MZ0MNHYQYWX1VG4CRS",
+      "apiKey": "SECRET",
       "branchName": "master",
       "enableSoftAssert": true
     }

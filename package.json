@@ -66,7 +66,7 @@
     "@types/react-dom": "^16.9.8",
     "@types/react-router-dom": "^5.1.5",
     "@types/socket.io-client": "^1.4.33",
-    "@visual-regression-tracker/agent-cypress": "^4.2.0",
+    "@visual-regression-tracker/agent-cypress": "^4.2.3",
     "cypress": "^5.1.0",
     "cypress-react-unit-test": "^4.11.2",
     "ts-loader": "^8.0.3"

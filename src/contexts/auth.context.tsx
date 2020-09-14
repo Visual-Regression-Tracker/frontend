@@ -103,4 +103,12 @@ function logout(dispatch: Dispatch) {
   dispatch({ type: "logout" });
 }
 
-export { AuthProvider, useAuthState, useAuthDispatch, login, logout, update };
+export {
+  AuthStateContext,
+  AuthProvider,
+  useAuthState,
+  useAuthDispatch,
+  login,
+  logout,
+  update,
+};
