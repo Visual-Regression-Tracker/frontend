@@ -2,31 +2,23 @@
 import React from "react";
 import { mount } from "cypress-react-unit-test";
 import ProfilePage from "./ProfilePage";
-import { AuthProvider, AuthStateContext } from "../contexts";
+import { AuthProvider } from "../contexts";
 import { BrowserRouter } from "react-router-dom";
 import { SnackbarProvider } from "notistack";
+import { haveUserLogged } from "../_helpers/precondition.helper";
+import { userMock } from "../_helpers/testData.helper";
 
-describe("Login page", () => {
+describe("Profile page", () => {
+  before(() => {
+    haveUserLogged(userMock);
+  });
+
   it("image", () => {
     mount(
       <BrowserRouter>
         <SnackbarProvider>
           <AuthProvider>
-            <AuthStateContext.Provider
-              value={{
-                loggedIn: true,
-                user: {
-                  id: "1",
-                  token: 123,
-                  apiKey: "SOME KEY SECRET",
-                  email: "some@email.com",
-                  firstName: "First name",
-                  lastName: "Last name",
-                },
-              }}
-            >
-              <ProfilePage />
-            </AuthStateContext.Provider>
+            <ProfilePage />
           </AuthProvider>
         </SnackbarProvider>
       </BrowserRouter>,

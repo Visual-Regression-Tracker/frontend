@@ -2,49 +2,37 @@
 import React from "react";
 import { mount } from "cypress-react-unit-test";
 import Header from "./Header";
-import { AuthProvider, AuthStateContext } from "../contexts";
+import { AuthProvider } from "../contexts";
 import { BrowserRouter } from "react-router-dom";
+import { haveUserLogged } from "../_helpers/precondition.helper";
+import { userMock } from "../_helpers/testData.helper";
 
 describe("Header", () => {
-  it("image", () => {
-    mount(
-      <BrowserRouter>
-        <AuthProvider>
-          <AuthStateContext.Provider
-            value={{
-              loggedIn: false,
-            }}
-          >
+  describe("image", () => {
+    it("Guest", () => {
+      localStorage.clear();
+      mount(
+        <BrowserRouter>
+          <AuthProvider>
             <Header />
-          </AuthStateContext.Provider>
-        </AuthProvider>
-      </BrowserRouter>
-    );
+          </AuthProvider>
+        </BrowserRouter>
+      );
 
-    cy.get("#cypress-root").vrtTrack("Header. Guest");
+      cy.get("#cypress-root").vrtTrack("Header. Guest");
+    });
 
-    mount(
-      <BrowserRouter>
-        <AuthProvider>
-          <AuthStateContext.Provider
-            value={{
-              loggedIn: true,
-              user: {
-                id: "1",
-                token: 123,
-                apiKey: "apuKey",
-                email: "some@email.com",
-                firstName: "First name",
-                lastName: "Last name",
-              },
-            }}
-          >
+    it("Logged", () => {
+      haveUserLogged(userMock);
+      mount(
+        <BrowserRouter>
+          <AuthProvider>
             <Header />
-          </AuthStateContext.Provider>
-        </AuthProvider>
-      </BrowserRouter>
-    );
+          </AuthProvider>
+        </BrowserRouter>
+      );
 
-    cy.get("#cypress-root").vrtTrack("Header. Logged");
+      cy.get("#cypress-root").vrtTrack("Header. Logged");
+    });
   });
 });
