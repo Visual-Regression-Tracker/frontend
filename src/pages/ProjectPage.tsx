@@ -65,7 +65,7 @@ const useStyles = makeStyles((theme) => ({
 
 const ProjectPage = () => {
   const classes = useStyles();
-  const { projectId } = useParams();
+  const { projectId } = useParams<{ projectId: string }>();
   const location = useLocation();
   const history = useHistory();
   const { enqueueSnackbar } = useSnackbar();
