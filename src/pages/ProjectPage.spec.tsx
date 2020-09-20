@@ -1,13 +1,24 @@
 /* global cy */
 import React from "react";
 import ProjectPage from "./ProjectPage";
-import { buildsService, testRunService } from "../services";
+import { buildsService, staticService, testRunService } from "../services";
 import { BuildStatus } from "../types/buildStatus";
 import { TestStatus } from "../types/testStatus";
 import { mountVrtComponent } from "../_test/test.moun.helper";
+import baselineImageMock from "../_test/images/baseline.png";
+import imageMock from "../_test/images/screenshot.png";
+import diffMock from "../_test/images/diff.png";
 
 describe("Project List page", () => {
   it("image", () => {
+    cy.stub(staticService, "getImage")
+      .withArgs("baseline.png")
+      .returns(baselineImageMock)
+      .withArgs("image.png")
+      .returns(imageMock)
+      .withArgs("diff.png")
+      .returns(diffMock);
+
     cy.stub(buildsService, "getList").resolves([
       {
         id: "some id",
@@ -56,9 +67,9 @@ describe("Project List page", () => {
         createdBy: "2020-09-14T06:57:25.845Z",
 
         buildId: "some build id",
-        imageName: "imageName.png",
-        diffName: "diffName.png",
-        baselineName: "baselineName.png",
+        imageName: "image.png",
+        diffName: "diff.png",
+        baselineName: "baseline.png",
         diffPercent: 1.24,
         diffTollerancePercent: 3.21,
         status: TestStatus.unresolved,
