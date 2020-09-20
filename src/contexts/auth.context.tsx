@@ -23,12 +23,6 @@ const AuthDispatchContext = React.createContext<Dispatch | undefined>(
   undefined
 );
 
-const localStorageUser = localStorage.getItem("user");
-const initialState: State = {
-  loggedIn: !!localStorageUser,
-  user: localStorageUser ? JSON.parse(localStorageUser) : undefined,
-};
-
 function authReducer(state: State, action: IAction): State {
   switch (action.type) {
     case "success":
@@ -47,6 +41,12 @@ function authReducer(state: State, action: IAction): State {
 }
 
 function AuthProvider({ children }: AuthProviderProps) {
+  const localStorageUser = localStorage.getItem("user");
+  const initialState: State = {
+    loggedIn: !!localStorageUser,
+    user: localStorageUser ? JSON.parse(localStorageUser) : undefined,
+  };
+
   const [state, dispatch] = React.useReducer(authReducer, initialState);
   return (
     <AuthStateContext.Provider value={state}>

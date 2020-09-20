@@ -35,7 +35,7 @@ const TestVariationDetailsPage: React.FunctionComponent = () => {
   const { enqueueSnackbar } = useSnackbar();
   const buildDispatch = useBuildDispatch();
   const testRunDispatch = useTestRunDispatch();
-  const { testVariationId } = useParams();
+  const { testVariationId } = useParams<{ testVariationId: string }>();
   const [testVariation, setTestVariation] = React.useState<TestVariation>();
 
   React.useEffect(() => {

@@ -44,10 +44,6 @@ const ProjectDispatchContext = React.createContext<Dispatch | undefined>(
   undefined
 );
 
-const initialState: State = {
-  projectList: [],
-};
-
 function projectReducer(state: State, action: IAction): State {
   switch (action.type) {
     case "get":
@@ -81,6 +77,10 @@ function projectReducer(state: State, action: IAction): State {
 }
 
 function ProjectProvider({ children }: ProjectProviderProps) {
+  const initialState: State = {
+    projectList: [],
+  };
+
   const [state, dispatch] = React.useReducer(projectReducer, initialState);
 
   return (
