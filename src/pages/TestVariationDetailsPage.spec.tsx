@@ -1,3 +1,4 @@
+/* global cy */
 import React from "react";
 import { staticService, testVariationService } from "../services";
 import { mountVrtComponent } from "../_test/test.moun.helper";
