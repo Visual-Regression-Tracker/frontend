@@ -1,18 +1,10 @@
 /* global cy */
 import React from "react";
-import { mount } from "cypress-react-unit-test";
 import ProjectPage from "./ProjectPage";
-import {
-  ProjectProvider,
-  AuthProvider,
-  BuildProvider,
-  TestRunProvider,
-} from "../contexts";
-import { MemoryRouter, Route } from "react-router-dom";
-import { SnackbarProvider } from "notistack";
-import { buildsService, testRunService, staticService } from "../services";
+import { buildsService, testRunService } from "../services";
 import { BuildStatus } from "../types/buildStatus";
 import { TestStatus } from "../types/testStatus";
+import { mountVrtComponent } from "../_helpers/test.moun.helper";
 
 describe("Project List page", () => {
   it("image", () => {
@@ -156,26 +148,13 @@ describe("Project List page", () => {
       },
     ]);
 
-    mount(
-      <MemoryRouter initialEntries={["/someId"]}>
-        <Route path={"/:projectId"}>
-          <SnackbarProvider>
-            <AuthProvider>
-              <ProjectProvider>
-                <BuildProvider>
-                  <TestRunProvider>
-                    <ProjectPage />
-                  </TestRunProvider>
-                </BuildProvider>
-              </ProjectProvider>
-            </AuthProvider>
-          </SnackbarProvider>
-        </Route>
-      </MemoryRouter>,
-      {
-        stylesheets: ["/__root/src/index.css"],
-      }
-    );
+    mountVrtComponent({
+      component: <ProjectPage />,
+      memoryRouterProps: {
+        initialEntries: ["/someId"],
+      },
+      path: "/:projectId",
+    });
 
     cy.vrtTrack("Project page");
 

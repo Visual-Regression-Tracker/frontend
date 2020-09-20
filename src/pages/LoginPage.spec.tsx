@@ -5,21 +5,13 @@ import LoginPage from "./LoginPage";
 import { AuthProvider, AuthStateContext } from "../contexts";
 import { BrowserRouter } from "react-router-dom";
 import { SnackbarProvider } from "notistack";
+import { mountVrtComponent } from "../_helpers/test.moun.helper";
 
 describe("Login page", () => {
   it("image", () => {
-    mount(
-      <BrowserRouter>
-        <SnackbarProvider>
-          <AuthProvider>
-            <LoginPage />
-          </AuthProvider>
-        </SnackbarProvider>
-      </BrowserRouter>,
-      {
-        stylesheets: ["/__root/src/index.css"],
-      }
-    );
+    mountVrtComponent({
+      component: <LoginPage />,
+    });
 
     cy.get("#cypress-root").vrtTrack("Login page");
   });

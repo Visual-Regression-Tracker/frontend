@@ -1,13 +1,10 @@
 /* global cy */
 import React from "react";
-import { mount } from "cypress-react-unit-test";
 import ProjectListPage from "./ProjectListPage";
-import { ProjectProvider, AuthProvider } from "../contexts";
-import { BrowserRouter } from "react-router-dom";
-import { SnackbarProvider } from "notistack";
 import { projectsService } from "../services";
 import { haveUserLogged } from "../_helpers/precondition.helper";
 import { userMock } from "../_helpers/testData.helper";
+import { mountVrtComponent } from "../_helpers/test.moun.helper";
 
 describe("Project List page", () => {
   before(() => {
@@ -26,20 +23,9 @@ describe("Project List page", () => {
       },
     ]);
 
-    mount(
-      <BrowserRouter>
-        <SnackbarProvider>
-          <AuthProvider>
-            <ProjectProvider>
-              <ProjectListPage />
-            </ProjectProvider>
-          </AuthProvider>
-        </SnackbarProvider>
-      </BrowserRouter>,
-      {
-        stylesheets: ["/__root/src/index.css"],
-      }
-    );
+    mountVrtComponent({
+      component: <ProjectListPage />,
+    });
 
     cy.get("#cypress-root").vrtTrack("Project List page");
   });

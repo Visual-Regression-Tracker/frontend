@@ -1,12 +1,9 @@
 /* global cy */
 import React from "react";
-import { mount } from "cypress-react-unit-test";
 import ProfilePage from "./ProfilePage";
-import { AuthProvider } from "../contexts";
-import { BrowserRouter } from "react-router-dom";
-import { SnackbarProvider } from "notistack";
 import { haveUserLogged } from "../_helpers/precondition.helper";
 import { userMock } from "../_helpers/testData.helper";
+import { mountVrtComponent } from "../_helpers/test.moun.helper";
 
 describe("Profile page", () => {
   before(() => {
@@ -14,18 +11,9 @@ describe("Profile page", () => {
   });
 
   it("image", () => {
-    mount(
-      <BrowserRouter>
-        <SnackbarProvider>
-          <AuthProvider>
-            <ProfilePage />
-          </AuthProvider>
-        </SnackbarProvider>
-      </BrowserRouter>,
-      {
-        stylesheets: ["/__root/src/index.css"],
-      }
-    );
+    mountVrtComponent({
+      component: <ProfilePage />,
+    });
 
     cy.get("#cypress-root").vrtTrack("Profile page");
   });
