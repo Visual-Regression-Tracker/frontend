@@ -3,8 +3,8 @@ import React from "react";
 import ProjectListPage from "./ProjectListPage";
 import { projectsService } from "../services";
 import { haveUserLogged } from "../_helpers/precondition.helper";
-import { userMock } from "../_helpers/testData.helper";
-import { mountVrtComponent } from "../_helpers/test.moun.helper";
+import { userMock } from "../_test/test.data.helper";
+import { mountVrtComponent } from "../_test/test.moun.helper";
 
 describe("Project List page", () => {
   before(() => {

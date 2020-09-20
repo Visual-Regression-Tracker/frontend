@@ -11,7 +11,7 @@ import { useSnackbar } from "notistack";
 
 const TestVariationListPage: React.FunctionComponent = () => {
   const { enqueueSnackbar } = useSnackbar();
-  const { projectId = "" } = useParams();
+  const { projectId = "" } = useParams<{ projectId: string }>();
   const [testVariations, setTestVariations] = React.useState<TestVariation[]>(
     []
   );

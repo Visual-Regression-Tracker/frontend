@@ -2,8 +2,8 @@
 import React from "react";
 import ProfilePage from "./ProfilePage";
 import { haveUserLogged } from "../_helpers/precondition.helper";
-import { userMock } from "../_helpers/testData.helper";
-import { mountVrtComponent } from "../_helpers/test.moun.helper";
+import { userMock } from "../_test/test.data.helper";
+import { mountVrtComponent } from "../_test/test.moun.helper";
 
 describe("Profile page", () => {
   before(() => {

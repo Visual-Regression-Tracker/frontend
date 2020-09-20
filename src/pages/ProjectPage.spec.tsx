@@ -4,7 +4,7 @@ import ProjectPage from "./ProjectPage";
 import { buildsService, testRunService } from "../services";
 import { BuildStatus } from "../types/buildStatus";
 import { TestStatus } from "../types/testStatus";
-import { mountVrtComponent } from "../_helpers/test.moun.helper";
+import { mountVrtComponent } from "../_test/test.moun.helper";
 
 describe("Project List page", () => {
   it("image", () => {
