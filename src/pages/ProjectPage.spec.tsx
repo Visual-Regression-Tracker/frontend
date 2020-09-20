@@ -10,7 +10,7 @@ import {
 } from "../contexts";
 import { MemoryRouter, Route } from "react-router-dom";
 import { SnackbarProvider } from "notistack";
-import { buildsService, testRunService } from "../services";
+import { buildsService, testRunService, staticService } from "../services";
 import { BuildStatus } from "../types/buildStatus";
 import { TestStatus } from "../types/testStatus";
 
@@ -64,14 +64,14 @@ describe("Project List page", () => {
         createdBy: "2020-09-14T06:57:25.845Z",
 
         buildId: "some build id",
-        imageName: "imageName",
-        diffName: "diffName",
+        imageName: "imageName.png",
+        diffName: "diffName.png",
+        baselineName: "baselineName.png",
         diffPercent: 1.24,
         diffTollerancePercent: 3.21,
         status: TestStatus.unresolved,
         testVariationId: "some test variation id",
         name: "test run name",
-        baselineName: "baselineName",
         os: "OS",
         browser: "browser",
         viewport: "viewport",
@@ -178,5 +178,9 @@ describe("Project List page", () => {
     );
 
     cy.vrtTrack("Project page");
+
+    cy.contains("test run name").click();
+
+    cy.get(".MuiDialog-root").vrtTrack("TestDetailsModal");
   });
 });

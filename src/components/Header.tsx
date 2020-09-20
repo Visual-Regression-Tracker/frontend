@@ -11,6 +11,7 @@ import {
 import { Link } from "react-router-dom";
 import { useAuthState, useAuthDispatch, logout } from "../contexts";
 import { routes } from "../constants";
+import logo from "../static/logo.png";
 
 const Header: FunctionComponent = () => {
   const [menuRef, setMenuRef] = React.useState<null | HTMLElement>(null);
@@ -64,7 +65,7 @@ const Header: FunctionComponent = () => {
           <Grid container justify="space-between" alignItems="center">
             <Grid item>
               <Link to="/">
-                <img src="/logo.png" width="60" height="60" alt="logo" />
+                <img src={logo} width="60" height="60" alt="logo" />
               </Link>
             </Grid>
             <Grid item>

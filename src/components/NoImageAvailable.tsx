@@ -1,5 +1,6 @@
 import React from "react";
 import { makeStyles } from "@material-ui/core";
+import noImage from "../static/no-image.png";
 
 const useStyles = makeStyles((theme) => ({
   img: {
@@ -13,7 +14,5 @@ const useStyles = makeStyles((theme) => ({
 export const NoImagePlaceholder: React.FunctionComponent = () => {
   const classes = useStyles();
 
-  return (
-    <img src="/no-image.png" alt="Not available" className={classes.img} />
-  );
+  return <img src={noImage} alt="Not available" className={classes.img} />;
 };
