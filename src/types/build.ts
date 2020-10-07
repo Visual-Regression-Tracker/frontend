@@ -3,6 +3,7 @@ import { BuildStatus } from "./buildStatus";
 
 export interface Build {
   id: string;
+  number: number;
   projectName: string;
   branchName: string;
   status: BuildStatus;

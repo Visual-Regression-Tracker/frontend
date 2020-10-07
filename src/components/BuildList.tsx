@@ -93,7 +93,9 @@ const BuildList: FunctionComponent = () => {
                 primary={
                   <Grid container>
                     <Grid item>
-                      <Typography variant="subtitle2">{`#${build.id}`}</Typography>
+                      <Typography variant="subtitle2">{`#${
+                        build.number || build.id
+                      }`}</Typography>
                     </Grid>
                   </Grid>
                 }
