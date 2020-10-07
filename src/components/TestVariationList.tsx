@@ -9,6 +9,7 @@ import {
   CardActions,
   Button,
   IconButton,
+  Typography,
 } from "@material-ui/core";
 import { staticService } from "../services";
 import { Link } from "react-router-dom";
@@ -39,6 +40,9 @@ const TestVariationList: React.FunctionComponent<IProps> = ({
 
   return (
     <Grid container>
+      {items.length === 0 && (
+        <Typography variant="h5">No variations</Typography>
+      )}
       {items.map((t) => (
         <Grid item key={t.id} xs={4}>
           <Card className={classes.card}>
