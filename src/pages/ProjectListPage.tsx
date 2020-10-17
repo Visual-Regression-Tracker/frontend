@@ -22,8 +22,9 @@ import { Link } from "react-router-dom";
 import { Delete, Add, Edit } from "@material-ui/icons";
 import { routes } from "../constants";
 import { formatDateTime } from "../_helpers/format.helper";
-import { ProjectModal } from "../components/ProjectModal";
+import { ProjectForm } from "../components/ProjectForm";
 import { useSnackbar } from "notistack";
+import { BaseModal } from "../components/BaseModal";
 
 const ProjectsListPage = () => {
   const { enqueueSnackbar } = useSnackbar();
@@ -84,12 +85,12 @@ const ProjectsListPage = () => {
             </Fab>
           </Box>
 
-          <ProjectModal
+          <BaseModal
             open={createDialogOpen}
             title={"Create Project"}
             submitButtonText={"Create"}
             onCancel={toggleCreateDialogOpen}
-            projectState={[project, setProject]}
+            content={<ProjectForm projectState={[project, setProject]} />}
             onSubmit={() =>
               createProject(projectDispatch, project)
                 .then((project) => {
@@ -106,12 +107,12 @@ const ProjectsListPage = () => {
             }
           />
 
-          <ProjectModal
+          <BaseModal
             open={updateDialogOpen}
             title={"Update Project"}
             submitButtonText={"Update"}
             onCancel={toggleUpdateDialogOpen}
-            projectState={[project, setProject]}
+            content={<ProjectForm projectState={[project, setProject]} />}
             onSubmit={() =>
               updateProject(projectDispatch, project)
                 .then((project) => {
