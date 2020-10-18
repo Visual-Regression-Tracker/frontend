@@ -16,6 +16,7 @@ import { Link } from "react-router-dom";
 import { routes } from "../constants";
 import { TestVariationDetails } from "./TestVariationDetails";
 import { Delete } from "@material-ui/icons";
+import { BaseModal } from "./BaseModal";
 
 interface IProps {
   items: TestVariation[];
@@ -37,43 +38,68 @@ const TestVariationList: React.FunctionComponent<IProps> = ({
   onDeleteClick,
 }) => {
   const classes = useStyles();
+  const [selectedItem, setSelectedItem] = React.useState<
+    TestVariation | undefined
+  >(undefined);
+
+  const handleClose = () => {
+    setSelectedItem(undefined);
+  };
 
   return (
-    <Grid container>
-      {items.length === 0 && (
-        <Typography variant="h5">No variations</Typography>
+    <React.Fragment>
+      <Grid container>
+        {items.length === 0 && (
+          <Typography variant="h5">No variations</Typography>
+        )}
+        {items.map((t) => (
+          <Grid item key={t.id} xs={4}>
+            <Card className={classes.card}>
+              <CardMedia
+                className={classes.media}
+                image={staticService.getImage(t.baselineName)}
+                title={t.name}
+              />
+              <CardContent>
+                <TestVariationDetails testVariation={t} />
+              </CardContent>
+              <CardActions>
+                <Button
+                  color="primary"
+                  component={Link}
+                  to={`${routes.VARIATION_DETAILS_PAGE}/${t.id}`}
+                >
+                  History
+                </Button>
+                <IconButton
+                  onClick={(event: React.MouseEvent<HTMLElement>) =>
+                    setSelectedItem(t)
+                  }
+                >
+                  <Delete />
+                </IconButton>
+              </CardActions>
+            </Card>
+          </Grid>
+        ))}
+      </Grid>
+
+      {selectedItem && (
+        <BaseModal
+          open={!!selectedItem}
+          title={"Delete TestVariation"}
+          submitButtonText={"Delete"}
+          onCancel={handleClose}
+          content={
+            <Typography>{`Are you sure you want to delete: ${selectedItem.name}?`}</Typography>
+          }
+          onSubmit={() => {
+            onDeleteClick(selectedItem.id);
+            handleClose();
+          }}
+        />
       )}
-      {items.map((t) => (
-        <Grid item key={t.id} xs={4}>
-          <Card className={classes.card}>
-            <CardMedia
-              className={classes.media}
-              image={staticService.getImage(t.baselineName)}
-              title={t.name}
-            />
-            <CardContent>
-              <TestVariationDetails testVariation={t} />
-            </CardContent>
-            <CardActions>
-              <Button
-                color="primary"
-                component={Link}
-                to={`${routes.VARIATION_DETAILS_PAGE}/${t.id}`}
-              >
-                History
-              </Button>
-              <IconButton
-                onClick={(event: React.MouseEvent<HTMLElement>) =>
-                  onDeleteClick(t.id)
-                }
-              >
-                <Delete />
-              </IconButton>
-            </CardActions>
-          </Card>
-        </Grid>
-      ))}
-    </Grid>
+    </React.Fragment>
   );
 };
 
