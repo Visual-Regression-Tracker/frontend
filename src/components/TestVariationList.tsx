@@ -38,12 +38,12 @@ const TestVariationList: React.FunctionComponent<IProps> = ({
   onDeleteClick,
 }) => {
   const classes = useStyles();
-  const [selectedItem, setSelectedItem] = React.useState<
-    TestVariation | undefined
-  >(undefined);
+  const [selectedItem, setSelectedItem] = React.useState<TestVariation | null>(
+    null
+  );
 
   const handleClose = () => {
-    setSelectedItem(undefined);
+    setSelectedItem(null);
   };
 
   return (
