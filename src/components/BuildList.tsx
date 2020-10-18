@@ -29,6 +29,7 @@ import { SkeletonList } from "./SkeletonList";
 import { formatDateTime } from "../_helpers/format.helper";
 import { useSnackbar } from "notistack";
 import { Build } from "../types";
+import { BaseModal } from "./BaseModal";
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -50,6 +51,7 @@ const BuildList: FunctionComponent = () => {
   const buildDispatch = useBuildDispatch();
   const { enqueueSnackbar } = useSnackbar();
 
+  const [deleteDialogOpen, setDeleteDialogOpen] = React.useState(false);
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
   const [menuBuild, setMenuBuild] = React.useState<Build | null>();
 
@@ -64,6 +66,10 @@ const BuildList: FunctionComponent = () => {
 
   const handleMenuClose = () => {
     setMenuBuild(null);
+  };
+
+  const toggleDeleteDialogOpen = () => {
+    setDeleteDialogOpen(!deleteDialogOpen);
   };
 
   return (
@@ -155,25 +161,40 @@ const BuildList: FunctionComponent = () => {
               Stop
             </MenuItem>
           )}
-          <MenuItem
-            onClick={() => {
-              deleteBuild(buildDispatch, menuBuild.id)
-                .then((b) =>
-                  enqueueSnackbar(`${menuBuild.id} deleted`, {
-                    variant: "success",
-                  })
-                )
-                .catch((err) =>
-                  enqueueSnackbar(err, {
-                    variant: "error",
-                  })
-                );
-              handleMenuClose();
-            }}
-          >
-            Delete
-          </MenuItem>
+          <MenuItem onClick={toggleDeleteDialogOpen}>Delete</MenuItem>
         </Menu>
+      )}
+
+      {menuBuild && (
+        <BaseModal
+          open={deleteDialogOpen}
+          title={"Delete Build"}
+          submitButtonText={"Delete"}
+          onCancel={toggleDeleteDialogOpen}
+          content={
+            <Typography>{`Are you sure you want to delete build: #${
+              menuBuild.number || menuBuild.id
+            }?`}</Typography>
+          }
+          onSubmit={() => {
+            deleteBuild(buildDispatch, menuBuild.id)
+              .then((b) => {
+                toggleDeleteDialogOpen();
+                enqueueSnackbar(
+                  `Build #${menuBuild.number || menuBuild.id} deleted`,
+                  {
+                    variant: "success",
+                  }
+                );
+              })
+              .catch((err) =>
+                enqueueSnackbar(err, {
+                  variant: "error",
+                })
+              );
+            handleMenuClose();
+          }}
+        />
       )}
     </React.Fragment>
   );
