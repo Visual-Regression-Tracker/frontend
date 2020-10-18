@@ -59,7 +59,7 @@ const TestVariationListPage: React.FunctionComponent = () => {
       .remove(id)
       .then((item) => {
         setTestVariations(testVariations.filter((i) => i.id !== item.id));
-        enqueueSnackbar("Deleted", {
+        enqueueSnackbar(`${item.name} deleted`, {
           variant: "success",
         });
       })

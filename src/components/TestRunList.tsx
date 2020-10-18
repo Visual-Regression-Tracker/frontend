@@ -24,6 +24,7 @@ import {
 } from "../contexts";
 import { SkeletonList } from "./SkeletonList";
 import { useSnackbar } from "notistack";
+import { BaseModal } from "./BaseModal";
 
 const TestRunList: React.FunctionComponent<{
   items: TestRun[];
@@ -36,6 +37,7 @@ const TestRunList: React.FunctionComponent<{
   const [selectedTestRun, setSelectedTestRun] = React.useState<
     TestRun | undefined
   >(undefined);
+  const [deleteDialogOpen, setDeleteDialogOpen] = React.useState(false);
 
   const handleClick = (
     event: React.MouseEvent<HTMLElement>,
@@ -48,6 +50,10 @@ const TestRunList: React.FunctionComponent<{
 
   const handleClose = () => {
     setSelectedTestRun(undefined);
+  };
+
+  const toggleDeleteDialogOpen = () => {
+    setDeleteDialogOpen(!deleteDialogOpen);
   };
 
   return (
@@ -121,25 +127,34 @@ const TestRunList: React.FunctionComponent<{
           >
             Details
           </MenuItem>
-          <MenuItem
-            onClick={() => {
-              deleteTestRun(testRunDispatch, selectedTestRun.id)
-                .then((testRun) => {
-                  enqueueSnackbar(`Deleted`, {
-                    variant: "success",
-                  });
-                })
-                .catch((err) =>
-                  enqueueSnackbar(err, {
-                    variant: "error",
-                  })
-                );
-              handleClose();
-            }}
-          >
-            Delete
-          </MenuItem>
+          <MenuItem onClick={toggleDeleteDialogOpen}>Delete</MenuItem>
         </Menu>
+      )}
+
+      {selectedTestRun && (
+        <BaseModal
+          open={deleteDialogOpen}
+          title={"Delete TestRun"}
+          submitButtonText={"Delete"}
+          onCancel={toggleDeleteDialogOpen}
+          content={
+            <Typography>{`Are you sure you want to delete: ${selectedTestRun.name}?`}</Typography>
+          }
+          onSubmit={() => {
+            deleteTestRun(testRunDispatch, selectedTestRun.id)
+              .then((testRun) => {
+                enqueueSnackbar(`${selectedTestRun.name} deleted`, {
+                  variant: "success",
+                });
+              })
+              .catch((err) =>
+                enqueueSnackbar(err, {
+                  variant: "error",
+                })
+              );
+            handleClose();
+          }}
+        />
       )}
     </React.Fragment>
   );

@@ -22,8 +22,9 @@ import { Link } from "react-router-dom";
 import { Delete, Add, Edit } from "@material-ui/icons";
 import { routes } from "../constants";
 import { formatDateTime } from "../_helpers/format.helper";
-import { ProjectModal } from "../components/ProjectModal";
+import { ProjectForm } from "../components/ProjectForm";
 import { useSnackbar } from "notistack";
+import { BaseModal } from "../components/BaseModal";
 
 const ProjectsListPage = () => {
   const { enqueueSnackbar } = useSnackbar();
@@ -32,6 +33,7 @@ const ProjectsListPage = () => {
 
   const [createDialogOpen, setCreateDialogOpen] = React.useState(false);
   const [updateDialogOpen, setUpdateDialogOpen] = React.useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = React.useState(false);
   const [project, setProject] = React.useState<{
     id: string;
     name: string;
@@ -56,6 +58,10 @@ const ProjectsListPage = () => {
 
   const toggleUpdateDialogOpen = () => {
     setUpdateDialogOpen(!updateDialogOpen);
+  };
+
+  const toggleDeleteDialogOpen = () => {
+    setDeleteDialogOpen(!deleteDialogOpen);
   };
 
   return (
@@ -84,12 +90,12 @@ const ProjectsListPage = () => {
             </Fab>
           </Box>
 
-          <ProjectModal
+          <BaseModal
             open={createDialogOpen}
             title={"Create Project"}
             submitButtonText={"Create"}
             onCancel={toggleCreateDialogOpen}
-            projectState={[project, setProject]}
+            content={<ProjectForm projectState={[project, setProject]} />}
             onSubmit={() =>
               createProject(projectDispatch, project)
                 .then((project) => {
@@ -106,17 +112,41 @@ const ProjectsListPage = () => {
             }
           />
 
-          <ProjectModal
+          <BaseModal
             open={updateDialogOpen}
             title={"Update Project"}
             submitButtonText={"Update"}
             onCancel={toggleUpdateDialogOpen}
-            projectState={[project, setProject]}
+            content={<ProjectForm projectState={[project, setProject]} />}
             onSubmit={() =>
               updateProject(projectDispatch, project)
                 .then((project) => {
                   toggleUpdateDialogOpen();
                   enqueueSnackbar(`${project.name} updated`, {
+                    variant: "success",
+                  });
+                })
+                .catch((err) =>
+                  enqueueSnackbar(err, {
+                    variant: "error",
+                  })
+                )
+            }
+          />
+
+          <BaseModal
+            open={deleteDialogOpen}
+            title={"Delete Project"}
+            submitButtonText={"Delete"}
+            onCancel={toggleDeleteDialogOpen}
+            content={
+              <Typography>{`Are you sure you want to delete: ${project.name}?`}</Typography>
+            }
+            onSubmit={() =>
+              deleteProject(projectDispatch, project.id)
+                .then((project) => {
+                  toggleDeleteDialogOpen();
+                  enqueueSnackbar(`${project.name} deleted`, {
                     variant: "success",
                   });
                 })
@@ -160,17 +190,8 @@ const ProjectsListPage = () => {
                 </IconButton>
                 <IconButton
                   onClick={(event: React.MouseEvent<HTMLElement>) => {
-                    deleteProject(projectDispatch, project.id)
-                      .then((project) => {
-                        enqueueSnackbar(`${project.name} deleted`, {
-                          variant: "success",
-                        });
-                      })
-                      .catch((err) =>
-                        enqueueSnackbar(err, {
-                          variant: "error",
-                        })
-                      );
+                    toggleDeleteDialogOpen();
+                    setProject(project);
                   }}
                 >
                   <Delete />
