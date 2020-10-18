@@ -33,6 +33,7 @@ const ProjectsListPage = () => {
 
   const [createDialogOpen, setCreateDialogOpen] = React.useState(false);
   const [updateDialogOpen, setUpdateDialogOpen] = React.useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = React.useState(false);
   const [project, setProject] = React.useState<{
     id: string;
     name: string;
@@ -57,6 +58,10 @@ const ProjectsListPage = () => {
 
   const toggleUpdateDialogOpen = () => {
     setUpdateDialogOpen(!updateDialogOpen);
+  };
+
+  const toggleDeleteDialogOpen = () => {
+    setDeleteDialogOpen(!deleteDialogOpen);
   };
 
   return (
@@ -128,6 +133,30 @@ const ProjectsListPage = () => {
                 )
             }
           />
+
+          <BaseModal
+            open={deleteDialogOpen}
+            title={"Delete Project"}
+            submitButtonText={"Delete"}
+            onCancel={toggleDeleteDialogOpen}
+            content={
+              <Typography>{`Are you sure you want to delete: ${project.name}?`}</Typography>
+            }
+            onSubmit={() =>
+              deleteProject(projectDispatch, project.id)
+                .then((project) => {
+                  toggleDeleteDialogOpen();
+                  enqueueSnackbar(`${project.name} deleted`, {
+                    variant: "success",
+                  });
+                })
+                .catch((err) =>
+                  enqueueSnackbar(err, {
+                    variant: "error",
+                  })
+                )
+            }
+          />
         </Grid>
         {projectState.projectList.map((project) => (
           <Grid item xs={4} key={project.id}>
@@ -161,17 +190,8 @@ const ProjectsListPage = () => {
                 </IconButton>
                 <IconButton
                   onClick={(event: React.MouseEvent<HTMLElement>) => {
-                    deleteProject(projectDispatch, project.id)
-                      .then((project) => {
-                        enqueueSnackbar(`${project.name} deleted`, {
-                          variant: "success",
-                        });
-                      })
-                      .catch((err) =>
-                        enqueueSnackbar(err, {
-                          variant: "error",
-                        })
-                      );
+                    toggleDeleteDialogOpen();
+                    setProject(project);
                   }}
                 >
                   <Delete />
