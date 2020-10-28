@@ -1,12 +1,5 @@
 import React, { useEffect } from "react";
-import {
-  Grid,
-  Dialog,
-  IconButton,
-  Box,
-  Typography,
-  makeStyles,
-} from "@material-ui/core";
+import { Grid, Dialog, Box, Typography, makeStyles } from "@material-ui/core";
 import { useParams, useLocation, useHistory } from "react-router-dom";
 import { TestRun } from "../types";
 import BuildList from "../components/BuildList";
@@ -14,9 +7,7 @@ import ProjectSelect from "../components/ProjectSelect";
 import qs from "qs";
 import TestRunList from "../components/TestRunList";
 import TestDetailsModal from "../components/TestDetailsModal";
-import { NavigateBefore, NavigateNext } from "@material-ui/icons";
 import Filters from "../components/Filters";
-import { buildTestRunLocation } from "../_helpers/route.helpers";
 import {
   useBuildState,
   useBuildDispatch,
@@ -28,6 +19,7 @@ import {
   getTestRunList,
 } from "../contexts";
 import { useSnackbar } from "notistack";
+import { ArrowButtons } from "../components/ArrowButtons";
 
 const getQueryParams = (guery: string) => {
   const queryParams = qs.parse(guery, { ignoreQueryPrefix: true });
@@ -40,18 +32,6 @@ const getQueryParams = (guery: string) => {
 const useStyles = makeStyles((theme) => ({
   modal: {
     margin: 40,
-  },
-  button: {
-    width: 64,
-    height: 64,
-    padding: 0,
-    position: "fixed",
-    top: "50%",
-    zIndex: 4000,
-  },
-  icon: {
-    width: 64,
-    height: 64,
   },
   buildListContainer: {
     maxHeight: "89vh",
@@ -67,7 +47,6 @@ const ProjectPage = () => {
   const classes = useStyles();
   const { projectId } = useParams<{ projectId: string }>();
   const location = useLocation();
-  const history = useHistory();
   const { enqueueSnackbar } = useSnackbar();
   const { buildList, selectedBuildId } = useBuildState();
   const buildDispatch = useBuildDispatch();
@@ -167,38 +146,10 @@ const ProjectPage = () => {
               testRuns[selectedTestRunIndex] && (
                 <Dialog open={true} fullScreen className={classes.modal}>
                   <TestDetailsModal testRun={testRuns[selectedTestRunIndex]} />
-                  {selectedTestRunIndex + 1 < testRuns.length && (
-                    <IconButton
-                      color="secondary"
-                      className={classes.button}
-                      style={{
-                        right: 0,
-                      }}
-                      onClick={() => {
-                        const next = testRuns[selectedTestRunIndex + 1];
-                        history.push(buildTestRunLocation(next));
-                        selectTestRun(testRunDispatch, next.id);
-                      }}
-                    >
-                      <NavigateNext className={classes.icon} />
-                    </IconButton>
-                  )}
-                  {selectedTestRunIndex > 0 && (
-                    <IconButton
-                      color="secondary"
-                      className={classes.button}
-                      style={{
-                        left: 0,
-                      }}
-                      onClick={() => {
-                        const prev = testRuns[selectedTestRunIndex - 1];
-                        history.push(buildTestRunLocation(prev));
-                        selectTestRun(testRunDispatch, prev.id);
-                      }}
-                    >
-                      <NavigateBefore className={classes.icon} />
-                    </IconButton>
-                  )}
+                  <ArrowButtons
+                    testRuns={testRuns}
+                    selectedTestRunIndex={selectedTestRunIndex}
+                  />
                 </Dialog>
               )}
           </Grid>
