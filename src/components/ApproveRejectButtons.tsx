@@ -65,14 +65,18 @@ export const ApproveRejectButtons: React.FunctionComponent<{
         </Grid>
       )}
       <Grid item>
-        <Button color="inherit" onClick={approve}>
-          Approve
-        </Button>
+        <Tooltip title={"Hotkey: A"}>
+          <Button color="inherit" onClick={approve}>
+            Approve
+          </Button>
+        </Tooltip>
       </Grid>
       <Grid item>
-        <Button color="secondary" onClick={reject}>
-          Reject
-        </Button>
+        <Tooltip title={"Hotkey: X"}>
+          <Button color="secondary" onClick={reject}>
+            Reject
+          </Button>
+        </Tooltip>
       </Grid>
     </Grid>
   );

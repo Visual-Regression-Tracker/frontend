@@ -10,6 +10,7 @@ import {
   Paper,
   Box,
   makeStyles,
+  Tooltip,
 } from "@material-ui/core";
 import { ToggleButton } from "@material-ui/lab";
 import { useHotkeys } from "react-hotkeys-hook";
@@ -151,11 +152,13 @@ const TestDetailsModal: React.FunctionComponent<{
               <Typography variant="h6">{testRun.name}</Typography>
             </Grid>
             <Grid item>
-              <Switch
-                checked={isDiffShown}
-                onChange={() => setIsDiffShown(!isDiffShown)}
-                name="Show diff"
-              />
+              <Tooltip title={"Hotkey: D"}>
+                <Switch
+                  checked={isDiffShown}
+                  onChange={() => setIsDiffShown(!isDiffShown)}
+                  name="Show diff"
+                />
+              </Tooltip>
             </Grid>
             {(testRun.status === TestStatus.unresolved ||
               testRun.status === TestStatus.new) && (

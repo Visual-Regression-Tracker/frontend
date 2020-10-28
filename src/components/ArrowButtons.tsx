@@ -1,4 +1,4 @@
-import { IconButton, makeStyles } from "@material-ui/core";
+import { IconButton, makeStyles, Tooltip } from "@material-ui/core";
 import { NavigateNext, NavigateBefore } from "@material-ui/icons";
 import React from "react";
 import { useHotkeys } from "react-hotkeys-hook";
@@ -51,28 +51,32 @@ export const ArrowButtons: React.FunctionComponent<{
   return (
     <React.Fragment>
       {selectedTestRunIndex + 1 < testRuns.length && (
-        <IconButton
-          color="secondary"
-          className={classes.button}
-          style={{
-            right: 0,
-          }}
-          onClick={navigateNext}
-        >
-          <NavigateNext className={classes.icon} />
-        </IconButton>
+        <Tooltip title={"Hotkey: ArrowRight"}>
+          <IconButton
+            color="secondary"
+            className={classes.button}
+            style={{
+              right: 0,
+            }}
+            onClick={navigateNext}
+          >
+            <NavigateNext className={classes.icon} />
+          </IconButton>
+        </Tooltip>
       )}
       {selectedTestRunIndex > 0 && (
-        <IconButton
-          color="secondary"
-          className={classes.button}
-          style={{
-            left: 0,
-          }}
-          onClick={navigateBefore}
-        >
-          <NavigateBefore className={classes.icon} />
-        </IconButton>
+        <Tooltip title={"Hotkey: ArrowLeft"}>
+          <IconButton
+            color="secondary"
+            className={classes.button}
+            style={{
+              left: 0,
+            }}
+            onClick={navigateBefore}
+          >
+            <NavigateBefore className={classes.icon} />
+          </IconButton>
+        </Tooltip>
       )}
     </React.Fragment>
   );
