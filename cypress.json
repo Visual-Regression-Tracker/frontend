@@ -10,7 +10,7 @@
   "testFiles": "**/*.spec.*",
   "env": {
     "visualRegressionTracker": {
-      "apiUrl": "http://68.183.221.18:4200",
+      "apiUrl": "http://162.243.161.172:4200",
       "project": "VRT",
       "apiKey": "SECRET",
       "branchName": "master",
