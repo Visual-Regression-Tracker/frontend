@@ -1,6 +1,6 @@
 import React, { useEffect } from "react";
 import { Grid, Dialog, Box, Typography, makeStyles } from "@material-ui/core";
-import { useParams, useLocation, useHistory } from "react-router-dom";
+import { useParams, useLocation } from "react-router-dom";
 import { TestRun } from "../types";
 import BuildList from "../components/BuildList";
 import ProjectSelect from "../components/ProjectSelect";

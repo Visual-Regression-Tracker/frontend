@@ -9,11 +9,10 @@ import {
   IconButton,
   Paper,
   Box,
-  Chip,
-  Tooltip,
   makeStyles,
 } from "@material-ui/core";
 import { ToggleButton } from "@material-ui/lab";
+import { useHotkeys } from "react-hotkeys-hook";
 import { TestRun } from "../types";
 import {
   testRunService,
@@ -33,6 +32,7 @@ import { DrawArea } from "./DrawArea";
 import { CommentsPopper } from "./CommentsPopper";
 import { useSnackbar } from "notistack";
 import { ScaleActionsSpeedDial } from "./ZoomSpeedDial";
+import { ApproveRejectButtons } from "./ApproveRejectButtons";
 
 const defaultStagePos = {
   x: 0,
@@ -136,6 +136,8 @@ const TestDetailsModal: React.FunctionComponent<{
     setIsDiffShown(!!testRun.diffName);
   }, [testRun.diffName]);
 
+  useHotkeys("d", () => setIsDiffShown((isDiffShown) => !isDiffShown));
+
   return (
     <React.Fragment>
       <Prompt
@@ -158,67 +160,7 @@ const TestDetailsModal: React.FunctionComponent<{
             {(testRun.status === TestStatus.unresolved ||
               testRun.status === TestStatus.new) && (
               <Grid item>
-                <Grid container spacing={2} alignItems="center">
-                  {testRun.merge && (
-                    <Grid item>
-                      <Tooltip title="Will replace target branch baseline if accepted">
-                        <Chip
-                          label={`merge into: ${testRun.baselineBranchName}`}
-                          color="secondary"
-                          size="small"
-                        />
-                      </Tooltip>
-                    </Grid>
-                  )}
-                  <Grid item>
-                    <Button
-                      color="inherit"
-                      onClick={() =>
-                        testRunService
-                          .approve(testRun.id, testRun.merge)
-                          .then((testRun) => {
-                            updateTestRun(testRunDispatch, testRun);
-                          })
-                          .then(() =>
-                            enqueueSnackbar("Approved", {
-                              variant: "success",
-                            })
-                          )
-                          .catch((err) =>
-                            enqueueSnackbar(err, {
-                              variant: "error",
-                            })
-                          )
-                      }
-                    >
-                      Approve
-                    </Button>
-                  </Grid>
-                  <Grid item>
-                    <Button
-                      color="secondary"
-                      onClick={() =>
-                        testRunService
-                          .reject(testRun.id)
-                          .then((testRun) => {
-                            updateTestRun(testRunDispatch, testRun);
-                          })
-                          .then(() =>
-                            enqueueSnackbar("Rejected", {
-                              variant: "success",
-                            })
-                          )
-                          .catch((err) =>
-                            enqueueSnackbar(err, {
-                              variant: "error",
-                            })
-                          )
-                      }
-                    >
-                      Reject
-                    </Button>
-                  </Grid>
-                </Grid>
+                <ApproveRejectButtons testRun={testRun} />
               </Grid>
             )}
             <Grid item>
