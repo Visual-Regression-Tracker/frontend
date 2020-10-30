@@ -70,7 +70,7 @@ export const DrawArea: FunctionComponent<IDrawArea> = ({
   const [stageInitPos, setStageInitPos] = stageInitPosState;
   const [stageOffset, setStageOffset] = stageOffsetState;
   const [stagePos, setStagePos] = stagePosState;
-  const [stageScale] = stageScaleState;
+  const [stageScale, setStageScale] = stageScaleState;
   const [isDrag, setIsDrag] = React.useState(false);
 
   const [isDrawMode, setIsDrawMode] = drawModeState;
@@ -181,6 +181,15 @@ export const DrawArea: FunctionComponent<IDrawArea> = ({
               width={image && image.width}
               height={image && image.height}
               onMouseDown={onStageClick}
+              onWheel={(e: KonvaEventObject<WheelEvent>) => {
+                e.evt.preventDefault();
+                const scaleBy = 1.04;
+                const newScale =
+                  e.evt.deltaY > 0
+                    ? stageScale * scaleBy
+                    : stageScale / scaleBy;
+                setStageScale(newScale);
+              }}
               style={{
                 transform: `scale(${stageScale})`,
                 transformOrigin: "top left",
