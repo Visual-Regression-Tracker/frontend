@@ -97,13 +97,9 @@ const BuildList: FunctionComponent = () => {
               <ListItemText
                 disableTypography
                 primary={
-                  <Grid container>
-                    <Grid item>
-                      <Typography variant="subtitle2">{`#${
-                        build.number || build.id
-                      }`}</Typography>
-                    </Grid>
-                  </Grid>
+                  <Typography variant="subtitle2">{`#${build.number} ${
+                    build.ciBuildId || ""
+                  }`}</Typography>
                 }
                 secondary={
                   <Grid container direction="column">
