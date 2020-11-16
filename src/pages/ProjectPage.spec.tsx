@@ -22,6 +22,8 @@ describe("Project List page", () => {
     cy.stub(buildsService, "getList").resolves([
       {
         id: "some id",
+        number: 1,
+        ciBuildId: "some build id",
         projectName: "Project name",
         branchName: "Branch name",
         status: BuildStatus.failed,
@@ -35,6 +37,8 @@ describe("Project List page", () => {
       },
       {
         id: "some id2",
+        number: 2,
+        ciBuildId: "",
         projectName: "Project name",
         branchName: "Branch name",
         status: BuildStatus.passed,
@@ -48,6 +52,7 @@ describe("Project List page", () => {
       },
       {
         id: "some id3",
+        number: 3,
         projectName: "Project name",
         branchName: "Branch name",
         status: BuildStatus.unresolved,
