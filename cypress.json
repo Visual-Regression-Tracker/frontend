@@ -15,7 +15,7 @@
       "apiKey": "SECRET",
       "branchName": "master",
       "enableSoftAssert": false,
-      "ciBuildId": null
+      "ciBuildId": "SOME_UNIQUE_ID"
     }
   }
 }

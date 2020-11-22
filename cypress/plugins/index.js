@@ -14,7 +14,7 @@ module.exports = async (on, config) => {
   if (config.env.VRT_CI_BUILD_ID) {
     config.env.visualRegressionTracker.ciBuildId = config.env.VRT_CI_BUILD_ID;
   }
-  console.log(config.env.VRT_CI_BUILD_ID);
+  console.log("ciBuildId: " + config.env.VRT_CI_BUILD_ID);
   addVisualRegressionTrackerPlugin(on, config);
   return config;
 };
