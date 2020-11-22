@@ -11,6 +11,9 @@ module.exports = async (on, config) => {
   if (config.env.VRT_BRANCH_NAME) {
     config.env.visualRegressionTracker.branchName = config.env.VRT_BRANCH_NAME;
   }
+  if (config.env.VRT_CI_BUILD_ID) {
+    config.env.visualRegressionTracker.ciBuildId = config.env.VRT_CI_BUILD_ID;
+  }
   addVisualRegressionTrackerPlugin(on, config);
   return config;
 };
