@@ -9,7 +9,6 @@ module.exports = async (on, config) => {
     config.env.visualRegressionTracker.apiKey = config.env.VRT_API_KEY;
   }
   if (config.env.VRT_BRANCH_NAME) {
-    
     config.env.visualRegressionTracker.branchName = config.env.VRT_BRANCH_NAME;
   }
   addVisualRegressionTrackerPlugin(on, config);
