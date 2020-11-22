@@ -14,7 +14,8 @@
       "project": "VRT",
       "apiKey": "SECRET",
       "branchName": "master",
-      "enableSoftAssert": false
+      "enableSoftAssert": false,
+      "ciBuildId": null
     }
   }
 }
