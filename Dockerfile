@@ -23,7 +23,6 @@ COPY /nginx /etc/nginx/conf.d
 RUN chown -R nginx /etc/nginx /var/run /run
 
 EXPOSE 8080
-EXPOSE 443
 
 COPY --from=builder /app/build /usr/share/nginx/html
 

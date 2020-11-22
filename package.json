@@ -28,7 +28,8 @@
     "use-image": "^1.0.6"
   },
   "scripts": {
-    "start": "chmod +x ./env.sh && ./env.sh && cp env-config.js ./public/ && HTTPS=true react-scripts start",
+    "dev": "chmod +x ./env.sh && ./env.sh && cp env-config.js ./public/ && react-scripts start",
+    "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test"
   },
