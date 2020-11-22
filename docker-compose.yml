@@ -6,5 +6,8 @@ services:
       dockerfile: Dockerfile
     ports:
       - "${PORT}:8080"
+      - "443:443"
+    volumes: 
+      - ./secrets:/etc/nginx/secrets
     environment: 
       REACT_APP_API_URL: ${REACT_APP_API_URL}
