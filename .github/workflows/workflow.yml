@@ -14,6 +14,6 @@ jobs:
       - uses: actions/checkout@v2
 
       - name: Cypress run
-        uses: cypress-io/github-action@v1.16.1
+        uses: cypress-io/github-action@v2
         with:
-          env: VRT_API_KEY=${{ secrets.VRT_API_KEY }},VRT_BRANCH_NAME=${{ github.head_ref }}
+          env: VRT_API_KEY=${{ secrets.VRT_API_KEY }},VRT_BRANCH_NAME=${{ github.head_ref }},VRT_CI_BUILD_ID=${{ github.run_id }}
