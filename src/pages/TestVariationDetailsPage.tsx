@@ -21,6 +21,7 @@ import {
   selectTestRun,
 } from "../contexts";
 import { useSnackbar } from "notistack";
+import { formatDateTime } from "../_helpers/format.helper";
 
 const useStyles = makeStyles({
   media: {
@@ -83,7 +84,7 @@ const TestVariationDetailsPage: React.FunctionComponent = () => {
                           }
                         }}
                       >
-                        {baseline.createdAt}
+                        {formatDateTime(baseline.createdAt)}
                       </Button>
                     </CardActions>
                     <CardMedia
