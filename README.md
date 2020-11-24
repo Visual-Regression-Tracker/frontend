@@ -8,3 +8,8 @@
 - `npm i`
 - Update `.env`
 - `npm run start`
+
+## Local HTTPS config
+
+- Generate keys [here](https://www.selfsignedcertificate.com/)
+- place in folder `/secrets` named `ssl.cert` and `ssl.key`
