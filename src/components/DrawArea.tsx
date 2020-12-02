@@ -250,7 +250,7 @@ export const DrawArea: FunctionComponent<IDrawArea> = ({
                 {tempIgnoreAreas.map((rect, i) => {
                   return (
                     <Rectangle
-                      key={rect.id}
+                      key={i}
                       shapeProps={{
                         x: rect.x,
                         y: rect.y,
