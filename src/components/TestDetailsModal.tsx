@@ -307,6 +307,7 @@ const TestDetailsModal: React.FunctionComponent<{
               imageName={testRun.baselineName}
               branchName={testRun.baselineBranchName}
               ignoreAreas={[]}
+              tempIgnoreAreas={[]}
               setIgnoreAreas={setIgnoreAreas}
               selectedRectId={selectedRectId}
               setSelectedRectId={setSelectedRectId}
@@ -325,6 +326,7 @@ const TestDetailsModal: React.FunctionComponent<{
                 imageName={testRun.diffName}
                 branchName={testRun.branchName}
                 ignoreAreas={ignoreAreas}
+                tempIgnoreAreas={JSON.parse(testRun.tempIgnoreAreas)}
                 setIgnoreAreas={setIgnoreAreas}
                 selectedRectId={selectedRectId}
                 setSelectedRectId={setSelectedRectId}
@@ -341,6 +343,7 @@ const TestDetailsModal: React.FunctionComponent<{
                 imageName={testRun.imageName}
                 branchName={testRun.branchName}
                 ignoreAreas={ignoreAreas}
+                tempIgnoreAreas={JSON.parse(testRun.tempIgnoreAreas)}
                 setIgnoreAreas={setIgnoreAreas}
                 selectedRectId={selectedRectId}
                 setSelectedRectId={setSelectedRectId}

@@ -16,6 +16,7 @@ export interface TestRun {
   viewport: string;
   device: string;
   ignoreAreas: string;
+  tempIgnoreAreas: string;
   comment?: string;
   branchName: string;
   baselineBranchName: string;

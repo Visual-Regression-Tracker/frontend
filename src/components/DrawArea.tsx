@@ -1,14 +1,13 @@
 import React, { FunctionComponent } from "react";
 import { Stage, Layer, Image } from "react-konva";
-import { RectConfig } from "konva/types/shapes/Rect";
 import Rectangle, { MIN_RECT_SIDE_PIXEL } from "./Rectangle";
-import { KonvaEventObject } from "konva/types/Node";
 import { IgnoreArea } from "../types/ignoreArea";
 import { Grid, makeStyles, CircularProgress } from "@material-ui/core";
 import useImage from "use-image";
 import { staticService } from "../services";
 import { NoImagePlaceholder } from "./NoImageAvailable";
 import ImageDetails from "./ImageDetails";
+import Konva from "konva";
 
 const useStyles = makeStyles((theme) => ({
   canvasContainer: {
@@ -31,11 +30,12 @@ interface IDrawArea {
   type: "Baseline" | "Image" | "Diff";
   imageName: string;
   branchName: string;
+  tempIgnoreAreas: IgnoreArea[];
   ignoreAreas: IgnoreArea[];
   setIgnoreAreas: (ignoreAreas: IgnoreArea[]) => void;
   selectedRectId: string | undefined;
   setSelectedRectId: (id: string) => void;
-  onStageClick: (event: KonvaEventObject<MouseEvent>) => void;
+  onStageClick: (event: Konva.KonvaEventObject<MouseEvent>) => void;
   stageOffsetState: [
     { x: number; y: number },
     React.Dispatch<React.SetStateAction<{ x: number; y: number }>>
@@ -56,6 +56,7 @@ export const DrawArea: FunctionComponent<IDrawArea> = ({
   imageName,
   branchName,
   ignoreAreas,
+  tempIgnoreAreas,
   setIgnoreAreas,
   selectedRectId,
   setSelectedRectId,
@@ -143,6 +144,7 @@ export const DrawArea: FunctionComponent<IDrawArea> = ({
               type={type}
               branchName={branchName}
               imageName={imageName}
+              ignoreAreas={tempIgnoreAreas}
             />
           </div>
           <div
@@ -181,7 +183,7 @@ export const DrawArea: FunctionComponent<IDrawArea> = ({
               width={image && image.width}
               height={image && image.height}
               onMouseDown={onStageClick}
-              onWheel={(e: KonvaEventObject<WheelEvent>) => {
+              onWheel={(e: Konva.KonvaEventObject<WheelEvent>) => {
                 e.evt.preventDefault();
                 const scaleBy = 1.04;
                 const newScale =
@@ -228,7 +230,7 @@ export const DrawArea: FunctionComponent<IDrawArea> = ({
                       }}
                       isSelected={rect.id === selectedRectId}
                       onSelect={() => setSelectedRectId(rect.id)}
-                      onChange={(newAttrs: RectConfig) => {
+                      onChange={(newAttrs: Konva.RectConfig) => {
                         const rects = ignoreAreas.slice();
 
                         rects[i].x = Math.round(newAttrs.x || 0);
@@ -241,6 +243,19 @@ export const DrawArea: FunctionComponent<IDrawArea> = ({
                         );
 
                         setIgnoreAreas(rects);
+                      }}
+                    />
+                  );
+                })}
+                {tempIgnoreAreas.map((rect, i) => {
+                  return (
+                    <Rectangle
+                      key={rect.id}
+                      shapeProps={{
+                        x: rect.x,
+                        y: rect.y,
+                        width: rect.width,
+                        height: rect.height,
                       }}
                     />
                   );
