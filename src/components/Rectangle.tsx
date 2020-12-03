@@ -46,30 +46,20 @@ const Rectangle: React.FunctionComponent<IProps> = ({
         ref={shapeRef}
         {...shapeProps}
         draggable={isDraggable}
-        dragBoundFunc={
-          isDraggable
-            ? (pos) => {
-                const component = shapeRef.current;
-                if (!component) {
-                  return pos;
-                }
-                const rectWidth = component.width() * component.scaleX();
-                const rectHeight = component.height() * component.scaleY();
-                const layerSize = component.getLayer()!.getSize();
+        dragBoundFunc={(pos) => {
+          const component = shapeRef.current;
+          if (!component) {
+            return pos;
+          }
+          const rectWidth = component.width() * component.scaleX();
+          const rectHeight = component.height() * component.scaleY();
+          const layerSize = component.getLayer()!.getSize();
 
-                return {
-                  x:
-                    pos.x > 0
-                      ? Math.min(layerSize.width - rectWidth, pos.x)
-                      : 0,
-                  y:
-                    pos.y > 0
-                      ? Math.min(layerSize.height - rectHeight, pos.y)
-                      : 0,
-                };
-              }
-            : undefined
-        }
+          return {
+            x: pos.x > 0 ? Math.min(layerSize.width - rectWidth, pos.x) : 0,
+            y: pos.y > 0 ? Math.min(layerSize.height - rectHeight, pos.y) : 0,
+          };
+        }}
         onDragEnd={
           isDraggable
             ? (e) =>
