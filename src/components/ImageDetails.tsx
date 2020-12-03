@@ -36,7 +36,9 @@ const ImageDetails: React.FunctionComponent<IProps> = ({
             {ignoreAreas && ignoreAreas.length > 0 && (
               <Grid item>
                 <Tooltip
-                  title={"Contains ignore areas applyed during image upload."}
+                  title={
+                    "Contains noneditable ignore areas applyed during image upload."
+                  }
                 >
                   <IconButton>
                     <WarningRounded color="secondary" />
