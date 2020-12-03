@@ -85,7 +85,7 @@ describe("Project List page", () => {
         device: "device",
         ignoreAreas:
           '[{"id":"1606901916571","x":232,"y":123,"width":166,"height":138}]',
-        tempIgnoreAres: '[{"x":100,"y":300,"width":600,"height":700}]',
+        tempIgnoreAreas: '[{"x":100,"y":300,"width":600,"height":700}]',
         comment: "some comment",
         branchName: "branch name",
         baselineBranchName: "baselineBranchName",
