@@ -89,7 +89,9 @@ const Rectangle: React.FunctionComponent<IProps> = ({
                 // but in the store we have only width and height
                 // to match the data better we will reset scale on transform end
                 const node = shapeRef.current;
-                if (!node || !onChange) return;
+                if (!node || !onChange) {
+                  return;
+                }
                 const scaleX = node.scaleX();
                 const scaleY = node.scaleY();
 

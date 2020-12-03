@@ -70,7 +70,6 @@ describe("Project List page", () => {
         id: "some test run id",
         createdAt: "2020-09-14T06:57:25.845Z",
         createdBy: "2020-09-14T06:57:25.845Z",
-
         buildId: "some build id",
         imageName: "image.png",
         diffName: "diff.png",
