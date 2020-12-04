@@ -70,7 +70,6 @@ describe("Project List page", () => {
         id: "some test run id",
         createdAt: "2020-09-14T06:57:25.845Z",
         createdBy: "2020-09-14T06:57:25.845Z",
-
         buildId: "some build id",
         imageName: "image.png",
         diffName: "diff.png",
@@ -84,7 +83,9 @@ describe("Project List page", () => {
         browser: "browser",
         viewport: "viewport",
         device: "device",
-        ignoreAreas: "[]",
+        ignoreAreas:
+          '[{"id":"1606901916571","x":232,"y":123,"width":166,"height":138}]',
+        tempIgnoreAreas: '[{"x":100,"y":300,"width":600,"height":700}]',
         comment: "some comment",
         branchName: "branch name",
         baselineBranchName: "baselineBranchName",

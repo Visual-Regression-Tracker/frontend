@@ -1,18 +1,22 @@
 import React from "react";
-import { Typography, Chip, Grid } from "@material-ui/core";
+import { Typography, Chip, Grid, IconButton, Tooltip } from "@material-ui/core";
+import { WarningRounded } from "@material-ui/icons";
 import { staticService } from "../services";
 import useImage from "use-image";
+import { IgnoreArea } from "../types/ignoreArea";
 
 interface IProps {
   type: "Baseline" | "Image" | "Diff";
   imageName: string;
   branchName: string;
+  ignoreAreas?: IgnoreArea[];
 }
 
 const ImageDetails: React.FunctionComponent<IProps> = ({
   type,
   imageName,
   branchName,
+  ignoreAreas,
 }) => {
   const [image] = useImage(staticService.getImage(imageName));
   return (
@@ -20,7 +24,7 @@ const ImageDetails: React.FunctionComponent<IProps> = ({
       <Typography>{type}</Typography>
       {imageName ? (
         <React.Fragment>
-          <Grid container spacing={2}>
+          <Grid container spacing={2} alignItems={"center"}>
             <Grid item>
               <Typography variant="caption">
                 Real size: {`${image?.width} x ${image?.height}`}
@@ -29,6 +33,19 @@ const ImageDetails: React.FunctionComponent<IProps> = ({
             <Grid item>
               <Chip size="small" label={branchName} />
             </Grid>
+            {ignoreAreas && ignoreAreas.length > 0 && (
+              <Grid item>
+                <Tooltip
+                  title={
+                    "Contains noneditable ignore areas applyed during image upload."
+                  }
+                >
+                  <IconButton>
+                    <WarningRounded color="secondary" />
+                  </IconButton>
+                </Tooltip>
+              </Grid>
+            )}
           </Grid>
         </React.Fragment>
       ) : (
