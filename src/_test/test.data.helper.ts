@@ -1,5 +1,14 @@
-import { TestRun, User } from "../types";
+import { Project, TestRun, User } from "../types";
 import { TestStatus } from "../types/testStatus";
+
+export const projectMock: Project = {
+  id: "someProjectId",
+  name: "Project name",
+  mainBranchName: "Main branch name",
+  builds: [],
+  updatedAt: "2020-09-14T06:57:25.845Z",
+  createdAt: "2020-09-14T06:57:25.845Z",
+};
 
 export const userMock: User = {
   id: "1",
@@ -10,7 +19,7 @@ export const userMock: User = {
   lastName: "Last name",
 };
 
-export const testRunApproved: TestRun = {
+export const testRunMock: TestRun = {
   id: "some test run id2",
   buildId: "some build id",
   imageName: "screenshot.png",
@@ -26,6 +35,7 @@ export const testRunApproved: TestRun = {
   viewport: "viewport",
   device: "device",
   ignoreAreas: "[]",
+  tempIgnoreAreas: "[]",
   comment: "some comment",
   branchName: "branch name",
   baselineBranchName: "baselineBranchName",

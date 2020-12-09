@@ -2,12 +2,16 @@
 import React from "react";
 import { staticService, testVariationService } from "../services";
 import { mountVrtComponent } from "../_test/test.moun.helper";
-import { testRunApproved } from "../_test/test.data.helper";
+import { testRunMock } from "../_test/test.data.helper";
 import TestVariationDetailsPage from "./TestVariationDetailsPage";
 import baselineImageMock from "../_test/images/baseline.png";
 import imageMock from "../_test/images/screenshot.png";
+import { projectStub } from "../_test/stub.helper";
 
 describe("TestVariationDetailsPage", () => {
+  before(() => {
+    projectStub.getAll([]);
+  });
   it("image", () => {
     cy.stub(staticService, "getImage")
       .withArgs("baseline1.png")
@@ -33,7 +37,7 @@ describe("TestVariationDetailsPage", () => {
           testVariationId: "some test variation id",
           createdAt: "2020-09-14T06:57:25.845Z",
           updatedAt: "2020-09-14T06:57:25.845Z",
-          testRun: testRunApproved,
+          testRun: testRunMock,
         },
         {
           id: "some baseline id2",
@@ -42,7 +46,7 @@ describe("TestVariationDetailsPage", () => {
           testVariationId: "some test variation id",
           createdAt: "2020-09-12T06:57:25.845Z",
           updatedAt: "2020-09-12T06:57:25.845Z",
-          testRun: testRunApproved,
+          testRun: testRunMock,
         },
       ],
     });

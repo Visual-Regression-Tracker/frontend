@@ -1,13 +1,21 @@
 /* global cy */
 import React from "react";
 import ProfilePage from "./ProfilePage";
-import { haveUserLogged } from "../_helpers/precondition.helper";
-import { userMock } from "../_test/test.data.helper";
+import {
+  haveUserLogged,
+  haveWindowsEnvSet,
+} from "../_helpers/precondition.helper";
+import { projectMock, userMock } from "../_test/test.data.helper";
 import { mountVrtComponent } from "../_test/test.moun.helper";
+import { projectStub } from "../_test/stub.helper";
 
 describe("Profile page", () => {
   before(() => {
     haveUserLogged(userMock);
+    haveWindowsEnvSet({
+      REACT_APP_API_URL: "http://localhost:4200",
+    });
+    projectStub.getAll([projectMock]);
   });
 
   it("image", () => {
