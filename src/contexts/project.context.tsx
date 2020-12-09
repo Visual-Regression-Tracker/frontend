@@ -42,7 +42,7 @@ type IAction =
   | IUpdateAction;
 
 type Dispatch = (action: IAction) => void;
-type State = { selectedProjectId: string | undefined; projectList: Project[] };
+type State = { selectedProjectId: string | null; projectList: Project[] };
 
 type ProjectProviderProps = { children: React.ReactNode };
 
@@ -86,32 +86,6 @@ function projectReducer(state: State, action: IAction): State {
     default:
       return state;
   }
-}
-
-function ProjectProvider({ children }: ProjectProviderProps) {
-  const initialState: State = {
-    selectedProjectId: undefined,
-    projectList: [],
-  };
-
-  const [state, dispatch] = React.useReducer(projectReducer, initialState);
-  const { enqueueSnackbar } = useSnackbar();
-
-  React.useEffect(() => {
-    getProjectList(dispatch).catch((err) =>
-      enqueueSnackbar(err, {
-        variant: "error",
-      })
-    );
-  }, [enqueueSnackbar]);
-
-  return (
-    <ProjectStateContext.Provider value={state}>
-      <ProjectDispatchContext.Provider value={dispatch}>
-        {children}
-      </ProjectDispatchContext.Provider>
-    </ProjectStateContext.Provider>
-  );
 }
 
 function useProjectState() {
@@ -174,6 +148,32 @@ async function deleteProject(dispatch: Dispatch, id: string) {
     dispatch({ type: "delete", payload: id });
     return project;
   });
+}
+
+function ProjectProvider({ children }: ProjectProviderProps) {
+  const initialState: State = {
+    selectedProjectId: null,
+    projectList: [],
+  };
+
+  const [state, dispatch] = React.useReducer(projectReducer, initialState);
+  const { enqueueSnackbar } = useSnackbar();
+
+  React.useEffect(() => {
+    getProjectList(dispatch).catch((err) =>
+      enqueueSnackbar(err, {
+        variant: "error",
+      })
+    );
+  }, [enqueueSnackbar]);
+
+  return (
+    <ProjectStateContext.Provider value={state}>
+      <ProjectDispatchContext.Provider value={dispatch}>
+        {children}
+      </ProjectDispatchContext.Provider>
+    </ProjectStateContext.Provider>
+  );
 }
 
 export {
