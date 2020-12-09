@@ -1,6 +1,7 @@
 import * as React from "react";
 import { Project } from "../types";
 import { projectsService } from "../services";
+import { useSnackbar } from "notistack";
 
 interface IRequestAction {
   type: "request";
@@ -27,15 +28,21 @@ interface IDeleteAction {
   payload: string;
 }
 
+interface ISelectAction {
+  type: "select";
+  payload: string;
+}
+
 type IAction =
   | IRequestAction
   | IGetction
+  | ISelectAction
   | ICreateAction
   | IDeleteAction
   | IUpdateAction;
 
 type Dispatch = (action: IAction) => void;
-type State = { projectList: Project[] };
+type State = { selectedProjectId: string | undefined; projectList: Project[] };
 
 type ProjectProviderProps = { children: React.ReactNode };
 
@@ -50,6 +57,11 @@ function projectReducer(state: State, action: IAction): State {
       return {
         ...state,
         projectList: action.payload,
+      };
+    case "select":
+      return {
+        ...state,
+        selectedProjectId: action.payload,
       };
     case "create":
       return {
@@ -78,10 +90,20 @@ function projectReducer(state: State, action: IAction): State {
 
 function ProjectProvider({ children }: ProjectProviderProps) {
   const initialState: State = {
+    selectedProjectId: undefined,
     projectList: [],
   };
 
   const [state, dispatch] = React.useReducer(projectReducer, initialState);
+  const { enqueueSnackbar } = useSnackbar();
+
+  React.useEffect(() => {
+    getProjectList(dispatch).catch((err) =>
+      enqueueSnackbar(err, {
+        variant: "error",
+      })
+    );
+  }, [enqueueSnackbar]);
 
   return (
     <ProjectStateContext.Provider value={state}>
@@ -108,12 +130,17 @@ function useProjectDispatch() {
   return context;
 }
 
-async function getProjectList(dispatch: Dispatch) {
+async function getProjectList(dispatch: Dispatch): Promise<Project[]> {
   dispatch({ type: "request" });
 
   return projectsService.getAll().then((projects) => {
     dispatch({ type: "get", payload: projects });
+    return projects;
   });
+}
+
+async function selectProject(dispatch: Dispatch, id: string) {
+  dispatch({ type: "select", payload: id });
 }
 
 async function createProject(
@@ -157,4 +184,5 @@ export {
   updateProject,
   getProjectList,
   deleteProject,
+  selectProject,
 };

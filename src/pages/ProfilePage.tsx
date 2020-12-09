@@ -12,14 +12,22 @@ import {
   Tabs,
   Tab,
 } from "@material-ui/core";
-import { useAuthState, useAuthDispatch, update } from "../contexts";
+import {
+  useAuthState,
+  useAuthDispatch,
+  update,
+  selectProject,
+  useProjectDispatch,
+} from "../contexts";
 import { usersService } from "../services";
 import { useSnackbar } from "notistack";
+import ProjectSelect from "../components/ProjectSelect";
 
 const ProfilePage = () => {
   const { enqueueSnackbar } = useSnackbar();
   const { user } = useAuthState();
-  const dispatch = useAuthDispatch();
+  const authDispatch = useAuthDispatch();
+  const projectDispatch = useProjectDispatch();
   const [email, setEmail] = useState(user?.email);
   const [firstName, setFirstName] = useState(user?.firstName);
   const [lastName, setLastName] = useState(user?.lastName);
@@ -29,7 +37,7 @@ const ProfilePage = () => {
   const handleUserUpdateSubmit = (event: FormEvent) => {
     event.preventDefault();
     if (user && firstName && lastName && email) {
-      update(dispatch, {
+      update(authDispatch, {
         firstName,
         lastName,
         email,
@@ -212,6 +220,9 @@ const ProfilePage = () => {
             <Card variant="outlined">
               <CardHeader title={"Configuration examples"} />
               <CardContent>
+                <ProjectSelect
+                  onProjectSelect={(id) => selectProject(projectDispatch, id)}
+                />
                 <Tabs
                   value={tabIndex}
                   indicatorColor="primary"

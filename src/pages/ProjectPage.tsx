@@ -1,6 +1,6 @@
 import React, { useEffect } from "react";
-import { Grid, Dialog, Box, Typography, makeStyles } from "@material-ui/core";
-import { useParams, useLocation } from "react-router-dom";
+import { Grid, Dialog, Box, makeStyles } from "@material-ui/core";
+import { useParams, useLocation, useHistory } from "react-router-dom";
 import { TestRun } from "../types";
 import BuildList from "../components/BuildList";
 import ProjectSelect from "../components/ProjectSelect";
@@ -17,6 +17,8 @@ import {
   useTestRunDispatch,
   selectTestRun,
   getTestRunList,
+  useProjectDispatch,
+  selectProject,
 } from "../contexts";
 import { useSnackbar } from "notistack";
 import { ArrowButtons } from "../components/ArrowButtons";
@@ -47,9 +49,11 @@ const ProjectPage = () => {
   const classes = useStyles();
   const { projectId } = useParams<{ projectId: string }>();
   const location = useLocation();
+  const history = useHistory();
   const { enqueueSnackbar } = useSnackbar();
   const { buildList, selectedBuildId } = useBuildState();
   const buildDispatch = useBuildDispatch();
+  const projectDispatch = useProjectDispatch();
   const { testRuns, selectedTestRunIndex } = useTestRunState();
   const testRunDispatch = useTestRunDispatch();
 
@@ -61,6 +65,12 @@ const ProjectPage = () => {
   const [viewport, setViewport] = React.useState("");
   const [testStatus, setTestStatus] = React.useState("");
   const [filteredTestRuns, setFilteredTestRuns] = React.useState<TestRun[]>([]);
+
+  useEffect(() => {
+    if (projectId) {
+      selectProject(projectDispatch, projectId);
+    }
+  }, [projectId, projectDispatch]);
 
   useEffect(() => {
     if (projectId) {
@@ -115,11 +125,8 @@ const ProjectPage = () => {
   return (
     <Grid container>
       <Grid item xs={3}>
-        <Grid container direction="column">
-          <Grid item>
-            <Typography display="inline">Project: </Typography>
-            <ProjectSelect selectedId={projectId} />
-          </Grid>
+        <Grid item>
+          <ProjectSelect onProjectSelect={(id) => history.push(id)} />
         </Grid>
         <Grid item className={classes.buildListContainer}>
           <BuildList />
