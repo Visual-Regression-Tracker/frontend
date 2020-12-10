@@ -3,7 +3,7 @@ import TestVariationList from "../components/TestVariationList";
 import { useHistory, useParams } from "react-router-dom";
 import { TestVariation } from "../types";
 import { testVariationService } from "../services";
-import { Container, Box, Grid } from "@material-ui/core";
+import { Box, Grid } from "@material-ui/core";
 import ProjectSelect from "../components/ProjectSelect";
 import Filters from "../components/Filters";
 import { TestVariationMergeForm } from "../components/TestVariationMergeForm";
@@ -81,40 +81,38 @@ const TestVariationListPage: React.FunctionComponent = () => {
 
   return (
     <React.Fragment>
-      <Container>
-        <Box mt={2}>
-          <Grid container direction="column" spacing={2}>
-            <Grid item>
-              <ProjectSelect onProjectSelect={(id) => history.push(id)} />
-            </Grid>
-            <Grid item>
-              <TestVariationMergeForm
-                projectId={projectId}
-                items={Array.from(
-                  new Set(testVariations.map((t) => t.branchName))
-                )}
-              />
-            </Grid>
-            <Grid item>
-              <Filters
-                items={testVariations}
-                queryState={[query, setQuery]}
-                osState={[os, setOs]}
-                deviceState={[device, setDevice]}
-                browserState={[browser, setBrowser]}
-                viewportState={[viewport, setViewport]}
-                branchNameState={[branchName, setBranchName]}
-              />
-            </Grid>
-            <Grid item>
-              <TestVariationList
-                items={filteredItems}
-                onDeleteClick={handleDelete}
-              />
-            </Grid>
+      <Box m={2}>
+        <Grid container direction="column" spacing={2}>
+          <Grid item>
+            <ProjectSelect onProjectSelect={(id) => history.push(id)} />
           </Grid>
-        </Box>
-      </Container>
+          <Grid item>
+            <TestVariationMergeForm
+              projectId={projectId}
+              items={Array.from(
+                new Set(testVariations.map((t) => t.branchName))
+              )}
+            />
+          </Grid>
+          <Grid item>
+            <Filters
+              items={testVariations}
+              queryState={[query, setQuery]}
+              osState={[os, setOs]}
+              deviceState={[device, setDevice]}
+              browserState={[browser, setBrowser]}
+              viewportState={[viewport, setViewport]}
+              branchNameState={[branchName, setBranchName]}
+            />
+          </Grid>
+          <Grid item>
+            <TestVariationList
+              items={filteredItems}
+              onDeleteClick={handleDelete}
+            />
+          </Grid>
+        </Grid>
+      </Box>
     </React.Fragment>
   );
 };

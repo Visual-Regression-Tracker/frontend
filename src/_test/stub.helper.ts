@@ -1,3 +1,4 @@
+/* global cy */
 import { projectsService } from "../services";
 import { Project } from "../types";
 

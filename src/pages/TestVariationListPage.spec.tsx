@@ -88,7 +88,7 @@ describe("TestVariationListPage", () => {
     mountVrtComponent({
       component: <TestVariationListPage />,
       memoryRouterProps: {
-        initialEntries: ["someId"],
+        initialEntries: [`/${projectMock.id}`],
       },
       path: "/:projectId",
     });
