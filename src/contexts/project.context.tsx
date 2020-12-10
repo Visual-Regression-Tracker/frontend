@@ -1,6 +1,7 @@
 import * as React from "react";
 import { Project } from "../types";
 import { projectsService } from "../services";
+import { useSnackbar } from "notistack";
 
 interface IRequestAction {
   type: "request";
@@ -27,15 +28,21 @@ interface IDeleteAction {
   payload: string;
 }
 
+interface ISelectAction {
+  type: "select";
+  payload: string;
+}
+
 type IAction =
   | IRequestAction
   | IGetction
+  | ISelectAction
   | ICreateAction
   | IDeleteAction
   | IUpdateAction;
 
 type Dispatch = (action: IAction) => void;
-type State = { projectList: Project[] };
+type State = { selectedProjectId: string | null; projectList: Project[] };
 
 type ProjectProviderProps = { children: React.ReactNode };
 
@@ -50,6 +57,11 @@ function projectReducer(state: State, action: IAction): State {
       return {
         ...state,
         projectList: action.payload,
+      };
+    case "select":
+      return {
+        ...state,
+        selectedProjectId: action.payload,
       };
     case "create":
       return {
@@ -76,22 +88,6 @@ function projectReducer(state: State, action: IAction): State {
   }
 }
 
-function ProjectProvider({ children }: ProjectProviderProps) {
-  const initialState: State = {
-    projectList: [],
-  };
-
-  const [state, dispatch] = React.useReducer(projectReducer, initialState);
-
-  return (
-    <ProjectStateContext.Provider value={state}>
-      <ProjectDispatchContext.Provider value={dispatch}>
-        {children}
-      </ProjectDispatchContext.Provider>
-    </ProjectStateContext.Provider>
-  );
-}
-
 function useProjectState() {
   const context = React.useContext(ProjectStateContext);
   if (context === undefined) {
@@ -108,12 +104,17 @@ function useProjectDispatch() {
   return context;
 }
 
-async function getProjectList(dispatch: Dispatch) {
+async function getProjectList(dispatch: Dispatch): Promise<Project[]> {
   dispatch({ type: "request" });
 
   return projectsService.getAll().then((projects) => {
     dispatch({ type: "get", payload: projects });
+    return projects;
   });
+}
+
+async function selectProject(dispatch: Dispatch, id: string) {
+  dispatch({ type: "select", payload: id });
 }
 
 async function createProject(
@@ -149,6 +150,32 @@ async function deleteProject(dispatch: Dispatch, id: string) {
   });
 }
 
+function ProjectProvider({ children }: ProjectProviderProps) {
+  const initialState: State = {
+    selectedProjectId: null,
+    projectList: [],
+  };
+
+  const [state, dispatch] = React.useReducer(projectReducer, initialState);
+  const { enqueueSnackbar } = useSnackbar();
+
+  React.useEffect(() => {
+    getProjectList(dispatch).catch((err) =>
+      enqueueSnackbar(err, {
+        variant: "error",
+      })
+    );
+  }, [enqueueSnackbar]);
+
+  return (
+    <ProjectStateContext.Provider value={state}>
+      <ProjectDispatchContext.Provider value={dispatch}>
+        {children}
+      </ProjectDispatchContext.Provider>
+    </ProjectStateContext.Provider>
+  );
+}
+
 export {
   ProjectProvider,
   useProjectState,
@@ -157,4 +184,5 @@ export {
   updateProject,
   getProjectList,
   deleteProject,
+  selectProject,
 };

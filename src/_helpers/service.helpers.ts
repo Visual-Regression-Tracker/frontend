@@ -1,3 +1,4 @@
+import { routes } from "../constants";
 import { usersService } from "../services";
 import { User } from "../types";
 
@@ -20,7 +21,10 @@ export function handleResponse(response: Response) {
       if (response.status === 401) {
         // auto logout if 401 response returned from api
         usersService.logout();
-        window.location.reload();
+        // reload if not on login page
+        if (window.location.pathname !== routes.LOGIN) {
+          window.location.reload();
+        }
       }
 
       const error = (data && data.message) || response.statusText;

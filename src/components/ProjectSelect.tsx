@@ -1,39 +1,59 @@
 import React, { FunctionComponent } from "react";
-import { MenuItem, Select } from "@material-ui/core";
+import {
+  createStyles,
+  FormControl,
+  InputLabel,
+  makeStyles,
+  MenuItem,
+  Select,
+  Theme,
+} from "@material-ui/core";
 import { useProjectState } from "../contexts";
-import { useHistory } from "react-router-dom";
+
+const useStyles = makeStyles((theme: Theme) =>
+  createStyles({
+    formControl: {
+      margin: theme.spacing(1),
+      minWidth: 120,
+    },
+    selectEmpty: {
+      marginTop: theme.spacing(2),
+    },
+  })
+);
 
 const ProjectSelect: FunctionComponent<{
-  selectedId: string | undefined;
-}> = ({ selectedId }) => {
-  const history = useHistory();
-  const projectState = useProjectState();
-
-  const handleProjectSelect = (
-    event: React.ChangeEvent<{ value: unknown }>
-  ) => {
-    const newSelectedProject = projectState.projectList.find(
-      (p) => p.id === (event.target.value as string)
-    );
-    if (newSelectedProject) {
-      history.push(newSelectedProject.id);
-    }
-  };
+  onProjectSelect: (id: string) => void;
+}> = ({ onProjectSelect }) => {
+  const classes = useStyles();
+  const { projectList, selectedProjectId } = useProjectState();
 
   return (
     <React.Fragment>
-      {projectState.projectList.length > 0 && (
-        <Select
-          id="project-select"
-          value={selectedId}
-          onChange={handleProjectSelect}
-        >
-          {projectState.projectList.map((project) => (
-            <MenuItem key={project.id} value={project.id}>
-              {project.name}
+      {projectList.length > 0 && (
+        <FormControl className={classes.formControl}>
+          <InputLabel id="projectSelect" shrink>
+            Project
+          </InputLabel>
+          <Select
+            id="project-select"
+            labelId="projectSelect"
+            autoWidth
+            displayEmpty
+            className={classes.selectEmpty}
+            value={selectedProjectId ?? ""}
+            onChange={(event) => onProjectSelect(event.target.value as string)}
+          >
+            <MenuItem value="" disabled>
+              <em>Select project</em>
             </MenuItem>
-          ))}
-        </Select>
+            {projectList.map((project) => (
+              <MenuItem key={project.id} value={project.id}>
+                {project.name}
+              </MenuItem>
+            ))}
+          </Select>
+        </FormControl>
       )}
     </React.Fragment>
   );

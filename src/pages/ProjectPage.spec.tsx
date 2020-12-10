@@ -8,8 +8,21 @@ import { mountVrtComponent } from "../_test/test.moun.helper";
 import baselineImageMock from "../_test/images/baseline.png";
 import imageMock from "../_test/images/screenshot.png";
 import diffMock from "../_test/images/diff.png";
+import { projectStub } from "../_test/stub.helper";
 
 describe("Project List page", () => {
+  before(() => {
+    projectStub.getAll([
+      {
+        id: "someProjectId",
+        name: "Project name",
+        mainBranchName: "master",
+        builds: [],
+        updatedAt: "2020-09-14T06:57:25.845Z",
+        createdAt: "2020-09-14T06:57:25.845Z",
+      },
+    ]);
+  });
   it("image", () => {
     cy.stub(staticService, "getImage")
       .withArgs("baseline.png")
@@ -168,7 +181,7 @@ describe("Project List page", () => {
     mountVrtComponent({
       component: <ProjectPage />,
       memoryRouterProps: {
-        initialEntries: ["/someId"],
+        initialEntries: ["/someProjectId"],
       },
       path: "/:projectId",
     });

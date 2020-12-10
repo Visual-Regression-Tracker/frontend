@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React from "react";
 import {
   Grid,
   Typography,
@@ -13,7 +13,6 @@ import {
 import {
   useProjectState,
   useProjectDispatch,
-  getProjectList,
   deleteProject,
   createProject,
   updateProject,
@@ -43,14 +42,6 @@ const ProjectsListPage = () => {
     name: "",
     mainBranchName: "",
   });
-
-  useEffect(() => {
-    getProjectList(projectDispatch).catch((err) =>
-      enqueueSnackbar(err, {
-        variant: "error",
-      })
-    );
-  }, [projectDispatch, enqueueSnackbar]);
 
   const toggleCreateDialogOpen = () => {
     setCreateDialogOpen(!createDialogOpen);
