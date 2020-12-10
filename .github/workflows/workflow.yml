@@ -8,7 +8,7 @@ on:
 
 jobs:
   build:
-    runs-on: macOS-latest
+    runs-on: ubuntu-16.04
 
     steps:
       - uses: actions/checkout@v2
@@ -16,4 +16,5 @@ jobs:
       - name: Cypress run
         uses: cypress-io/github-action@v2
         with:
+          browser: chrome
           env: VRT_API_KEY=${{ secrets.VRT_API_KEY }},VRT_BRANCH_NAME=${{ github.head_ref }},VRT_CI_BUILD_ID=${{ github.run_id }}
