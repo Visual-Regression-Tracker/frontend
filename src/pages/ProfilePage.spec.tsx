@@ -4,7 +4,7 @@ import ProfilePage from "./ProfilePage";
 import {
   haveUserLogged,
   haveWindowsEnvSet,
-} from "../_helpers/precondition.helper";
+} from "../_test/precondition.helper";
 import { projectMock, userMock } from "../_test/test.data.helper";
 import { mountVrtComponent } from "../_test/test.moun.helper";
 import { projectStub } from "../_test/stub.helper";

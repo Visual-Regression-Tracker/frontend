@@ -9,9 +9,12 @@ import baselineImageMock from "../_test/images/baseline.png";
 import imageMock from "../_test/images/screenshot.png";
 import diffMock from "../_test/images/diff.png";
 import { projectStub } from "../_test/stub.helper";
+import { haveUserLogged } from "../_test/precondition.helper";
+import { userMock } from "../_test/test.data.helper";
 
 describe("Project List page", () => {
   before(() => {
+    haveUserLogged(userMock);
     projectStub.getAll([
       {
         id: "someProjectId",

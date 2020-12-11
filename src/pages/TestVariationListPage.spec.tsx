@@ -2,14 +2,16 @@
 import React from "react";
 import { staticService, testVariationService } from "../services";
 import { mountVrtComponent } from "../_test/test.moun.helper";
-import { projectMock, testRunMock } from "../_test/test.data.helper";
+import { projectMock, testRunMock, userMock } from "../_test/test.data.helper";
 import TestVariationListPage from "./TestVariationListPage";
 import baselineImageMock from "../_test/images/baseline.png";
 import imageMock from "../_test/images/screenshot.png";
 import { projectStub } from "../_test/stub.helper";
+import { haveUserLogged } from "../_test/precondition.helper";
 
 describe("TestVariationListPage", () => {
   before(() => {
+    haveUserLogged(userMock);
     projectStub.getAll([projectMock]);
   });
   it("image", () => {
