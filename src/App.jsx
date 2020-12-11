@@ -6,9 +6,9 @@ import {
   ProjectProvider,
   BuildProvider,
   TestRunProvider,
+  SocketProvider,
 } from "./contexts";
 import Router from "./Router";
-import { SocketProvider } from "./contexts/socket.context";
 
 function App() {
   return (

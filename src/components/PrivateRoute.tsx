@@ -3,7 +3,7 @@ import { Redirect, Route, RouteProps } from "react-router-dom";
 import { useAuthState } from "../contexts";
 import { routes } from "../constants";
 
-const PrivateRoute: React.SFC<RouteProps> = ({
+const PrivateRoute: React.FunctionComponent<RouteProps> = ({
   component: Component,
   ...rest
 }) => {

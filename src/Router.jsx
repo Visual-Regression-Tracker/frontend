@@ -15,6 +15,7 @@ function Router() {
     <Switch>
       <Route exact path={routes.LOGIN} component={() => <LoginPage />} />
       <Route exact path={routes.REGISTER} component={() => <RegisterPage />} />
+      <Redirect exact from={routes.HOME} to={routes.PROJECT_LIST_PAGE} />
       <PrivateRoute
         exact
         path={routes.PROFILE_PAGE}
@@ -39,11 +40,6 @@ function Router() {
         exact
         path={`${routes.VARIATION_DETAILS_PAGE}/:testVariationId`}
         component={() => <TestVariationDetailsPage />}
-      />
-      <PrivateRoute
-        exact
-        path={`${routes.HOME}`}
-        component={() => <Redirect to={routes.PROJECT_LIST_PAGE} />}
       />
     </Switch>
   );
