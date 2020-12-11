@@ -7,7 +7,6 @@ import {
   Grid,
   Switch,
   IconButton,
-  Paper,
   Box,
   makeStyles,
   Tooltip,
@@ -24,7 +23,7 @@ import { TestStatus } from "../types/testStatus";
 import { useHistory, Prompt } from "react-router-dom";
 import { IgnoreArea } from "../types/ignoreArea";
 import { KonvaEventObject } from "konva/types/Node";
-import { Close, Add, Delete, Save } from "@material-ui/icons";
+import { Close, Add, Delete, Save, WarningRounded } from "@material-ui/icons";
 import { TestRunDetails } from "./TestRunDetails";
 import useImage from "use-image";
 import { routes } from "../constants";
@@ -67,8 +66,14 @@ const TestDetailsModal: React.FunctionComponent<{
   const [stageInitPos, setStageInitPos] = React.useState(defaultStagePos);
   const [stageOffset, setStageOffset] = React.useState(defaultStagePos);
 
-  const [image] = useImage(
-    testRun.imageName && staticService.getImage(testRun.imageName)
+  const [image, imageStatus] = useImage(
+    staticService.getImage(testRun.imageName)
+  );
+  const [baselineImage, baselineImageStatus] = useImage(
+    staticService.getImage(testRun.baselineName)
+  );
+  const [diffImage, diffImageStatus] = useImage(
+    staticService.getImage(testRun.diffName)
   );
 
   const [isDrawMode, setIsDrawMode] = useState(false);
@@ -137,6 +142,13 @@ const TestDetailsModal: React.FunctionComponent<{
     setIsDiffShown(!!testRun.diffName);
   }, [testRun.diffName]);
 
+  const isImageSameSize = React.useMemo(
+    () =>
+      image?.height === baselineImage?.height &&
+      image?.width === baselineImage?.width,
+    [image, baselineImage]
+  );
+
   useHotkeys("d", () => setIsDiffShown((isDiffShown) => !isDiffShown));
 
   return (
@@ -156,7 +168,7 @@ const TestDetailsModal: React.FunctionComponent<{
                 <Switch
                   checked={isDiffShown}
                   onChange={() => setIsDiffShown(!isDiffShown)}
-                  name="Show diff"
+                  name="Toggle diff"
                 />
               </Tooltip>
             </Grid>
@@ -175,11 +187,96 @@ const TestDetailsModal: React.FunctionComponent<{
         </Toolbar>
       </AppBar>
       <Box m={1}>
-        <Grid container spacing={2}>
+        <Grid container alignItems="center">
+          <Grid item xs={12}>
+            <Grid container alignItems="center">
+              <Grid item>
+                <TestRunDetails testRun={testRun} />
+              </Grid>
+              {!isImageSameSize && (
+                <Grid item>
+                  <Tooltip
+                    title={
+                      "Image height/width differ from baseline! Cannot calculate diff!"
+                    }
+                  >
+                    <IconButton>
+                      <WarningRounded color="secondary" />
+                    </IconButton>
+                  </Tooltip>
+                </Grid>
+              )}
+            </Grid>
+          </Grid>
           <Grid item>
-            <Paper variant="outlined">
-              <TestRunDetails testRun={testRun} />
-            </Paper>
+            <Grid container alignItems="center" spacing={2}>
+              <Grid item>
+                <Typography variant="subtitle1" align="center">
+                  Ignore areas
+                </Typography>
+              </Grid>
+              <Grid item>
+                <ToggleButton
+                  value={"drawMode"}
+                  selected={isDrawMode}
+                  onClick={() => {
+                    setIsDrawMode(!isDrawMode);
+                  }}
+                >
+                  <Add />
+                </ToggleButton>
+              </Grid>
+              <Grid item>
+                <IconButton
+                  disabled={!selectedRectId}
+                  onClick={() =>
+                    selectedRectId && deleteIgnoreArea(selectedRectId)
+                  }
+                >
+                  <Delete />
+                </IconButton>
+              </Grid>
+              <Grid item>
+                <IconButton
+                  disabled={isIgnoreAreasSaved()}
+                  onClick={() =>
+                    Promise.all([
+                      // update in test run
+                      testRunService.setIgnoreAreas(testRun.id, ignoreAreas),
+                      // update in variation
+                      testVariationService.setIgnoreAreas(
+                        testRun.testVariationId,
+                        ignoreAreas
+                      ),
+                    ])
+                      .then(() => {
+                        enqueueSnackbar("Ignore areas are updated", {
+                          variant: "success",
+                        });
+
+                        // recalculate diff
+                        testRunService
+                          .recalculateDiff(testRun.id)
+                          .then((testRun) =>
+                            updateTestRun(testRunDispatch, testRun)
+                          )
+                          .then(() =>
+                            enqueueSnackbar("Diff recalculated", {
+                              variant: "success",
+                            })
+                          );
+                      })
+                      .catch((err) =>
+                        enqueueSnackbar(err, {
+                          variant: "error",
+                        })
+                      )
+                  }
+                >
+                  <Save />
+                </IconButton>
+              </Grid>
+            </Grid>
           </Grid>
           <Grid item>
             <Button
@@ -221,78 +318,6 @@ const TestDetailsModal: React.FunctionComponent<{
               }
             />
           </Grid>
-          <Grid item>
-            <Paper variant="outlined">
-              <Grid container justify="center">
-                <Grid item xs={12}>
-                  <Typography variant="subtitle1" align="center">
-                    Ignore areas
-                  </Typography>
-                </Grid>
-                <Grid item>
-                  <ToggleButton
-                    value={"drawMode"}
-                    selected={isDrawMode}
-                    onClick={() => {
-                      setIsDrawMode(!isDrawMode);
-                    }}
-                  >
-                    <Add />
-                  </ToggleButton>
-                </Grid>
-                <Grid item>
-                  <IconButton
-                    disabled={!selectedRectId}
-                    onClick={() =>
-                      selectedRectId && deleteIgnoreArea(selectedRectId)
-                    }
-                  >
-                    <Delete />
-                  </IconButton>
-                </Grid>
-                <Grid item>
-                  <IconButton
-                    disabled={isIgnoreAreasSaved()}
-                    onClick={() =>
-                      Promise.all([
-                        // update in test run
-                        testRunService.setIgnoreAreas(testRun.id, ignoreAreas),
-                        // update in variation
-                        testVariationService.setIgnoreAreas(
-                          testRun.testVariationId,
-                          ignoreAreas
-                        ),
-                      ])
-                        .then(() => {
-                          enqueueSnackbar("Ignore areas are updated", {
-                            variant: "success",
-                          });
-
-                          // recalculate diff
-                          testRunService
-                            .recalculateDiff(testRun.id)
-                            .then((testRun) =>
-                              updateTestRun(testRunDispatch, testRun)
-                            )
-                            .then(() =>
-                              enqueueSnackbar("Diff recalculated", {
-                                variant: "success",
-                              })
-                            );
-                        })
-                        .catch((err) =>
-                          enqueueSnackbar(err, {
-                            variant: "error",
-                          })
-                        )
-                    }
-                  >
-                    <Save />
-                  </IconButton>
-                </Grid>
-              </Grid>
-            </Paper>
-          </Grid>
         </Grid>
       </Box>
       <Box
@@ -306,6 +331,7 @@ const TestDetailsModal: React.FunctionComponent<{
               type="Baseline"
               imageName={testRun.baselineName}
               branchName={testRun.baselineBranchName}
+              imageState={[baselineImage, baselineImageStatus]}
               ignoreAreas={[]}
               tempIgnoreAreas={[]}
               setIgnoreAreas={setIgnoreAreas}
@@ -325,6 +351,7 @@ const TestDetailsModal: React.FunctionComponent<{
                 type="Diff"
                 imageName={testRun.diffName}
                 branchName={testRun.branchName}
+                imageState={[diffImage, diffImageStatus]}
                 ignoreAreas={ignoreAreas}
                 tempIgnoreAreas={JSON.parse(testRun.tempIgnoreAreas)}
                 setIgnoreAreas={setIgnoreAreas}
@@ -342,6 +369,7 @@ const TestDetailsModal: React.FunctionComponent<{
                 type="Image"
                 imageName={testRun.imageName}
                 branchName={testRun.branchName}
+                imageState={[image, imageStatus]}
                 ignoreAreas={ignoreAreas}
                 tempIgnoreAreas={JSON.parse(testRun.tempIgnoreAreas)}
                 setIgnoreAreas={setIgnoreAreas}

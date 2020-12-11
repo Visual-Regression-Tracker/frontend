@@ -3,8 +3,6 @@ import { Stage, Layer, Image } from "react-konva";
 import Rectangle, { MIN_RECT_SIDE_PIXEL } from "./Rectangle";
 import { IgnoreArea } from "../types/ignoreArea";
 import { Grid, makeStyles, CircularProgress } from "@material-ui/core";
-import useImage from "use-image";
-import { staticService } from "../services";
 import { NoImagePlaceholder } from "./NoImageAvailable";
 import ImageDetails from "./ImageDetails";
 import Konva from "konva";
@@ -30,6 +28,7 @@ interface IDrawArea {
   type: "Baseline" | "Image" | "Diff";
   imageName: string;
   branchName: string;
+  imageState: [undefined | HTMLImageElement, "loaded" | "loading" | "failed"];
   tempIgnoreAreas: IgnoreArea[];
   ignoreAreas: IgnoreArea[];
   setIgnoreAreas: (ignoreAreas: IgnoreArea[]) => void;
@@ -55,6 +54,7 @@ export const DrawArea: FunctionComponent<IDrawArea> = ({
   type,
   imageName,
   branchName,
+  imageState,
   ignoreAreas,
   tempIgnoreAreas,
   setIgnoreAreas,
@@ -76,7 +76,7 @@ export const DrawArea: FunctionComponent<IDrawArea> = ({
 
   const [isDrawMode, setIsDrawMode] = drawModeState;
   const [isDrawing, setIsDrawing] = React.useState(isDrawMode);
-  const [image, imageStatus] = useImage(staticService.getImage(imageName));
+  const [image, imageStatus] = imageState;
 
   const handleContentMousedown = (e: any) => {
     if (!isDrawMode) return;
