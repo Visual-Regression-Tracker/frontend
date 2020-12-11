@@ -2,6 +2,7 @@ import * as React from "react";
 import { Project } from "../types";
 import { projectsService } from "../services";
 import { useSnackbar } from "notistack";
+import { useAuthState } from "./auth.context";
 
 interface IRequestAction {
   type: "request";
@@ -156,16 +157,18 @@ function ProjectProvider({ children }: ProjectProviderProps) {
     projectList: [],
   };
 
+  const { loggedIn } = useAuthState();
   const [state, dispatch] = React.useReducer(projectReducer, initialState);
   const { enqueueSnackbar } = useSnackbar();
 
   React.useEffect(() => {
-    getProjectList(dispatch).catch((err) =>
-      enqueueSnackbar(err, {
-        variant: "error",
-      })
-    );
-  }, [enqueueSnackbar]);
+    loggedIn &&
+      getProjectList(dispatch).catch((err) =>
+        enqueueSnackbar(err, {
+          variant: "error",
+        })
+      );
+  }, [enqueueSnackbar, loggedIn]);
 
   return (
     <ProjectStateContext.Provider value={state}>

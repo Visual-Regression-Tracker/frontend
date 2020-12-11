@@ -16,6 +16,7 @@ import {
   deleteProject,
   createProject,
   updateProject,
+  getProjectList,
 } from "../contexts";
 import { Link } from "react-router-dom";
 import { Delete, Add, Edit } from "@material-ui/icons";
@@ -42,6 +43,10 @@ const ProjectsListPage = () => {
     name: "",
     mainBranchName: "",
   });
+
+  React.useEffect(() => {
+    getProjectList(projectDispatch);
+  }, [projectDispatch]);
 
   const toggleCreateDialogOpen = () => {
     setCreateDialogOpen(!createDialogOpen);
