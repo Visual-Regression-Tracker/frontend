@@ -142,11 +142,13 @@ const TestDetailsModal: React.FunctionComponent<{
     setIsDiffShown(!!testRun.diffName);
   }, [testRun.diffName]);
 
-  const isImageSameSize = React.useMemo(
+  const isImageSizeDiffer = React.useMemo(
     () =>
-      image?.height === baselineImage?.height &&
-      image?.width === baselineImage?.width,
-    [image, baselineImage]
+      testRun.baselineName &&
+      testRun.imageName &&
+      (image?.height !== baselineImage?.height ||
+        image?.width !== baselineImage?.width),
+    [image, baselineImage, testRun.baselineName, testRun.imageName]
   );
 
   useHotkeys("d", () => setIsDiffShown((isDiffShown) => !isDiffShown));
@@ -193,7 +195,7 @@ const TestDetailsModal: React.FunctionComponent<{
               <Grid item>
                 <TestRunDetails testRun={testRun} />
               </Grid>
-              {!isImageSameSize && (
+              {isImageSizeDiffer && (
                 <Grid item>
                   <Tooltip
                     title={
