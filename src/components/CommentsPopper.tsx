@@ -7,14 +7,12 @@ import {
   makeStyles,
   TextField,
   Badge,
-  IconButton,
 } from "@material-ui/core";
 import {
   usePopupState,
   bindToggle,
   bindPopper,
 } from "material-ui-popup-state/hooks";
-import { Comment } from "@material-ui/icons";
 
 const useStyles = makeStyles((theme) => ({
   popperContainer: {
@@ -45,15 +43,20 @@ export const CommentsPopper: React.FunctionComponent<IProps> = ({
 
   return (
     <React.Fragment>
-      <IconButton {...bindToggle(popupState)}>
-        <Badge
-          color="secondary"
-          variant="dot"
-          invisible={!comment || comment === ""}
-        >
-          <Comment />
-        </Badge>
-      </IconButton>
+      <Badge
+        color="secondary"
+        variant="dot"
+        badgeContent=" "
+        anchorOrigin={{
+          vertical: "bottom",
+          horizontal: "right",
+        }}
+        invisible={!comment || comment === ""}
+      >
+        <Button {...bindToggle(popupState)} color="primary">
+          Comments
+        </Button>
+      </Badge>
       <Popper
         {...bindPopper(popupState)}
         transition
