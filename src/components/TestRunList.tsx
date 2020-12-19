@@ -61,30 +61,37 @@ const TestRunList: React.FunctionComponent<{
 
   const doesHaveUnapprovedImage = (): boolean => {
     let status = false;
-    items.forEach(t => {
-      if (t.status === TestStatus.new || t.status === TestStatus.unresolved) {
+    items.forEach((eachItem) => {
+      if (eachItem.status === TestStatus.new || eachItem.status === TestStatus.unresolved) {
         status = true;
         return;
       }
-    })
+    });
     return status;
-  }
+  };
 
   const approveAll = () => {
     enqueueSnackbar("Wait for the confirmation message when approval is completed.", {
       variant: "info",
-    })
-    for (let i = 0; i < items.length; i++) {
-      let t = items[i];
-      if (!(t.status == TestStatus.ok || t.status == TestStatus.approved)) {
+    });
+    let lastItemToModify: TestRun | null = null;
+    //Determine the last item to be modified.
+    items.forEach((eachItem) => {
+      if (!(eachItem.status === TestStatus.ok || eachItem.status === TestStatus.approved)) {
+        lastItemToModify = eachItem;
+      }
+    });
+    //Iterate through all unapproved and send message when last item to modify is encounterd.
+    items.forEach((eachItem) => {
+      if (!(eachItem.status === TestStatus.ok || eachItem.status === TestStatus.approved)) {
         testRunService
-          .approve(t.id, false)
+          .approve(eachItem.id, false)
           .then((testRun) => {
             updateTestRun(testRunDispatch, testRun);
-            if (i === (items.length - 1)) {
+            if (eachItem === lastItemToModify) {
               enqueueSnackbar("All approved", {
                 variant: "success",
-              })
+              });
             }
           })
           .catch((err) =>
@@ -93,7 +100,7 @@ const TestRunList: React.FunctionComponent<{
             })
           );
       }
-    }
+    });
   };
 
   return (
