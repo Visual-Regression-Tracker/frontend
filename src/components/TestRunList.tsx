@@ -10,10 +10,11 @@ import {
   IconButton,
   Menu,
   MenuItem,
+  Button
 } from "@material-ui/core";
 import { MoreVert } from "@material-ui/icons";
 import { useHistory } from "react-router-dom";
-import { TestRun } from "../types";
+import { TestRun, TestStatus } from "../types";
 import TestStatusChip from "./TestStatusChip";
 import { buildTestRunLocation } from "../_helpers/route.helpers";
 import {
@@ -21,10 +22,12 @@ import {
   useTestRunDispatch,
   deleteTestRun,
   selectTestRun,
+  updateTestRun
 } from "../contexts";
 import { SkeletonList } from "./SkeletonList";
 import { useSnackbar } from "notistack";
 import { BaseModal } from "./BaseModal";
+import { testRunService } from "../services";
 
 const TestRunList: React.FunctionComponent<{
   items: TestRun[];
@@ -56,8 +59,54 @@ const TestRunList: React.FunctionComponent<{
     setDeleteDialogOpen(!deleteDialogOpen);
   };
 
+  const doesHaveUnapprovedImage = (): boolean => {
+    let status = false;
+    items.forEach(t => {
+      if (t.status === TestStatus.new || t.status === TestStatus.unresolved) {
+        status = true;
+        return;
+      }
+    })
+    return status;
+  }
+
+  const approveAll = () => {
+    enqueueSnackbar("Wait for the confirmation message when approval is completed.", {
+      variant: "info",
+    })
+    for (let i = 0; i < items.length; i++) {
+      let t = items[i];
+      if (!(t.status == TestStatus.ok || t.status == TestStatus.approved)) {
+        testRunService
+          .approve(t.id, false)
+          .then((testRun) => {
+            updateTestRun(testRunDispatch, testRun);
+            if (i === (items.length - 1)) {
+              enqueueSnackbar("All approved", {
+                variant: "success",
+              })
+            }
+          })
+          .catch((err) =>
+            enqueueSnackbar(err, {
+              variant: "error",
+            })
+          );
+      }
+    }
+  };
+
   return (
     <React.Fragment>
+      {items.length !== 0 && doesHaveUnapprovedImage() && <Button
+        variant="contained"
+        color="primary"
+        onClick={() => {
+          approveAll();
+        }}
+      >
+        Approve All
+          </Button>}
       <TableContainer>
         <Table>
           <TableHead>
