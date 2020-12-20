@@ -11,7 +11,6 @@ import Filters from "../components/Filters";
 import {
   useBuildState,
   useBuildDispatch,
-  getBuildList,
   selectBuild,
   useTestRunState,
   useTestRunDispatch,
@@ -51,7 +50,7 @@ const ProjectPage = () => {
   const location = useLocation();
   const history = useHistory();
   const { enqueueSnackbar } = useSnackbar();
-  const { buildList, selectedBuildId } = useBuildState();
+  const { selectedBuildId } = useBuildState();
   const buildDispatch = useBuildDispatch();
   const projectDispatch = useProjectDispatch();
   const { testRuns, selectedTestRunIndex } = useTestRunState();
@@ -73,16 +72,6 @@ const ProjectPage = () => {
   }, [projectId, projectDispatch]);
 
   useEffect(() => {
-    if (projectId) {
-      getBuildList(buildDispatch, projectId).catch((err) =>
-        enqueueSnackbar(err, {
-          variant: "error",
-        })
-      );
-    }
-  }, [projectId, buildDispatch, enqueueSnackbar]);
-
-  useEffect(() => {
     if (selectedBuildId) {
       getTestRunList(testRunDispatch, selectedBuildId).catch((err) =>
         enqueueSnackbar(err, {
@@ -96,17 +85,15 @@ const ProjectPage = () => {
     const queryParams = getQueryParams(location.search);
     if (queryParams.buildId) {
       selectBuild(buildDispatch, queryParams.buildId);
-    } else if (buildList.length > 0) {
-      selectBuild(buildDispatch, buildList[0].id);
     }
-  }, [buildDispatch, buildList, location.search]);
+  }, [buildDispatch, location.search]);
 
   useEffect(() => {
     const queryParams = getQueryParams(location.search);
     if (queryParams.testId) {
       selectTestRun(testRunDispatch, queryParams.testId);
     }
-  }, [location.search, testRuns, testRunDispatch]);
+  }, [location.search, testRunDispatch]);
 
   useEffect(() => {
     setFilteredTestRuns(

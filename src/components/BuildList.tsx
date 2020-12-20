@@ -23,6 +23,8 @@ import {
   deleteBuild,
   selectBuild,
   stopBuild,
+  getBuildList,
+  useProjectState,
 } from "../contexts";
 import { BuildStatusChip } from "./BuildStatusChip";
 import { SkeletonList } from "./SkeletonList";
@@ -30,6 +32,7 @@ import { formatDateTime } from "../_helpers/format.helper";
 import { useSnackbar } from "notistack";
 import { Build } from "../types";
 import { BaseModal } from "./BaseModal";
+import { Pagination } from "@material-ui/lab";
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -47,7 +50,8 @@ const useStyles = makeStyles((theme: Theme) =>
 const BuildList: FunctionComponent = () => {
   const classes = useStyles();
   const history = useHistory();
-  const { buildList, selectedBuildId, loading } = useBuildState();
+  const { selectedProjectId } = useProjectState();
+  const { buildList, selectedBuildId, loading, total, take } = useBuildState();
   const buildDispatch = useBuildDispatch();
   const { enqueueSnackbar } = useSnackbar();
 
@@ -71,6 +75,27 @@ const BuildList: FunctionComponent = () => {
   const toggleDeleteDialogOpen = () => {
     setDeleteDialogOpen(!deleteDialogOpen);
   };
+
+  const getBuildListCalback: any = React.useCallback(
+    (page: number) =>
+      selectedProjectId &&
+      getBuildList(buildDispatch, selectedProjectId, page).catch(
+        (err: string) =>
+          enqueueSnackbar(err, {
+            variant: "error",
+          })
+      ),
+    [buildDispatch, enqueueSnackbar, selectedProjectId]
+  );
+
+  React.useEffect(() => {
+    getBuildListCalback(1);
+  }, [getBuildListCalback]);
+
+  React.useEffect(() => {
+    if (!selectedBuildId && buildList.length > 0)
+      selectBuild(buildDispatch, buildList[0].id);
+  }, [buildDispatch, selectedBuildId, buildList]);
 
   return (
     <React.Fragment>
@@ -134,6 +159,11 @@ const BuildList: FunctionComponent = () => {
           </React.Fragment>
         ))}
       </List>
+      <Pagination
+        defaultPage={1}
+        count={Math.ceil(total / take)}
+        onChange={(event, page) => getBuildListCalback(page)}
+      />
 
       {menuBuild && (
         <Menu anchorEl={anchorEl} open={!!menuBuild} onClose={handleMenuClose}>

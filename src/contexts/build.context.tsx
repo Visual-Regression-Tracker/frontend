@@ -1,5 +1,5 @@
 import React from "react";
-import { Build } from "../types";
+import { Build, PaginatedData } from "../types";
 import { buildsService } from "../services";
 
 interface IRequestAction {
@@ -9,7 +9,7 @@ interface IRequestAction {
 
 interface IGetAction {
   type: "get";
-  payload: Build[];
+  payload: PaginatedData<Build>;
 }
 
 interface ISelectAction {
@@ -44,6 +44,9 @@ type Dispatch = (action: IAction) => void;
 type State = {
   selectedBuildId: string | undefined;
   buildList: Build[];
+  total: number;
+  take: number;
+  skip: number;
   loading: boolean;
 };
 
@@ -57,6 +60,9 @@ const BuildDispatchContext = React.createContext<Dispatch | undefined>(
 const initialState: State = {
   selectedBuildId: undefined,
   buildList: [],
+  take: 3,
+  skip: 0,
+  total: 0,
   loading: false,
 };
 
@@ -73,9 +79,13 @@ function buildReducer(state: State, action: IAction): State {
         loading: true,
       };
     case "get":
+      const { data, take, skip, total } = action.payload;
       return {
         ...state,
-        buildList: action.payload,
+        buildList: data,
+        take,
+        skip,
+        total,
         loading: false,
       };
     case "delete":
@@ -131,12 +141,14 @@ function useBuildDispatch() {
   return context;
 }
 
-async function getBuildList(dispatch: Dispatch, id: string) {
+async function getBuildList(dispatch: Dispatch, id: string, page: number) {
   dispatch({ type: "request" });
 
-  return buildsService.getList(id).then((items) => {
-    dispatch({ type: "get", payload: items });
-  });
+  return buildsService
+    .getList(id, initialState.take, initialState.take * (page - 1))
+    .then((response) => {
+      dispatch({ type: "get", payload: response });
+    });
 }
 
 async function deleteBuild(dispatch: Dispatch, id: string) {
