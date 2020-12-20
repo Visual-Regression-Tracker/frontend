@@ -49,6 +49,9 @@ const useStyles = makeStyles((theme: Theme) =>
         visibility: "inherit",
       },
     },
+    paginationUl: {
+      justifyContent: "center",
+    },
   })
 );
 
@@ -172,6 +175,7 @@ const BuildList: FunctionComponent = () => {
 
           <Box height="10%">
             <Pagination
+              classes={{ ul: classes.paginationUl }}
               defaultPage={1}
               count={Math.ceil(total / take)}
               onChange={(event, page) => getBuildListCalback(page)}
