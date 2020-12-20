@@ -101,8 +101,9 @@ const BuildList: FunctionComponent = () => {
   }, [getBuildListCalback]);
 
   React.useEffect(() => {
-    if (!selectedBuildId && buildList.length > 0)
+    if (!selectedBuildId && buildList.length > 0) {
       selectBuild(buildDispatch, buildList[0].id);
+    }
   }, [buildDispatch, selectedBuildId, buildList]);
 
   return (
