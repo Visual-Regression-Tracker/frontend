@@ -14,6 +14,7 @@ import {
   LinearProgress,
   Menu,
   MenuItem,
+  Box,
 } from "@material-ui/core";
 import { MoreVert } from "@material-ui/icons";
 import { useHistory } from "react-router-dom";
@@ -36,6 +37,10 @@ import { Pagination } from "@material-ui/lab";
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
+    listContainer: {
+      height: "100%",
+      overflow: "auto",
+    },
     listItemSecondaryAction: {
       visibility: "hidden",
     },
@@ -99,72 +104,81 @@ const BuildList: FunctionComponent = () => {
 
   return (
     <React.Fragment>
-      <List>
-        {loading && <SkeletonList />}
-        {buildList.length === 0 && (
-          <Typography variant="h5">No builds</Typography>
-        )}
-        {buildList.map((build) => (
-          <React.Fragment key={build.id}>
-            <ListItem
-              selected={selectedBuildId === build.id}
-              button
-              onClick={() => {
-                selectBuild(buildDispatch, build.id);
-                history.push({
-                  search: "buildId=" + build.id,
-                });
-              }}
-              classes={{
-                container: classes.listItem,
-              }}
-            >
-              <ListItemText
-                disableTypography
-                primary={
-                  <Typography variant="subtitle2">{`#${build.number} ${
-                    build.ciBuildId || ""
-                  }`}</Typography>
-                }
-                secondary={
-                  <Grid container direction="column">
-                    <Grid item>
-                      <Typography variant="caption" color="textPrimary">
-                        {formatDateTime(build.createdAt)}
-                      </Typography>
-                    </Grid>
-                    <Grid item>
-                      <Grid container justify="space-between">
-                        <Grid item>
-                          <Chip size="small" label={build.branchName} />
+      {loading && <SkeletonList />}
+      {buildList.length === 0 ? (
+        <Typography variant="h5">No builds</Typography>
+      ) : (
+        <Box height={1}>
+          <Box height="90%" overflow="auto">
+            <List>
+              {buildList.map((build) => (
+                <React.Fragment key={build.id}>
+                  <ListItem
+                    selected={selectedBuildId === build.id}
+                    button
+                    onClick={() => {
+                      selectBuild(buildDispatch, build.id);
+                      history.push({
+                        search: "buildId=" + build.id,
+                      });
+                    }}
+                    classes={{
+                      container: classes.listItem,
+                    }}
+                  >
+                    <ListItemText
+                      disableTypography
+                      primary={
+                        <Typography variant="subtitle2">{`#${build.number} ${
+                          build.ciBuildId || ""
+                        }`}</Typography>
+                      }
+                      secondary={
+                        <Grid container direction="column">
+                          <Grid item>
+                            <Typography variant="caption" color="textPrimary">
+                              {formatDateTime(build.createdAt)}
+                            </Typography>
+                          </Grid>
+                          <Grid item>
+                            <Grid container justify="space-between">
+                              <Grid item>
+                                <Chip size="small" label={build.branchName} />
+                              </Grid>
+                              <Grid item>
+                                <BuildStatusChip status={build.status} />
+                              </Grid>
+                            </Grid>
+                          </Grid>
                         </Grid>
-                        <Grid item>
-                          <BuildStatusChip status={build.status} />
-                        </Grid>
-                      </Grid>
-                    </Grid>
-                  </Grid>
-                }
-              />
+                      }
+                    />
 
-              <ListItemSecondaryAction
-                className={classes.listItemSecondaryAction}
-              >
-                <IconButton onClick={(event) => handleMenuClick(event, build)}>
-                  <MoreVert />
-                </IconButton>
-              </ListItemSecondaryAction>
-            </ListItem>
-            {build.isRunning && <LinearProgress />}
-          </React.Fragment>
-        ))}
-      </List>
-      <Pagination
-        defaultPage={1}
-        count={Math.ceil(total / take)}
-        onChange={(event, page) => getBuildListCalback(page)}
-      />
+                    <ListItemSecondaryAction
+                      className={classes.listItemSecondaryAction}
+                    >
+                      <IconButton
+                        onClick={(event) => handleMenuClick(event, build)}
+                      >
+                        <MoreVert />
+                      </IconButton>
+                    </ListItemSecondaryAction>
+                  </ListItem>
+                  {build.isRunning && <LinearProgress />}
+                </React.Fragment>
+              ))}
+            </List>
+          </Box>
 
+          <Box height="10%">
+            <Pagination
+              defaultPage={1}
+              count={Math.ceil(total / take)}
+              onChange={(event, page) => getBuildListCalback(page)}
+            />
+          </Box>
+        </Box>
+      )}
       {menuBuild && (
         <Menu anchorEl={anchorEl} open={!!menuBuild} onClose={handleMenuClose}>
           {menuBuild.isRunning && (

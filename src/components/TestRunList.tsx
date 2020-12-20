@@ -10,6 +10,8 @@ import {
   IconButton,
   Menu,
   MenuItem,
+  makeStyles,
+  Box,
 } from "@material-ui/core";
 import { MoreVert } from "@material-ui/icons";
 import { useHistory } from "react-router-dom";
@@ -26,9 +28,16 @@ import { SkeletonList } from "./SkeletonList";
 import { useSnackbar } from "notistack";
 import { BaseModal } from "./BaseModal";
 
+const useStyles = makeStyles((theme) => ({
+  root: {
+    height: "100%",
+  },
+}));
+
 const TestRunList: React.FunctionComponent<{
   items: TestRun[];
 }> = ({ items }) => {
+  const classes = useStyles();
   const { enqueueSnackbar } = useSnackbar();
   const { selectedTestRunId, loading } = useTestRunState();
   const testRunDispatch = useTestRunDispatch();
@@ -57,9 +66,9 @@ const TestRunList: React.FunctionComponent<{
   };
 
   return (
-    <React.Fragment>
-      <TableContainer>
-        <Table>
+    <Box height={1}>
+      <TableContainer className={classes.root}>
+        <Table stickyHeader>
           <TableHead>
             <TableRow>
               <TableCell>Name</TableCell>
@@ -156,7 +165,7 @@ const TestRunList: React.FunctionComponent<{
           }}
         />
       )}
-    </React.Fragment>
+    </Box>
   );
 };
 

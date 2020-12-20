@@ -60,7 +60,7 @@ const BuildDispatchContext = React.createContext<Dispatch | undefined>(
 const initialState: State = {
   selectedBuildId: undefined,
   buildList: [],
-  take: 3,
+  take: 10,
   skip: 0,
   total: 0,
   loading: false,

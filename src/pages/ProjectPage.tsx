@@ -31,16 +31,11 @@ const getQueryParams = (guery: string) => {
 };
 
 const useStyles = makeStyles((theme) => ({
+  root: {
+    height: "100%",
+  },
   modal: {
     margin: 40,
-  },
-  buildListContainer: {
-    maxHeight: "89vh",
-    overflow: "auto",
-  },
-  testRunContainer: {
-    maxHeight: "83vh",
-    overflow: "auto",
   },
 }));
 
@@ -110,44 +105,40 @@ const ProjectPage = () => {
   }, [query, os, device, browser, viewport, testStatus, testRuns]);
 
   return (
-    <Grid container>
-      <Grid item xs={3}>
-        <Grid item>
+    <Grid container className={classes.root}>
+      <Grid item xs={3} className={classes.root}>
+        <Box height="8%" mx={1}>
           <ProjectSelect onProjectSelect={(id) => history.push(id)} />
-        </Grid>
-        <Grid item className={classes.buildListContainer}>
+        </Box>
+        <Box height="92%">
           <BuildList />
-        </Grid>
+        </Box>
       </Grid>
-      <Grid item xs={9}>
-        <Grid container direction="column">
-          <Grid item>
-            <Box m={2}>
-              <Filters
-                items={testRuns}
-                queryState={[query, setQuery]}
-                osState={[os, setOs]}
-                deviceState={[device, setDevice]}
-                browserState={[browser, setBrowser]}
-                viewportState={[viewport, setViewport]}
-                testStatusState={[testStatus, setTestStatus]}
-              />
-            </Box>
-          </Grid>
-          <Grid item className={classes.testRunContainer}>
-            <TestRunList items={filteredTestRuns} />
-            {selectedTestRunIndex !== undefined &&
-              testRuns[selectedTestRunIndex] && (
-                <Dialog open={true} fullScreen className={classes.modal}>
-                  <TestDetailsModal testRun={testRuns[selectedTestRunIndex]} />
-                  <ArrowButtons
-                    testRuns={testRuns}
-                    selectedTestRunIndex={selectedTestRunIndex}
-                  />
-                </Dialog>
-              )}
-          </Grid>
-        </Grid>
+      <Grid item xs={9} className={classes.root}>
+        <Box height="10%">
+          <Filters
+            items={testRuns}
+            queryState={[query, setQuery]}
+            osState={[os, setOs]}
+            deviceState={[device, setDevice]}
+            browserState={[browser, setBrowser]}
+            viewportState={[viewport, setViewport]}
+            testStatusState={[testStatus, setTestStatus]}
+          />
+        </Box>
+        <Box height="90%">
+          <TestRunList items={filteredTestRuns} />
+          {selectedTestRunIndex !== undefined &&
+            testRuns[selectedTestRunIndex] && (
+              <Dialog open={true} fullScreen className={classes.modal}>
+                <TestDetailsModal testRun={testRuns[selectedTestRunIndex]} />
+                <ArrowButtons
+                  testRuns={testRuns}
+                  selectedTestRunIndex={selectedTestRunIndex}
+                />
+              </Dialog>
+            )}
+        </Box>
       </Grid>
     </Grid>
   );
