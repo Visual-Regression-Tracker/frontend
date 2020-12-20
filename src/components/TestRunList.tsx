@@ -12,10 +12,11 @@ import {
   MenuItem,
   makeStyles,
   Box,
+  Button,
 } from "@material-ui/core";
 import { MoreVert } from "@material-ui/icons";
 import { useHistory } from "react-router-dom";
-import { TestRun } from "../types";
+import { TestRun, TestStatus } from "../types";
 import TestStatusChip from "./TestStatusChip";
 import { buildTestRunLocation } from "../_helpers/route.helpers";
 import {
@@ -23,10 +24,12 @@ import {
   useTestRunDispatch,
   deleteTestRun,
   selectTestRun,
+  updateTestRun,
 } from "../contexts";
 import { SkeletonList } from "./SkeletonList";
 import { useSnackbar } from "notistack";
 import { BaseModal } from "./BaseModal";
+import { testRunService } from "../services";
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -65,8 +68,54 @@ const TestRunList: React.FunctionComponent<{
     setDeleteDialogOpen(!deleteDialogOpen);
   };
 
+  const isUnapproved = (eachItem: TestRun): boolean => {
+    return (
+      eachItem.status === TestStatus.new ||
+      eachItem.status === TestStatus.unresolved
+    );
+  };
+
+  const doesHaveUnapprovedImage = (): boolean => {
+    return items.some(isUnapproved);
+  };
+
   return (
     <Box height={1}>
+      {doesHaveUnapprovedImage() && (
+        <Button
+          variant="contained"
+          color="primary"
+          onClick={async () => {
+            enqueueSnackbar(
+              "Wait for the confirmation message until approval is completed.",
+              {
+                variant: "info",
+              }
+            );
+            await Promise.all(
+              items
+                .filter(isUnapproved)
+                .map((item) =>
+                  testRunService
+                    .approve(item.id, false)
+                    .then((testRun) => updateTestRun(testRunDispatch, testRun))
+                )
+            )
+              .then(() =>
+                enqueueSnackbar("All approved.", {
+                  variant: "success",
+                })
+              )
+              .catch((err) =>
+                enqueueSnackbar(err, {
+                  variant: "error",
+                })
+              );
+          }}
+        >
+          Approve All
+        </Button>
+      )}
       <TableContainer className={classes.root}>
         <Table stickyHeader>
           <TableHead>
