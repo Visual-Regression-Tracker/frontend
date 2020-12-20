@@ -60,56 +60,43 @@ const TestRunList: React.FunctionComponent<{
   };
 
   const doesHaveUnapprovedImage = (): boolean => {
-    let status = false;
-    items.forEach((eachItem) => {
-      if (eachItem.status === TestStatus.new || eachItem.status === TestStatus.unresolved) {
-        status = true;
-        return;
-      }
+    return items.some((eachItem) => {
+      return (eachItem.status === TestStatus.new || eachItem.status === TestStatus.unresolved);
     });
-    return status;
   };
 
-  const approveAll = () => {
-    enqueueSnackbar("Wait for the confirmation message when approval is completed.", {
-      variant: "info",
-    });
-    let lastItemToModify: TestRun | null = null;
-    //Determine the last item to be modified.
-    items.forEach((eachItem) => {
-      if (!(eachItem.status === TestStatus.ok || eachItem.status === TestStatus.approved)) {
-        lastItemToModify = eachItem;
-      }
-    });
-    //Iterate through all unapproved and send message when last item to modify is encounterd.
-    items.forEach((eachItem) => {
-      if (!(eachItem.status === TestStatus.ok || eachItem.status === TestStatus.approved)) {
-        testRunService
-          .approve(eachItem.id, false)
-          .then((testRun) => {
-            updateTestRun(testRunDispatch, testRun);
-            if (eachItem === lastItemToModify) {
-              enqueueSnackbar("All approved", {
-                variant: "success",
-              });
-            }
-          })
-          .catch((err) =>
-            enqueueSnackbar(err, {
-              variant: "error",
-            })
-          );
-      }
-    });
+  const isUnapproved = (eachItem: TestRun): boolean => {
+    return (eachItem.status === TestStatus.new || eachItem.status === TestStatus.unresolved);
   };
 
   return (
     <React.Fragment>
-      {items.length !== 0 && doesHaveUnapprovedImage() && <Button
+      { doesHaveUnapprovedImage() && <Button
         variant="contained"
         color="primary"
-        onClick={() => {
-          approveAll();
+        onClick={async () => {
+          enqueueSnackbar("Wait for the confirmation message until approval is completed.", {
+            variant: "info",
+          });
+          await Promise.all(
+            items
+              .filter(isUnapproved)
+              .map((item) =>
+                testRunService
+                  .approve(item.id, false)
+                  .then((testRun) => updateTestRun(testRunDispatch, testRun))
+              )
+          )
+            .then(() =>
+              enqueueSnackbar("All approved.", {
+                variant: "success",
+              })
+            )
+            .catch((err) =>
+              enqueueSnackbar(err, {
+                variant: "error",
+              })
+            );
         }}
       >
         Approve All
