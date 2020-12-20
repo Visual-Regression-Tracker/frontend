@@ -59,7 +59,7 @@ const BuildList: FunctionComponent = () => {
   const classes = useStyles();
   const history = useHistory();
   const { selectedProjectId } = useProjectState();
-  const { buildList, selectedBuildId, loading, total, take } = useBuildState();
+  const { buildList, selectedBuild, loading, total, take } = useBuildState();
   const buildDispatch = useBuildDispatch();
   const { enqueueSnackbar } = useSnackbar();
 
@@ -101,10 +101,10 @@ const BuildList: FunctionComponent = () => {
   }, [getBuildListCalback]);
 
   React.useEffect(() => {
-    if (!selectedBuildId && buildList.length > 0) {
+    if (!selectedBuild && buildList.length > 0) {
       selectBuild(buildDispatch, buildList[0].id);
     }
-  }, [buildDispatch, selectedBuildId, buildList]);
+  }, [buildDispatch, selectedBuild, buildList]);
 
   return (
     <React.Fragment>
@@ -118,10 +118,9 @@ const BuildList: FunctionComponent = () => {
               {buildList.map((build) => (
                 <React.Fragment key={build.id}>
                   <ListItem
-                    selected={selectedBuildId === build.id}
+                    selected={selectedBuild?.id === build.id}
                     button
                     onClick={() => {
-                      selectBuild(buildDispatch, build.id);
                       history.push({
                         search: "buildId=" + build.id,
                       });

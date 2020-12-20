@@ -45,7 +45,7 @@ const ProjectPage = () => {
   const location = useLocation();
   const history = useHistory();
   const { enqueueSnackbar } = useSnackbar();
-  const { selectedBuildId } = useBuildState();
+  const { selectedBuild } = useBuildState();
   const buildDispatch = useBuildDispatch();
   const projectDispatch = useProjectDispatch();
   const { testRuns, selectedTestRunIndex } = useTestRunState();
@@ -67,14 +67,14 @@ const ProjectPage = () => {
   }, [projectId, projectDispatch]);
 
   useEffect(() => {
-    if (selectedBuildId) {
-      getTestRunList(testRunDispatch, selectedBuildId).catch((err) =>
+    if (selectedBuild) {
+      getTestRunList(testRunDispatch, selectedBuild.id).catch((err) =>
         enqueueSnackbar(err, {
           variant: "error",
         })
       );
     }
-  }, [selectedBuildId, testRunDispatch, enqueueSnackbar]);
+  }, [selectedBuild, testRunDispatch, enqueueSnackbar]);
 
   useEffect(() => {
     const queryParams = getQueryParams(location.search);

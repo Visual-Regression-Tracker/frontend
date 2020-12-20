@@ -47,7 +47,7 @@ function socketReducer(state: State, action: IAction): State {
 
 function SocketProvider({ children }: SocketProviderProps) {
   const [state, dispatch] = React.useReducer(socketReducer, initialState);
-  const { selectedBuildId } = useBuildState();
+  const { selectedBuild } = useBuildState();
   const testRunDispatch = useTestRunDispatch();
   const buildDispatch = useBuildDispatch();
 
@@ -72,18 +72,18 @@ function SocketProvider({ children }: SocketProviderProps) {
       });
 
       state.socket.on(`testRun_created`, function (testRun: TestRun) {
-        if (testRun.buildId === selectedBuildId) {
+        if (testRun.buildId === selectedBuild?.id) {
           addTestRun(testRunDispatch, testRun);
         }
       });
 
       state.socket.on(`testRun_deleted`, function (testRun: TestRun) {
-        if (testRun.buildId === selectedBuildId) {
+        if (testRun.buildId === selectedBuild?.id) {
           testRunDispatch({ type: "delete", payload: testRun.id });
         }
       });
     }
-  }, [state.socket, selectedBuildId, buildDispatch, testRunDispatch]);
+  }, [state.socket, selectedBuild, buildDispatch, testRunDispatch]);
 
   return (
     <SocketStateContext.Provider value={state}>

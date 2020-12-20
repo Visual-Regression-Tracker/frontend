@@ -20,6 +20,17 @@ async function getList(
   ).then(handleResponse);
 }
 
+async function getDetails(id: string): Promise<Build> {
+  const requestOptions = {
+    method: "GET",
+    headers: authHeader(),
+  };
+
+  return fetch(`${API_URL}${ENDPOINT_URL}/${id}`, requestOptions).then(
+    handleResponse
+  );
+}
+
 async function remove(id: string): Promise<Build> {
   const requestOptions = {
     method: "DELETE",
@@ -43,6 +54,7 @@ async function stop(id: string): Promise<Build> {
 }
 
 export const buildsService = {
+  getDetails,
   getList,
   remove,
   stop,

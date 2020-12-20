@@ -14,7 +14,7 @@ interface IGetAction {
 
 interface ISelectAction {
   type: "select";
-  payload: string;
+  payload: Build;
 }
 
 interface IDeleteAction {
@@ -42,7 +42,7 @@ type IAction =
 
 type Dispatch = (action: IAction) => void;
 type State = {
-  selectedBuildId: string | undefined;
+  selectedBuild: Build | undefined;
   buildList: Build[];
   total: number;
   take: number;
@@ -58,7 +58,7 @@ const BuildDispatchContext = React.createContext<Dispatch | undefined>(
 );
 
 const initialState: State = {
-  selectedBuildId: undefined,
+  selectedBuild: undefined,
   buildList: [],
   take: 10,
   skip: 0,
@@ -71,7 +71,7 @@ function buildReducer(state: State, action: IAction): State {
     case "select":
       return {
         ...state,
-        selectedBuildId: action.payload,
+        selectedBuild: action.payload,
       };
     case "request":
       return {
@@ -166,7 +166,9 @@ async function stopBuild(dispatch: Dispatch, id: string) {
 }
 
 async function selectBuild(dispatch: Dispatch, id: string) {
-  dispatch({ type: "select", payload: id });
+  return buildsService.getDetails(id).then((build) => {
+    dispatch({ type: "select", payload: build });
+  });
 }
 
 async function addBuild(dispatch: Dispatch, build: Build) {
