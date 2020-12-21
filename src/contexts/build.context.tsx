@@ -79,6 +79,7 @@ function buildReducer(state: State, action: IAction): State {
     case "request":
       return {
         ...state,
+        buildList: [],
         loading: true,
       };
     case "get":
