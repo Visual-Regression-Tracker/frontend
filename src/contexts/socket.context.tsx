@@ -7,7 +7,11 @@ import {
   updateBuild,
 } from "./build.context";
 import { Build, TestRun } from "../types";
-import { useTestRunDispatch, addTestRun } from "./testRun.context";
+import {
+  useTestRunDispatch,
+  addTestRun,
+  updateTestRun,
+} from "./testRun.context";
 import { API_URL } from "../_config/env.config";
 
 interface IConnectAction {
@@ -74,6 +78,12 @@ function SocketProvider({ children }: SocketProviderProps) {
       state.socket.on(`testRun_created`, function (testRun: TestRun) {
         if (testRun.buildId === selectedBuild?.id) {
           addTestRun(testRunDispatch, testRun);
+        }
+      });
+
+      state.socket.on(`testRun_updated`, function (testRun: TestRun) {
+        if (testRun.buildId === selectedBuild?.id) {
+          updateTestRun(testRunDispatch, testRun);
         }
       });
 

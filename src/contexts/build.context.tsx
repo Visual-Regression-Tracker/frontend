@@ -42,6 +42,7 @@ type IAction =
 
 type Dispatch = (action: IAction) => void;
 type State = {
+  selectedBuildId: string | undefined;
   selectedBuild: Build | undefined;
   buildList: Build[];
   total: number;
@@ -58,6 +59,7 @@ const BuildDispatchContext = React.createContext<Dispatch | undefined>(
 );
 
 const initialState: State = {
+  selectedBuildId: undefined,
   selectedBuild: undefined,
   buildList: [],
   take: 10,
@@ -71,6 +73,7 @@ function buildReducer(state: State, action: IAction): State {
     case "select":
       return {
         ...state,
+        selectedBuildId: action.payload.id,
         selectedBuild: action.payload,
       };
     case "request":
@@ -101,6 +104,10 @@ function buildReducer(state: State, action: IAction): State {
     case "update":
       return {
         ...state,
+        selectedBuild:
+          state.selectedBuild?.id === action.payload.id
+            ? action.payload
+            : state.selectedBuild,
         buildList: state.buildList.map((p) => {
           if (p.id === action.payload.id) {
             return action.payload;

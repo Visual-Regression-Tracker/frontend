@@ -53,9 +53,22 @@ async function stop(id: string): Promise<Build> {
   );
 }
 
+async function approve(id: string, merge: boolean): Promise<void> {
+  const requestOptions = {
+    method: "PATCH",
+    headers: authHeader(),
+  };
+
+  return fetch(
+    `${API_URL}${ENDPOINT_URL}/${id}/approve?merge=${merge}`,
+    requestOptions
+  ).then(handleResponse);
+}
+
 export const buildsService = {
   getDetails,
   getList,
+  approve,
   remove,
   stop,
 };

@@ -21,6 +21,7 @@ import {
 } from "../contexts";
 import { useSnackbar } from "notistack";
 import { ArrowButtons } from "../components/ArrowButtons";
+import BuildDetails from "../components/BuildDetails";
 
 const getQueryParams = (guery: string) => {
   const queryParams = qs.parse(guery, { ignoreQueryPrefix: true });
@@ -45,7 +46,7 @@ const ProjectPage = () => {
   const location = useLocation();
   const history = useHistory();
   const { enqueueSnackbar } = useSnackbar();
-  const { selectedBuild } = useBuildState();
+  const { selectedBuild, selectedBuildId } = useBuildState();
   const buildDispatch = useBuildDispatch();
   const projectDispatch = useProjectDispatch();
   const { testRuns, selectedTestRunIndex } = useTestRunState();
@@ -67,14 +68,14 @@ const ProjectPage = () => {
   }, [projectId, projectDispatch]);
 
   useEffect(() => {
-    if (selectedBuild) {
-      getTestRunList(testRunDispatch, selectedBuild.id).catch((err) =>
+    if (selectedBuildId) {
+      getTestRunList(testRunDispatch, selectedBuildId).catch((err) =>
         enqueueSnackbar(err, {
           variant: "error",
         })
       );
     }
-  }, [selectedBuild, testRunDispatch, enqueueSnackbar]);
+  }, [selectedBuildId, testRunDispatch, enqueueSnackbar]);
 
   useEffect(() => {
     const queryParams = getQueryParams(location.search);
@@ -115,7 +116,8 @@ const ProjectPage = () => {
         </Box>
       </Grid>
       <Grid item xs={9} className={classes.root}>
-        <Box height="10%">
+        <Box height="17%">
+          {selectedBuild && <BuildDetails build={selectedBuild} />}
           <Filters
             items={testRuns}
             queryState={[query, setQuery]}
@@ -126,7 +128,7 @@ const ProjectPage = () => {
             testStatusState={[testStatus, setTestStatus]}
           />
         </Box>
-        <Box height="90%">
+        <Box height="83%">
           <TestRunList items={filteredTestRuns} />
           {selectedTestRunIndex !== undefined &&
             testRuns[selectedTestRunIndex] && (
