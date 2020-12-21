@@ -11,7 +11,6 @@ import {
   Menu,
   MenuItem,
   makeStyles,
-  Box,
 } from "@material-ui/core";
 import { MoreVert } from "@material-ui/icons";
 import { useHistory } from "react-router-dom";
@@ -66,106 +65,113 @@ const TestRunList: React.FunctionComponent<{
   };
 
   return (
-    <Box height={1}>
-      <TableContainer className={classes.root}>
-        <Table stickyHeader>
-          <TableHead>
-            <TableRow>
-              <TableCell>Name</TableCell>
-              <TableCell>OS</TableCell>
-              <TableCell>Device</TableCell>
-              <TableCell>Browser</TableCell>
-              <TableCell>Viewport</TableCell>
-              <TableCell>Status</TableCell>
-              <TableCell></TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {items.map((test) => (
-              <TableRow
-                key={test.id}
-                hover
-                selected={test.id === selectedTestRunId}
-              >
-                <TableCell
-                  onClick={() => {
-                    history.push(buildTestRunLocation(test));
-                    selectTestRun(testRunDispatch, test.id);
-                  }}
-                >
-                  <Typography>{test.name}</Typography>
-                </TableCell>
-                <TableCell>
-                  <Typography>{test.os}</Typography>
-                </TableCell>
-                <TableCell>
-                  <Typography>{test.device}</Typography>
-                </TableCell>
-                <TableCell>
-                  <Typography>{test.browser}</Typography>
-                </TableCell>
-                <TableCell>
-                  <Typography>{test.viewport}</Typography>
-                </TableCell>
-                <TableCell>
-                  <TestStatusChip status={test.status} />
-                </TableCell>
-                <TableCell>
-                  <IconButton onClick={(event) => handleClick(event, test)}>
-                    <MoreVert />
-                  </IconButton>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </TableContainer>
-      {loading && <SkeletonList />}
-      {items.length === 0 && <Typography variant="h5">No test runs</Typography>}
-      {selectedTestRun && (
-        <Menu
-          anchorEl={anchorEl}
-          open={!!selectedTestRun}
-          onClose={handleClose}
-        >
-          <MenuItem
-            onClick={() => {
-              history.push(buildTestRunLocation(selectedTestRun));
-              handleClose();
-            }}
-          >
-            Details
-          </MenuItem>
-          <MenuItem onClick={toggleDeleteDialogOpen}>Delete</MenuItem>
-        </Menu>
-      )}
+    <React.Fragment>
+      {loading ? (
+        <SkeletonList />
+      ) : items.length === 0 ? (
+        <Typography variant="h5">No test runs</Typography>
+      ) : (
+        <React.Fragment>
+          <TableContainer className={classes.root}>
+            <Table stickyHeader>
+              <TableHead>
+                <TableRow>
+                  <TableCell>Name</TableCell>
+                  <TableCell>OS</TableCell>
+                  <TableCell>Device</TableCell>
+                  <TableCell>Browser</TableCell>
+                  <TableCell>Viewport</TableCell>
+                  <TableCell>Status</TableCell>
+                  <TableCell></TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {items.map((test) => (
+                  <TableRow
+                    key={test.id}
+                    hover
+                    selected={test.id === selectedTestRunId}
+                  >
+                    <TableCell
+                      onClick={() => {
+                        history.push(buildTestRunLocation(test));
+                        selectTestRun(testRunDispatch, test.id);
+                      }}
+                    >
+                      <Typography>{test.name}</Typography>
+                    </TableCell>
+                    <TableCell>
+                      <Typography>{test.os}</Typography>
+                    </TableCell>
+                    <TableCell>
+                      <Typography>{test.device}</Typography>
+                    </TableCell>
+                    <TableCell>
+                      <Typography>{test.browser}</Typography>
+                    </TableCell>
+                    <TableCell>
+                      <Typography>{test.viewport}</Typography>
+                    </TableCell>
+                    <TableCell>
+                      <TestStatusChip status={test.status} />
+                    </TableCell>
+                    <TableCell>
+                      <IconButton onClick={(event) => handleClick(event, test)}>
+                        <MoreVert />
+                      </IconButton>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </TableContainer>
 
-      {selectedTestRun && (
-        <BaseModal
-          open={deleteDialogOpen}
-          title={"Delete TestRun"}
-          submitButtonText={"Delete"}
-          onCancel={toggleDeleteDialogOpen}
-          content={
-            <Typography>{`Are you sure you want to delete: ${selectedTestRun.name}?`}</Typography>
-          }
-          onSubmit={() => {
-            deleteTestRun(testRunDispatch, selectedTestRun.id)
-              .then((testRun) => {
-                enqueueSnackbar(`${selectedTestRun.name} deleted`, {
-                  variant: "success",
-                });
-              })
-              .catch((err) =>
-                enqueueSnackbar(err, {
-                  variant: "error",
-                })
-              );
-            handleClose();
-          }}
-        />
+          {selectedTestRun && (
+            <Menu
+              anchorEl={anchorEl}
+              open={!!selectedTestRun}
+              onClose={handleClose}
+            >
+              <MenuItem
+                onClick={() => {
+                  history.push(buildTestRunLocation(selectedTestRun));
+                  handleClose();
+                }}
+              >
+                Details
+              </MenuItem>
+              <MenuItem onClick={toggleDeleteDialogOpen}>Delete</MenuItem>
+            </Menu>
+          )}
+
+          {selectedTestRun && (
+            <BaseModal
+              open={deleteDialogOpen}
+              title={"Delete TestRun"}
+              submitButtonText={"Delete"}
+              onCancel={toggleDeleteDialogOpen}
+              content={
+                <Typography>{`Are you sure you want to delete: ${selectedTestRun.name}?`}</Typography>
+              }
+              onSubmit={() => {
+                deleteTestRun(testRunDispatch, selectedTestRun.id)
+                  .then((testRun) => {
+                    enqueueSnackbar(`${selectedTestRun.name} deleted`, {
+                      variant: "success",
+                    });
+                  })
+                  .catch((err) =>
+                    enqueueSnackbar(err, {
+                      variant: "error",
+                    })
+                  );
+                handleClose();
+              }}
+            />
+          )}
+        </React.Fragment>
       )}
-    </Box>
+    </React.Fragment>
   );
 };
 

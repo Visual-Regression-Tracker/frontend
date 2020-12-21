@@ -108,65 +108,67 @@ const BuildList: FunctionComponent = () => {
       <Box height={1}>
         <Box height="93%" overflow="auto">
           <List>
-            {loading && <SkeletonList />}
-            {buildList.length === 0 && (
+            {loading ? (
+              <SkeletonList />
+            ) : buildList.length === 0 ? (
               <Typography variant="h5">No builds</Typography>
-            )}
-            {buildList.map((build) => (
-              <React.Fragment key={build.id}>
-                <ListItem
-                  selected={selectedBuild?.id === build.id}
-                  button
-                  onClick={() => {
-                    history.push({
-                      search: "buildId=" + build.id,
-                    });
-                  }}
-                  classes={{
-                    container: classes.listItem,
-                  }}
-                >
-                  <ListItemText
-                    disableTypography
-                    primary={
-                      <Typography variant="subtitle2">{`#${build.number} ${
-                        build.ciBuildId || ""
-                      }`}</Typography>
-                    }
-                    secondary={
-                      <Grid container direction="column">
-                        <Grid item>
-                          <Typography variant="caption" color="textPrimary">
-                            {formatDateTime(build.createdAt)}
-                          </Typography>
-                        </Grid>
-                        <Grid item>
-                          <Grid container justify="space-between">
-                            <Grid item>
-                              <Chip size="small" label={build.branchName} />
-                            </Grid>
-                            <Grid item>
-                              <BuildStatusChip status={build.status} />
+            ) : (
+              buildList.map((build) => (
+                <React.Fragment key={build.id}>
+                  <ListItem
+                    selected={selectedBuild?.id === build.id}
+                    button
+                    onClick={() => {
+                      history.push({
+                        search: "buildId=" + build.id,
+                      });
+                    }}
+                    classes={{
+                      container: classes.listItem,
+                    }}
+                  >
+                    <ListItemText
+                      disableTypography
+                      primary={
+                        <Typography variant="subtitle2">{`#${build.number} ${
+                          build.ciBuildId || ""
+                        }`}</Typography>
+                      }
+                      secondary={
+                        <Grid container direction="column">
+                          <Grid item>
+                            <Typography variant="caption" color="textPrimary">
+                              {formatDateTime(build.createdAt)}
+                            </Typography>
+                          </Grid>
+                          <Grid item>
+                            <Grid container justify="space-between">
+                              <Grid item>
+                                <Chip size="small" label={build.branchName} />
+                              </Grid>
+                              <Grid item>
+                                <BuildStatusChip status={build.status} />
+                              </Grid>
                             </Grid>
                           </Grid>
                         </Grid>
-                      </Grid>
-                    }
-                  />
+                      }
+                    />
 
-                  <ListItemSecondaryAction
-                    className={classes.listItemSecondaryAction}
-                  >
-                    <IconButton
-                      onClick={(event) => handleMenuClick(event, build)}
+                    <ListItemSecondaryAction
+                      className={classes.listItemSecondaryAction}
                     >
-                      <MoreVert />
-                    </IconButton>
-                  </ListItemSecondaryAction>
-                </ListItem>
-                {build.isRunning && <LinearProgress />}
-              </React.Fragment>
-            ))}
+                      <IconButton
+                        onClick={(event) => handleMenuClick(event, build)}
+                      >
+                        <MoreVert />
+                      </IconButton>
+                    </ListItemSecondaryAction>
+                  </ListItem>
+                  {build.isRunning && <LinearProgress />}
+                </React.Fragment>
+              ))
+            )}
           </List>
         </Box>
         <Box height="7%">
