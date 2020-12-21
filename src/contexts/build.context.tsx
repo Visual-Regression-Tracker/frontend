@@ -42,8 +42,8 @@ type IAction =
 
 type Dispatch = (action: IAction) => void;
 type State = {
-  selectedBuildId: string | undefined;
-  selectedBuild: Build | undefined;
+  selectedBuildId: string | null;
+  selectedBuild: Build | null;
   buildList: Build[];
   total: number;
   take: number;
@@ -59,8 +59,8 @@ const BuildDispatchContext = React.createContext<Dispatch | undefined>(
 );
 
 const initialState: State = {
-  selectedBuildId: undefined,
-  selectedBuild: undefined,
+  selectedBuildId: null,
+  selectedBuild: null,
   buildList: [],
   take: 10,
   skip: 0,

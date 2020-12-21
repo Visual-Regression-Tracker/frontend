@@ -75,7 +75,7 @@ function SocketProvider({ children }: SocketProviderProps) {
         updateBuild(buildDispatch, build);
       });
 
-      state.socket.on(`testRun_created`, function (testRun: TestRun) {
+      state.socket.on("testRun_created", function (testRun: TestRun) {
         if (testRun.buildId === selectedBuild?.id) {
           addTestRun(testRunDispatch, testRun);
         }
