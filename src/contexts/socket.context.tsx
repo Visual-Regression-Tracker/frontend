@@ -81,13 +81,13 @@ function SocketProvider({ children }: SocketProviderProps) {
         }
       });
 
-      state.socket.on(`testRun_updated`, function (testRun: TestRun) {
+      state.socket.on("testRun_updated", function (testRun: TestRun) {
         if (testRun.buildId === selectedBuild?.id) {
           updateTestRun(testRunDispatch, testRun);
         }
       });
 
-      state.socket.on(`testRun_deleted`, function (testRun: TestRun) {
+      state.socket.on("testRun_deleted", function (testRun: TestRun) {
         if (testRun.buildId === selectedBuild?.id) {
           testRunDispatch({ type: "delete", payload: testRun.id });
         }
