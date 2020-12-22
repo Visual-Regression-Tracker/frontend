@@ -152,6 +152,7 @@ const TestDetailsModal: React.FunctionComponent<{
   );
 
   useHotkeys("d", () => setIsDiffShown((isDiffShown) => !isDiffShown));
+  useHotkeys("ESC", () => handleClose());
 
   return (
     <React.Fragment>
