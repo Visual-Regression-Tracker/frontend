@@ -4,7 +4,8 @@ body {
   text-align: center;
 }
 
-#root {
+#root,
+#cypress-root {
   height: 100%;
 }
 

@@ -9,6 +9,7 @@ import TestRunList from "../components/TestRunList";
 import TestDetailsModal from "../components/TestDetailsModal";
 import Filters from "../components/Filters";
 import {
+  useProjectState,
   useBuildState,
   useBuildDispatch,
   selectBuild,
@@ -18,10 +19,12 @@ import {
   getTestRunList,
   useProjectDispatch,
   selectProject,
+  getBuildList,
 } from "../contexts";
 import { useSnackbar } from "notistack";
 import { ArrowButtons } from "../components/ArrowButtons";
 import BuildDetails from "../components/BuildDetails";
+import { Pagination } from "@material-ui/lab";
 
 const getQueryParams = (guery: string) => {
   const queryParams = qs.parse(guery, { ignoreQueryPrefix: true });
@@ -46,8 +49,9 @@ const ProjectPage = () => {
   const location = useLocation();
   const history = useHistory();
   const { enqueueSnackbar } = useSnackbar();
-  const { selectedBuild, selectedBuildId } = useBuildState();
+  const { selectedBuild, selectedBuildId, total, take } = useBuildState();
   const buildDispatch = useBuildDispatch();
+  const { selectedProjectId } = useProjectState();
   const projectDispatch = useProjectDispatch();
   const { testRuns, selectedTestRunIndex } = useTestRunState();
   const testRunDispatch = useTestRunDispatch();
@@ -105,42 +109,64 @@ const ProjectPage = () => {
     );
   }, [query, os, device, browser, viewport, testStatus, testRuns]);
 
+  const getBuildListCalback: any = React.useCallback(
+    (page: number) =>
+      selectedProjectId &&
+      getBuildList(buildDispatch, selectedProjectId, page).catch(
+        (err: string) =>
+          enqueueSnackbar(err, {
+            variant: "error",
+          })
+      ),
+    [buildDispatch, enqueueSnackbar, selectedProjectId]
+  );
+
+  React.useEffect(() => {
+    getBuildListCalback(1);
+  }, [getBuildListCalback]);
+
   return (
     <Grid container className={classes.root}>
       <Grid item xs={3} className={classes.root}>
-        <Box height="8%" mx={1}>
-          <ProjectSelect onProjectSelect={(id) => history.push(id)} />
-        </Box>
-        <Box height="92%">
+        <ProjectSelect onProjectSelect={(id) => history.push(id)} />
+        <Box height="85%" my={0.5}>
           <BuildList />
         </Box>
+        <Grid container justify="center">
+          <Grid item>
+            <Pagination
+              size="small"
+              defaultPage={1}
+              count={Math.ceil(total / take)}
+              onChange={(event, page) => getBuildListCalback(page)}
+            />
+          </Grid>
+        </Grid>
       </Grid>
       <Grid item xs={9} className={classes.root}>
-        <Box height="17%">
-          {selectedBuild && <BuildDetails build={selectedBuild} />}
-          <Filters
-            items={testRuns}
-            queryState={[query, setQuery]}
-            osState={[os, setOs]}
-            deviceState={[device, setDevice]}
-            browserState={[browser, setBrowser]}
-            viewportState={[viewport, setViewport]}
-            testStatusState={[testStatus, setTestStatus]}
-          />
-        </Box>
-        <Box height="83%">
+        {selectedBuild && <BuildDetails build={selectedBuild} />}
+        <Filters
+          items={testRuns}
+          queryState={[query, setQuery]}
+          osState={[os, setOs]}
+          deviceState={[device, setDevice]}
+          browserState={[browser, setBrowser]}
+          viewportState={[viewport, setViewport]}
+          testStatusState={[testStatus, setTestStatus]}
+        />
+        <Box height="75%">
           <TestRunList items={filteredTestRuns} />
-          {selectedTestRunIndex !== undefined &&
-            testRuns[selectedTestRunIndex] && (
-              <Dialog open={true} fullScreen className={classes.modal}>
-                <TestDetailsModal testRun={testRuns[selectedTestRunIndex]} />
-                <ArrowButtons
-                  testRuns={testRuns}
-                  selectedTestRunIndex={selectedTestRunIndex}
-                />
-              </Dialog>
-            )}
         </Box>
+
+        {selectedTestRunIndex !== undefined && testRuns[selectedTestRunIndex] && (
+          <Dialog open={true} fullScreen className={classes.modal}>
+            <TestDetailsModal testRun={testRuns[selectedTestRunIndex]} />
+            <ArrowButtons
+              testRuns={testRuns}
+              selectedTestRunIndex={selectedTestRunIndex}
+            />
+          </Dialog>
+        )}
       </Grid>
     </Grid>
   );

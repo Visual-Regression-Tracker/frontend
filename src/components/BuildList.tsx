@@ -24,8 +24,6 @@ import {
   deleteBuild,
   selectBuild,
   stopBuild,
-  getBuildList,
-  useProjectState,
 } from "../contexts";
 import { BuildStatusChip } from "./BuildStatusChip";
 import { SkeletonList } from "./SkeletonList";
@@ -33,7 +31,6 @@ import { formatDateTime } from "../_helpers/format.helper";
 import { useSnackbar } from "notistack";
 import { Build } from "../types";
 import { BaseModal } from "./BaseModal";
-import { Pagination } from "@material-ui/lab";
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -55,8 +52,7 @@ const useStyles = makeStyles((theme: Theme) =>
 const BuildList: FunctionComponent = () => {
   const classes = useStyles();
   const history = useHistory();
-  const { selectedProjectId } = useProjectState();
-  const { buildList, selectedBuild, loading, total, take } = useBuildState();
+  const { buildList, selectedBuild, loading } = useBuildState();
   const buildDispatch = useBuildDispatch();
   const { enqueueSnackbar } = useSnackbar();
 
@@ -81,22 +77,6 @@ const BuildList: FunctionComponent = () => {
     setDeleteDialogOpen(!deleteDialogOpen);
   };
 
-  const getBuildListCalback: any = React.useCallback(
-    (page: number) =>
-      selectedProjectId &&
-      getBuildList(buildDispatch, selectedProjectId, page).catch(
-        (err: string) =>
-          enqueueSnackbar(err, {
-            variant: "error",
-          })
-      ),
-    [buildDispatch, enqueueSnackbar, selectedProjectId]
-  );
-
-  React.useEffect(() => {
-    getBuildListCalback(1);
-  }, [getBuildListCalback]);
-
   React.useEffect(() => {
     if (!selectedBuild && buildList.length > 0) {
       selectBuild(buildDispatch, buildList[0].id);
@@ -105,83 +85,70 @@ const BuildList: FunctionComponent = () => {
 
   return (
     <React.Fragment>
-      <Box height={1}>
-        <Box height="93%" overflow="auto">
-          <List>
-            {loading ? (
-              <SkeletonList />
-            ) : buildList.length === 0 ? (
-              <Typography variant="h5">No builds</Typography>
-            ) : (
-              buildList.map((build) => (
-                <React.Fragment key={build.id}>
-                  <ListItem
-                    selected={selectedBuild?.id === build.id}
-                    button
-                    onClick={() => {
-                      history.push({
-                        search: "buildId=" + build.id,
-                      });
-                    }}
-                    classes={{
-                      container: classes.listItem,
-                    }}
-                  >
-                    <ListItemText
-                      disableTypography
-                      primary={
-                        <Typography variant="subtitle2">{`#${build.number} ${
-                          build.ciBuildId || ""
-                        }`}</Typography>
-                      }
-                      secondary={
-                        <Grid container direction="column">
-                          <Grid item>
-                            <Typography variant="caption" color="textPrimary">
-                              {formatDateTime(build.createdAt)}
-                            </Typography>
-                          </Grid>
-                          <Grid item>
-                            <Grid container justify="space-between">
-                              <Grid item>
-                                <Chip size="small" label={build.branchName} />
-                              </Grid>
-                              <Grid item>
-                                <BuildStatusChip status={build.status} />
-                              </Grid>
+      <Box height={1} overflow="auto">
+        <List>
+          {loading ? (
+            <SkeletonList />
+          ) : buildList.length === 0 ? (
+            <Typography variant="h5">No builds</Typography>
+          ) : (
+            buildList.map((build) => (
+              <React.Fragment key={build.id}>
+                <ListItem
+                  selected={selectedBuild?.id === build.id}
+                  button
+                  onClick={() => {
+                    history.push({
+                      search: "buildId=" + build.id,
+                    });
+                  }}
+                  classes={{
+                    container: classes.listItem,
+                  }}
+                >
+                  <ListItemText
+                    disableTypography
+                    primary={
+                      <Typography variant="subtitle2">{`#${build.number} ${
+                        build.ciBuildId || ""
+                      }`}</Typography>
+                    }
+                    secondary={
+                      <Grid container direction="column">
+                        <Grid item>
+                          <Typography variant="caption" color="textPrimary">
+                            {formatDateTime(build.createdAt)}
+                          </Typography>
+                        </Grid>
+                        <Grid item>
+                          <Grid container justify="space-between">
+                            <Grid item>
+                              <Chip size="small" label={build.branchName} />
+                            </Grid>
+                            <Grid item>
+                              <BuildStatusChip status={build.status} />
                             </Grid>
                           </Grid>
                         </Grid>
-                      }
-                    />
+                      </Grid>
+                    }
+                  />
 
-                    <ListItemSecondaryAction
-                      className={classes.listItemSecondaryAction}
+                  <ListItemSecondaryAction
+                    className={classes.listItemSecondaryAction}
+                  >
+                    <IconButton
+                      onClick={(event) => handleMenuClick(event, build)}
                     >
-                      <IconButton
-                        onClick={(event) => handleMenuClick(event, build)}
-                      >
-                        <MoreVert />
-                      </IconButton>
-                    </ListItemSecondaryAction>
-                  </ListItem>
-                  {build.isRunning && <LinearProgress />}
-                </React.Fragment>
-              ))
-            )}
-          </List>
-        </Box>
-        <Box height="7%">
-          <Grid container justify="center">
-            <Grid item>
-              <Pagination
-                defaultPage={1}
-                count={Math.ceil(total / take)}
-                onChange={(event, page) => getBuildListCalback(page)}
-              />
-            </Grid>
-          </Grid>
-        </Box>
+                      <MoreVert />
+                    </IconButton>
+                  </ListItemSecondaryAction>
+                </ListItem>
+                {build.isRunning && <LinearProgress />}
+              </React.Fragment>
+            ))
+          )}
+        </List>
       </Box>
       {menuBuild && (
         <Menu anchorEl={anchorEl} open={!!menuBuild} onClose={handleMenuClose}>

@@ -67,7 +67,6 @@
     "@types/socket.io-client": "^1.4.33",
     "@visual-regression-tracker/agent-cypress": "^4.5.0",
     "cypress": "^5.6.0",
-    "cypress-react-unit-test": "^4.17.0",
-    "ts-loader": "^8.0.3"
+    "cypress-react-unit-test": "^4.17.0"
   }
 }
