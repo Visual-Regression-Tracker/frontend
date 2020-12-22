@@ -23,12 +23,21 @@ const RegisterForm = () => {
     event.preventDefault();
     usersService
       .register(firstName, lastName, email, password)
-      .then(() => login(dispatch, email, password))
+      .then(() => {
+        enqueueSnackbar("Successfully created account.", {
+          variant: "success",
+        });
+        login(dispatch, email, password);
+      })
       .catch((err) =>
         enqueueSnackbar(err, {
           variant: "error",
         })
       );
+  };
+
+  const isDataValid = () => {
+    return firstName.length > 0 && lastName.length > 0 && email.includes("@") && password.length > 0;
   };
 
   return (
@@ -111,6 +120,7 @@ const RegisterForm = () => {
           <Grid container justify="center">
             <Grid item>
               <Button
+                disabled={!isDataValid()}
                 type="submit"
                 color="primary"
                 variant="outlined"

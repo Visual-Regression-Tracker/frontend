@@ -28,6 +28,10 @@ const LoginForm = () => {
     );
   };
 
+  const isDataValid = () => {
+    return email.length > 5 && email.includes("@") && password.length > 0;
+  };
+
   return (
     <form onSubmit={handleSubmit}>
       <Card variant="outlined">
@@ -74,6 +78,7 @@ const LoginForm = () => {
           <Grid container direction="column" justify="center" spacing={3}>
             <Grid item>
               <Button
+                disabled={!isDataValid()}
                 type="submit"
                 color="primary"
                 variant="outlined"
