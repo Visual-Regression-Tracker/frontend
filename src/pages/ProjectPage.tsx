@@ -9,9 +9,9 @@ import TestRunList from "../components/TestRunList";
 import TestDetailsModal from "../components/TestDetailsModal";
 import Filters from "../components/Filters";
 import {
+  useProjectState,
   useBuildState,
   useBuildDispatch,
-  getBuildList,
   selectBuild,
   useTestRunState,
   useTestRunDispatch,
@@ -19,9 +19,12 @@ import {
   getTestRunList,
   useProjectDispatch,
   selectProject,
+  getBuildList,
 } from "../contexts";
 import { useSnackbar } from "notistack";
 import { ArrowButtons } from "../components/ArrowButtons";
+import BuildDetails from "../components/BuildDetails";
+import { Pagination } from "@material-ui/lab";
 
 const getQueryParams = (guery: string) => {
   const queryParams = qs.parse(guery, { ignoreQueryPrefix: true });
@@ -32,16 +35,11 @@ const getQueryParams = (guery: string) => {
 };
 
 const useStyles = makeStyles((theme) => ({
+  root: {
+    height: "100%",
+  },
   modal: {
     margin: 40,
-  },
-  buildListContainer: {
-    maxHeight: "89vh",
-    overflow: "auto",
-  },
-  testRunContainer: {
-    maxHeight: "83vh",
-    overflow: "auto",
   },
 }));
 
@@ -51,8 +49,9 @@ const ProjectPage = () => {
   const location = useLocation();
   const history = useHistory();
   const { enqueueSnackbar } = useSnackbar();
-  const { buildList, selectedBuildId } = useBuildState();
+  const { selectedBuild, selectedBuildId, total, take } = useBuildState();
   const buildDispatch = useBuildDispatch();
+  const { selectedProjectId } = useProjectState();
   const projectDispatch = useProjectDispatch();
   const { testRuns, selectedTestRunIndex } = useTestRunState();
   const testRunDispatch = useTestRunDispatch();
@@ -73,16 +72,6 @@ const ProjectPage = () => {
   }, [projectId, projectDispatch]);
 
   useEffect(() => {
-    if (projectId) {
-      getBuildList(buildDispatch, projectId).catch((err) =>
-        enqueueSnackbar(err, {
-          variant: "error",
-        })
-      );
-    }
-  }, [projectId, buildDispatch, enqueueSnackbar]);
-
-  useEffect(() => {
     if (selectedBuildId) {
       getTestRunList(testRunDispatch, selectedBuildId).catch((err) =>
         enqueueSnackbar(err, {
@@ -96,17 +85,15 @@ const ProjectPage = () => {
     const queryParams = getQueryParams(location.search);
     if (queryParams.buildId) {
       selectBuild(buildDispatch, queryParams.buildId);
-    } else if (buildList.length > 0) {
-      selectBuild(buildDispatch, buildList[0].id);
     }
-  }, [buildDispatch, buildList, location.search]);
+  }, [buildDispatch, location.search]);
 
   useEffect(() => {
     const queryParams = getQueryParams(location.search);
     if (queryParams.testId) {
       selectTestRun(testRunDispatch, queryParams.testId);
     }
-  }, [location.search, testRuns, testRunDispatch]);
+  }, [location.search, testRunDispatch]);
 
   useEffect(() => {
     setFilteredTestRuns(
@@ -122,45 +109,64 @@ const ProjectPage = () => {
     );
   }, [query, os, device, browser, viewport, testStatus, testRuns]);
 
+  const getBuildListCalback: any = React.useCallback(
+    (page: number) =>
+      selectedProjectId &&
+      getBuildList(buildDispatch, selectedProjectId, page).catch(
+        (err: string) =>
+          enqueueSnackbar(err, {
+            variant: "error",
+          })
+      ),
+    [buildDispatch, enqueueSnackbar, selectedProjectId]
+  );
+
+  React.useEffect(() => {
+    getBuildListCalback(1);
+  }, [getBuildListCalback]);
+
   return (
-    <Grid container>
-      <Grid item xs={3}>
-        <Grid item>
-          <ProjectSelect onProjectSelect={(id) => history.push(id)} />
-        </Grid>
-        <Grid item className={classes.buildListContainer}>
+    <Grid container className={classes.root}>
+      <Grid item xs={3} className={classes.root}>
+        <ProjectSelect onProjectSelect={(id) => history.push(id)} />
+        <Box height="85%" my={0.5}>
           <BuildList />
+        </Box>
+        <Grid container justify="center">
+          <Grid item>
+            <Pagination
+              size="small"
+              defaultPage={1}
+              count={Math.ceil(total / take)}
+              onChange={(event, page) => getBuildListCalback(page)}
+            />
+          </Grid>
         </Grid>
       </Grid>
-      <Grid item xs={9}>
-        <Grid container direction="column">
-          <Grid item>
-            <Box m={2}>
-              <Filters
-                items={testRuns}
-                queryState={[query, setQuery]}
-                osState={[os, setOs]}
-                deviceState={[device, setDevice]}
-                browserState={[browser, setBrowser]}
-                viewportState={[viewport, setViewport]}
-                testStatusState={[testStatus, setTestStatus]}
-              />
-            </Box>
-          </Grid>
-          <Grid item className={classes.testRunContainer}>
-            <TestRunList items={filteredTestRuns} />
-            {selectedTestRunIndex !== undefined &&
-              testRuns[selectedTestRunIndex] && (
-                <Dialog open={true} fullScreen className={classes.modal}>
-                  <TestDetailsModal testRun={testRuns[selectedTestRunIndex]} />
-                  <ArrowButtons
-                    testRuns={testRuns}
-                    selectedTestRunIndex={selectedTestRunIndex}
-                  />
-                </Dialog>
-              )}
-          </Grid>
-        </Grid>
+      <Grid item xs={9} className={classes.root}>
+        {selectedBuild && <BuildDetails build={selectedBuild} />}
+        <Filters
+          items={testRuns}
+          queryState={[query, setQuery]}
+          osState={[os, setOs]}
+          deviceState={[device, setDevice]}
+          browserState={[browser, setBrowser]}
+          viewportState={[viewport, setViewport]}
+          testStatusState={[testStatus, setTestStatus]}
+        />
+        <Box height="75%">
+          <TestRunList items={filteredTestRuns} />
+        </Box>
+
+        {selectedTestRunIndex !== undefined && testRuns[selectedTestRunIndex] && (
+          <Dialog open={true} fullScreen className={classes.modal}>
+            <TestDetailsModal testRun={testRuns[selectedTestRunIndex]} />
+            <ArrowButtons
+              testRuns={testRuns}
+              selectedTestRunIndex={selectedTestRunIndex}
+            />
+          </Dialog>
+        )}
       </Grid>
     </Grid>
   );

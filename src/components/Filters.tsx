@@ -7,6 +7,7 @@ import {
   FormControl,
   InputLabel,
   Button,
+  Box,
 } from "@material-ui/core";
 import { TestRun, TestVariation } from "../types";
 import { DebounceInput } from "react-debounce-input";
@@ -74,7 +75,7 @@ const Filters: React.FunctionComponent<IProps> = ({
       .filter((v, i, array) => v && array.indexOf(v) === i);
 
   return (
-    <React.Fragment>
+    <Box m={1}>
       <Grid container spacing={2} alignItems="flex-end">
         <Grid item xs>
           <DebounceInput
@@ -252,7 +253,7 @@ const Filters: React.FunctionComponent<IProps> = ({
           </Button>
         </Grid>
       </Grid>
-    </React.Fragment>
+    </Box>
   );
 };
 

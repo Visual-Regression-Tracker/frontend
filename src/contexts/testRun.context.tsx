@@ -97,6 +97,7 @@ function testRunReducer(state: State, action: IAction): State {
     case "request":
       return {
         ...state,
+        testRuns: [],
         loading: true,
       };
     case "get":

@@ -1,5 +1,6 @@
 import React from "react";
 import { SnackbarProvider } from "notistack";
+import { Box } from "@material-ui/core";
 import Header from "./components/Header";
 import {
   AuthProvider,
@@ -18,8 +19,12 @@ function App() {
           <BuildProvider>
             <TestRunProvider>
               <SocketProvider>
-                <Header />
-                <Router />
+                <Box height="10%">
+                  <Header />
+                </Box>
+                <Box height="90%">
+                  <Router />
+                </Box>
               </SocketProvider>
             </TestRunProvider>
           </BuildProvider>
