@@ -88,6 +88,7 @@ const TestVariationDetailsPage: React.FunctionComponent = () => {
                       </Button>
                     </CardActions>
                     <CardMedia
+                      component="img"
                       className={classes.media}
                       image={staticService.getImage(baseline.baselineName)}
                     />

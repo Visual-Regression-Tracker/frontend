@@ -56,6 +56,7 @@ const TestVariationList: React.FunctionComponent<IProps> = ({
           <Grid item key={t.id} xs={4}>
             <Card className={classes.card}>
               <CardMedia
+                component="img"
                 className={classes.media}
                 image={staticService.getImage(t.baselineName)}
                 title={t.name}
