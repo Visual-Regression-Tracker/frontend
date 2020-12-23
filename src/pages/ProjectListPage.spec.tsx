@@ -27,6 +27,6 @@ describe("Project List page", () => {
       component: <ProjectListPage />,
     });
 
-    cy.get("#cypress-root").vrtTrack("Project List page");
+    cy.vrtTrack("Project List page");
   });
 });

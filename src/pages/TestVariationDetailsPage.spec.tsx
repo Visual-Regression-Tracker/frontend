@@ -58,6 +58,6 @@ describe("TestVariationDetailsPage", () => {
       path: "/:testVariationId",
     });
 
-    cy.get("#cypress-root").vrtTrack("TestVariationDetails page");
+    cy.vrtTrack("TestVariationDetails page");
   });
 });

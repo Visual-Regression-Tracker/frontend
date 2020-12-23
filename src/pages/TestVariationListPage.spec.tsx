@@ -95,6 +95,6 @@ describe("TestVariationListPage", () => {
       path: "/:projectId",
     });
 
-    cy.get("#cypress-root").vrtTrack("TestVariationList page");
+    cy.vrtTrack("TestVariationList page");
   });
 });
