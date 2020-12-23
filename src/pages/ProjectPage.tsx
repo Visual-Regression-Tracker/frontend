@@ -112,7 +112,7 @@ const ProjectPage = () => {
     setFilteredTestRuns(
       testRuns.filter(
         (t) =>
-          t.name.includes(query) && // by query
+          t.name.toLowerCase().includes(query.toLowerCase()) && // by query
           (os ? t.os === os : true) && // by OS
           (device ? t.device === device : true) && // by device
           (viewport ? t.viewport === viewport : true) && // by viewport
