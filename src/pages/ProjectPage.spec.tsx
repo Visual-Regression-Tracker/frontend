@@ -1,7 +1,7 @@
 /* global cy */
 import React from "react";
 import ProjectPage from "./ProjectPage";
-import { buildsService, staticService, testRunService } from "../services";
+import { staticService } from "../services";
 import { BuildStatus } from "../types/buildStatus";
 import { TestStatus } from "../types/testStatus";
 import { mountVrtComponent } from "../_test/test.moun.helper";
@@ -275,6 +275,11 @@ describe("Project page", () => {
 
     cy.contains("test run name").click();
 
+    cy.get("[data-testid='image-details']").should(($imageDetails) => {
+      expect($imageDetails).to.have.length(2);
+      expect($imageDetails.eq(0)).to.have.text("Real size: 1280 x 720");
+      expect($imageDetails.eq(1)).to.have.text("Real size: 1280 x 720");
+    });
     cy.get(".MuiDialog-root").vrtTrack("TestDetailsModal");
   });
 });
