@@ -26,7 +26,7 @@ import { formatDateTime } from "../_helpers/format.helper";
 const useStyles = makeStyles({
   media: {
     height: 600,
-    backgroundSize: "contain",
+    objectFit: "contain",
   },
 });
 

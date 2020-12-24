@@ -29,7 +29,7 @@ const useStyles = makeStyles({
   },
   media: {
     height: 140,
-    backgroundSize: "contain",
+    objectFit: "contain",
   },
 });
 
