@@ -12,7 +12,7 @@
     "husky": "^4.2.5",
     "konva": "^7.0.3",
     "lint-staged": "^10.2.11",
-    "material-ui-popup-state": "^1.6.1",
+    "material-ui-popup-state": "^1.7.1",
     "notistack": "^0.9.17",
     "prettier": "^2.0.5",
     "qs": "^6.9.4",
