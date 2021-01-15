@@ -30,14 +30,14 @@ const LoginForm = () => {
     );
   };
 
-  const isDataValid = () => {
-    return isEmailValid && isPasswordValid;
-  };
-
   const isEmailLengthCorrect = email.length > 4;
   const isEmailFormatCorrect = email.includes(".") && email.includes("@");
   const isEmailValid = isEmailFormatCorrect && isEmailLengthCorrect;
   const isPasswordValid = password.length > 3;
+
+  const isDataValid = () => {
+    return isEmailValid && isPasswordValid;
+  };
 
   return (
     <form onSubmit={handleSubmit}>
@@ -54,9 +54,9 @@ const LoginForm = () => {
                 variant="outlined"
                 error={!isEmailValid && emailTouched}
                 helperText={
-                  (!isEmailFormatCorrect && emailTouched)
+                  !isEmailFormatCorrect && emailTouched
                     ? "Enter valid email address."
-                    : (!isEmailLengthCorrect && emailTouched)
+                    : !isEmailLengthCorrect && emailTouched
                     ? "Email length should be at least 5."
                     : ""
                 }
@@ -83,7 +83,11 @@ const LoginForm = () => {
                 required
                 fullWidth
                 error={!isPasswordValid && passwordTouched}
-                helperText={!isPasswordValid && passwordTouched ? "Password of lenght at least 4." : ""}
+                helperText={
+                  !isPasswordValid && passwordTouched
+                    ? "Password of length at least 4."
+                    : ""
+                }
                 inputProps={{
                   onChange: (event) => {
                     setPassword((event.target as HTMLInputElement).value);

@@ -56,7 +56,7 @@ const ProjectsListPage = () => {
   };
 
   const isDataValid = () => {
-    return project.name.length > 0 && project.mainBranchName.length > 0;
+    return project.name.length > 1 && project.mainBranchName.length > 1;
   };
 
   return (

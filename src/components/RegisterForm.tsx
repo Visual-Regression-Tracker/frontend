@@ -73,7 +73,7 @@ const RegisterForm = () => {
                 fullWidth
                 error={!isTextboxFirstNameValid && firstNameTouched}
                 helperText={
-                  (!isTextboxFirstNameValid && firstNameTouched)
+                  !isTextboxFirstNameValid && firstNameTouched
                     ? "Enter at least 2 character."
                     : ""
                 }
@@ -98,12 +98,12 @@ const RegisterForm = () => {
                 fullWidth
                 error={!isTextboxLastNameValid && lastNameTouched}
                 helperText={
-                  (!isTextboxLastNameValid && lastNameTouched)
+                  !isTextboxLastNameValid && lastNameTouched
                     ? "Enter at least 2 character."
                     : ""
                 }
                 inputProps={{
-                  onChange: (event) =>{
+                  onChange: (event) => {
                     setLastName((event.target as HTMLInputElement).value);
                     setLastNameTouched(true);
                   },
@@ -152,7 +152,7 @@ const RegisterForm = () => {
                 error={!isPasswordValid && passwordTouched}
                 helperText={
                   !isPasswordValid && passwordTouched
-                    ? "Password of lenght at least 4."
+                    ? "Password of length at least 4."
                     : ""
                 }
                 inputProps={{
