@@ -23,6 +23,6 @@ describe("Profile page", () => {
       component: <ProfilePage />,
     });
 
-    cy.get("#cypress-root").vrtTrack("Profile page");
+    cy.vrtTrack("Profile page");
   });
 });

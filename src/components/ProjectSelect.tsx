@@ -13,11 +13,10 @@ import { useProjectState } from "../contexts";
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
     formControl: {
-      margin: theme.spacing(1),
-      minWidth: 120,
+      width: "100%",
     },
-    selectEmpty: {
-      marginTop: theme.spacing(2),
+    input: {
+      margin: theme.spacing(1),
     },
   })
 );
@@ -38,9 +37,8 @@ const ProjectSelect: FunctionComponent<{
           <Select
             id="project-select"
             labelId="projectSelect"
-            autoWidth
+            className={classes.input}
             displayEmpty
-            className={classes.selectEmpty}
             value={selectedProjectId ?? ""}
             onChange={(event) => onProjectSelect(event.target.value as string)}
           >

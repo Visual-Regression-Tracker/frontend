@@ -1,5 +1,5 @@
 import React from "react";
-import { Build } from "../types";
+import { Build, PaginatedData } from "../types";
 import { buildsService } from "../services";
 
 interface IRequestAction {
@@ -9,12 +9,12 @@ interface IRequestAction {
 
 interface IGetAction {
   type: "get";
-  payload: Build[];
+  payload: PaginatedData<Build>;
 }
 
 interface ISelectAction {
   type: "select";
-  payload: string;
+  payload: Build;
 }
 
 interface IDeleteAction {
@@ -42,8 +42,12 @@ type IAction =
 
 type Dispatch = (action: IAction) => void;
 type State = {
-  selectedBuildId: string | undefined;
+  selectedBuildId: string | null;
+  selectedBuild: Build | null;
   buildList: Build[];
+  total: number;
+  take: number;
+  skip: number;
   loading: boolean;
 };
 
@@ -55,8 +59,12 @@ const BuildDispatchContext = React.createContext<Dispatch | undefined>(
 );
 
 const initialState: State = {
-  selectedBuildId: undefined,
+  selectedBuildId: null,
+  selectedBuild: null,
   buildList: [],
+  take: 10,
+  skip: 0,
+  total: 0,
   loading: false,
 };
 
@@ -65,17 +73,23 @@ function buildReducer(state: State, action: IAction): State {
     case "select":
       return {
         ...state,
-        selectedBuildId: action.payload,
+        selectedBuildId: action.payload.id,
+        selectedBuild: action.payload,
       };
     case "request":
       return {
         ...state,
+        buildList: [],
         loading: true,
       };
     case "get":
+      const { data, take, skip, total } = action.payload;
       return {
         ...state,
-        buildList: action.payload,
+        buildList: data,
+        take,
+        skip,
+        total,
         loading: false,
       };
     case "delete":
@@ -91,6 +105,10 @@ function buildReducer(state: State, action: IAction): State {
     case "update":
       return {
         ...state,
+        selectedBuild:
+          state.selectedBuild?.id === action.payload.id
+            ? action.payload
+            : state.selectedBuild,
         buildList: state.buildList.map((p) => {
           if (p.id === action.payload.id) {
             return action.payload;
@@ -131,12 +149,14 @@ function useBuildDispatch() {
   return context;
 }
 
-async function getBuildList(dispatch: Dispatch, id: string) {
+async function getBuildList(dispatch: Dispatch, id: string, page: number) {
   dispatch({ type: "request" });
 
-  return buildsService.getList(id).then((items) => {
-    dispatch({ type: "get", payload: items });
-  });
+  return buildsService
+    .getList(id, initialState.take, initialState.take * (page - 1))
+    .then((response) => {
+      dispatch({ type: "get", payload: response });
+    });
 }
 
 async function deleteBuild(dispatch: Dispatch, id: string) {
@@ -154,7 +174,9 @@ async function stopBuild(dispatch: Dispatch, id: string) {
 }
 
 async function selectBuild(dispatch: Dispatch, id: string) {
-  dispatch({ type: "select", payload: id });
+  return buildsService.getDetails(id).then((build) => {
+    dispatch({ type: "select", payload: build });
+  });
 }
 
 async function addBuild(dispatch: Dispatch, build: Build) {

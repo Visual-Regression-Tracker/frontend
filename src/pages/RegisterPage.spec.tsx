@@ -13,6 +13,6 @@ describe("Register page", () => {
       component: <RegisterPage />,
     });
 
-    cy.get("#cypress-root").vrtTrack("Register page");
+    cy.vrtTrack("Register page");
   });
 });

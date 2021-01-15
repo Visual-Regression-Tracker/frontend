@@ -1,6 +1,12 @@
 body {
+  height: 100vh;
   margin: 0;
   text-align: center;
+}
+
+#root,
+#cypress-root {
+  height: 100%;
 }
 
 .konvajs-content {

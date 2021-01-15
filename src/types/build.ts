@@ -17,4 +17,5 @@ export interface Build {
   passedCount: number;
   failedCount: number;
   isRunning: boolean;
+  merge: boolean;
 }

@@ -13,6 +13,6 @@ describe("Login page", () => {
       component: <LoginPage />,
     });
 
-    cy.get("#cypress-root").vrtTrack("Login page");
+    cy.vrtTrack("Login page");
   });
 });

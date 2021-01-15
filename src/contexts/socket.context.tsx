@@ -7,7 +7,11 @@ import {
   updateBuild,
 } from "./build.context";
 import { Build, TestRun } from "../types";
-import { useTestRunDispatch, addTestRun } from "./testRun.context";
+import {
+  useTestRunDispatch,
+  addTestRun,
+  updateTestRun,
+} from "./testRun.context";
 import { API_URL } from "../_config/env.config";
 
 interface IConnectAction {
@@ -47,7 +51,7 @@ function socketReducer(state: State, action: IAction): State {
 
 function SocketProvider({ children }: SocketProviderProps) {
   const [state, dispatch] = React.useReducer(socketReducer, initialState);
-  const { selectedBuildId } = useBuildState();
+  const { selectedBuild } = useBuildState();
   const testRunDispatch = useTestRunDispatch();
   const buildDispatch = useBuildDispatch();
 
@@ -71,19 +75,25 @@ function SocketProvider({ children }: SocketProviderProps) {
         updateBuild(buildDispatch, build);
       });
 
-      state.socket.on(`testRun_created`, function (testRun: TestRun) {
-        if (testRun.buildId === selectedBuildId) {
+      state.socket.on("testRun_created", function (testRun: TestRun) {
+        if (testRun.buildId === selectedBuild?.id) {
           addTestRun(testRunDispatch, testRun);
         }
       });
 
-      state.socket.on(`testRun_deleted`, function (testRun: TestRun) {
-        if (testRun.buildId === selectedBuildId) {
+      state.socket.on("testRun_updated", function (testRun: TestRun) {
+        if (testRun.buildId === selectedBuild?.id) {
+          updateTestRun(testRunDispatch, testRun);
+        }
+      });
+
+      state.socket.on("testRun_deleted", function (testRun: TestRun) {
+        if (testRun.buildId === selectedBuild?.id) {
           testRunDispatch({ type: "delete", payload: testRun.id });
         }
       });
     }
-  }, [state.socket, selectedBuildId, buildDispatch, testRunDispatch]);
+  }, [state.socket, selectedBuild, buildDispatch, testRunDispatch]);
 
   return (
     <SocketStateContext.Provider value={state}>

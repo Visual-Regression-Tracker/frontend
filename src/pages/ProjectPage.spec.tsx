@@ -1,18 +1,22 @@
 /* global cy */
 import React from "react";
 import ProjectPage from "./ProjectPage";
-import { buildsService, staticService, testRunService } from "../services";
+import { staticService } from "../services";
 import { BuildStatus } from "../types/buildStatus";
 import { TestStatus } from "../types/testStatus";
 import { mountVrtComponent } from "../_test/test.moun.helper";
 import baselineImageMock from "../_test/images/baseline.png";
 import imageMock from "../_test/images/screenshot.png";
 import diffMock from "../_test/images/diff.png";
-import { projectStub } from "../_test/stub.helper";
+import {
+  projectStub,
+  buildsServiceStub,
+  testRunServiceStub,
+} from "../_test/stub.helper";
 import { haveUserLogged } from "../_test/precondition.helper";
 import { userMock } from "../_test/test.data.helper";
 
-describe("Project List page", () => {
+describe("Project page", () => {
   before(() => {
     haveUserLogged(userMock);
     projectStub.getAll([
@@ -35,9 +39,9 @@ describe("Project List page", () => {
       .withArgs("diff.png")
       .returns(diffMock);
 
-    cy.stub(buildsService, "getList").resolves([
+    buildsServiceStub.getList([
       {
-        id: "some id",
+        id: "someId",
         number: 1,
         ciBuildId: "some build id",
         projectName: "Project name",
@@ -50,9 +54,10 @@ describe("Project List page", () => {
         passedCount: 2,
         failedCount: 1,
         isRunning: false,
+        merge: false,
       },
       {
-        id: "some id2",
+        id: "someId2",
         number: 2,
         ciBuildId: "",
         projectName: "Project name",
@@ -65,10 +70,12 @@ describe("Project List page", () => {
         passedCount: 2,
         failedCount: 0,
         isRunning: false,
+        merge: false,
       },
       {
-        id: "some id3",
+        id: "someId3",
         number: 3,
+        ciBuildId: "",
         projectName: "Project name",
         branchName: "Branch name",
         status: BuildStatus.unresolved,
@@ -79,13 +86,28 @@ describe("Project List page", () => {
         passedCount: 0,
         failedCount: 0,
         isRunning: false,
+        merge: true,
       },
     ]);
-    cy.stub(testRunService, "getList").resolves([
+    buildsServiceStub.getDetails({
+      id: "someId",
+      number: 1,
+      ciBuildId: "some build id",
+      projectName: "Project name",
+      branchName: "Branch name",
+      status: BuildStatus.failed,
+      createdAt: "2020-09-14T06:57:25.845Z",
+      createdBy: "2020-09-14T06:57:25.845Z",
+      testRuns: [],
+      unresolvedCount: 0,
+      passedCount: 2,
+      failedCount: 1,
+      isRunning: false,
+      merge: false,
+    });
+    testRunServiceStub.getList([
       {
         id: "some test run id",
-        createdAt: "2020-09-14T06:57:25.845Z",
-        createdBy: "2020-09-14T06:57:25.845Z",
         buildId: "some build id",
         imageName: "image.png",
         diffName: "diff.png",
@@ -109,9 +131,6 @@ describe("Project List page", () => {
       },
       {
         id: "some test run id2",
-        createdAt: "2020-09-14T06:57:25.845Z",
-        createdBy: "2020-09-14T06:57:25.845Z",
-
         buildId: "some build id",
         imageName: "imageName",
         diffName: "diffName",
@@ -126,6 +145,7 @@ describe("Project List page", () => {
         viewport: "viewport",
         device: "device",
         ignoreAreas: "[]",
+        tempIgnoreAreas: "[]",
         comment: "some comment",
         branchName: "branch name",
         baselineBranchName: "baselineBranchName",
@@ -133,9 +153,6 @@ describe("Project List page", () => {
       },
       {
         id: "some test run id3",
-        createdAt: "2020-09-14T06:57:25.845Z",
-        createdBy: "2020-09-14T06:57:25.845Z",
-
         buildId: "some build id",
         imageName: "imageName",
         diffName: "diffName",
@@ -150,6 +167,7 @@ describe("Project List page", () => {
         viewport: "",
         device: "",
         ignoreAreas: "[]",
+        tempIgnoreAreas: "[]",
         comment: "some comment",
         branchName: "branch name",
         baselineBranchName: "baselineBranchName",
@@ -157,9 +175,6 @@ describe("Project List page", () => {
       },
       {
         id: "some test run id4",
-        createdAt: "2020-09-14T06:57:25.845Z",
-        createdBy: "2020-09-14T06:57:25.845Z",
-
         buildId: "some build id",
         imageName: "imageName",
         diffName: "diffName",
@@ -174,6 +189,73 @@ describe("Project List page", () => {
         viewport: "",
         device: "",
         ignoreAreas: "[]",
+        tempIgnoreAreas: "[]",
+        comment: "some comment",
+        branchName: "branch name",
+        baselineBranchName: "baselineBranchName",
+        merge: false,
+      },
+      {
+        id: "some test run id7",
+        buildId: "some build id",
+        imageName: "imageName",
+        diffName: "diffName",
+        diffPercent: 1.24,
+        diffTollerancePercent: 3.21,
+        status: TestStatus.ok,
+        testVariationId: "some test variation id",
+        name: "test run name4",
+        baselineName: "baselineName",
+        os: "",
+        browser: "",
+        viewport: "",
+        device: "",
+        ignoreAreas: "[]",
+        tempIgnoreAreas: "[]",
+        comment: "some comment",
+        branchName: "branch name",
+        baselineBranchName: "baselineBranchName",
+        merge: false,
+      },
+      {
+        id: "some test run id6",
+        buildId: "some build id",
+        imageName: "imageName",
+        diffName: "diffName",
+        diffPercent: 1.24,
+        diffTollerancePercent: 3.21,
+        status: TestStatus.ok,
+        testVariationId: "some test variation id",
+        name: "test run name4",
+        baselineName: "baselineName",
+        os: "",
+        browser: "",
+        viewport: "",
+        device: "",
+        ignoreAreas: "[]",
+        tempIgnoreAreas: "[]",
+        comment: "some comment",
+        branchName: "branch name",
+        baselineBranchName: "baselineBranchName",
+        merge: false,
+      },
+      {
+        id: "some test run id5",
+        buildId: "some build id",
+        imageName: "imageName",
+        diffName: "diffName",
+        diffPercent: 1.24,
+        diffTollerancePercent: 3.21,
+        status: TestStatus.ok,
+        testVariationId: "some test variation id",
+        name: "test run name4",
+        baselineName: "baselineName",
+        os: "",
+        browser: "",
+        viewport: "",
+        device: "",
+        ignoreAreas: "[]",
+        tempIgnoreAreas: "[]",
         comment: "some comment",
         branchName: "branch name",
         baselineBranchName: "baselineBranchName",
@@ -193,6 +275,11 @@ describe("Project List page", () => {
 
     cy.contains("test run name").click();
 
+    cy.get("[data-testid='image-details']").should(($imageDetails) => {
+      expect($imageDetails).to.have.length(2);
+      expect($imageDetails.eq(0)).to.have.text("Real size: 1280 x 720");
+      expect($imageDetails.eq(1)).to.have.text("Real size: 1280 x 720");
+    });
     cy.get(".MuiDialog-root").vrtTrack("TestDetailsModal");
   });
 });

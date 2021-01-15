@@ -26,7 +26,7 @@ const ImageDetails: React.FunctionComponent<IProps> = ({
         <React.Fragment>
           <Grid container spacing={2} alignItems={"center"}>
             <Grid item>
-              <Typography variant="caption">
+              <Typography variant="caption" data-testid="image-details">
                 Real size: {`${image?.width} x ${image?.height}`}
               </Typography>
             </Grid>
