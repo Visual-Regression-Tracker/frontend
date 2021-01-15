@@ -179,6 +179,7 @@ const TestRunList: React.FunctionComponent<{
           open={deleteDialogOpen}
           title={"Delete TestRun"}
           submitButtonText={"Delete"}
+          isDisabled={false}
           onCancel={toggleDeleteDialogOpen}
           content={
             <Typography>{`Are you sure you want to delete: ${selectedTestRun.name}?`}</Typography>

@@ -89,6 +89,7 @@ const TestVariationList: React.FunctionComponent<IProps> = ({
           open={!!selectedItem}
           title={"Delete TestVariation"}
           submitButtonText={"Delete"}
+          isDisabled={false}
           onCancel={handleClose}
           content={
             <Typography>{`Are you sure you want to delete: ${selectedItem.name}?`}</Typography>

@@ -16,6 +16,8 @@ import { useSnackbar } from "notistack";
 const LoginForm = () => {
   const { enqueueSnackbar } = useSnackbar();
   const [email, setEmail] = useState("");
+  const [emailTouched, setEmailTouched] = useState(false);
+  const [passwordTouched, setPasswordTouched] = useState(false);
   const [password, setPassword] = useState("");
   const dispatch = useAuthDispatch();
 
@@ -29,8 +31,13 @@ const LoginForm = () => {
   };
 
   const isDataValid = () => {
-    return email.length > 5 && email.includes("@") && password.length > 0;
+    return isEmailValid && isPasswordValid;
   };
+
+  const isEmailLengthCorrect = email.length > 4;
+  const isEmailFormatCorrect = email.includes(".") && email.includes("@");
+  const isEmailValid = isEmailFormatCorrect && isEmailLengthCorrect;
+  const isPasswordValid = password.length > 3;
 
   return (
     <form onSubmit={handleSubmit}>
@@ -45,11 +52,21 @@ const LoginForm = () => {
                 label={"Email address"}
                 type="text"
                 variant="outlined"
+                error={!isEmailValid && emailTouched}
+                helperText={
+                  (!isEmailFormatCorrect && emailTouched)
+                    ? "Enter valid email address."
+                    : (!isEmailLengthCorrect && emailTouched)
+                    ? "Email length should be at least 5."
+                    : ""
+                }
                 required
                 fullWidth
                 inputProps={{
-                  onChange: (event) =>
-                    setEmail((event.target as HTMLInputElement).value),
+                  onChange: (event) => {
+                    setEmail((event.target as HTMLInputElement).value);
+                    setEmailTouched(true);
+                  },
                   "data-testid": "email",
                 }}
               />
@@ -65,9 +82,13 @@ const LoginForm = () => {
                 variant="outlined"
                 required
                 fullWidth
+                error={!isPasswordValid && passwordTouched}
+                helperText={!isPasswordValid && passwordTouched ? "Password of lenght at least 4." : ""}
                 inputProps={{
-                  onChange: (event) =>
-                    setPassword((event.target as HTMLInputElement).value),
+                  onChange: (event) => {
+                    setPassword((event.target as HTMLInputElement).value);
+                    setPasswordTouched(true);
+                  },
                   "data-testid": "password",
                 }}
               />

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { TextField } from "@material-ui/core";
 
 interface IProps {
@@ -22,6 +22,11 @@ export const ProjectForm: React.FunctionComponent<IProps> = ({
   projectState,
 }) => {
   const [project, setProject] = projectState;
+  const [nameTouched, setNameTouched] = useState(false);
+  const [mainBranchNameTouched, setMainBranchNameTouched] = useState(false);
+
+  const isTextboxNameValid = project.name.length > 1;
+  const isTextboxMainBranchNameValid = project.mainBranchName.length > 1;
 
   return (
     <React.Fragment>
@@ -33,12 +38,19 @@ export const ProjectForm: React.FunctionComponent<IProps> = ({
         type="text"
         fullWidth
         value={project.name}
-        onChange={(event) =>
+        error={!isTextboxNameValid && nameTouched}
+        helperText={
+          !isTextboxNameValid && nameTouched
+            ? "Enter at least 2 character."
+            : ""
+        }
+        onChange={(event) => {
           setProject({
             ...project,
             name: event.target.value,
-          })
-        }
+          });
+          setNameTouched(true);
+        }}
       />
       <TextField
         margin="dense"
@@ -47,12 +59,19 @@ export const ProjectForm: React.FunctionComponent<IProps> = ({
         type="text"
         fullWidth
         value={project.mainBranchName}
-        onChange={(event) =>
+        error={!isTextboxMainBranchNameValid && mainBranchNameTouched}
+        helperText={
+          !isTextboxMainBranchNameValid && mainBranchNameTouched
+            ? "Enter at least 2 character."
+            : ""
+        }
+        onChange={(event) => {
           setProject({
             ...project,
             mainBranchName: event.target.value,
-          })
-        }
+          });
+          setMainBranchNameTouched(true);
+        }}
       />
     </React.Fragment>
   );

@@ -167,6 +167,7 @@ const BuildList: FunctionComponent = () => {
           title={"Delete Build"}
           submitButtonText={"Delete"}
           onCancel={toggleDeleteDialogOpen}
+          isDisabled={false}
           content={
             <Typography>{`Are you sure you want to delete build: #${
               menuBuild.number || menuBuild.id

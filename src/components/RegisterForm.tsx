@@ -17,6 +17,10 @@ const RegisterForm = () => {
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [password, setPassword] = useState("");
+  const [emailTouched, setEmailTouched] = useState(false);
+  const [passwordTouched, setPasswordTouched] = useState(false);
+  const [firstNameTouched, setFirstNameTouched] = useState(false);
+  const [lastNameTouched, setLastNameTouched] = useState(false);
   const dispatch = useAuthDispatch();
 
   const handleSubmit = (event: FormEvent) => {
@@ -37,8 +41,20 @@ const RegisterForm = () => {
   };
 
   const isDataValid = () => {
-    return firstName.length > 0 && lastName.length > 0 && email.includes("@") && password.length > 0;
+    return (
+      firstName.length > 0 &&
+      lastName.length > 0 &&
+      email.includes("@") &&
+      password.length > 0
+    );
   };
+
+  const isTextboxFirstNameValid = firstName.length > 1;
+  const isTextboxLastNameValid = lastName.length > 1;
+  const isEmailLengthCorrect = email.length > 4;
+  const isEmailFormatCorrect = email.includes(".") && email.includes("@");
+  const isEmailValid = isEmailFormatCorrect && isEmailLengthCorrect;
+  const isPasswordValid = password.length > 3;
 
   return (
     <form onSubmit={handleSubmit}>
@@ -55,9 +71,17 @@ const RegisterForm = () => {
                 variant="outlined"
                 required
                 fullWidth
+                error={!isTextboxFirstNameValid && firstNameTouched}
+                helperText={
+                  (!isTextboxFirstNameValid && firstNameTouched)
+                    ? "Enter at least 2 character."
+                    : ""
+                }
                 inputProps={{
-                  onChange: (event) =>
-                    setFirstName((event.target as HTMLInputElement).value),
+                  onChange: (event) => {
+                    setFirstName((event.target as HTMLInputElement).value);
+                    setFirstNameTouched(true);
+                  },
                   "data-testid": "firstName",
                 }}
               />
@@ -72,9 +96,17 @@ const RegisterForm = () => {
                 variant="outlined"
                 required
                 fullWidth
+                error={!isTextboxLastNameValid && lastNameTouched}
+                helperText={
+                  (!isTextboxLastNameValid && lastNameTouched)
+                    ? "Enter at least 2 character."
+                    : ""
+                }
                 inputProps={{
-                  onChange: (event) =>
-                    setLastName((event.target as HTMLInputElement).value),
+                  onChange: (event) =>{
+                    setLastName((event.target as HTMLInputElement).value);
+                    setLastNameTouched(true);
+                  },
                   "data-testid": "lastName",
                 }}
               />
@@ -89,9 +121,19 @@ const RegisterForm = () => {
                 variant="outlined"
                 required
                 fullWidth
+                error={!isEmailValid && emailTouched}
+                helperText={
+                  !isEmailFormatCorrect && emailTouched
+                    ? "Enter valid email address."
+                    : !isEmailLengthCorrect && emailTouched
+                    ? "Email length should be at least 5."
+                    : ""
+                }
                 inputProps={{
-                  onChange: (event) =>
-                    setEmail((event.target as HTMLInputElement).value),
+                  onChange: (event) => {
+                    setEmail((event.target as HTMLInputElement).value);
+                    setEmailTouched(true);
+                  },
                   "data-testid": "email",
                 }}
               />
@@ -107,9 +149,17 @@ const RegisterForm = () => {
                 variant="outlined"
                 required
                 fullWidth
+                error={!isPasswordValid && passwordTouched}
+                helperText={
+                  !isPasswordValid && passwordTouched
+                    ? "Password of lenght at least 4."
+                    : ""
+                }
                 inputProps={{
-                  onChange: (event) =>
-                    setPassword((event.target as HTMLInputElement).value),
+                  onChange: (event) => {
+                    setPassword((event.target as HTMLInputElement).value);
+                    setPasswordTouched(true);
+                  },
                   "data-testid": "password",
                 }}
               />

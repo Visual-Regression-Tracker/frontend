@@ -55,6 +55,10 @@ const ProjectsListPage = () => {
     setDeleteDialogOpen(!deleteDialogOpen);
   };
 
+  const isDataValid = () => {
+    return project.name.length > 0 && project.mainBranchName.length > 0;
+  };
+
   return (
     <Box mt={2}>
       <Grid container spacing={2}>
@@ -85,6 +89,7 @@ const ProjectsListPage = () => {
             open={createDialogOpen}
             title={"Create Project"}
             submitButtonText={"Create"}
+            isDisabled={!isDataValid()}
             onCancel={toggleCreateDialogOpen}
             content={<ProjectForm projectState={[project, setProject]} />}
             onSubmit={() =>
@@ -107,6 +112,7 @@ const ProjectsListPage = () => {
             open={updateDialogOpen}
             title={"Update Project"}
             submitButtonText={"Update"}
+            isDisabled={!isDataValid()}
             onCancel={toggleUpdateDialogOpen}
             content={<ProjectForm projectState={[project, setProject]} />}
             onSubmit={() =>
@@ -129,6 +135,7 @@ const ProjectsListPage = () => {
             open={deleteDialogOpen}
             title={"Delete Project"}
             submitButtonText={"Delete"}
+            isDisabled={false}
             onCancel={toggleDeleteDialogOpen}
             content={
               <Typography>{`Are you sure you want to delete: ${project.name}?`}</Typography>
