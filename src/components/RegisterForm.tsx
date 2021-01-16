@@ -40,21 +40,19 @@ const RegisterForm = () => {
       );
   };
 
-  const isDataValid = () => {
-    return (
-      firstName.length > 0 &&
-      lastName.length > 0 &&
-      email.includes("@") &&
-      password.length > 0
-    );
-  };
-
   const isTextboxFirstNameValid = firstName.length > 1;
   const isTextboxLastNameValid = lastName.length > 1;
   const isEmailLengthCorrect = email.length > 4;
   const isEmailFormatCorrect = email.includes(".") && email.includes("@");
   const isEmailValid = isEmailFormatCorrect && isEmailLengthCorrect;
   const isPasswordValid = password.length > 3;
+
+  const isDataValid =
+    isTextboxFirstNameValid &&
+    isTextboxLastNameValid &&
+    isEmailFormatCorrect &&
+    isEmailValid &&
+    isPasswordValid;
 
   return (
     <form onSubmit={handleSubmit}>
@@ -170,7 +168,7 @@ const RegisterForm = () => {
           <Grid container justify="center">
             <Grid item>
               <Button
-                disabled={!isDataValid()}
+                disabled={!isDataValid}
                 type="submit"
                 color="primary"
                 variant="outlined"

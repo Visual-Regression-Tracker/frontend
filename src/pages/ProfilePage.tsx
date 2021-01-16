@@ -78,6 +78,14 @@ const ProfilePage = () => {
     }
   };
 
+  const isTextboxFirstNameValid = (firstName || "").length > 1;
+  const isTextboxLastNameValid = (lastName || "").length > 1;
+  const isEmailLengthCorrect = (email || "").length > 4;
+  const isEmailFormatCorrect =  (email || "").includes(".") && (email || "").includes("@");
+  const isEmailValid = isEmailFormatCorrect && isEmailLengthCorrect;
+  const isPasswordValid = password.length > 3;
+  const isUserDetailsValid = isTextboxFirstNameValid && isTextboxLastNameValid && isEmailFormatCorrect && isEmailValid;
+
   return (
     <Box m={2}>
       <Grid container spacing={1}>
@@ -99,6 +107,12 @@ const ProfilePage = () => {
                           variant="outlined"
                           required
                           fullWidth
+                          error={!isTextboxFirstNameValid}
+                          helperText={
+                            !isTextboxFirstNameValid
+                              ? "Enter at least 2 character."
+                              : ""
+                          }
                           inputProps={{
                             onChange: (event) =>
                               setFirstName(
@@ -118,6 +132,12 @@ const ProfilePage = () => {
                           variant="outlined"
                           required
                           fullWidth
+                          error={!isTextboxLastNameValid}
+                          helperText={
+                            !isTextboxLastNameValid
+                              ? "Enter at least 2 character."
+                              : ""
+                          }
                           inputProps={{
                             onChange: (event) =>
                               setLastName(
@@ -137,6 +157,14 @@ const ProfilePage = () => {
                           variant="outlined"
                           required
                           fullWidth
+                          error={!isEmailValid}
+                          helperText={
+                            !isEmailFormatCorrect
+                              ? "Enter valid email address."
+                              : !isEmailLengthCorrect
+                              ? "Email length should be at least 5."
+                              : ""
+                          }
                           inputProps={{
                             onChange: (event) =>
                               setEmail(
@@ -156,6 +184,7 @@ const ProfilePage = () => {
                           color="primary"
                           variant="outlined"
                           data-testid="submit"
+                          disabled={!isUserDetailsValid}
                         >
                           Update
                         </Button>
@@ -196,6 +225,7 @@ const ProfilePage = () => {
                     <Grid container justify="center">
                       <Grid item>
                         <Button
+                          disabled={!isPasswordValid}
                           type="submit"
                           color="primary"
                           variant="outlined"
