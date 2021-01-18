@@ -26,7 +26,12 @@ import { ArrowButtons } from "../components/ArrowButtons";
 import BuildDetails from "../components/BuildDetails";
 import { Pagination } from "@material-ui/lab";
 
-const getQueryParams = (guery: string) => {
+interface QueryParams {
+  buildId?: string;
+  testId?: string;
+}
+
+const getQueryParams = (guery: string): QueryParams => {
   const queryParams = qs.parse(guery, { ignoreQueryPrefix: true });
   return {
     buildId: queryParams.buildId as string,
@@ -65,6 +70,11 @@ const ProjectPage = () => {
   const [testStatus, setTestStatus] = React.useState("");
   const [filteredTestRuns, setFilteredTestRuns] = React.useState<TestRun[]>([]);
 
+  const queryParams: QueryParams = React.useMemo(
+    () => getQueryParams(location.search),
+    [location.search]
+  );
+
   useEffect(() => {
     if (projectId) {
       selectProject(projectDispatch, projectId);
@@ -82,18 +92,16 @@ const ProjectPage = () => {
   }, [selectedBuildId, testRunDispatch, enqueueSnackbar]);
 
   useEffect(() => {
-    const queryParams = getQueryParams(location.search);
     if (queryParams.buildId) {
       selectBuild(buildDispatch, queryParams.buildId);
     }
-  }, [buildDispatch, location.search]);
+  }, [buildDispatch, queryParams.buildId]);
 
   useEffect(() => {
-    const queryParams = getQueryParams(location.search);
     if (queryParams.testId) {
       selectTestRun(testRunDispatch, queryParams.testId);
     }
-  }, [location.search, testRunDispatch]);
+  }, [queryParams.testId, testRunDispatch]);
 
   useEffect(() => {
     setFilteredTestRuns(
