@@ -79,10 +79,6 @@ const ProfilePage = () => {
     }
   };
 
-  ValidatorForm.addValidationRule(
-    "isAtLeastTwoDigits",
-    (value) => value.length > 1
-  );
   const errorForTwoChar = "Enter at least two characters.";
 
   return (
@@ -98,7 +94,7 @@ const ProfilePage = () => {
                     <Grid container spacing={2}>
                       <Grid item xs={6}>
                         <TextValidator
-                          validators={["isAtLeastTwoDigits"]}
+                          validators={["minStringLength:2"]}
                           errorMessages={[errorForTwoChar]}
                           id="firstName"
                           name="firstName"
@@ -119,7 +115,7 @@ const ProfilePage = () => {
                       </Grid>
                       <Grid item xs={6}>
                         <TextValidator
-                          validators={["isAtLeastTwoDigits"]}
+                          validators={["minStringLength:2"]}
                           errorMessages={[errorForTwoChar]}
                           id="lastName"
                           name="lastName"
@@ -189,7 +185,7 @@ const ProfilePage = () => {
                     <Grid container spacing={2}>
                       <Grid item xs={12}>
                         <TextValidator
-                          validators={["isAtLeastTwoDigits"]}
+                          validators={["minStringLength:2"]}
                           errorMessages={[errorForTwoChar]}
                           id="password"
                           name="password"

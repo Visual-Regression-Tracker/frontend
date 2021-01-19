@@ -27,13 +27,14 @@ export const ProjectForm: React.FunctionComponent<IProps> = ({
     <React.Fragment>
       <TextValidator
         name="projectName"
-        validators={["required", "isAtLeastTwoDigits"]}
-        errorMessages={["Required field.", "Enter at least two characters."]}
+        validators={["minStringLength:2"]}
+        errorMessages={["Enter at least two characters."]}
         margin="dense"
         id="name"
         label="Project name"
         type="text"
         fullWidth
+        required
         value={project.name}
         onChange={(event) => {
           setProject({
@@ -44,13 +45,14 @@ export const ProjectForm: React.FunctionComponent<IProps> = ({
       />
       <TextValidator
         name="mainBranchName"
-        validators={["isAtLeastTwoDigits"]}
+        validators={["minStringLength:2"]}
         errorMessages={["Enter at least two characters."]}
         margin="dense"
         id="branchName"
         label="Main branch"
         type="text"
         fullWidth
+        required
         value={project.mainBranchName}
         onChange={(event) => {
           setProject({

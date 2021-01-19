@@ -26,11 +26,6 @@ export const BaseModal: React.FunctionComponent<IProps> = ({
   onCancel,
 }) => {
 
-  ValidatorForm.addValidationRule(
-    "isAtLeastTwoDigits",
-    (value) => value.length > 1
-  );
-
   return (
     <Dialog open={open} onClose={onCancel} aria-labelledby="form-dialog-title" fullWidth>
       <DialogTitle id="form-dialog-title">{title}</DialogTitle>

@@ -28,10 +28,6 @@ const LoginForm = () => {
     );
   };
 
-  ValidatorForm.addValidationRule(
-    "isAtLeastTwoDigits",
-    (value) => value.length > 1
-  );
   const errorForTwoChar = "Enter at least two characters.";
 
   return (
@@ -61,7 +57,7 @@ const LoginForm = () => {
 
             <Grid item>
               <TextValidator
-                validators={["isAtLeastTwoDigits"]}
+                validators={["minStringLength:2"]}
                 errorMessages={[errorForTwoChar]}
                 id="password"
                 name="password"
