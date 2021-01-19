@@ -23,6 +23,7 @@ import {
 import { usersService } from "../services";
 import { useSnackbar } from "notistack";
 import ProjectSelect from "../components/ProjectSelect";
+import { TextValidator, ValidatorForm } from "react-material-ui-form-validator";
 
 const ProfilePage = () => {
   const { enqueueSnackbar } = useSnackbar();
@@ -78,13 +79,11 @@ const ProfilePage = () => {
     }
   };
 
-  const isTextboxFirstNameValid = (firstName || "").length > 1;
-  const isTextboxLastNameValid = (lastName || "").length > 1;
-  const isEmailLengthCorrect = (email || "").length > 4;
-  const isEmailFormatCorrect =  (email || "").includes(".") && (email || "").includes("@");
-  const isEmailValid = isEmailFormatCorrect && isEmailLengthCorrect;
-  const isPasswordValid = password.length > 3;
-  const isUserDetailsValid = isTextboxFirstNameValid && isTextboxLastNameValid && isEmailFormatCorrect && isEmailValid;
+  ValidatorForm.addValidationRule(
+    "isAtLeastTwoDigits",
+    (value) => value.length > 1
+  );
+  const errorForTwoChar = "Enter at least two characters.";
 
   return (
     <Box m={2}>
@@ -92,13 +91,15 @@ const ProfilePage = () => {
         <Grid item xs={6}>
           <Grid container spacing={1}>
             <Grid item xs={12}>
-              <form onSubmit={handleUserUpdateSubmit}>
+              <ValidatorForm onSubmit={handleUserUpdateSubmit} instantValidate>
                 <Card variant="outlined">
                   <CardHeader title={"User details"} />
                   <CardContent>
                     <Grid container spacing={2}>
                       <Grid item xs={6}>
-                        <TextField
+                        <TextValidator
+                          validators={["isAtLeastTwoDigits"]}
+                          errorMessages={[errorForTwoChar]}
                           id="firstName"
                           name="firstName"
                           value={firstName}
@@ -107,14 +108,8 @@ const ProfilePage = () => {
                           variant="outlined"
                           required
                           fullWidth
-                          error={!isTextboxFirstNameValid}
-                          helperText={
-                            !isTextboxFirstNameValid
-                              ? "Enter at least 2 character."
-                              : ""
-                          }
                           inputProps={{
-                            onChange: (event) =>
+                            onChange: (event: any) =>
                               setFirstName(
                                 (event.target as HTMLInputElement).value
                               ),
@@ -123,7 +118,9 @@ const ProfilePage = () => {
                         />
                       </Grid>
                       <Grid item xs={6}>
-                        <TextField
+                        <TextValidator
+                          validators={["isAtLeastTwoDigits"]}
+                          errorMessages={[errorForTwoChar]}
                           id="lastName"
                           name="lastName"
                           value={lastName}
@@ -132,14 +129,8 @@ const ProfilePage = () => {
                           variant="outlined"
                           required
                           fullWidth
-                          error={!isTextboxLastNameValid}
-                          helperText={
-                            !isTextboxLastNameValid
-                              ? "Enter at least 2 character."
-                              : ""
-                          }
                           inputProps={{
-                            onChange: (event) =>
+                            onChange: (event: any) =>
                               setLastName(
                                 (event.target as HTMLInputElement).value
                               ),
@@ -148,7 +139,9 @@ const ProfilePage = () => {
                         />
                       </Grid>
                       <Grid item xs={12}>
-                        <TextField
+                        <TextValidator
+                          validators={["isEmail"]}
+                          errorMessages={["Enter valid email address"]}
                           id="email"
                           name="email"
                           value={email}
@@ -157,16 +150,8 @@ const ProfilePage = () => {
                           variant="outlined"
                           required
                           fullWidth
-                          error={!isEmailValid}
-                          helperText={
-                            !isEmailFormatCorrect
-                              ? "Enter valid email address."
-                              : !isEmailLengthCorrect
-                              ? "Email length should be at least 5."
-                              : ""
-                          }
                           inputProps={{
-                            onChange: (event) =>
+                            onChange: (event: any) =>
                               setEmail(
                                 (event.target as HTMLInputElement).value
                               ),
@@ -184,7 +169,6 @@ const ProfilePage = () => {
                           color="primary"
                           variant="outlined"
                           data-testid="submit"
-                          disabled={!isUserDetailsValid}
                         >
                           Update
                         </Button>
@@ -192,16 +176,21 @@ const ProfilePage = () => {
                     </Grid>
                   </CardActions>
                 </Card>
-              </form>
+              </ValidatorForm>
             </Grid>
             <Grid item xs={12}>
-              <form onSubmit={handlePasswordUpdateSubmit}>
+              <ValidatorForm
+                onSubmit={handlePasswordUpdateSubmit}
+                instantValidate
+              >
                 <Card variant="outlined">
                   <CardHeader title="Change password" />
                   <CardContent>
                     <Grid container spacing={2}>
                       <Grid item xs={12}>
-                        <TextField
+                        <TextValidator
+                          validators={["isAtLeastTwoDigits"]}
+                          errorMessages={[errorForTwoChar]}
                           id="password"
                           name="password"
                           value={password}
@@ -211,7 +200,7 @@ const ProfilePage = () => {
                           required
                           fullWidth
                           inputProps={{
-                            onChange: (event) =>
+                            onChange: (event:any) =>
                               setPassword(
                                 (event.target as HTMLInputElement).value
                               ),
@@ -225,7 +214,6 @@ const ProfilePage = () => {
                     <Grid container justify="center">
                       <Grid item>
                         <Button
-                          disabled={!isPasswordValid}
                           type="submit"
                           color="primary"
                           variant="outlined"
@@ -237,7 +225,7 @@ const ProfilePage = () => {
                     </Grid>
                   </CardActions>
                 </Card>
-              </form>
+              </ValidatorForm>
             </Grid>
           </Grid>
         </Grid>

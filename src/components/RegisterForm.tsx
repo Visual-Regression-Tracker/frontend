@@ -2,7 +2,6 @@ import React, { useState, FormEvent } from "react";
 import {
   Button,
   Grid,
-  TextField,
   Card,
   CardContent,
   CardActions,
@@ -10,6 +9,7 @@ import {
 import { useAuthDispatch, login } from "../contexts";
 import { usersService } from "../services";
 import { useSnackbar } from "notistack";
+import { TextValidator, ValidatorForm } from "react-material-ui-form-validator";
 
 const RegisterForm = () => {
   const { enqueueSnackbar } = useSnackbar();
@@ -17,10 +17,6 @@ const RegisterForm = () => {
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [password, setPassword] = useState("");
-  const [emailTouched, setEmailTouched] = useState(false);
-  const [passwordTouched, setPasswordTouched] = useState(false);
-  const [firstNameTouched, setFirstNameTouched] = useState(false);
-  const [lastNameTouched, setLastNameTouched] = useState(false);
   const dispatch = useAuthDispatch();
 
   const handleSubmit = (event: FormEvent) => {
@@ -40,27 +36,21 @@ const RegisterForm = () => {
       );
   };
 
-  const isTextboxFirstNameValid = firstName.length > 1;
-  const isTextboxLastNameValid = lastName.length > 1;
-  const isEmailLengthCorrect = email.length > 4;
-  const isEmailFormatCorrect = email.includes(".") && email.includes("@");
-  const isEmailValid = isEmailFormatCorrect && isEmailLengthCorrect;
-  const isPasswordValid = password.length > 3;
-
-  const isDataValid =
-    isTextboxFirstNameValid &&
-    isTextboxLastNameValid &&
-    isEmailFormatCorrect &&
-    isEmailValid &&
-    isPasswordValid;
+  ValidatorForm.addValidationRule(
+    "isAtLeastTwoDigits",
+    (value) => value.length > 1
+  );
+  const errorForTwoChar = "Enter at least two characters.";
 
   return (
-    <form onSubmit={handleSubmit}>
+    <ValidatorForm onSubmit={handleSubmit} instantValidate>
       <Card variant="outlined">
         <CardContent>
           <Grid container direction="column" spacing={2}>
             <Grid item>
-              <TextField
+              <TextValidator
+                validators={["isAtLeastTwoDigits"]}
+                errorMessages={[errorForTwoChar]}
                 id="firstName"
                 name="firstName"
                 value={firstName}
@@ -69,23 +59,17 @@ const RegisterForm = () => {
                 variant="outlined"
                 required
                 fullWidth
-                error={!isTextboxFirstNameValid && firstNameTouched}
-                helperText={
-                  !isTextboxFirstNameValid && firstNameTouched
-                    ? "Enter at least 2 character."
-                    : ""
-                }
                 inputProps={{
-                  onChange: (event) => {
-                    setFirstName((event.target as HTMLInputElement).value);
-                    setFirstNameTouched(true);
-                  },
+                  onChange: (event: any) =>
+                    setFirstName((event.target as HTMLInputElement).value),
                   "data-testid": "firstName",
                 }}
               />
             </Grid>
             <Grid item>
-              <TextField
+              <TextValidator
+                validators={["required", "isAtLeastTwoDigits"]}
+                errorMessages={["Required field.", errorForTwoChar]}
                 id="lastName"
                 name="lastName"
                 value={lastName}
@@ -94,23 +78,17 @@ const RegisterForm = () => {
                 variant="outlined"
                 required
                 fullWidth
-                error={!isTextboxLastNameValid && lastNameTouched}
-                helperText={
-                  !isTextboxLastNameValid && lastNameTouched
-                    ? "Enter at least 2 character."
-                    : ""
-                }
                 inputProps={{
-                  onChange: (event) => {
-                    setLastName((event.target as HTMLInputElement).value);
-                    setLastNameTouched(true);
-                  },
+                  onChange: (event: any) =>
+                    setLastName((event.target as HTMLInputElement).value),
                   "data-testid": "lastName",
                 }}
               />
             </Grid>
             <Grid item>
-              <TextField
+              <TextValidator
+                validators={["isEmail"]}
+                errorMessages={["Enter a valid email."]}
                 id="email"
                 name="email"
                 value={email}
@@ -119,26 +97,17 @@ const RegisterForm = () => {
                 variant="outlined"
                 required
                 fullWidth
-                error={!isEmailValid && emailTouched}
-                helperText={
-                  !isEmailFormatCorrect && emailTouched
-                    ? "Enter valid email address."
-                    : !isEmailLengthCorrect && emailTouched
-                    ? "Email length should be at least 5."
-                    : ""
-                }
                 inputProps={{
-                  onChange: (event) => {
-                    setEmail((event.target as HTMLInputElement).value);
-                    setEmailTouched(true);
-                  },
+                  onChange: (event: any) =>
+                    setEmail((event.target as HTMLInputElement).value),
                   "data-testid": "email",
                 }}
               />
             </Grid>
-
             <Grid item>
-              <TextField
+              <TextValidator
+                validators={["required", "isAtLeastTwoDigits"]}
+                errorMessages={["Required field.", errorForTwoChar]}
                 id="password"
                 name="password"
                 value={password}
@@ -147,17 +116,9 @@ const RegisterForm = () => {
                 variant="outlined"
                 required
                 fullWidth
-                error={!isPasswordValid && passwordTouched}
-                helperText={
-                  !isPasswordValid && passwordTouched
-                    ? "Password of length at least 4."
-                    : ""
-                }
                 inputProps={{
-                  onChange: (event) => {
-                    setPassword((event.target as HTMLInputElement).value);
-                    setPasswordTouched(true);
-                  },
+                  onChange: (event: any) =>
+                    setPassword((event.target as HTMLInputElement).value),
                   "data-testid": "password",
                 }}
               />
@@ -168,7 +129,6 @@ const RegisterForm = () => {
           <Grid container justify="center">
             <Grid item>
               <Button
-                disabled={!isDataValid}
                 type="submit"
                 color="primary"
                 variant="outlined"
@@ -180,7 +140,7 @@ const RegisterForm = () => {
           </Grid>
         </CardActions>
       </Card>
-    </form>
+    </ValidatorForm>
   );
 };
 

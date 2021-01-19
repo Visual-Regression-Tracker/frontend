@@ -143,12 +143,12 @@ const TestRunList: React.FunctionComponent<{
               <MenuItem onClick={toggleDeleteDialogOpen}>Delete</MenuItem>
             </Menu>
           )}
+
           {selectedTestRun && (
             <BaseModal
               open={deleteDialogOpen}
               title={"Delete TestRun"}
               submitButtonText={"Delete"}
-              isDisabled={false}
               onCancel={toggleDeleteDialogOpen}
               content={
                 <Typography>{`Are you sure you want to delete: ${selectedTestRun.name}?`}</Typography>

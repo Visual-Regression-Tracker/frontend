@@ -1,6 +1,5 @@
 import React from "react";
-import { TextField } from "@material-ui/core";
-import { useState } from "react";
+import { TextValidator } from "react-material-ui-form-validator";
 
 interface IProps {
   projectState: [
@@ -23,55 +22,41 @@ export const ProjectForm: React.FunctionComponent<IProps> = ({
   projectState,
 }) => {
   const [project, setProject] = projectState;
-  const [nameTouched, setNameTouched] = useState(false);
-  const [mainBranchNameTouched, setMainBranchNameTouched] = useState(false);
-
-  const isTextboxNameValid = project.name.length > 1;
-  const isTextboxMainBranchNameValid = project.mainBranchName.length > 1;
 
   return (
     <React.Fragment>
-      <TextField
-        autoFocus
+      <TextValidator
+        name="projectName"
+        validators={["required", "isAtLeastTwoDigits"]}
+        errorMessages={["Required field.", "Enter at least two characters."]}
         margin="dense"
         id="name"
         label="Project name"
         type="text"
         fullWidth
         value={project.name}
-        error={!isTextboxNameValid && nameTouched}
-        helperText={
-          !isTextboxNameValid && nameTouched
-            ? "Enter at least 2 character."
-            : ""
-        }
         onChange={(event) => {
           setProject({
             ...project,
-            name: event.target.value,
+            name: (event.target as HTMLInputElement).value,
           });
-          setNameTouched(true);
         }}
       />
-      <TextField
+      <TextValidator
+        name="mainBranchName"
+        validators={["isAtLeastTwoDigits"]}
+        errorMessages={["Enter at least two characters."]}
         margin="dense"
         id="branchName"
         label="Main branch"
         type="text"
         fullWidth
         value={project.mainBranchName}
-        error={!isTextboxMainBranchNameValid && mainBranchNameTouched}
-        helperText={
-          !isTextboxMainBranchNameValid && mainBranchNameTouched
-            ? "Enter at least 2 character."
-            : ""
-        }
         onChange={(event) => {
           setProject({
             ...project,
-            mainBranchName: event.target.value,
+            mainBranchName: (event.target as HTMLInputElement).value,
           });
-          setMainBranchNameTouched(true);
         }}
       />
     </React.Fragment>
