@@ -32,13 +32,18 @@ interface IUpdateAction {
   payload: Build;
 }
 
+interface IEmptyAction {
+  type: "empty";
+}
+
 type IAction =
   | IRequestAction
   | IGetAction
   | IDeleteAction
   | IAddAction
   | IUpdateAction
-  | ISelectAction;
+  | ISelectAction
+  | IEmptyAction;
 
 type Dispatch = (action: IAction) => void;
 type State = {
@@ -81,6 +86,11 @@ function buildReducer(state: State, action: IAction): State {
         ...state,
         buildList: [],
         loading: true,
+      };
+    case "empty":
+      return {
+        ...state,
+        selectedBuild: null
       };
     case "get":
       const { data, take, skip, total } = action.payload;
@@ -179,6 +189,10 @@ async function selectBuild(dispatch: Dispatch, id: string) {
   });
 }
 
+async function clearBuild(dispatch: Dispatch) {
+  dispatch({ type: "empty" });
+}
+
 async function addBuild(dispatch: Dispatch, build: Build) {
   dispatch({ type: "add", payload: build });
 }
@@ -194,6 +208,7 @@ export {
   getBuildList,
   deleteBuild,
   selectBuild,
+  clearBuild,
   addBuild,
   updateBuild,
   stopBuild,
