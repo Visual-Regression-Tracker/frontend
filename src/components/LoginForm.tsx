@@ -3,7 +3,6 @@ import { Link } from "react-router-dom";
 import {
   Button,
   Grid,
-  TextField,
   Card,
   CardContent,
   CardActions,
@@ -12,6 +11,7 @@ import {
 import { useAuthDispatch, login } from "../contexts";
 import { routes } from "../constants";
 import { useSnackbar } from "notistack";
+import { TextValidator, ValidatorForm } from "react-material-ui-form-validator";
 
 const LoginForm = () => {
   const { enqueueSnackbar } = useSnackbar();
@@ -28,13 +28,17 @@ const LoginForm = () => {
     );
   };
 
+  const errorForTwoChar = "Enter at least two characters.";
+
   return (
-    <form onSubmit={handleSubmit}>
+    <ValidatorForm onSubmit={handleSubmit} instantValidate>
       <Card variant="outlined">
         <CardContent>
           <Grid container direction="column" spacing={2}>
             <Grid item>
-              <TextField
+              <TextValidator
+                validators={["isEmail"]}
+                errorMessages={["Enter a valid email."]}
                 id="email"
                 name="email"
                 value={email}
@@ -44,7 +48,7 @@ const LoginForm = () => {
                 required
                 fullWidth
                 inputProps={{
-                  onChange: (event) =>
+                  onChange: (event: any) =>
                     setEmail((event.target as HTMLInputElement).value),
                   "data-testid": "email",
                 }}
@@ -52,7 +56,9 @@ const LoginForm = () => {
             </Grid>
 
             <Grid item>
-              <TextField
+              <TextValidator
+                validators={["minStringLength:2"]}
+                errorMessages={[errorForTwoChar]}
                 id="password"
                 name="password"
                 value={password}
@@ -62,7 +68,7 @@ const LoginForm = () => {
                 required
                 fullWidth
                 inputProps={{
-                  onChange: (event) =>
+                  onChange: (event:any) =>
                     setPassword((event.target as HTMLInputElement).value),
                   "data-testid": "password",
                 }}
@@ -90,7 +96,7 @@ const LoginForm = () => {
           </Grid>
         </CardActions>
       </Card>
-    </form>
+    </ValidatorForm>
   );
 };
 

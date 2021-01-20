@@ -1,5 +1,5 @@
 import React from "react";
-import { TextField } from "@material-ui/core";
+import { TextValidator } from "react-material-ui-form-validator";
 
 interface IProps {
   projectState: [
@@ -25,34 +25,41 @@ export const ProjectForm: React.FunctionComponent<IProps> = ({
 
   return (
     <React.Fragment>
-      <TextField
-        autoFocus
+      <TextValidator
+        name="projectName"
+        validators={["minStringLength:2"]}
+        errorMessages={["Enter at least two characters."]}
         margin="dense"
         id="name"
         label="Project name"
         type="text"
         fullWidth
+        required
         value={project.name}
-        onChange={(event) =>
+        onChange={(event) => {
           setProject({
             ...project,
-            name: event.target.value,
-          })
-        }
+            name: (event.target as HTMLInputElement).value,
+          });
+        }}
       />
-      <TextField
+      <TextValidator
+        name="mainBranchName"
+        validators={["minStringLength:2"]}
+        errorMessages={["Enter at least two characters."]}
         margin="dense"
         id="branchName"
         label="Main branch"
         type="text"
         fullWidth
+        required
         value={project.mainBranchName}
-        onChange={(event) =>
+        onChange={(event) => {
           setProject({
             ...project,
-            mainBranchName: event.target.value,
-          })
-        }
+            mainBranchName: (event.target as HTMLInputElement).value,
+          });
+        }}
       />
     </React.Fragment>
   );

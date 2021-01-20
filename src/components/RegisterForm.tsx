@@ -2,7 +2,6 @@ import React, { useState, FormEvent } from "react";
 import {
   Button,
   Grid,
-  TextField,
   Card,
   CardContent,
   CardActions,
@@ -10,6 +9,7 @@ import {
 import { useAuthDispatch, login } from "../contexts";
 import { usersService } from "../services";
 import { useSnackbar } from "notistack";
+import { TextValidator, ValidatorForm } from "react-material-ui-form-validator";
 
 const RegisterForm = () => {
   const { enqueueSnackbar } = useSnackbar();
@@ -23,7 +23,12 @@ const RegisterForm = () => {
     event.preventDefault();
     usersService
       .register(firstName, lastName, email, password)
-      .then(() => login(dispatch, email, password))
+      .then(() => {
+        enqueueSnackbar("Successfully created account.", {
+          variant: "success",
+        });
+        login(dispatch, email, password);
+      })
       .catch((err) =>
         enqueueSnackbar(err, {
           variant: "error",
@@ -31,13 +36,17 @@ const RegisterForm = () => {
       );
   };
 
+  const errorForTwoChar = "Enter at least two characters.";
+
   return (
-    <form onSubmit={handleSubmit}>
+    <ValidatorForm onSubmit={handleSubmit} instantValidate>
       <Card variant="outlined">
         <CardContent>
           <Grid container direction="column" spacing={2}>
             <Grid item>
-              <TextField
+              <TextValidator
+                validators={["minStringLength:2"]}
+                errorMessages={[errorForTwoChar]}
                 id="firstName"
                 name="firstName"
                 value={firstName}
@@ -47,14 +56,16 @@ const RegisterForm = () => {
                 required
                 fullWidth
                 inputProps={{
-                  onChange: (event) =>
+                  onChange: (event: any) =>
                     setFirstName((event.target as HTMLInputElement).value),
                   "data-testid": "firstName",
                 }}
               />
             </Grid>
             <Grid item>
-              <TextField
+              <TextValidator
+                validators={["minStringLength:2"]}
+                errorMessages={[errorForTwoChar]}
                 id="lastName"
                 name="lastName"
                 value={lastName}
@@ -64,14 +75,16 @@ const RegisterForm = () => {
                 required
                 fullWidth
                 inputProps={{
-                  onChange: (event) =>
+                  onChange: (event: any) =>
                     setLastName((event.target as HTMLInputElement).value),
                   "data-testid": "lastName",
                 }}
               />
             </Grid>
             <Grid item>
-              <TextField
+              <TextValidator
+                validators={["isEmail"]}
+                errorMessages={["Enter a valid email."]}
                 id="email"
                 name="email"
                 value={email}
@@ -81,15 +94,16 @@ const RegisterForm = () => {
                 required
                 fullWidth
                 inputProps={{
-                  onChange: (event) =>
+                  onChange: (event: any) =>
                     setEmail((event.target as HTMLInputElement).value),
                   "data-testid": "email",
                 }}
               />
             </Grid>
-
             <Grid item>
-              <TextField
+              <TextValidator
+                validators={["minStringLength:2"]}
+                errorMessages={[errorForTwoChar]}
                 id="password"
                 name="password"
                 value={password}
@@ -99,7 +113,7 @@ const RegisterForm = () => {
                 required
                 fullWidth
                 inputProps={{
-                  onChange: (event) =>
+                  onChange: (event: any) =>
                     setPassword((event.target as HTMLInputElement).value),
                   "data-testid": "password",
                 }}
@@ -122,7 +136,7 @@ const RegisterForm = () => {
           </Grid>
         </CardActions>
       </Card>
-    </form>
+    </ValidatorForm>
   );
 };
 
