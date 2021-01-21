@@ -23,7 +23,6 @@ import {
   useBuildDispatch,
   deleteBuild,
   selectBuild,
-  clearBuild,
   stopBuild,
 } from "../contexts";
 import { BuildStatusChip } from "./BuildStatusChip";
@@ -189,16 +188,19 @@ const BuildList: FunctionComponent = () => {
           }
           onSubmit={() => {
             let indexOfBuildDeleted = buildList.findIndex((e) => e.id === menuBuild.id);
+            let indexOfSelectedBuild = buildList.findIndex((e) => e.id === selectedBuild?.id);
             deleteBuild(buildDispatch, menuBuild.id)
               .then((b) => {
-                if (buildList.length > 1) {
-                  if (indexOfBuildDeleted === 0) {
-                    selectBuild(buildDispatch, buildList[1].id);
+                if (indexOfBuildDeleted === indexOfSelectedBuild) {
+                  if (buildList.length > 1) {
+                    if (indexOfBuildDeleted === 0) {
+                      selectBuild(buildDispatch, buildList[1].id);
+                    } else {
+                      selectBuild(buildDispatch, buildList[indexOfBuildDeleted - 1].id);
+                    }
                   } else {
-                    selectBuild(buildDispatch, buildList[indexOfBuildDeleted - 1].id);
+                    selectBuild(buildDispatch, null);
                   }
-                } else {
-                  clearBuild(buildDispatch);
                 }
                 toggleDeleteDialogOpen();
                 enqueueSnackbar(

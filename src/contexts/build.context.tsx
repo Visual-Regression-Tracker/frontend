@@ -14,7 +14,7 @@ interface IGetAction {
 
 interface ISelectAction {
   type: "select";
-  payload: Build;
+  payload: Build | null;
 }
 
 interface IDeleteAction {
@@ -32,18 +32,13 @@ interface IUpdateAction {
   payload: Build;
 }
 
-interface IEmptyAction {
-  type: "empty";
-}
-
 type IAction =
   | IRequestAction
   | IGetAction
   | IDeleteAction
   | IAddAction
   | IUpdateAction
-  | ISelectAction
-  | IEmptyAction;
+  | ISelectAction;
 
 type Dispatch = (action: IAction) => void;
 type State = {
@@ -76,21 +71,23 @@ const initialState: State = {
 function buildReducer(state: State, action: IAction): State {
   switch (action.type) {
     case "select":
-      return {
-        ...state,
-        selectedBuildId: action.payload.id,
-        selectedBuild: action.payload,
-      };
+      if (action.payload === null) {
+        return {
+          ...state,
+          selectedBuild: null
+        };
+      } else {
+        return {
+          ...state,
+          selectedBuildId: action.payload.id,
+          selectedBuild: action.payload,
+        };
+      }
     case "request":
       return {
         ...state,
         buildList: [],
         loading: true,
-      };
-    case "empty":
-      return {
-        ...state,
-        selectedBuild: null
       };
     case "get":
       const { data, take, skip, total } = action.payload;
@@ -183,14 +180,14 @@ async function stopBuild(dispatch: Dispatch, id: string) {
   });
 }
 
-async function selectBuild(dispatch: Dispatch, id: string) {
-  return buildsService.getDetails(id).then((build) => {
-    dispatch({ type: "select", payload: build });
-  });
-}
-
-async function clearBuild(dispatch: Dispatch) {
-  dispatch({ type: "empty" });
+async function selectBuild(dispatch: Dispatch, id: string | null) {
+  if (id === null) {
+    dispatch({ type: "select", payload: null });
+  } else {
+    return buildsService.getDetails(id).then((build) => {
+      dispatch({ type: "select", payload: build });
+    });
+  }
 }
 
 async function addBuild(dispatch: Dispatch, build: Build) {
@@ -208,7 +205,6 @@ export {
   getBuildList,
   deleteBuild,
   selectBuild,
-  clearBuild,
   addBuild,
   updateBuild,
   stopBuild,
