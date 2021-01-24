@@ -58,12 +58,7 @@ const ProjectPage = () => {
   const buildDispatch = useBuildDispatch();
   const { selectedProjectId } = useProjectState();
   const projectDispatch = useProjectDispatch();
-  const {
-    testRuns,
-    selectedTestRunIndex,
-    total: testRunTotal,
-    take: testRunTake,
-  } = useTestRunState();
+  const { testRuns, selectedTestRunIndex } = useTestRunState();
   const testRunDispatch = useTestRunDispatch();
 
   // filter
@@ -85,6 +80,16 @@ const ProjectPage = () => {
       selectProject(projectDispatch, projectId);
     }
   }, [projectId, projectDispatch]);
+
+  useEffect(() => {
+    if (selectedBuildId) {
+      getTestRunList(testRunDispatch, selectedBuildId).catch((err) =>
+        enqueueSnackbar(err, {
+          variant: "error",
+        })
+      );
+    }
+  }, [selectedBuildId, testRunDispatch, enqueueSnackbar]);
 
   useEffect(() => {
     if (queryParams.buildId) {
@@ -112,18 +117,6 @@ const ProjectPage = () => {
     );
   }, [query, os, device, browser, viewport, testStatus, testRuns]);
 
-  const getTestRunListCalback: any = React.useCallback(
-    (page: number) =>
-      selectedBuildId &&
-      getTestRunList(testRunDispatch, selectedBuildId, page).catch(
-        (err: string) =>
-          enqueueSnackbar(err, {
-            variant: "error",
-          })
-      ),
-    [testRunDispatch, enqueueSnackbar, selectedBuildId]
-  );
-
   const getBuildListCalback: any = React.useCallback(
     (page: number) =>
       selectedProjectId &&
@@ -135,10 +128,6 @@ const ProjectPage = () => {
       ),
     [buildDispatch, enqueueSnackbar, selectedProjectId]
   );
-
-  React.useEffect(() => {
-    getTestRunListCalback(1);
-  }, [getTestRunListCalback]);
 
   React.useEffect(() => {
     getBuildListCalback(1);
@@ -173,19 +162,9 @@ const ProjectPage = () => {
           viewportState={[viewport, setViewport]}
           testStatusState={[testStatus, setTestStatus]}
         />
-        <Box height="70%" my={0.5}>
+        <Box height="75%">
           <TestRunList items={filteredTestRuns} />
         </Box>
-        <Grid container justify="center">
-          <Grid item>
-            <Pagination
-              size="small"
-              defaultPage={1}
-              count={Math.ceil(testRunTotal / testRunTake)}
-              onChange={(event, page) => getTestRunListCalback(page)}
-            />
-          </Grid>
-        </Grid>
 
         {selectedTestRunIndex !== undefined && testRuns[selectedTestRunIndex] && (
           <Dialog open={true} fullScreen className={classes.modal}>

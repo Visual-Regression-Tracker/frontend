@@ -1,5 +1,5 @@
 import React from "react";
-import { PaginatedData, TestRun } from "../types";
+import { TestRun } from "../types";
 import { testRunService } from "../services";
 
 interface IRequestAction {
@@ -9,7 +9,7 @@ interface IRequestAction {
 
 interface IGetAction {
   type: "get";
-  payload: PaginatedData<TestRun>;
+  payload: TestRun[];
 }
 
 interface ISelectAction {
@@ -63,9 +63,6 @@ type State = {
   selectedTestRunId: string | undefined;
   selectedTestRunIndex: number | undefined;
   testRuns: TestRun[];
-  total: number;
-  take: number;
-  skip: number;
   loading: boolean;
 };
 
@@ -80,9 +77,6 @@ const initialState: State = {
   selectedTestRunId: undefined,
   selectedTestRunIndex: undefined,
   testRuns: [],
-  take: 10,
-  skip: 0,
-  total: 0,
   loading: false,
 };
 
@@ -107,13 +101,9 @@ function testRunReducer(state: State, action: IAction): State {
         loading: true,
       };
     case "get":
-      const { data, take, skip, total } = action.payload;
       return {
         ...state,
-        testRuns: data,
-        take,
-        skip,
-        total,
+        testRuns: action.payload,
         loading: false,
       };
     case "delete":
@@ -173,18 +163,12 @@ function useTestRunDispatch() {
   return context;
 }
 
-async function getTestRunList(
-  dispatch: Dispatch,
-  buildId: string,
-  page: number
-): Promise<void> {
+async function getTestRunList(dispatch: Dispatch, buildId: string) {
   dispatch({ type: "request" });
 
-  return testRunService
-    .getList(buildId, initialState.take, initialState.take * (page - 1))
-    .then((response) => {
-      dispatch({ type: "get", payload: response });
-    });
+  return testRunService.getList(buildId).then((items) => {
+    dispatch({ type: "get", payload: items });
+  });
 }
 
 async function deleteTestRun(dispatch: Dispatch, id: string) {
