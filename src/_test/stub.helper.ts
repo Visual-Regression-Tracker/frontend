@@ -21,7 +21,9 @@ const buildsServiceStub = {
 
 const testRunServiceStub = {
   getList: (testRuns: TestRun[]) =>
-    cy.stub(testRunService, "getList").resolves(testRuns),
+    cy
+      .stub(testRunService, "getList")
+      .resolves({ data: testRuns, total: 100, skip: 0, take: 10 }),
 };
 
 export { projectStub, buildsServiceStub, testRunServiceStub };
