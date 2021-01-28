@@ -16,6 +16,6 @@ jobs:
       - name: Cypress run
         uses: cypress-io/github-action@v2
         env: 
-          CYPRESS_VRT_APIKEY: ${{ secrets.VRT_API_KEY }}
-          CYPRESS_VRT_BRANCHNAME: ${{ github.head_ref }}
-          CYPRESS_VRT_CIBUILDID: "Github run_id:  ${{ github.run_id }}"
+          VRT_APIKEY: ${{ secrets.VRT_API_KEY }}
+          VRT_BRANCHNAME: ${{ github.head_ref }}
+          VRT_CIBUILDID: "Github run_id:  ${{ github.run_id }}"

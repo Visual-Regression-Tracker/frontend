@@ -6,7 +6,5 @@
   "retries": 0,
   "experimentalComponentTesting": true,
   "componentFolder": "src",
-  "testFiles": "**/*.spec.*",
-  "env": {
-  }
+  "testFiles": "**/*.spec.*"
 }
