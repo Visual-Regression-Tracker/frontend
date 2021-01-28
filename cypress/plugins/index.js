@@ -4,16 +4,6 @@ const {
 
 module.exports = async (on, config) => {
   require("cypress-react-unit-test/plugins/react-scripts")(on, config);
-
-  if (config.env.VRT_API_KEY) {
-    config.env.visualRegressionTracker.apiKey = config.env.VRT_API_KEY;
-  }
-  if (config.env.VRT_BRANCH_NAME) {
-    config.env.visualRegressionTracker.branchName = config.env.VRT_BRANCH_NAME;
-  }
-  if (config.env.VRT_CI_BUILD_ID) {
-    config.env.visualRegressionTracker.ciBuildId = `Github run_id: ${config.env.VRT_CI_BUILD_ID}`;
-  }
   addVisualRegressionTrackerPlugin(on, config);
   return config;
 };
