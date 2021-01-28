@@ -187,8 +187,21 @@ const BuildList: FunctionComponent = () => {
             }?`}</Typography>
           }
           onSubmit={() => {
+            let indexOfBuildDeleted = buildList.findIndex((e) => e.id === menuBuild.id);
+            let indexOfSelectedBuild = buildList.findIndex((e) => e.id === selectedBuild?.id);
             deleteBuild(buildDispatch, menuBuild.id)
               .then((b) => {
+                if (indexOfBuildDeleted === indexOfSelectedBuild) {
+                  if (buildList.length > 1) {
+                    if (indexOfBuildDeleted === 0) {
+                      selectBuild(buildDispatch, buildList[1].id);
+                    } else {
+                      selectBuild(buildDispatch, buildList[indexOfBuildDeleted - 1].id);
+                    }
+                  } else {
+                    selectBuild(buildDispatch, null);
+                  }
+                }
                 toggleDeleteDialogOpen();
                 enqueueSnackbar(
                   `Build #${menuBuild.number || menuBuild.id} deleted`,

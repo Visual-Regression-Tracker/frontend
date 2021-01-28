@@ -14,7 +14,7 @@ interface IGetAction {
 
 interface ISelectAction {
   type: "select";
-  payload: Build;
+  payload: Build | null;
 }
 
 interface IDeleteAction {
@@ -71,11 +71,18 @@ const initialState: State = {
 function buildReducer(state: State, action: IAction): State {
   switch (action.type) {
     case "select":
-      return {
-        ...state,
-        selectedBuildId: action.payload.id,
-        selectedBuild: action.payload,
-      };
+      if (action.payload === null) {
+        return {
+          ...state,
+          selectedBuild: null
+        };
+      } else {
+        return {
+          ...state,
+          selectedBuildId: action.payload.id,
+          selectedBuild: action.payload,
+        };
+      }
     case "request":
       return {
         ...state,
@@ -173,10 +180,14 @@ async function stopBuild(dispatch: Dispatch, id: string) {
   });
 }
 
-async function selectBuild(dispatch: Dispatch, id: string) {
-  return buildsService.getDetails(id).then((build) => {
-    dispatch({ type: "select", payload: build });
-  });
+async function selectBuild(dispatch: Dispatch, id: string | null) {
+  if (id === null) {
+    dispatch({ type: "select", payload: null });
+  } else {
+    return buildsService.getDetails(id).then((build) => {
+      dispatch({ type: "select", payload: build });
+    });
+  }
 }
 
 async function addBuild(dispatch: Dispatch, build: Build) {
