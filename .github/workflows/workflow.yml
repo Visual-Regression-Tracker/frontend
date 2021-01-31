@@ -19,7 +19,7 @@ jobs:
       run: |
         echo "##[set-output name=branch;]$(echo ${GITHUB_REF#refs/heads/})"
         echo "::set-output name=sha_short::$(git rev-parse --short HEAD)"
-        -
+
       - name: Cypress run
         uses: cypress-io/github-action@v2
         env:
