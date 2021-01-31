@@ -13,12 +13,13 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
-    - name: Declare some env variables
-      id: env_vars
+  - name: Declare some variables
+      id: vars
       shell: bash
       run: |
-        echo "##[set-output name=branch_name;]$(echo ${GITHUB_REF#refs/heads/})"
-
+        echo "##[set-output name=branch;]$(echo ${GITHUB_REF#refs/heads/})"
+        echo "::set-output name=sha_short::$(git rev-parse --short HEAD)"
+        -
       - name: Cypress run
         uses: cypress-io/github-action@v2
         env:
@@ -26,5 +27,5 @@ jobs:
           VRT_PROJECT: "VRT"
           VRT_ENABLESOFTASSERT: false
           VRT_APIKEY: ${{ secrets.VRT_API_KEY }}
-          VRT_BRANCHNAME: ${{ steps.env_vars.outputs.branch_name }}
+          VRT_BRANCHNAME: ${{ steps.vars.outputs.branch }}
           VRT_CIBUILDID: "Github run_id:  ${{ github.run_id }}"
