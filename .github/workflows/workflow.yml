@@ -14,8 +14,16 @@ jobs:
       - uses: actions/checkout@v2
 
       # print branch name
+      - name: Get branch name1
+        run: echo ${{ git rev-parse --abbrev-ref HEAD }}
+
+      # print branch name
+      - name: Get branch name2
+        run: echo ${{ github.head_ref }}
+
+      # print branch name
       - name: Get branch name
-        run: git rev-parse --abbrev-ref HEAD
+        run: echo ${{ github.ref }}
 
       - name: Cypress run
         uses: cypress-io/github-action@v2
