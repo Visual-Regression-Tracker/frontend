@@ -15,7 +15,7 @@ jobs:
 
       # print branch name
       - name: Get branch name
-        run: echo 'The branch name is' ${{ github.head_ref }}
+        run: git rev-parse --abbrev-ref HEAD
 
       - name: Cypress run
         uses: cypress-io/github-action@v2
