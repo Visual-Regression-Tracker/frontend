@@ -66,15 +66,6 @@ const ProjectPage = () => {
   } = useTestRunState();
   const testRunDispatch = useTestRunDispatch();
 
-  // filter
-  const [query, setQuery] = React.useState("");
-  const [os, setOs] = React.useState("");
-  const [device, setDevice] = React.useState("");
-  const [browser, setBrowser] = React.useState("");
-  const [viewport, setViewport] = React.useState("");
-  const [testStatus, setTestStatus] = React.useState("");
-  const [filteredTestRuns, setFilteredTestRuns] = React.useState<TestRun[]>([]);
-
   const queryParams: QueryParams = React.useMemo(
     () => getQueryParams(location.search),
     [location.search]
@@ -97,20 +88,6 @@ const ProjectPage = () => {
       selectTestRun(testRunDispatch, queryParams.testId);
     }
   }, [queryParams.testId, testRunDispatch]);
-
-  useEffect(() => {
-    setFilteredTestRuns(
-      testRuns.filter(
-        (t) =>
-          t.name.toLowerCase().includes(query.toLowerCase()) && // by query
-          (os ? t.os === os : true) && // by OS
-          (device ? t.device === device : true) && // by device
-          (viewport ? t.viewport === viewport : true) && // by viewport
-          (testStatus ? t.status === testStatus : true) && // by status
-          (browser ? t.browser === browser : true) // by browser
-      )
-    );
-  }, [query, os, device, browser, viewport, testStatus, testRuns]);
 
   const getTestRunListCalback: any = React.useCallback(
     (page: number) =>
@@ -145,59 +122,51 @@ const ProjectPage = () => {
   }, [getBuildListCalback]);
 
   return (
-    <Grid container className={classes.root}>
-      <Grid item xs={3} className={classes.root}>
-        <ProjectSelect onProjectSelect={(id) => history.push(id)} />
-        <Box height="85%" my={0.5}>
-          <BuildList />
-        </Box>
-        <Grid container justify="center">
-          <Grid item>
-            <Pagination
-              size="small"
-              defaultPage={1}
-              count={Math.ceil(total / take)}
-              onChange={(event, page) => getBuildListCalback(page)}
-            />
+    <React.Fragment>
+      <Grid container className={classes.root}>
+        <Grid item xs={3} className={classes.root}>
+          <ProjectSelect onProjectSelect={(id) => history.push(id)} />
+          <Box height="85%" my={0.5}>
+            <BuildList />
+          </Box>
+          <Grid container justify="center">
+            <Grid item>
+              <Pagination
+                size="small"
+                defaultPage={1}
+                count={Math.ceil(total / take)}
+                onChange={(event, page) => getBuildListCalback(page)}
+              />
+            </Grid>
+          </Grid>
+        </Grid>
+        <Grid item xs={9} className={classes.root}>
+          {selectedBuild && <BuildDetails build={selectedBuild} />}
+          <Box height="80%" my={0.5}>
+            <TestRunList items={testRuns} />
+          </Box>
+          <Grid container justify="center">
+            <Grid item>
+              <Pagination
+                size="small"
+                defaultPage={1}
+                count={Math.ceil(testRunTotal / testRunTake)}
+                onChange={(event, page) => getTestRunListCalback(page)}
+              />
+            </Grid>
           </Grid>
         </Grid>
       </Grid>
-      <Grid item xs={9} className={classes.root}>
-        {selectedBuild && <BuildDetails build={selectedBuild} />}
-        <Filters
-          items={testRuns}
-          queryState={[query, setQuery]}
-          osState={[os, setOs]}
-          deviceState={[device, setDevice]}
-          browserState={[browser, setBrowser]}
-          viewportState={[viewport, setViewport]}
-          testStatusState={[testStatus, setTestStatus]}
-        />
-        <Box height="70%" my={0.5}>
-          <TestRunList items={filteredTestRuns} />
-        </Box>
-        <Grid container justify="center">
-          <Grid item>
-            <Pagination
-              size="small"
-              defaultPage={1}
-              count={Math.ceil(testRunTotal / testRunTake)}
-              onChange={(event, page) => getTestRunListCalback(page)}
-            />
-          </Grid>
-        </Grid>
-
-        {selectedTestRunIndex !== undefined && testRuns[selectedTestRunIndex] && (
-          <Dialog open={true} fullScreen className={classes.modal}>
-            <TestDetailsModal testRun={testRuns[selectedTestRunIndex]} />
-            <ArrowButtons
-              testRuns={testRuns}
-              selectedTestRunIndex={selectedTestRunIndex}
-            />
-          </Dialog>
-        )}
-      </Grid>
-    </Grid>
+      {selectedTestRunIndex !== undefined && testRuns[selectedTestRunIndex] && (
+        <Dialog open={true} fullScreen className={classes.modal}>
+          <TestDetailsModal testRun={testRuns[selectedTestRunIndex]} />
+          <ArrowButtons
+            testRuns={testRuns}
+            selectedTestRunIndex={selectedTestRunIndex}
+          />
+        </Dialog>
+      )}
+    </React.Fragment>
   );
 };
 
