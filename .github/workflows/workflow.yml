@@ -13,11 +13,18 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
-      - name: Extract branch name
-        shell: bash
-        run: echo "##[set-output name=branch;]$(echo ${GITHUB_REF#refs/heads/})"
-        id: extract_branch
-        
+      # print branch name
+      - name: Get branch name1
+        run: echo $(git rev-parse --abbrev-ref HEAD)
+
+      # print branch name
+      - name: Get branch name2
+        run: echo ${{ github.head_ref }}
+
+      # print branch name
+      - name: Get branch name
+        run: echo ${{ github.ref }}
+
       - name: Cypress run
         uses: cypress-io/github-action@v2
         env:
