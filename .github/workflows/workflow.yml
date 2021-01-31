@@ -13,13 +13,32 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
+      # extract branch name
+      - name: Extract branch name
+        if: github.event_name != 'pull_request'
+        shell: bash
+        run: echo "::set-env name=BRANCH_NAME::$(echo ${GITHUB_REF#refs/heads/})"
+        id: extract_branch
+
+      # extract branch name on pull request
+      - name: Print branch name
+        if: github.event_name == 'pull_request'
+        run: echo "::set-env name=BRANCH_NAME::$(echo ${GITHUB_HEAD_REF})"
+
+      # print branch name
+      - name: Get branch name
+        run: echo 'The branch name is' $BRANCH_NAME
+
+      # print branch name
+      - name: Get branch name
+        run: echo 'The branch name is' ${{ github.head_ref }}
+
       - name: Cypress run
         uses: cypress-io/github-action@v2
-        env: 
+        env:
           VRT_APIURL: "http://162.243.161.172:4200"
           VRT_PROJECT: "VRT"
           VRT_ENABLESOFTASSERT: false
           VRT_APIKEY: ${{ secrets.VRT_API_KEY }}
           VRT_BRANCHNAME: ${{ github.head_ref }}
           VRT_CIBUILDID: "Github run_id:  ${{ github.run_id }}"
-          
