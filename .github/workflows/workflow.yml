@@ -20,5 +20,5 @@ jobs:
           VRT_PROJECT: "VRT"
           VRT_ENABLESOFTASSERT: false
           VRT_APIKEY: ${{ secrets.VRT_API_KEY }}
-          VRT_BRANCHNAME: $(git rev-parse --abbrev-ref HEAD)
+          VRT_BRANCHNAME: ${{ $(git rev-parse --abbrev-ref HEAD) }}
           VRT_CIBUILDID: "Github run_id:  ${{ github.run_id }}"
