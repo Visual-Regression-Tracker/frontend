@@ -174,7 +174,7 @@ async function deleteBuild(dispatch: Dispatch, id: string) {
 }
 
 async function stopBuild(dispatch: Dispatch, id: string) {
-  return buildsService.stop(id).then((build) => {
+  return buildsService.update(id, { "isRunning": false }).then((build) => {
     dispatch({ type: "update", payload: build });
     return build;
   });
@@ -194,6 +194,10 @@ async function addBuild(dispatch: Dispatch, build: Build) {
   dispatch({ type: "add", payload: build });
 }
 
+async function modifyBuild(dispatch: Dispatch, id: string, body: object) {
+  return buildsService.update(id, body);
+}
+
 async function updateBuild(dispatch: Dispatch, build: Build) {
   dispatch({ type: "update", payload: build });
 }
@@ -207,5 +211,6 @@ export {
   selectBuild,
   addBuild,
   updateBuild,
+  modifyBuild,
   stopBuild,
 };

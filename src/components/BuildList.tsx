@@ -23,6 +23,7 @@ import {
   useBuildDispatch,
   deleteBuild,
   selectBuild,
+  modifyBuild,
   stopBuild,
 } from "../contexts";
 import { BuildStatusChip } from "./BuildStatusChip";
@@ -31,6 +32,7 @@ import { formatDateTime } from "../_helpers/format.helper";
 import { useSnackbar } from "notistack";
 import { Build } from "../types";
 import { BaseModal } from "./BaseModal";
+import { TextValidator } from "react-material-ui-form-validator";
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -57,8 +59,10 @@ const BuildList: FunctionComponent = () => {
   const { enqueueSnackbar } = useSnackbar();
 
   const [deleteDialogOpen, setDeleteDialogOpen] = React.useState(false);
+  const [editDialogOpen, setEditDialogOpen] = React.useState(false);
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
   const [menuBuild, setMenuBuild] = React.useState<Build | null>();
+  const [newCiBuildId, setNewCiBuildId] = React.useState("");
 
   const handleMenuClick = (
     event: React.MouseEvent<HTMLElement>,
@@ -77,6 +81,10 @@ const BuildList: FunctionComponent = () => {
     setDeleteDialogOpen(!deleteDialogOpen);
   };
 
+  const toggleEditDialogOpen = () => {
+    setEditDialogOpen(!editDialogOpen);
+  };
+
   React.useEffect(() => {
     if (!selectedBuild && buildList.length > 0) {
       selectBuild(buildDispatch, buildList[0].id);
@@ -92,62 +100,61 @@ const BuildList: FunctionComponent = () => {
           ) : buildList.length === 0 ? (
             <Typography variant="h5">No builds</Typography>
           ) : (
-            buildList.map((build) => (
-              <React.Fragment key={build.id}>
-                <ListItem
-                  selected={selectedBuild?.id === build.id}
-                  button
-                  onClick={() => {
-                    history.push({
-                      search: "buildId=" + build.id,
-                    });
-                  }}
-                  classes={{
-                    container: classes.listItem,
-                  }}
-                >
-                  <ListItemText
-                    disableTypography
-                    primary={
-                      <Typography variant="subtitle2">{`#${build.number} ${
-                        build.ciBuildId || ""
-                      }`}</Typography>
-                    }
-                    secondary={
-                      <Grid container direction="column">
-                        <Grid item>
-                          <Typography variant="caption" color="textPrimary">
-                            {formatDateTime(build.createdAt)}
-                          </Typography>
-                        </Grid>
-                        <Grid item>
-                          <Grid container justify="space-between">
+                buildList.map((build) => (
+                  <React.Fragment key={build.id}>
+                    <ListItem
+                      selected={selectedBuild?.id === build.id}
+                      button
+                      onClick={() => {
+                        history.push({
+                          search: "buildId=" + build.id,
+                        });
+                      }}
+                      classes={{
+                        container: classes.listItem,
+                      }}
+                    >
+                      <ListItemText
+                        disableTypography
+                        primary={
+                          <Typography variant="subtitle2">{`#${build.number} ${build.ciBuildId || ""
+                            }`}</Typography>
+                        }
+                        secondary={
+                          <Grid container direction="column">
                             <Grid item>
-                              <Chip size="small" label={build.branchName} />
+                              <Typography variant="caption" color="textPrimary">
+                                {formatDateTime(build.createdAt)}
+                              </Typography>
                             </Grid>
                             <Grid item>
-                              <BuildStatusChip status={build.status} />
+                              <Grid container justify="space-between">
+                                <Grid item>
+                                  <Chip size="small" label={build.branchName} />
+                                </Grid>
+                                <Grid item>
+                                  <BuildStatusChip status={build.status} />
+                                </Grid>
+                              </Grid>
                             </Grid>
                           </Grid>
-                        </Grid>
-                      </Grid>
-                    }
-                  />
+                        }
+                      />
 
-                  <ListItemSecondaryAction
-                    className={classes.listItemSecondaryAction}
-                  >
-                    <IconButton
-                      onClick={(event) => handleMenuClick(event, build)}
-                    >
-                      <MoreVert />
-                    </IconButton>
-                  </ListItemSecondaryAction>
-                </ListItem>
-                {build.isRunning && <LinearProgress />}
-              </React.Fragment>
-            ))
-          )}
+                      <ListItemSecondaryAction
+                        className={classes.listItemSecondaryAction}
+                      >
+                        <IconButton
+                          onClick={(event) => handleMenuClick(event, build)}
+                        >
+                          <MoreVert />
+                        </IconButton>
+                      </ListItemSecondaryAction>
+                    </ListItem>
+                    {build.isRunning && <LinearProgress />}
+                  </React.Fragment>
+                ))
+              )}
         </List>
       </Box>
       {menuBuild && (
@@ -172,8 +179,52 @@ const BuildList: FunctionComponent = () => {
               Stop
             </MenuItem>
           )}
+          <MenuItem onClick={toggleEditDialogOpen}>Edit CI Build</MenuItem>
           <MenuItem onClick={toggleDeleteDialogOpen}>Delete</MenuItem>
         </Menu>
+      )}
+      {menuBuild && (
+        <BaseModal
+          open={editDialogOpen}
+          title={"Edit CI Build ID"}
+          submitButtonText={"Edit"}
+          onCancel={toggleEditDialogOpen}
+          content={
+            <React.Fragment>
+              <Typography>{`Edit the ci build id for build: #${menuBuild.number || menuBuild.id
+                }`}</Typography>
+              <TextValidator
+                name="newCiBuildId"
+                validators={["minStringLength:2"]}
+                errorMessages={["Enter at least two characters."]}
+                margin="dense"
+                id="name"
+                label="New CI Build Id"
+                type="text"
+                fullWidth
+                required
+                value={newCiBuildId}
+                inputProps={{
+                  onChange: (event: any) =>
+                    setNewCiBuildId((event.target as HTMLInputElement).value),
+                  "data-testid": "newCiBuildId",
+                }}
+              />
+            </React.Fragment>
+          }
+          onSubmit={() => {
+            modifyBuild(buildDispatch, menuBuild.id, { "ciBuildId": newCiBuildId })
+              .then((b) => {
+                toggleEditDialogOpen();
+              })
+              .catch((err) =>
+                enqueueSnackbar(err, {
+                  variant: "error",
+                })
+              );
+            handleMenuClose();
+          }}
+        />
       )}
       {menuBuild && (
         <BaseModal
@@ -182,9 +233,8 @@ const BuildList: FunctionComponent = () => {
           submitButtonText={"Delete"}
           onCancel={toggleDeleteDialogOpen}
           content={
-            <Typography>{`Are you sure you want to delete build: #${
-              menuBuild.number || menuBuild.id
-            }?`}</Typography>
+            <Typography>{`Are you sure you want to delete build: #${menuBuild.number || menuBuild.id
+              }?`}</Typography>
           }
           onSubmit={() => {
             let indexOfBuildDeleted = buildList.findIndex((e) => e.id === menuBuild.id);

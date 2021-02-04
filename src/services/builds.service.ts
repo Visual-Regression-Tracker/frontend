@@ -42,10 +42,11 @@ async function remove(id: string): Promise<Build> {
   );
 }
 
-async function stop(id: string): Promise<Build> {
+async function update(id: string, body: object): Promise<Build> {
   const requestOptions = {
     method: "PATCH",
-    headers: authHeader(),
+    headers: { "Content-Type": "application/json", ...authHeader() },
+    body: JSON.stringify(body)
   };
 
   return fetch(`${API_URL}${ENDPOINT_URL}/${id}`, requestOptions).then(
@@ -70,5 +71,5 @@ export const buildsService = {
   getList,
   approve,
   remove,
-  stop,
+  update,
 };
