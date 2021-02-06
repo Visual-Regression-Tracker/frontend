@@ -1,6 +1,7 @@
 import { Build, PaginatedData } from "../types";
 import { handleResponse, authHeader } from "../_helpers/service.helpers";
 import { API_URL } from "../_config/env.config";
+import {BuildDto} from "../types/dto/build.dto";
 
 const ENDPOINT_URL = "/builds";
 
@@ -42,7 +43,7 @@ async function remove(id: string): Promise<Build> {
   );
 }
 
-async function update(id: string, body: object): Promise<Build> {
+async function update(id: string, body: BuildDto): Promise<Build> {
   const requestOptions = {
     method: "PATCH",
     headers: { "Content-Type": "application/json", ...authHeader() },

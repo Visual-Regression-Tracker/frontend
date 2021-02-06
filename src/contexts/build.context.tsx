@@ -180,6 +180,10 @@ async function stopBuild(dispatch: Dispatch, id: string) {
   });
 }
 
+async function modifyBuild(dispatch: Dispatch, id: string, body: object) {
+  return buildsService.update(id, body);
+}
+
 async function selectBuild(dispatch: Dispatch, id: string | null) {
   if (id === null) {
     dispatch({ type: "select", payload: null });
@@ -192,10 +196,6 @@ async function selectBuild(dispatch: Dispatch, id: string | null) {
 
 async function addBuild(dispatch: Dispatch, build: Build) {
   dispatch({ type: "add", payload: build });
-}
-
-async function modifyBuild(dispatch: Dispatch, id: string, body: object) {
-  return buildsService.update(id, body);
 }
 
 async function updateBuild(dispatch: Dispatch, build: Build) {
