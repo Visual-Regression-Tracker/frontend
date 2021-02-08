@@ -12,11 +12,9 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2
-        with:
-          ref: master
 
       - id: get-branch-name
-        run: echo "::set-output name=branch_name::$(git symbolic-ref --short HEAD)"
+        run: echo "::set-output name=branch_name::$(echo ${GITHUB_REF#refs/heads/})"
         shell: bash
 
       - name: Cypress run
