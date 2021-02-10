@@ -72,7 +72,6 @@ const TestRunList: React.FunctionComponent = () => {
     getTestRunListCalback(1);
   }, [getTestRunListCalback]);
 
-  console.log("TestRunList");
   return (
     <React.Fragment>
       <DataGrid

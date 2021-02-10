@@ -7,7 +7,6 @@ import qs from "qs";
 import TestRunList from "../components/TestRunList";
 import TestDetailsModal from "../components/TestDetailsModal";
 import {
-  useProjectState,
   useBuildState,
   useBuildDispatch,
   selectBuild,
@@ -16,12 +15,9 @@ import {
   selectTestRun,
   useProjectDispatch,
   selectProject,
-  getBuildList,
 } from "../contexts";
-import { useSnackbar } from "notistack";
 import { ArrowButtons } from "../components/ArrowButtons";
 import BuildDetails from "../components/BuildDetails";
-import { Pagination } from "@material-ui/lab";
 
 interface QueryParams {
   buildId?: string;
@@ -79,7 +75,6 @@ const ProjectPage = () => {
     }
   }, [queryParams.testId, testRunDispatch]);
 
-  console.log("ProjectPage");
   return (
     <React.Fragment>
       <Grid container className={classes.root}>
