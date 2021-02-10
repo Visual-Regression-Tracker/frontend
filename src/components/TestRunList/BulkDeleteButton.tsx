@@ -40,7 +40,7 @@ export const BulkDeleteButton: React.FunctionComponent<BaseComponentProps> = (
           )
             .then(() => {
               toggleDeleteDialogOpen();
-              enqueueSnackbar(`Deleted`, {
+              enqueueSnackbar(`${count} items deleted`, {
                 variant: "success",
               });
             })
