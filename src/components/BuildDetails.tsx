@@ -21,6 +21,41 @@ const BuildDetails: React.FunctionComponent = () => {
     return null;
   }
 
+  const approveAllButton = selectedBuild.unresolvedCount > 0 && (
+    <Grid item>
+      <Button
+        variant="contained"
+        color="primary"
+        size="small"
+        onClick={async () => {
+          enqueueSnackbar(
+            "Wait for the confirmation message until approval is completed.",
+            {
+              variant: "info",
+            }
+          );
+
+          buildsService
+            .approve(selectedBuild.id, selectedBuild.merge)
+            .then(() =>
+              enqueueSnackbar("All approved.", {
+                variant: "success",
+              })
+            )
+            .catch((err) =>
+              enqueueSnackbar(err, {
+                variant: "error",
+              })
+            );
+        }}
+      >
+        Approve All
+      </Button>
+    </Grid>
+  );
+
+  const loadingAnimation = selectedBuild.isRunning && <LinearProgress />;
+
   return (
     <Grid container direction="column">
       <Grid item>
@@ -37,38 +72,7 @@ const BuildDetails: React.FunctionComponent = () => {
             <Grid item>
               <BuildStatusChip status={selectedBuild.status} />
             </Grid>
-            {selectedBuild.unresolvedCount > 0 && (
-              <Grid item>
-                <Button
-                  variant="contained"
-                  color="primary"
-                  size="small"
-                  onClick={async () => {
-                    enqueueSnackbar(
-                      "Wait for the confirmation message until approval is completed.",
-                      {
-                        variant: "info",
-                      }
-                    );
-
-                    buildsService
-                      .approve(selectedBuild.id, selectedBuild.merge)
-                      .then(() =>
-                        enqueueSnackbar("All approved.", {
-                          variant: "success",
-                        })
-                      )
-                      .catch((err) =>
-                        enqueueSnackbar(err, {
-                          variant: "error",
-                        })
-                      );
-                  }}
-                >
-                  Approve All
-                </Button>
-              </Grid>
-            )}
+            {approveAllButton}
           </Grid>
         </Box>
       </Grid>
@@ -105,7 +109,7 @@ const BuildDetails: React.FunctionComponent = () => {
           </Grid>
         </Box>
       </Grid>
-      {selectedBuild.isRunning && <LinearProgress />}
+      {loadingAnimation}
     </Grid>
   );
 };
