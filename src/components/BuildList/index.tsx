@@ -24,13 +24,16 @@ import {
   deleteBuild,
   selectBuild,
   stopBuild,
-} from "../contexts";
-import { BuildStatusChip } from "./BuildStatusChip";
-import { SkeletonList } from "./SkeletonList";
-import { formatDateTime } from "../_helpers/format.helper";
+  getBuildList,
+  useProjectState,
+} from "../../contexts";
+import { BuildStatusChip } from "../BuildStatusChip";
+import { SkeletonList } from "../SkeletonList";
+import { formatDateTime } from "../../_helpers/format.helper";
 import { useSnackbar } from "notistack";
-import { Build } from "../types";
-import { BaseModal } from "./BaseModal";
+import { Build } from "../../types";
+import { BaseModal } from "../BaseModal";
+import { Pagination } from "@material-ui/lab";
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -52,10 +55,10 @@ const useStyles = makeStyles((theme: Theme) =>
 const BuildList: FunctionComponent = () => {
   const classes = useStyles();
   const history = useHistory();
-  const { buildList, selectedBuild, loading } = useBuildState();
+  const { buildList, selectedBuild, loading, total, take } = useBuildState();
   const buildDispatch = useBuildDispatch();
   const { enqueueSnackbar } = useSnackbar();
-
+  const { selectedProjectId } = useProjectState();
   const [deleteDialogOpen, setDeleteDialogOpen] = React.useState(false);
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
   const [menuBuild, setMenuBuild] = React.useState<Build | null>();
@@ -83,9 +86,25 @@ const BuildList: FunctionComponent = () => {
     }
   }, [buildDispatch, selectedBuild, buildList]);
 
+  const getBuildListCalback: any = React.useCallback(
+    (page: number) =>
+      selectedProjectId &&
+      getBuildList(buildDispatch, selectedProjectId, page).catch(
+        (err: string) =>
+          enqueueSnackbar(err, {
+            variant: "error",
+          })
+      ),
+    [buildDispatch, enqueueSnackbar, selectedProjectId]
+  );
+
+  React.useEffect(() => {
+    getBuildListCalback(1);
+  }, [getBuildListCalback]);
+
   return (
     <React.Fragment>
-      <Box height={1} overflow="auto">
+      <Box height="91%" overflow="auto">
         <List>
           {loading ? (
             <SkeletonList />
@@ -150,6 +169,19 @@ const BuildList: FunctionComponent = () => {
           )}
         </List>
       </Box>
+      <Box height="9%">
+        <Grid container justify="center">
+          <Grid item>
+            <Pagination
+              size="small"
+              defaultPage={1}
+              count={Math.ceil(total / take)}
+              onChange={(event, page) => getBuildListCalback(page)}
+            />
+          </Grid>
+        </Grid>
+      </Box>
+
       {menuBuild && (
         <Menu anchorEl={anchorEl} open={!!menuBuild} onClose={handleMenuClose}>
           {menuBuild.isRunning && (
@@ -187,8 +219,12 @@ const BuildList: FunctionComponent = () => {
             }?`}</Typography>
           }
           onSubmit={() => {
-            let indexOfBuildDeleted = buildList.findIndex((e) => e.id === menuBuild.id);
-            let indexOfSelectedBuild = buildList.findIndex((e) => e.id === selectedBuild?.id);
+            let indexOfBuildDeleted = buildList.findIndex(
+              (e) => e.id === menuBuild.id
+            );
+            let indexOfSelectedBuild = buildList.findIndex(
+              (e) => e.id === selectedBuild?.id
+            );
             deleteBuild(buildDispatch, menuBuild.id)
               .then((b) => {
                 if (indexOfBuildDeleted === indexOfSelectedBuild) {
@@ -196,7 +232,10 @@ const BuildList: FunctionComponent = () => {
                     if (indexOfBuildDeleted === 0) {
                       selectBuild(buildDispatch, buildList[1].id);
                     } else {
-                      selectBuild(buildDispatch, buildList[indexOfBuildDeleted - 1].id);
+                      selectBuild(
+                        buildDispatch,
+                        buildList[indexOfBuildDeleted - 1].id
+                      );
                     }
                   } else {
                     selectBuild(buildDispatch, null);
