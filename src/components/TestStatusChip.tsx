@@ -2,9 +2,9 @@ import React from "react";
 import { Chip } from "@material-ui/core";
 import { TestStatus } from "../types/testStatus";
 
-const TestStatusChip: React.FunctionComponent<{ status: TestStatus }> = ({
-  status,
-}) => {
+const TestStatusChip: React.FunctionComponent<{
+  status: string | undefined;
+}> = ({ status }) => {
   let color: "inherit" | "primary" | "secondary" | "default" | undefined;
   switch (status) {
     case TestStatus.new:

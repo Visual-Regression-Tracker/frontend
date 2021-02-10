@@ -1,13 +1,11 @@
 import React, { useEffect } from "react";
 import { Grid, Dialog, Box, makeStyles } from "@material-ui/core";
 import { useParams, useLocation, useHistory } from "react-router-dom";
-import { TestRun } from "../types";
 import BuildList from "../components/BuildList";
 import ProjectSelect from "../components/ProjectSelect";
 import qs from "qs";
 import TestRunList from "../components/TestRunList";
 import TestDetailsModal from "../components/TestDetailsModal";
-import Filters from "../components/Filters";
 import {
   useProjectState,
   useBuildState,
@@ -16,7 +14,6 @@ import {
   useTestRunState,
   useTestRunDispatch,
   selectTestRun,
-  getTestRunList,
   useProjectDispatch,
   selectProject,
   getBuildList,
@@ -53,17 +50,10 @@ const ProjectPage = () => {
   const { projectId } = useParams<{ projectId: string }>();
   const location = useLocation();
   const history = useHistory();
-  const { enqueueSnackbar } = useSnackbar();
-  const { selectedBuild, selectedBuildId, total, take } = useBuildState();
+  const { selectedBuild } = useBuildState();
   const buildDispatch = useBuildDispatch();
-  const { selectedProjectId } = useProjectState();
   const projectDispatch = useProjectDispatch();
-  const {
-    testRuns,
-    selectedTestRunIndex,
-    total: testRunTotal,
-    take: testRunTake,
-  } = useTestRunState();
+  const { testRuns, selectedTestRunIndex } = useTestRunState();
   const testRunDispatch = useTestRunDispatch();
 
   const queryParams: QueryParams = React.useMemo(
@@ -89,38 +79,7 @@ const ProjectPage = () => {
     }
   }, [queryParams.testId, testRunDispatch]);
 
-  const getTestRunListCalback: any = React.useCallback(
-    (page: number) =>
-      selectedBuildId &&
-      getTestRunList(testRunDispatch, selectedBuildId, page).catch(
-        (err: string) =>
-          enqueueSnackbar(err, {
-            variant: "error",
-          })
-      ),
-    [testRunDispatch, enqueueSnackbar, selectedBuildId]
-  );
-
-  const getBuildListCalback: any = React.useCallback(
-    (page: number) =>
-      selectedProjectId &&
-      getBuildList(buildDispatch, selectedProjectId, page).catch(
-        (err: string) =>
-          enqueueSnackbar(err, {
-            variant: "error",
-          })
-      ),
-    [buildDispatch, enqueueSnackbar, selectedProjectId]
-  );
-
-  React.useEffect(() => {
-    getTestRunListCalback(1);
-  }, [getTestRunListCalback]);
-
-  React.useEffect(() => {
-    getBuildListCalback(1);
-  }, [getBuildListCalback]);
-
+  console.log("ProjectPage");
   return (
     <React.Fragment>
       <Grid container className={classes.root}>
@@ -129,34 +88,17 @@ const ProjectPage = () => {
           <Box height="85%" my={0.5}>
             <BuildList />
           </Box>
-          <Grid container justify="center">
-            <Grid item>
-              <Pagination
-                size="small"
-                defaultPage={1}
-                count={Math.ceil(total / take)}
-                onChange={(event, page) => getBuildListCalback(page)}
-              />
-            </Grid>
-          </Grid>
         </Grid>
         <Grid item xs={9} className={classes.root}>
-          {selectedBuild && <BuildDetails build={selectedBuild} />}
-          <Box height="80%" my={0.5}>
-            <TestRunList items={testRuns} />
+          <Box height="15%">
+            {selectedBuild && <BuildDetails build={selectedBuild} />}
           </Box>
-          <Grid container justify="center">
-            <Grid item>
-              <Pagination
-                size="small"
-                defaultPage={1}
-                count={Math.ceil(testRunTotal / testRunTake)}
-                onChange={(event, page) => getTestRunListCalback(page)}
-              />
-            </Grid>
-          </Grid>
+          <Box height="85%">
+            <TestRunList />
+          </Box>
         </Grid>
       </Grid>
+
       {selectedTestRunIndex !== undefined && testRuns[selectedTestRunIndex] && (
         <Dialog open={true} fullScreen className={classes.modal}>
           <TestDetailsModal testRun={testRuns[selectedTestRunIndex]} />
