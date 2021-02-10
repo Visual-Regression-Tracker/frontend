@@ -28,10 +28,10 @@ const columns: ColDef[] = [
     flex: 1,
     renderCell: (params: CellParams) => {
       const tags = [
-        params.getValue("os")?.toString(),
-        params.getValue("device")?.toString(),
-        params.getValue("browser")?.toString(),
-        params.getValue("viewport")?.toString(),
+        params.row["os"],
+        params.row["device"],
+        params.row["browser"],
+        params.row["viewport"],
       ];
       return (
         <>

@@ -8,7 +8,11 @@ import {
   Select,
   Theme,
 } from "@material-ui/core";
-import { useProjectState } from "../contexts";
+import {
+  useProjectState,
+  useProjectDispatch,
+  selectProject,
+} from "../contexts";
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -22,10 +26,18 @@ const useStyles = makeStyles((theme: Theme) =>
 );
 
 const ProjectSelect: FunctionComponent<{
+  projectId?: string;
   onProjectSelect: (id: string) => void;
-}> = ({ onProjectSelect }) => {
+}> = ({ projectId, onProjectSelect }) => {
   const classes = useStyles();
   const { projectList, selectedProjectId } = useProjectState();
+  const projectDispatch = useProjectDispatch();
+
+  React.useEffect(() => {
+    if (projectId && projectId !== selectedProjectId) {
+      selectProject(projectDispatch, projectId);
+    }
+  }, [projectId, selectedProjectId, projectDispatch]);
 
   return (
     <React.Fragment>
