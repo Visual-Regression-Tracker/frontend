@@ -104,7 +104,7 @@ const BuildList: FunctionComponent = () => {
 
   return (
     <React.Fragment>
-      <Box height={1} overflow="auto">
+      <Box height="91%" overflow="auto">
         <List>
           {loading ? (
             <SkeletonList />
@@ -169,16 +169,19 @@ const BuildList: FunctionComponent = () => {
           )}
         </List>
       </Box>
-      <Grid container justify="center">
-        <Grid item>
-          <Pagination
-            size="small"
-            defaultPage={1}
-            count={Math.ceil(total / take)}
-            onChange={(event, page) => getBuildListCalback(page)}
-          />
+      <Box height="9%">
+        <Grid container justify="center">
+          <Grid item>
+            <Pagination
+              size="small"
+              defaultPage={1}
+              count={Math.ceil(total / take)}
+              onChange={(event, page) => getBuildListCalback(page)}
+            />
+          </Grid>
         </Grid>
-      </Grid>
+      </Box>
+
       {menuBuild && (
         <Menu anchorEl={anchorEl} open={!!menuBuild} onClose={handleMenuClose}>
           {menuBuild.isRunning && (

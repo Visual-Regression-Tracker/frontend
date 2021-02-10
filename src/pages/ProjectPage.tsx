@@ -36,11 +36,13 @@ const ProjectPage = () => {
     <React.Fragment>
       <Grid container className={classes.root}>
         <Grid item xs={3} className={classes.root}>
-          <ProjectSelect
-            projectId={projectId}
-            onProjectSelect={(id) => history.push(id)}
-          />
-          <Box height="85%" my={0.5}>
+          <Box height="9%">
+            <ProjectSelect
+              projectId={projectId}
+              onProjectSelect={(id) => history.push(id)}
+            />
+          </Box>
+          <Box height="91%">
             <BuildList />
           </Box>
         </Grid>
