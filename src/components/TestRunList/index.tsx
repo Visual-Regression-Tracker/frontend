@@ -35,7 +35,9 @@ const columns: ColDef[] = [
       ];
       return (
         <>
-          {tags.map((tag) => tag && <Chip id={tag} size="small" label={tag} />)}
+          {tags.map(
+            (tag) => tag && <Chip key={tag} size="small" label={tag} />
+          )}
         </>
       );
     },
