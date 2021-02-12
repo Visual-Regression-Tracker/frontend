@@ -33,7 +33,7 @@ export const ArrowButtons: React.FunctionComponent<{
   const navigateNext = () => {
     if (selectedTestRunIndex + 1 < testRuns.length) {
       const next = testRuns[selectedTestRunIndex + 1];
-      history.push(buildTestRunLocation(next));
+      history.push(buildTestRunLocation(next.buildId, next.id));
       selectTestRun(testRunDispatch, next.id);
     }
   };
@@ -42,7 +42,7 @@ export const ArrowButtons: React.FunctionComponent<{
   const navigateBefore = () => {
     if (selectedTestRunIndex > 0) {
       const prev = testRuns[selectedTestRunIndex - 1];
-      history.push(buildTestRunLocation(prev));
+      history.push(buildTestRunLocation(prev.buildId, prev.id));
       selectTestRun(testRunDispatch, prev.id);
     }
   };

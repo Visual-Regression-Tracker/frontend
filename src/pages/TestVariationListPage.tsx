@@ -8,12 +8,10 @@ import ProjectSelect from "../components/ProjectSelect";
 import Filters from "../components/Filters";
 import { TestVariationMergeForm } from "../components/TestVariationMergeForm";
 import { useSnackbar } from "notistack";
-import { selectProject, useProjectDispatch } from "../contexts";
 
 const TestVariationListPage: React.FunctionComponent = () => {
   const history = useHistory();
   const { enqueueSnackbar } = useSnackbar();
-  const projectDispatch = useProjectDispatch();
   const { projectId = "" } = useParams<{ projectId: string }>();
   const [testVariations, setTestVariations] = React.useState<TestVariation[]>(
     []
@@ -27,12 +25,6 @@ const TestVariationListPage: React.FunctionComponent = () => {
   const [viewport, setViewport] = React.useState("");
   const [branchName, setBranchName] = React.useState("");
   const [filteredItems, setFilteredItems] = React.useState<TestVariation[]>([]);
-
-  React.useEffect(() => {
-    if (projectId) {
-      selectProject(projectDispatch, projectId);
-    }
-  }, [projectId, projectDispatch]);
 
   React.useEffect(() => {
     if (projectId) {
@@ -84,7 +76,10 @@ const TestVariationListPage: React.FunctionComponent = () => {
       <Box m={2}>
         <Grid container direction="column" spacing={2}>
           <Grid item>
-            <ProjectSelect onProjectSelect={(id) => history.push(id)} />
+            <ProjectSelect
+              projectId={projectId}
+              onProjectSelect={(id) => history.push(id)}
+            />
           </Grid>
           <Grid item>
             <TestVariationMergeForm
