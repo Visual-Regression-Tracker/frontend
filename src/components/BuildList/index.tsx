@@ -23,6 +23,7 @@ import {
   useBuildDispatch,
   deleteBuild,
   selectBuild,
+  modifyBuild,
   stopBuild,
   getBuildList,
   useProjectState,
@@ -31,9 +32,10 @@ import { BuildStatusChip } from "../BuildStatusChip";
 import { SkeletonList } from "../SkeletonList";
 import { formatDateTime } from "../../_helpers/format.helper";
 import { useSnackbar } from "notistack";
+import { TextValidator } from "react-material-ui-form-validator";
+import { Pagination } from "@material-ui/lab";
 import { Build } from "../../types";
 import { BaseModal } from "../BaseModal";
-import { Pagination } from "@material-ui/lab";
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -60,8 +62,10 @@ const BuildList: FunctionComponent = () => {
   const { enqueueSnackbar } = useSnackbar();
   const { selectedProjectId } = useProjectState();
   const [deleteDialogOpen, setDeleteDialogOpen] = React.useState(false);
+  const [editDialogOpen, setEditDialogOpen] = React.useState(false);
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
   const [menuBuild, setMenuBuild] = React.useState<Build | null>();
+  const [newCiBuildId, setNewCiBuildId] = React.useState("");
 
   const handleMenuClick = (
     event: React.MouseEvent<HTMLElement>,
@@ -78,6 +82,10 @@ const BuildList: FunctionComponent = () => {
 
   const toggleDeleteDialogOpen = () => {
     setDeleteDialogOpen(!deleteDialogOpen);
+  };
+
+  const toggleEditDialogOpen = () => {
+    setEditDialogOpen(!editDialogOpen);
   };
 
   React.useEffect(() => {
@@ -204,8 +212,55 @@ const BuildList: FunctionComponent = () => {
               Stop
             </MenuItem>
           )}
+          <MenuItem onClick={toggleEditDialogOpen}>Edit CI Build</MenuItem>
           <MenuItem onClick={toggleDeleteDialogOpen}>Delete</MenuItem>
         </Menu>
+      )}
+      {menuBuild && (
+        <BaseModal
+          open={editDialogOpen}
+          title={"Edit CI Build ID"}
+          submitButtonText={"Edit"}
+          onCancel={toggleEditDialogOpen}
+          content={
+            <React.Fragment>
+              <Typography>{`Edit the ci build id for build: #${
+                menuBuild.number || menuBuild.id
+              }`}</Typography>
+              <TextValidator
+                name="newCiBuildId"
+                validators={["minStringLength:2"]}
+                errorMessages={["Enter at least two characters."]}
+                margin="dense"
+                id="name"
+                label="New CI Build Id"
+                type="text"
+                fullWidth
+                required
+                value={newCiBuildId}
+                inputProps={{
+                  onChange: (event: any) =>
+                    setNewCiBuildId((event.target as HTMLInputElement).value),
+                  "data-testid": "newCiBuildId",
+                }}
+              />
+            </React.Fragment>
+          }
+          onSubmit={() => {
+            modifyBuild(buildDispatch, menuBuild.id, {
+              ciBuildId: newCiBuildId,
+            })
+              .then((b) => {
+                toggleEditDialogOpen();
+              })
+              .catch((err) =>
+                enqueueSnackbar(err, {
+                  variant: "error",
+                })
+              );
+            handleMenuClose();
+          }}
+        />
       )}
       {menuBuild && (
         <BaseModal
