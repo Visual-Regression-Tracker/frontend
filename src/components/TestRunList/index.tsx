@@ -15,7 +15,6 @@ import {
   ColDef,
   RowParams,
   CellParams,
-  PageChangeParams,
 } from "@material-ui/data-grid";
 import { DataGridCustomToolbar } from "./DataGridCustomToolbar";
 
@@ -53,25 +52,24 @@ const columns: ColDef[] = [
 
 const TestRunList: React.FunctionComponent = () => {
   const { enqueueSnackbar } = useSnackbar();
-  const { testRuns, loading, total, take } = useTestRunState();
+  const { testRuns, loading } = useTestRunState();
   const { selectedBuildId } = useBuildState();
   const testRunDispatch = useTestRunDispatch();
   const history = useHistory();
 
   const getTestRunListCalback = React.useCallback(
-    (page: number) =>
+    () =>
       selectedBuildId &&
-      getTestRunList(testRunDispatch, selectedBuildId, page).catch(
-        (err: string) =>
-          enqueueSnackbar(err, {
-            variant: "error",
-          })
+      getTestRunList(testRunDispatch, selectedBuildId).catch((err: string) =>
+        enqueueSnackbar(err, {
+          variant: "error",
+        })
       ),
     [testRunDispatch, enqueueSnackbar, selectedBuildId]
   );
 
   React.useEffect(() => {
-    getTestRunListCalback(1);
+    getTestRunListCalback();
   }, [getTestRunListCalback]);
 
   return (
@@ -79,10 +77,9 @@ const TestRunList: React.FunctionComponent = () => {
       <DataGrid
         rows={testRuns}
         columns={columns}
-        pageSize={take}
-        rowCount={total}
+        pageSize={10}
+        rowsPerPageOptions={[10, 20, 30]}
         loading={loading}
-        paginationMode={"server"}
         showToolbar={true}
         components={{
           Toolbar: DataGridCustomToolbar,
@@ -99,9 +96,6 @@ const TestRunList: React.FunctionComponent = () => {
             )
           );
         }}
-        onPageChange={(param: PageChangeParams) =>
-          getTestRunListCalback(param.page)
-        }
       />
     </React.Fragment>
   );

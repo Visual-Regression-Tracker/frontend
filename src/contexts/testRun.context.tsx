@@ -1,5 +1,5 @@
 import React from "react";
-import { PaginatedData, TestRun } from "../types";
+import { TestRun } from "../types";
 import { testRunService } from "../services";
 
 interface IRequestAction {
@@ -9,17 +9,17 @@ interface IRequestAction {
 
 interface IGetAction {
   type: "get";
-  payload: PaginatedData<TestRun>;
+  payload: Array<TestRun>;
 }
 
 interface ISelectAction {
   type: "select";
-  payload: string | undefined;
+  payload?: string;
 }
 
 interface IIndexAction {
   type: "index";
-  payload: string | undefined;
+  payload?: string;
 }
 
 interface IDeleteAction {
@@ -60,12 +60,9 @@ type IAction =
 
 type Dispatch = (action: IAction) => void;
 type State = {
-  selectedTestRunId: string | undefined;
-  selectedTestRunIndex: number | undefined;
-  testRuns: TestRun[];
-  total: number;
-  take: number;
-  skip: number;
+  selectedTestRunId?: string;
+  selectedTestRunIndex?: number;
+  testRuns: Array<TestRun>;
   loading: boolean;
 };
 
@@ -77,12 +74,7 @@ const TestRunDispatchContext = React.createContext<Dispatch | undefined>(
 );
 
 const initialState: State = {
-  selectedTestRunId: undefined,
-  selectedTestRunIndex: undefined,
   testRuns: [],
-  take: 10,
-  skip: 0,
-  total: 0,
   loading: false,
 };
 
@@ -107,13 +99,9 @@ function testRunReducer(state: State, action: IAction): State {
         loading: true,
       };
     case "get":
-      const { data, take, skip, total } = action.payload;
       return {
         ...state,
-        testRuns: data,
-        take,
-        skip,
-        total,
+        testRuns: action.payload,
         loading: false,
       };
     case "delete":
@@ -175,16 +163,13 @@ function useTestRunDispatch() {
 
 async function getTestRunList(
   dispatch: Dispatch,
-  buildId: string,
-  page: number
+  buildId: string
 ): Promise<void> {
   dispatch({ type: "request" });
 
-  return testRunService
-    .getList(buildId, initialState.take, initialState.take * (page - 1))
-    .then((response) => {
-      dispatch({ type: "get", payload: response });
-    });
+  return testRunService.getList(buildId).then((response) => {
+    dispatch({ type: "get", payload: response });
+  });
 }
 
 async function deleteTestRun(dispatch: Dispatch, id: string) {
