@@ -1,22 +1,18 @@
-import { PaginatedData, TestRun } from "../types";
+import { TestRun } from "../types";
 import { handleResponse, authHeader } from "../_helpers/service.helpers";
 import { API_URL } from "../_config/env.config";
 import { IgnoreArea } from "../types/ignoreArea";
 
 const ENDPOINT_URL = "/test-runs";
 
-async function getList(
-  buildId: string,
-  take: number,
-  skip: number
-): Promise<PaginatedData<TestRun>> {
+async function getList(buildId: string): Promise<TestRun[]> {
   const requestOptions = {
     method: "GET",
     headers: authHeader(),
   };
 
   return fetch(
-    `${API_URL}${ENDPOINT_URL}?buildId=${buildId}&take=${take}&skip=${skip}`,
+    `${API_URL}${ENDPOINT_URL}?buildId=${buildId}`,
     requestOptions
   ).then(handleResponse);
 }
