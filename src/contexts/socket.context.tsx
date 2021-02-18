@@ -11,6 +11,7 @@ import {
   useTestRunDispatch,
   addTestRun,
   updateTestRun,
+  deleteTestRun,
 } from "./testRun.context";
 import { API_URL } from "../_config/env.config";
 
@@ -67,30 +68,40 @@ function SocketProvider({ children }: SocketProviderProps) {
         addBuild(buildDispatch, build);
       });
 
-      state.socket.on("build_finished", function (build: Build) {
-        updateBuild(buildDispatch, build);
+      state.socket.on("build_updated", function (builds: Array<Build>) {
+        updateBuild(buildDispatch, builds);
       });
 
-      state.socket.on("build_updated", function (build: Build) {
-        updateBuild(buildDispatch, build);
-      });
-
-      state.socket.on("testRun_created", function (testRun: TestRun) {
-        if (testRun.buildId === selectedBuild?.id) {
-          addTestRun(testRunDispatch, testRun);
+      state.socket.on("testRun_created", function (testRuns: Array<TestRun>) {
+        if (!selectedBuild) {
+          return;
         }
+        addTestRun(
+          testRunDispatch,
+          testRuns.filter((tr) => tr.buildId === selectedBuild.id)
+        );
       });
 
-      state.socket.on("testRun_updated", function (testRun: TestRun) {
-        if (testRun.buildId === selectedBuild?.id) {
-          updateTestRun(testRunDispatch, testRun);
+      state.socket.on("testRun_updated", function (testRuns: Array<TestRun>) {
+        if (!selectedBuild) {
+          return;
         }
+        updateTestRun(
+          testRunDispatch,
+          testRuns.filter((tr) => tr.buildId === selectedBuild.id)
+        );
       });
 
-      state.socket.on("testRun_deleted", function (testRun: TestRun) {
-        if (testRun.buildId === selectedBuild?.id) {
-          testRunDispatch({ type: "delete", payload: testRun.id });
+      state.socket.on("testRun_deleted", function (testRuns: Array<TestRun>) {
+        if (!selectedBuild) {
+          return;
         }
+        deleteTestRun(
+          testRunDispatch,
+          testRuns
+            .filter((tr) => tr.buildId === selectedBuild.id)
+            .map((testRun) => testRun.id)
+        );
       });
     }
   }, [state.socket, selectedBuild, buildDispatch, testRunDispatch]);

@@ -1,16 +1,15 @@
 import React from "react";
 import { Typography, IconButton } from "@material-ui/core";
 import { BaseComponentProps } from "@material-ui/data-grid";
-import { deleteTestRun, useTestRunDispatch } from "../../contexts";
 import { BaseModal } from "../BaseModal";
 import { useSnackbar } from "notistack";
 import { Delete } from "@material-ui/icons";
+import { testRunService } from "../../services";
 
 export const BulkDeleteButton: React.FunctionComponent<BaseComponentProps> = (
   props: BaseComponentProps
 ) => {
   const { enqueueSnackbar } = useSnackbar();
-  const testRunDispatch = useTestRunDispatch();
   const [deleteDialogOpen, setDeleteDialogOpen] = React.useState(false);
   const rows: Record<React.ReactText, boolean> = props.state.selection;
   const count = Object.keys(rows).length;
@@ -33,14 +32,19 @@ export const BulkDeleteButton: React.FunctionComponent<BaseComponentProps> = (
           <Typography>{`Are you sure you want to delete ${count} items?`}</Typography>
         }
         onSubmit={() => {
+          enqueueSnackbar(
+            "Wait for the confirmation message until BULK delete TestRuns is completed.",
+            {
+              variant: "info",
+            }
+          );
+          toggleDeleteDialogOpen();
+
           Promise.all(
-            Object.keys(rows).map((id: string) =>
-              deleteTestRun(testRunDispatch, id)
-            )
+            Object.keys(rows).map((id: string) => testRunService.remove(id))
           )
             .then(() => {
-              toggleDeleteDialogOpen();
-              enqueueSnackbar(`${count} items deleted`, {
+              enqueueSnackbar(`${count} TestRuns deleted`, {
                 variant: "success",
               });
             })

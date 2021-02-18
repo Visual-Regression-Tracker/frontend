@@ -29,7 +29,7 @@ interface IAddAction {
 
 interface IUpdateAction {
   type: "update";
-  payload: Build;
+  payload: Array<Build>;
 }
 
 type IAction =
@@ -74,7 +74,7 @@ function buildReducer(state: State, action: IAction): State {
       if (action.payload === null) {
         return {
           ...state,
-          selectedBuild: null
+          selectedBuild: null,
         };
       } else {
         return {
@@ -113,14 +113,14 @@ function buildReducer(state: State, action: IAction): State {
       return {
         ...state,
         selectedBuild:
-          state.selectedBuild?.id === action.payload.id
-            ? action.payload
-            : state.selectedBuild,
-        buildList: state.buildList.map((p) => {
-          if (p.id === action.payload.id) {
-            return action.payload;
+          action.payload.find((i) => i.id === state.selectedBuild?.id) ??
+          state.selectedBuild,
+        buildList: state.buildList.map((b) => {
+          const item = action.payload.find((i) => i.id === b.id);
+          if (item) {
+            return item;
           }
-          return p;
+          return b;
         }),
       };
     default:
@@ -173,17 +173,6 @@ async function deleteBuild(dispatch: Dispatch, id: string) {
   });
 }
 
-async function stopBuild(dispatch: Dispatch, id: string) {
-  return buildsService.update(id, { "isRunning": false }).then((build) => {
-    dispatch({ type: "update", payload: build });
-    return build;
-  });
-}
-
-async function modifyBuild(dispatch: Dispatch, id: string, body: object) {
-  return buildsService.update(id, body);
-}
-
 async function selectBuild(dispatch: Dispatch, id: string | null) {
   if (id === null) {
     dispatch({ type: "select", payload: null });
@@ -198,8 +187,8 @@ async function addBuild(dispatch: Dispatch, build: Build) {
   dispatch({ type: "add", payload: build });
 }
 
-async function updateBuild(dispatch: Dispatch, build: Build) {
-  dispatch({ type: "update", payload: build });
+async function updateBuild(dispatch: Dispatch, builds: Array<Build>) {
+  dispatch({ type: "update", payload: builds });
 }
 
 export {
@@ -211,6 +200,4 @@ export {
   selectBuild,
   addBuild,
   updateBuild,
-  modifyBuild,
-  stopBuild,
 };

@@ -23,8 +23,6 @@ import {
   useBuildDispatch,
   deleteBuild,
   selectBuild,
-  modifyBuild,
-  stopBuild,
   getBuildList,
   useProjectState,
 } from "../../contexts";
@@ -36,6 +34,7 @@ import { TextValidator } from "react-material-ui-form-validator";
 import { Pagination } from "@material-ui/lab";
 import { Build } from "../../types";
 import { BaseModal } from "../BaseModal";
+import { buildsService } from "../../services";
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -195,7 +194,8 @@ const BuildList: FunctionComponent = () => {
           {menuBuild.isRunning && (
             <MenuItem
               onClick={() => {
-                stopBuild(buildDispatch, menuBuild.id)
+                buildsService
+                  .update(menuBuild.id, { isRunning: false })
                   .then((b) =>
                     enqueueSnackbar(`${menuBuild.id} finished`, {
                       variant: "success",
@@ -247,9 +247,10 @@ const BuildList: FunctionComponent = () => {
             </React.Fragment>
           }
           onSubmit={() => {
-            modifyBuild(buildDispatch, menuBuild.id, {
-              ciBuildId: newCiBuildId,
-            })
+            buildsService
+              .update(menuBuild.id, {
+                ciBuildId: newCiBuildId,
+              })
               .then((b) => {
                 toggleEditDialogOpen();
               })

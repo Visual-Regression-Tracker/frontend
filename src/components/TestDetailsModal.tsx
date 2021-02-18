@@ -27,7 +27,7 @@ import { Close, Add, Delete, Save, WarningRounded } from "@material-ui/icons";
 import { TestRunDetails } from "./TestRunDetails";
 import useImage from "use-image";
 import { routes } from "../constants";
-import { useTestRunDispatch, updateTestRun, selectTestRun } from "../contexts";
+import { useTestRunDispatch, selectTestRun } from "../contexts";
 import { DrawArea } from "./DrawArea";
 import { CommentsPopper } from "./CommentsPopper";
 import { useSnackbar } from "notistack";
@@ -256,18 +256,6 @@ const TestDetailsModal: React.FunctionComponent<{
                         enqueueSnackbar("Ignore areas are updated", {
                           variant: "success",
                         });
-
-                        // recalculate diff
-                        testRunService
-                          .recalculateDiff(testRun.id)
-                          .then((testRun) =>
-                            updateTestRun(testRunDispatch, testRun)
-                          )
-                          .then(() =>
-                            enqueueSnackbar("Diff recalculated", {
-                              variant: "success",
-                            })
-                          );
                       })
                       .catch((err) =>
                         enqueueSnackbar(err, {
@@ -299,9 +287,7 @@ const TestDetailsModal: React.FunctionComponent<{
               onSave={(comment) =>
                 Promise.all([
                   // update in test run
-                  testRunService
-                    .setComment(testRun.id, comment)
-                    .then((testRun) => updateTestRun(testRunDispatch, testRun)),
+                  testRunService.setComment(testRun.id, comment),
                   // update in variation
                   testVariationService.setComment(
                     testRun.testVariationId,

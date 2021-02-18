@@ -28,18 +28,6 @@ async function remove(id: string): Promise<TestRun> {
   );
 }
 
-async function recalculateDiff(id: string): Promise<TestRun> {
-  const requestOptions = {
-    method: "GET",
-    headers: authHeader(),
-  };
-
-  return fetch(
-    `${API_URL}${ENDPOINT_URL}/recalculateDiff/${id}`,
-    requestOptions
-  ).then(handleResponse);
-}
-
 async function approve(id: string, merge: boolean): Promise<TestRun> {
   const requestOptions = {
     method: "GET",
@@ -94,7 +82,6 @@ async function setComment(id: string, comment: string): Promise<TestRun> {
 export const testRunService = {
   getList,
   remove,
-  recalculateDiff,
   approve,
   reject,
   setIgnoreAreas,
