@@ -2,22 +2,17 @@ import { Grid, Tooltip, Chip, Button } from "@material-ui/core";
 import { useSnackbar } from "notistack";
 import { useHotkeys } from "react-hotkeys-hook";
 import React from "react";
-import { updateTestRun, useTestRunDispatch } from "../contexts";
 import { testRunService } from "../services";
 import { TestRun } from "../types";
 
 export const ApproveRejectButtons: React.FunctionComponent<{
   testRun: TestRun;
 }> = ({ testRun }) => {
-  const testRunDispatch = useTestRunDispatch();
   const { enqueueSnackbar } = useSnackbar();
 
   const approve = () => {
     testRunService
       .approve(testRun.id, testRun.merge)
-      .then((testRun) => {
-        updateTestRun(testRunDispatch, testRun);
-      })
       .then(() =>
         enqueueSnackbar("Approved", {
           variant: "success",
@@ -33,9 +28,6 @@ export const ApproveRejectButtons: React.FunctionComponent<{
   const reject = () => {
     testRunService
       .reject(testRun.id)
-      .then((testRun) => {
-        updateTestRun(testRunDispatch, testRun);
-      })
       .then(() =>
         enqueueSnackbar("Rejected", {
           variant: "success",

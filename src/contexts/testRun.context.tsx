@@ -24,17 +24,17 @@ interface IIndexAction {
 
 interface IDeleteAction {
   type: "delete";
-  payload: string;
+  payload: Array<string>;
 }
 
 interface IAddAction {
   type: "add";
-  payload: TestRun;
+  payload: Array<TestRun>;
 }
 
 interface IUpdateAction {
   type: "update";
-  payload: TestRun;
+  payload: Array<TestRun>;
 }
 
 interface IApproveAction {
@@ -107,19 +107,26 @@ function testRunReducer(state: State, action: IAction): State {
     case "delete":
       return {
         ...state,
-        testRuns: state.testRuns.filter((p) => p.id !== action.payload),
+        testRuns: state.testRuns.filter((p) => !action.payload.includes(p.id)),
       };
     case "add":
       return {
         ...state,
-        testRuns: [...state.testRuns, action.payload],
+        testRuns: [
+          ...state.testRuns,
+          ...action.payload.filter(
+            // remove duplicates
+            (i) => !state.testRuns.find((tr) => tr.id === i.id)
+          ),
+        ],
       };
     case "update":
       return {
         ...state,
         testRuns: state.testRuns.map((t) => {
-          if (t.id === action.payload.id) {
-            return action.payload;
+          const item = action.payload.find((i) => i.id === t.id);
+          if (item) {
+            return item;
           }
           return t;
         }),
@@ -172,27 +179,24 @@ async function getTestRunList(
   });
 }
 
-async function deleteTestRun(dispatch: Dispatch, id: string) {
-  return testRunService.remove(id).then((testRun) => {
-    dispatch({ type: "delete", payload: id });
-    return testRun;
-  });
+async function deleteTestRun(dispatch: Dispatch, ids: Array<string>) {
+  dispatch({ type: "delete", payload: ids });
 }
 
-async function selectTestRun(dispatch: Dispatch, id: string | undefined) {
+async function selectTestRun(dispatch: Dispatch, id?: string) {
   dispatch({ type: "select", payload: id });
 }
 
-async function setTestRunIndex(dispatch: Dispatch, index: string | undefined) {
+async function setTestRunIndex(dispatch: Dispatch, index?: string) {
   dispatch({ type: "index", payload: index });
 }
 
-async function addTestRun(dispatch: Dispatch, testRun: TestRun) {
-  dispatch({ type: "add", payload: testRun });
+async function addTestRun(dispatch: Dispatch, testRuns: Array<TestRun>) {
+  dispatch({ type: "add", payload: testRuns });
 }
 
-async function updateTestRun(dispatch: Dispatch, testRun: TestRun) {
-  dispatch({ type: "update", payload: testRun });
+async function updateTestRun(dispatch: Dispatch, testRuns: Array<TestRun>) {
+  dispatch({ type: "update", payload: testRuns });
 }
 
 export {
@@ -200,8 +204,8 @@ export {
   useTestRunState,
   useTestRunDispatch,
   getTestRunList,
-  deleteTestRun,
   selectTestRun,
   addTestRun,
+  deleteTestRun,
   updateTestRun,
 };
