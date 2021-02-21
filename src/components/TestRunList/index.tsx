@@ -17,36 +17,57 @@ import {
   CellParams,
 } from "@material-ui/data-grid";
 import { DataGridCustomToolbar } from "./DataGridCustomToolbar";
+import { StatusFilterOperators } from "./StatusFilterOperators";
+import { TagFilterOperators } from "./TagFilterOperators";
 
-const columns: ColDef[] = [
-  { field: "id", hide: true },
+const columnsDef: ColDef[] = [
+  { field: "id", hide: true, filterable: false },
   { field: "name", headerName: "Name", flex: 1 },
   {
     field: "tags",
     headerName: "Tags",
     flex: 1,
-    renderCell: (params: CellParams) => {
-      const tags = [
+    valueGetter: (params: CellParams) => {
+      const tags: Array<string> = [
         params.row["os"],
         params.row["device"],
         params.row["browser"],
         params.row["viewport"],
       ];
-      return (
-        <>
-          {tags.map(
-            (tag) => tag && <Chip key={tag} size="small" label={tag} />
-          )}
-        </>
+      return tags.reduce(
+        (prev, curr) => prev.concat(curr ? `${curr};` : ""),
+        ""
       );
     },
+    renderCell: (params: CellParams) => (
+      <React.Fragment>
+        {params
+          .getValue("tags")
+          ?.toString()
+          .split(";")
+          .map(
+            (tag) =>
+              tag && (
+                <Chip
+                  key={tag}
+                  size="small"
+                  label={tag}
+                  style={{ margin: "1px" }}
+                />
+              )
+          )}
+      </React.Fragment>
+    ),
+    filterOperators: TagFilterOperators,
   },
   {
     field: "status",
     headerName: "Status",
+    flex: 0.3,
     renderCell: (params: CellParams) => {
       return <TestStatusChip status={params.getValue("status")?.toString()} />;
     },
+    filterOperators: StatusFilterOperators,
   },
 ];
 
@@ -76,7 +97,7 @@ const TestRunList: React.FunctionComponent = () => {
     <React.Fragment>
       <DataGrid
         rows={testRuns}
-        columns={columns}
+        columns={columnsDef}
         pageSize={10}
         rowsPerPageOptions={[10, 20, 30]}
         loading={loading}
