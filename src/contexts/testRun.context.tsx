@@ -4,7 +4,6 @@ import { testRunService } from "../services";
 
 interface IRequestAction {
   type: "request";
-  payload?: undefined;
 }
 
 interface IGetAction {
@@ -14,11 +13,6 @@ interface IGetAction {
 
 interface ISelectAction {
   type: "select";
-  payload?: string;
-}
-
-interface IIndexAction {
-  type: "index";
   payload?: string;
 }
 
@@ -49,7 +43,6 @@ interface IRejectAction {
 
 type IAction =
   | IRequestAction
-  | IIndexAction
   | IGetAction
   | IDeleteAction
   | IAddAction
@@ -84,10 +77,6 @@ function testRunReducer(state: State, action: IAction): State {
       return {
         ...state,
         selectedTestRunId: action.payload,
-      };
-    case "index":
-      return {
-        ...state,
         selectedTestRunIndex: state.testRuns.findIndex(
           (t) => t.id === action.payload
         ),
@@ -139,10 +128,6 @@ function testRunReducer(state: State, action: IAction): State {
 function TestRunProvider({ children }: TestRunProviderProps) {
   const [state, dispatch] = React.useReducer(testRunReducer, initialState);
 
-  React.useEffect(() => {
-    setTestRunIndex(dispatch, state.selectedTestRunId);
-  }, [state.selectedTestRunId, state.testRuns]);
-
   return (
     <TestRunStateContext.Provider value={state}>
       <TestRunDispatchContext.Provider value={dispatch}>
@@ -185,10 +170,6 @@ async function deleteTestRun(dispatch: Dispatch, ids: Array<string>) {
 
 async function selectTestRun(dispatch: Dispatch, id?: string) {
   dispatch({ type: "select", payload: id });
-}
-
-async function setTestRunIndex(dispatch: Dispatch, index?: string) {
-  dispatch({ type: "index", payload: index });
 }
 
 async function addTestRun(dispatch: Dispatch, testRuns: Array<TestRun>) {
