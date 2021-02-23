@@ -195,7 +195,7 @@ const BuildList: FunctionComponent = () => {
             <MenuItem
               onClick={() => {
                 buildsService
-                  .update(menuBuild.id, { isRunning: false })
+                  .update(menuBuild.id, [{ op: "replace", path: "/isRunning", value: false }])
                   .then((b) =>
                     enqueueSnackbar(`${menuBuild.id} finished`, {
                       variant: "success",
@@ -248,9 +248,9 @@ const BuildList: FunctionComponent = () => {
           }
           onSubmit={() => {
             buildsService
-              .update(menuBuild.id, {
-                ciBuildId: newCiBuildId,
-              })
+              .update(menuBuild.id, [{
+                op: "replace", path: "/ciBuildId", value: newCiBuildId
+              }])
               .then((b) => {
                 toggleEditDialogOpen();
               })
