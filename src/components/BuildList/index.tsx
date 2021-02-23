@@ -318,4 +318,4 @@ const BuildList: FunctionComponent = () => {
   );
 };
 
-export default BuildList;
+export default React.memo(BuildList);
