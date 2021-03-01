@@ -74,6 +74,7 @@ function buildReducer(state: State, action: IAction): State {
       if (action.payload === null) {
         return {
           ...state,
+          selectedBuildId: null,
           selectedBuild: null,
         };
       } else {

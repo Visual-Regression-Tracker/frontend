@@ -95,7 +95,7 @@ const TestRunList: React.FunctionComponent = () => {
 
   return (
     <React.Fragment>
-      <DataGrid
+      {selectedBuildId && (<DataGrid
         rows={testRuns}
         columns={columnsDef}
         pageSize={10}
@@ -117,7 +117,7 @@ const TestRunList: React.FunctionComponent = () => {
             )
           );
         }}
-      />
+      />)}
     </React.Fragment>
   );
 };
