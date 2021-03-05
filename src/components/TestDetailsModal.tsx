@@ -116,9 +116,9 @@ const TestDetailsModal: React.FunctionComponent<{
   const fitStageToScreen = () => {
     const scale = image
       ? Math.min(
-          stageWidth < image.width ? stageWidth / image.width : 1,
-          stageHeigth < image.height ? stageHeigth / image.height : 1
-        )
+        stageWidth < image.width ? stageWidth / image.width : 1,
+        stageHeigth < image.height ? stageHeigth / image.height : 1
+      )
       : 1;
     setStageScale(scale);
     resetPositioin();
@@ -151,8 +151,9 @@ const TestDetailsModal: React.FunctionComponent<{
     [image, baselineImage, testRun.baselineName, testRun.imageName]
   );
 
-  useHotkeys("d", () => setIsDiffShown((isDiffShown) => !isDiffShown));
+  useHotkeys("d", () => shouldDiffHotKeyBeActive  && setIsDiffShown((isDiffShown) => !isDiffShown));
   useHotkeys("ESC", () => handleClose());
+  const shouldDiffHotKeyBeActive = !!testRun.diffName;
 
   return (
     <React.Fragment>
@@ -166,21 +167,23 @@ const TestDetailsModal: React.FunctionComponent<{
             <Grid item>
               <Typography variant="h6">{testRun.name}</Typography>
             </Grid>
-            <Grid item>
-              <Tooltip title={"Hotkey: D"}>
-                <Switch
-                  checked={isDiffShown}
-                  onChange={() => setIsDiffShown(!isDiffShown)}
-                  name="Toggle diff"
-                />
-              </Tooltip>
-            </Grid>
-            {(testRun.status === TestStatus.unresolved ||
-              testRun.status === TestStatus.new) && (
+            {(shouldDiffHotKeyBeActive) && (
               <Grid item>
-                <ApproveRejectButtons testRun={testRun} />
+                <Tooltip title={"Hotkey: D"}>
+                  <Switch
+                    checked={isDiffShown}
+                    onChange={() => setIsDiffShown(!isDiffShown)}
+                    name="Toggle diff"
+                  />
+                </Tooltip>
               </Grid>
             )}
+            {(testRun.status === TestStatus.unresolved ||
+              testRun.status === TestStatus.new) && (
+                <Grid item>
+                  <ApproveRejectButtons testRun={testRun} />
+                </Grid>
+              )}
             <Grid item>
               <IconButton color="inherit" onClick={handleClose}>
                 <Close />
@@ -335,7 +338,7 @@ const TestDetailsModal: React.FunctionComponent<{
             />
           </Grid>
           <Grid item xs={6} className={classes.drawAreaItem}>
-            {isDiffShown ? (
+            {(isDiffShown) ? (
               <DrawArea
                 type="Diff"
                 imageName={testRun.diffName}
@@ -354,24 +357,24 @@ const TestDetailsModal: React.FunctionComponent<{
                 drawModeState={[isDrawMode, setIsDrawMode]}
               />
             ) : (
-              <DrawArea
-                type="Image"
-                imageName={testRun.imageName}
-                branchName={testRun.branchName}
-                imageState={[image, imageStatus]}
-                ignoreAreas={ignoreAreas}
-                tempIgnoreAreas={JSON.parse(testRun.tempIgnoreAreas)}
-                setIgnoreAreas={setIgnoreAreas}
-                selectedRectId={selectedRectId}
-                setSelectedRectId={setSelectedRectId}
-                onStageClick={removeSelection}
-                stageScaleState={[stageScale, setStageScale]}
-                stagePosState={[stagePos, setStagePos]}
-                stageInitPosState={[stageInitPos, setStageInitPos]}
-                stageOffsetState={[stageOffset, setStageOffset]}
-                drawModeState={[isDrawMode, setIsDrawMode]}
-              />
-            )}
+                <DrawArea
+                  type="Image"
+                  imageName={testRun.imageName}
+                  branchName={testRun.branchName}
+                  imageState={[image, imageStatus]}
+                  ignoreAreas={ignoreAreas}
+                  tempIgnoreAreas={JSON.parse(testRun.tempIgnoreAreas)}
+                  setIgnoreAreas={setIgnoreAreas}
+                  selectedRectId={selectedRectId}
+                  setSelectedRectId={setSelectedRectId}
+                  onStageClick={removeSelection}
+                  stageScaleState={[stageScale, setStageScale]}
+                  stagePosState={[stagePos, setStagePos]}
+                  stageInitPosState={[stageInitPos, setStageInitPos]}
+                  stageOffsetState={[stageOffset, setStageOffset]}
+                  drawModeState={[isDrawMode, setIsDrawMode]}
+                />
+              )}
           </Grid>
         </Grid>
       </Box>
