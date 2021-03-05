@@ -151,9 +151,9 @@ const TestDetailsModal: React.FunctionComponent<{
     [image, baselineImage, testRun.baselineName, testRun.imageName]
   );
 
-  useHotkeys("d", () => setIsDiffShown((isDiffShown) => !isDiffShown));
+  useHotkeys("d", () => shouldDiffHotKeyBeActive  && setIsDiffShown((isDiffShown) => !isDiffShown));
   useHotkeys("ESC", () => handleClose());
-  const shouldDiffHotKeyBeActive = !!testRun.baselineName && !!testRun.diffName;
+  const shouldDiffHotKeyBeActive = !!testRun.diffName;
 
   return (
     <React.Fragment>
@@ -338,7 +338,7 @@ const TestDetailsModal: React.FunctionComponent<{
             />
           </Grid>
           <Grid item xs={6} className={classes.drawAreaItem}>
-            {(isDiffShown && shouldDiffHotKeyBeActive) ? (
+            {(isDiffShown) ? (
               <DrawArea
                 type="Diff"
                 imageName={testRun.diffName}
