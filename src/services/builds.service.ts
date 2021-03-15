@@ -16,7 +16,7 @@ async function getList(
   };
 
   return fetch(
-    `${API_URL}${ENDPOINT_URL}?projectId=${projectId}&take=${take}&skip=${skip}`,
+    `${API_URL}${ENDPOINT_URL}?projectI1d=${projectId}&take=${take}&skip=${skip}`,
     requestOptions
   ).then(handleResponse);
 }
