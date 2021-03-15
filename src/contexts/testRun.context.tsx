@@ -79,7 +79,6 @@ const initialState: State = {
 function testRunReducer(state: State, action: IAction): State {
   switch (action.type) {
     case "select":
-      console.log({ tr: state.testRuns, id: action.payload });
       return {
         ...state,
         selectedTestRunId: action.payload,
