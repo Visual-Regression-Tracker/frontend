@@ -1,6 +1,12 @@
 import React from "react";
 import { TestRun } from "../types";
 import { testRunService } from "../services";
+import { useHistory, useLocation } from "react-router-dom";
+import {
+  buildTestRunLocation,
+  getQueryParams,
+} from "../_helpers/route.helpers";
+import { useBuildState } from ".";
 
 interface IRequestAction {
   type: "request";
@@ -54,7 +60,6 @@ type IAction =
 type Dispatch = (action: IAction) => void;
 type State = {
   selectedTestRunId?: string;
-  selectedTestRunIndex?: number;
   testRuns: Array<TestRun>;
   loading: boolean;
 };
@@ -74,12 +79,10 @@ const initialState: State = {
 function testRunReducer(state: State, action: IAction): State {
   switch (action.type) {
     case "select":
+      console.log({ tr: state.testRuns, id: action.payload });
       return {
         ...state,
         selectedTestRunId: action.payload,
-        selectedTestRunIndex: state.testRuns.findIndex(
-          (t) => t.id === action.payload
-        ),
       };
     case "request":
       return {
@@ -127,6 +130,27 @@ function testRunReducer(state: State, action: IAction): State {
 
 function TestRunProvider({ children }: TestRunProviderProps) {
   const [state, dispatch] = React.useReducer(testRunReducer, initialState);
+  const location = useLocation();
+  const history = useHistory();
+  const { selectedBuildId } = useBuildState();
+
+  // get id from url in case none in state
+  React.useEffect(() => {
+    const idFromUrl = getQueryParams(location.search).testId;
+    if (!state.selectedTestRunId && idFromUrl) {
+      selectTestRun(dispatch, idFromUrl);
+    }
+    // eslint-disable-next-line
+  }, []);
+
+  // update url
+  React.useEffect(() => {
+    if (selectedBuildId) {
+      history.push(
+        buildTestRunLocation(selectedBuildId, state.selectedTestRunId)
+      );
+    }
+  }, [history, selectedBuildId, state.selectedTestRunId]);
 
   return (
     <TestRunStateContext.Provider value={state}>

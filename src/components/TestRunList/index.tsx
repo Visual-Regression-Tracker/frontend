@@ -1,13 +1,12 @@
 import React from "react";
 import { Chip } from "@material-ui/core";
-import { useHistory } from "react-router-dom";
 import TestStatusChip from "../TestStatusChip";
-import { buildTestRunLocation } from "../../_helpers/route.helpers";
 import {
   useTestRunState,
   useTestRunDispatch,
   getTestRunList,
   useBuildState,
+  selectTestRun,
 } from "../../contexts";
 import { useSnackbar } from "notistack";
 import {
@@ -76,7 +75,6 @@ const TestRunList: React.FunctionComponent = () => {
   const { testRuns, loading } = useTestRunState();
   const { selectedBuildId } = useBuildState();
   const testRunDispatch = useTestRunDispatch();
-  const history = useHistory();
 
   const getTestRunListCalback = React.useCallback(
     () =>
@@ -95,29 +93,26 @@ const TestRunList: React.FunctionComponent = () => {
 
   return (
     <React.Fragment>
-      {selectedBuildId && (<DataGrid
-        rows={testRuns}
-        columns={columnsDef}
-        pageSize={10}
-        rowsPerPageOptions={[10, 20, 30]}
-        loading={loading}
-        showToolbar={true}
-        components={{
-          Toolbar: DataGridCustomToolbar,
-        }}
-        checkboxSelection
-        disableColumnSelector
-        disableColumnMenu
-        disableSelectionOnClick
-        onRowClick={(param: RowParams) => {
-          history.push(
-            buildTestRunLocation(
-              param.getValue("buildId")?.toString() || "",
-              param.getValue("id")?.toString() || ""
-            )
-          );
-        }}
-      />)}
+      {selectedBuildId && (
+        <DataGrid
+          rows={testRuns}
+          columns={columnsDef}
+          pageSize={10}
+          rowsPerPageOptions={[10, 20, 30]}
+          loading={loading}
+          showToolbar={true}
+          components={{
+            Toolbar: DataGridCustomToolbar,
+          }}
+          checkboxSelection
+          disableColumnSelector
+          disableColumnMenu
+          disableSelectionOnClick
+          onRowClick={(param: RowParams) => {
+            selectTestRun(testRunDispatch, param.getValue("id")?.toString());
+          }}
+        />
+      )}
     </React.Fragment>
   );
 };
