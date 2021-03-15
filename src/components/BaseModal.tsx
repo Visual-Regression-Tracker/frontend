@@ -25,9 +25,13 @@ export const BaseModal: React.FunctionComponent<IProps> = ({
   onSubmit,
   onCancel,
 }) => {
-
   return (
-    <Dialog open={open} onClose={onCancel} aria-labelledby="form-dialog-title" fullWidth>
+    <Dialog
+      open={open}
+      onClose={onCancel}
+      aria-labelledby="form-dialog-title"
+      fullWidth
+    >
       <DialogTitle id="form-dialog-title">{title}</DialogTitle>
       <ValidatorForm onSubmit={onSubmit} instantValidate>
         <DialogContent>{content}</DialogContent>

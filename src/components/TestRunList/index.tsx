@@ -95,29 +95,31 @@ const TestRunList: React.FunctionComponent = () => {
 
   return (
     <React.Fragment>
-      {selectedBuildId && (<DataGrid
-        rows={testRuns}
-        columns={columnsDef}
-        pageSize={10}
-        rowsPerPageOptions={[10, 20, 30]}
-        loading={loading}
-        showToolbar={true}
-        components={{
-          Toolbar: DataGridCustomToolbar,
-        }}
-        checkboxSelection
-        disableColumnSelector
-        disableColumnMenu
-        disableSelectionOnClick
-        onRowClick={(param: RowParams) => {
-          history.push(
-            buildTestRunLocation(
-              param.getValue("buildId")?.toString() || "",
-              param.getValue("id")?.toString() || ""
-            )
-          );
-        }}
-      />)}
+      {selectedBuildId && (
+        <DataGrid
+          rows={testRuns}
+          columns={columnsDef}
+          pageSize={10}
+          rowsPerPageOptions={[10, 20, 30]}
+          loading={loading}
+          showToolbar={true}
+          components={{
+            Toolbar: DataGridCustomToolbar,
+          }}
+          checkboxSelection
+          disableColumnSelector
+          disableColumnMenu
+          disableSelectionOnClick
+          onRowClick={(param: RowParams) => {
+            history.push(
+              buildTestRunLocation(
+                param.getValue("buildId")?.toString() || "",
+                param.getValue("id")?.toString() || ""
+              )
+            );
+          }}
+        />
+      )}
     </React.Fragment>
   );
 };
