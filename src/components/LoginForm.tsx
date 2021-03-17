@@ -68,7 +68,7 @@ const LoginForm = () => {
                 required
                 fullWidth
                 inputProps={{
-                  onChange: (event:any) =>
+                  onChange: (event: any) =>
                     setPassword((event.target as HTMLInputElement).value),
                   "data-testid": "password",
                 }}
