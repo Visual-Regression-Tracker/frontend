@@ -17,7 +17,6 @@ import {
   Box,
 } from "@material-ui/core";
 import { MoreVert } from "@material-ui/icons";
-import { useHistory } from "react-router-dom";
 import {
   useBuildState,
   useBuildDispatch,
@@ -55,7 +54,6 @@ const useStyles = makeStyles((theme: Theme) =>
 
 const BuildList: FunctionComponent = () => {
   const classes = useStyles();
-  const history = useHistory();
   const { buildList, selectedBuild, loading, total, take } = useBuildState();
   const buildDispatch = useBuildDispatch();
   const { enqueueSnackbar } = useSnackbar();
@@ -124,9 +122,7 @@ const BuildList: FunctionComponent = () => {
                   selected={selectedBuild?.id === build.id}
                   button
                   onClick={() => {
-                    history.push({
-                      search: "buildId=" + build.id,
-                    });
+                    selectBuild(buildDispatch, build.id);
                   }}
                   classes={{
                     container: classes.listItem,

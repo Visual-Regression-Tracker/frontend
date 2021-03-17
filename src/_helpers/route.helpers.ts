@@ -1,19 +1,14 @@
-import { TestRun, TestVariation } from "../types";
 import { routes } from "../constants";
 import qs from "qs";
 
-export const buildTestRunUrl = (
-  testVariation: TestVariation,
-  testRun: TestRun
-) =>
-  `${routes.HOME}${testVariation.projectId}?buildId=${testRun.buildId}&testId=${testRun.id}`;
+export const buildProjectPageUrl = (projectId: string) =>
+  `${routes.HOME}${projectId}`;
 
-export const buildTestRunLocation = (buildId: string, testRunId: string) => ({
-  search: `buildId=${buildId}&testId=${testRunId}`,
+export const buildTestRunLocation = (buildId: string, testRunId?: string) => ({
+  search: testRunId
+    ? `buildId=${buildId}&testId=${testRunId}`
+    : `buildId=${buildId}`,
 });
-
-export const buildBuildPageUrl = (projectId: string, buildId: string) =>
-  `${routes.HOME}${projectId}?buildId=${buildId}`;
 
 export interface QueryParams {
   buildId?: string;

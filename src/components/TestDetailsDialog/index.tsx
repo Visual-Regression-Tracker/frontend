@@ -1,12 +1,6 @@
 import { Dialog, makeStyles } from "@material-ui/core";
 import React from "react";
-import { useLocation } from "react-router-dom";
-import {
-  selectTestRun,
-  useTestRunDispatch,
-  useTestRunState,
-} from "../../contexts";
-import { QueryParams, getQueryParams } from "../../_helpers/route.helpers";
+import { useTestRunState } from "../../contexts";
 import { ArrowButtons } from "../ArrowButtons";
 import TestDetailsModal from "../TestDetailsModal";
 
@@ -18,20 +12,12 @@ const useStyles = makeStyles((theme) => ({
 
 export const TestDetailsDialog: React.FunctionComponent = () => {
   const classes = useStyles();
-  const location = useLocation();
-  const { testRuns, selectedTestRunIndex } = useTestRunState();
-  const testRunDispatch = useTestRunDispatch();
+  const { testRuns, selectedTestRunId } = useTestRunState();
 
-  const queryParams: QueryParams = React.useMemo(
-    () => getQueryParams(location.search),
-    [location.search]
+  const selectedTestRunIndex = React.useMemo(
+    () => testRuns.findIndex((t) => t.id === selectedTestRunId),
+    [testRuns, selectedTestRunId]
   );
-
-  React.useEffect(() => {
-    if (queryParams.testId) {
-      selectTestRun(testRunDispatch, queryParams.testId);
-    }
-  }, [queryParams.testId, testRunDispatch]);
 
   if (selectedTestRunIndex === undefined || !testRuns[selectedTestRunIndex]) {
     return null;

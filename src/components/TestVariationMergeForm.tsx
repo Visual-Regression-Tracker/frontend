@@ -2,8 +2,12 @@ import React from "react";
 import { Grid, Select, MenuItem, Button } from "@material-ui/core";
 import { testVariationService } from "../services";
 import { useHistory } from "react-router-dom";
-import { buildBuildPageUrl } from "../_helpers/route.helpers";
+import {
+  buildProjectPageUrl,
+  buildTestRunLocation,
+} from "../_helpers/route.helpers";
 import { useSnackbar } from "notistack";
+import { selectBuild, useBuildDispatch } from "../contexts";
 
 interface IProps {
   projectId: string;
@@ -15,6 +19,7 @@ export const TestVariationMergeForm: React.FunctionComponent<IProps> = ({
   items,
 }) => {
   const history = useHistory();
+  const buildDispatch = useBuildDispatch();
   const { enqueueSnackbar } = useSnackbar();
   const [branch, setBranch] = React.useState("");
 
@@ -26,7 +31,11 @@ export const TestVariationMergeForm: React.FunctionComponent<IProps> = ({
         enqueueSnackbar(`Merge started in build: ${build.id}`, {
           variant: "success",
         });
-        history.push(buildBuildPageUrl(projectId, build.id));
+        history.push({
+          pathname: buildProjectPageUrl(projectId),
+          ...buildTestRunLocation(build.id),
+        });
+        selectBuild(buildDispatch, build.id);
       })
       .catch((err) =>
         enqueueSnackbar(err, {

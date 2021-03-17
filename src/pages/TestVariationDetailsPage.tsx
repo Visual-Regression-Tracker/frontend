@@ -12,7 +12,10 @@ import {
   CardActions,
   Button,
 } from "@material-ui/core";
-import { buildTestRunUrl } from "../_helpers/route.helpers";
+import {
+  buildProjectPageUrl,
+  buildTestRunLocation,
+} from "../_helpers/route.helpers";
 import { TestVariationDetails } from "../components/TestVariationDetails";
 import {
   selectBuild,
@@ -72,14 +75,23 @@ const TestVariationDetailsPage: React.FunctionComponent = () => {
                         disabled={!baseline.testRun}
                         onClick={() => {
                           if (baseline.testRun) {
+                            history.push({
+                              pathname: buildProjectPageUrl(
+                                testVariation.projectId
+                              ),
+                              ...buildTestRunLocation(
+                                baseline.testRun.buildId,
+                                baseline.testRunId
+                              ),
+                            });
                             selectBuild(
                               buildDispatch,
                               baseline.testRun.buildId
-                            );
-                            selectTestRun(testRunDispatch, baseline.testRun.id);
-
-                            history.push(
-                              buildTestRunUrl(testVariation, baseline.testRun)
+                            ).then(() =>
+                              selectTestRun(
+                                testRunDispatch,
+                                baseline.testRun.id
+                              )
                             );
                           }
                         }}
