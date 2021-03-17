@@ -1,6 +1,11 @@
 import React from "react";
 import { Build, PaginatedData } from "../types";
 import { buildsService } from "../services";
+import {
+  buildTestRunLocation,
+  getQueryParams,
+} from "../_helpers/route.helpers";
+import { useHistory, useLocation } from "react-router-dom";
 
 interface IRequestAction {
   type: "request";
@@ -131,6 +136,24 @@ function buildReducer(state: State, action: IAction): State {
 
 function BuildProvider({ children }: BuildProviderProps) {
   const [state, dispatch] = React.useReducer(buildReducer, initialState);
+  const location = useLocation();
+  const history = useHistory();
+
+  // get id from url in case none in state
+  React.useEffect(() => {
+    const idFromUrl = getQueryParams(location.search).buildId;
+    if (!state.selectedBuildId && idFromUrl) {
+      selectBuild(dispatch, idFromUrl);
+    }
+    // eslint-disable-next-line
+  }, []);
+
+  // update url
+  React.useEffect(() => {
+    if (state.selectedBuildId) {
+      history.push(buildTestRunLocation(state.selectedBuildId));
+    }
+  }, [history, state.selectedBuildId]);
 
   return (
     <BuildStateContext.Provider value={state}>

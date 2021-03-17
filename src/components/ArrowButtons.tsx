@@ -2,10 +2,8 @@ import { IconButton, makeStyles, Tooltip } from "@material-ui/core";
 import { NavigateNext, NavigateBefore } from "@material-ui/icons";
 import React from "react";
 import { useHotkeys } from "react-hotkeys-hook";
-import { useHistory } from "react-router-dom";
 import { useTestRunDispatch, selectTestRun } from "../contexts";
 import { TestRun } from "../types";
-import { buildTestRunLocation } from "../_helpers/route.helpers";
 
 const useStyles = makeStyles((theme) => ({
   button: {
@@ -27,13 +25,11 @@ export const ArrowButtons: React.FunctionComponent<{
   selectedTestRunIndex: number;
 }> = ({ testRuns, selectedTestRunIndex }) => {
   const classes = useStyles();
-  const history = useHistory();
   const testRunDispatch = useTestRunDispatch();
 
   const navigateNext = () => {
     if (selectedTestRunIndex + 1 < testRuns.length) {
       const next = testRuns[selectedTestRunIndex + 1];
-      history.push(buildTestRunLocation(next.buildId, next.id));
       selectTestRun(testRunDispatch, next.id);
     }
   };
@@ -42,7 +38,6 @@ export const ArrowButtons: React.FunctionComponent<{
   const navigateBefore = () => {
     if (selectedTestRunIndex > 0) {
       const prev = testRuns[selectedTestRunIndex - 1];
-      history.push(buildTestRunLocation(prev.buildId, prev.id));
       selectTestRun(testRunDispatch, prev.id);
     }
   };

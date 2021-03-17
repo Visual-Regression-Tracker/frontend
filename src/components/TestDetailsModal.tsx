@@ -98,9 +98,6 @@ const TestDetailsModal: React.FunctionComponent<{
   };
 
   const handleClose = () => {
-    history.push({
-      search: `buildId=${testRun.buildId}`,
-    });
     selectTestRun(testRunDispatch, undefined);
   };
 

@@ -1,13 +1,11 @@
-import React, { useEffect } from "react";
+import React from "react";
 import { Grid, Box, makeStyles } from "@material-ui/core";
-import { useParams, useLocation, useHistory } from "react-router-dom";
+import { useParams, useHistory } from "react-router-dom";
 import BuildList from "../components/BuildList";
 import ProjectSelect from "../components/ProjectSelect";
 import TestRunList from "../components/TestRunList";
-import { useBuildDispatch, selectBuild } from "../contexts";
 import BuildDetails from "../components/BuildDetails";
 import { TestDetailsDialog } from "../components/TestDetailsDialog";
-import { getQueryParams, QueryParams } from "../_helpers/route.helpers";
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -18,19 +16,7 @@ const useStyles = makeStyles((theme) => ({
 const ProjectPage = () => {
   const classes = useStyles();
   const { projectId } = useParams<{ projectId: string }>();
-  const location = useLocation();
   const history = useHistory();
-  const buildDispatch = useBuildDispatch();
-
-  const queryParams: QueryParams = React.useMemo(() => {
-    return getQueryParams(location.search);
-  }, [location.search]);
-
-  useEffect(() => {
-    if (queryParams.buildId) {
-      selectBuild(buildDispatch, queryParams.buildId);
-    }
-  }, [buildDispatch, queryParams.buildId]);
 
   return (
     <React.Fragment>
