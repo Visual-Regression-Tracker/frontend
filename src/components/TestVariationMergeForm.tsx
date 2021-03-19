@@ -1,5 +1,5 @@
 import React from "react";
-import { Grid, Select, MenuItem, Button } from "@material-ui/core";
+import { Grid, Select, MenuItem, Button, TextField } from "@material-ui/core";
 import { testVariationService } from "../services";
 import { useHistory } from "react-router-dom";
 import {
@@ -21,12 +21,13 @@ export const TestVariationMergeForm: React.FunctionComponent<IProps> = ({
   const history = useHistory();
   const buildDispatch = useBuildDispatch();
   const { enqueueSnackbar } = useSnackbar();
-  const [branch, setBranch] = React.useState("");
+  const [fromBranch, setFromBranch] = React.useState("");
+  const [toBranch, setToBranch] = React.useState("");
 
   const handleSubmit = (event: React.FormEvent) => {
     event.preventDefault();
     testVariationService
-      .merge(projectId, branch)
+      .merge(projectId, fromBranch, toBranch)
       .then((build) => {
         enqueueSnackbar(`Merge started in build: ${build.id}`, {
           variant: "success",
@@ -50,11 +51,11 @@ export const TestVariationMergeForm: React.FunctionComponent<IProps> = ({
         <Grid item>
           <Select
             displayEmpty
-            value={branch}
-            onChange={(event) => setBranch(event.target.value as string)}
+            value={fromBranch}
+            onChange={(event) => setFromBranch(event.target.value as string)}
           >
             <MenuItem value="">
-              <em>Select branch</em>
+              <em>From branch</em>
             </MenuItem>
             {items.map((i) => (
               <MenuItem key={i} value={i}>
@@ -62,6 +63,23 @@ export const TestVariationMergeForm: React.FunctionComponent<IProps> = ({
               </MenuItem>
             ))}
           </Select>
+        </Grid>
+        <Grid item>
+          <TextField
+            id="toBranch"
+            name="toBranch"
+            value={toBranch}
+            label={"To Branch"}
+            type="text"
+            variant="outlined"
+            required
+            fullWidth
+            inputProps={{
+              onChange: (event: any) =>
+                setToBranch((event.target as HTMLInputElement).value),
+              "data-testid": "toBranch",
+            }}
+          />
         </Grid>
         <Grid item>
           <Button type="submit" color="primary" variant="contained">

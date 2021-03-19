@@ -56,14 +56,18 @@ async function setComment(id: string, comment: string): Promise<TestVariation> {
   );
 }
 
-async function merge(projectId: String, branchName: String): Promise<Build> {
+async function merge(
+  projectId: String,
+  fromBranch: String,
+  toBranch: String
+): Promise<Build> {
   const requestOptions = {
     method: "GET",
     headers: authHeader(),
   };
 
   return fetch(
-    `${API_URL}${ENDPOINT_URL}/merge?projectId=${projectId}&branchName=${branchName}`,
+    `${API_URL}${ENDPOINT_URL}/merge?projectId=${projectId}&fromBranch=${fromBranch}&toBranch=${toBranch}`,
     requestOptions
   ).then(handleResponse);
 }
