@@ -5,7 +5,7 @@ import {
   haveUserLogged,
   haveWindowsEnvSet,
 } from "../_test/precondition.helper";
-import { projectMock, userMock } from "../_test/test.data.helper";
+import { PROJECT_ONE, userMock } from "../_test/test.data.helper";
 import { mountVrtComponent } from "../_test/test.moun.helper";
 import { projectStub } from "../_test/stub.helper";
 
@@ -15,7 +15,7 @@ describe("Profile page", () => {
     haveWindowsEnvSet({
       REACT_APP_API_URL: "http://localhost:4200",
     });
-    projectStub.getAll([projectMock]);
+    projectStub.getAll([PROJECT_ONE]);
   });
 
   it("image", () => {

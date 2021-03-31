@@ -14,21 +14,12 @@ import {
   testRunServiceStub,
 } from "../_test/stub.helper";
 import { haveUserLogged } from "../_test/precondition.helper";
-import { userMock } from "../_test/test.data.helper";
+import { PROJECT_ONE, userMock } from "../_test/test.data.helper";
 
 describe("Project page", () => {
   before(() => {
     haveUserLogged(userMock);
-    projectStub.getAll([
-      {
-        id: "someProjectId",
-        name: "Project name",
-        mainBranchName: "master",
-        builds: [],
-        updatedAt: "2020-09-14T06:57:25.845Z",
-        createdAt: "2020-09-14T06:57:25.845Z",
-      },
-    ]);
+    projectStub.getAll([PROJECT_ONE]);
   });
   it("image", () => {
     cy.stub(staticService, "getImage")

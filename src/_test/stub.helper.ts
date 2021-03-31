@@ -1,5 +1,11 @@
 /* global cy */
-import { buildsService, projectsService, testRunService } from "../services";
+import {
+  buildsService,
+  projectsService,
+  testRunService,
+  staticService,
+  testVariationService,
+} from "../services";
 import { Build, Project, TestRun } from "../types";
 
 const projectStub = {
@@ -24,4 +30,19 @@ const testRunServiceStub = {
     cy.stub(testRunService, "getList").resolves(testRuns),
 };
 
-export { projectStub, buildsServiceStub, testRunServiceStub };
+const staticServiceStub = {
+  getImage: () => cy.stub(staticService, "getImage"),
+};
+
+const testVariationServiceStub = {
+  getDetails: () => cy.stub(testVariationService, "getDetails"),
+  getList: () => cy.stub(testVariationService, "getList"),
+};
+
+export {
+  projectStub,
+  buildsServiceStub,
+  testRunServiceStub,
+  staticServiceStub,
+  testVariationServiceStub,
+};

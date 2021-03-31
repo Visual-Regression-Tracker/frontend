@@ -1,7 +1,7 @@
-import { Project, TestRun, User } from "../types";
+import { Project, TestRun, TestVariation, User } from "../types";
 import { TestStatus } from "../types/testStatus";
 
-export const projectMock: Project = {
+export const PROJECT_ONE: Project = {
   id: "someProjectId",
   name: "Project name",
   mainBranchName: "Main branch name",
@@ -40,4 +40,72 @@ export const testRunMock: TestRun = {
   branchName: "branch name",
   baselineBranchName: "baselineBranchName",
   merge: false,
+};
+
+export const TEST_VARIATION_ONE: TestVariation = {
+  id: "testVariationId",
+  name: "test run name",
+  baselineName: "baselineName.png",
+  os: "OS",
+  browser: "browser",
+  viewport: "viewport",
+  device: "device",
+  ignoreAreas: "[]",
+  comment: "some comment",
+  branchName: "branch name",
+  projectId: PROJECT_ONE.id,
+  baselines: [
+    {
+      id: "some baseline id1",
+      baselineName: "baseline1.png",
+      testRunId: "testRunId1",
+      testVariationId: "some test variation id",
+      createdAt: "2020-09-14T06:57:25.845Z",
+      updatedAt: "2020-09-14T06:57:25.845Z",
+      testRun: testRunMock,
+    },
+    {
+      id: "some baseline id2",
+      baselineName: "baseline2.png",
+      testRunId: "testRunId2",
+      testVariationId: "some test variation id",
+      createdAt: "2020-09-12T06:57:25.845Z",
+      updatedAt: "2020-09-12T06:57:25.845Z",
+      testRun: testRunMock,
+    },
+  ],
+};
+
+export const TEST_VARIATION_TWO: TestVariation = {
+  id: "some test variation id2",
+  name: "test run name2",
+  baselineName: "baseline2.png",
+  os: "OS",
+  browser: "browser",
+  viewport: "viewport",
+  device: "device",
+  ignoreAreas: "[]",
+  comment: "some comment",
+  branchName: "branch name",
+  projectId: PROJECT_ONE.id,
+  baselines: [
+    {
+      id: "some baseline id1",
+      baselineName: "baseline1.png",
+      testRunId: "testRunId1",
+      testVariationId: "some test variation id",
+      createdAt: "2020-09-14T06:57:25.845Z",
+      updatedAt: "2020-09-14T06:57:25.845Z",
+      testRun: testRunMock,
+    },
+    {
+      id: "some baseline id2",
+      baselineName: "baseline2.png",
+      testRunId: "testRunId2",
+      testVariationId: "some test variation id",
+      createdAt: "2020-09-12T06:57:25.845Z",
+      updatedAt: "2020-09-12T06:57:25.845Z",
+      testRun: testRunMock,
+    },
+  ],
 };
