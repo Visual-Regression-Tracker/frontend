@@ -4,6 +4,7 @@ import { mountVrtComponent } from "../_test/test.moun.helper";
 import {
   TEST_PROJECT,
   TEST_USER,
+  TEST_VARIATION_ONE,
   TEST_VARIATION_TWO,
 } from "../_test/test.data.helper";
 import TestVariationListPage from "./TestVariationListPage";
@@ -22,13 +23,13 @@ describe("TestVariationListPage", () => {
     projectStub.getAll([TEST_PROJECT]);
     staticServiceStub
       .getImage()
-      .withArgs(TEST_VARIATION_TWO.baselineName)
+      .withArgs(TEST_VARIATION_ONE.baselineName)
       .returns(baselineImageMock)
       .withArgs(TEST_VARIATION_TWO.baselineName)
       .returns(imageMock);
     testVariationServiceStub
       .getList()
-      .resolves([TEST_VARIATION_TWO, TEST_VARIATION_TWO]);
+      .resolves([TEST_VARIATION_ONE, TEST_VARIATION_TWO]);
   });
 
   it("image", () => {
