@@ -5,7 +5,7 @@ import Header from "./Header";
 import { AuthProvider } from "../contexts";
 import { BrowserRouter } from "react-router-dom";
 import { haveUserLogged } from "../_test/precondition.helper";
-import { userMock } from "../_test/test.data.helper";
+import { TEST_USER } from "../_test/test.data.helper";
 
 describe("Header", () => {
   describe("image", () => {
@@ -23,7 +23,7 @@ describe("Header", () => {
     });
 
     it("Logged", () => {
-      haveUserLogged(userMock);
+      haveUserLogged(TEST_USER);
       mount(
         <BrowserRouter>
           <AuthProvider>
