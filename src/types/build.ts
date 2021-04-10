@@ -5,6 +5,7 @@ export interface Build {
   id: string;
   ciBuildId: string;
   number: number;
+  projectId: string;
   projectName: string;
   branchName: string;
   status: BuildStatus;
