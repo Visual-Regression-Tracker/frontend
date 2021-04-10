@@ -14,6 +14,7 @@ import {
   deleteTestRun,
 } from "./testRun.context";
 import { API_URL } from "../_config/env.config";
+import { useProjectState } from "./project.context";
 
 interface IConnectAction {
   type: "connect";
@@ -53,6 +54,7 @@ function socketReducer(state: State, action: IAction): State {
 function SocketProvider({ children }: SocketProviderProps) {
   const [state, dispatch] = React.useReducer(socketReducer, initialState);
   const { selectedBuild } = useBuildState();
+  const { selectedProjectId } = useProjectState();
   const testRunDispatch = useTestRunDispatch();
   const buildDispatch = useBuildDispatch();
 
@@ -65,11 +67,16 @@ function SocketProvider({ children }: SocketProviderProps) {
       state.socket.removeAllListeners();
 
       state.socket.on("build_created", function (build: Build) {
-        addBuild(buildDispatch, build);
+        if (build.projectId === selectedProjectId) {
+          addBuild(buildDispatch, build);
+        }
       });
 
       state.socket.on("build_updated", function (builds: Array<Build>) {
-        updateBuild(buildDispatch, builds);
+        updateBuild(
+          buildDispatch,
+          builds.filter((build) => build.projectId === selectedProjectId)
+        );
       });
 
       state.socket.on("testRun_created", function (testRuns: Array<TestRun>) {
@@ -104,7 +111,13 @@ function SocketProvider({ children }: SocketProviderProps) {
         );
       });
     }
-  }, [state.socket, selectedBuild, buildDispatch, testRunDispatch]);
+  }, [
+    state.socket,
+    selectedBuild,
+    selectedProjectId,
+    buildDispatch,
+    testRunDispatch,
+  ]);
 
   return (
     <SocketStateContext.Provider value={state}>
