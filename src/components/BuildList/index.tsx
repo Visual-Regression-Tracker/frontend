@@ -86,8 +86,9 @@ const BuildList: FunctionComponent = () => {
   };
 
   React.useEffect(() => {
-    if (!selectedBuild && buildList.length > 0) {
-      selectBuild(buildDispatch, buildList[0].id);
+    if (!selectedBuild || selectedBuild.projectId !== selectedProjectId) {
+      const buildId = buildList.length > 0 ? buildList[0].id : null;
+      selectBuild(buildDispatch, buildId);
     }
   }, [buildDispatch, selectedBuild, buildList]);
 
