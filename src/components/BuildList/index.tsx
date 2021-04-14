@@ -90,7 +90,7 @@ const BuildList: FunctionComponent = () => {
       const buildId = buildList.length > 0 ? buildList[0].id : null;
       selectBuild(buildDispatch, buildId);
     }
-  }, [buildDispatch, selectedBuild, buildList]);
+  }, [buildDispatch, selectedBuild, buildList, selectedProjectId]);
 
   const getBuildListCalback: any = React.useCallback(
     (page: number) =>
