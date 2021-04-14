@@ -5,7 +5,7 @@ import {
   DensitySelector,
   FilterToolbarButton,
 } from "@material-ui/data-grid";
-import { BulkDeleteButton } from "./BulkDeleteButton";
+import { BulkOperation } from "./BulkOperation";
 
 export const DataGridCustomToolbar: React.FunctionComponent<BaseComponentProps> = (
   props: BaseComponentProps
@@ -16,7 +16,7 @@ export const DataGridCustomToolbar: React.FunctionComponent<BaseComponentProps> 
         <FilterToolbarButton />
         <DensitySelector />
         <Box marginLeft="auto">
-          <BulkDeleteButton {...props} />
+          <BulkOperation {...props} />
         </Box>
       </Toolbar>
     </>
