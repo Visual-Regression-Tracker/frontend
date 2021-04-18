@@ -76,7 +76,7 @@ const TestRunList: React.FunctionComponent = () => {
   const { selectedBuildId } = useBuildState();
   const testRunDispatch = useTestRunDispatch();
 
-  const getTestRunListCalback = React.useCallback(
+  const getTestRunListCallback = React.useCallback(
     () =>
       selectedBuildId &&
       getTestRunList(testRunDispatch, selectedBuildId).catch((err: string) =>
@@ -88,8 +88,8 @@ const TestRunList: React.FunctionComponent = () => {
   );
 
   React.useEffect(() => {
-    getTestRunListCalback();
-  }, [getTestRunListCalback]);
+    getTestRunListCallback();
+  }, [getTestRunListCallback]);
 
   return (
     <React.Fragment>

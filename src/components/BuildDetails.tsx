@@ -4,55 +4,18 @@ import {
   Chip,
   Grid,
   Box,
-  Button,
   LinearProgress,
 } from "@material-ui/core";
 import { BuildStatusChip } from "./BuildStatusChip";
-import { useSnackbar } from "notistack";
-import { buildsService } from "../services";
 import { formatDateTime } from "../_helpers/format.helper";
 import { useBuildState } from "../contexts";
 
 const BuildDetails: React.FunctionComponent = () => {
-  const { enqueueSnackbar } = useSnackbar();
   const { selectedBuild } = useBuildState();
 
   if (!selectedBuild) {
     return null;
   }
-
-  const approveAllButton = selectedBuild.unresolvedCount > 0 && (
-    <Grid item>
-      <Button
-        variant="contained"
-        color="primary"
-        size="small"
-        onClick={async () => {
-          enqueueSnackbar(
-            "Wait for the confirmation message until approval is completed.",
-            {
-              variant: "info",
-            }
-          );
-
-          buildsService
-            .approve(selectedBuild.id, selectedBuild.merge)
-            .then(() =>
-              enqueueSnackbar("All approved.", {
-                variant: "success",
-              })
-            )
-            .catch((err) =>
-              enqueueSnackbar(err, {
-                variant: "error",
-              })
-            );
-        }}
-      >
-        Approve All
-      </Button>
-    </Grid>
-  );
 
   const loadingAnimation = selectedBuild.isRunning && <LinearProgress />;
 
@@ -72,7 +35,6 @@ const BuildDetails: React.FunctionComponent = () => {
             <Grid item>
               <BuildStatusChip status={selectedBuild.status} />
             </Grid>
-            {approveAllButton}
           </Grid>
         </Box>
       </Grid>
