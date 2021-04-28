@@ -2,51 +2,46 @@ import { Project } from "../types";
 import { handleResponse, authHeader } from "../_helpers/service.helpers";
 import { API_URL } from "../_config/env.config";
 
-function getAll(): Promise<Project[]> {
+async function getAll(): Promise<Project[]> {
   const requestOptions = {
     method: "GET",
     headers: authHeader(),
   };
 
-  return fetch(`${API_URL}/projects`, requestOptions).then(handleResponse);
+  const response = await fetch(`${API_URL}/projects`, requestOptions);
+  return handleResponse(response);
 }
 
-function remove(id: string): Promise<Project> {
+async function remove(id: string): Promise<Project> {
   const requestOptions = {
     method: "DELETE",
     headers: authHeader(),
   };
 
-  return fetch(`${API_URL}/projects/${id}`, requestOptions).then(
-    handleResponse
-  );
+  const response = await fetch(`${API_URL}/projects/${id}`, requestOptions);
+  return handleResponse(response);
 }
 
-function create(project: {
-  name: string;
-  mainBranchName: string;
-}): Promise<Project> {
+async function create(project: Partial<Project>): Promise<Project> {
   const requestOptions = {
     method: "POST",
     headers: { "Content-Type": "application/json", ...authHeader() },
     body: JSON.stringify(project),
   };
 
-  return fetch(`${API_URL}/projects`, requestOptions).then(handleResponse);
+  const response = await fetch(`${API_URL}/projects`, requestOptions);
+  return handleResponse(response);
 }
 
-function update(project: {
-  id: string;
-  name: string;
-  mainBranchName: string;
-}): Promise<Project> {
+async function update(project: Partial<Project>): Promise<Project> {
   const requestOptions = {
     method: "PUT",
     headers: { "Content-Type": "application/json", ...authHeader() },
     body: JSON.stringify(project),
   };
 
-  return fetch(`${API_URL}/projects`, requestOptions).then(handleResponse);
+  const response = await fetch(`${API_URL}/projects`, requestOptions);
+  return handleResponse(response);
 }
 
 export const projectsService = {

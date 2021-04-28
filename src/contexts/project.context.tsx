@@ -1,5 +1,5 @@
 import * as React from "react";
-import { Project } from "../types";
+import { Project, ProjectDto } from "../types";
 import { projectsService } from "../services";
 import { useSnackbar } from "notistack";
 import { useAuthState } from "./auth.context";
@@ -118,10 +118,7 @@ async function selectProject(dispatch: Dispatch, id: string) {
   dispatch({ type: "select", payload: id });
 }
 
-async function createProject(
-  dispatch: Dispatch,
-  project: { name: string; mainBranchName: string }
-) {
+async function createProject(dispatch: Dispatch, project: ProjectDto) {
   dispatch({ type: "request" });
 
   return projectsService.create(project).then((project: Project) => {
@@ -130,10 +127,7 @@ async function createProject(
   });
 }
 
-async function updateProject(
-  dispatch: Dispatch,
-  project: { id: string; name: string; mainBranchName: string }
-) {
+async function updateProject(dispatch: Dispatch, project: ProjectDto) {
   dispatch({ type: "request" });
 
   return projectsService.update(project).then((project: Project) => {

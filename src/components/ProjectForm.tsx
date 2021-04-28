@@ -1,21 +1,18 @@
+import {
+  FormControl,
+  FormControlLabel,
+  InputLabel,
+  MenuItem,
+  Select,
+  Switch,
+} from "@material-ui/core";
 import React from "react";
 import { TextValidator } from "react-material-ui-form-validator";
+import { ProjectDto } from "../types";
+import { ImageComparison } from "../types/imageComparison";
 
 interface IProps {
-  projectState: [
-    {
-      id: string;
-      name: string;
-      mainBranchName: string;
-    },
-    React.Dispatch<
-      React.SetStateAction<{
-        id: string;
-        name: string;
-        mainBranchName: string;
-      }>
-    >
-  ];
+  projectState: [ProjectDto, React.Dispatch<React.SetStateAction<ProjectDto>>];
 }
 
 export const ProjectForm: React.FunctionComponent<IProps> = ({
@@ -54,10 +51,98 @@ export const ProjectForm: React.FunctionComponent<IProps> = ({
         fullWidth
         required
         value={project.mainBranchName}
-        onChange={(event) => {
+        onChange={(event) =>
           setProject({
             ...project,
             mainBranchName: (event.target as HTMLInputElement).value,
+          })
+        }
+      />
+      <FormControl fullWidth>
+        <InputLabel id="imageComparisonSelect">
+          Image comparison library
+        </InputLabel>
+        <Select
+          id="imageComparisonSelect"
+          labelId="imageComparisonSelect"
+          value={project.imageComparison}
+          onChange={(event) =>
+            setProject({
+              ...project,
+              imageComparison: event.target.value as ImageComparison,
+            })
+          }
+        >
+          <MenuItem value={ImageComparison.pixelmatch}>
+            {ImageComparison.pixelmatch}
+          </MenuItem>
+        </Select>
+      </FormControl>
+      <FormControlLabel
+        label="Auto approve feature"
+        control={
+          <Switch
+            checked={project.autoApproveFeature}
+            onChange={(event, checked) =>
+              setProject({
+                ...project,
+                autoApproveFeature: checked,
+              })
+            }
+            color="primary"
+            name="autoApproveFeature"
+          />
+        }
+      />
+      <FormControlLabel
+        label="Allow diff dimentions"
+        control={
+          <Switch
+            checked={project.diffDimensionsFeature}
+            onChange={(event, checked) =>
+              setProject({
+                ...project,
+                diffDimensionsFeature: checked,
+              })
+            }
+            color="primary"
+            name="diffDimensionsFeature"
+          />
+        }
+      />
+      <FormControlLabel
+        label="Ignore anti-alliasing"
+        control={
+          <Switch
+            checked={project.ignoreAntialiasing}
+            onChange={(event, checked) =>
+              setProject({
+                ...project,
+                ignoreAntialiasing: checked,
+              })
+            }
+            color="primary"
+            name="ignoreAntialiasing"
+          />
+        }
+      />
+      <TextValidator
+        name="threshold"
+        validators={["minNumber:0", "maxNumber:1"]}
+        errorMessages={["Enter greater than 0", "Enter less than 1"]}
+        InputProps={{ inputProps: { min: 0, max: 1, step: 0.001 } }}
+        margin="dense"
+        id="threshold"
+        label="Pixel diff threshold"
+        type="number"
+        fullWidth
+        required
+        value={project.threshold}
+        onChange={(event) => {
+          const value = (event.target as HTMLInputElement).value;
+          setProject({
+            ...project,
+            threshold: parseFloat(value),
           });
         }}
       />

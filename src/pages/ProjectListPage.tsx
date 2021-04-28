@@ -24,6 +24,19 @@ import { formatDateTime } from "../_helpers/format.helper";
 import { ProjectForm } from "../components/ProjectForm";
 import { useSnackbar } from "notistack";
 import { BaseModal } from "../components/BaseModal";
+import { ProjectDto } from "../types";
+import { ImageComparison } from "../types/imageComparison";
+
+const defaultProject: ProjectDto = {
+  id: "",
+  name: "",
+  mainBranchName: "",
+  ignoreAntialiasing: true,
+  autoApproveFeature: true,
+  diffDimensionsFeature: true,
+  threshold: 0.1,
+  imageComparison: ImageComparison.pixelmatch,
+};
 
 const ProjectsListPage = () => {
   const { enqueueSnackbar } = useSnackbar();
@@ -33,15 +46,7 @@ const ProjectsListPage = () => {
   const [createDialogOpen, setCreateDialogOpen] = React.useState(false);
   const [updateDialogOpen, setUpdateDialogOpen] = React.useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = React.useState(false);
-  const [project, setProject] = React.useState<{
-    id: string;
-    name: string;
-    mainBranchName: string;
-  }>({
-    id: "",
-    name: "",
-    mainBranchName: "",
-  });
+  const [project, setProject] = React.useState(defaultProject);
 
   const toggleCreateDialogOpen = () => {
     setCreateDialogOpen(!createDialogOpen);
@@ -70,11 +75,7 @@ const ProjectsListPage = () => {
               aria-label="add"
               onClick={() => {
                 toggleCreateDialogOpen();
-                setProject({
-                  id: "",
-                  name: "",
-                  mainBranchName: "",
-                });
+                setProject(defaultProject);
               }}
             >
               <Add />
