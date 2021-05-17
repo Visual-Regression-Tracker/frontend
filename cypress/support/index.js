@@ -20,12 +20,11 @@ import "./commands";
 
 // Alternatively you can use CommonJS syntax:
 // require('./commands')
-require("cypress-react-unit-test/support");
 
-before(() => {
-  cy.vrtStart();
-});
+// before(() => {
+//   cy.vrtStart();
+// });
 
-after(() => {
-  cy.vrtStop();
-});
+// after(() => {
+//   cy.vrtStop();
+// });

@@ -1,6 +1,6 @@
 /* global cy */
 import React from "react";
-import { mount } from "cypress-react-unit-test";
+import { mount } from "@cypress/react";
 import Header from "./Header";
 import { AuthProvider } from "../contexts";
 import { BrowserRouter } from "react-router-dom";

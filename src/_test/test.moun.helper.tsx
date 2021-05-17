@@ -1,5 +1,5 @@
 import React from "react";
-import { mount } from "cypress-react-unit-test";
+import { mount } from "@cypress/react";
 import {
   ProjectProvider,
   AuthProvider,
@@ -32,8 +32,5 @@ export const mountVrtComponent = ({
           </AuthProvider>
         </SnackbarProvider>
       </Route>
-    </MemoryRouter>,
-    {
-      stylesheets: ["/__root/src/index.css"],
-    }
+    </MemoryRouter>
   );

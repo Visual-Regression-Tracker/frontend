@@ -9,6 +9,7 @@ describe("Login page", () => {
       component: <LoginPage />,
     });
 
-    cy.vrtTrack("Login page");
+    // cy.vrtTrack("Login page");
+    cy.screenshot();
   });
 });

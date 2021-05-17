@@ -1,6 +1,6 @@
 /* global cy */
 import React from "react";
-import { mount } from "cypress-react-unit-test";
+import { mount } from "@cypress/react";
 import Filters from "./Filters";
 import { TestStatus } from "../types/testStatus";
 
