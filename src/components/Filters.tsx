@@ -19,6 +19,7 @@ interface IProps {
   deviceState: [string, React.Dispatch<React.SetStateAction<string>>];
   browserState: [string, React.Dispatch<React.SetStateAction<string>>];
   viewportState: [string, React.Dispatch<React.SetStateAction<string>>];
+  customTagsState: [string, React.Dispatch<React.SetStateAction<string>>];
   testStatusState?: [string, React.Dispatch<React.SetStateAction<string>>];
   branchNameState?: [string, React.Dispatch<React.SetStateAction<string>>];
 }
@@ -30,6 +31,7 @@ const Filters: React.FunctionComponent<IProps> = ({
   deviceState,
   browserState,
   viewportState,
+  customTagsState,
   testStatusState,
   branchNameState,
 }) => {
@@ -38,12 +40,13 @@ const Filters: React.FunctionComponent<IProps> = ({
   const [device, setDevice] = deviceState;
   const [browser, setBrowser] = browserState;
   const [viewport, setViewport] = viewportState;
+  const [customTags, setCustomTags] = customTagsState;
   const [testStatus, setTestStatus] = testStatusState
     ? testStatusState
-    : [null, () => {}];
+    : [null, () => { }];
   const [branchName, setBranchName] = branchNameState
     ? branchNameState
-    : [null, () => {}];
+    : [null, () => { }];
 
   const osList = items
     .map((t) => t.os)
@@ -59,6 +62,10 @@ const Filters: React.FunctionComponent<IProps> = ({
 
   const viewportList = items
     .map((t) => t.viewport)
+    .filter((v, i, array) => v && array.indexOf(v) === i);
+
+  const customTagsList = items
+    .map((t) => t.customTags)
     .filter((v, i, array) => v && array.indexOf(v) === i);
 
   const testStatusList =
@@ -184,6 +191,30 @@ const Filters: React.FunctionComponent<IProps> = ({
             </FormControl>
           </Grid>
         )}
+        {customTagsList.length > 0 && (
+          <Grid item xs>
+            <FormControl fullWidth>
+              <InputLabel shrink id="filter_customTags">
+                Custom Tags
+              </InputLabel>
+              <Select
+                id="filter_customTags"
+                value={customTags}
+                displayEmpty
+                onChange={(event) => setCustomTags(event.target.value as string)}
+              >
+                <MenuItem value="">
+                  <em>All</em>
+                </MenuItem>
+                {customTagsList.map((item) => (
+                  <MenuItem key={item} value={item}>
+                    {item}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+          </Grid>
+        )}
         {testStatusList && testStatusList.length > 0 && (
           <Grid item xs>
             <FormControl fullWidth>
@@ -246,6 +277,7 @@ const Filters: React.FunctionComponent<IProps> = ({
               setDevice("");
               setBrowser("");
               setViewport("");
+              setCustomTags("");
               setTestStatus("");
             }}
           >

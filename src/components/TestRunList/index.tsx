@@ -32,6 +32,7 @@ const columnsDef: ColDef[] = [
         params.row["device"],
         params.row["browser"],
         params.row["viewport"],
+        params.row["customTags"],
       ];
       return tags.reduce(
         (prev, curr) => prev.concat(curr ? `${curr};` : ""),
