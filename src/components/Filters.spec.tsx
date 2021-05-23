@@ -24,6 +24,7 @@ describe("Filters", () => {
             browser: "Chrome",
             viewport: "100x200",
             device: "Laptop",
+            customTags: "customTags",
             ignoreAreas: "[]",
             comment: "comment",
             branchName: "master",
@@ -36,6 +37,7 @@ describe("Filters", () => {
         deviceState={["Laptop", cy.stub()]}
         browserState={["Chrome", cy.stub()]}
         viewportState={["100x200", cy.stub()]}
+        customTagsState={["customTags", cy.stub()]}
         testStatusState={[TestStatus.ok, cy.stub()]}
       />
     );

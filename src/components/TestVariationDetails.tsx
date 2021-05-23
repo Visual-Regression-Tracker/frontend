@@ -23,6 +23,11 @@ export const TestVariationDetails: React.FunctionComponent<IProps> = ({
             <Typography>Device: {testVariation.device}</Typography>
           </Grid>
         )}
+        {testVariation.customTags && (
+          <Grid item>
+            <Typography>Custom Tags: {testVariation.customTags}</Typography>
+          </Grid>
+        )}
         {testVariation.browser && (
           <Grid item>
             <Typography>Browser: {testVariation.browser}</Typography>

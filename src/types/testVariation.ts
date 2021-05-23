@@ -9,6 +9,7 @@ export interface TestVariation {
   browser: string;
   viewport: string;
   device: string;
+  customTags: string;
   ignoreAreas: string;
   projectId: string;
   baselines: Baseline[];

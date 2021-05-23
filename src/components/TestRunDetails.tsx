@@ -31,6 +31,11 @@ export const TestRunDetails: React.FunctionComponent<IProps> = ({
           <Typography>Viewport: {testRun.viewport}</Typography>
         </Grid>
       )}
+      {testRun.customTags && (
+        <Grid item>
+          <Typography>Custom Tags: {testRun.customTags}</Typography>
+        </Grid>
+      )}
       <Grid item>
         <Typography>Diff: {testRun.diffPercent}%</Typography>
       </Grid>

@@ -23,6 +23,7 @@ const TestVariationListPage: React.FunctionComponent = () => {
   const [device, setDevice] = React.useState("");
   const [browser, setBrowser] = React.useState("");
   const [viewport, setViewport] = React.useState("");
+  const [customTags, setCustomTags] = React.useState("");
   const [branchName, setBranchName] = React.useState("");
   const [filteredItems, setFilteredItems] = React.useState<TestVariation[]>([]);
 
@@ -50,10 +51,11 @@ const TestVariationListPage: React.FunctionComponent = () => {
           (os ? t.os === os : true) && // by OS
           (device ? t.device === device : true) && // by device
           (viewport ? t.viewport === viewport : true) && // by viewport
+          (customTags ? t.customTags === customTags : true) && // by customTags
           (browser ? t.browser === browser : true) // by browser
       )
     );
-  }, [query, branchName, os, device, browser, viewport, testVariations]);
+  }, [query, branchName, os, device, browser, viewport, customTags, testVariations]);
 
   const handleDelete = (id: string) => {
     testVariationService
@@ -97,6 +99,7 @@ const TestVariationListPage: React.FunctionComponent = () => {
               deviceState={[device, setDevice]}
               browserState={[browser, setBrowser]}
               viewportState={[viewport, setViewport]}
+              customTagsState={[customTags, setCustomTags]}
               branchNameState={[branchName, setBranchName]}
             />
           </Grid>
