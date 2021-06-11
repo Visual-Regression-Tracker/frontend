@@ -3,6 +3,7 @@ import { Project, ProjectDto } from "../types";
 import { projectsService } from "../services";
 import { useSnackbar } from "notistack";
 import { useAuthState } from "./auth.context";
+import { ImageComparison } from "../types/imageComparison";
 
 interface IRequestAction {
   type: "request";
@@ -34,7 +35,13 @@ interface ISelectAction {
   payload: string;
 }
 
+interface ISetProjectEditState {
+  type: "setProjectEditState";
+  payload: ProjectDto;
+}
+
 type IAction =
+  | ISetProjectEditState
   | IRequestAction
   | IGetction
   | ISelectAction
@@ -43,7 +50,21 @@ type IAction =
   | IUpdateAction;
 
 type Dispatch = (action: IAction) => void;
-type State = { selectedProjectId: string | null; projectList: Project[] };
+type State = {
+  selectedProjectId: string | null;
+  projectEditState: ProjectDto;
+  projectList: Project[];
+};
+
+const DEFAULT_PROJECT_EDIT_STATE: ProjectDto = {
+  id: "",
+  name: "",
+  mainBranchName: "",
+  autoApproveFeature: true,
+  imageComparison: ImageComparison.pixelmatch,
+  imageComparisonConfig:
+    '{"threshold":0.1,"ignoreAntialiasing":true,"allowDiffDimensions":false}',
+};
 
 type ProjectProviderProps = { children: React.ReactNode };
 
@@ -83,6 +104,11 @@ function projectReducer(state: State, action: IAction): State {
       return {
         ...state,
         projectList: state.projectList.filter((p) => p.id !== action.payload),
+      };
+    case "setProjectEditState":
+      return {
+        ...state,
+        projectEditState: action.payload,
       };
     default:
       return state;
@@ -145,10 +171,18 @@ async function deleteProject(dispatch: Dispatch, id: string) {
   });
 }
 
+async function setProjectEditState(dispatch: Dispatch, project?: ProjectDto) {
+  dispatch({
+    type: "setProjectEditState",
+    payload: project ?? DEFAULT_PROJECT_EDIT_STATE,
+  });
+}
+
 function ProjectProvider({ children }: ProjectProviderProps) {
   const initialState: State = {
     selectedProjectId: null,
     projectList: [],
+    projectEditState: DEFAULT_PROJECT_EDIT_STATE,
   };
 
   const { loggedIn } = useAuthState();
@@ -182,4 +216,5 @@ export {
   getProjectList,
   deleteProject,
   selectProject,
+  setProjectEditState,
 };
