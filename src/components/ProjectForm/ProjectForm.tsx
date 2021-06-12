@@ -99,7 +99,7 @@ export const ProjectForm: React.FunctionComponent = () => {
             const imageComparison = event.target.value as ImageComparison;
             setProjectEditState(projectDispatch, {
               ...project,
-              imageComparison: imageComparison,
+              imageComparison,
               imageComparisonConfig:
                 project.imageComparison !== imageComparison
                   ? getDefaultConfig(imageComparison)
