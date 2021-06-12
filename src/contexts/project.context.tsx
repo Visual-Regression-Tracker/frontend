@@ -3,7 +3,7 @@ import { Project, ProjectDto } from "../types";
 import { projectsService } from "../services";
 import { useSnackbar } from "notistack";
 import { useAuthState } from "./auth.context";
-import { ImageComparison } from "../types/imageComparison";
+import { DEFAULT_PROJECT_EDIT_STATE } from "../constants";
 
 interface IRequestAction {
   type: "request";
@@ -54,16 +54,6 @@ type State = {
   selectedProjectId: string | null;
   projectEditState: ProjectDto;
   projectList: Project[];
-};
-
-const DEFAULT_PROJECT_EDIT_STATE: ProjectDto = {
-  id: "",
-  name: "",
-  mainBranchName: "",
-  autoApproveFeature: true,
-  imageComparison: ImageComparison.pixelmatch,
-  imageComparisonConfig:
-    '{"threshold":0.1,"ignoreAntialiasing":true,"allowDiffDimensions":false}',
 };
 
 type ProjectProviderProps = { children: React.ReactNode };

@@ -23,7 +23,7 @@ export const PixelmatchConfigForm: React.FunctionComponent = () => {
 
   const updateConfig = React.useCallback(
     (name: keyof PixelmatchConfig, value: PixelmatchConfig[typeof name]) => {
-      const imageComparisonConfig = modifyConfigProp(
+      const imageComparisonConfig = modifyConfigProp<PixelmatchConfig>(
         project.imageComparisonConfig,
         name,
         value

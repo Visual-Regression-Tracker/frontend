@@ -14,7 +14,9 @@ import {
   setProjectEditState,
 } from "../../contexts";
 import { ImageComparison } from "../../types/imageComparison";
+import { LooksSameConfigForm } from "./LooksSameConfigForm";
 import { PixelmatchConfigForm } from "./PixelmatchConfigForm";
+import { getDefaultConfig } from "./utils";
 
 export const ProjectForm: React.FunctionComponent = () => {
   const { projectEditState: project } = useProjectState();
@@ -24,6 +26,8 @@ export const ProjectForm: React.FunctionComponent = () => {
     switch (project.imageComparison) {
       case ImageComparison.pixelmatch:
         return <PixelmatchConfigForm />;
+      case ImageComparison.lookSame:
+        return <LooksSameConfigForm />;
       default:
         return null;
     }
@@ -91,12 +95,17 @@ export const ProjectForm: React.FunctionComponent = () => {
           id="imageComparisonSelect"
           labelId="imageComparisonSelect"
           value={project.imageComparison}
-          onChange={(event) =>
+          onChange={(event) => {
+            const imageComparison = event.target.value as ImageComparison;
             setProjectEditState(projectDispatch, {
               ...project,
-              imageComparison: event.target.value as ImageComparison,
-            })
-          }
+              imageComparison: imageComparison,
+              imageComparisonConfig:
+                project.imageComparison !== imageComparison
+                  ? getDefaultConfig(imageComparison)
+                  : project.imageComparisonConfig,
+            });
+          }}
         >
           <MenuItem value={ImageComparison.pixelmatch}>
             {ImageComparison.pixelmatch}
