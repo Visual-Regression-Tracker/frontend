@@ -33,5 +33,14 @@ COPY .env .
 COPY ./env.sh .
 RUN chmod +x env.sh
 
+RUN adduser -D app
+RUN chown -R app:app . && \
+    chown -R app:app /var/cache/nginx && \
+    chown -R app:app /var/log/nginx && \
+    chown -R app:app /etc/nginx/conf.d
+RUN touch /var/run/nginx.pid && \
+    chown -R app:app /var/run/nginx.pid
+USER app
+
 # Start Nginx server
 CMD ["/bin/bash", "-c", "/usr/share/nginx/html/env.sh && nginx -g \"daemon off;\""]
