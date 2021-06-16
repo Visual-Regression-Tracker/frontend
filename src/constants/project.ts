@@ -13,4 +13,5 @@ export const DEFAULT_PROJECT_EDIT_STATE: ProjectDto = {
   autoApproveFeature: true,
   imageComparison: ImageComparison.pixelmatch,
   imageComparisonConfig: PIXELMATCH_DEFAULT_CONFIG,
+  maxBuildAllowed: 100,
 };

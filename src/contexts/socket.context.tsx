@@ -5,6 +5,8 @@ import {
   useBuildDispatch,
   addBuild,
   updateBuild,
+  selectBuild,
+  clearBuild,
 } from "./build.context";
 import { Build, TestRun } from "../types";
 import {
@@ -77,6 +79,13 @@ function SocketProvider({ children }: SocketProviderProps) {
           buildDispatch,
           builds.filter((build) => build.projectId === selectedProjectId)
         );
+      });
+
+      state.socket.on("build_deleted", function (build: Build) {
+        clearBuild(buildDispatch, build.id);
+        if (selectedBuild && selectedBuild.id === build.id) {
+          selectBuild(buildDispatch, null);
+        }
       });
 
       state.socket.on("testRun_created", function (testRuns: Array<TestRun>) {

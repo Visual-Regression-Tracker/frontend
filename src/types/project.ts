@@ -11,6 +11,7 @@ export interface Project {
   autoApproveFeature: boolean;
   imageComparison: ImageComparison;
   imageComparisonConfig: string;
+  maxBuildAllowed: number;
 }
 
 export type ProjectDto = Omit<Project, "updatedAt" | "createdAt" | "builds">;

@@ -197,6 +197,10 @@ async function deleteBuild(dispatch: Dispatch, id: string) {
   });
 }
 
+async function clearBuild(dispatch: Dispatch, id: string) {
+  dispatch({ type: "delete", payload: id });
+}
+
 async function selectBuild(dispatch: Dispatch, id: string | null) {
   if (id === null) {
     dispatch({ type: "select", payload: null });
@@ -221,6 +225,7 @@ export {
   useBuildDispatch,
   getBuildList,
   deleteBuild,
+  clearBuild,
   selectBuild,
   addBuild,
   updateBuild,
