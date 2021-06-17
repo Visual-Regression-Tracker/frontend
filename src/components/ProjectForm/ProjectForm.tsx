@@ -71,6 +71,26 @@ export const ProjectForm: React.FunctionComponent = () => {
           })
         }
       />
+      <TextValidator
+        name="buildCount"
+        validators={["minNumber:1"]}
+        errorMessages={["Enter greater than 1"]}
+        InputProps={{ inputProps: { min: 1, step: 1 } }}
+        margin="dense"
+        id="buildCount"
+        label="Number of builds to keep"
+        type="number"
+        fullWidth
+        required
+        value={project.maxBuildAllowed}
+        onChange={(event) => {
+          const value = (event.target as HTMLInputElement).value;
+          setProjectEditState(projectDispatch, {
+            ...project,
+            maxBuildAllowed: parseInt(value),
+          });
+        }}
+      />
       <FormControlLabel
         label="Auto approve feature"
         control={
