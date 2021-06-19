@@ -53,7 +53,7 @@ export const LooksSameConfigForm: React.FunctionComponent = () => {
         name="tolerance"
         validators={["minNumber:0"]}
         errorMessages={["Enter greater than 0"]}
-        InputProps={{ inputProps: { min: 0 } }}
+        InputProps={{ inputProps: { min: 0, step: 0.001 } }}
         margin="dense"
         id="tolerance"
         label="Tolerance"
@@ -83,7 +83,7 @@ export const LooksSameConfigForm: React.FunctionComponent = () => {
         name="antialiasingTolerance"
         validators={["minNumber:0"]}
         errorMessages={["Enter greater than 0"]}
-        InputProps={{ inputProps: { min: 0 } }}
+        InputProps={{ inputProps: { min: 0, step: 0.001 } }}
         margin="dense"
         id="antialiasingTolerance"
         label="Antialiasing tolerance"
