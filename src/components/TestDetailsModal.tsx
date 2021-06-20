@@ -25,7 +25,7 @@ import { TestStatus } from "../types/testStatus";
 import { useHistory, Prompt } from "react-router-dom";
 import { IgnoreArea } from "../types/ignoreArea";
 import { KonvaEventObject } from "konva/types/Node";
-import { Close, Add, Delete, Save, WarningRounded } from "@material-ui/icons";
+import { Close, Add, Delete, Save, WarningRounded, LayersClear } from "@material-ui/icons";
 import { TestRunDetails } from "./TestRunDetails";
 import useImage from "use-image";
 import { routes } from "../constants";
@@ -330,7 +330,7 @@ const TestDetailsModal: React.FunctionComponent<{
               </Grid>
               <Grid item>
                 <IconButton
-                  disabled={!selectedRectId}
+                  disabled={!selectedRectId || ignoreAreas.length === 0}
                   onClick={() =>
                     selectedRectId && deleteIgnoreArea(selectedRectId)
                   }
@@ -338,6 +338,18 @@ const TestDetailsModal: React.FunctionComponent<{
                   <Delete />
                 </IconButton>
               </Grid>
+              <Tooltip title="Clears all ignore areas." aria-label="reject">
+                <Grid item>
+                  <IconButton
+                    disabled={ignoreAreas.length === 0}
+                    onClick={() =>
+                      setIgnoreAreas([])
+                    }
+                  >
+                    <LayersClear />
+                  </IconButton>
+                </Grid>
+              </Tooltip>
               <Grid item>
                 <IconButton
                   disabled={isIgnoreAreasSaved()}

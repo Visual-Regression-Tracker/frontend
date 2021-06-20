@@ -67,18 +67,6 @@ async function setIgnoreAreas(
   ).then(handleResponse);
 }
 
-async function getTestRunDetails(id: string): Promise<TestRun> {
-  const requestOptions = {
-    method: "GET",
-    headers: authHeader(),
-  };
-
-  return fetch(
-    `${API_URL}${ENDPOINT_URL}/${id}`,
-    requestOptions
-  ).then(handleResponse);
-}
-
 async function setComment(id: string, comment: string): Promise<TestRun> {
   const requestOptions = {
     method: "PUT",
@@ -96,7 +84,6 @@ export const testRunService = {
   remove,
   approve,
   reject,
-  getTestRunDetails,
   setIgnoreAreas,
   setComment,
 };

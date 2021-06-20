@@ -3,7 +3,7 @@ import { Typography, IconButton, Tooltip, LinearProgress } from "@material-ui/co
 import { BaseComponentProps, InternalRowsState, RowModel } from "@material-ui/data-grid";
 import { BaseModal } from "../BaseModal";
 import { useSnackbar } from "notistack";
-import { Collections, Delete, LayersClear, ThumbDown, ThumbUp } from "@material-ui/icons";
+import { Delete, LayersClear, ThumbDown, ThumbUp } from "@material-ui/icons";
 import { testRunService } from "../../services";
 import { TestStatus } from "../../types";
 import { IgnoreArea } from "../../types/ignoreArea";
@@ -15,7 +15,6 @@ export const BulkOperation: React.FunctionComponent<BaseComponentProps> = (
   const [approveDialogOpen, setApproveDialogOpen] = React.useState(false);
   const [rejectDialogOpen, setRejectDialogOpen] = React.useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = React.useState(false);
-  const [applyIgnoreDialogOpen, setApplyIgnoreDialogOpen] = React.useState(false);
   const [clearIgnoreDialogOpen, setClearIgnoreDialogOpen] = React.useState(false);
   const [isProcessing, setIsProcessing] = React.useState(false);
 
@@ -32,17 +31,11 @@ export const BulkOperation: React.FunctionComponent<BaseComponentProps> = (
   const toggleDeleteDialogOpen = () => {
     setDeleteDialogOpen(!deleteDialogOpen);
   };
-  const toggleApplyIgnoreDialogOpen = () => {
-    setApplyIgnoreDialogOpen(!applyIgnoreDialogOpen);
-  };
   const toggleClearIgnoreDialogOpen = () => {
     setClearIgnoreDialogOpen(!clearIgnoreDialogOpen);
   };
 
   const getTitle = () => {
-    if (applyIgnoreDialogOpen) {
-      return "Apply Selected Ignore Area To All Images";
-    }
     if (clearIgnoreDialogOpen) {
       return "Clear Ignore Area For Selected Items";
     }
@@ -59,9 +52,6 @@ export const BulkOperation: React.FunctionComponent<BaseComponentProps> = (
     if (deleteDialogOpen) {
       return "Delete";
     }
-    if (applyIgnoreDialogOpen) {
-      return "Apply";
-    }
     if (clearIgnoreDialogOpen) {
       return "Clear";
     }
@@ -77,9 +67,6 @@ export const BulkOperation: React.FunctionComponent<BaseComponentProps> = (
     }
     if (rejectDialogOpen) {
       return toggleRejectDialogOpen();
-    }
-    if (applyIgnoreDialogOpen) {
-      return toggleApplyIgnoreDialogOpen();
     }
     if (clearIgnoreDialogOpen) {
       return toggleClearIgnoreDialogOpen();
@@ -104,20 +91,6 @@ export const BulkOperation: React.FunctionComponent<BaseComponentProps> = (
     if (clearIgnoreDialogOpen) {
       testRunService.setIgnoreAreas(id, []);
     }
-    if (applyIgnoreDialogOpen) {
-      const testRun = testRunService.getTestRunDetails(id);
-      let runningNumber = 0;
-      allRows.allRows.forEach(async (eachRow) => {
-        const ignoreAreaToSet: IgnoreArea[] = JSON.parse((await testRun).ignoreAreas);
-        if (ignoreAreaToSet.length > 0) {
-          //Add a running number to make id unique.
-          ignoreAreaToSet.forEach((e) => {
-            e.id = (Date.now() + (++runningNumber)).toString().slice(0, 13);
-          });
-          testRunService.setIgnoreAreas(eachRow.toString(), ignoreAreaToSet);
-        }
-      });
-    }
   };
 
   const processApproveReject = (id: string) => {
@@ -136,20 +109,10 @@ export const BulkOperation: React.FunctionComponent<BaseComponentProps> = (
     if (approveDialogOpen) {
       return toggleApproveDialogOpen();
     }
-    if (applyIgnoreDialogOpen) {
-      return toggleApplyIgnoreDialogOpen();
-    }
     if (clearIgnoreDialogOpen) {
       return toggleClearIgnoreDialogOpen();
     }
     return toggleRejectDialogOpen();
-  };
-
-  const getProcessSuccessMessage = () => {
-    if (applyIgnoreDialogOpen) {
-      return "Selected image ignore area has been applied to all images.";
-    }
-    return `${count} test runs processed.`;
   };
 
   return (
@@ -175,30 +138,29 @@ export const BulkOperation: React.FunctionComponent<BaseComponentProps> = (
           </IconButton>
         </span>
       </Tooltip>
-      <Tooltip title="Applies ignore area from selected image to all images in this build." aria-label="apply ignore area">
+      <Tooltip
+        title="Clear ignore areas for selected rows."
+        aria-label="clear ignore area"
+      >
         <span>
-          <IconButton disabled={count !== 1} onClick={toggleApplyIgnoreDialogOpen}>
-            <Collections />
-          </IconButton>
-        </span>
-      </Tooltip>
-      <Tooltip title="Clear ignore areas for selected rows." aria-label="clear ignore area">
-        <span>
-          <IconButton disabled={count === 0} onClick={toggleClearIgnoreDialogOpen}>
+          <IconButton
+            disabled={count === 0}
+            onClick={toggleClearIgnoreDialogOpen}
+          >
             <LayersClear />
           </IconButton>
         </span>
       </Tooltip>
 
       <BaseModal
-        open={deleteDialogOpen || approveDialogOpen || rejectDialogOpen || applyIgnoreDialogOpen || clearIgnoreDialogOpen}
+        open={deleteDialogOpen || approveDialogOpen || rejectDialogOpen || clearIgnoreDialogOpen}
         title={getTitle()}
         submitButtonText={submitButtonText()}
         onCancel={dismissDialog}
         content={
-          <Typography>{applyIgnoreDialogOpen
-            ? `Are you sure you want to apply ignore area to all images? Works well if images are of same resolution.`
-            : `Are you sure you want to ${submitButtonText().toLowerCase()} ${count} items?`}</Typography>
+          <Typography>
+            {`Are you sure you want to ${submitButtonText().toLowerCase()} ${count} items?`}
+          </Typography>
         }
         onSubmit={() => {
           setIsProcessing(true);
@@ -207,7 +169,7 @@ export const BulkOperation: React.FunctionComponent<BaseComponentProps> = (
           )
             .then(() => {
               setIsProcessing(false);
-              enqueueSnackbar(getProcessSuccessMessage(), {
+              enqueueSnackbar(`${count} test runs processed.`, {
                 variant: "success",
               });
             })
