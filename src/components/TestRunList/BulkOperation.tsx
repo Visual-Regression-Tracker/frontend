@@ -1,11 +1,12 @@
 import React from "react";
-import { Typography, IconButton, Tooltip } from "@material-ui/core";
-import { BaseComponentProps, RowModel } from "@material-ui/data-grid";
+import { Typography, IconButton, Tooltip, LinearProgress } from "@material-ui/core";
+import { BaseComponentProps, InternalRowsState, RowModel } from "@material-ui/data-grid";
 import { BaseModal } from "../BaseModal";
 import { useSnackbar } from "notistack";
-import { Delete, ThumbDown, ThumbUp } from "@material-ui/icons";
+import { Delete, LayersClear, ThumbDown, ThumbUp } from "@material-ui/icons";
 import { testRunService } from "../../services";
 import { TestStatus } from "../../types";
+import { IgnoreArea } from "../../types/ignoreArea";
 
 export const BulkOperation: React.FunctionComponent<BaseComponentProps> = (
   props: BaseComponentProps
@@ -14,9 +15,12 @@ export const BulkOperation: React.FunctionComponent<BaseComponentProps> = (
   const [approveDialogOpen, setApproveDialogOpen] = React.useState(false);
   const [rejectDialogOpen, setRejectDialogOpen] = React.useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = React.useState(false);
+  const [clearIgnoreDialogOpen, setClearIgnoreDialogOpen] = React.useState(false);
+  const [isProcessing, setIsProcessing] = React.useState(false);
 
-  const rows: Record<React.ReactText, boolean> = props.state.selection;
-  const count = Object.keys(rows).length;
+  const allRows: InternalRowsState = props.state.rows;
+  const selectedRows: Record<React.ReactText, boolean> = props.state.selection;
+  const count = Object.keys(selectedRows).length;
 
   const toggleApproveDialogOpen = () => {
     setApproveDialogOpen(!approveDialogOpen);
@@ -27,20 +31,29 @@ export const BulkOperation: React.FunctionComponent<BaseComponentProps> = (
   const toggleDeleteDialogOpen = () => {
     setDeleteDialogOpen(!deleteDialogOpen);
   };
+  const toggleClearIgnoreDialogOpen = () => {
+    setClearIgnoreDialogOpen(!clearIgnoreDialogOpen);
+  };
 
   const getTitle = () => {
+    if (clearIgnoreDialogOpen) {
+      return "Clear Ignore Area For Selected Items";
+    }
     return submitButtonText() + " Test Runs";
   };
 
   const submitButtonText = (): string => {
-    if (deleteDialogOpen) {
-      return "Delete";
-    }
     if (approveDialogOpen) {
       return "Approve";
     }
     if (rejectDialogOpen) {
       return "Reject";
+    }
+    if (deleteDialogOpen) {
+      return "Delete";
+    }
+    if (clearIgnoreDialogOpen) {
+      return "Clear";
     }
     return "";
   };
@@ -54,6 +67,9 @@ export const BulkOperation: React.FunctionComponent<BaseComponentProps> = (
     }
     if (rejectDialogOpen) {
       return toggleRejectDialogOpen();
+    }
+    if (clearIgnoreDialogOpen) {
+      return toggleClearIgnoreDialogOpen();
     }
   };
 
@@ -72,6 +88,9 @@ export const BulkOperation: React.FunctionComponent<BaseComponentProps> = (
     if (isRowEligibleForApproveOrReject(id)) {
       processApproveReject(id);
     }
+    if (clearIgnoreDialogOpen) {
+      testRunService.setIgnoreAreas(id, []);
+    }
   };
 
   const processApproveReject = (id: string) => {
@@ -89,6 +108,9 @@ export const BulkOperation: React.FunctionComponent<BaseComponentProps> = (
     }
     if (approveDialogOpen) {
       return toggleApproveDialogOpen();
+    }
+    if (clearIgnoreDialogOpen) {
+      return toggleClearIgnoreDialogOpen();
     }
     return toggleRejectDialogOpen();
   };
@@ -116,27 +138,37 @@ export const BulkOperation: React.FunctionComponent<BaseComponentProps> = (
           </IconButton>
         </span>
       </Tooltip>
+      <Tooltip
+        title="Clear ignore areas for selected rows."
+        aria-label="clear ignore area"
+      >
+        <span>
+          <IconButton
+            disabled={count === 0}
+            onClick={toggleClearIgnoreDialogOpen}
+          >
+            <LayersClear />
+          </IconButton>
+        </span>
+      </Tooltip>
 
       <BaseModal
-        open={deleteDialogOpen || approveDialogOpen || rejectDialogOpen}
+        open={deleteDialogOpen || approveDialogOpen || rejectDialogOpen || clearIgnoreDialogOpen}
         title={getTitle()}
         submitButtonText={submitButtonText()}
         onCancel={dismissDialog}
         content={
-          <Typography>{`Are you sure you want to ${submitButtonText().toLowerCase()} ${count} items?`}</Typography>
+          <Typography>
+            {`Are you sure you want to ${submitButtonText().toLowerCase()} ${count} items?`}
+          </Typography>
         }
         onSubmit={() => {
-          enqueueSnackbar(
-            "Wait for the confirmation message until operation is completed.",
-            {
-              variant: "info",
-            }
-          );
-
+          setIsProcessing(true);
           Promise.all(
-            Object.keys(rows).map((id: string) => processAction(id))
+            Object.keys(selectedRows).map((id: string) => processAction(id))
           )
             .then(() => {
+              setIsProcessing(false);
               enqueueSnackbar(`${count} test runs processed.`, {
                 variant: "success",
               });
@@ -149,6 +181,7 @@ export const BulkOperation: React.FunctionComponent<BaseComponentProps> = (
           closeModal();
         }}
       />
+      { isProcessing && <LinearProgress />}
     </>
   );
 };
