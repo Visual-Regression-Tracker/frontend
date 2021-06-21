@@ -12,6 +12,7 @@ import {
   Tooltip,
   Select,
   MenuItem,
+  CircularProgress,
 } from "@material-ui/core";
 import { ToggleButton } from "@material-ui/lab";
 import { useHotkeys } from "react-hotkeys-hook";
@@ -32,6 +33,7 @@ import {
   Save,
   WarningRounded,
   LayersClear,
+  Collections,
 } from "@material-ui/icons";
 import { TestRunDetails } from "./TestRunDetails";
 import useImage from "use-image";
@@ -76,6 +78,7 @@ const TestDetailsModal: React.FunctionComponent<{
   const [stagePos, setStagePos] = React.useState(defaultStagePos);
   const [stageInitPos, setStageInitPos] = React.useState(defaultStagePos);
   const [stageOffset, setStageOffset] = React.useState(defaultStagePos);
+  const [progress, setProgress] = React.useState(0);
 
   const [image, imageStatus] = useImage(
     staticService.getImage(testRun.imageName)
@@ -156,6 +159,11 @@ const TestDetailsModal: React.FunctionComponent<{
     }
   };
 
+  const getIgnoreAreaForSelectionId = (idPassed: string) => {
+    let ignoreAreaToReturn = ignoreAreas.filter((area) => idPassed === area.id)[0];
+    return ignoreAreaToReturn;
+  };
+
   const handleClose = () => {
     selectTestRun(testRunDispatch, undefined);
   };
@@ -183,6 +191,34 @@ const TestDetailsModal: React.FunctionComponent<{
   const resetPositioin = () => {
     setStagePos(defaultStagePos);
     setStageOffset(defaultStagePos);
+  };
+
+  const applyIgnoreArea = () => {
+    let newIgnoreArea = getIgnoreAreaForSelectionId(selectedRectId!);
+    let runningNumber = 0;
+    let index = 0;
+    testRunService.getList(testRun.buildId).then(
+      (allRows) => {
+        allRows.forEach(
+          async (eachRow) => {
+            let existingIgnoreArea = (await testRunService.getTestRunDetails(eachRow.id)).ignoreAreas.toString();
+            //Add a running number to make id unique.
+            const newId = (Date.now() + (++runningNumber)).toString().slice(0, 13);
+            newIgnoreArea.id = newId;
+            let newIgnoreAreas: IgnoreArea[] = JSON.parse(existingIgnoreArea);
+            newIgnoreAreas.push(newIgnoreArea);
+            testRunService.setIgnoreAreas(eachRow.id, newIgnoreAreas);
+            // update in variation
+            testVariationService.setIgnoreAreas(testRun.testVariationId, ignoreAreas);
+            let valueToSet = Math.floor(++index * 100 / allRows.length);
+            setProgress(valueToSet);
+          });
+      });
+    setProgress(0);
+    setSelectedRectId(undefined);
+    enqueueSnackbar("Ignore areas are updated in all images in this build.", {
+      variant: "success",
+    });
   };
 
   React.useEffect(() => {
@@ -252,6 +288,7 @@ const TestDetailsModal: React.FunctionComponent<{
           </Grid>
         </Toolbar>
       </AppBar>
+      {(100 > progress && progress > 0) && <CircularProgress variant="determinate" value={progress} />}
       <Box m={1}>
         <Grid container alignItems="center">
           <Grid item xs={12}>
@@ -313,13 +350,25 @@ const TestDetailsModal: React.FunctionComponent<{
                   <Delete />
                 </IconButton>
               </Grid>
-              <Tooltip title="Clears all ignore areas." aria-label="reject">
+              <Tooltip title="Clears all ignore areas." aria-label="clear ignore area">
                 <Grid item>
                   <IconButton
                     disabled={ignoreAreas.length === 0}
                     onClick={() => setIgnoreAreas([])}
                   >
                     <LayersClear />
+                  </IconButton>
+                </Grid>
+              </Tooltip>
+              <Tooltip title="Apply selected ignore area to all images in this build." aria-label="apply ignore area">
+                <Grid item>
+                  <IconButton
+                    disabled={!selectedRectId || ignoreAreas.length === 0}
+                    onClick={() =>
+                      applyIgnoreArea()
+                    }
+                  >
+                    <Collections />
                   </IconButton>
                 </Grid>
               </Tooltip>
