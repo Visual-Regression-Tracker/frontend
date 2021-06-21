@@ -25,7 +25,14 @@ import { TestStatus } from "../types/testStatus";
 import { useHistory, Prompt } from "react-router-dom";
 import { IgnoreArea } from "../types/ignoreArea";
 import { KonvaEventObject } from "konva/types/Node";
-import { Close, Add, Delete, Save, WarningRounded, LayersClear } from "@material-ui/icons";
+import {
+  Close,
+  Add,
+  Delete,
+  Save,
+  WarningRounded,
+  LayersClear,
+} from "@material-ui/icons";
 import { TestRunDetails } from "./TestRunDetails";
 import useImage from "use-image";
 import { routes } from "../constants";
@@ -35,6 +42,8 @@ import { CommentsPopper } from "./CommentsPopper";
 import { useSnackbar } from "notistack";
 import { ScaleActionsSpeedDial } from "./ZoomSpeedDial";
 import { ApproveRejectButtons } from "./ApproveRejectButtons";
+import { head } from "lodash";
+import { invertIgnoreArea } from "../_helpers/ignoreArea.helper";
 
 const defaultStagePos = {
   x: 0,
@@ -79,7 +88,9 @@ const TestDetailsModal: React.FunctionComponent<{
   );
 
   const [isDrawMode, setIsDrawMode] = useState(false);
-  const [valueOfIgnoreOrCompare, setValueOfIgnoreOrCompare] = useState("Ignore Areas");
+  const [valueOfIgnoreOrCompare, setValueOfIgnoreOrCompare] = useState(
+    "Ignore Areas"
+  );
   const [isDiffShown, setIsDiffShown] = useState(false);
   const [selectedRectId, setSelectedRectId] = React.useState<string>();
 
@@ -105,10 +116,7 @@ const TestDetailsModal: React.FunctionComponent<{
       // update in test run
       testRunService.setIgnoreAreas(testRun.id, ignoreAreas),
       // update in variation
-      testVariationService.setIgnoreAreas(
-        testRun.testVariationId,
-        ignoreAreas
-      ),
+      testVariationService.setIgnoreAreas(testRun.testVariationId, ignoreAreas),
     ])
       .then(() => {
         enqueueSnackbar(successMessage, {
@@ -122,56 +130,21 @@ const TestDetailsModal: React.FunctionComponent<{
       );
   };
 
-  const isValidCompareArea = () => {
-    if (ignoreAreas.length === 1) {
-      return true;
-    }
-    enqueueSnackbar("Select one and only one area to compare.", {
-      variant: "error",
-    });
-    return false;
-  };
-
   const saveIgnoreAreasOrCompareArea = () => {
     if (valueOfIgnoreOrCompare.includes("Ignore")) {
       saveTestRun(ignoreAreas, "Ignore areas are updated.");
-      return;
-    }
-    if (isValidCompareArea()) {
-      const imageHeight = image?.height ? image.height : 0;
-      const imageWidth = image?.width ? image.width : 0;
-      const firstIgnoreArea = ignoreAreas[0];
-      let ignoreArea1 = Object.assign({}, firstIgnoreArea);
-      ignoreArea1.x = 0;
-      ignoreArea1.y = 0;
-      ignoreArea1.width = firstIgnoreArea.x;
-      ignoreArea1.height = imageHeight;
-      ignoreArea1.id = firstIgnoreArea.id + 1;
+    } else {
+      const invertedIgnoreAreas = invertIgnoreArea(
+        image!.width,
+        image!.height,
+        head(ignoreAreas)
+      );
 
-      let ignoreArea2 = Object.assign({}, firstIgnoreArea);
-      ignoreArea2.x = firstIgnoreArea.x;
-      ignoreArea2.y = 0;
-      ignoreArea2.width = imageWidth;
-      ignoreArea2.height = firstIgnoreArea.y;
-      ignoreArea2.id = firstIgnoreArea.id + 2;
-
-      let ignoreArea3 = Object.assign({}, firstIgnoreArea);
-      ignoreArea3.x = firstIgnoreArea.x + firstIgnoreArea.width;
-      ignoreArea3.y = firstIgnoreArea.y;
-      ignoreArea3.height = imageHeight;
-      ignoreArea3.width = imageWidth;
-      ignoreArea3.id = firstIgnoreArea.id + 3;
-
-      let ignoreArea4 = Object.assign({}, firstIgnoreArea);
-      ignoreArea4.x = firstIgnoreArea.x;
-      ignoreArea4.y = firstIgnoreArea.y + firstIgnoreArea.height;
-      ignoreArea4.height = imageHeight;
-      ignoreArea4.width = firstIgnoreArea.width;
-      ignoreArea4.id = firstIgnoreArea.id + 4;
-
-      const newIgnoreArea = [ignoreArea1, ignoreArea2, ignoreArea3, ignoreArea4];
-      setIgnoreAreas(newIgnoreArea);
-      saveTestRun(newIgnoreArea, "Selected area has been inverted to ignore areas and saved.");
+      setIgnoreAreas(invertedIgnoreAreas);
+      saveTestRun(
+        invertedIgnoreAreas,
+        "Selected area has been inverted to ignore areas and saved."
+      );
     }
   };
 
@@ -199,9 +172,9 @@ const TestDetailsModal: React.FunctionComponent<{
   const fitStageToScreen = () => {
     const scale = image
       ? Math.min(
-        stageWidth < image.width ? stageWidth / image.width : 1,
-        stageHeigth < image.height ? stageHeigth / image.height : 1
-      )
+          stageWidth < image.width ? stageWidth / image.width : 1,
+          stageHeigth < image.height ? stageHeigth / image.height : 1
+        )
       : 1;
     setStageScale(scale);
     resetPositioin();
@@ -267,10 +240,10 @@ const TestDetailsModal: React.FunctionComponent<{
             )}
             {(testRun.status === TestStatus.unresolved ||
               testRun.status === TestStatus.new) && (
-                <Grid item>
-                  <ApproveRejectButtons testRun={testRun} />
-                </Grid>
-              )}
+              <Grid item>
+                <ApproveRejectButtons testRun={testRun} />
+              </Grid>
+            )}
             <Grid item>
               <IconButton color="inherit" onClick={handleClose}>
                 <Close />
@@ -308,7 +281,9 @@ const TestDetailsModal: React.FunctionComponent<{
                   id="area-select"
                   labelId="areaSelect"
                   value={valueOfIgnoreOrCompare}
-                  onChange={(event) => onIgnoreOrCompareSelectChange(event.target.value as string)}
+                  onChange={(event) =>
+                    onIgnoreOrCompareSelectChange(event.target.value as string)
+                  }
                 >
                   {["Ignore Areas", "Compare Area"].map((eachItem) => (
                     <MenuItem key={eachItem} value={eachItem}>
@@ -342,9 +317,7 @@ const TestDetailsModal: React.FunctionComponent<{
                 <Grid item>
                   <IconButton
                     disabled={ignoreAreas.length === 0}
-                    onClick={() =>
-                      setIgnoreAreas([])
-                    }
+                    onClick={() => setIgnoreAreas([])}
                   >
                     <LayersClear />
                   </IconButton>
@@ -353,9 +326,7 @@ const TestDetailsModal: React.FunctionComponent<{
               <Grid item>
                 <IconButton
                   disabled={isIgnoreAreasSaved()}
-                  onClick={() =>
-                    saveIgnoreAreasOrCompareArea()
-                  }
+                  onClick={() => saveIgnoreAreasOrCompareArea()}
                 >
                   <Save />
                 </IconButton>
