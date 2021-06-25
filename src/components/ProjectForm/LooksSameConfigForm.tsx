@@ -1,11 +1,40 @@
 import { FormControlLabel, Switch } from "@material-ui/core";
 import React from "react";
 import { TextValidator } from "react-material-ui-form-validator";
+import {
+  useProjectState,
+  useProjectDispatch,
+  setProjectEditState,
+} from "../../contexts";
 import { LooksSameConfig } from "../../types/imageComparison";
-import { useConfigHook } from "./useConfigHook";
+import { modifyConfigProp, parseImageComparisonConfig } from "./utils";
 
 export const LooksSameConfigForm: React.FunctionComponent = () => {
-  const [config, updateConfig] = useConfigHook<LooksSameConfig>();
+  const { projectEditState: project } = useProjectState();
+  const projectDispatch = useProjectDispatch();
+
+  const config: LooksSameConfig = React.useMemo(
+    () =>
+      parseImageComparisonConfig<LooksSameConfig>(
+        project.imageComparisonConfig
+      ),
+    [project.imageComparisonConfig]
+  );
+
+  const updateConfig = React.useCallback(
+    (name: keyof LooksSameConfig, value: LooksSameConfig[typeof name]) => {
+      const imageComparisonConfig = modifyConfigProp<LooksSameConfig>(
+        project.imageComparisonConfig,
+        name,
+        value
+      );
+      setProjectEditState(projectDispatch, {
+        ...project,
+        imageComparisonConfig,
+      });
+    },
+    [projectDispatch, project]
+  );
 
   return (
     <React.Fragment>

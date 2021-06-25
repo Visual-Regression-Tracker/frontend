@@ -1,11 +1,40 @@
 import { FormControlLabel, Switch } from "@material-ui/core";
 import React from "react";
 import { TextValidator } from "react-material-ui-form-validator";
+import {
+  useProjectState,
+  useProjectDispatch,
+  setProjectEditState,
+} from "../../contexts";
 import { PixelmatchConfig } from "../../types/imageComparison";
-import { useConfigHook } from "./useConfigHook";
+import { modifyConfigProp, parseImageComparisonConfig } from "./utils";
 
 export const PixelmatchConfigForm: React.FunctionComponent = () => {
-  const [config, updateConfig] = useConfigHook<PixelmatchConfig>();
+  const { projectEditState: project } = useProjectState();
+  const projectDispatch = useProjectDispatch();
+
+  const config: PixelmatchConfig = React.useMemo(
+    () =>
+      parseImageComparisonConfig<PixelmatchConfig>(
+        project.imageComparisonConfig
+      ),
+    [project.imageComparisonConfig]
+  );
+
+  const updateConfig = React.useCallback(
+    (name: keyof PixelmatchConfig, value: PixelmatchConfig[typeof name]) => {
+      const imageComparisonConfig = modifyConfigProp<PixelmatchConfig>(
+        project.imageComparisonConfig,
+        name,
+        value
+      );
+      setProjectEditState(projectDispatch, {
+        ...project,
+        imageComparisonConfig,
+      });
+    },
+    [projectDispatch, project]
+  );
 
   return (
     <React.Fragment>

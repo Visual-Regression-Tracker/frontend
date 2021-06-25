@@ -15,7 +15,6 @@ import {
 } from "../../contexts";
 import { ImageComparison } from "../../types/imageComparison";
 import { LooksSameConfigForm } from "./LooksSameConfigForm";
-import { OdiffConfigForm } from "./OdiffConfigForm";
 import { PixelmatchConfigForm } from "./PixelmatchConfigForm";
 import { getDefaultConfig } from "./utils";
 
@@ -29,8 +28,6 @@ export const ProjectForm: React.FunctionComponent = () => {
         return <PixelmatchConfigForm />;
       case ImageComparison.lookSame:
         return <LooksSameConfigForm />;
-      case ImageComparison.odiff:
-        return <OdiffConfigForm />;
       default:
         return null;
     }
@@ -135,9 +132,6 @@ export const ProjectForm: React.FunctionComponent = () => {
           </MenuItem>
           <MenuItem value={ImageComparison.lookSame}>
             {ImageComparison.lookSame}
-          </MenuItem>
-          <MenuItem value={ImageComparison.odiff}>
-            {ImageComparison.odiff}
           </MenuItem>
         </Select>
       </FormControl>
