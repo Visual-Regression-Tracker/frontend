@@ -1,20 +1,18 @@
 import {
   LOOKSSAME_DEFAULT_CONFIG,
+  ODIFF_DEFAULT_CONFIG,
   PIXELMATCH_DEFAULT_CONFIG,
 } from "../../constants";
 import {
   ImageComparison,
-  LooksSameConfig,
-  PixelmatchConfig,
+  ImageComparisonConfig,
 } from "../../types/imageComparison";
 
-export const parseImageComparisonConfig = <
-  T extends PixelmatchConfig | LooksSameConfig
->(
+export const parseImageComparisonConfig = <T extends ImageComparisonConfig>(
   config: string
 ): T => JSON.parse(config);
 
-export const modifyConfigProp = <T extends PixelmatchConfig | LooksSameConfig>(
+export const modifyConfigProp = <T extends ImageComparisonConfig>(
   config: string,
   name: keyof T,
   value: T[typeof name]
@@ -33,6 +31,8 @@ export const getDefaultConfig = (imageComparison: ImageComparison): string => {
       return PIXELMATCH_DEFAULT_CONFIG;
     case ImageComparison.lookSame:
       return LOOKSSAME_DEFAULT_CONFIG;
+    case ImageComparison.odiff:
+      return ODIFF_DEFAULT_CONFIG;
     default:
       return PIXELMATCH_DEFAULT_CONFIG;
   }

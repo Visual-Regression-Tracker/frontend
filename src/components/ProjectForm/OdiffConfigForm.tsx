@@ -1,24 +1,37 @@
 import { FormControlLabel, Switch } from "@material-ui/core";
 import React from "react";
 import { TextValidator } from "react-material-ui-form-validator";
-import { PixelmatchConfig } from "../../types/imageComparison";
+import { OdiffConfig } from "../../types/imageComparison";
 import { useConfigHook } from "./useConfigHook";
 
-export const PixelmatchConfigForm: React.FunctionComponent = () => {
-  const [config, updateConfig] = useConfigHook<PixelmatchConfig>();
+export const OdiffConfigForm: React.FunctionComponent = () => {
+  const [config, updateConfig] = useConfigHook<OdiffConfig>();
 
   return (
     <React.Fragment>
       <FormControlLabel
-        label="Allow diff dimentions"
+        label="Output diff mask"
         control={
           <Switch
-            checked={config.allowDiffDimensions}
+            checked={config.outputDiffMask}
             onChange={(event, checked) =>
-              updateConfig("allowDiffDimensions", checked)
+              updateConfig("outputDiffMask", checked)
             }
             color="primary"
-            name="diffDimensionsFeature"
+            name="strict"
+          />
+        }
+      />
+      <FormControlLabel
+        label="Fail on layout diff"
+        control={
+          <Switch
+            checked={config.failOnLayoutDiff}
+            onChange={(event, checked) =>
+              updateConfig("failOnLayoutDiff", checked)
+            }
+            color="primary"
+            name="strict"
           />
         }
       />
@@ -26,12 +39,10 @@ export const PixelmatchConfigForm: React.FunctionComponent = () => {
         label="Ignore anti-alliasing"
         control={
           <Switch
-            checked={config.ignoreAntialiasing}
-            onChange={(event, checked) =>
-              updateConfig("ignoreAntialiasing", checked)
-            }
+            checked={config.antialiasing}
+            onChange={(event, checked) => updateConfig("antialiasing", checked)}
             color="primary"
-            name="ignoreAntialiasing"
+            name="antialiasing"
           />
         }
       />
