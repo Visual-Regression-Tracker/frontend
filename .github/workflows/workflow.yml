@@ -20,9 +20,6 @@ jobs:
       - name: Run Component tests 🧪
         uses: cypress-io/github-action@v2
         with:
-          # we have already installed everything
-          install: false
-          # to run component tests we need to use "cypress run-ct"
           command: npm run cypress run-ct
         env:
           VRT_APIURL: "http://162.243.161.172:4200"
