@@ -32,5 +32,8 @@ export const mountVrtComponent = ({
           </AuthProvider>
         </SnackbarProvider>
       </Route>
-    </MemoryRouter>
+    </MemoryRouter>,
+    {
+      stylesheets: ["/src/index.css"],
+    }
   );

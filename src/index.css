@@ -4,6 +4,11 @@ body {
   text-align: center;
 }
 
+#root,
+#__cy_root {
+  height: 100%;
+}
+
 .konvajs-content {
   margin: auto;
   box-shadow: 0 0 4px 0 rgba(0, 0, 0, 0.2), 0 0 20px rgba(0, 0, 0, 0.1);
