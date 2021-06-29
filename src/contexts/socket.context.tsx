@@ -1,5 +1,5 @@
 import * as React from "react";
-import socketIOClient, { Socket } from "socket.io-client";
+import socketIOClient from "socket.io-client";
 import {
   useBuildState,
   useBuildDispatch,
@@ -18,7 +18,7 @@ import { useProjectState } from "./project.context";
 
 interface IConnectAction {
   type: "connect";
-  payload: Socket;
+  payload: SocketIOClient.Socket;
 }
 
 interface IClearAction {
@@ -28,7 +28,7 @@ interface IClearAction {
 type IAction = IConnectAction | IClearAction;
 
 type Dispatch = (action: IAction) => void;
-type State = { socket: Socket | undefined };
+type State = { socket: SocketIOClient.Socket | undefined };
 
 type SocketProviderProps = { children: React.ReactNode };
 
@@ -64,7 +64,7 @@ function SocketProvider({ children }: SocketProviderProps) {
 
   React.useEffect(() => {
     if (state.socket) {
-      state.socket.disconnect();
+      state.socket.removeAllListeners();
 
       state.socket.on("build_created", function (build: Build) {
         if (build.projectId === selectedProjectId) {
