@@ -5,6 +5,8 @@ export const PIXELMATCH_DEFAULT_CONFIG =
   '{"threshold":0.1,"ignoreAntialiasing":true,"allowDiffDimensions":false}';
 export const LOOKSSAME_DEFAULT_CONFIG =
   '{"strict":false,"tolerance":2.3,"ignoreAntialiasing":true,"antialiasingTolerance":0,"ignoreCaret":true,"allowDiffDimensions":false}';
+export const ODIFF_DEFAULT_CONFIG =
+  '{"threshold":0,"antialiasing":true,"failOnLayoutDiff":true,"outputDiffMask":true}';
 
 export const DEFAULT_PROJECT_EDIT_STATE: ProjectDto = {
   id: "",
