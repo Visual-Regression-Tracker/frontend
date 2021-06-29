@@ -1,12 +1,16 @@
 import React from "react";
-import { Typography, IconButton, Tooltip, LinearProgress } from "@material-ui/core";
-import { BaseComponentProps, InternalRowsState, RowModel } from "@material-ui/data-grid";
+import {
+  Typography,
+  IconButton,
+  Tooltip,
+  LinearProgress,
+} from "@material-ui/core";
+import { BaseComponentProps, RowModel } from "@material-ui/data-grid";
 import { BaseModal } from "../BaseModal";
 import { useSnackbar } from "notistack";
 import { Delete, LayersClear, ThumbDown, ThumbUp } from "@material-ui/icons";
 import { testRunService } from "../../services";
 import { TestStatus } from "../../types";
-import { IgnoreArea } from "../../types/ignoreArea";
 
 export const BulkOperation: React.FunctionComponent<BaseComponentProps> = (
   props: BaseComponentProps
@@ -15,10 +19,11 @@ export const BulkOperation: React.FunctionComponent<BaseComponentProps> = (
   const [approveDialogOpen, setApproveDialogOpen] = React.useState(false);
   const [rejectDialogOpen, setRejectDialogOpen] = React.useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = React.useState(false);
-  const [clearIgnoreDialogOpen, setClearIgnoreDialogOpen] = React.useState(false);
+  const [clearIgnoreDialogOpen, setClearIgnoreDialogOpen] = React.useState(
+    false
+  );
   const [isProcessing, setIsProcessing] = React.useState(false);
 
-  const allRows: InternalRowsState = props.state.rows;
   const selectedRows: Record<React.ReactText, boolean> = props.state.selection;
   const count = Object.keys(selectedRows).length;
 
@@ -75,10 +80,15 @@ export const BulkOperation: React.FunctionComponent<BaseComponentProps> = (
 
   const isRowEligibleForApproveOrReject = (id: string) => {
     //Find the test status of the current row
-    let currentRow: any = props.rows.find((value: RowModel) => value.id.toString().includes(id));
+    let currentRow: any = props.rows.find((value: RowModel) =>
+      value.id.toString().includes(id)
+    );
     let currentRowStatus = JSON.stringify(currentRow.status);
     //In line with how we can approve/reject only new and unresolved from details modal.
-    return (currentRowStatus.includes(TestStatus.new) || currentRowStatus.includes(TestStatus.unresolved));
+    return (
+      currentRowStatus.includes(TestStatus.new) ||
+      currentRowStatus.includes(TestStatus.unresolved)
+    );
   };
 
   const processAction = (id: string) => {
@@ -117,7 +127,10 @@ export const BulkOperation: React.FunctionComponent<BaseComponentProps> = (
 
   return (
     <>
-      <Tooltip title="Approve unresolved in selected rows." aria-label="approve">
+      <Tooltip
+        title="Approve unresolved in selected rows."
+        aria-label="approve"
+      >
         <span>
           <IconButton disabled={count === 0} onClick={toggleApproveDialogOpen}>
             <ThumbUp />
@@ -153,7 +166,12 @@ export const BulkOperation: React.FunctionComponent<BaseComponentProps> = (
       </Tooltip>
 
       <BaseModal
-        open={deleteDialogOpen || approveDialogOpen || rejectDialogOpen || clearIgnoreDialogOpen}
+        open={
+          deleteDialogOpen ||
+          approveDialogOpen ||
+          rejectDialogOpen ||
+          clearIgnoreDialogOpen
+        }
         title={getTitle()}
         submitButtonText={submitButtonText()}
         onCancel={dismissDialog}
@@ -181,7 +199,7 @@ export const BulkOperation: React.FunctionComponent<BaseComponentProps> = (
           closeModal();
         }}
       />
-      { isProcessing && <LinearProgress />}
+      {isProcessing && <LinearProgress />}
     </>
   );
 };
