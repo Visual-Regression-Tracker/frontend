@@ -20,7 +20,7 @@ jobs:
       - name: Run Component tests 🧪
         uses: cypress-io/github-action@v2
         with:
-          command: npm run cypress run-ct
+          command: npx run cypress run-ct
         env:
           VRT_APIURL: "http://162.243.161.172:4200"
           VRT_PROJECT: "VRT"
