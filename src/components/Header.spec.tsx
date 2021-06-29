@@ -19,7 +19,7 @@ describe("Header", () => {
         </BrowserRouter>
       );
 
-      cy.get("#cypress-root").vrtTrack("Header. Guest");
+      cy.get("#__cy_root").vrtTrack("Header. Guest");
     });
 
     it("Logged", () => {
@@ -32,7 +32,7 @@ describe("Header", () => {
         </BrowserRouter>
       );
 
-      cy.get("#cypress-root").vrtTrack("Header. Logged");
+      cy.get("#__cy_root").vrtTrack("Header. Logged");
     });
   });
 });

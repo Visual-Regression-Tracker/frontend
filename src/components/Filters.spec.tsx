@@ -29,6 +29,7 @@ describe("Filters", () => {
             branchName: "master",
             baselineBranchName: "baselineBranchName",
             merge: false,
+            tempIgnoreAreas: "[]",
           },
         ]}
         queryState={["Some query", cy.stub()]}
@@ -40,6 +41,6 @@ describe("Filters", () => {
       />
     );
 
-    cy.get("#cypress-root").vrtTrack("Filters");
+    cy.get("#__cy_root").vrtTrack("Filters");
   });
 });
