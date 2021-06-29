@@ -24,10 +24,10 @@ jobs:
           install: false
           # to run component tests we need to use "cypress run-ct"
           command: npm run cypress run-ct
-          env:
-            VRT_APIURL: "http://162.243.161.172:4200"
-            VRT_PROJECT: "VRT"
-            VRT_ENABLESOFTASSERT: false
-            VRT_APIKEY: ${{ secrets.VRT_API_KEY }}
-            VRT_BRANCHNAME: ${{ github.head_ref || steps.get-branch-name.outputs.branch_name }}
-            VRT_CIBUILDID: "Github run_id:  ${{ github.run_id }}"
+        env:
+          VRT_APIURL: "http://162.243.161.172:4200"
+          VRT_PROJECT: "VRT"
+          VRT_ENABLESOFTASSERT: false
+          VRT_APIKEY: ${{ secrets.VRT_API_KEY }}
+          VRT_BRANCHNAME: ${{ github.head_ref || steps.get-branch-name.outputs.branch_name }}
+          VRT_CIBUILDID: "Github run_id:  ${{ github.run_id }}"
