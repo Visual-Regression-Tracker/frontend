@@ -15,6 +15,7 @@ export interface TestRun {
   browser: string;
   viewport: string;
   device: string;
+  customTags: string;
   ignoreAreas: string;
   tempIgnoreAreas: string;
   comment?: string;

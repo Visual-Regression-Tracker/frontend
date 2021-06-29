@@ -21,6 +21,7 @@ const TagInputComponent = (props: FilterInputValueProps) => {
         .concat(testRuns.map((item) => item.browser))
         .concat(testRuns.map((item) => item.device))
         .concat(testRuns.map((item) => item.viewport))
+        .concat(testRuns.map((item) => item.customTags))
     )
   );
 

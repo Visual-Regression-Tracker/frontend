@@ -9,10 +9,9 @@ export interface Project {
   updatedAt: string;
   createdAt: string;
   autoApproveFeature: boolean;
-  diffDimensionsFeature: boolean;
-  ignoreAntialiasing: boolean;
-  threshold: number;
   imageComparison: ImageComparison;
+  imageComparisonConfig: string;
+  maxBuildAllowed: number;
 }
 
 export type ProjectDto = Omit<Project, "updatedAt" | "createdAt" | "builds">;

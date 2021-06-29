@@ -16,6 +16,7 @@ import {
   deleteProject,
   createProject,
   updateProject,
+  setProjectEditState,
 } from "../contexts";
 import { Link } from "react-router-dom";
 import { Delete, Add, Edit } from "@material-ui/icons";
@@ -24,19 +25,6 @@ import { formatDateTime } from "../_helpers/format.helper";
 import { ProjectForm } from "../components/ProjectForm";
 import { useSnackbar } from "notistack";
 import { BaseModal } from "../components/BaseModal";
-import { ProjectDto } from "../types";
-import { ImageComparison } from "../types/imageComparison";
-
-const defaultProject: ProjectDto = {
-  id: "",
-  name: "",
-  mainBranchName: "",
-  ignoreAntialiasing: true,
-  autoApproveFeature: true,
-  diffDimensionsFeature: true,
-  threshold: 0.1,
-  imageComparison: ImageComparison.pixelmatch,
-};
 
 const ProjectsListPage = () => {
   const { enqueueSnackbar } = useSnackbar();
@@ -46,7 +34,6 @@ const ProjectsListPage = () => {
   const [createDialogOpen, setCreateDialogOpen] = React.useState(false);
   const [updateDialogOpen, setUpdateDialogOpen] = React.useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = React.useState(false);
-  const [project, setProject] = React.useState(defaultProject);
 
   const toggleCreateDialogOpen = () => {
     setCreateDialogOpen(!createDialogOpen);
@@ -75,7 +62,7 @@ const ProjectsListPage = () => {
               aria-label="add"
               onClick={() => {
                 toggleCreateDialogOpen();
-                setProject(defaultProject);
+                setProjectEditState(projectDispatch);
               }}
             >
               <Add />
@@ -87,9 +74,9 @@ const ProjectsListPage = () => {
             title={"Create Project"}
             submitButtonText={"Create"}
             onCancel={toggleCreateDialogOpen}
-            content={<ProjectForm projectState={[project, setProject]} />}
+            content={<ProjectForm />}
             onSubmit={() =>
-              createProject(projectDispatch, project)
+              createProject(projectDispatch, projectState.projectEditState)
                 .then((project) => {
                   toggleCreateDialogOpen();
                   enqueueSnackbar(`${project.name} created`, {
@@ -109,9 +96,9 @@ const ProjectsListPage = () => {
             title={"Update Project"}
             submitButtonText={"Update"}
             onCancel={toggleUpdateDialogOpen}
-            content={<ProjectForm projectState={[project, setProject]} />}
+            content={<ProjectForm />}
             onSubmit={() =>
-              updateProject(projectDispatch, project)
+              updateProject(projectDispatch, projectState.projectEditState)
                 .then((project) => {
                   toggleUpdateDialogOpen();
                   enqueueSnackbar(`${project.name} updated`, {
@@ -132,10 +119,10 @@ const ProjectsListPage = () => {
             submitButtonText={"Delete"}
             onCancel={toggleDeleteDialogOpen}
             content={
-              <Typography>{`Are you sure you want to delete: ${project.name}?`}</Typography>
+              <Typography>{`Are you sure you want to delete: ${projectState.projectEditState.name}?`}</Typography>
             }
             onSubmit={() =>
-              deleteProject(projectDispatch, project.id)
+              deleteProject(projectDispatch, projectState.projectEditState.id)
                 .then((project) => {
                   toggleDeleteDialogOpen();
                   enqueueSnackbar(`${project.name} deleted`, {
@@ -175,7 +162,7 @@ const ProjectsListPage = () => {
                 <IconButton
                   onClick={(event: React.MouseEvent<HTMLElement>) => {
                     toggleUpdateDialogOpen();
-                    setProject(project);
+                    setProjectEditState(projectDispatch, project);
                   }}
                 >
                   <Edit />
@@ -183,7 +170,7 @@ const ProjectsListPage = () => {
                 <IconButton
                   onClick={(event: React.MouseEvent<HTMLElement>) => {
                     toggleDeleteDialogOpen();
-                    setProject(project);
+                    setProjectEditState(projectDispatch, project);
                   }}
                 >
                   <Delete />

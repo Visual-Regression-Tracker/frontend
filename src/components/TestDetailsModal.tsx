@@ -10,6 +10,8 @@ import {
   Box,
   makeStyles,
   Tooltip,
+  Select,
+  MenuItem,
 } from "@material-ui/core";
 import { ToggleButton } from "@material-ui/lab";
 import { useHotkeys } from "react-hotkeys-hook";
@@ -23,7 +25,14 @@ import { TestStatus } from "../types/testStatus";
 import { useHistory, Prompt } from "react-router-dom";
 import { IgnoreArea } from "../types/ignoreArea";
 import { KonvaEventObject } from "konva/types/Node";
-import { Close, Add, Delete, Save, WarningRounded } from "@material-ui/icons";
+import {
+  Close,
+  Add,
+  Delete,
+  Save,
+  WarningRounded,
+  LayersClear,
+} from "@material-ui/icons";
 import { TestRunDetails } from "./TestRunDetails";
 import useImage from "use-image";
 import { routes } from "../constants";
@@ -33,6 +42,8 @@ import { CommentsPopper } from "./CommentsPopper";
 import { useSnackbar } from "notistack";
 import { ScaleActionsSpeedDial } from "./ZoomSpeedDial";
 import { ApproveRejectButtons } from "./ApproveRejectButtons";
+import { head } from "lodash";
+import { invertIgnoreArea } from "../_helpers/ignoreArea.helper";
 
 const defaultStagePos = {
   x: 0,
@@ -77,6 +88,9 @@ const TestDetailsModal: React.FunctionComponent<{
   );
 
   const [isDrawMode, setIsDrawMode] = useState(false);
+  const [valueOfIgnoreOrCompare, setValueOfIgnoreOrCompare] = useState(
+    "Ignore Areas"
+  );
   const [isDiffShown, setIsDiffShown] = useState(false);
   const [selectedRectId, setSelectedRectId] = React.useState<string>();
 
@@ -95,6 +109,51 @@ const TestDetailsModal: React.FunctionComponent<{
   const deleteIgnoreArea = (id: string) => {
     setIgnoreAreas(ignoreAreas.filter((area) => area.id !== id));
     setSelectedRectId(undefined);
+  };
+
+  const saveTestRun = (ignoreAreas: IgnoreArea[], successMessage: string) => {
+    Promise.all([
+      // update in test run
+      testRunService.setIgnoreAreas(testRun.id, ignoreAreas),
+      // update in variation
+      testVariationService.setIgnoreAreas(testRun.testVariationId, ignoreAreas),
+    ])
+      .then(() => {
+        enqueueSnackbar(successMessage, {
+          variant: "success",
+        });
+      })
+      .catch((err) =>
+        enqueueSnackbar(err, {
+          variant: "error",
+        })
+      );
+  };
+
+  const saveIgnoreAreasOrCompareArea = () => {
+    if (valueOfIgnoreOrCompare.includes("Ignore")) {
+      saveTestRun(ignoreAreas, "Ignore areas are updated.");
+    } else {
+      const invertedIgnoreAreas = invertIgnoreArea(
+        image!.width,
+        image!.height,
+        head(ignoreAreas)
+      );
+
+      setIgnoreAreas(invertedIgnoreAreas);
+      saveTestRun(
+        invertedIgnoreAreas,
+        "Selected area has been inverted to ignore areas and saved."
+      );
+    }
+  };
+
+  const onIgnoreOrCompareSelectChange = (value: string) => {
+    if (value.includes("Compare")) {
+      setValueOfIgnoreOrCompare("Compare Area");
+    } else {
+      setValueOfIgnoreOrCompare("Ignore Areas");
+    }
   };
 
   const handleClose = () => {
@@ -218,9 +277,20 @@ const TestDetailsModal: React.FunctionComponent<{
           <Grid item>
             <Grid container alignItems="center" spacing={2}>
               <Grid item>
-                <Typography variant="subtitle1" align="center">
-                  Ignore areas
-                </Typography>
+                <Select
+                  id="area-select"
+                  labelId="areaSelect"
+                  value={valueOfIgnoreOrCompare}
+                  onChange={(event) =>
+                    onIgnoreOrCompareSelectChange(event.target.value as string)
+                  }
+                >
+                  {["Ignore Areas", "Compare Area"].map((eachItem) => (
+                    <MenuItem key={eachItem} value={eachItem}>
+                      {eachItem}
+                    </MenuItem>
+                  ))}
+                </Select>
               </Grid>
               <Grid item>
                 <ToggleButton
@@ -235,7 +305,7 @@ const TestDetailsModal: React.FunctionComponent<{
               </Grid>
               <Grid item>
                 <IconButton
-                  disabled={!selectedRectId}
+                  disabled={!selectedRectId || ignoreAreas.length === 0}
                   onClick={() =>
                     selectedRectId && deleteIgnoreArea(selectedRectId)
                   }
@@ -243,30 +313,20 @@ const TestDetailsModal: React.FunctionComponent<{
                   <Delete />
                 </IconButton>
               </Grid>
+              <Tooltip title="Clears all ignore areas." aria-label="reject">
+                <Grid item>
+                  <IconButton
+                    disabled={ignoreAreas.length === 0}
+                    onClick={() => setIgnoreAreas([])}
+                  >
+                    <LayersClear />
+                  </IconButton>
+                </Grid>
+              </Tooltip>
               <Grid item>
                 <IconButton
                   disabled={isIgnoreAreasSaved()}
-                  onClick={() =>
-                    Promise.all([
-                      // update in test run
-                      testRunService.setIgnoreAreas(testRun.id, ignoreAreas),
-                      // update in variation
-                      testVariationService.setIgnoreAreas(
-                        testRun.testVariationId,
-                        ignoreAreas
-                      ),
-                    ])
-                      .then(() => {
-                        enqueueSnackbar("Ignore areas are updated", {
-                          variant: "success",
-                        });
-                      })
-                      .catch((err) =>
-                        enqueueSnackbar(err, {
-                          variant: "error",
-                        })
-                      )
-                  }
+                  onClick={() => saveIgnoreAreasOrCompareArea()}
                 >
                   <Save />
                 </IconButton>
