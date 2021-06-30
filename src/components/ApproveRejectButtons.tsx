@@ -12,7 +12,7 @@ export const ApproveRejectButtons: React.FunctionComponent<{
 
   const approve = () => {
     testRunService
-      .approve(testRun.id, testRun.merge)
+      .approveBulk([testRun.id], testRun.merge)
       .then(() =>
         enqueueSnackbar("Approved", {
           variant: "success",
@@ -27,7 +27,7 @@ export const ApproveRejectButtons: React.FunctionComponent<{
 
   const reject = () => {
     testRunService
-      .reject(testRun.id)
+      .rejectBulk([testRun.id])
       .then(() =>
         enqueueSnackbar("Rejected", {
           variant: "success",

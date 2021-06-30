@@ -1,12 +1,17 @@
 import React from "react";
-import { Typography, IconButton, Tooltip, LinearProgress } from "@material-ui/core";
-import { BaseComponentProps, InternalRowsState, RowModel } from "@material-ui/data-grid";
+import {
+  Typography,
+  IconButton,
+  Tooltip,
+  LinearProgress,
+} from "@material-ui/core";
+import { BaseComponentProps, RowModel } from "@material-ui/data-grid";
 import { BaseModal } from "../BaseModal";
 import { useSnackbar } from "notistack";
 import { Delete, LayersClear, ThumbDown, ThumbUp } from "@material-ui/icons";
 import { testRunService } from "../../services";
 import { TestStatus } from "../../types";
-import { IgnoreArea } from "../../types/ignoreArea";
+import { head } from "lodash";
 
 export const BulkOperation: React.FunctionComponent<BaseComponentProps> = (
   props: BaseComponentProps
@@ -15,10 +20,39 @@ export const BulkOperation: React.FunctionComponent<BaseComponentProps> = (
   const [approveDialogOpen, setApproveDialogOpen] = React.useState(false);
   const [rejectDialogOpen, setRejectDialogOpen] = React.useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = React.useState(false);
-  const [clearIgnoreDialogOpen, setClearIgnoreDialogOpen] = React.useState(false);
+  const [clearIgnoreDialogOpen, setClearIgnoreDialogOpen] = React.useState(
+    false
+  );
   const [isProcessing, setIsProcessing] = React.useState(false);
+  const ids: string[] = React.useMemo(
+    () => Object.keys(props.state.selection),
+    [props.state.selection]
+  );
+  const isMerge: boolean = React.useMemo(
+    () =>
+      !!head(
+        props.rows.filter((value: RowModel) =>
+          ids.includes(value.id.toString())
+        )
+      )?.merge,
+    // eslint-disable-next-line
+    [ids]
+  );
+  const idsEligibleForApproveOrReject: string[] = React.useMemo(
+    () =>
+      props.rows
+        .filter(
+          (value: RowModel) =>
+            ids.includes(value.id.toString()) &&
+            [TestStatus.new, TestStatus.unresolved].includes(
+              value.status.toString()
+            )
+        )
+        .map((value: RowModel) => value.id.toString()),
+    // eslint-disable-next-line
+    [ids]
+  );
 
-  const allRows: InternalRowsState = props.state.rows;
   const selectedRows: Record<React.ReactText, boolean> = props.state.selection;
   const count = Object.keys(selectedRows).length;
 
@@ -73,33 +107,20 @@ export const BulkOperation: React.FunctionComponent<BaseComponentProps> = (
     }
   };
 
-  const isRowEligibleForApproveOrReject = (id: string) => {
-    //Find the test status of the current row
-    let currentRow: any = props.rows.find((value: RowModel) => value.id.toString().includes(id));
-    let currentRowStatus = JSON.stringify(currentRow.status);
-    //In line with how we can approve/reject only new and unresolved from details modal.
-    return (currentRowStatus.includes(TestStatus.new) || currentRowStatus.includes(TestStatus.unresolved));
-  };
-
-  const processAction = (id: string) => {
+  const getBulkAction = () => {
     if (deleteDialogOpen) {
-      testRunService.remove(id);
-    }
-    if (isRowEligibleForApproveOrReject(id)) {
-      processApproveReject(id);
-    }
-    if (clearIgnoreDialogOpen) {
-      testRunService.setIgnoreAreas(id, []);
-    }
-  };
-
-  const processApproveReject = (id: string) => {
-    if (approveDialogOpen) {
-      testRunService.approve(id, false);
+      return testRunService.removeBulk(ids);
     }
     if (rejectDialogOpen) {
-      testRunService.reject(id);
+      return testRunService.rejectBulk(idsEligibleForApproveOrReject);
     }
+    if (approveDialogOpen) {
+      return testRunService.approveBulk(idsEligibleForApproveOrReject, isMerge);
+    }
+    return testRunService.updateIgnoreAreas({
+      ids,
+      ignoreAreas: [],
+    });
   };
 
   const dismissDialog = () => {
@@ -117,7 +138,10 @@ export const BulkOperation: React.FunctionComponent<BaseComponentProps> = (
 
   return (
     <>
-      <Tooltip title="Approve unresolved in selected rows." aria-label="approve">
+      <Tooltip
+        title="Approve unresolved in selected rows."
+        aria-label="approve"
+      >
         <span>
           <IconButton disabled={count === 0} onClick={toggleApproveDialogOpen}>
             <ThumbUp />
@@ -153,7 +177,12 @@ export const BulkOperation: React.FunctionComponent<BaseComponentProps> = (
       </Tooltip>
 
       <BaseModal
-        open={deleteDialogOpen || approveDialogOpen || rejectDialogOpen || clearIgnoreDialogOpen}
+        open={
+          deleteDialogOpen ||
+          approveDialogOpen ||
+          rejectDialogOpen ||
+          clearIgnoreDialogOpen
+        }
         title={getTitle()}
         submitButtonText={submitButtonText()}
         onCancel={dismissDialog}
@@ -164,9 +193,7 @@ export const BulkOperation: React.FunctionComponent<BaseComponentProps> = (
         }
         onSubmit={() => {
           setIsProcessing(true);
-          Promise.all(
-            Object.keys(selectedRows).map((id: string) => processAction(id))
-          )
+          getBulkAction()
             .then(() => {
               setIsProcessing(false);
               enqueueSnackbar(`${count} test runs processed.`, {
@@ -181,7 +208,7 @@ export const BulkOperation: React.FunctionComponent<BaseComponentProps> = (
           closeModal();
         }}
       />
-      { isProcessing && <LinearProgress />}
+      {isProcessing && <LinearProgress />}
     </>
   );
 };

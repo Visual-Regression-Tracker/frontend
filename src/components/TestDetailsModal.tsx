@@ -16,11 +16,7 @@ import {
 import { ToggleButton } from "@material-ui/lab";
 import { useHotkeys } from "react-hotkeys-hook";
 import { TestRun } from "../types";
-import {
-  testRunService,
-  testVariationService,
-  staticService,
-} from "../services";
+import { testRunService, staticService } from "../services";
 import { TestStatus } from "../types/testStatus";
 import { useHistory, Prompt } from "react-router-dom";
 import { IgnoreArea } from "../types/ignoreArea";
@@ -112,12 +108,11 @@ const TestDetailsModal: React.FunctionComponent<{
   };
 
   const saveTestRun = (ignoreAreas: IgnoreArea[], successMessage: string) => {
-    Promise.all([
-      // update in test run
-      testRunService.setIgnoreAreas(testRun.id, ignoreAreas),
-      // update in variation
-      testVariationService.setIgnoreAreas(testRun.testVariationId, ignoreAreas),
-    ])
+    testRunService
+      .updateIgnoreAreas({
+        ids: [testRun.id],
+        ignoreAreas: ignoreAreas,
+      })
       .then(() => {
         enqueueSnackbar(successMessage, {
           variant: "success",
@@ -349,15 +344,8 @@ const TestDetailsModal: React.FunctionComponent<{
             <CommentsPopper
               text={testRun.comment}
               onSave={(comment) =>
-                Promise.all([
-                  // update in test run
-                  testRunService.setComment(testRun.id, comment),
-                  // update in variation
-                  testVariationService.setComment(
-                    testRun.testVariationId,
-                    comment
-                  ),
-                ])
+                testRunService
+                  .setComment(testRun.id, comment)
                   .then(() =>
                     enqueueSnackbar("Comment updated", {
                       variant: "success",

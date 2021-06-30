@@ -1,7 +1,7 @@
 import { TestRun } from "../types";
 import { handleResponse, authHeader } from "../_helpers/service.helpers";
 import { API_URL } from "../_config/env.config";
-import { IgnoreArea } from "../types/ignoreArea";
+import { UpdateIgnoreAreaDto } from "../types/ignoreArea";
 
 const ENDPOINT_URL = "/test-runs";
 
@@ -17,52 +17,65 @@ async function getList(buildId: string): Promise<TestRun[]> {
   ).then(handleResponse);
 }
 
-async function remove(id: string): Promise<TestRun> {
+async function removeBulk(ids: string[]): Promise<void> {
   const requestOptions = {
-    method: "DELETE",
-    headers: authHeader(),
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...authHeader() },
+    body: JSON.stringify(ids),
   };
 
-  return fetch(`${API_URL}${ENDPOINT_URL}/${id}`, requestOptions).then(
+  return fetch(`${API_URL}${ENDPOINT_URL}/delete`, requestOptions).then(
     handleResponse
   );
 }
 
-async function approve(id: string, merge: boolean): Promise<TestRun> {
+async function rejectBulk(ids: string[]): Promise<void> {
   const requestOptions = {
-    method: "GET",
-    headers: authHeader(),
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...authHeader() },
+    body: JSON.stringify(ids),
+  };
+
+  return fetch(`${API_URL}${ENDPOINT_URL}/reject`, requestOptions).then(
+    handleResponse
+  );
+}
+
+async function approveBulk(ids: string[], merge: boolean): Promise<void> {
+  const requestOptions = {
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...authHeader() },
+    body: JSON.stringify(ids),
   };
 
   return fetch(
-    `${API_URL}${ENDPOINT_URL}/approve?id=${id}&merge=${merge}`,
+    `${API_URL}${ENDPOINT_URL}/approve?merge=${merge}`,
     requestOptions
   ).then(handleResponse);
 }
 
-async function reject(id: string): Promise<TestRun> {
+async function updateIgnoreAreas(data: UpdateIgnoreAreaDto): Promise<void> {
   const requestOptions = {
-    method: "GET",
-    headers: authHeader(),
-  };
-
-  return fetch(`${API_URL}${ENDPOINT_URL}/reject/${id}`, requestOptions).then(
-    handleResponse
-  );
-}
-
-async function setIgnoreAreas(
-  id: string,
-  ignoreAreas: IgnoreArea[]
-): Promise<TestRun> {
-  const requestOptions = {
-    method: "PUT",
+    method: "POST",
     headers: { "Content-Type": "application/json", ...authHeader() },
-    body: JSON.stringify(ignoreAreas),
+    body: JSON.stringify(data),
   };
 
   return fetch(
-    `${API_URL}${ENDPOINT_URL}/ignoreArea/${id}`,
+    `${API_URL}${ENDPOINT_URL}/ignoreAreas/update`,
+    requestOptions
+  ).then(handleResponse);
+}
+
+async function addIgnoreAreas(data: UpdateIgnoreAreaDto): Promise<void> {
+  const requestOptions = {
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...authHeader() },
+    body: JSON.stringify(data),
+  };
+
+  return fetch(
+    `${API_URL}${ENDPOINT_URL}/ignoreAreas/add`,
     requestOptions
   ).then(handleResponse);
 }
@@ -81,9 +94,10 @@ async function setComment(id: string, comment: string): Promise<TestRun> {
 
 export const testRunService = {
   getList,
-  remove,
-  approve,
-  reject,
-  setIgnoreAreas,
+  removeBulk,
+  rejectBulk,
+  approveBulk,
+  updateIgnoreAreas,
+  addIgnoreAreas,
   setComment,
 };
