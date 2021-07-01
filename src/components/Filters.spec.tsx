@@ -1,6 +1,6 @@
 /* global cy */
 import React from "react";
-import { mount } from "cypress-react-unit-test";
+import { mount } from "@cypress/react";
 import Filters from "./Filters";
 import { TestStatus } from "../types/testStatus";
 
@@ -30,6 +30,7 @@ describe("Filters", () => {
             branchName: "master",
             baselineBranchName: "baselineBranchName",
             merge: false,
+            tempIgnoreAreas: "[]",
           },
         ]}
         queryState={["Some query", cy.stub()]}
@@ -42,6 +43,6 @@ describe("Filters", () => {
       />
     );
 
-    cy.get("#cypress-root").vrtTrack("Filters");
+    cy.get("#__cy_root").vrtTrack("Filters");
   });
 });

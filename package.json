@@ -13,7 +13,7 @@
     "husky": "^4.3.8",
     "konva": "^7.0.3",
     "lint-staged": "^10.5.4",
-    "material-ui-popup-state": "^1.6.1",
+    "material-ui-popup-state": "^1.8.3",
     "notistack": "^0.9.17",
     "prettier": "^2.2.1",
     "qs": "^6.9.4",
@@ -25,30 +25,25 @@
     "react-material-ui-form-validator": "^2.1.1",
     "react-router-dom": "^5.2.0",
     "react-scripts": "4.0.3",
-    "socket.io-client": "^2.3.0",
-    "typescript": "^3.9.7",
+    "socket.io-client": "^2.4.0",
+    "typescript": "^4.3.4",
     "use-image": "^1.0.6"
   },
   "scripts": {
     "start": "chmod +x ./env.sh && ./env.sh && cp env-config.js ./public/ && react-scripts start",
     "build": "react-scripts build",
-    "test": "react-scripts test"
+    "test": "react-scripts test",
+    "test:cy": "cypress run-ct"
   },
   "eslintConfig": {
     "extends": "react-app"
   },
-  "browserslist": {
-    "production": [
-      ">0.2%",
-      "not dead",
-      "not op_mini all"
-    ],
-    "development": [
-      "last 1 chrome version",
-      "last 1 firefox version",
-      "last 1 safari version"
-    ]
-  },
+  "browserslist": [
+    ">0.3%",
+    "not ie 11",
+    "not dead",
+    "not op_mini all"
+  ],
   "husky": {
     "hooks": {
       "pre-commit": "lint-staged"
@@ -60,17 +55,18 @@
     ]
   },
   "devDependencies": {
+    "@cypress/react": "^5.9.1",
+    "@cypress/webpack-dev-server": "^1.4.0",
     "@types/jest": "^26.0.20",
     "@types/lodash": "^4.14.170",
-    "@types/node": "^13.13.0",
+    "@types/node": "^15.12.4",
     "@types/qs": "^6.9.5",
     "@types/react": "^16.9.43",
     "@types/react-dom": "^16.9.8",
     "@types/react-material-ui-form-validator": "^2.1.0",
     "@types/react-router-dom": "^5.1.5",
     "@types/socket.io-client": "^1.4.33",
-    "@visual-regression-tracker/agent-cypress": "^4.7.3",
-    "cypress": "^5.6.0",
-    "cypress-react-unit-test": "^4.17.0"
+    "@visual-regression-tracker/agent-cypress": "^5.0.0",
+    "cypress": "^7.6.0"
   }
 }

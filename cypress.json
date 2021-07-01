@@ -4,7 +4,6 @@
   "video": false,
   "screenshotOnRunFailure": false,
   "retries": 0,
-  "experimentalComponentTesting": true,
   "componentFolder": "src",
   "testFiles": "**/*.spec.*"
 }
