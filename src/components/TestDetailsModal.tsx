@@ -111,7 +111,7 @@ const TestDetailsModal: React.FunctionComponent<{
     testRunService
       .updateIgnoreAreas({
         ids: [testRun.id],
-        ignoreAreas: ignoreAreas,
+        ignoreAreas,
       })
       .then(() => {
         enqueueSnackbar(successMessage, {
