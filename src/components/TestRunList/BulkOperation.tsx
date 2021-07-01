@@ -11,6 +11,7 @@ import { useSnackbar } from "notistack";
 import { Delete, LayersClear, ThumbDown, ThumbUp } from "@material-ui/icons";
 import { testRunService } from "../../services";
 import { TestStatus } from "../../types";
+import { head } from "lodash";
 
 export const BulkOperation: React.FunctionComponent<BaseComponentProps> = (
   props: BaseComponentProps
@@ -23,6 +24,34 @@ export const BulkOperation: React.FunctionComponent<BaseComponentProps> = (
     false
   );
   const [isProcessing, setIsProcessing] = React.useState(false);
+  const ids: string[] = React.useMemo(
+    () => Object.keys(props.state.selection),
+    [props.state.selection]
+  );
+  const isMerge: boolean = React.useMemo(
+    () =>
+      !!head(
+        props.rows.filter((value: RowModel) =>
+          ids.includes(value.id.toString())
+        )
+      )?.merge,
+    // eslint-disable-next-line
+    [ids]
+  );
+  const idsEligibleForApproveOrReject: string[] = React.useMemo(
+    () =>
+      props.rows
+        .filter(
+          (value: RowModel) =>
+            ids.includes(value.id.toString()) &&
+            [TestStatus.new, TestStatus.unresolved].includes(
+              value.status.toString()
+            )
+        )
+        .map((value: RowModel) => value.id.toString()),
+    // eslint-disable-next-line
+    [ids]
+  );
 
   const selectedRows: Record<React.ReactText, boolean> = props.state.selection;
   const count = Object.keys(selectedRows).length;
@@ -78,38 +107,20 @@ export const BulkOperation: React.FunctionComponent<BaseComponentProps> = (
     }
   };
 
-  const isRowEligibleForApproveOrReject = (id: string) => {
-    //Find the test status of the current row
-    let currentRow: any = props.rows.find((value: RowModel) =>
-      value.id.toString().includes(id)
-    );
-    let currentRowStatus = JSON.stringify(currentRow.status);
-    //In line with how we can approve/reject only new and unresolved from details modal.
-    return (
-      currentRowStatus.includes(TestStatus.new) ||
-      currentRowStatus.includes(TestStatus.unresolved)
-    );
-  };
-
-  const processAction = (id: string) => {
+  const getBulkAction = () => {
     if (deleteDialogOpen) {
-      testRunService.remove(id);
-    }
-    if (isRowEligibleForApproveOrReject(id)) {
-      processApproveReject(id);
-    }
-    if (clearIgnoreDialogOpen) {
-      testRunService.setIgnoreAreas(id, []);
-    }
-  };
-
-  const processApproveReject = (id: string) => {
-    if (approveDialogOpen) {
-      testRunService.approve(id, false);
+      return testRunService.removeBulk(ids);
     }
     if (rejectDialogOpen) {
-      testRunService.reject(id);
+      return testRunService.rejectBulk(idsEligibleForApproveOrReject);
     }
+    if (approveDialogOpen) {
+      return testRunService.approveBulk(idsEligibleForApproveOrReject, isMerge);
+    }
+    return testRunService.updateIgnoreAreas({
+      ids,
+      ignoreAreas: [],
+    });
   };
 
   const dismissDialog = () => {
@@ -182,9 +193,7 @@ export const BulkOperation: React.FunctionComponent<BaseComponentProps> = (
         }
         onSubmit={() => {
           setIsProcessing(true);
-          Promise.all(
-            Object.keys(selectedRows).map((id: string) => processAction(id))
-          )
+          getBulkAction()
             .then(() => {
               setIsProcessing(false);
               enqueueSnackbar(`${count} test runs processed.`, {
