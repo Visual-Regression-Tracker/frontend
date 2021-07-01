@@ -345,7 +345,7 @@ const TestDetailsModal: React.FunctionComponent<{
               text={testRun.comment}
               onSave={(comment) =>
                 testRunService
-                  .setComment(testRun.id, comment)
+                  .update(testRun.id, { comment })
                   .then(() =>
                     enqueueSnackbar("Comment updated", {
                       variant: "success",

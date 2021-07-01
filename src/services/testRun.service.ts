@@ -80,11 +80,11 @@ async function addIgnoreAreas(data: UpdateIgnoreAreaDto): Promise<void> {
   ).then(handleResponse);
 }
 
-async function setComment(id: string, comment: string): Promise<TestRun> {
+async function update(id: string, data: { comment: string }): Promise<TestRun> {
   const requestOptions = {
     method: "PUT",
     headers: { "Content-Type": "application/json", ...authHeader() },
-    body: JSON.stringify({ comment }),
+    body: JSON.stringify(data),
   };
 
   return fetch(`${API_URL}${ENDPOINT_URL}/comment/${id}`, requestOptions).then(
@@ -99,5 +99,5 @@ export const testRunService = {
   approveBulk,
   updateIgnoreAreas,
   addIgnoreAreas,
-  setComment,
+  update,
 };
