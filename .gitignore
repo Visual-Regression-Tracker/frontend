@@ -6,6 +6,7 @@
 .pnp.js
 
 # testing
+vrt.json
 .nyc_output/
 /coverage
 /cypress/screenshots

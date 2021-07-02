@@ -5,7 +5,7 @@ body {
 }
 
 #root,
-#cypress-root {
+#__cy_root {
   height: 100%;
 }
 
