@@ -157,11 +157,6 @@ const TestDetailsModal: React.FunctionComponent<{
     }
   };
 
-  const getIgnoreAreaForSelectionId = (idPassed: string) => {
-    let ignoreAreaToReturn = ignoreAreas.filter((area) => idPassed === area.id)[0];
-    return ignoreAreaToReturn;
-  };
-
   const handleClose = () => {
     selectTestRun(testRunDispatch, undefined);
   };
@@ -192,21 +187,27 @@ const TestDetailsModal: React.FunctionComponent<{
   };
 
   const applyIgnoreArea = () => {
-    setProcessing(true);
-    let newIgnoreArea = getIgnoreAreaForSelectionId(selectedRectId!);
-    testRunService.getList(testRun.buildId).then(
-      (allRows) => {
-        let allIds: string[] = [];
-        allRows.forEach((value) => allIds.push(value.id));
-        let data: UpdateIgnoreAreaDto = { ids: allIds, ignoreAreas: [newIgnoreArea] };
-        testRunService.addIgnoreAreas(data).then(() => {
-          setProcessing(false);
-          setSelectedRectId(undefined);
-          enqueueSnackbar("Ignore areas are updated in all images in this build.", {
-            variant: "success",
+    let newIgnoreArea = ignoreAreas.find((area) => selectedRectId! === area.id);
+    if (newIgnoreArea) {
+      setProcessing(true);
+      testRunService.getList(testRun.buildId).then(
+        (testRuns: TestRun[]) => {
+          let allIds = testRuns.map((item) => item.id);
+          let data: UpdateIgnoreAreaDto = { ids: allIds, ignoreAreas: [newIgnoreArea!] };
+          testRunService.addIgnoreAreas(data).then(() => {
+            setProcessing(false);
+            setSelectedRectId(undefined);
+            enqueueSnackbar("Ignore areas are updated in all images in this build.", {
+              variant: "success",
+            });
           });
+        }).catch((error) => {
+          enqueueSnackbar("There was an error : " + error, { variant: "error" });
+          setProcessing(false);
         });
-      });
+    } else {
+      enqueueSnackbar("There was an error determining which ignore area to apply.", { variant: "error" });
+    }
   };
 
   React.useEffect(() => {
@@ -276,7 +277,7 @@ const TestDetailsModal: React.FunctionComponent<{
           </Grid>
         </Toolbar>
       </AppBar>
-      {(processing) && <LinearProgress/>}
+      {(processing) && <LinearProgress />}
       <Box m={1}>
         <Grid container alignItems="center">
           <Grid item xs={12}>
