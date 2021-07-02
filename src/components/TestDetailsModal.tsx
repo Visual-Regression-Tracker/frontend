@@ -12,15 +12,18 @@ import {
   Tooltip,
   Select,
   MenuItem,
-  CircularProgress,
+  LinearProgress,
 } from "@material-ui/core";
 import { ToggleButton } from "@material-ui/lab";
 import { useHotkeys } from "react-hotkeys-hook";
 import { TestRun } from "../types";
-import { testRunService, staticService } from "../services";
+import {
+  testRunService,
+  staticService,
+} from "../services";
 import { TestStatus } from "../types/testStatus";
 import { useHistory, Prompt } from "react-router-dom";
-import { IgnoreArea } from "../types/ignoreArea";
+import { IgnoreArea, UpdateIgnoreAreaDto } from "../types/ignoreArea";
 import { KonvaEventObject } from "konva/types/Node";
 import {
   Close,
@@ -74,7 +77,7 @@ const TestDetailsModal: React.FunctionComponent<{
   const [stagePos, setStagePos] = React.useState(defaultStagePos);
   const [stageInitPos, setStageInitPos] = React.useState(defaultStagePos);
   const [stageOffset, setStageOffset] = React.useState(defaultStagePos);
-  const [progress, setProgress] = React.useState(0);
+  const [processing, setProcessing] = React.useState(false);
 
   const [image, imageStatus] = useImage(
     staticService.getImage(testRun.imageName)
@@ -175,9 +178,9 @@ const TestDetailsModal: React.FunctionComponent<{
   const fitStageToScreen = () => {
     const scale = image
       ? Math.min(
-          stageWidth < image.width ? stageWidth / image.width : 1,
-          stageHeigth < image.height ? stageHeigth / image.height : 1
-        )
+        stageWidth < image.width ? stageWidth / image.width : 1,
+        stageHeigth < image.height ? stageHeigth / image.height : 1
+      )
       : 1;
     setStageScale(scale);
     resetPositioin();
@@ -189,31 +192,21 @@ const TestDetailsModal: React.FunctionComponent<{
   };
 
   const applyIgnoreArea = () => {
+    setProcessing(true);
     let newIgnoreArea = getIgnoreAreaForSelectionId(selectedRectId!);
-    let runningNumber = 0;
-    let index = 0;
     testRunService.getList(testRun.buildId).then(
       (allRows) => {
-        allRows.forEach(
-          async (eachRow) => {
-            let existingIgnoreArea = (await testRunService.getTestRunDetails(eachRow.id)).ignoreAreas.toString();
-            //Add a running number to make id unique.
-            const newId = (Date.now() + (++runningNumber)).toString().slice(0, 13);
-            newIgnoreArea.id = newId;
-            let newIgnoreAreas: IgnoreArea[] = JSON.parse(existingIgnoreArea);
-            newIgnoreAreas.push(newIgnoreArea);
-            testRunService.setIgnoreAreas(eachRow.id, newIgnoreAreas);
-            // update in variation
-            testVariationService.setIgnoreAreas(testRun.testVariationId, ignoreAreas);
-            let valueToSet = Math.floor(++index * 100 / allRows.length);
-            setProgress(valueToSet);
+        let allIds: string[] = [];
+        allRows.forEach((value) => allIds.push(value.id));
+        let data: UpdateIgnoreAreaDto = { ids: allIds, ignoreAreas: [newIgnoreArea] };
+        testRunService.addIgnoreAreas(data).then(() => {
+          setProcessing(false);
+          setSelectedRectId(undefined);
+          enqueueSnackbar("Ignore areas are updated in all images in this build.", {
+            variant: "success",
           });
+        });
       });
-    setProgress(0);
-    setSelectedRectId(undefined);
-    enqueueSnackbar("Ignore areas are updated in all images in this build.", {
-      variant: "success",
-    });
   };
 
   React.useEffect(() => {
@@ -271,10 +264,10 @@ const TestDetailsModal: React.FunctionComponent<{
             )}
             {(testRun.status === TestStatus.unresolved ||
               testRun.status === TestStatus.new) && (
-              <Grid item>
-                <ApproveRejectButtons testRun={testRun} />
-              </Grid>
-            )}
+                <Grid item>
+                  <ApproveRejectButtons testRun={testRun} />
+                </Grid>
+              )}
             <Grid item>
               <IconButton color="inherit" onClick={handleClose}>
                 <Close />
@@ -283,7 +276,7 @@ const TestDetailsModal: React.FunctionComponent<{
           </Grid>
         </Toolbar>
       </AppBar>
-      {(100 > progress && progress > 0) && <CircularProgress variant="determinate" value={progress} />}
+      {(processing) && <LinearProgress/>}
       <Box m={1}>
         <Grid container alignItems="center">
           <Grid item xs={12}>
@@ -345,7 +338,7 @@ const TestDetailsModal: React.FunctionComponent<{
                   <Delete />
                 </IconButton>
               </Grid>
-              <Tooltip title="Clears all ignore areas." aria-label="clear ignore area">
+              <Tooltip title="Clears all ignore areas." aria-label="reject">
                 <Grid item>
                   <IconButton
                     disabled={ignoreAreas.length === 0}
