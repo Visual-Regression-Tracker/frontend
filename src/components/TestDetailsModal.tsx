@@ -12,14 +12,18 @@ import {
   Tooltip,
   Select,
   MenuItem,
+  LinearProgress,
 } from "@material-ui/core";
 import { ToggleButton } from "@material-ui/lab";
 import { useHotkeys } from "react-hotkeys-hook";
 import { TestRun } from "../types";
-import { testRunService, staticService } from "../services";
+import {
+  testRunService,
+  staticService,
+} from "../services";
 import { TestStatus } from "../types/testStatus";
 import { useHistory, Prompt } from "react-router-dom";
-import { IgnoreArea } from "../types/ignoreArea";
+import { IgnoreArea, UpdateIgnoreAreaDto } from "../types/ignoreArea";
 import { KonvaEventObject } from "konva/types/Node";
 import {
   Close,
@@ -28,6 +32,7 @@ import {
   Save,
   WarningRounded,
   LayersClear,
+  Collections,
 } from "@material-ui/icons";
 import { TestRunDetails } from "./TestRunDetails";
 import useImage from "use-image";
@@ -72,6 +77,7 @@ const TestDetailsModal: React.FunctionComponent<{
   const [stagePos, setStagePos] = React.useState(defaultStagePos);
   const [stageInitPos, setStageInitPos] = React.useState(defaultStagePos);
   const [stageOffset, setStageOffset] = React.useState(defaultStagePos);
+  const [processing, setProcessing] = React.useState(false);
 
   const [image, imageStatus] = useImage(
     staticService.getImage(testRun.imageName)
@@ -167,9 +173,9 @@ const TestDetailsModal: React.FunctionComponent<{
   const fitStageToScreen = () => {
     const scale = image
       ? Math.min(
-          stageWidth < image.width ? stageWidth / image.width : 1,
-          stageHeigth < image.height ? stageHeigth / image.height : 1
-        )
+        stageWidth < image.width ? stageWidth / image.width : 1,
+        stageHeigth < image.height ? stageHeigth / image.height : 1
+      )
       : 1;
     setStageScale(scale);
     resetPositioin();
@@ -178,6 +184,30 @@ const TestDetailsModal: React.FunctionComponent<{
   const resetPositioin = () => {
     setStagePos(defaultStagePos);
     setStageOffset(defaultStagePos);
+  };
+
+  const applyIgnoreArea = () => {
+    let newIgnoreArea = ignoreAreas.find((area) => selectedRectId! === area.id);
+    if (newIgnoreArea) {
+      setProcessing(true);
+      testRunService.getList(testRun.buildId).then(
+        (testRuns: TestRun[]) => {
+          let allIds = testRuns.map((item) => item.id);
+          let data: UpdateIgnoreAreaDto = { ids: allIds, ignoreAreas: [newIgnoreArea!] };
+          testRunService.addIgnoreAreas(data).then(() => {
+            setProcessing(false);
+            setSelectedRectId(undefined);
+            enqueueSnackbar("Ignore areas are updated in all images in this build.", {
+              variant: "success",
+            });
+          });
+        }).catch((error) => {
+          enqueueSnackbar("There was an error : " + error, { variant: "error" });
+          setProcessing(false);
+        });
+    } else {
+      enqueueSnackbar("There was an error determining which ignore area to apply.", { variant: "error" });
+    }
   };
 
   React.useEffect(() => {
@@ -235,10 +265,10 @@ const TestDetailsModal: React.FunctionComponent<{
             )}
             {(testRun.status === TestStatus.unresolved ||
               testRun.status === TestStatus.new) && (
-              <Grid item>
-                <ApproveRejectButtons testRun={testRun} />
-              </Grid>
-            )}
+                <Grid item>
+                  <ApproveRejectButtons testRun={testRun} />
+                </Grid>
+              )}
             <Grid item>
               <IconButton color="inherit" onClick={handleClose}>
                 <Close />
@@ -247,6 +277,7 @@ const TestDetailsModal: React.FunctionComponent<{
           </Grid>
         </Toolbar>
       </AppBar>
+      {(processing) && <LinearProgress />}
       <Box m={1}>
         <Grid container alignItems="center">
           <Grid item xs={12}>
@@ -315,6 +346,18 @@ const TestDetailsModal: React.FunctionComponent<{
                     onClick={() => setIgnoreAreas([])}
                   >
                     <LayersClear />
+                  </IconButton>
+                </Grid>
+              </Tooltip>
+              <Tooltip title="Apply selected ignore area to all images in this build." aria-label="apply ignore area">
+                <Grid item>
+                  <IconButton
+                    disabled={!selectedRectId || ignoreAreas.length === 0}
+                    onClick={() =>
+                      applyIgnoreArea()
+                    }
+                  >
+                    <Collections />
                   </IconButton>
                 </Grid>
               </Tooltip>
