@@ -11,6 +11,7 @@ import {
   makeStyles,
   CardActions,
   Button,
+  Typography,
 } from "@material-ui/core";
 import {
   buildProjectPageUrl,
@@ -25,6 +26,7 @@ import {
 } from "../contexts";
 import { useSnackbar } from "notistack";
 import { formatDateTime } from "../_helpers/format.helper";
+import TestStatusChip from "../components/TestStatusChip";
 
 const useStyles = makeStyles({
   media: {
@@ -96,8 +98,17 @@ const TestVariationDetailsPage: React.FunctionComponent = () => {
                           }
                         }}
                       >
-                        {formatDateTime(baseline.createdAt)}
+                        Test Run
                       </Button>
+                      <TestStatusChip status={baseline.testRun.status} />
+                      {baseline.user && (
+                        <Typography>
+                          {`${baseline.user.firstName} ${baseline.user.lastName} <${baseline.user.email}>`}
+                        </Typography>
+                      )}
+                      <Typography>
+                        {formatDateTime(baseline.createdAt)}
+                      </Typography>
                     </CardActions>
                     <CardMedia
                       component="img"
