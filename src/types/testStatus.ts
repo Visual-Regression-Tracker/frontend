@@ -4,4 +4,5 @@ export enum TestStatus {
   unresolved = "unresolved",
   failed = "failed",
   approved = "approved",
+  autoApproved = "autoApproved",
 }
