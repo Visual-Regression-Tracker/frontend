@@ -94,6 +94,26 @@ export const ProjectForm: React.FunctionComponent = () => {
           });
         }}
       />
+      <TextValidator
+        name="maxBranchLifetime"
+        validators={["minNumber:1"]}
+        errorMessages={["Enter greater than 1"]}
+        InputProps={{ inputProps: { min: 1, step: 1 } }}
+        margin="dense"
+        id="maxBranchLifetime"
+        label="Max branch lifetime (days)"
+        type="number"
+        fullWidth
+        required
+        value={project.maxBranchLifetime}
+        onChange={(event) => {
+          const value = (event.target as HTMLInputElement).value;
+          setProjectEditState(projectDispatch, {
+            ...project,
+            maxBranchLifetime: parseInt(value),
+          });
+        }}
+      />
       <FormControlLabel
         label="Auto approve feature"
         control={

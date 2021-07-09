@@ -12,6 +12,7 @@ export interface Project {
   imageComparison: ImageComparison;
   imageComparisonConfig: string;
   maxBuildAllowed: number;
+  maxBranchLifetime: number;
 }
 
 export type ProjectDto = Omit<Project, "updatedAt" | "createdAt" | "builds">;

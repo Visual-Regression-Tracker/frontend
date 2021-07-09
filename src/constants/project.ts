@@ -16,4 +16,5 @@ export const DEFAULT_PROJECT_EDIT_STATE: ProjectDto = {
   imageComparison: ImageComparison.pixelmatch,
   imageComparisonConfig: PIXELMATCH_DEFAULT_CONFIG,
   maxBuildAllowed: 100,
+  maxBranchLifetime: 30,
 };
