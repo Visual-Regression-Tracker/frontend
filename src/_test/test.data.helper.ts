@@ -66,6 +66,7 @@ export const TEST_VARIATION_ONE: TestVariation = {
       createdAt: "2020-09-14T06:57:25.845Z",
       updatedAt: "2020-09-14T06:57:25.845Z",
       testRun: testRunMock,
+      user: TEST_USER,
     },
     {
       id: "some baseline id2",
@@ -75,6 +76,7 @@ export const TEST_VARIATION_ONE: TestVariation = {
       createdAt: "2020-09-12T06:57:25.845Z",
       updatedAt: "2020-09-12T06:57:25.845Z",
       testRun: testRunMock,
+      user: TEST_USER,
     },
   ],
 };
@@ -101,6 +103,7 @@ export const TEST_VARIATION_TWO: TestVariation = {
       createdAt: "2020-09-14T06:57:25.845Z",
       updatedAt: "2020-09-14T06:57:25.845Z",
       testRun: testRunMock,
+      user: TEST_USER,
     },
     {
       id: "some baseline id2",
@@ -110,6 +113,7 @@ export const TEST_VARIATION_TWO: TestVariation = {
       createdAt: "2020-09-12T06:57:25.845Z",
       updatedAt: "2020-09-12T06:57:25.845Z",
       testRun: testRunMock,
+      user: TEST_USER,
     },
   ],
 };
@@ -118,6 +122,7 @@ export const TEST_BUILD_FAILED: Build = {
   id: "someId",
   number: 1,
   ciBuildId: "some build id",
+  projectId: TEST_PROJECT.id,
   projectName: "Project name",
   branchName: "Branch name",
   status: BuildStatus.failed,
@@ -135,6 +140,7 @@ export const TEST_BUILD_PASSED: Build = {
   id: "someId2",
   number: 2,
   ciBuildId: "",
+  projectId: TEST_PROJECT.id,
   projectName: "Project name",
   branchName: "Branch name",
   status: BuildStatus.passed,
@@ -152,6 +158,7 @@ export const TEST_BUILD_UNRESOLVED: Build = {
   id: "someId3",
   number: 3,
   ciBuildId: "",
+  projectId: TEST_PROJECT.id,
   projectName: "Project name",
   branchName: "Branch name",
   status: BuildStatus.unresolved,
