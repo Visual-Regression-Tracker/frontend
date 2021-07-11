@@ -182,7 +182,7 @@ export const TEST_UNRESOLVED: TestRun = {
   diffTollerancePercent: 3.21,
   status: TestStatus.unresolved,
   testVariationId: "some test variation id",
-  name: "test run name",
+  name: "test run name unresolved",
   os: "OS",
   browser: "browser",
   viewport: "viewport",

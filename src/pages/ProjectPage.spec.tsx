@@ -74,7 +74,7 @@ describe("Project page", () => {
 
     cy.vrtTrack("Project page");
 
-    cy.contains("test run name").click();
+    cy.contains(TEST_UNRESOLVED.name).click();
 
     cy.get("[data-testid='image-details']").should(($imageDetails) => {
       expect($imageDetails).to.have.length(2);
