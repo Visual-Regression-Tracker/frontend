@@ -2,11 +2,11 @@ import { FormControl, InputLabel, Select } from "@material-ui/core";
 import React from "react";
 import { useTestRunState } from "../../contexts";
 import {
-  FilterInputValueProps,
-  getStringOperators,
+  GridFilterInputValueProps,
+  getGridStringOperators,
 } from "@material-ui/data-grid";
 
-const TagInputComponent = (props: FilterInputValueProps) => {
+const TagInputComponent = (props: GridFilterInputValueProps) => {
   const { item, applyValue } = props;
   const { testRuns } = useTestRunState();
 
@@ -51,7 +51,7 @@ const TagInputComponent = (props: FilterInputValueProps) => {
   );
 };
 
-export const TagFilterOperators = getStringOperators()
+export const TagFilterOperators = getGridStringOperators()
   .filter((operator) => operator.value === "contains")
   .map((operator) => ({
     ...operator,

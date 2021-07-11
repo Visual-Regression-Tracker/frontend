@@ -1,22 +1,19 @@
 import React from "react";
 import { Toolbar, Box } from "@material-ui/core";
 import {
-  BaseComponentProps,
-  DensitySelector,
-  FilterToolbarButton,
+  GridToolbarDensitySelector,
+  GridToolbarFilterButton,
 } from "@material-ui/data-grid";
 import { BulkOperation } from "./BulkOperation";
 
-export const DataGridCustomToolbar: React.FunctionComponent<BaseComponentProps> = (
-  props: BaseComponentProps
-) => {
+export const DataGridCustomToolbar: React.FunctionComponent = () => {
   return (
     <>
       <Toolbar variant="dense">
-        <FilterToolbarButton />
-        <DensitySelector />
+        <GridToolbarFilterButton />
+        <GridToolbarDensitySelector />
         <Box marginLeft="auto">
-          <BulkOperation {...props} />
+          <BulkOperation />
         </Box>
       </Toolbar>
     </>
