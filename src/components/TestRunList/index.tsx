@@ -17,11 +17,14 @@ import {
   GridValueGetterParams,
   GridValueFormatterParams,
   GridFilterModelParams,
+  GridCellValue,
+  GridSortCellParams,
+  GridSortDirection,
 } from "@material-ui/data-grid";
 import { DataGridCustomToolbar } from "./DataGridCustomToolbar";
 import { StatusFilterOperators } from "./StatusFilterOperators";
 import { TagFilterOperators } from "./TagFilterOperators";
-import { TestRun } from "../../types";
+import { TestRun, TestStatus } from "../../types";
 
 const columnsDef: GridColDef[] = [
   { field: "id", hide: true, filterable: false },
@@ -75,6 +78,18 @@ const columnsDef: GridColDef[] = [
         />
       );
     },
+    sortComparator: (
+      v1: GridCellValue,
+      v2: GridCellValue,
+      cellParams1: GridSortCellParams,
+      cellParams2: GridSortCellParams
+    ) => {
+      const statusOrder = Object.values(TestStatus);
+      return (
+        statusOrder.indexOf(v2 as TestStatus) -
+        statusOrder.indexOf(v1 as TestStatus)
+      );
+    },
     filterOperators: StatusFilterOperators,
   },
 ];
@@ -116,6 +131,12 @@ const TestRunList: React.FunctionComponent = () => {
           disableColumnSelector
           disableColumnMenu
           disableSelectionOnClick
+          sortModel={[
+            {
+              field: "status",
+              sort: "desc" as GridSortDirection,
+            },
+          ]}
           onRowClick={(param: GridRowParams) => {
             selectTestRun(
               testRunDispatch,
