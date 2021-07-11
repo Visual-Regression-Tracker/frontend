@@ -4,6 +4,8 @@ import { useTestRunState } from "../../contexts";
 import {
   GridFilterInputValueProps,
   getGridStringOperators,
+  GridFilterItem,
+  GridCellParams,
 } from "@material-ui/data-grid";
 import { TestStatus } from "../../types";
 
@@ -42,9 +44,30 @@ const StatusInputComponent = (props: GridFilterInputValueProps) => {
   );
 };
 
-export const StatusFilterOperators = getGridStringOperators()
-  .filter((operator) => operator.value === "equals")
-  .map((operator) => ({
-    ...operator,
+export const StatusFilterOperators = [
+  ...getGridStringOperators()
+    .filter((operator) => operator.value === "equals")
+    .map((operator) => ({
+      ...operator,
+      InputComponent: StatusInputComponent,
+    })),
+  {
+    label: "not",
+    value: "not",
+    getApplyFilterFn: (filterItem: GridFilterItem) => {
+      if (
+        !filterItem.columnField ||
+        !filterItem.value ||
+        !filterItem.operatorValue
+      ) {
+        return null;
+      }
+
+      return (params: GridCellParams): boolean => {
+        return params.value !== filterItem.value;
+      };
+    },
     InputComponent: StatusInputComponent,
-  }));
+    InputComponentProps: { type: "string" },
+  },
+];
