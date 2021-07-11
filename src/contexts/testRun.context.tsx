@@ -80,7 +80,6 @@ const TestRunDispatchContext = React.createContext<Dispatch | undefined>(
 
 const initialState: State = {
   testRuns: [],
-  filteredTestRuns: undefined,
   loading: false,
 };
 
