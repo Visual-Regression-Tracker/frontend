@@ -11,22 +11,26 @@ import {
 import { useSnackbar } from "notistack";
 import {
   DataGrid,
-  ColDef,
-  RowParams,
-  CellParams,
+  GridCellParams,
+  GridColDef,
+  GridRowParams,
+  GridValueGetterParams,
+  GridValueFormatterParams,
+  GridFilterModelParams,
 } from "@material-ui/data-grid";
 import { DataGridCustomToolbar } from "./DataGridCustomToolbar";
 import { StatusFilterOperators } from "./StatusFilterOperators";
 import { TagFilterOperators } from "./TagFilterOperators";
+import { TestRun } from "../../types";
 
-const columnsDef: ColDef[] = [
+const columnsDef: GridColDef[] = [
   { field: "id", hide: true, filterable: false },
   { field: "name", headerName: "Name", flex: 1 },
   {
     field: "tags",
     headerName: "Tags",
     flex: 1,
-    valueGetter: (params: CellParams) => {
+    valueGetter: (params: GridValueGetterParams) => {
       const tags: Array<string> = [
         params.row["os"],
         params.row["device"],
@@ -39,10 +43,10 @@ const columnsDef: ColDef[] = [
         ""
       );
     },
-    renderCell: (params: CellParams) => (
+    renderCell: (params: GridCellParams) => (
       <React.Fragment>
         {params
-          .getValue("tags")
+          .getValue(params.id, "tags")
           ?.toString()
           .split(";")
           .map(
@@ -64,8 +68,12 @@ const columnsDef: ColDef[] = [
     field: "status",
     headerName: "Status",
     flex: 0.3,
-    renderCell: (params: CellParams) => {
-      return <TestStatusChip status={params.getValue("status")?.toString()} />;
+    renderCell: (params: GridValueFormatterParams) => {
+      return (
+        <TestStatusChip
+          status={params.getValue(params.id, "status")?.toString()}
+        />
+      );
     },
     filterOperators: StatusFilterOperators,
   },
@@ -101,7 +109,6 @@ const TestRunList: React.FunctionComponent = () => {
           pageSize={10}
           rowsPerPageOptions={[10, 20, 30]}
           loading={loading}
-          showToolbar={true}
           components={{
             Toolbar: DataGridCustomToolbar,
           }}
@@ -109,8 +116,19 @@ const TestRunList: React.FunctionComponent = () => {
           disableColumnSelector
           disableColumnMenu
           disableSelectionOnClick
-          onRowClick={(param: RowParams) => {
-            selectTestRun(testRunDispatch, param.getValue("id")?.toString());
+          onRowClick={(param: GridRowParams) => {
+            selectTestRun(
+              testRunDispatch,
+              param.getValue(param.id, "id")?.toString()
+            );
+          }}
+          onFilterModelChange={(params: GridFilterModelParams) => {
+            testRunDispatch({
+              type: "filter",
+              payload: Array.from(
+                params.visibleRows.values()
+              ) as Array<TestRun>,
+            });
           }}
         />
       )}

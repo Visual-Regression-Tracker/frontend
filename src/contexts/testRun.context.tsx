@@ -47,6 +47,11 @@ interface IRejectAction {
   payload: TestRun;
 }
 
+interface IFilterAction {
+  type: "filter";
+  payload: Array<TestRun>;
+}
+
 type IAction =
   | IRequestAction
   | IGetAction
@@ -55,11 +60,13 @@ type IAction =
   | IUpdateAction
   | IApproveAction
   | IRejectAction
+  | IFilterAction
   | ISelectAction;
 
 type Dispatch = (action: IAction) => void;
 type State = {
   selectedTestRunId?: string;
+  filteredTestRuns: Array<TestRun>;
   testRuns: Array<TestRun>;
   loading: boolean;
 };
@@ -73,6 +80,7 @@ const TestRunDispatchContext = React.createContext<Dispatch | undefined>(
 
 const initialState: State = {
   testRuns: [],
+  filteredTestRuns: [],
   loading: false,
 };
 
@@ -82,6 +90,11 @@ function testRunReducer(state: State, action: IAction): State {
       return {
         ...state,
         selectedTestRunId: action.payload,
+      };
+    case "filter":
+      return {
+        ...state,
+        filteredTestRuns: action.payload,
       };
     case "request":
       return {

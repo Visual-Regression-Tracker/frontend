@@ -12,7 +12,16 @@ const useStyles = makeStyles((theme) => ({
 
 export const TestDetailsDialog: React.FunctionComponent = () => {
   const classes = useStyles();
-  const { testRuns, selectedTestRunId } = useTestRunState();
+  const {
+    testRuns: allTestRuns,
+    filteredTestRuns,
+    selectedTestRunId,
+  } = useTestRunState();
+
+  const testRuns = React.useMemo(() => filteredTestRuns ?? allTestRuns, [
+    allTestRuns,
+    filteredTestRuns,
+  ]);
 
   const selectedTestRunIndex = React.useMemo(
     () => testRuns.findIndex((t) => t.id === selectedTestRunId),

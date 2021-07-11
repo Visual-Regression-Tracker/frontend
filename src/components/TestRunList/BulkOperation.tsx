@@ -5,7 +5,11 @@ import {
   Tooltip,
   LinearProgress,
 } from "@material-ui/core";
-import { BaseComponentProps, RowModel } from "@material-ui/data-grid";
+import {
+  GridRowData,
+  GridSelectionState,
+  useGridSlotComponentProps,
+} from "@material-ui/data-grid";
 import { BaseModal } from "../BaseModal";
 import { useSnackbar } from "notistack";
 import { Delete, LayersClear, ThumbDown, ThumbUp } from "@material-ui/icons";
@@ -13,9 +17,8 @@ import { testRunService } from "../../services";
 import { TestStatus } from "../../types";
 import { head } from "lodash";
 
-export const BulkOperation: React.FunctionComponent<BaseComponentProps> = (
-  props: BaseComponentProps
-) => {
+export const BulkOperation: React.FunctionComponent = () => {
+  const props = useGridSlotComponentProps();
   const { enqueueSnackbar } = useSnackbar();
   const [approveDialogOpen, setApproveDialogOpen] = React.useState(false);
   const [rejectDialogOpen, setRejectDialogOpen] = React.useState(false);
@@ -31,7 +34,7 @@ export const BulkOperation: React.FunctionComponent<BaseComponentProps> = (
   const isMerge: boolean = React.useMemo(
     () =>
       !!head(
-        props.rows.filter((value: RowModel) =>
+        props.rows.filter((value: GridRowData) =>
           ids.includes(value.id.toString())
         )
       )?.merge,
@@ -42,18 +45,18 @@ export const BulkOperation: React.FunctionComponent<BaseComponentProps> = (
     () =>
       props.rows
         .filter(
-          (value: RowModel) =>
+          (value: GridRowData) =>
             ids.includes(value.id.toString()) &&
             [TestStatus.new, TestStatus.unresolved].includes(
               value.status.toString()
             )
         )
-        .map((value: RowModel) => value.id.toString()),
+        .map((value: GridRowData) => value.id.toString()),
     // eslint-disable-next-line
     [ids]
   );
 
-  const selectedRows: Record<React.ReactText, boolean> = props.state.selection;
+  const selectedRows: GridSelectionState = props.state.selection;
   const count = Object.keys(selectedRows).length;
 
   const toggleApproveDialogOpen = () => {
