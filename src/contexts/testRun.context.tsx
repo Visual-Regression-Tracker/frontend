@@ -66,7 +66,7 @@ type IAction =
 type Dispatch = (action: IAction) => void;
 type State = {
   selectedTestRunId?: string;
-  filteredTestRuns: Array<TestRun>;
+  filteredTestRuns?: Array<TestRun>;
   testRuns: Array<TestRun>;
   loading: boolean;
 };
@@ -80,7 +80,7 @@ const TestRunDispatchContext = React.createContext<Dispatch | undefined>(
 
 const initialState: State = {
   testRuns: [],
-  filteredTestRuns: [],
+  filteredTestRuns: undefined,
   loading: false,
 };
 
