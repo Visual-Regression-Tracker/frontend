@@ -34,6 +34,13 @@ const Header: FunctionComponent = () => {
     >
       <MenuItem
         component={Link}
+        to={routes.USER_LIST_PAGE}
+        onClick={handleMenuClose}
+      >
+        Users
+      </MenuItem>
+      <MenuItem
+        component={Link}
         to={routes.PROJECT_LIST_PAGE}
         onClick={handleMenuClose}
       >

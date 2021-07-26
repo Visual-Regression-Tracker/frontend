@@ -1,5 +1,5 @@
 import { handleResponse, authHeader } from "../_helpers/service.helpers";
-import { User } from "../types/user";
+import { Role, User } from "../types/user";
 import { API_URL } from "../_config/env.config";
 
 const ENDPOINT_URL = "/users";
@@ -83,10 +83,35 @@ function logout() {
   localStorage.removeItem("user");
 }
 
+async function getList(): Promise<User[]> {
+  const requestOptions = {
+    method: "GET",
+    headers: authHeader(),
+  };
+
+  const response = await fetch(`${API_URL}${ENDPOINT_URL}/all`, requestOptions);
+  return handleResponse(response);
+}
+
+async function assignRole(id: string | number, role: Role): Promise<User> {
+  const requestOptions = {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json", ...authHeader() },
+    body: JSON.stringify({ role }),
+  };
+
+  return fetch(
+    `${API_URL}${ENDPOINT_URL}/assignRole/${id}`,
+    requestOptions
+  ).then(handleResponse);
+}
+
 export const usersService = {
   login,
   logout,
   register,
   update,
   changePassword,
+  getList,
+  assignRole,
 };

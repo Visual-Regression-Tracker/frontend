@@ -16,7 +16,7 @@ import {
   GridRowParams,
   GridValueGetterParams,
   GridValueFormatterParams,
-  GridFilterModelParams,
+  GridFilterModel,
   GridCellValue,
   GridSortCellParams,
   GridSortDirection,
@@ -143,12 +143,10 @@ const TestRunList: React.FunctionComponent = () => {
               param.getValue(param.id, "id")?.toString()
             );
           }}
-          onFilterModelChange={(params: GridFilterModelParams) => {
+          onFilterModelChange={(params: GridFilterModel) => {
             testRunDispatch({
               type: "filter",
-              payload: Array.from(
-                params.visibleRows.values()
-              ) as Array<TestRun>,
+              payload: Array.from(params.items.values()) as Array<TestRun>,
             });
           }}
         />
