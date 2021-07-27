@@ -25,7 +25,7 @@ export const TEST_USER: User = {
   email: "some@email.com",
   firstName: "First name",
   lastName: "Last name",
-  role: Role.admin,
+  role: "admin" as Role,
 };
 
 export const testRunMock: TestRun = {
