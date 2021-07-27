@@ -28,3 +28,4 @@ jobs:
           VRT_APIKEY: ${{ secrets.VRT_API_KEY }}
           VRT_BRANCHNAME: ${{ github.head_ref || steps.get-branch-name.outputs.branch_name }}
           VRT_CIBUILDID: "Github run_id:  ${{ github.run_id }}"
+          CHOKIDAR_USEPOLLING: 1
