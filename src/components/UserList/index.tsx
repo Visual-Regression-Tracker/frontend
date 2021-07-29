@@ -44,7 +44,7 @@ const UserList = () => {
   );
 
   React.useEffect(() => {
-    usersService.getList().then((users) => setUsers(users));
+    usersService.getAll().then((users) => setUsers(users));
   }, []);
 
   const handleEditRowModelChange = React.useCallback(
@@ -80,8 +80,9 @@ const UserList = () => {
     <DataGrid
       rows={users}
       columns={columnsDef}
-      disableColumnSelector
+      checkboxSelection
       disableColumnMenu
+      disableSelectionOnClick
       components={{
         Toolbar: DataGridCustomToolbar,
       }}

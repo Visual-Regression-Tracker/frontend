@@ -28,6 +28,26 @@ export const TEST_USER: User = {
   role: "admin" as Role,
 };
 
+export const GUEST_USER: User = {
+  id: "2",
+  token: 123567,
+  apiKey: "SOME KEY SECRET",
+  email: "guest@email.com",
+  firstName: "Guest name",
+  lastName: "Guest name",
+  role: "guest" as Role,
+};
+
+export const EDITOR_USER: User = {
+  id: "3",
+  token: 123567,
+  apiKey: "SOME KEY SECRET",
+  email: "guest@email.com",
+  firstName: "Editor name",
+  lastName: "Editor name",
+  role: "editor" as Role,
+};
+
 export const testRunMock: TestRun = {
   id: "some test run id2",
   buildId: "some build id",

@@ -83,7 +83,7 @@ function logout() {
   localStorage.removeItem("user");
 }
 
-async function getList(): Promise<User[]> {
+async function getAll(): Promise<User[]> {
   const requestOptions = {
     method: "GET",
     headers: authHeader(),
@@ -105,12 +105,25 @@ async function assignRole(id: string | number, role: Role): Promise<User> {
   );
 }
 
+async function remove(ids: (string | number)[]): Promise<boolean> {
+  const requestOptions = {
+    method: "DELETE",
+    headers: { "Content-Type": "application/json", ...authHeader() },
+    body: JSON.stringify(ids),
+  };
+
+  return fetch(`${API_URL}${ENDPOINT_URL}`, requestOptions).then(
+    handleResponse
+  );
+}
+
 export const usersService = {
   login,
   logout,
   register,
   update,
   changePassword,
-  getList,
+  getAll,
   assignRole,
+  remove,
 };
