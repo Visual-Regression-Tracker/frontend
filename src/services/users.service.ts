@@ -97,13 +97,12 @@ async function assignRole(id: string | number, role: Role): Promise<User> {
   const requestOptions = {
     method: "PATCH",
     headers: { "Content-Type": "application/json", ...authHeader() },
-    body: JSON.stringify({ role }),
+    body: JSON.stringify({ id, role }),
   };
 
-  return fetch(
-    `${API_URL}${ENDPOINT_URL}/assignRole/${id}`,
-    requestOptions
-  ).then(handleResponse);
+  return fetch(`${API_URL}${ENDPOINT_URL}/assignRole`, requestOptions).then(
+    handleResponse
+  );
 }
 
 export const usersService = {
