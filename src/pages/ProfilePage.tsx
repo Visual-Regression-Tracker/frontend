@@ -11,6 +11,8 @@ import {
   CardHeader,
   Tabs,
   Tab,
+  Select,
+  MenuItem,
 } from "@material-ui/core";
 import {
   useAuthState,
@@ -24,6 +26,7 @@ import { usersService } from "../services";
 import { useSnackbar } from "notistack";
 import ProjectSelect from "../components/ProjectSelect";
 import { TextValidator, ValidatorForm } from "react-material-ui-form-validator";
+import { Role } from "../types";
 
 const ProfilePage = () => {
   const { enqueueSnackbar } = useSnackbar();
@@ -154,6 +157,22 @@ const ProfilePage = () => {
                             "data-testid": "email",
                           }}
                         />
+                      </Grid>
+                      <Grid item xs={12}>
+                        <Select
+                          id="role"
+                          labelId="role"
+                          displayEmpty
+                          fullWidth
+                          disabled
+                          value={user?.role}
+                        >
+                          {Object.entries(Role).map(([key, value]) => (
+                            <MenuItem key={key} value={key}>
+                              {value}
+                            </MenuItem>
+                          ))}
+                        </Select>
                       </Grid>
                     </Grid>
                   </CardContent>

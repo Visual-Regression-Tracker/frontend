@@ -5,8 +5,14 @@ import {
   testRunService,
   staticService,
   testVariationService,
+  usersService,
 } from "../services";
-import { Build, Project, TestRun } from "../types";
+import { Build, Project, TestRun, User } from "../types";
+
+const userStub = {
+  getAll: (users: Array<User>) =>
+    cy.stub(usersService, "getAll").resolves(users),
+};
 
 const projectStub = {
   getAll: (projects: Array<Project>) =>
@@ -40,6 +46,7 @@ const testVariationServiceStub = {
 };
 
 export {
+  userStub,
   projectStub,
   buildsServiceStub,
   testRunServiceStub,

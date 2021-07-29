@@ -8,6 +8,7 @@ import { routes } from "./constants";
 import RegisterPage from "./pages/RegisterPage";
 import ProfilePage from "./pages/ProfilePage";
 import TestVariationListPage from "./pages/TestVariationListPage";
+import UserListPage from "./pages/UserListPage";
 import TestVariationDetailsPage from "./pages/TestVariationDetailsPage";
 
 function Router() {
@@ -25,6 +26,11 @@ function Router() {
         exact
         path={routes.PROJECT_LIST_PAGE}
         component={() => <ProjectsListPage />}
+      />
+      <PrivateRoute
+        exact
+        path={routes.USER_LIST_PAGE}
+        component={() => <UserListPage />}
       />
       <PrivateRoute
         exact

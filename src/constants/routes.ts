@@ -9,4 +9,7 @@ export const routes = {
   PROJECT_LIST_PAGE: "/projects",
   VARIATION_LIST_PAGE: "/variations",
   VARIATION_DETAILS_PAGE: "/variations/details",
+
+  // admin
+  USER_LIST_PAGE: "/users",
 };

@@ -1,5 +1,7 @@
-import { Build, Project, TestRun, TestVariation, User } from "../types";
+import { PIXELMATCH_DEFAULT_CONFIG } from "../constants";
+import { Build, Project, Role, TestRun, TestVariation, User } from "../types";
 import { BuildStatus } from "../types/buildStatus";
+import { ImageComparison } from "../types/imageComparison";
 import { TestStatus } from "../types/testStatus";
 
 export const TEST_PROJECT: Project = {
@@ -9,6 +11,11 @@ export const TEST_PROJECT: Project = {
   builds: [],
   updatedAt: "2020-09-14T06:57:25.845Z",
   createdAt: "2020-09-14T06:57:25.845Z",
+  autoApproveFeature: true,
+  imageComparison: ImageComparison.pixelmatch,
+  imageComparisonConfig: PIXELMATCH_DEFAULT_CONFIG,
+  maxBuildAllowed: 100,
+  maxBranchLifetime: 30,
 };
 
 export const TEST_USER: User = {
@@ -18,6 +25,27 @@ export const TEST_USER: User = {
   email: "some@email.com",
   firstName: "First name",
   lastName: "Last name",
+  role: "admin" as Role,
+};
+
+export const GUEST_USER: User = {
+  id: "2",
+  token: 123567,
+  apiKey: "SOME KEY SECRET",
+  email: "guest@email.com",
+  firstName: "Guest name",
+  lastName: "Guest name",
+  role: "guest" as Role,
+};
+
+export const EDITOR_USER: User = {
+  id: "3",
+  token: 123567,
+  apiKey: "SOME KEY SECRET",
+  email: "guest@email.com",
+  firstName: "Editor name",
+  lastName: "Editor name",
+  role: "editor" as Role,
 };
 
 export const testRunMock: TestRun = {
