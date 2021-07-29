@@ -12,6 +12,7 @@ import { Link } from "react-router-dom";
 import { useAuthState, useAuthDispatch, logout } from "../contexts";
 import { routes } from "../constants";
 import logo from "../static/logo.png";
+import { Role } from "../types";
 
 const Header: FunctionComponent = () => {
   const [menuRef, setMenuRef] = React.useState<null | HTMLElement>(null);
@@ -32,13 +33,15 @@ const Header: FunctionComponent = () => {
       open={!!menuRef}
       onClose={handleMenuClose}
     >
-      <MenuItem
-        component={Link}
-        to={routes.USER_LIST_PAGE}
-        onClick={handleMenuClose}
-      >
-        Users
-      </MenuItem>
+      {user?.role === Role.admin && (
+        <MenuItem
+          component={Link}
+          to={routes.USER_LIST_PAGE}
+          onClick={handleMenuClose}
+        >
+          Users
+        </MenuItem>
+      )}
       <MenuItem
         component={Link}
         to={routes.PROJECT_LIST_PAGE}
