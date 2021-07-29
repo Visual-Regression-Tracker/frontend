@@ -4,8 +4,10 @@ import {
   DataGrid,
   GridColDef,
   GridEditCellPropsParams,
+  GridEditRowModelParams,
   GridToolbarDensitySelector,
   GridToolbarFilterButton,
+  GridEditRowsModel,
   GridValueFormatterParams,
 } from "@material-ui/data-grid";
 import { ActionButtons } from "./ActionButtons";
@@ -37,24 +39,28 @@ const columnsDef: GridColDef[] = [
 const UserList = () => {
   const { enqueueSnackbar } = useSnackbar();
   const [users, setUsers] = React.useState<User[]>([]);
+  const [editRowsModel, setEditRowsModel] = React.useState<GridEditRowsModel>(
+    {}
+  );
 
   React.useEffect(() => {
     usersService.getList().then((users) => setUsers(users));
   }, []);
 
+  const handleEditRowModelChange = React.useCallback(
+    (params: GridEditRowModelParams) => {
+      setEditRowsModel(params.model);
+    },
+    []
+  );
+
   const handleEditCellChangeCommitted = React.useCallback(
-    (
-      params: GridEditCellPropsParams,
-      event?: React.ChangeEvent<{
-        name?: string | undefined;
-        value?: unknown;
-      }>
-    ) => {
-      const { id, field, props } = params;
+    (params: GridEditCellPropsParams) => {
+      const { id, field } = params;
+      const value = editRowsModel[id][field].value;
       if (field === "role") {
-        const role = (props.value ?? event?.target.value) as Role;
         usersService
-          .assignRole(id, role)
+          .assignRole(id, value as Role)
           .then(() => {
             enqueueSnackbar("Updated", {
               variant: "success",
@@ -67,7 +73,7 @@ const UserList = () => {
           );
       }
     },
-    [enqueueSnackbar]
+    [enqueueSnackbar, editRowsModel]
   );
 
   return (
@@ -80,6 +86,8 @@ const UserList = () => {
         Toolbar: DataGridCustomToolbar,
       }}
       onEditCellChangeCommitted={handleEditCellChangeCommitted}
+      editRowsModel={editRowsModel}
+      onEditRowModelChange={handleEditRowModelChange}
     />
   );
 };
