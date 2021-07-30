@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import {
   Grid,
   Typography,
@@ -26,7 +26,7 @@ import { ProjectForm } from "../components/ProjectForm";
 import { useSnackbar } from "notistack";
 import { BaseModal } from "../components/BaseModal";
 
-const ProjectsListPage = () => {
+const ProjectsListPage = (props: any) => {
   const { enqueueSnackbar } = useSnackbar();
   const projectState = useProjectState();
   const projectDispatch = useProjectDispatch();
@@ -34,6 +34,16 @@ const ProjectsListPage = () => {
   const [createDialogOpen, setCreateDialogOpen] = React.useState(false);
   const [updateDialogOpen, setUpdateDialogOpen] = React.useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = React.useState(false);
+
+  const helpSteps = [{
+    target: "#projectlist-12",
+    content: (<div>By default, a project is created by docker, feel free to edit/add/delete projects.</div>),
+    title: 'Project List'
+  }];
+
+  useEffect(() => {
+    props.populateHelpSteps(helpSteps);
+  });
 
   const toggleCreateDialogOpen = () => {
     setCreateDialogOpen(!createDialogOpen);
@@ -139,7 +149,7 @@ const ProjectsListPage = () => {
         </Grid>
         {projectState.projectList.map((project) => (
           <Grid item xs={4} key={project.id}>
-            <Card>
+            <Card id="projectlist-1">
               <CardContent>
                 <Typography>Id: {project.id}</Typography>
                 <Typography>Name: {project.name}</Typography>

@@ -201,7 +201,9 @@ const Filters: React.FunctionComponent<IProps> = ({
                 id="filter_customTags"
                 value={customTags}
                 displayEmpty
-                onChange={(event) => setCustomTags(event.target.value as string)}
+                onChange={(event) =>
+                  setCustomTags(event.target.value as string)
+                }
               >
                 <MenuItem value="">
                   <em>All</em>
@@ -243,7 +245,7 @@ const Filters: React.FunctionComponent<IProps> = ({
         )}
         {branchNameList && branchNameList.length > 0 && (
           <Grid item xs>
-            <FormControl fullWidth>
+            <FormControl fullWidth id="reset-filter">
               <InputLabel shrink id="filter_branchName">
                 Branch
               </InputLabel>

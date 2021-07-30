@@ -12,15 +12,36 @@ import { Link } from "react-router-dom";
 import { useAuthState, useAuthDispatch, logout } from "../contexts";
 import { routes } from "../constants";
 import logo from "../static/logo.png";
-import { Role } from "../types";
+import Joyride, { CallBackProps, STATUS, StoreHelpers } from 'react-joyride';
+import { HelpOutline } from "@material-ui/icons";
 
-const Header: FunctionComponent = () => {
+const Header: FunctionComponent = (props: any) => {
   const [menuRef, setMenuRef] = React.useState<null | HTMLElement>(null);
+  const [run, setRun] = React.useState(false);
   const { loggedIn, user } = useAuthState();
   const authDispatch = useAuthDispatch();
+  let helpers: StoreHelpers;
+
+  const getHelpers = (helper: StoreHelpers) => {
+    helpers = helper;
+  };
 
   const handleMenuClose = () => {
     setMenuRef(null);
+  };
+
+  const handleClickStart = (e: React.MouseEvent<HTMLElement>) => {
+    e.preventDefault();
+    setRun(true);
+  };
+
+  const handleJoyrideCallback = (data: CallBackProps) => {
+    const { status, type } = data;
+    const finishedStatuses: string[] = [STATUS.FINISHED, STATUS.SKIPPED];
+
+    if (finishedStatuses.includes(status)) {
+      setRun(false);
+    }
   };
 
   const renderMenu = (
@@ -79,15 +100,39 @@ const Header: FunctionComponent = () => {
               </Link>
             </Grid>
             <Grid item>
-              {loggedIn && (
+              <Grid container justify="space-between" alignItems="center">
                 <IconButton
-                  onClick={(event: React.MouseEvent<HTMLElement>) =>
-                    setMenuRef(event.currentTarget)
-                  }
+                  onClick={handleClickStart}
                 >
-                  <Avatar>{`${user?.firstName[0]}${user?.lastName[0]}`}</Avatar>
+                  <Avatar>
+                    <HelpOutline />
+                    <Joyride
+                      callback={handleJoyrideCallback}
+                      continuous={true}
+                      getHelpers={getHelpers}
+                      run={run}
+                      scrollToFirstStep={true}
+                      showProgress={true}
+                      showSkipButton={true}
+                      steps={props.getHelpSteps()}
+                      styles={{
+                        options: {
+                          zIndex: 10000,
+                        },
+                      }}
+                    />
+                  </Avatar>
                 </IconButton>
-              )}
+                {loggedIn && (
+                  <IconButton
+                    onClick={(event: React.MouseEvent<HTMLElement>) =>
+                      setMenuRef(event.currentTarget)
+                    }
+                  >
+                    <Avatar>{`${user?.firstName[0]}${user?.lastName[0]}`}</Avatar>
+                  </IconButton>
+                )}
+              </Grid>
             </Grid>
           </Grid>
         </Toolbar>

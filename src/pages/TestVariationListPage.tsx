@@ -9,7 +9,7 @@ import Filters from "../components/Filters";
 import { TestVariationMergeForm } from "../components/TestVariationMergeForm";
 import { useSnackbar } from "notistack";
 
-const TestVariationListPage: React.FunctionComponent = () => {
+const TestVariationListPage: React.FunctionComponent = (props: any) => {
   const history = useHistory();
   const { enqueueSnackbar } = useSnackbar();
   const { projectId = "" } = useParams<{ projectId: string }>();
@@ -27,8 +27,23 @@ const TestVariationListPage: React.FunctionComponent = () => {
   const [branchName, setBranchName] = React.useState("");
   const [filteredItems, setFilteredItems] = React.useState<TestVariation[]>([]);
 
+  const helpSteps = [{
+    target: "#select-project",
+    title: 'Shows all the  historical record of baselines by Name + Branch + OS + Browser + Viewport + Device',
+    content: (<div>Select the project you want to act on.</div>),
+  }, {
+    target: "#select-branch",
+    content: (<div>Select the branch to which you want to merge the variations.</div>),
+  }, {
+    target: "#reset-filter",
+    content: (<div>Only filters items are merged to the target branch.</div>),
+  }];
+
+  const { populateHelpSteps } = props;
+
   React.useEffect(() => {
     if (projectId) {
+      populateHelpSteps(helpSteps);
       testVariationService
         .getList(projectId)
         .then((testVariations) => {
@@ -40,7 +55,7 @@ const TestVariationListPage: React.FunctionComponent = () => {
           })
         );
     }
-  }, [projectId, enqueueSnackbar]);
+  }, [projectId, enqueueSnackbar, populateHelpSteps]);
 
   React.useEffect(() => {
     setFilteredItems(
@@ -77,7 +92,7 @@ const TestVariationListPage: React.FunctionComponent = () => {
     <React.Fragment>
       <Box m={2}>
         <Grid container direction="column" spacing={2}>
-          <Grid item>
+          <Grid item id="select-project">
             <ProjectSelect
               projectId={projectId}
               onProjectSelect={(id) => history.push(id)}

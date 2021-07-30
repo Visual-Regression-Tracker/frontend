@@ -22,7 +22,7 @@ const BuildDetails: React.FunctionComponent = () => {
   return (
     <Grid container direction="column">
       <Grid item>
-        <Box m={0.5}>
+        <Box m={0.5} id="build-details">
           <Grid container spacing={1} alignItems="center">
             <Grid item>
               <Typography variant="subtitle2">{`#${selectedBuild.number} ${

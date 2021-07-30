@@ -11,10 +11,18 @@ import TestVariationListPage from "./pages/TestVariationListPage";
 import UserListPage from "./pages/UserListPage";
 import TestVariationDetailsPage from "./pages/TestVariationDetailsPage";
 
-function Router() {
+function Router(props) {
   return (
     <Switch>
-      <Route exact path={routes.LOGIN} component={() => <LoginPage />} />
+      <Route
+        exact
+        path={routes.LOGIN}
+        component={() => (
+          <LoginPage
+            populateHelpSteps={(steps) => props.populateHelpSteps(steps)}
+          />
+        )}
+      />
       <Route exact path={routes.REGISTER} component={() => <RegisterPage />} />
       <Redirect exact from={routes.HOME} to={routes.PROJECT_LIST_PAGE} />
       <PrivateRoute
@@ -25,22 +33,34 @@ function Router() {
       <PrivateRoute
         exact
         path={routes.PROJECT_LIST_PAGE}
-        component={() => <ProjectsListPage />}
+        component={() => (
+          <ProjectsListPage
+            populateHelpSteps={(steps) => props.populateHelpSteps(steps)}
+          />
+        )}
       />
       <PrivateRoute
-        exact
-        path={routes.USER_LIST_PAGE}
-        component={() => <UserListPage />}
+              exact
+              path={routes.USER_LIST_PAGE}
+              component={() => <UserListPage />}
       />
       <PrivateRoute
         exact
         path={`${routes.HOME}:projectId`}
-        component={() => <ProjectPage />}
+        component={() => (
+          <ProjectPage
+            populateHelpSteps={(steps) => props.populateHelpSteps(steps)}
+          />
+        )}
       />
       <PrivateRoute
         exact
         path={`${routes.VARIATION_LIST_PAGE}/:projectId`}
-        component={() => <TestVariationListPage />}
+        component={() => (
+          <TestVariationListPage
+            populateHelpSteps={(steps) => props.populateHelpSteps(steps)}
+          />
+        )}
       />
       <PrivateRoute
         exact
