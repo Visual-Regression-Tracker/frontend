@@ -7,6 +7,6 @@ export interface IgnoreArea {
 }
 
 export interface UpdateIgnoreAreaDto {
-  ids: string[];
+  ids: (string | number)[];
   ignoreAreas: IgnoreArea[];
 }

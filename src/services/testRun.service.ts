@@ -17,7 +17,7 @@ async function getList(buildId: string): Promise<TestRun[]> {
   ).then(handleResponse);
 }
 
-async function removeBulk(ids: string[]): Promise<void> {
+async function removeBulk(ids: (string | number)[]): Promise<void> {
   const requestOptions = {
     method: "POST",
     headers: { "Content-Type": "application/json", ...authHeader() },
@@ -29,7 +29,7 @@ async function removeBulk(ids: string[]): Promise<void> {
   );
 }
 
-async function rejectBulk(ids: string[]): Promise<void> {
+async function rejectBulk(ids: (string | number)[]): Promise<void> {
   const requestOptions = {
     method: "POST",
     headers: { "Content-Type": "application/json", ...authHeader() },
@@ -41,7 +41,10 @@ async function rejectBulk(ids: string[]): Promise<void> {
   );
 }
 
-async function approveBulk(ids: string[], merge: boolean): Promise<void> {
+async function approveBulk(
+  ids: (string | number)[],
+  merge: boolean
+): Promise<void> {
   const requestOptions = {
     method: "POST",
     headers: { "Content-Type": "application/json", ...authHeader() },
