@@ -9,15 +9,14 @@ import {
   MenuItem,
 } from "@material-ui/core";
 import { Link } from "react-router-dom";
-import { useAuthState, useAuthDispatch, logout } from "../contexts";
+import { useUserDispatch, useUserState, logout } from "../contexts";
 import { routes } from "../constants";
 import logo from "../static/logo.png";
-import { Role } from "../types";
 
 const Header: FunctionComponent = () => {
   const [menuRef, setMenuRef] = React.useState<null | HTMLElement>(null);
-  const { loggedIn, user } = useAuthState();
-  const authDispatch = useAuthDispatch();
+  const { loggedIn, user } = useUserState();
+  const authDispatch = useUserDispatch();
 
   const handleMenuClose = () => {
     setMenuRef(null);
@@ -33,7 +32,7 @@ const Header: FunctionComponent = () => {
       open={!!menuRef}
       onClose={handleMenuClose}
     >
-      {user?.role === Role.admin && (
+      {user?.role === "admin" && (
         <MenuItem
           component={Link}
           to={routes.USER_LIST_PAGE}

@@ -16,11 +16,11 @@ import {
 } from "@material-ui/core";
 import { ToggleButton } from "@material-ui/lab";
 import { useHotkeys } from "react-hotkeys-hook";
-import { TestRun } from "../types";
-import { testRunService, staticService } from "../services";
-import { TestStatus } from "../types/testStatus";
+import { TestRun } from "../../types";
+import { testRunService, staticService } from "../../services";
+import { TestStatus } from "../../types/testStatus";
 import { useHistory, Prompt } from "react-router-dom";
-import { IgnoreArea, UpdateIgnoreAreaDto } from "../types/ignoreArea";
+import { IgnoreArea, UpdateIgnoreAreaDto } from "../../types/ignoreArea";
 import { KonvaEventObject } from "konva/types/Node";
 import {
   Close,
@@ -31,17 +31,17 @@ import {
   LayersClear,
   Collections,
 } from "@material-ui/icons";
-import { TestRunDetails } from "./TestRunDetails";
+import { TestRunDetails } from "../TestRunDetails";
 import useImage from "use-image";
-import { routes } from "../constants";
-import { useTestRunDispatch, selectTestRun } from "../contexts";
-import { DrawArea } from "./DrawArea";
-import { CommentsPopper } from "./CommentsPopper";
+import { routes } from "../../constants";
+import { useTestRunDispatch, selectTestRun } from "../../contexts";
+import { DrawArea } from "../DrawArea";
+import { CommentsPopper } from "../CommentsPopper";
 import { useSnackbar } from "notistack";
-import { ScaleActionsSpeedDial } from "./ZoomSpeedDial";
-import { ApproveRejectButtons } from "./ApproveRejectButtons";
+import { ScaleActionsSpeedDial } from "../ZoomSpeedDial";
+import { ApproveRejectButtons } from "../ApproveRejectButtons";
 import { head } from "lodash";
-import { invertIgnoreArea } from "../_helpers/ignoreArea.helper";
+import { invertIgnoreArea } from "../../_helpers/ignoreArea.helper";
 
 const defaultStagePos = {
   x: 0,

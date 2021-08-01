@@ -2,7 +2,7 @@ import React from "react";
 import { mount } from "@cypress/react";
 import {
   ProjectProvider,
-  AuthProvider,
+  UserProvider,
   BuildProvider,
   TestRunProvider,
 } from "../contexts";
@@ -23,13 +23,13 @@ export const mountVrtComponent = ({
     <MemoryRouter {...memoryRouterProps}>
       <Route path={path}>
         <SnackbarProvider>
-          <AuthProvider>
+          <UserProvider>
             <ProjectProvider>
               <BuildProvider>
                 <TestRunProvider>{component}</TestRunProvider>
               </BuildProvider>
             </ProjectProvider>
-          </AuthProvider>
+          </UserProvider>
         </SnackbarProvider>
       </Route>
     </MemoryRouter>,

@@ -5,7 +5,7 @@ export interface User {
   lastName: string;
   token: number;
   apiKey: string;
-  role: Role;
+  role: keyof typeof Role;
 }
 
 export enum Role {

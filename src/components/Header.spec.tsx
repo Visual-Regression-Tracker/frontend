@@ -2,7 +2,7 @@
 import React from "react";
 import { mount } from "@cypress/react";
 import Header from "./Header";
-import { AuthProvider } from "../contexts";
+import { UserProvider } from "../contexts";
 import { BrowserRouter } from "react-router-dom";
 import { haveUserLogged } from "../_test/precondition.helper";
 import { TEST_USER } from "../_test/test.data.helper";
@@ -13,9 +13,9 @@ describe("Header", () => {
       localStorage.clear();
       mount(
         <BrowserRouter>
-          <AuthProvider>
+          <UserProvider>
             <Header />
-          </AuthProvider>
+          </UserProvider>
         </BrowserRouter>
       );
 
@@ -26,9 +26,9 @@ describe("Header", () => {
       haveUserLogged(TEST_USER);
       mount(
         <BrowserRouter>
-          <AuthProvider>
+          <UserProvider>
             <Header />
-          </AuthProvider>
+          </UserProvider>
         </BrowserRouter>
       );
 

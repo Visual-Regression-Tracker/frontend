@@ -49,7 +49,12 @@ interface IRejectAction {
 
 interface IFilterAction {
   type: "filter";
-  payload: Array<TestRun>;
+  payload?: Array<string | number>;
+}
+
+interface ISortAction {
+  type: "sort";
+  payload?: Array<string | number>;
 }
 
 type IAction =
@@ -61,12 +66,14 @@ type IAction =
   | IApproveAction
   | IRejectAction
   | IFilterAction
+  | ISortAction
   | ISelectAction;
 
 type Dispatch = (action: IAction) => void;
 type State = {
   selectedTestRunId?: string;
-  filteredTestRuns?: Array<TestRun>;
+  sortedTestRunIds?: Array<string | number>;
+  filteredTestRunIds?: Array<string | number>;
   testRuns: Array<TestRun>;
   loading: boolean;
 };
@@ -93,7 +100,12 @@ function testRunReducer(state: State, action: IAction): State {
     case "filter":
       return {
         ...state,
-        filteredTestRuns: action.payload,
+        filteredTestRunIds: action.payload,
+      };
+    case "sort":
+      return {
+        ...state,
+        sortedTestRunIds: action.payload,
       };
     case "request":
       return {
