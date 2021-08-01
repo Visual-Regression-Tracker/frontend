@@ -85,12 +85,12 @@ async function addIgnoreAreas(data: UpdateIgnoreAreaDto): Promise<void> {
 
 async function update(id: string, data: { comment: string }): Promise<TestRun> {
   const requestOptions = {
-    method: "PUT",
+    method: "PATCH",
     headers: { "Content-Type": "application/json", ...authHeader() },
     body: JSON.stringify(data),
   };
 
-  return fetch(`${API_URL}${ENDPOINT_URL}/comment/${id}`, requestOptions).then(
+  return fetch(`${API_URL}${ENDPOINT_URL}/update/${id}`, requestOptions).then(
     handleResponse
   );
 }
