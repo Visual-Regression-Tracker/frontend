@@ -1,13 +1,13 @@
 import React from "react";
 import { Redirect, Route, RouteProps } from "react-router-dom";
-import { useAuthState } from "../contexts";
+import { useUserState } from "../contexts";
 import { routes } from "../constants";
 
 const PrivateRoute: React.FunctionComponent<RouteProps> = ({
   component: Component,
   ...rest
 }) => {
-  const { loggedIn } = useAuthState();
+  const { loggedIn } = useUserState();
   if (!Component) {
     return null;
   }

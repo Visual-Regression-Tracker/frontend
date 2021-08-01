@@ -3,17 +3,16 @@ import { Box, Toolbar } from "@material-ui/core";
 import {
   DataGrid,
   GridColDef,
-  GridEditCellPropsParams,
-  GridEditRowModelParams,
   GridToolbarDensitySelector,
   GridToolbarFilterButton,
-  GridEditRowsModel,
   GridValueFormatterParams,
+  GridCellEditCommitParams,
 } from "@material-ui/data-grid";
 import { ActionButtons } from "./ActionButtons";
 import { usersService } from "../../services";
-import { Role, User } from "../../types";
+import { Role } from "../../types";
 import { useSnackbar } from "notistack";
+import { useUserDispatch, useUserState } from "../../contexts";
 
 const columnsDef: GridColDef[] = [
   { field: "id", hide: true, filterable: false },
@@ -38,26 +37,18 @@ const columnsDef: GridColDef[] = [
 
 const UserList = () => {
   const { enqueueSnackbar } = useSnackbar();
-  const [users, setUsers] = React.useState<User[]>([]);
-  const [editRowsModel, setEditRowsModel] = React.useState<GridEditRowsModel>(
-    {}
-  );
+  const userDispatch = useUserDispatch();
+  const { userList } = useUserState();
 
   React.useEffect(() => {
-    usersService.getAll().then((users) => setUsers(users));
-  }, []);
-
-  const handleEditRowModelChange = React.useCallback(
-    (params: GridEditRowModelParams) => {
-      setEditRowsModel(params.model);
-    },
-    []
-  );
+    usersService
+      .getAll()
+      .then((users) => userDispatch({ type: "getAll", payload: users }));
+  }, [userDispatch]);
 
   const handleEditCellChangeCommitted = React.useCallback(
-    (params: GridEditCellPropsParams) => {
-      const { id, field } = params;
-      const value = editRowsModel[id][field].value;
+    (params: GridCellEditCommitParams) => {
+      const { id, field, value } = params;
       if (field === "role") {
         usersService
           .assignRole(id, value as Role)
@@ -73,12 +64,12 @@ const UserList = () => {
           );
       }
     },
-    [enqueueSnackbar, editRowsModel]
+    [enqueueSnackbar]
   );
 
   return (
     <DataGrid
-      rows={users}
+      rows={userList}
       columns={columnsDef}
       checkboxSelection
       disableColumnMenu
@@ -86,9 +77,7 @@ const UserList = () => {
       components={{
         Toolbar: DataGridCustomToolbar,
       }}
-      onEditCellChangeCommitted={handleEditCellChangeCommitted}
-      editRowsModel={editRowsModel}
-      onEditRowModelChange={handleEditRowModelChange}
+      onCellEditCommit={handleEditCellChangeCommitted}
     />
   );
 };

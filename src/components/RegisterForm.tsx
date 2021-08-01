@@ -6,7 +6,7 @@ import {
   CardContent,
   CardActions,
 } from "@material-ui/core";
-import { useAuthDispatch, login } from "../contexts";
+import { useUserDispatch, login } from "../contexts";
 import { usersService } from "../services";
 import { useSnackbar } from "notistack";
 import { TextValidator, ValidatorForm } from "react-material-ui-form-validator";
@@ -17,7 +17,7 @@ const RegisterForm = () => {
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [password, setPassword] = useState("");
-  const dispatch = useAuthDispatch();
+  const dispatch = useUserDispatch();
 
   const handleSubmit = (event: FormEvent) => {
     event.preventDefault();

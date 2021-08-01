@@ -15,8 +15,8 @@ import {
   MenuItem,
 } from "@material-ui/core";
 import {
-  useAuthState,
-  useAuthDispatch,
+  useUserDispatch,
+  useUserState,
   update,
   selectProject,
   useProjectDispatch,
@@ -30,8 +30,8 @@ import { Role } from "../types";
 
 const ProfilePage = () => {
   const { enqueueSnackbar } = useSnackbar();
-  const { user } = useAuthState();
-  const authDispatch = useAuthDispatch();
+  const { user } = useUserState();
+  const authDispatch = useUserDispatch();
   const projectDispatch = useProjectDispatch();
   const { selectedProjectId } = useProjectState();
   const [email, setEmail] = useState(user?.email);

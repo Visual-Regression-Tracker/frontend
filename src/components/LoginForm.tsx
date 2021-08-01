@@ -8,7 +8,7 @@ import {
   CardActions,
   Typography,
 } from "@material-ui/core";
-import { useAuthDispatch, login } from "../contexts";
+import { useUserDispatch, login } from "../contexts";
 import { routes } from "../constants";
 import { useSnackbar } from "notistack";
 import { TextValidator, ValidatorForm } from "react-material-ui-form-validator";
@@ -17,7 +17,7 @@ const LoginForm = () => {
   const { enqueueSnackbar } = useSnackbar();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const dispatch = useAuthDispatch();
+  const dispatch = useUserDispatch();
 
   const handleSubmit = (event: FormEvent) => {
     event.preventDefault();

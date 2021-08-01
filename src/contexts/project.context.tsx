@@ -2,7 +2,7 @@ import * as React from "react";
 import { Project, ProjectDto } from "../types";
 import { projectsService } from "../services";
 import { useSnackbar } from "notistack";
-import { useAuthState } from "./auth.context";
+import { useUserState } from "./user.context";
 import { DEFAULT_PROJECT_EDIT_STATE } from "../constants";
 
 interface IRequestAction {
@@ -175,7 +175,7 @@ function ProjectProvider({ children }: ProjectProviderProps) {
     projectEditState: DEFAULT_PROJECT_EDIT_STATE,
   };
 
-  const { loggedIn } = useAuthState();
+  const { loggedIn } = useUserState();
   const [state, dispatch] = React.useReducer(projectReducer, initialState);
   const { enqueueSnackbar } = useSnackbar();
 
