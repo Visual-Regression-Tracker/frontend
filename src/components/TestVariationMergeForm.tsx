@@ -1,5 +1,5 @@
 import React from "react";
-import { Grid, Select, MenuItem, Button } from "@material-ui/core";
+import { Grid, Select, MenuItem, Button, TextField } from "@material-ui/core";
 import { testVariationService } from "../services";
 import { useHistory } from "react-router-dom";
 import {
@@ -8,6 +8,7 @@ import {
 } from "../_helpers/route.helpers";
 import { useSnackbar } from "notistack";
 import { selectBuild, useBuildDispatch } from "../contexts";
+import { Autocomplete } from "@material-ui/lab";
 
 interface IProps {
   projectId: string;
@@ -21,14 +22,15 @@ export const TestVariationMergeForm: React.FunctionComponent<IProps> = ({
   const history = useHistory();
   const buildDispatch = useBuildDispatch();
   const { enqueueSnackbar } = useSnackbar();
-  const [branch, setBranch] = React.useState("");
+  const [fromBranch, setFromBranch] = React.useState("");
+  const [toBranch, setToBranch] = React.useState("");
 
   const locatorSelectBranch = "select-branch";
 
   const handleSubmit = (event: React.FormEvent) => {
     event.preventDefault();
     testVariationService
-      .merge(projectId, branch)
+      .merge(projectId, fromBranch, toBranch)
       .then((build) => {
         enqueueSnackbar(`Merge started in build: ${build.id}`, {
           variant: "success",
@@ -49,14 +51,16 @@ export const TestVariationMergeForm: React.FunctionComponent<IProps> = ({
   return (
     <form onSubmit={handleSubmit}>
       <Grid container spacing={2} alignItems="flex-end">
-        <Grid item>
+        <Grid item xs>
           <Select
+            required
+            fullWidth
             displayEmpty
-            value={branch}
-            onChange={(event) => setBranch(event.target.value as string)}
+            value={fromBranch}
+            onChange={(event) => setFromBranch(event.target.value as string)}
           >
             <MenuItem value="">
-              <em>Select branch</em>
+              <em>From branch</em>
             </MenuItem>
             {items.map((i) => (
               <MenuItem key={i} value={i}>
@@ -64,6 +68,21 @@ export const TestVariationMergeForm: React.FunctionComponent<IProps> = ({
               </MenuItem>
             ))}
           </Select>
+        </Grid>
+        <Grid item xs>
+          <Autocomplete
+            id="toBranch"
+            options={items.map((i) => ({ title: i }))}
+            getOptionLabel={(option) => option.title}
+            freeSolo
+            fullWidth
+            renderInput={(params) => (
+              <TextField {...params} required label="To branch" />
+            )}
+            onInputChange={(_, value) => {
+              setToBranch(value);
+            }}
+          />
         </Grid>
         <Grid item>
           <Button

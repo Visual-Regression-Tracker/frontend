@@ -7,6 +7,7 @@ import {
 } from "@material-ui/core";
 import {
   GridRowData,
+  GridRowId,
   GridSelectionState,
   useGridSlotComponentProps,
 } from "@material-ui/data-grid";
@@ -27,8 +28,8 @@ export const BulkOperation: React.FunctionComponent = () => {
     false
   );
   const [isProcessing, setIsProcessing] = React.useState(false);
-  const ids: string[] = React.useMemo(
-    () => Object.keys(props.state.selection),
+  const ids: GridRowId[] = React.useMemo(
+    () => Object.values(props.state.selection),
     [props.state.selection]
   );
   const isMerge: boolean = React.useMemo(
