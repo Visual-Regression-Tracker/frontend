@@ -23,6 +23,8 @@ export const TestVariationMergeForm: React.FunctionComponent<IProps> = ({
   const { enqueueSnackbar } = useSnackbar();
   const [branch, setBranch] = React.useState("");
 
+  const locatorSelectBranch = "select-branch";
+
   const handleSubmit = (event: React.FormEvent) => {
     event.preventDefault();
     testVariationService
@@ -46,7 +48,7 @@ export const TestVariationMergeForm: React.FunctionComponent<IProps> = ({
 
   return (
     <form onSubmit={handleSubmit}>
-      <Grid container spacing={2}>
+      <Grid container spacing={2} alignItems="flex-end">
         <Grid item>
           <Select
             displayEmpty
@@ -64,7 +66,12 @@ export const TestVariationMergeForm: React.FunctionComponent<IProps> = ({
           </Select>
         </Grid>
         <Grid item>
-          <Button type="submit" color="primary" variant="contained" id="select-branch">
+          <Button
+            type="submit"
+            color="primary"
+            variant="contained"
+            id={locatorSelectBranch}
+          >
             Merge
           </Button>
         </Grid>

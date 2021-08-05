@@ -11,16 +11,14 @@ import TestVariationListPage from "./pages/TestVariationListPage";
 import UserListPage from "./pages/UserListPage";
 import TestVariationDetailsPage from "./pages/TestVariationDetailsPage";
 
-function Router(props) {
+function Router() {
   return (
     <Switch>
       <Route
         exact
         path={routes.LOGIN}
         component={() => (
-          <LoginPage
-            populateHelpSteps={(steps) => props.populateHelpSteps(steps)}
-          />
+          <LoginPage />
         )}
       />
       <Route exact path={routes.REGISTER} component={() => <RegisterPage />} />
@@ -34,32 +32,26 @@ function Router(props) {
         exact
         path={routes.PROJECT_LIST_PAGE}
         component={() => (
-          <ProjectsListPage
-            populateHelpSteps={(steps) => props.populateHelpSteps(steps)}
-          />
+          <ProjectsListPage />
         )}
       />
       <PrivateRoute
-              exact
-              path={routes.USER_LIST_PAGE}
-              component={() => <UserListPage />}
+        exact
+        path={routes.USER_LIST_PAGE}
+        component={() => <UserListPage />}
       />
       <PrivateRoute
         exact
         path={`${routes.HOME}:projectId`}
         component={() => (
-          <ProjectPage
-            populateHelpSteps={(steps) => props.populateHelpSteps(steps)}
-          />
+          <ProjectPage />
         )}
       />
       <PrivateRoute
         exact
         path={`${routes.VARIATION_LIST_PAGE}/:projectId`}
         component={() => (
-          <TestVariationListPage
-            populateHelpSteps={(steps) => props.populateHelpSteps(steps)}
-          />
+          <TestVariationListPage />
         )}
       />
       <PrivateRoute

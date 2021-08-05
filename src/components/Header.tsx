@@ -12,36 +12,17 @@ import { Link } from "react-router-dom";
 import { useAuthState, useAuthDispatch, logout } from "../contexts";
 import { routes } from "../constants";
 import logo from "../static/logo.png";
-import Joyride, { CallBackProps, STATUS, StoreHelpers } from 'react-joyride';
-import { HelpOutline } from "@material-ui/icons";
+import { Role } from "../types";
+import GuidedTour from "./GuidedTour";
 
-const Header: FunctionComponent = (props: any) => {
+
+const Header: FunctionComponent = () => {
   const [menuRef, setMenuRef] = React.useState<null | HTMLElement>(null);
-  const [run, setRun] = React.useState(false);
   const { loggedIn, user } = useAuthState();
   const authDispatch = useAuthDispatch();
-  let helpers: StoreHelpers;
-
-  const getHelpers = (helper: StoreHelpers) => {
-    helpers = helper;
-  };
 
   const handleMenuClose = () => {
     setMenuRef(null);
-  };
-
-  const handleClickStart = (e: React.MouseEvent<HTMLElement>) => {
-    e.preventDefault();
-    setRun(true);
-  };
-
-  const handleJoyrideCallback = (data: CallBackProps) => {
-    const { status, type } = data;
-    const finishedStatuses: string[] = [STATUS.FINISHED, STATUS.SKIPPED];
-
-    if (finishedStatuses.includes(status)) {
-      setRun(false);
-    }
   };
 
   const renderMenu = (
@@ -101,28 +82,7 @@ const Header: FunctionComponent = (props: any) => {
             </Grid>
             <Grid item>
               <Grid container justify="space-between" alignItems="center">
-                <IconButton
-                  onClick={handleClickStart}
-                >
-                  <Avatar>
-                    <HelpOutline />
-                    <Joyride
-                      callback={handleJoyrideCallback}
-                      continuous={true}
-                      getHelpers={getHelpers}
-                      run={run}
-                      scrollToFirstStep={true}
-                      showProgress={true}
-                      showSkipButton={true}
-                      steps={props.getHelpSteps()}
-                      styles={{
-                        options: {
-                          zIndex: 10000,
-                        },
-                      }}
-                    />
-                  </Avatar>
-                </IconButton>
+                <GuidedTour />
                 {loggedIn && (
                   <IconButton
                     onClick={(event: React.MouseEvent<HTMLElement>) =>

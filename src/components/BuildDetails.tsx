@@ -18,11 +18,12 @@ const BuildDetails: React.FunctionComponent = () => {
   }
 
   const loadingAnimation = selectedBuild.isRunning && <LinearProgress />;
+  const locatorBuildDetails = "build-details";
 
   return (
-    <Grid container direction="column">
+    <Grid container direction="column" id={locatorBuildDetails}>
       <Grid item>
-        <Box m={0.5} id="build-details">
+        <Box m={0.5}>
           <Grid container spacing={1} alignItems="center">
             <Grid item>
               <Typography variant="subtitle2">{`#${selectedBuild.number} ${

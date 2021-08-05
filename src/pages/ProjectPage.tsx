@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useContext } from "react";
 import { Grid, Box, makeStyles } from "@material-ui/core";
 import { useParams, useHistory } from "react-router-dom";
 import BuildList from "../components/BuildList";
@@ -6,6 +6,7 @@ import ProjectSelect from "../components/ProjectSelect";
 import TestRunList from "../components/TestRunList";
 import BuildDetails from "../components/BuildDetails";
 import { TestDetailsDialog } from "../components/TestDetailsDialog";
+import { HelpContext } from "../contexts/help.context";
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -13,28 +14,42 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-const ProjectPage = (props: any) => {
+const ProjectPage = () => {
   const classes = useStyles();
   const { projectId } = useParams<{ projectId: string }>();
   const history = useHistory();
 
+  const helpSteps = [
+    {
+      target: "#select-project",
+      content: (
+        <div>Select the project for which you want to view details.</div>
+      ),
+    },
+    {
+      target: "#build-list",
+      title:"List of test runs",
+      content: (
+        <div>
+          If you see 'No Builds', please run your image
+          comparison from any client.
+        </div>
+      ),
+    },
+    {
+      target: "#build-details",
+      content: <div>Details of the currently selected build.</div>,
+    },
+    {
+      target: "#test-run-list",
+      content: <div>On selecting a build, shows all comparisons for the selected build.</div>,
+    },
+  ];
 
-  const helpsteps = [{
-    target: "#select-project",
-    content: (<div>Select the project for which you want to view details.</div>),
-  }, {
-    target: "#build-list",
-    content: (<div>List of test runs. If you see 'No Builds', please run your image comparison from any client.</div>),
-  }, {
-    target: "#build-details",
-    content: (<div>Details of the currently selected build.</div>),
-  }, {
-    target: "#test-run-list",
-    content: (<div>List of all comparisons for the selected build.</div>),
-  }];
+  const { populateHelpSteps } = useContext(HelpContext);
 
   useEffect(() => {
-    props.populateHelpSteps(helpsteps);
+    populateHelpSteps(helpSteps);
   });
 
   return (
@@ -47,7 +62,7 @@ const ProjectPage = (props: any) => {
               onProjectSelect={(id) => history.push(id)}
             />
           </Box>
-          <Box height="91%" id="build-list" >
+          <Box height="91%" id="build-list">
             <BuildList />
           </Box>
         </Grid>

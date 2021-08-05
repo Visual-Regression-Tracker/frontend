@@ -5,7 +5,7 @@ import { useHistory, useLocation } from "react-router-dom";
 import { useAuthState } from "../contexts";
 import { routes } from "../constants";
 
-const LoginPage = (props: any) => {
+const LoginPage = () => {
   const history = useHistory();
   const location = useLocation<{ from: string }>();
   const { loggedIn } = useAuthState();
@@ -13,14 +13,8 @@ const LoginPage = (props: any) => {
     from: { pathname: routes.HOME },
   };
 
-  const helpSteps = [{
-    target: "#loginform-1",
-    content: "Get default username and password from the docker run log.",
-  }];
-
   useEffect(() => {
     if (loggedIn) history.replace(from);
-    props.populateHelpSteps(helpSteps);
   });
 
   return (
@@ -32,7 +26,7 @@ const LoginPage = (props: any) => {
       justify="center"
       style={{ minHeight: "60vh" }}
     >
-      <Grid item id="loginform-1" >
+      <Grid item>
         <LoginForm />
       </Grid>
     </Grid>

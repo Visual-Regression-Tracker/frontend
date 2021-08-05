@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useContext } from "react";
 import { SnackbarProvider } from "notistack";
 import { Box } from "@material-ui/core";
 import Header from "./components/Header";
@@ -10,23 +10,11 @@ import {
   SocketProvider,
 } from "./contexts";
 import Router from "./Router";
+import { HelpContext } from "./contexts/help.context";
 
 function App() {
-  let helpSteps = [];
-
-  const getHelpSteps = () => {
-    const firstStep = helpSteps[0];
-    //Below line is to prevent application breaking if element is not present for any reason (e.g. if the user deletes build or if there is no data.)
-    if (firstStep && document.getElementById(firstStep.target.slice(1))) {
-      return helpSteps;
-    }
-    return [];
-  };
-
-  const populateHelpSteps = (steps) => {
-    helpSteps = steps;
-  };
-
+  const { getHelpSteps } = useContext(HelpContext);
+  const { populateHelpSteps } = useContext(HelpContext);
   return (
     <SnackbarProvider maxSnack={3}>
       <AuthProvider>
@@ -34,14 +22,14 @@ function App() {
           <BuildProvider>
             <TestRunProvider>
               <SocketProvider>
-                <Box height="10%">
-                  <Header getHelpSteps={() => getHelpSteps()} />
-                </Box>
-                <Box height="90%">
-                  <Router
-                    populateHelpSteps={(steps) => populateHelpSteps(steps)}
-                  />
-                </Box>
+                <HelpContext.Provider value={{getHelpSteps, populateHelpSteps}}>
+                  <Box height="10%">
+                    <Header />
+                  </Box>
+                  <Box height="90%">
+                    <Router/>
+                  </Box>
+                </HelpContext.Provider>
               </SocketProvider>
             </TestRunProvider>
           </BuildProvider>

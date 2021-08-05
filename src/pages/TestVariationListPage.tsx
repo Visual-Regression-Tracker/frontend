@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useContext } from "react";
 import TestVariationList from "../components/TestVariationList";
 import { useHistory, useParams } from "react-router-dom";
 import { TestVariation } from "../types";
@@ -8,8 +8,9 @@ import ProjectSelect from "../components/ProjectSelect";
 import Filters from "../components/Filters";
 import { TestVariationMergeForm } from "../components/TestVariationMergeForm";
 import { useSnackbar } from "notistack";
+import { HelpContext } from "../contexts/help.context";
 
-const TestVariationListPage: React.FunctionComponent = (props: any) => {
+const TestVariationListPage: React.FunctionComponent = () => {
   const history = useHistory();
   const { enqueueSnackbar } = useSnackbar();
   const { projectId = "" } = useParams<{ projectId: string }>();
@@ -27,23 +28,36 @@ const TestVariationListPage: React.FunctionComponent = (props: any) => {
   const [branchName, setBranchName] = React.useState("");
   const [filteredItems, setFilteredItems] = React.useState<TestVariation[]>([]);
 
-  const helpSteps = [{
-    target: "#select-project",
-    title: 'Shows all the  historical record of baselines by Name + Branch + OS + Browser + Viewport + Device',
-    content: (<div>Select the project you want to act on.</div>),
-  }, {
-    target: "#select-branch",
-    content: (<div>Select the branch to which you want to merge the variations.</div>),
-  }, {
-    target: "#reset-filter",
-    content: (<div>Only filters items are merged to the target branch.</div>),
-  }];
+  const locatorSelectProject = "select-project";
 
-  const { populateHelpSteps } = props;
+  const helpSteps = [
+    {
+      target: "#select-project",
+      title:
+        "Shows all the  historical record of baselines by Name + Branch + OS + Browser + Viewport + Device",
+      content: <div>Select the project you want to act on.</div>,
+    },
+    {
+      target: "#select-branch",
+      title: "Merge from one branch to another",
+      content: (
+        <div>Select the branch from/to which you want to merge the variations.</div >
+      ),
+    },
+    {
+      target: "#reset-filter",
+      content: <div>Only filtered items are displayed/merged to the target branch.</div>,
+    },
+  ];
+
+  const { populateHelpSteps } = useContext(HelpContext);
+
+  React.useEffect(() => {
+    populateHelpSteps(helpSteps);
+  });
 
   React.useEffect(() => {
     if (projectId) {
-      populateHelpSteps(helpSteps);
       testVariationService
         .getList(projectId)
         .then((testVariations) => {
@@ -92,7 +106,7 @@ const TestVariationListPage: React.FunctionComponent = (props: any) => {
     <React.Fragment>
       <Box m={2}>
         <Grid container direction="column" spacing={2}>
-          <Grid item id="select-project">
+          <Grid item id={locatorSelectProject}>
             <ProjectSelect
               projectId={projectId}
               onProjectSelect={(id) => history.push(id)}

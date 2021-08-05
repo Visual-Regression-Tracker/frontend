@@ -1,4 +1,4 @@
-import React, { useState, FormEvent } from "react";
+import React, { useState, FormEvent, useEffect, useContext } from "react";
 import { Link } from "react-router-dom";
 import {
   Button,
@@ -8,7 +8,7 @@ import {
   CardActions,
   Typography,
 } from "@material-ui/core";
-import { useAuthDispatch, login } from "../contexts";
+import { useAuthDispatch, login, HelpContext } from "../contexts";
 import { routes } from "../constants";
 import { useSnackbar } from "notistack";
 import { TextValidator, ValidatorForm } from "react-material-ui-form-validator";
@@ -28,12 +28,26 @@ const LoginForm = () => {
     );
   };
 
+  const helpSteps = [
+    {
+      target: "#loginform-1",
+      content: "Default admin account: visual-regression-tracker@example.com / 123456. Make sure to change it's password.",
+    },
+  ];
+  
+  useEffect(() => {
+    populateHelpSteps(helpSteps);
+  });
+
+  const { populateHelpSteps } = useContext(HelpContext);
+
   const errorForTwoChar = "Enter at least two characters.";
+  const locatorLoginForm = "loginform-1";
 
   return (
     <ValidatorForm onSubmit={handleSubmit} instantValidate>
       <Card variant="outlined">
-        <CardContent>
+        <CardContent id={locatorLoginForm}>
           <Grid container direction="column" spacing={2}>
             <Grid item>
               <TextValidator

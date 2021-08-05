@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useContext, useEffect } from "react";
 import {
   Grid,
   Typography,
@@ -17,6 +17,7 @@ import {
   createProject,
   updateProject,
   setProjectEditState,
+  HelpContext,
 } from "../contexts";
 import { Link } from "react-router-dom";
 import { Delete, Add, Edit } from "@material-ui/icons";
@@ -26,7 +27,7 @@ import { ProjectForm } from "../components/ProjectForm";
 import { useSnackbar } from "notistack";
 import { BaseModal } from "../components/BaseModal";
 
-const ProjectsListPage = (props: any) => {
+const ProjectsListPage = () => {
   const { enqueueSnackbar } = useSnackbar();
   const projectState = useProjectState();
   const projectDispatch = useProjectDispatch();
@@ -35,14 +36,23 @@ const ProjectsListPage = (props: any) => {
   const [updateDialogOpen, setUpdateDialogOpen] = React.useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = React.useState(false);
 
-  const helpSteps = [{
-    target: "#projectlist-12",
-    content: (<div>By default, a project is created by docker, feel free to edit/add/delete projects.</div>),
-    title: 'Project List'
-  }];
+  const helpSteps = [
+    {
+      target: "#projectlist-1",
+      content: (
+        <div>
+          By default, a project is created by docker, feel free to
+          edit/add/delete projects.
+        </div>
+      ),
+      title: "Project List",
+    },
+  ];
+
+  const { populateHelpSteps } = useContext(HelpContext);
 
   useEffect(() => {
-    props.populateHelpSteps(helpSteps);
+    populateHelpSteps(helpSteps);
   });
 
   const toggleCreateDialogOpen = () => {
