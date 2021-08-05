@@ -16,15 +16,16 @@ import {
   GridRowParams,
   GridValueGetterParams,
   GridValueFormatterParams,
-  GridFilterModel,
   GridCellValue,
   GridSortCellParams,
+  GridStateChangeParams,
   GridSortDirection,
+  GridSortModel,
 } from "@material-ui/data-grid";
 import { DataGridCustomToolbar } from "./DataGridCustomToolbar";
 import { StatusFilterOperators } from "./StatusFilterOperators";
 import { TagFilterOperators } from "./TagFilterOperators";
-import { TestRun, TestStatus } from "../../types";
+import { TestStatus } from "../../types";
 
 const columnsDef: GridColDef[] = [
   { field: "id", hide: true, filterable: false },
@@ -100,6 +101,13 @@ const TestRunList: React.FunctionComponent = () => {
   const { selectedBuildId } = useBuildState();
   const testRunDispatch = useTestRunDispatch();
 
+  const [sortModel, setSortModel] = React.useState<GridSortModel>([
+    {
+      field: "status",
+      sort: "desc" as GridSortDirection,
+    },
+  ]);
+
   const getTestRunListCallback = React.useCallback(
     () =>
       selectedBuildId &&
@@ -131,22 +139,22 @@ const TestRunList: React.FunctionComponent = () => {
           disableColumnSelector
           disableColumnMenu
           disableSelectionOnClick
-          sortModel={[
-            {
-              field: "status",
-              sort: "desc" as GridSortDirection,
-            },
-          ]}
+          sortModel={sortModel}
+          onSortModelChange={(model) => setSortModel(model)}
           onRowClick={(param: GridRowParams) => {
             selectTestRun(
               testRunDispatch,
               param.getValue(param.id, "id")?.toString()
             );
           }}
-          onFilterModelChange={(params: GridFilterModel) => {
+          onStateChange={(props: GridStateChangeParams) => {
             testRunDispatch({
               type: "filter",
-              payload: Array.from(params.items.values()) as Array<TestRun>,
+              payload: props.state.visibleRows.visibleRows,
+            });
+            testRunDispatch({
+              type: "sort",
+              payload: props.state.sorting.sortedRows,
             });
           }}
         />

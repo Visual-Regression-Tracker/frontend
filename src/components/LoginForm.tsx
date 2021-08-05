@@ -17,7 +17,7 @@ const LoginForm = () => {
   const { enqueueSnackbar } = useSnackbar();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const dispatch = useAuthDispatch();
+  const dispatch = useUserDispatch();
 
   const handleSubmit = (event: FormEvent) => {
     event.preventDefault();

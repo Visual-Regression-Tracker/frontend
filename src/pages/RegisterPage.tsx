@@ -2,12 +2,12 @@ import React, { useEffect } from "react";
 import { Grid } from "@material-ui/core";
 import RegisterForm from "../components/RegisterForm";
 import { useHistory } from "react-router-dom";
-import { useAuthState } from "../contexts";
+import { useUserState } from "../contexts";
 import { routes } from "../constants";
 
 const RegisterPage = () => {
   const history = useHistory();
-  const { loggedIn } = useAuthState();
+  const { loggedIn } = useUserState();
 
   useEffect(() => {
     if (loggedIn) history.replace(routes.HOME);

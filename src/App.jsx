@@ -3,7 +3,7 @@ import { SnackbarProvider } from "notistack";
 import { Box } from "@material-ui/core";
 import Header from "./components/Header";
 import {
-  AuthProvider,
+  UserProvider,
   ProjectProvider,
   BuildProvider,
   TestRunProvider,
@@ -17,7 +17,7 @@ function App() {
   const { populateHelpSteps } = useContext(HelpContext);
   return (
     <SnackbarProvider maxSnack={3}>
-      <AuthProvider>
+      <UserProvider>
         <ProjectProvider>
           <BuildProvider>
             <TestRunProvider>
@@ -34,7 +34,7 @@ function App() {
             </TestRunProvider>
           </BuildProvider>
         </ProjectProvider>
-      </AuthProvider>
+      </UserProvider>
     </SnackbarProvider>
   );
 }
