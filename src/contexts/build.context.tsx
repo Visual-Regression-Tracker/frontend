@@ -105,27 +105,28 @@ function buildReducer(state: State, action: IAction): State {
         total,
         loading: false,
       };
-    case "delete": {
-      let buildList = state.buildList;
-      let indexOfBuildDeleted = buildList.findIndex(
-        (e) => e.id === action.payload
-      );
-      let indexOfSelectedBuild = buildList.findIndex(
-        (e) => e.id === state.selectedBuildId
-      );
-      if (indexOfBuildDeleted === indexOfSelectedBuild) {
-        let buildToSelect = null;
-        if (buildList.length > 1) {
+    case "delete":
+      {
+        let buildList = state.buildList;
+        let indexOfBuildDeleted = buildList.findIndex(
+          (e) => e.id === action.payload
+        );
+        let indexOfSelectedBuild = buildList.findIndex(
+          (e) => e.id === state.selectedBuildId
+        );
+        if (indexOfBuildDeleted === indexOfSelectedBuild) {
+          let buildToSelect = null;
+          if (buildList.length > 1) {
             buildToSelect = (buildList.length === 0) ? buildList[1] : buildList[indexOfSelectedBuild - 1];
+          }
+          state.selectedBuild = buildToSelect;
+          state.selectedBuildId = buildToSelect?.id ?? null;
         }
-        state.selectedBuild = buildToSelect;
-        state.selectedBuildId = buildToSelect?.id ?? null;
+        return {
+          ...state,
+          buildList: state.buildList.filter((p) => p.id !== action.payload),
+        };
       }
-      return {
-        ...state,
-        buildList: state.buildList.filter((p) => p.id !== action.payload),
-      };
-    }
     case "add":
       return {
         ...state,

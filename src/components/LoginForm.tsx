@@ -8,7 +8,7 @@ import {
   CardActions,
   Typography,
 } from "@material-ui/core";
-import { useAuthDispatch, login, HelpContext } from "../contexts";
+import { useUserDispatch, login, HelpContext } from "../contexts";
 import { routes } from "../constants";
 import { useSnackbar } from "notistack";
 import { TextValidator, ValidatorForm } from "react-material-ui-form-validator";

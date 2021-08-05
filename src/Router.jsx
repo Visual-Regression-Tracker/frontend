@@ -14,13 +14,7 @@ import TestVariationDetailsPage from "./pages/TestVariationDetailsPage";
 function Router() {
   return (
     <Switch>
-      <Route
-        exact
-        path={routes.LOGIN}
-        component={() => (
-          <LoginPage />
-        )}
-      />
+      <Route exact path={routes.LOGIN} component={() => <LoginPage />} />
       <Route exact path={routes.REGISTER} component={() => <RegisterPage />} />
       <Redirect exact from={routes.HOME} to={routes.PROJECT_LIST_PAGE} />
       <PrivateRoute
@@ -31,9 +25,7 @@ function Router() {
       <PrivateRoute
         exact
         path={routes.PROJECT_LIST_PAGE}
-        component={() => (
-          <ProjectsListPage />
-        )}
+        component={() => <ProjectsListPage />}
       />
       <PrivateRoute
         exact
@@ -43,16 +35,12 @@ function Router() {
       <PrivateRoute
         exact
         path={`${routes.HOME}:projectId`}
-        component={() => (
-          <ProjectPage />
-        )}
+        component={() => <ProjectPage />}
       />
       <PrivateRoute
         exact
         path={`${routes.VARIATION_LIST_PAGE}/:projectId`}
-        component={() => (
-          <TestVariationListPage />
-        )}
+        component={() => <TestVariationListPage />}
       />
       <PrivateRoute
         exact

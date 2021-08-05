@@ -46,6 +46,6 @@ const GuidedTour: FunctionComponent = () => {
             </IconButton>
         </React.Fragment>
     );
-}
+};
 
 export default GuidedTour;

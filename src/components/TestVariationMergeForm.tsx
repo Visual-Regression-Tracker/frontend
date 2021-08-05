@@ -85,12 +85,7 @@ export const TestVariationMergeForm: React.FunctionComponent<IProps> = ({
           />
         </Grid>
         <Grid item>
-          <Button
-            type="submit"
-            color="primary"
-            variant="contained"
-            id={locatorSelectBranch}
-          >
+          <Button type="submit" color="primary" variant="contained" id={locatorSelectBranch}>
             Merge
           </Button>
         </Grid>
