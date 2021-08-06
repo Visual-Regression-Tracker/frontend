@@ -36,10 +36,13 @@ const GuidedTour: FunctionComponent = () => {
                         showProgress={true}
                         showSkipButton={true}
                         steps={getHelpSteps()}
+                        disableCloseOnEsc={true}
                         styles={{
                             options: {
                                 zIndex: 10000,
                             },
+                            buttonNext: { color: "#3f51b5", backgroundColor: "" },
+                            buttonBack: { color: "#3f51b5" },
                         }}
                     />
                 </Avatar>
