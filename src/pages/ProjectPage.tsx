@@ -1,4 +1,4 @@
-import React, { useEffect, useContext } from "react";
+import React, { useEffect } from "react";
 import { Grid, Box, makeStyles } from "@material-ui/core";
 import { useParams, useHistory } from "react-router-dom";
 import BuildList from "../components/BuildList";
@@ -6,7 +6,7 @@ import ProjectSelect from "../components/ProjectSelect";
 import TestRunList from "../components/TestRunList";
 import BuildDetails from "../components/BuildDetails";
 import { TestDetailsDialog } from "../components/TestDetailsDialog";
-import { HelpContext } from "../contexts/help.context";
+import { useHelpDispatch, setHelpSteps } from "../contexts";
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -18,6 +18,7 @@ const ProjectPage = () => {
   const classes = useStyles();
   const { projectId } = useParams<{ projectId: string }>();
   const history = useHistory();
+  const helpDispatch = useHelpDispatch();
 
   const helpSteps = [
     {
@@ -28,11 +29,11 @@ const ProjectPage = () => {
     },
     {
       target: "#build-list",
-      title:"List of test runs",
+      title: "List of test runs",
       content: (
         <div>
-          If you see 'No Builds', please run your image
-          comparison from any client.
+          If you see 'No Builds', please run your image comparison from any
+          client.
         </div>
       ),
     },
@@ -42,14 +43,16 @@ const ProjectPage = () => {
     },
     {
       target: "#test-run-list",
-      content: <div>On selecting a build, shows all comparisons for the selected build.</div>,
+      content: (
+        <div>
+          On selecting a build, shows all comparisons for the selected build.
+        </div>
+      ),
     },
   ];
 
-  const { populateHelpSteps } = useContext(HelpContext);
-
   useEffect(() => {
-    populateHelpSteps(helpSteps);
+    setHelpSteps(helpDispatch, helpSteps);
   });
 
   return (

@@ -1,4 +1,4 @@
-import React, { useContext } from "react";
+import React from "react";
 import TestVariationList from "../components/TestVariationList";
 import { useHistory, useParams } from "react-router-dom";
 import { TestVariation } from "../types";
@@ -8,11 +8,12 @@ import ProjectSelect from "../components/ProjectSelect";
 import Filters from "../components/Filters";
 import { TestVariationMergeForm } from "../components/TestVariationMergeForm";
 import { useSnackbar } from "notistack";
-import { HelpContext } from "../contexts/help.context";
+import { setHelpSteps, useHelpDispatch } from "../contexts/help.context";
 
 const TestVariationListPage: React.FunctionComponent = () => {
   const history = useHistory();
   const { enqueueSnackbar } = useSnackbar();
+  const helpDispatch = useHelpDispatch();
   const { projectId = "" } = useParams<{ projectId: string }>();
   const [testVariations, setTestVariations] = React.useState<TestVariation[]>(
     []
@@ -41,19 +42,23 @@ const TestVariationListPage: React.FunctionComponent = () => {
       target: "#select-branch",
       title: "Merge from one branch to another",
       content: (
-        <div>Select the branch from/to which you want to merge the variations.</div >
+        <div>
+          Select the branch from/to which you want to merge the variations.
+        </div>
       ),
     },
     {
       target: "#reset-filter",
-      content: <div>Only filtered items are displayed/merged to the target branch.</div>,
+      content: (
+        <div>
+          Only filtered items are displayed/merged to the target branch.
+        </div>
+      ),
     },
   ];
 
-  const { populateHelpSteps } = useContext(HelpContext);
-
   React.useEffect(() => {
-    populateHelpSteps(helpSteps);
+    setHelpSteps(helpDispatch, helpSteps);
   });
 
   React.useEffect(() => {
@@ -69,7 +74,7 @@ const TestVariationListPage: React.FunctionComponent = () => {
           })
         );
     }
-  }, [projectId, enqueueSnackbar, populateHelpSteps]);
+  }, [projectId, enqueueSnackbar]);
 
   React.useEffect(() => {
     setFilteredItems(
@@ -84,7 +89,16 @@ const TestVariationListPage: React.FunctionComponent = () => {
           (browser ? t.browser === browser : true) // by browser
       )
     );
-  }, [query, branchName, os, device, browser, viewport, customTags, testVariations]);
+  }, [
+    query,
+    branchName,
+    os,
+    device,
+    browser,
+    viewport,
+    customTags,
+    testVariations,
+  ]);
 
   const handleDelete = (id: string) => {
     testVariationService

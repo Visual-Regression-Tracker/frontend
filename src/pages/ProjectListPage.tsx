@@ -1,4 +1,4 @@
-import React, { useContext, useEffect } from "react";
+import React, { useEffect } from "react";
 import {
   Grid,
   Typography,
@@ -17,7 +17,8 @@ import {
   createProject,
   updateProject,
   setProjectEditState,
-  HelpContext,
+  useHelpDispatch,
+  setHelpSteps,
 } from "../contexts";
 import { Link } from "react-router-dom";
 import { Delete, Add, Edit } from "@material-ui/icons";
@@ -31,6 +32,7 @@ const ProjectsListPage = () => {
   const { enqueueSnackbar } = useSnackbar();
   const projectState = useProjectState();
   const projectDispatch = useProjectDispatch();
+  const helpDispatch = useHelpDispatch();
 
   const [createDialogOpen, setCreateDialogOpen] = React.useState(false);
   const [updateDialogOpen, setUpdateDialogOpen] = React.useState(false);
@@ -49,10 +51,8 @@ const ProjectsListPage = () => {
     },
   ];
 
-  const { populateHelpSteps } = useContext(HelpContext);
-
   useEffect(() => {
-    populateHelpSteps(helpSteps);
+    setHelpSteps(helpDispatch, helpSteps);
   });
 
   const toggleCreateDialogOpen = () => {
