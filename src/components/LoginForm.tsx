@@ -1,4 +1,4 @@
-import React, { useState, FormEvent, useEffect, useContext } from "react";
+import React, { useState, FormEvent, useEffect } from "react";
 import { Link } from "react-router-dom";
 import {
   Button,
@@ -8,7 +8,12 @@ import {
   CardActions,
   Typography,
 } from "@material-ui/core";
-import { useUserDispatch, login, HelpContext } from "../contexts";
+import {
+  useUserDispatch,
+  login,
+  setHelpSteps,
+  useHelpDispatch,
+} from "../contexts";
 import { routes } from "../constants";
 import { useSnackbar } from "notistack";
 import { TextValidator, ValidatorForm } from "react-material-ui-form-validator";
@@ -18,6 +23,7 @@ const LoginForm = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const dispatch = useUserDispatch();
+  const helpDispatch = useHelpDispatch();
 
   const handleSubmit = (event: FormEvent) => {
     event.preventDefault();
@@ -31,15 +37,14 @@ const LoginForm = () => {
   const helpSteps = [
     {
       target: "#loginform-1",
-      content: "Default admin account: visual-regression-tracker@example.com / 123456. Make sure to change it's password.",
+      content:
+        "Default admin account: visual-regression-tracker@example.com / 123456. Make sure to change it's password.",
     },
   ];
-  
-  useEffect(() => {
-    populateHelpSteps(helpSteps);
-  });
 
-  const { populateHelpSteps } = useContext(HelpContext);
+  useEffect(() => {
+    setHelpSteps(helpDispatch, helpSteps);
+  });
 
   const errorForTwoChar = "Enter at least two characters.";
   const locatorLoginForm = "loginform-1";

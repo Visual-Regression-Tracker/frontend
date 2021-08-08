@@ -1,23 +1,69 @@
-import { createContext } from 'react';
-import { Step } from 'react-joyride';
+import React from "react";
+import { Step } from "react-joyride";
 
-let helpSteps: Step[] = [];
+interface ISetStepAction {
+  type: "setSteps";
+  payload: Array<Step>;
+}
 
-let getHelpSteps = (): Step[] => {
-    const firstStep = helpSteps[0];
-    //Below line is to prevent application breaking if element is not present for any reason (e.g. if the user deletes build or if there is no data.)
-    if (firstStep && document.getElementById(firstStep.target.toString().slice(1))) {
-        helpSteps.every((e) => {
-            e.disableBeacon = true;
-            e.hideCloseButton = true;
-        });
-        return helpSteps;
-    }
-    return [];
+type IAction = ISetStepAction;
+
+type Dispatch = (action: IAction) => void;
+type State = {
+  helpSteps: Array<Step>;
 };
 
-const populateHelpSteps = (steps: any) => {
-    helpSteps = steps;
+type HelpProviderProps = { children: React.ReactNode };
+
+const StateContext = React.createContext<State | undefined>(undefined);
+const DispatchContext = React.createContext<Dispatch | undefined>(undefined);
+
+const initialState: State = {
+  helpSteps: [],
 };
 
-export const HelpContext = createContext({ getHelpSteps, populateHelpSteps });
+function reducer(state: State, action: IAction): State {
+  switch (action.type) {
+    case "setSteps":
+      return {
+        ...state,
+        helpSteps: action.payload,
+      };
+    default:
+      return state;
+  }
+}
+
+function HelpProvider({ children }: HelpProviderProps) {
+  const [state, dispatch] = React.useReducer(reducer, initialState);
+
+  return (
+    <StateContext.Provider value={state}>
+      <DispatchContext.Provider value={dispatch}>
+        {children}
+      </DispatchContext.Provider>
+    </StateContext.Provider>
+  );
+}
+
+function useHelpState() {
+  const context = React.useContext(StateContext);
+  if (context === undefined) {
+    throw new Error("must be used within a HelpContext");
+  }
+  return context;
+}
+
+function useHelpDispatch() {
+  const context = React.useContext(DispatchContext);
+  if (context === undefined) {
+    throw new Error("must be used within a HelpContext");
+  }
+  return context;
+}
+
+function setHelpSteps(dispatch: Dispatch, data: Array<Step>) {
+  dispatch({ type: "setSteps", payload: data });
+}
+
+export { HelpProvider, useHelpDispatch, useHelpState, setHelpSteps };

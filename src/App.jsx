@@ -1,4 +1,4 @@
-import React, { useContext } from "react";
+import React from "react";
 import { SnackbarProvider } from "notistack";
 import { Box } from "@material-ui/core";
 import Header from "./components/Header";
@@ -8,13 +8,11 @@ import {
   BuildProvider,
   TestRunProvider,
   SocketProvider,
+  HelpProvider,
 } from "./contexts";
 import Router from "./Router";
-import { HelpContext } from "./contexts/help.context";
 
 function App() {
-  const { getHelpSteps } = useContext(HelpContext);
-  const { populateHelpSteps } = useContext(HelpContext);
   return (
     <SnackbarProvider maxSnack={3}>
       <UserProvider>
@@ -22,14 +20,14 @@ function App() {
           <BuildProvider>
             <TestRunProvider>
               <SocketProvider>
-                <HelpContext.Provider value={{getHelpSteps, populateHelpSteps}}>
+                <HelpProvider>
                   <Box height="10%">
                     <Header />
                   </Box>
                   <Box height="90%">
-                    <Router/>
+                    <Router />
                   </Box>
-                </HelpContext.Provider>
+                </HelpProvider>
               </SocketProvider>
             </TestRunProvider>
           </BuildProvider>
