@@ -7,6 +7,7 @@ import TestRunList from "../components/TestRunList";
 import BuildDetails from "../components/BuildDetails";
 import { TestDetailsDialog } from "../components/TestDetailsDialog";
 import { useHelpDispatch, setHelpSteps } from "../contexts";
+import { CONTENT_PROJECT_PAGE_BUILD_DETAILS, CONTENT_PROJECT_PAGE_BUILD_LIST, CONTENT_PROJECT_PAGE_SELECT_PROJECT, CONTENT_PROJECT_PAGE_TEST_RUN_LIST, LOCATOR_PROJECT_PAGE_BUILD_DETAILS, LOCATOR_PROJECT_PAGE_BUILD_LIST, LOCATOR_PROJECT_PAGE_SELECT_PROJECT, LOCATOR_PROJECT_PAGE_TEST_RUN_LIST } from "../constants/help";
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -22,30 +23,29 @@ const ProjectPage = () => {
 
   const helpSteps = [
     {
-      target: "#select-project",
+      target: "#" + LOCATOR_PROJECT_PAGE_SELECT_PROJECT,
       content: (
-        <div>Select the project for which you want to view details.</div>
+        <div>{CONTENT_PROJECT_PAGE_SELECT_PROJECT}</div>
       ),
     },
     {
-      target: "#build-list",
+      target: "#" + LOCATOR_PROJECT_PAGE_BUILD_LIST,
       title: "List of test runs",
       content: (
         <div>
-          If you see 'No Builds', please run your image comparison from any
-          client.
+          {CONTENT_PROJECT_PAGE_BUILD_LIST}
         </div>
       ),
     },
     {
-      target: "#build-details",
-      content: <div>Details of the currently selected build.</div>,
+      target: "#" + LOCATOR_PROJECT_PAGE_BUILD_DETAILS,
+      content: <div>{CONTENT_PROJECT_PAGE_BUILD_DETAILS}</div>,
     },
     {
-      target: "#test-run-list",
+      target: "#" + LOCATOR_PROJECT_PAGE_TEST_RUN_LIST,
       content: (
         <div>
-          On selecting a build, shows all comparisons for the selected build.
+          {CONTENT_PROJECT_PAGE_TEST_RUN_LIST}
         </div>
       ),
     },
@@ -59,13 +59,13 @@ const ProjectPage = () => {
     <React.Fragment>
       <Grid container className={classes.root}>
         <Grid item xs={3} className={classes.root}>
-          <Box height="9%" id="select-project">
+          <Box height="9%" id={LOCATOR_PROJECT_PAGE_SELECT_PROJECT}>
             <ProjectSelect
               projectId={projectId}
               onProjectSelect={(id) => history.push(id)}
             />
           </Box>
-          <Box height="91%" id="build-list">
+          <Box height="91%" id={LOCATOR_PROJECT_PAGE_BUILD_LIST}>
             <BuildList />
           </Box>
         </Grid>
@@ -73,7 +73,7 @@ const ProjectPage = () => {
           <Box height="15%">
             <BuildDetails />
           </Box>
-          <Box height="85%" id="test-run-list">
+          <Box height="85%" id={LOCATOR_PROJECT_PAGE_TEST_RUN_LIST}>
             <TestRunList />
           </Box>
         </Grid>

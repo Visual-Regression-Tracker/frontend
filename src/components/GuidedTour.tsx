@@ -15,7 +15,7 @@ const GuidedTour: FunctionComponent = () => {
       firstStep &&
       document.getElementById(firstStep.target.toString().slice(1))
     ) {
-      helpSteps.every((e) => {
+      helpSteps.forEach((e) => {
         e.disableBeacon = true;
         e.hideCloseButton = true;
       });

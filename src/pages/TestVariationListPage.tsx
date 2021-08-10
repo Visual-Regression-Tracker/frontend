@@ -9,6 +9,7 @@ import Filters from "../components/Filters";
 import { TestVariationMergeForm } from "../components/TestVariationMergeForm";
 import { useSnackbar } from "notistack";
 import { setHelpSteps, useHelpDispatch } from "../contexts/help.context";
+import { CONTENT_TEST_VARIATION_LIST_PAGE_SELECT_BRANCH, CONTENT_TEST_VARIATION_LIST_PAGE_SELECT_PROJECT, CONTENT_TEST_VARIATION_LIST_PAGE_SELECT_RESET_FILTER, LOCATOR_TEST_VARIATION_LIST_PAGE_SELECT_PROJECT, LOCATOR_TEST_VARIATION_LIST_PAGE_SELECT_RESET_FILTER, LOCATOR_TEST_VARIATION_SELECT_BRANCH, TITLE_TEST_VARIATION_LIST_PAGE_SELECT_BRANCH, TITLE_TEST_VARIATION_LIST_PAGE_SELECT_PROJECT } from "../constants/help";
 
 const TestVariationListPage: React.FunctionComponent = () => {
   const history = useHistory();
@@ -29,31 +30,20 @@ const TestVariationListPage: React.FunctionComponent = () => {
   const [branchName, setBranchName] = React.useState("");
   const [filteredItems, setFilteredItems] = React.useState<TestVariation[]>([]);
 
-  const locatorSelectProject = "select-project";
-
   const helpSteps = [
     {
-      target: "#select-project",
-      title:
-        "Shows all the  historical record of baselines by Name + Branch + OS + Browser + Viewport + Device",
-      content: <div>Select the project you want to act on.</div>,
+      target: "#" + LOCATOR_TEST_VARIATION_LIST_PAGE_SELECT_PROJECT,
+      title: TITLE_TEST_VARIATION_LIST_PAGE_SELECT_PROJECT,
+      content: <div>{CONTENT_TEST_VARIATION_LIST_PAGE_SELECT_PROJECT}</div>,
     },
     {
-      target: "#select-branch",
-      title: "Merge from one branch to another",
-      content: (
-        <div>
-          Select the branch from/to which you want to merge the variations.
-        </div>
-      ),
+      target: "#" + LOCATOR_TEST_VARIATION_SELECT_BRANCH,
+      title: TITLE_TEST_VARIATION_LIST_PAGE_SELECT_BRANCH,
+      content: <div>{CONTENT_TEST_VARIATION_LIST_PAGE_SELECT_BRANCH}</div>,
     },
     {
-      target: "#reset-filter",
-      content: (
-        <div>
-          Only filtered items are displayed/merged to the target branch.
-        </div>
-      ),
+      target: "#" + LOCATOR_TEST_VARIATION_LIST_PAGE_SELECT_RESET_FILTER,
+      content: <div>{CONTENT_TEST_VARIATION_LIST_PAGE_SELECT_RESET_FILTER}</div>,
     },
   ];
 
@@ -120,7 +110,7 @@ const TestVariationListPage: React.FunctionComponent = () => {
     <React.Fragment>
       <Box m={2}>
         <Grid container direction="column" spacing={2}>
-          <Grid item id={locatorSelectProject}>
+          <Grid item id={LOCATOR_TEST_VARIATION_LIST_PAGE_SELECT_PROJECT}>
             <ProjectSelect
               projectId={projectId}
               onProjectSelect={(id) => history.push(id)}

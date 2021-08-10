@@ -27,6 +27,7 @@ import { formatDateTime } from "../_helpers/format.helper";
 import { ProjectForm } from "../components/ProjectForm";
 import { useSnackbar } from "notistack";
 import { BaseModal } from "../components/BaseModal";
+import { CONTENT_PROJECT_LIST_PAGE_PROJECT_LIST, LOCATOR_PROJECT_LIST_PAGE_PROJECT_LIST } from "../constants/help";
 
 const ProjectsListPage = () => {
   const { enqueueSnackbar } = useSnackbar();
@@ -40,11 +41,10 @@ const ProjectsListPage = () => {
 
   const helpSteps = [
     {
-      target: "#projectlist-1",
+      target: "#" + LOCATOR_PROJECT_LIST_PAGE_PROJECT_LIST,
       content: (
         <div>
-          By default, a project is created by docker, feel free to
-          edit/add/delete projects.
+          {CONTENT_PROJECT_LIST_PAGE_PROJECT_LIST}
         </div>
       ),
       title: "Project List",
@@ -159,7 +159,7 @@ const ProjectsListPage = () => {
         </Grid>
         {projectState.projectList.map((project) => (
           <Grid item xs={4} key={project.id}>
-            <Card id="projectlist-1">
+            <Card id={LOCATOR_PROJECT_LIST_PAGE_PROJECT_LIST}>
               <CardContent>
                 <Typography>Id: {project.id}</Typography>
                 <Typography>Name: {project.name}</Typography>

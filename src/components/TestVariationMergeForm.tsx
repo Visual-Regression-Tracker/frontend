@@ -9,6 +9,7 @@ import {
 import { useSnackbar } from "notistack";
 import { selectBuild, useBuildDispatch } from "../contexts";
 import { Autocomplete } from "@material-ui/lab";
+import { LOCATOR_TEST_VARIATION_SELECT_BRANCH } from "../constants/help";
 
 interface IProps {
   projectId: string;
@@ -24,8 +25,6 @@ export const TestVariationMergeForm: React.FunctionComponent<IProps> = ({
   const { enqueueSnackbar } = useSnackbar();
   const [fromBranch, setFromBranch] = React.useState("");
   const [toBranch, setToBranch] = React.useState("");
-
-  const locatorSelectBranch = "select-branch";
 
   const handleSubmit = (event: React.FormEvent) => {
     event.preventDefault();
@@ -85,7 +84,7 @@ export const TestVariationMergeForm: React.FunctionComponent<IProps> = ({
           />
         </Grid>
         <Grid item>
-          <Button type="submit" color="primary" variant="contained" id={locatorSelectBranch}>
+          <Button type="submit" color="primary" variant="contained" id={LOCATOR_TEST_VARIATION_SELECT_BRANCH}>
             Merge
           </Button>
         </Grid>

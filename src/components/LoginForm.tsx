@@ -17,6 +17,7 @@ import {
 import { routes } from "../constants";
 import { useSnackbar } from "notistack";
 import { TextValidator, ValidatorForm } from "react-material-ui-form-validator";
+import { CONTENT_LOGIN_FORM, LOCATOR_LOGIN_FORM } from "../constants/help";
 
 const LoginForm = () => {
   const { enqueueSnackbar } = useSnackbar();
@@ -36,9 +37,8 @@ const LoginForm = () => {
 
   const helpSteps = [
     {
-      target: "#loginform-1",
-      content:
-        "Default admin account: visual-regression-tracker@example.com / 123456. Make sure to change it's password.",
+      target: "#" + LOCATOR_LOGIN_FORM,
+      content: CONTENT_LOGIN_FORM,
     },
   ];
 
@@ -47,12 +47,11 @@ const LoginForm = () => {
   });
 
   const errorForTwoChar = "Enter at least two characters.";
-  const locatorLoginForm = "loginform-1";
 
   return (
     <ValidatorForm onSubmit={handleSubmit} instantValidate>
       <Card variant="outlined">
-        <CardContent id={locatorLoginForm}>
+        <CardContent id={LOCATOR_LOGIN_FORM}>
           <Grid container direction="column" spacing={2}>
             <Grid item>
               <TextValidator

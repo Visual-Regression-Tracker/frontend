@@ -1,0 +1,24 @@
+export const LOCATOR_LOGIN_FORM = "loginform-1";
+export const LOCATOR_BUILD_DETAILS = "build-details";
+export const LOCATOR_RESET_FILTER = "reset-filter";
+export const LOCATOR_TEST_VARIATION_SELECT_BRANCH = "select-branch";
+export const LOCATOR_PROJECT_LIST_PAGE_PROJECT_LIST = "projectlist-1";
+export const LOCATOR_PROJECT_PAGE_SELECT_PROJECT = "select-project";
+export const LOCATOR_PROJECT_PAGE_BUILD_LIST = "build-list";
+export const LOCATOR_PROJECT_PAGE_BUILD_DETAILS = "build-details";
+export const LOCATOR_PROJECT_PAGE_TEST_RUN_LIST = "test-run-list";
+export const LOCATOR_TEST_VARIATION_LIST_PAGE_SELECT_PROJECT = "select-project";
+export const LOCATOR_TEST_VARIATION_LIST_PAGE_SELECT_BRANCH = "select-branch";
+export const LOCATOR_TEST_VARIATION_LIST_PAGE_SELECT_RESET_FILTER = "reset-filter";
+
+export const CONTENT_LOGIN_FORM = "Default admin account: visual-regression-tracker@example.com / 123456. Make sure to change it's password.";
+export const CONTENT_PROJECT_LIST_PAGE_PROJECT_LIST = "By default, a project is created by docker, feel free to edit/add/delete projects.";
+export const CONTENT_PROJECT_PAGE_SELECT_PROJECT = "Select the project for which you want to view details.";
+export const CONTENT_PROJECT_PAGE_BUILD_LIST = "If you see 'No Builds', please run your image comparison from any client.";
+export const CONTENT_PROJECT_PAGE_BUILD_DETAILS = "Details of the currently selected build.";
+export const CONTENT_PROJECT_PAGE_TEST_RUN_LIST = "On selecting a build, shows all comparisons for the selected build.";
+export const TITLE_TEST_VARIATION_LIST_PAGE_SELECT_PROJECT = "Shows all the historical record of baselines by Name + Branch + OS + Browser + Viewport + Device";
+export const CONTENT_TEST_VARIATION_LIST_PAGE_SELECT_PROJECT = "Select the project you want to act on.";
+export const TITLE_TEST_VARIATION_LIST_PAGE_SELECT_BRANCH = "Merge from one branch to another";
+export const CONTENT_TEST_VARIATION_LIST_PAGE_SELECT_BRANCH = "Select the branch from/to which you want to merge the variations.";
+export const CONTENT_TEST_VARIATION_LIST_PAGE_SELECT_RESET_FILTER = "Only filtered items are displayed/merged to the target branch.";

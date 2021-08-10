@@ -9,6 +9,7 @@ import {
 import { BuildStatusChip } from "./BuildStatusChip";
 import { formatDateTime } from "../_helpers/format.helper";
 import { useBuildState } from "../contexts";
+import { LOCATOR_BUILD_DETAILS } from '../constants/help';
 
 const BuildDetails: React.FunctionComponent = () => {
   const { selectedBuild } = useBuildState();
@@ -18,10 +19,9 @@ const BuildDetails: React.FunctionComponent = () => {
   }
 
   const loadingAnimation = selectedBuild.isRunning && <LinearProgress />;
-  const locatorBuildDetails = "build-details";
 
   return (
-    <Grid container direction="column" id={locatorBuildDetails}>
+    <Grid container direction="column" id={LOCATOR_BUILD_DETAILS}>
       <Grid item>
         <Box m={0.5}>
           <Grid container spacing={1} alignItems="center">
