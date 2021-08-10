@@ -9,7 +9,10 @@ import Filters from "../components/Filters";
 import { TestVariationMergeForm } from "../components/TestVariationMergeForm";
 import { useSnackbar } from "notistack";
 import { setHelpSteps, useHelpDispatch } from "../contexts/help.context";
-import { CONTENT_TEST_VARIATION_LIST_PAGE_SELECT_BRANCH, CONTENT_TEST_VARIATION_LIST_PAGE_SELECT_PROJECT, CONTENT_TEST_VARIATION_LIST_PAGE_SELECT_RESET_FILTER, LOCATOR_TEST_VARIATION_LIST_PAGE_SELECT_PROJECT, LOCATOR_TEST_VARIATION_LIST_PAGE_SELECT_RESET_FILTER, LOCATOR_TEST_VARIATION_SELECT_BRANCH, TITLE_TEST_VARIATION_LIST_PAGE_SELECT_BRANCH, TITLE_TEST_VARIATION_LIST_PAGE_SELECT_PROJECT } from "../constants/help";
+import {
+  LOCATOR_TEST_VARIATION_LIST_PAGE_SELECT_PROJECT,
+  TEST_VARIATION_LIST_PAGE,
+} from "../constants";
 
 const TestVariationListPage: React.FunctionComponent = () => {
   const history = useHistory();
@@ -30,25 +33,8 @@ const TestVariationListPage: React.FunctionComponent = () => {
   const [branchName, setBranchName] = React.useState("");
   const [filteredItems, setFilteredItems] = React.useState<TestVariation[]>([]);
 
-  const helpSteps = [
-    {
-      target: "#" + LOCATOR_TEST_VARIATION_LIST_PAGE_SELECT_PROJECT,
-      title: TITLE_TEST_VARIATION_LIST_PAGE_SELECT_PROJECT,
-      content: <div>{CONTENT_TEST_VARIATION_LIST_PAGE_SELECT_PROJECT}</div>,
-    },
-    {
-      target: "#" + LOCATOR_TEST_VARIATION_SELECT_BRANCH,
-      title: TITLE_TEST_VARIATION_LIST_PAGE_SELECT_BRANCH,
-      content: <div>{CONTENT_TEST_VARIATION_LIST_PAGE_SELECT_BRANCH}</div>,
-    },
-    {
-      target: "#" + LOCATOR_TEST_VARIATION_LIST_PAGE_SELECT_RESET_FILTER,
-      content: <div>{CONTENT_TEST_VARIATION_LIST_PAGE_SELECT_RESET_FILTER}</div>,
-    },
-  ];
-
   React.useEffect(() => {
-    setHelpSteps(helpDispatch, helpSteps);
+    setHelpSteps(helpDispatch, TEST_VARIATION_LIST_PAGE);
   });
 
   React.useEffect(() => {

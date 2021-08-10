@@ -1,4 +1,4 @@
-import React, { useState, FormEvent, useEffect } from "react";
+import React, { useState, FormEvent } from "react";
 import { Link } from "react-router-dom";
 import {
   Button,
@@ -8,23 +8,16 @@ import {
   CardActions,
   Typography,
 } from "@material-ui/core";
-import {
-  useUserDispatch,
-  login,
-  setHelpSteps,
-  useHelpDispatch,
-} from "../contexts";
-import { routes } from "../constants";
+import { useUserDispatch, login } from "../contexts";
+import { LOCATOR_LOGIN_FORM, routes } from "../constants";
 import { useSnackbar } from "notistack";
 import { TextValidator, ValidatorForm } from "react-material-ui-form-validator";
-import { CONTENT_LOGIN_FORM, LOCATOR_LOGIN_FORM } from "../constants/help";
 
 const LoginForm = () => {
   const { enqueueSnackbar } = useSnackbar();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const dispatch = useUserDispatch();
-  const helpDispatch = useHelpDispatch();
 
   const handleSubmit = (event: FormEvent) => {
     event.preventDefault();
@@ -34,17 +27,6 @@ const LoginForm = () => {
       })
     );
   };
-
-  const helpSteps = [
-    {
-      target: "#" + LOCATOR_LOGIN_FORM,
-      content: CONTENT_LOGIN_FORM,
-    },
-  ];
-
-  useEffect(() => {
-    setHelpSteps(helpDispatch, helpSteps);
-  });
 
   const errorForTwoChar = "Enter at least two characters.";
 

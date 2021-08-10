@@ -22,12 +22,15 @@ import {
 } from "../contexts";
 import { Link } from "react-router-dom";
 import { Delete, Add, Edit } from "@material-ui/icons";
-import { routes } from "../constants";
+import {
+  routes,
+  LOCATOR_PROJECT_LIST_PAGE_PROJECT_LIST,
+  PROJECT_LIST_PAGE_STEPS,
+} from "../constants";
 import { formatDateTime } from "../_helpers/format.helper";
 import { ProjectForm } from "../components/ProjectForm";
 import { useSnackbar } from "notistack";
 import { BaseModal } from "../components/BaseModal";
-import { CONTENT_PROJECT_LIST_PAGE_PROJECT_LIST, LOCATOR_PROJECT_LIST_PAGE_PROJECT_LIST } from "../constants/help";
 
 const ProjectsListPage = () => {
   const { enqueueSnackbar } = useSnackbar();
@@ -39,20 +42,8 @@ const ProjectsListPage = () => {
   const [updateDialogOpen, setUpdateDialogOpen] = React.useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = React.useState(false);
 
-  const helpSteps = [
-    {
-      target: "#" + LOCATOR_PROJECT_LIST_PAGE_PROJECT_LIST,
-      content: (
-        <div>
-          {CONTENT_PROJECT_LIST_PAGE_PROJECT_LIST}
-        </div>
-      ),
-      title: "Project List",
-    },
-  ];
-
   useEffect(() => {
-    setHelpSteps(helpDispatch, helpSteps);
+    setHelpSteps(helpDispatch, PROJECT_LIST_PAGE_STEPS);
   });
 
   const toggleCreateDialogOpen = () => {
