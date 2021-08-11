@@ -27,6 +27,7 @@ import {
 import { useSnackbar } from "notistack";
 import { formatDateTime } from "../_helpers/format.helper";
 import TestStatusChip from "../components/TestStatusChip";
+import { Baseline } from "../types/baseline";
 
 const useStyles = makeStyles({
   media: {
@@ -68,7 +69,7 @@ const TestVariationDetailsPage: React.FunctionComponent = () => {
               <Grid item>
                 <TestVariationDetails testVariation={testVariation} />
               </Grid>
-              {testVariation.baselines.map((baseline) => (
+              {testVariation.baselines.map((baseline: Baseline) => (
                 <Grid item key={baseline.id}>
                   <Card>
                     <CardActions>
@@ -76,31 +77,31 @@ const TestVariationDetailsPage: React.FunctionComponent = () => {
                         color="primary"
                         disabled={!baseline.testRun}
                         onClick={() => {
-                          if (baseline.testRun) {
+                          const { testRun } = baseline;
+                          if (testRun) {
                             history.push({
                               pathname: buildProjectPageUrl(
                                 testVariation.projectId
                               ),
                               ...buildTestRunLocation(
-                                baseline.testRun.buildId,
-                                baseline.testRunId
+                                testRun.buildId,
+                                testRun.id
                               ),
                             });
                             selectBuild(
                               buildDispatch,
-                              baseline.testRun.buildId
+                              testRun.buildId
                             ).then(() =>
-                              selectTestRun(
-                                testRunDispatch,
-                                baseline.testRun.id
-                              )
+                              selectTestRun(testRunDispatch, testRun.id)
                             );
                           }
                         }}
                       >
                         Test Run
                       </Button>
-                      <TestStatusChip status={baseline.testRun.status} />
+                      {baseline.testRun && (
+                        <TestStatusChip status={baseline.testRun.status} />
+                      )}
                       {baseline.user && (
                         <Typography>
                           {`${baseline.user.firstName} ${baseline.user.lastName} <${baseline.user.email}>`}
