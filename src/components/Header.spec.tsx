@@ -1,36 +1,25 @@
 /* global cy */
 import React from "react";
-import { mount } from "@cypress/react";
 import Header from "./Header";
-import { UserProvider } from "../contexts";
-import { BrowserRouter } from "react-router-dom";
 import { haveUserLogged } from "../_test/precondition.helper";
-import { TEST_USER } from "../_test/test.data.helper";
+import { TEST_PROJECT, TEST_USER } from "../_test/test.data.helper";
+import { mountVrtComponent } from "../_test/test.moun.helper";
+import { projectStub } from "../_test/stub.helper";
 
 describe("Header", () => {
   describe("image", () => {
     it("Guest", () => {
       localStorage.clear();
-      mount(
-        <BrowserRouter>
-          <UserProvider>
-            <Header />
-          </UserProvider>
-        </BrowserRouter>
-      );
+      mountVrtComponent({ component: <Header /> });
 
       cy.get("#__cy_root").vrtTrack("Header. Guest");
     });
 
     it("Logged", () => {
       haveUserLogged(TEST_USER);
-      mount(
-        <BrowserRouter>
-          <UserProvider>
-            <Header />
-          </UserProvider>
-        </BrowserRouter>
-      );
+      projectStub.getAll([TEST_PROJECT]);
+
+      mountVrtComponent({ component: <Header /> });
 
       cy.get("#__cy_root").vrtTrack("Header. Logged");
     });

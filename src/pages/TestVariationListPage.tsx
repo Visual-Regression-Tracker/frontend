@@ -8,10 +8,16 @@ import ProjectSelect from "../components/ProjectSelect";
 import Filters from "../components/Filters";
 import { TestVariationMergeForm } from "../components/TestVariationMergeForm";
 import { useSnackbar } from "notistack";
+import { setHelpSteps, useHelpDispatch } from "../contexts/help.context";
+import {
+  LOCATOR_TEST_VARIATION_LIST_PAGE_SELECT_PROJECT,
+  TEST_VARIATION_LIST_PAGE,
+} from "../constants";
 
 const TestVariationListPage: React.FunctionComponent = () => {
   const history = useHistory();
   const { enqueueSnackbar } = useSnackbar();
+  const helpDispatch = useHelpDispatch();
   const { projectId = "" } = useParams<{ projectId: string }>();
   const [testVariations, setTestVariations] = React.useState<TestVariation[]>(
     []
@@ -26,6 +32,10 @@ const TestVariationListPage: React.FunctionComponent = () => {
   const [customTags, setCustomTags] = React.useState("");
   const [branchName, setBranchName] = React.useState("");
   const [filteredItems, setFilteredItems] = React.useState<TestVariation[]>([]);
+
+  React.useEffect(() => {
+    setHelpSteps(helpDispatch, TEST_VARIATION_LIST_PAGE);
+  });
 
   React.useEffect(() => {
     if (projectId) {
@@ -55,7 +65,16 @@ const TestVariationListPage: React.FunctionComponent = () => {
           (browser ? t.browser === browser : true) // by browser
       )
     );
-  }, [query, branchName, os, device, browser, viewport, customTags, testVariations]);
+  }, [
+    query,
+    branchName,
+    os,
+    device,
+    browser,
+    viewport,
+    customTags,
+    testVariations,
+  ]);
 
   const handleDelete = (id: string) => {
     testVariationService
@@ -77,7 +96,7 @@ const TestVariationListPage: React.FunctionComponent = () => {
     <React.Fragment>
       <Box m={2}>
         <Grid container direction="column" spacing={2}>
-          <Grid item>
+          <Grid item id={LOCATOR_TEST_VARIATION_LIST_PAGE_SELECT_PROJECT}>
             <ProjectSelect
               projectId={projectId}
               onProjectSelect={(id) => history.push(id)}

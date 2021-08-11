@@ -12,6 +12,7 @@ import { Link } from "react-router-dom";
 import { useUserDispatch, useUserState, logout } from "../contexts";
 import { routes } from "../constants";
 import logo from "../static/logo.png";
+import GuidedTour from "./GuidedTour";
 
 const Header: FunctionComponent = () => {
   const [menuRef, setMenuRef] = React.useState<null | HTMLElement>(null);
@@ -78,15 +79,18 @@ const Header: FunctionComponent = () => {
               </Link>
             </Grid>
             <Grid item>
-              {loggedIn && (
-                <IconButton
-                  onClick={(event: React.MouseEvent<HTMLElement>) =>
-                    setMenuRef(event.currentTarget)
-                  }
-                >
-                  <Avatar>{`${user?.firstName[0]}${user?.lastName[0]}`}</Avatar>
-                </IconButton>
-              )}
+              <Grid container justify="space-between" alignItems="center">
+                <GuidedTour />
+                {loggedIn && (
+                  <IconButton
+                    onClick={(event: React.MouseEvent<HTMLElement>) =>
+                      setMenuRef(event.currentTarget)
+                    }
+                  >
+                    <Avatar>{`${user?.firstName[0]}${user?.lastName[0]}`}</Avatar>
+                  </IconButton>
+                )}
+              </Grid>
             </Grid>
           </Grid>
         </Toolbar>

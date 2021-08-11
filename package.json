@@ -21,6 +21,7 @@
     "react-debounce-input": "^3.2.2",
     "react-dom": "^16.13.1",
     "react-hotkeys-hook": "^2.4.0",
+    "react-joyride": "^2.3.1",
     "react-konva": "^16.13.0-3",
     "react-material-ui-form-validator": "^2.1.1",
     "react-router-dom": "^5.2.0",

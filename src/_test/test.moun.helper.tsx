@@ -5,6 +5,7 @@ import {
   UserProvider,
   BuildProvider,
   TestRunProvider,
+  HelpProvider,
 } from "../contexts";
 import { MemoryRouter, Route } from "react-router-dom";
 import { MemoryRouterProps } from "react-router";
@@ -26,7 +27,9 @@ export const mountVrtComponent = ({
           <UserProvider>
             <ProjectProvider>
               <BuildProvider>
-                <TestRunProvider>{component}</TestRunProvider>
+                <HelpProvider>
+                  <TestRunProvider>{component}</TestRunProvider>
+                </HelpProvider>
               </BuildProvider>
             </ProjectProvider>
           </UserProvider>

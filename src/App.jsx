@@ -8,6 +8,7 @@ import {
   BuildProvider,
   TestRunProvider,
   SocketProvider,
+  HelpProvider,
 } from "./contexts";
 import Router from "./Router";
 
@@ -19,12 +20,14 @@ function App() {
           <BuildProvider>
             <TestRunProvider>
               <SocketProvider>
-                <Box height="10%">
-                  <Header />
-                </Box>
-                <Box height="90%">
-                  <Router />
-                </Box>
+                <HelpProvider>
+                  <Box height="10%">
+                    <Header />
+                  </Box>
+                  <Box height="90%">
+                    <Router />
+                  </Box>
+                </HelpProvider>
               </SocketProvider>
             </TestRunProvider>
           </BuildProvider>

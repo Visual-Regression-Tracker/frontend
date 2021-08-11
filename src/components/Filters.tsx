@@ -10,6 +10,7 @@ import {
 } from "@material-ui/core";
 import { TestRun, TestVariation } from "../types";
 import { DebounceInput } from "react-debounce-input";
+import { LOCATOR_RESET_FILTER } from "../constants/help";
 
 interface IProps {
   items: (TestRun | TestVariation)[];
@@ -239,7 +240,7 @@ const Filters: React.FunctionComponent<IProps> = ({
       )}
       {branchNameList && branchNameList.length > 0 && (
         <Grid item xs>
-          <FormControl fullWidth>
+          <FormControl fullWidth id={LOCATOR_RESET_FILTER}>
             <InputLabel shrink id="filter_branchName">
               Branch
             </InputLabel>

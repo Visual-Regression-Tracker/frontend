@@ -9,7 +9,7 @@ import {
   Typography,
 } from "@material-ui/core";
 import { useUserDispatch, login } from "../contexts";
-import { routes } from "../constants";
+import { LOCATOR_LOGIN_FORM, routes } from "../constants";
 import { useSnackbar } from "notistack";
 import { TextValidator, ValidatorForm } from "react-material-ui-form-validator";
 
@@ -33,7 +33,7 @@ const LoginForm = () => {
   return (
     <ValidatorForm onSubmit={handleSubmit} instantValidate>
       <Card variant="outlined">
-        <CardContent>
+        <CardContent id={LOCATOR_LOGIN_FORM}>
           <Grid container direction="column" spacing={2}>
             <Grid item>
               <TextValidator

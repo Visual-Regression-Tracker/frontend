@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import {
   Grid,
   Typography,
@@ -17,10 +17,16 @@ import {
   createProject,
   updateProject,
   setProjectEditState,
+  useHelpDispatch,
+  setHelpSteps,
 } from "../contexts";
 import { Link } from "react-router-dom";
 import { Delete, Add, Edit } from "@material-ui/icons";
-import { routes } from "../constants";
+import {
+  routes,
+  LOCATOR_PROJECT_LIST_PAGE_PROJECT_LIST,
+  PROJECT_LIST_PAGE_STEPS,
+} from "../constants";
 import { formatDateTime } from "../_helpers/format.helper";
 import { ProjectForm } from "../components/ProjectForm";
 import { useSnackbar } from "notistack";
@@ -30,10 +36,15 @@ const ProjectsListPage = () => {
   const { enqueueSnackbar } = useSnackbar();
   const projectState = useProjectState();
   const projectDispatch = useProjectDispatch();
+  const helpDispatch = useHelpDispatch();
 
   const [createDialogOpen, setCreateDialogOpen] = React.useState(false);
   const [updateDialogOpen, setUpdateDialogOpen] = React.useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = React.useState(false);
+
+  useEffect(() => {
+    setHelpSteps(helpDispatch, PROJECT_LIST_PAGE_STEPS);
+  });
 
   const toggleCreateDialogOpen = () => {
     setCreateDialogOpen(!createDialogOpen);
@@ -139,7 +150,7 @@ const ProjectsListPage = () => {
         </Grid>
         {projectState.projectList.map((project) => (
           <Grid item xs={4} key={project.id}>
-            <Card>
+            <Card id={LOCATOR_PROJECT_LIST_PAGE_PROJECT_LIST}>
               <CardContent>
                 <Typography>Id: {project.id}</Typography>
                 <Typography>Name: {project.name}</Typography>
