@@ -22,7 +22,7 @@ jobs:
         with:
           command: npm run test:cy
         env:
-          VRT_APIURL: "http://162.243.161.172:4200"
+          VRT_APIURL: "https://visual-regression-tracker.com:4200"
           VRT_PROJECT: "VRT"
           VRT_ENABLESOFTASSERT: false
           VRT_APIKEY: ${{ secrets.VRT_API_KEY }}
