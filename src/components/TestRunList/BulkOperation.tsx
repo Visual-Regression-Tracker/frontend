@@ -204,11 +204,12 @@ export const BulkOperation: React.FunctionComponent = () => {
                 variant: "success",
               });
             })
-            .catch((err) =>
+            .catch((err) => {
+              setIsProcessing(false);
               enqueueSnackbar(err, {
                 variant: "error",
-              })
-            );
+              });
+            });
           closeModal();
         }}
       />
