@@ -57,6 +57,11 @@ interface ISortAction {
   payload?: Array<string | number>;
 }
 
+interface ITouchedAction {
+  type: "touched";
+  payload: boolean;
+}
+
 type IAction =
   | IRequestAction
   | IGetAction
@@ -67,6 +72,7 @@ type IAction =
   | IRejectAction
   | IFilterAction
   | ISortAction
+  | ITouchedAction
   | ISelectAction;
 
 type Dispatch = (action: IAction) => void;
@@ -75,6 +81,8 @@ type State = {
   sortedTestRunIds?: Array<string | number>;
   filteredTestRunIds?: Array<string | number>;
   testRuns: Array<TestRun>;
+  testRun?: TestRun;
+  touched: boolean;
   loading: boolean;
 };
 
@@ -86,6 +94,7 @@ const TestRunDispatchContext = React.createContext<Dispatch | undefined>(
 );
 
 const initialState: State = {
+  touched: false,
   testRuns: [],
   loading: false,
 };
@@ -95,7 +104,9 @@ function testRunReducer(state: State, action: IAction): State {
     case "select":
       return {
         ...state,
+        touched: false,
         selectedTestRunId: action.payload,
+        testRun: state.testRuns.find((item) => item.id === action.payload),
       };
     case "filter":
       return {
@@ -145,6 +156,11 @@ function testRunReducer(state: State, action: IAction): State {
           }
           return t;
         }),
+      };
+    case "touched":
+      return {
+        ...state,
+        touched: action.payload,
       };
     default:
       return state;

@@ -19,7 +19,7 @@ import { useHotkeys } from "react-hotkeys-hook";
 import { TestRun } from "../../types";
 import { testRunService, staticService } from "../../services";
 import { TestStatus } from "../../types/testStatus";
-import { useHistory, Prompt } from "react-router-dom";
+import { useHistory } from "react-router-dom";
 import { IgnoreArea, UpdateIgnoreAreaDto } from "../../types/ignoreArea";
 import { KonvaEventObject } from "konva/types/Node";
 import {
@@ -34,7 +34,7 @@ import {
 import { TestRunDetails } from "../TestRunDetails";
 import useImage from "use-image";
 import { routes } from "../../constants";
-import { useTestRunDispatch, selectTestRun } from "../../contexts";
+import { useTestRunDispatch } from "../../contexts";
 import { DrawArea } from "../DrawArea";
 import { CommentsPopper } from "../CommentsPopper";
 import { useSnackbar } from "notistack";
@@ -61,7 +61,9 @@ const useStyles = makeStyles((theme) => ({
 
 const TestDetailsModal: React.FunctionComponent<{
   testRun: TestRun;
-}> = ({ testRun }) => {
+  touched: boolean;
+  handleClose: () => void;
+}> = ({ testRun, touched, handleClose }) => {
   const classes = useStyles();
   const history = useHistory();
   const { enqueueSnackbar } = useSnackbar();
@@ -75,6 +77,13 @@ const TestDetailsModal: React.FunctionComponent<{
   const [stageInitPos, setStageInitPos] = React.useState(defaultStagePos);
   const [stageOffset, setStageOffset] = React.useState(defaultStagePos);
   const [processing, setProcessing] = React.useState(false);
+  const [isDrawMode, setIsDrawMode] = useState(false);
+  const [valueOfIgnoreOrCompare, setValueOfIgnoreOrCompare] = useState(
+    "Ignore Areas"
+  );
+  const [isDiffShown, setIsDiffShown] = useState(!!testRun.diffName);
+  const [selectedRectId, setSelectedRectId] = React.useState<string>();
+  const [ignoreAreas, setIgnoreAreas] = React.useState<IgnoreArea[]>([]);
 
   const [image, imageStatus] = useImage(
     staticService.getImage(testRun.imageName)
@@ -86,16 +95,31 @@ const TestDetailsModal: React.FunctionComponent<{
     staticService.getImage(testRun.diffName)
   );
 
-  const [isDrawMode, setIsDrawMode] = useState(false);
-  const [valueOfIgnoreOrCompare, setValueOfIgnoreOrCompare] = useState(
-    "Ignore Areas"
-  );
-  const [isDiffShown, setIsDiffShown] = useState(false);
-  const [selectedRectId, setSelectedRectId] = React.useState<string>();
+  React.useEffect(() => {
+    fitStageToScreen();
+    // eslint-disable-next-line
+  }, [image]);
 
-  const [ignoreAreas, setIgnoreAreas] = React.useState<IgnoreArea[]>(
-    JSON.parse(testRun.ignoreAreas)
+  React.useEffect(() => {
+    setIgnoreAreas(JSON.parse(testRun.ignoreAreas));
+  }, [testRun]);
+
+  const isImageSizeDiffer = React.useMemo(
+    () =>
+      testRun.baselineName &&
+      testRun.imageName &&
+      (image?.height !== baselineImage?.height ||
+        image?.width !== baselineImage?.width),
+    [image, baselineImage, testRun.baselineName, testRun.imageName]
   );
+
+  const handleIgnoreAreaChange = (ignoreAreas: IgnoreArea[]) => {
+    setIgnoreAreas(ignoreAreas);
+    testRunDispatch({
+      type: "touched",
+      payload: testRun.ignoreAreas !== JSON.stringify(ignoreAreas),
+    });
+  };
 
   const removeSelection = (event: KonvaEventObject<MouseEvent>) => {
     // deselect when clicked not on Rect
@@ -106,7 +130,7 @@ const TestDetailsModal: React.FunctionComponent<{
   };
 
   const deleteIgnoreArea = (id: string) => {
-    setIgnoreAreas(ignoreAreas.filter((area) => area.id !== id));
+    handleIgnoreAreaChange(ignoreAreas.filter((area) => area.id !== id));
     setSelectedRectId(undefined);
   };
 
@@ -138,12 +162,13 @@ const TestDetailsModal: React.FunctionComponent<{
         head(ignoreAreas)
       );
 
-      setIgnoreAreas(invertedIgnoreAreas);
+      handleIgnoreAreaChange(invertedIgnoreAreas);
       saveTestRun(
         invertedIgnoreAreas,
         "Selected area has been inverted to ignore areas and saved."
       );
     }
+    testRunDispatch({ type: "touched", payload: false });
   };
 
   const onIgnoreOrCompareSelectChange = (value: string) => {
@@ -152,14 +177,6 @@ const TestDetailsModal: React.FunctionComponent<{
     } else {
       setValueOfIgnoreOrCompare("Ignore Areas");
     }
-  };
-
-  const handleClose = () => {
-    selectTestRun(testRunDispatch, undefined);
-  };
-
-  const isIgnoreAreasSaved = () => {
-    return testRun.ignoreAreas === JSON.stringify(ignoreAreas);
   };
 
   const setOriginalSize = () => {
@@ -220,42 +237,16 @@ const TestDetailsModal: React.FunctionComponent<{
     }
   };
 
-  React.useEffect(() => {
-    setIgnoreAreas(JSON.parse(testRun.ignoreAreas));
-  }, [testRun]);
-
-  React.useEffect(() => {
-    fitStageToScreen();
-    // eslint-disable-next-line
-  }, [image]);
-
-  React.useEffect(() => {
-    setIsDiffShown(!!testRun.diffName);
-  }, [testRun.diffName]);
-
-  const isImageSizeDiffer = React.useMemo(
-    () =>
-      testRun.baselineName &&
-      testRun.imageName &&
-      (image?.height !== baselineImage?.height ||
-        image?.width !== baselineImage?.width),
-    [image, baselineImage, testRun.baselineName, testRun.imageName]
-  );
-
   useHotkeys(
     "d",
     () =>
       shouldDiffHotKeyBeActive && setIsDiffShown((isDiffShown) => !isDiffShown)
   );
-  useHotkeys("ESC", () => handleClose());
+  useHotkeys("ESC", handleClose, [handleClose]);
   const shouldDiffHotKeyBeActive = !!testRun.diffName;
 
   return (
     <React.Fragment>
-      <Prompt
-        when={!isIgnoreAreasSaved()}
-        message={`You have unsaved changes that will be lost`}
-      />
       <AppBar position="sticky">
         <Toolbar>
           <Grid container justify="space-between">
@@ -353,7 +344,9 @@ const TestDetailsModal: React.FunctionComponent<{
                 <Grid item>
                   <IconButton
                     disabled={ignoreAreas.length === 0}
-                    onClick={() => setIgnoreAreas([])}
+                    onClick={() => {
+                      handleIgnoreAreaChange([]);
+                    }}
                   >
                     <LayersClear />
                   </IconButton>
@@ -374,7 +367,7 @@ const TestDetailsModal: React.FunctionComponent<{
               </Tooltip>
               <Grid item>
                 <IconButton
-                  disabled={isIgnoreAreasSaved()}
+                  disabled={!touched}
                   onClick={() => saveIgnoreAreasOrCompareArea()}
                 >
                   <Save />
@@ -430,7 +423,7 @@ const TestDetailsModal: React.FunctionComponent<{
               imageState={[baselineImage, baselineImageStatus]}
               ignoreAreas={[]}
               tempIgnoreAreas={[]}
-              setIgnoreAreas={setIgnoreAreas}
+              setIgnoreAreas={handleIgnoreAreaChange}
               selectedRectId={selectedRectId}
               setSelectedRectId={setSelectedRectId}
               onStageClick={removeSelection}
@@ -450,7 +443,7 @@ const TestDetailsModal: React.FunctionComponent<{
                 imageState={[diffImage, diffImageStatus]}
                 ignoreAreas={ignoreAreas}
                 tempIgnoreAreas={JSON.parse(testRun.tempIgnoreAreas)}
-                setIgnoreAreas={setIgnoreAreas}
+                setIgnoreAreas={handleIgnoreAreaChange}
                 selectedRectId={selectedRectId}
                 setSelectedRectId={setSelectedRectId}
                 onStageClick={removeSelection}
@@ -468,7 +461,7 @@ const TestDetailsModal: React.FunctionComponent<{
                 imageState={[image, imageStatus]}
                 ignoreAreas={ignoreAreas}
                 tempIgnoreAreas={JSON.parse(testRun.tempIgnoreAreas)}
-                setIgnoreAreas={setIgnoreAreas}
+                setIgnoreAreas={handleIgnoreAreaChange}
                 selectedRectId={selectedRectId}
                 setSelectedRectId={setSelectedRectId}
                 onStageClick={removeSelection}

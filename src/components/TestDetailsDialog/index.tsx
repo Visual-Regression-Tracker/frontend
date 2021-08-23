@@ -1,6 +1,11 @@
-import { Dialog, makeStyles } from "@material-ui/core";
+import { Dialog, makeStyles, Typography } from "@material-ui/core";
 import React from "react";
-import { useTestRunState } from "../../contexts";
+import {
+  selectTestRun,
+  useTestRunDispatch,
+  useTestRunState,
+} from "../../contexts";
+import { BaseModal } from "../BaseModal";
 import { ArrowButtons } from "./ArrowButtons";
 import TestDetailsModal from "./TestDetailsModal";
 
@@ -13,11 +18,16 @@ const useStyles = makeStyles((theme) => ({
 export const TestDetailsDialog: React.FunctionComponent = () => {
   const classes = useStyles();
   const {
+    testRun,
+    touched,
     testRuns: allTestRuns,
     filteredTestRunIds,
     sortedTestRunIds,
     selectedTestRunId,
   } = useTestRunState();
+  const testRunDispatch = useTestRunDispatch();
+  const [notSavedChangesModal, setNotSavedChangesModal] = React.useState(false);
+  const [navigationTargetId, setNavigationTargetId] = React.useState<string>();
 
   const testRuns = React.useMemo(() => {
     const filtered = filteredTestRunIds
@@ -40,16 +50,46 @@ export const TestDetailsDialog: React.FunctionComponent = () => {
     [testRuns, selectedTestRunId]
   );
 
-  if (selectedTestRunIndex === undefined || !testRuns[selectedTestRunIndex]) {
+  const handleNavigation = React.useCallback(
+    (id?: string) => {
+      if (touched) {
+        setNavigationTargetId(id);
+        setNotSavedChangesModal(true);
+      } else {
+        selectTestRun(testRunDispatch, id);
+      }
+    },
+    [testRunDispatch, touched]
+  );
+
+  if (!testRun) {
     return null;
   }
 
   return (
     <Dialog open={true} fullScreen className={classes.modal}>
-      <TestDetailsModal testRun={testRuns[selectedTestRunIndex]} />
+      <TestDetailsModal
+        testRun={testRun}
+        touched={touched}
+        handleClose={() => handleNavigation()}
+      />
       <ArrowButtons
         testRuns={testRuns}
         selectedTestRunIndex={selectedTestRunIndex}
+        handleNavigation={handleNavigation}
+      />
+      <BaseModal
+        open={notSavedChangesModal}
+        title={"You have not saved ignore areas"}
+        submitButtonText={"Discard"}
+        onCancel={() => setNotSavedChangesModal(false)}
+        content={
+          <Typography>{`Are you sure you want to discard changes?`}</Typography>
+        }
+        onSubmit={() => {
+          selectTestRun(testRunDispatch, navigationTargetId);
+          setNotSavedChangesModal(false);
+        }}
       />
     </Dialog>
   );
