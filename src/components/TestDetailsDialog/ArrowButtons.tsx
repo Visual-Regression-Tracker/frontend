@@ -2,7 +2,6 @@ import { IconButton, makeStyles, Tooltip } from "@material-ui/core";
 import { NavigateNext, NavigateBefore } from "@material-ui/icons";
 import React from "react";
 import { useHotkeys } from "react-hotkeys-hook";
-import { useTestRunDispatch, selectTestRun } from "../../contexts";
 import { TestRun } from "../../types";
 
 const useStyles = makeStyles((theme) => ({
@@ -23,25 +22,26 @@ const useStyles = makeStyles((theme) => ({
 export const ArrowButtons: React.FunctionComponent<{
   testRuns: TestRun[];
   selectedTestRunIndex: number;
-}> = ({ testRuns, selectedTestRunIndex }) => {
+  handleNavigation: (testRunId: string) => void;
+}> = ({ testRuns, selectedTestRunIndex, handleNavigation }) => {
   const classes = useStyles();
-  const testRunDispatch = useTestRunDispatch();
 
-  const navigateNext = () => {
+  const navigateNext = React.useCallback(() => {
     if (selectedTestRunIndex + 1 < testRuns.length) {
       const next = testRuns[selectedTestRunIndex + 1];
-      selectTestRun(testRunDispatch, next.id);
+      handleNavigation(next.id);
     }
-  };
-  useHotkeys("right", navigateNext, [selectedTestRunIndex]);
+  }, [handleNavigation, selectedTestRunIndex, testRuns]);
 
   const navigateBefore = () => {
     if (selectedTestRunIndex > 0) {
       const prev = testRuns[selectedTestRunIndex - 1];
-      selectTestRun(testRunDispatch, prev.id);
+      handleNavigation(prev.id);
     }
   };
-  useHotkeys("left", navigateBefore, [selectedTestRunIndex]);
+
+  useHotkeys("right", navigateNext, [selectedTestRunIndex, handleNavigation]);
+  useHotkeys("left", navigateBefore, [selectedTestRunIndex, handleNavigation]);
 
   return (
     <React.Fragment>
