@@ -71,7 +71,7 @@ export const TestDetailsDialog: React.FunctionComponent = () => {
       <TestDetailsModal
         testRun={testRun}
         touched={touched}
-        handleClose={() => handleNavigation(undefined)}
+        handleClose={() => handleNavigation()}
       />
       <ArrowButtons
         testRuns={testRuns}
