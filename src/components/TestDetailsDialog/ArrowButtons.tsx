@@ -26,12 +26,12 @@ export const ArrowButtons: React.FunctionComponent<{
 }> = ({ testRuns, selectedTestRunIndex, handleNavigation }) => {
   const classes = useStyles();
 
-  const navigateNext = React.useCallback(() => {
+  const navigateNext = () => {
     if (selectedTestRunIndex + 1 < testRuns.length) {
       const next = testRuns[selectedTestRunIndex + 1];
       handleNavigation(next.id);
     }
-  }, [handleNavigation, selectedTestRunIndex, testRuns]);
+  };
 
   const navigateBefore = () => {
     if (selectedTestRunIndex > 0) {
