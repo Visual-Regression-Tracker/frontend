@@ -14,7 +14,7 @@
     "konva": "^7.0.3",
     "lint-staged": "^10.5.4",
     "material-ui-popup-state": "^1.8.3",
-    "notistack": "^0.9.17",
+    "notistack": "^1.0.10",
     "prettier": "^2.2.1",
     "qs": "^6.9.4",
     "react": "^16.13.1",

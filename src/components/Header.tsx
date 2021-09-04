@@ -72,14 +72,18 @@ const Header: FunctionComponent = () => {
     <React.Fragment>
       <AppBar position="static" color="default">
         <Toolbar>
-          <Grid container justify="space-between" alignItems="center">
+          <Grid container justifyContent="space-between" alignItems="center">
             <Grid item>
               <Link to="/">
                 <img src={logo} width="60" height="60" alt="logo" />
               </Link>
             </Grid>
             <Grid item>
-              <Grid container justify="space-between" alignItems="center">
+              <Grid
+                container
+                justifyContent="space-between"
+                alignItems="center"
+              >
                 <GuidedTour />
                 {loggedIn && (
                   <IconButton

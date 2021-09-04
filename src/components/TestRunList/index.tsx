@@ -97,7 +97,7 @@ const columnsDef: GridColDef[] = [
 
 const TestRunList: React.FunctionComponent = () => {
   const { enqueueSnackbar } = useSnackbar();
-  const { testRuns, loading } = useTestRunState();
+  const { testRun, testRuns, loading } = useTestRunState();
   const { selectedBuildId } = useBuildState();
   const testRunDispatch = useTestRunDispatch();
 
@@ -148,14 +148,17 @@ const TestRunList: React.FunctionComponent = () => {
             );
           }}
           onStateChange={(props: GridStateChangeParams) => {
-            testRunDispatch({
-              type: "filter",
-              payload: props.state.visibleRows.visibleRows,
-            });
-            testRunDispatch({
-              type: "sort",
-              payload: props.state.sorting.sortedRows,
-            });
+            if (!testRun) {
+              // only if testRun modal is not shown
+              testRunDispatch({
+                type: "filter",
+                payload: props.state.visibleRows.visibleRows,
+              });
+              testRunDispatch({
+                type: "sort",
+                payload: props.state.sorting.sortedRows,
+              });
+            }
           }}
         />
       )}
