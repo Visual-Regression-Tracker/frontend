@@ -128,7 +128,7 @@ export const DrawArea: FunctionComponent<IDrawArea> = ({
           container
           direction="column"
           alignItems="center"
-          justify="center"
+          justifyContent="center"
           className={classes.progressContainer}
         >
           <Grid item>

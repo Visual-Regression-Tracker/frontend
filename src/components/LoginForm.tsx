@@ -77,7 +77,12 @@ const LoginForm = () => {
           </Grid>
         </CardContent>
         <CardActions>
-          <Grid container direction="column" justify="center" spacing={3}>
+          <Grid
+            container
+            direction="column"
+            justifyContent="center"
+            spacing={3}
+          >
             <Grid item>
               <Button
                 type="submit"

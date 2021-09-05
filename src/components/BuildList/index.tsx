@@ -44,11 +44,6 @@ const useStyles = makeStyles((theme: Theme) =>
     listItemSecondaryAction: {
       visibility: "hidden",
     },
-    listItem: {
-      "&:hover $listItemSecondaryAction": {
-        visibility: "inherit",
-      },
-    },
   })
 );
 
@@ -125,9 +120,6 @@ const BuildList: FunctionComponent = () => {
                   onClick={() => {
                     selectBuild(buildDispatch, build.id);
                   }}
-                  classes={{
-                    container: classes.listItem,
-                  }}
                 >
                   <ListItemText
                     disableTypography
@@ -144,7 +136,7 @@ const BuildList: FunctionComponent = () => {
                           </Typography>
                         </Grid>
                         <Grid item>
-                          <Grid container justify="space-between">
+                          <Grid container justifyContent="space-between">
                             <Grid item>
                               <Chip size="small" label={build.branchName} />
                             </Grid>
@@ -174,7 +166,7 @@ const BuildList: FunctionComponent = () => {
         </List>
       </Box>
       <Box height="9%">
-        <Grid container justify="center">
+        <Grid container justifyContent="center">
           <Grid item>
             <Pagination
               size="small"

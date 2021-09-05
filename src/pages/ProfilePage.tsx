@@ -177,7 +177,7 @@ const ProfilePage = () => {
                     </Grid>
                   </CardContent>
                   <CardActions>
-                    <Grid container justify="center">
+                    <Grid container justifyContent="center">
                       <Grid item>
                         <Button
                           type="submit"
@@ -226,7 +226,7 @@ const ProfilePage = () => {
                     </Grid>
                   </CardContent>
                   <CardActions>
-                    <Grid container justify="center">
+                    <Grid container justifyContent="center">
                       <Grid item>
                         <Button
                           type="submit"

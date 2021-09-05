@@ -122,7 +122,7 @@ const RegisterForm = () => {
           </Grid>
         </CardContent>
         <CardActions>
-          <Grid container justify="center">
+          <Grid container justifyContent="center">
             <Grid item>
               <Button
                 type="submit"

@@ -29,7 +29,7 @@ const LoginPage = () => {
       spacing={0}
       direction="column"
       alignItems="center"
-      justify="center"
+      justifyContent="center"
       style={{ minHeight: "60vh" }}
     >
       <Grid item>

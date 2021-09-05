@@ -249,7 +249,7 @@ const TestDetailsModal: React.FunctionComponent<{
     <React.Fragment>
       <AppBar position="sticky">
         <Toolbar>
-          <Grid container justify="space-between">
+          <Grid container justifyContent="space-between">
             <Grid item>
               <Typography variant="h6">{testRun.name}</Typography>
             </Grid>

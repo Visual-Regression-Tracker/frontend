@@ -156,6 +156,9 @@ function testRunReducer(state: State, action: IAction): State {
           }
           return t;
         }),
+        testRun:
+          state.testRun &&
+          action.payload.find((item) => item.id === state.testRun!.id),
       };
     case "touched":
       return {
