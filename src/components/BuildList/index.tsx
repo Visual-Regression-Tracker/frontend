@@ -44,6 +44,11 @@ const useStyles = makeStyles((theme: Theme) =>
     listItemSecondaryAction: {
       visibility: "hidden",
     },
+    listItem: {
+      "&:hover $listItemSecondaryAction": {
+        visibility: "inherit",
+      },
+    },
   })
 );
 
@@ -119,6 +124,9 @@ const BuildList: FunctionComponent = () => {
                   button
                   onClick={() => {
                     selectBuild(buildDispatch, build.id);
+                  }}
+                  classes={{
+                    container: classes.listItem,
                   }}
                 >
                   <ListItemText
