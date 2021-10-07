@@ -42,6 +42,7 @@ import { ScaleActionsSpeedDial } from "../ZoomSpeedDial";
 import { ApproveRejectButtons } from "../ApproveRejectButtons";
 import { head } from "lodash";
 import { invertIgnoreArea } from "../../_helpers/ignoreArea.helper";
+import { BaseModal } from "../BaseModal";
 
 const defaultStagePos = {
   x: 0,
@@ -84,6 +85,11 @@ const TestDetailsModal: React.FunctionComponent<{
   const [isDiffShown, setIsDiffShown] = useState(!!testRun.diffName);
   const [selectedRectId, setSelectedRectId] = React.useState<string>();
   const [ignoreAreas, setIgnoreAreas] = React.useState<IgnoreArea[]>([]);
+  const [applyIgnoreDialogOpen, setApplyIgnoreDialogOpen] = React.useState(false);
+
+  const toggleApplyIgnoreDialogOpen = () => {
+    setApplyIgnoreDialogOpen(!applyIgnoreDialogOpen);
+  };
 
   const [image, imageStatus] = useImage(
     staticService.getImage(testRun.imageName)
@@ -187,9 +193,9 @@ const TestDetailsModal: React.FunctionComponent<{
   const fitStageToScreen = () => {
     const scale = image
       ? Math.min(
-          stageWidth < image.width ? stageWidth / image.width : 1,
-          stageHeigth < image.height ? stageHeigth / image.height : 1
-        )
+        stageWidth < image.width ? stageWidth / image.width : 1,
+        stageHeigth < image.height ? stageHeigth / image.height : 1
+      )
       : 1;
     setStageScale(scale);
     resetPositioin();
@@ -266,10 +272,10 @@ const TestDetailsModal: React.FunctionComponent<{
             )}
             {(testRun.status === TestStatus.unresolved ||
               testRun.status === TestStatus.new) && (
-              <Grid item>
-                <ApproveRejectButtons testRun={testRun} />
-              </Grid>
-            )}
+                <Grid item>
+                  <ApproveRejectButtons testRun={testRun} />
+                </Grid>
+              )}
             <Grid item>
               <IconButton color="inherit" onClick={handleClose}>
                 <Close />
@@ -359,7 +365,7 @@ const TestDetailsModal: React.FunctionComponent<{
                 <Grid item>
                   <IconButton
                     disabled={!selectedRectId || ignoreAreas.length === 0}
-                    onClick={() => applyIgnoreArea()}
+                    onClick={() => setApplyIgnoreDialogOpen(!applyIgnoreDialogOpen)}
                   >
                     <Collections />
                   </IconButton>
@@ -480,6 +486,22 @@ const TestDetailsModal: React.FunctionComponent<{
         onZoomOutClick={() => setStageScale(stageScale / stageScaleBy)}
         onOriginalSizeClick={setOriginalSize}
         onFitIntoScreenClick={fitStageToScreen}
+      />
+      <BaseModal
+        open={applyIgnoreDialogOpen}
+        title={''}
+        submitButtonText={'Yes'}
+        onCancel={toggleApplyIgnoreDialogOpen}
+        content={
+          <Typography>
+            {`Are you sure you want to apply ignore area to all items in this build?`}
+          </Typography>
+        }
+        onSubmit={() => {
+          toggleApplyIgnoreDialogOpen();
+          applyIgnoreArea();
+        }
+        }
       />
     </React.Fragment>
   );
