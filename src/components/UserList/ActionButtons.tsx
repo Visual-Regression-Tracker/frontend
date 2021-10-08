@@ -25,14 +25,20 @@ export const ActionButtons: React.FunctionComponent = () => {
             onClick={() => {
               usersService
                 .remove(ids)
-                .then(() => {
-                  enqueueSnackbar(`Removed`, {
-                    variant: "success",
-                  });
-                  userDispatch({
-                    type: "getAll",
-                    payload: userList.filter((user) => !ids.includes(user.id)),
-                  });
+                .then((value) => {
+                  if (value.toString().trim().length === 0) {
+                    enqueueSnackbar(`Removed`, {
+                      variant: "success",
+                    });
+                    userDispatch({
+                      type: "getAll",
+                      payload: userList.filter((user) => !ids.includes(user.id)),
+                    });
+                  } else {
+                    enqueueSnackbar(`You cannot delete yourself.`, {
+                      variant: "error",
+                    });
+                  }
                 })
                 .catch((err) =>
                   enqueueSnackbar(err, {
