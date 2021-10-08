@@ -106,15 +106,6 @@ async function assignRole(id: string | number, role: Role): Promise<User> {
 }
 
 async function remove(ids: (string | number)[]): Promise<boolean> {
-
-  const userString = localStorage.getItem("user");
-  if (userString) {
-    const user: User = JSON.parse(userString);
-    if (ids.includes(user.id)) {
-      return false;
-    }
-  }
-  
   const requestOptions = {
     method: "DELETE",
     headers: { "Content-Type": "application/json", ...authHeader() },
