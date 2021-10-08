@@ -101,6 +101,8 @@ const TestDetailsModal: React.FunctionComponent<{
     staticService.getImage(testRun.diffName)
   );
 
+  const applyIgnoreAreaText = 'Apply selected ignore area to all images in this build.';
+
   React.useEffect(() => {
     fitStageToScreen();
     // eslint-disable-next-line
@@ -359,13 +361,13 @@ const TestDetailsModal: React.FunctionComponent<{
                 </Grid>
               </Tooltip>
               <Tooltip
-                title="Apply selected ignore area to all images in this build."
+                title={applyIgnoreAreaText}
                 aria-label="apply ignore area"
               >
                 <Grid item>
                   <IconButton
                     disabled={!selectedRectId || ignoreAreas.length === 0}
-                    onClick={() => setApplyIgnoreDialogOpen(!applyIgnoreDialogOpen)}
+                    onClick={() => toggleApplyIgnoreDialogOpen()}
                   >
                     <Collections />
                   </IconButton>
@@ -489,12 +491,12 @@ const TestDetailsModal: React.FunctionComponent<{
       />
       <BaseModal
         open={applyIgnoreDialogOpen}
-        title={''}
+        title={applyIgnoreAreaText}
         submitButtonText={'Yes'}
         onCancel={toggleApplyIgnoreDialogOpen}
         content={
           <Typography>
-            {`Are you sure you want to apply ignore area to all items in this build?`}
+            {`All images in the current build will be re-compared with new ignore area taken into account. Are you sure?`}
           </Typography>
         }
         onSubmit={() => {
