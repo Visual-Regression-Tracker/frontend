@@ -10,7 +10,7 @@ export const ActionButtons: React.FunctionComponent = () => {
   const props = useGridSlotComponentProps();
   const { enqueueSnackbar } = useSnackbar();
   const userDispatch = useUserDispatch();
-  const { userList } = useUserState();
+  const { userList, user } = useUserState();
 
   const ids: GridRowId[] = React.useMemo(
     () => Object.values(props.state.selection),
@@ -23,22 +23,29 @@ export const ActionButtons: React.FunctionComponent = () => {
           <IconButton
             disabled={!ids.length}
             onClick={() => {
-              usersService
-                .remove(ids)
-                .then(() => {
-                  enqueueSnackbar(`Removed`, {
-                    variant: "success",
-                  });
-                  userDispatch({
-                    type: "getAll",
-                    payload: userList.filter((user) => !ids.includes(user.id)),
-                  });
-                })
-                .catch((err) =>
-                  enqueueSnackbar(err, {
-                    variant: "error",
+              const currentUserId = user?.id;
+              if (currentUserId && ids.includes(currentUserId)) {
+                enqueueSnackbar(`You cannot delete yourself.`, {
+                  variant: "error",
+                });
+              } else {
+                usersService
+                  .remove(ids)
+                  .then(() => {
+                    enqueueSnackbar(`Removed`, {
+                      variant: "success",
+                    });
+                    userDispatch({
+                      type: "getAll",
+                      payload: userList.filter((user) => !ids.includes(user.id)),
+                    });
                   })
-                );
+                  .catch((err) =>
+                    enqueueSnackbar(err, {
+                      variant: "error",
+                    })
+                  );
+              }
             }}
           >
             <Delete />
