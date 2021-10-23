@@ -1,12 +1,11 @@
 import React from "react";
-import { Chip } from "@material-ui/core";
+import { Chip, Typography } from "@material-ui/core";
 import TestStatusChip from "../TestStatusChip";
 import {
   useTestRunState,
   useTestRunDispatch,
-  getTestRunList,
-  useBuildState,
   selectTestRun,
+  useBuildState,
 } from "../../contexts";
 import { useSnackbar } from "notistack";
 import {
@@ -26,6 +25,7 @@ import { DataGridCustomToolbar } from "./DataGridCustomToolbar";
 import { StatusFilterOperators } from "./StatusFilterOperators";
 import { TagFilterOperators } from "./TagFilterOperators";
 import { TestStatus } from "../../types";
+import { testRunService } from "../../services";
 
 const columnsDef: GridColDef[] = [
   { field: "id", hide: true, filterable: false },
@@ -98,7 +98,7 @@ const columnsDef: GridColDef[] = [
 const TestRunList: React.FunctionComponent = () => {
   const { enqueueSnackbar } = useSnackbar();
   const { testRun, testRuns, loading } = useTestRunState();
-  const { selectedBuildId } = useBuildState();
+  const { selectedBuild } = useBuildState();
   const testRunDispatch = useTestRunDispatch();
 
   const [sortModel, setSortModel] = React.useState<GridSortModel>([
@@ -108,16 +108,21 @@ const TestRunList: React.FunctionComponent = () => {
     },
   ]);
 
-  const getTestRunListCallback = React.useCallback(
-    () =>
-      selectedBuildId &&
-      getTestRunList(testRunDispatch, selectedBuildId).catch((err: string) =>
-        enqueueSnackbar(err, {
-          variant: "error",
-        })
-      ),
-    [testRunDispatch, enqueueSnackbar, selectedBuildId]
-  );
+  const getTestRunListCallback = React.useCallback(() => {
+    testRunDispatch({ type: "request" });
+    if (selectedBuild?.id) {
+      testRunService
+        .getList(selectedBuild.id)
+        .then((payload) => testRunDispatch({ type: "get", payload }))
+        .catch((err: string) =>
+          enqueueSnackbar(err, {
+            variant: "error",
+          })
+        );
+    } else {
+      testRunDispatch({ type: "get", payload: [] });
+    }
+  }, [testRunDispatch, enqueueSnackbar, selectedBuild?.id]);
 
   React.useEffect(() => {
     getTestRunListCallback();
@@ -125,7 +130,7 @@ const TestRunList: React.FunctionComponent = () => {
 
   return (
     <React.Fragment>
-      {selectedBuildId && (
+      {selectedBuild ? (
         <DataGrid
           rows={testRuns}
           columns={columnsDef}
@@ -161,6 +166,8 @@ const TestRunList: React.FunctionComponent = () => {
             }
           }}
         />
+      ) : (
+        <Typography variant="h5">Select build from list</Typography>
       )}
     </React.Fragment>
   );

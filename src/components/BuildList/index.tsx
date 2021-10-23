@@ -21,8 +21,6 @@ import {
   useBuildState,
   useBuildDispatch,
   deleteBuild,
-  selectBuild,
-  getBuildList,
   useProjectState,
 } from "../../contexts";
 import { BuildStatusChip } from "../BuildStatusChip";
@@ -34,6 +32,8 @@ import { Pagination } from "@material-ui/lab";
 import { Build } from "../../types";
 import { BaseModal } from "../BaseModal";
 import { buildsService } from "../../services";
+import { useHistory } from "react-router";
+import { buildTestRunLocation } from "../../_helpers/route.helpers";
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -54,6 +54,7 @@ const useStyles = makeStyles((theme: Theme) =>
 
 const BuildList: FunctionComponent = () => {
   const classes = useStyles();
+  const history = useHistory();
   const { buildList, selectedBuild, loading, total, take } = useBuildState();
   const buildDispatch = useBuildDispatch();
   const { enqueueSnackbar } = useSnackbar();
@@ -85,23 +86,28 @@ const BuildList: FunctionComponent = () => {
     setEditDialogOpen(!editDialogOpen);
   };
 
-  React.useEffect(() => {
-    if (!selectedBuild || selectedBuild.projectId !== selectedProjectId) {
-      const buildId = buildList.length > 0 ? buildList[0].id : null;
-      selectBuild(buildDispatch, buildId);
-    }
-  }, [buildDispatch, selectedBuild, buildList, selectedProjectId]);
+  const selectBuildCalback = React.useCallback(
+    (id?: string) => history.push(buildTestRunLocation(id)),
+    [history]
+  );
 
-  const getBuildListCalback: any = React.useCallback(
-    (page: number) =>
-      selectedProjectId &&
-      getBuildList(buildDispatch, selectedProjectId, page).catch(
-        (err: string) =>
-          enqueueSnackbar(err, {
-            variant: "error",
+  const getBuildListCalback = React.useCallback(
+    (page: number) => {
+      if (selectedProjectId) {
+        buildDispatch({ type: "request" });
+        buildsService
+          .getList(selectedProjectId, take, take * (page - 1))
+          .then((payload) => {
+            buildDispatch({ type: "get", payload });
           })
-      ),
-    [buildDispatch, enqueueSnackbar, selectedProjectId]
+          .catch((err: string) =>
+            enqueueSnackbar(err, {
+              variant: "error",
+            })
+          );
+      }
+    },
+    [buildDispatch, enqueueSnackbar, selectedProjectId, take]
   );
 
   React.useEffect(() => {
@@ -122,9 +128,7 @@ const BuildList: FunctionComponent = () => {
                 <ListItem
                   selected={selectedBuild?.id === build.id}
                   button
-                  onClick={() => {
-                    selectBuild(buildDispatch, build.id);
-                  }}
+                  onClick={() => selectBuildCalback(build.id)}
                   classes={{
                     container: classes.listItem,
                   }}
@@ -273,7 +277,7 @@ const BuildList: FunctionComponent = () => {
           }
           onSubmit={() => {
             deleteBuild(buildDispatch, menuBuild.id)
-              .then((b) => {
+              .then((build) => {
                 toggleDeleteDialogOpen();
                 enqueueSnackbar(
                   `Build #${menuBuild.number || menuBuild.id} deleted`,
@@ -281,6 +285,9 @@ const BuildList: FunctionComponent = () => {
                     variant: "success",
                   }
                 );
+                if (menuBuild.id === selectedBuild?.id) {
+                  selectBuildCalback();
+                }
               })
               .catch((err) =>
                 enqueueSnackbar(err, {

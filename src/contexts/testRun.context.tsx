@@ -1,12 +1,7 @@
 import React from "react";
 import { TestRun } from "../types";
-import { testRunService } from "../services";
-import { useHistory, useLocation } from "react-router-dom";
-import {
-  buildTestRunLocation,
-  getQueryParams,
-} from "../_helpers/route.helpers";
-import { useBuildState } from ".";
+import { useLocation } from "react-router-dom";
+import { getQueryParams } from "../_helpers/route.helpers";
 
 interface IRequestAction {
   type: "request";
@@ -173,26 +168,12 @@ function testRunReducer(state: State, action: IAction): State {
 function TestRunProvider({ children }: TestRunProviderProps) {
   const [state, dispatch] = React.useReducer(testRunReducer, initialState);
   const location = useLocation();
-  const history = useHistory();
-  const { selectedBuildId } = useBuildState();
 
-  // get id from url in case none in state
+  // get id from url
   React.useEffect(() => {
-    const idFromUrl = getQueryParams(location.search).testId;
-    if (!state.selectedTestRunId && idFromUrl) {
-      selectTestRun(dispatch, idFromUrl);
-    }
-    // eslint-disable-next-line
-  }, []);
-
-  // update url
-  React.useEffect(() => {
-    if (selectedBuildId) {
-      history.push(
-        buildTestRunLocation(selectedBuildId, state.selectedTestRunId)
-      );
-    }
-  }, [history, selectedBuildId, state.selectedTestRunId]);
+    const { testId } = getQueryParams(location.search);
+    selectTestRun(dispatch, testId);
+  }, [location.search]);
 
   return (
     <TestRunStateContext.Provider value={state}>
@@ -219,17 +200,6 @@ function useTestRunDispatch() {
   return context;
 }
 
-async function getTestRunList(
-  dispatch: Dispatch,
-  buildId: string
-): Promise<void> {
-  dispatch({ type: "request" });
-
-  return testRunService.getList(buildId).then((response) => {
-    dispatch({ type: "get", payload: response });
-  });
-}
-
 async function deleteTestRun(dispatch: Dispatch, ids: Array<string>) {
   dispatch({ type: "delete", payload: ids });
 }
@@ -250,7 +220,6 @@ export {
   TestRunProvider,
   useTestRunState,
   useTestRunDispatch,
-  getTestRunList,
   selectTestRun,
   addTestRun,
   deleteTestRun,
