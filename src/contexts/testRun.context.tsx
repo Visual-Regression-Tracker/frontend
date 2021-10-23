@@ -2,6 +2,7 @@ import React from "react";
 import { TestRun } from "../types";
 import { useLocation } from "react-router-dom";
 import { getQueryParams } from "../_helpers/route.helpers";
+import { testRunService } from "../services";
 
 interface IRequestAction {
   type: "request";
@@ -14,7 +15,7 @@ interface IGetAction {
 
 interface ISelectAction {
   type: "select";
-  payload?: string;
+  payload?: TestRun;
 }
 
 interface IDeleteAction {
@@ -72,11 +73,10 @@ type IAction =
 
 type Dispatch = (action: IAction) => void;
 type State = {
-  selectedTestRunId?: string;
+  selectedTestRun?: TestRun;
   sortedTestRunIds?: Array<string | number>;
   filteredTestRunIds?: Array<string | number>;
   testRuns: Array<TestRun>;
-  testRun?: TestRun;
   touched: boolean;
   loading: boolean;
 };
@@ -100,8 +100,7 @@ function testRunReducer(state: State, action: IAction): State {
       return {
         ...state,
         touched: false,
-        selectedTestRunId: action.payload,
-        testRun: state.testRuns.find((item) => item.id === action.payload),
+        selectedTestRun: action.payload,
       };
     case "filter":
       return {
@@ -151,9 +150,9 @@ function testRunReducer(state: State, action: IAction): State {
           }
           return t;
         }),
-        testRun:
-          state.testRun &&
-          action.payload.find((item) => item.id === state.testRun!.id),
+        selectedTestRun:
+          action.payload.find((i) => i.id === state.selectedTestRun?.id) ??
+          state.selectedTestRun,
       };
     case "touched":
       return {
@@ -169,10 +168,15 @@ function TestRunProvider({ children }: TestRunProviderProps) {
   const [state, dispatch] = React.useReducer(testRunReducer, initialState);
   const location = useLocation();
 
-  // get id from url
   React.useEffect(() => {
     const { testId } = getQueryParams(location.search);
-    selectTestRun(dispatch, testId);
+    if (!testId) {
+      dispatch({ type: "select" });
+    } else {
+      testRunService.getDetails(testId).then((payload) => {
+        dispatch({ type: "select", payload });
+      });
+    }
   }, [location.search]);
 
   return (
@@ -204,10 +208,6 @@ async function deleteTestRun(dispatch: Dispatch, ids: Array<string>) {
   dispatch({ type: "delete", payload: ids });
 }
 
-async function selectTestRun(dispatch: Dispatch, id?: string) {
-  dispatch({ type: "select", payload: id });
-}
-
 async function addTestRun(dispatch: Dispatch, testRuns: Array<TestRun>) {
   dispatch({ type: "add", payload: testRuns });
 }
@@ -220,7 +220,6 @@ export {
   TestRunProvider,
   useTestRunState,
   useTestRunDispatch,
-  selectTestRun,
   addTestRun,
   deleteTestRun,
   updateTestRun,

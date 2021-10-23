@@ -121,12 +121,16 @@ function buildReducer(state: State, action: IAction): State {
 
 function BuildProvider({ children }: BuildProviderProps) {
   const [state, dispatch] = React.useReducer(buildReducer, initialState);
+  const [buildId, setBuildId] = React.useState<string>();
   const location = useLocation();
 
   React.useEffect(() => {
-    const { buildId } = getQueryParams(location.search);
-    selectBuild(dispatch, buildId);
-  }, [location.search]);
+    const { buildId: id } = getQueryParams(location.search);
+    if (buildId !== id) {
+      selectBuild(dispatch, id);
+      setBuildId(id);
+    }
+  }, [location.search, buildId]);
 
   return (
     <BuildStateContext.Provider value={state}>

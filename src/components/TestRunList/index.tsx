@@ -4,7 +4,6 @@ import TestStatusChip from "../TestStatusChip";
 import {
   useTestRunState,
   useTestRunDispatch,
-  selectTestRun,
   useBuildState,
 } from "../../contexts";
 import { useSnackbar } from "notistack";
@@ -26,6 +25,8 @@ import { StatusFilterOperators } from "./StatusFilterOperators";
 import { TagFilterOperators } from "./TagFilterOperators";
 import { TestStatus } from "../../types";
 import { testRunService } from "../../services";
+import { useHistory } from "react-router";
+import { buildTestRunLocation } from "../../_helpers/route.helpers";
 
 const columnsDef: GridColDef[] = [
   { field: "id", hide: true, filterable: false },
@@ -97,7 +98,8 @@ const columnsDef: GridColDef[] = [
 
 const TestRunList: React.FunctionComponent = () => {
   const { enqueueSnackbar } = useSnackbar();
-  const { testRun, testRuns, loading } = useTestRunState();
+  const history = useHistory();
+  const { selectedTestRun, testRuns, loading } = useTestRunState();
   const { selectedBuild } = useBuildState();
   const testRunDispatch = useTestRunDispatch();
 
@@ -147,13 +149,15 @@ const TestRunList: React.FunctionComponent = () => {
           sortModel={sortModel}
           onSortModelChange={(model) => setSortModel(model)}
           onRowClick={(param: GridRowParams) => {
-            selectTestRun(
-              testRunDispatch,
-              param.getValue(param.id, "id")?.toString()
+            history.push(
+              buildTestRunLocation(
+                selectedBuild.id,
+                param.getValue(param.id, "id")?.toString()
+              )
             );
           }}
           onStateChange={(props: GridStateChangeParams) => {
-            if (!testRun) {
+            if (!selectedTestRun) {
               // only if testRun modal is not shown
               testRunDispatch({
                 type: "filter",

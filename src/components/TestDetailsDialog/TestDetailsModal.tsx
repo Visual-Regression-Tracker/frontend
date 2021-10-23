@@ -85,7 +85,9 @@ const TestDetailsModal: React.FunctionComponent<{
   const [isDiffShown, setIsDiffShown] = useState(!!testRun.diffName);
   const [selectedRectId, setSelectedRectId] = React.useState<string>();
   const [ignoreAreas, setIgnoreAreas] = React.useState<IgnoreArea[]>([]);
-  const [applyIgnoreDialogOpen, setApplyIgnoreDialogOpen] = React.useState(false);
+  const [applyIgnoreDialogOpen, setApplyIgnoreDialogOpen] = React.useState(
+    false
+  );
 
   const toggleApplyIgnoreDialogOpen = () => {
     setApplyIgnoreDialogOpen(!applyIgnoreDialogOpen);
@@ -101,7 +103,8 @@ const TestDetailsModal: React.FunctionComponent<{
     staticService.getImage(testRun.diffName)
   );
 
-  const applyIgnoreAreaText = 'Apply selected ignore area to all images in this build.';
+  const applyIgnoreAreaText =
+    "Apply selected ignore area to all images in this build.";
 
   React.useEffect(() => {
     fitStageToScreen();
@@ -195,9 +198,9 @@ const TestDetailsModal: React.FunctionComponent<{
   const fitStageToScreen = () => {
     const scale = image
       ? Math.min(
-        stageWidth < image.width ? stageWidth / image.width : 1,
-        stageHeigth < image.height ? stageHeigth / image.height : 1
-      )
+          stageWidth < image.width ? stageWidth / image.width : 1,
+          stageHeigth < image.height ? stageHeigth / image.height : 1
+        )
       : 1;
     setStageScale(scale);
     resetPositioin();
@@ -274,10 +277,10 @@ const TestDetailsModal: React.FunctionComponent<{
             )}
             {(testRun.status === TestStatus.unresolved ||
               testRun.status === TestStatus.new) && (
-                <Grid item>
-                  <ApproveRejectButtons testRun={testRun} />
-                </Grid>
-              )}
+              <Grid item>
+                <ApproveRejectButtons testRun={testRun} />
+              </Grid>
+            )}
             <Grid item>
               <IconButton color="inherit" onClick={handleClose}>
                 <Close />
@@ -492,7 +495,7 @@ const TestDetailsModal: React.FunctionComponent<{
       <BaseModal
         open={applyIgnoreDialogOpen}
         title={applyIgnoreAreaText}
-        submitButtonText={'Yes'}
+        submitButtonText={"Yes"}
         onCancel={toggleApplyIgnoreDialogOpen}
         content={
           <Typography>
@@ -502,8 +505,7 @@ const TestDetailsModal: React.FunctionComponent<{
         onSubmit={() => {
           toggleApplyIgnoreDialogOpen();
           applyIgnoreArea();
-        }
-        }
+        }}
       />
     </React.Fragment>
   );
