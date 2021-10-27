@@ -15,6 +15,7 @@ import {
   Menu,
   MenuItem,
   Box,
+  Tooltip,
 } from "@material-ui/core";
 import { MoreVert } from "@material-ui/icons";
 import {
@@ -136,9 +137,14 @@ const BuildList: FunctionComponent = () => {
                   <ListItemText
                     disableTypography
                     primary={
-                      <Typography variant="subtitle2">{`#${build.number} ${
-                        build.ciBuildId || ""
-                      }`}</Typography>
+                      <Typography
+                        variant="subtitle2"
+                        style={{
+                          wordWrap: "break-word",
+                        }}
+                      >
+                        {`#${build.number} ${build.ciBuildId || ""}`}
+                      </Typography>
                     }
                     secondary={
                       <Grid container direction="column">
@@ -150,7 +156,13 @@ const BuildList: FunctionComponent = () => {
                         <Grid item>
                           <Grid container justifyContent="space-between">
                             <Grid item>
-                              <Chip size="small" label={build.branchName} />
+                              <Tooltip title={build.branchName}>
+                                <Chip
+                                  size="small"
+                                  label={build.branchName}
+                                  style={{ maxWidth: 180 }}
+                                />
+                              </Tooltip>
                             </Grid>
                             <Grid item>
                               <BuildStatusChip status={build.status} />

@@ -5,14 +5,19 @@ import {
   Grid,
   Box,
   LinearProgress,
+  Tooltip,
 } from "@material-ui/core";
 import { BuildStatusChip } from "./BuildStatusChip";
 import { formatDateTime } from "../_helpers/format.helper";
 import { useBuildState } from "../contexts";
-import { LOCATOR_BUILD_DETAILS } from '../constants/help';
+import { LOCATOR_BUILD_DETAILS } from "../constants/help";
 
 const BuildDetails: React.FunctionComponent = () => {
   const { selectedBuild } = useBuildState();
+  const buildNumber = React.useMemo(
+    () => `#${selectedBuild?.number} ${selectedBuild?.ciBuildId || ""}`,
+    [selectedBuild?.number, selectedBuild?.ciBuildId]
+  );
 
   if (!selectedBuild) {
     return null;
@@ -25,13 +30,24 @@ const BuildDetails: React.FunctionComponent = () => {
       <Grid item>
         <Box m={0.5}>
           <Grid container spacing={1} alignItems="center">
-            <Grid item>
-              <Typography variant="subtitle2">{`#${selectedBuild.number} ${
-                selectedBuild.ciBuildId || ""
-              }`}</Typography>
+            <Grid item style={{ maxWidth: "20%", whiteSpace: "nowrap" }}>
+              <Tooltip title={buildNumber}>
+                <Typography
+                  variant="subtitle2"
+                  style={{ overflow: "hidden", textOverflow: "ellipsis" }}
+                >
+                  {buildNumber}
+                </Typography>
+              </Tooltip>
             </Grid>
-            <Grid item>
-              <Chip size="small" label={selectedBuild.branchName} />
+            <Grid item style={{ maxWidth: "70%" }}>
+              <Tooltip title={selectedBuild.branchName}>
+                <Chip
+                  size="small"
+                  style={{ maxWidth: "100%" }}
+                  label={selectedBuild.branchName}
+                />
+              </Tooltip>
             </Grid>
             <Grid item>
               <BuildStatusChip status={selectedBuild.status} />
