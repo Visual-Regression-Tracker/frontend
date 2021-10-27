@@ -4,10 +4,12 @@ import qs from "qs";
 export const buildProjectPageUrl = (projectId: string) =>
   `${routes.HOME}${projectId}`;
 
-export const buildTestRunLocation = (buildId: string, testRunId?: string) => ({
-  search: testRunId
-    ? `buildId=${buildId}&testId=${testRunId}`
-    : `buildId=${buildId}`,
+export const buildTestRunLocation = (buildId?: string, testRunId?: string) => ({
+  search: buildId
+    ? testRunId
+      ? `buildId=${buildId}&testId=${testRunId}`
+      : `buildId=${buildId}`
+    : "",
 });
 
 export interface QueryParams {

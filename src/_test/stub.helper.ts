@@ -34,6 +34,8 @@ const buildsServiceStub = {
 const testRunServiceStub = {
   getList: (testRuns: Array<TestRun>) =>
     cy.stub(testRunService, "getList").resolves(testRuns),
+  getDetails: (testRun: TestRun) =>
+    cy.stub(testRunService, "getDetails").resolves(testRun),
 };
 
 const staticServiceStub = {

@@ -1,12 +1,8 @@
 import React from "react";
 import { TestRun } from "../types";
+import { useLocation } from "react-router-dom";
+import { getQueryParams } from "../_helpers/route.helpers";
 import { testRunService } from "../services";
-import { useHistory, useLocation } from "react-router-dom";
-import {
-  buildTestRunLocation,
-  getQueryParams,
-} from "../_helpers/route.helpers";
-import { useBuildState } from ".";
 
 interface IRequestAction {
   type: "request";
@@ -19,7 +15,7 @@ interface IGetAction {
 
 interface ISelectAction {
   type: "select";
-  payload?: string;
+  payload?: TestRun;
 }
 
 interface IDeleteAction {
@@ -77,11 +73,10 @@ type IAction =
 
 type Dispatch = (action: IAction) => void;
 type State = {
-  selectedTestRunId?: string;
+  selectedTestRun?: TestRun;
   sortedTestRunIds?: Array<string | number>;
   filteredTestRunIds?: Array<string | number>;
   testRuns: Array<TestRun>;
-  testRun?: TestRun;
   touched: boolean;
   loading: boolean;
 };
@@ -105,8 +100,7 @@ function testRunReducer(state: State, action: IAction): State {
       return {
         ...state,
         touched: false,
-        selectedTestRunId: action.payload,
-        testRun: state.testRuns.find((item) => item.id === action.payload),
+        selectedTestRun: action.payload,
       };
     case "filter":
       return {
@@ -156,9 +150,9 @@ function testRunReducer(state: State, action: IAction): State {
           }
           return t;
         }),
-        testRun:
-          state.testRun &&
-          action.payload.find((item) => item.id === state.testRun!.id),
+        selectedTestRun:
+          action.payload.find((i) => i.id === state.selectedTestRun?.id) ??
+          state.selectedTestRun,
       };
     case "touched":
       return {
@@ -173,26 +167,17 @@ function testRunReducer(state: State, action: IAction): State {
 function TestRunProvider({ children }: TestRunProviderProps) {
   const [state, dispatch] = React.useReducer(testRunReducer, initialState);
   const location = useLocation();
-  const history = useHistory();
-  const { selectedBuildId } = useBuildState();
 
-  // get id from url in case none in state
   React.useEffect(() => {
-    const idFromUrl = getQueryParams(location.search).testId;
-    if (!state.selectedTestRunId && idFromUrl) {
-      selectTestRun(dispatch, idFromUrl);
+    const { testId } = getQueryParams(location.search);
+    if (!testId) {
+      dispatch({ type: "select" });
+    } else {
+      testRunService.getDetails(testId).then((payload) => {
+        dispatch({ type: "select", payload });
+      });
     }
-    // eslint-disable-next-line
-  }, []);
-
-  // update url
-  React.useEffect(() => {
-    if (selectedBuildId) {
-      history.push(
-        buildTestRunLocation(selectedBuildId, state.selectedTestRunId)
-      );
-    }
-  }, [history, selectedBuildId, state.selectedTestRunId]);
+  }, [location.search]);
 
   return (
     <TestRunStateContext.Provider value={state}>
@@ -219,23 +204,8 @@ function useTestRunDispatch() {
   return context;
 }
 
-async function getTestRunList(
-  dispatch: Dispatch,
-  buildId: string
-): Promise<void> {
-  dispatch({ type: "request" });
-
-  return testRunService.getList(buildId).then((response) => {
-    dispatch({ type: "get", payload: response });
-  });
-}
-
 async function deleteTestRun(dispatch: Dispatch, ids: Array<string>) {
   dispatch({ type: "delete", payload: ids });
-}
-
-async function selectTestRun(dispatch: Dispatch, id?: string) {
-  dispatch({ type: "select", payload: id });
 }
 
 async function addTestRun(dispatch: Dispatch, testRuns: Array<TestRun>) {
@@ -250,8 +220,6 @@ export {
   TestRunProvider,
   useTestRunState,
   useTestRunDispatch,
-  getTestRunList,
-  selectTestRun,
   addTestRun,
   deleteTestRun,
   updateTestRun,

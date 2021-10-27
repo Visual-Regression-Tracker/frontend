@@ -18,12 +18,6 @@ import {
   buildTestRunLocation,
 } from "../_helpers/route.helpers";
 import { TestVariationDetails } from "../components/TestVariationDetails";
-import {
-  selectBuild,
-  useBuildDispatch,
-  useTestRunDispatch,
-  selectTestRun,
-} from "../contexts";
 import { useSnackbar } from "notistack";
 import { formatDateTime } from "../_helpers/format.helper";
 import TestStatusChip from "../components/TestStatusChip";
@@ -40,8 +34,6 @@ const TestVariationDetailsPage: React.FunctionComponent = () => {
   const classes = useStyles();
   const history = useHistory();
   const { enqueueSnackbar } = useSnackbar();
-  const buildDispatch = useBuildDispatch();
-  const testRunDispatch = useTestRunDispatch();
   const { testVariationId } = useParams<{ testVariationId: string }>();
   const [testVariation, setTestVariation] = React.useState<TestVariation>();
 
@@ -88,12 +80,6 @@ const TestVariationDetailsPage: React.FunctionComponent = () => {
                                 testRun.id
                               ),
                             });
-                            selectBuild(
-                              buildDispatch,
-                              testRun.buildId
-                            ).then(() =>
-                              selectTestRun(testRunDispatch, testRun.id)
-                            );
                           }
                         }}
                       >

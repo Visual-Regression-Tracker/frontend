@@ -63,6 +63,7 @@ describe("Project page", () => {
         id: "some test run id7",
       },
     ]);
+    testRunServiceStub.getDetails(TEST_UNRESOLVED);
 
     mountVrtComponent({
       component: <ProjectPage />,
@@ -71,6 +72,8 @@ describe("Project page", () => {
       },
       path: "/:projectId",
     });
+
+    cy.contains(TEST_BUILD_FAILED.ciBuildId).click();
 
     cy.vrtTrack("Project page");
 

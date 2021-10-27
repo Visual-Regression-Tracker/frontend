@@ -1,12 +1,10 @@
 import React from "react";
-import { Chip } from "@material-ui/core";
+import { Chip, Typography } from "@material-ui/core";
 import TestStatusChip from "../TestStatusChip";
 import {
   useTestRunState,
   useTestRunDispatch,
-  getTestRunList,
   useBuildState,
-  selectTestRun,
 } from "../../contexts";
 import { useSnackbar } from "notistack";
 import {
@@ -26,6 +24,9 @@ import { DataGridCustomToolbar } from "./DataGridCustomToolbar";
 import { StatusFilterOperators } from "./StatusFilterOperators";
 import { TagFilterOperators } from "./TagFilterOperators";
 import { TestStatus } from "../../types";
+import { testRunService } from "../../services";
+import { useHistory } from "react-router";
+import { buildTestRunLocation } from "../../_helpers/route.helpers";
 
 const columnsDef: GridColDef[] = [
   { field: "id", hide: true, filterable: false },
@@ -97,8 +98,9 @@ const columnsDef: GridColDef[] = [
 
 const TestRunList: React.FunctionComponent = () => {
   const { enqueueSnackbar } = useSnackbar();
-  const { testRun, testRuns, loading } = useTestRunState();
-  const { selectedBuildId } = useBuildState();
+  const history = useHistory();
+  const { selectedTestRun, testRuns, loading } = useTestRunState();
+  const { selectedBuild } = useBuildState();
   const testRunDispatch = useTestRunDispatch();
 
   const [sortModel, setSortModel] = React.useState<GridSortModel>([
@@ -108,16 +110,21 @@ const TestRunList: React.FunctionComponent = () => {
     },
   ]);
 
-  const getTestRunListCallback = React.useCallback(
-    () =>
-      selectedBuildId &&
-      getTestRunList(testRunDispatch, selectedBuildId).catch((err: string) =>
-        enqueueSnackbar(err, {
-          variant: "error",
-        })
-      ),
-    [testRunDispatch, enqueueSnackbar, selectedBuildId]
-  );
+  const getTestRunListCallback = React.useCallback(() => {
+    testRunDispatch({ type: "request" });
+    if (selectedBuild?.id) {
+      testRunService
+        .getList(selectedBuild.id)
+        .then((payload) => testRunDispatch({ type: "get", payload }))
+        .catch((err: string) =>
+          enqueueSnackbar(err, {
+            variant: "error",
+          })
+        );
+    } else {
+      testRunDispatch({ type: "get", payload: [] });
+    }
+  }, [testRunDispatch, enqueueSnackbar, selectedBuild?.id]);
 
   React.useEffect(() => {
     getTestRunListCallback();
@@ -125,7 +132,7 @@ const TestRunList: React.FunctionComponent = () => {
 
   return (
     <React.Fragment>
-      {selectedBuildId && (
+      {selectedBuild ? (
         <DataGrid
           rows={testRuns}
           columns={columnsDef}
@@ -142,13 +149,15 @@ const TestRunList: React.FunctionComponent = () => {
           sortModel={sortModel}
           onSortModelChange={(model) => setSortModel(model)}
           onRowClick={(param: GridRowParams) => {
-            selectTestRun(
-              testRunDispatch,
-              param.getValue(param.id, "id")?.toString()
+            history.push(
+              buildTestRunLocation(
+                selectedBuild.id,
+                param.getValue(param.id, "id")?.toString()
+              )
             );
           }}
           onStateChange={(props: GridStateChangeParams) => {
-            if (!testRun) {
+            if (!selectedTestRun) {
               // only if testRun modal is not shown
               testRunDispatch({
                 type: "filter",
@@ -161,6 +170,8 @@ const TestRunList: React.FunctionComponent = () => {
             }
           }}
         />
+      ) : (
+        <Typography variant="h5">Select build from list</Typography>
       )}
     </React.Fragment>
   );

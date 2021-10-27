@@ -17,6 +17,17 @@ async function getList(buildId: string): Promise<TestRun[]> {
   ).then(handleResponse);
 }
 
+async function getDetails(id: string): Promise<TestRun> {
+  const requestOptions = {
+    method: "GET",
+    headers: authHeader(),
+  };
+
+  return fetch(`${API_URL}${ENDPOINT_URL}/${id}`, requestOptions).then(
+    handleResponse
+  );
+}
+
 async function removeBulk(ids: (string | number)[]): Promise<void> {
   const requestOptions = {
     method: "POST",
@@ -97,6 +108,7 @@ async function update(id: string, data: { comment: string }): Promise<TestRun> {
 
 export const testRunService = {
   getList,
+  getDetails,
   removeBulk,
   rejectBulk,
   approveBulk,

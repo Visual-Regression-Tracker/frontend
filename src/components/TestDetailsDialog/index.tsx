@@ -1,10 +1,8 @@
 import { Dialog, makeStyles, Typography } from "@material-ui/core";
 import React from "react";
-import {
-  selectTestRun,
-  useTestRunDispatch,
-  useTestRunState,
-} from "../../contexts";
+import { useHistory } from "react-router";
+import { useBuildState, useTestRunState } from "../../contexts";
+import { buildTestRunLocation } from "../../_helpers/route.helpers";
 import { BaseModal } from "../BaseModal";
 import { ArrowButtons } from "./ArrowButtons";
 import TestDetailsModal from "./TestDetailsModal";
@@ -18,14 +16,14 @@ const useStyles = makeStyles((theme) => ({
 export const TestDetailsDialog: React.FunctionComponent = () => {
   const classes = useStyles();
   const {
-    testRun,
+    selectedTestRun,
     touched,
     testRuns: allTestRuns,
     filteredTestRunIds,
     sortedTestRunIds,
-    selectedTestRunId,
   } = useTestRunState();
-  const testRunDispatch = useTestRunDispatch();
+  const { selectedBuild } = useBuildState();
+  const history = useHistory();
   const [notSavedChangesModal, setNotSavedChangesModal] = React.useState(false);
   const [navigationTargetId, setNavigationTargetId] = React.useState<string>();
 
@@ -46,8 +44,8 @@ export const TestDetailsDialog: React.FunctionComponent = () => {
   }, [allTestRuns, filteredTestRunIds, sortedTestRunIds]);
 
   const selectedTestRunIndex = React.useMemo(
-    () => testRuns.findIndex((t) => t.id === selectedTestRunId),
-    [testRuns, selectedTestRunId]
+    () => testRuns.findIndex((t) => t.id === selectedTestRun?.id),
+    [testRuns, selectedTestRun?.id]
   );
 
   const handleNavigation = React.useCallback(
@@ -56,20 +54,20 @@ export const TestDetailsDialog: React.FunctionComponent = () => {
         setNavigationTargetId(id);
         setNotSavedChangesModal(true);
       } else {
-        selectTestRun(testRunDispatch, id);
+        history.push(buildTestRunLocation(selectedBuild?.id, id));
       }
     },
-    [testRunDispatch, touched]
+    [touched, history, selectedBuild?.id]
   );
 
-  if (!testRun) {
+  if (!selectedTestRun) {
     return null;
   }
 
   return (
     <Dialog open={true} fullScreen className={classes.modal}>
       <TestDetailsModal
-        testRun={testRun}
+        testRun={selectedTestRun}
         touched={touched}
         handleClose={() => handleNavigation()}
       />
@@ -87,7 +85,9 @@ export const TestDetailsDialog: React.FunctionComponent = () => {
           <Typography>{`Are you sure you want to discard changes?`}</Typography>
         }
         onSubmit={() => {
-          selectTestRun(testRunDispatch, navigationTargetId);
+          history.push(
+            buildTestRunLocation(selectedBuild?.id, navigationTargetId)
+          );
           setNotSavedChangesModal(false);
         }}
       />
