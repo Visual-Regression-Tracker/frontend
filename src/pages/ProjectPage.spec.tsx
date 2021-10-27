@@ -72,6 +72,8 @@ describe("Project page", () => {
       path: "/:projectId",
     });
 
+    cy.contains(TEST_BUILD_FAILED.ciBuildId).click();
+
     cy.vrtTrack("Project page");
 
     cy.contains(TEST_UNRESOLVED.name).click();
