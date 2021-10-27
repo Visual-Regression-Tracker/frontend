@@ -63,6 +63,7 @@ describe("Project page", () => {
         id: "some test run id7",
       },
     ]);
+    testRunServiceStub.getDetails(TEST_UNRESOLVED);
 
     mountVrtComponent({
       component: <ProjectPage />,
