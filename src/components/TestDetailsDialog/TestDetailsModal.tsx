@@ -82,7 +82,7 @@ const TestDetailsModal: React.FunctionComponent<{
   const [valueOfIgnoreOrCompare, setValueOfIgnoreOrCompare] = useState(
     "Ignore Areas"
   );
-  const [isDiffShown, setIsDiffShown] = useState(!!testRun.diffName);
+  const [isDiffShown, setIsDiffShown] = useState(false);
   const [selectedRectId, setSelectedRectId] = React.useState<string>();
   const [ignoreAreas, setIgnoreAreas] = React.useState<IgnoreArea[]>([]);
   const [applyIgnoreDialogOpen, setApplyIgnoreDialogOpen] = React.useState(
@@ -110,6 +110,10 @@ const TestDetailsModal: React.FunctionComponent<{
     fitStageToScreen();
     // eslint-disable-next-line
   }, [image]);
+
+  React.useEffect(() => {
+    setIsDiffShown(!!testRun.diffName);
+  }, [testRun.diffName]);
 
   React.useEffect(() => {
     setIgnoreAreas(JSON.parse(testRun.ignoreAreas));
@@ -250,11 +254,10 @@ const TestDetailsModal: React.FunctionComponent<{
 
   useHotkeys(
     "d",
-    () =>
-      shouldDiffHotKeyBeActive && setIsDiffShown((isDiffShown) => !isDiffShown)
+    () => !!testRun.diffName && setIsDiffShown((isDiffShown) => !isDiffShown),
+    [testRun.diffName]
   );
   useHotkeys("ESC", handleClose, [handleClose]);
-  const shouldDiffHotKeyBeActive = !!testRun.diffName;
 
   return (
     <React.Fragment>
@@ -264,7 +267,7 @@ const TestDetailsModal: React.FunctionComponent<{
             <Grid item>
               <Typography variant="h6">{testRun.name}</Typography>
             </Grid>
-            {shouldDiffHotKeyBeActive && (
+            {testRun.diffName && (
               <Grid item>
                 <Tooltip title={"Hotkey: D"}>
                   <Switch
