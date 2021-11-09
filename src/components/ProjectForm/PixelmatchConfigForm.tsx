@@ -10,7 +10,7 @@ export const PixelmatchConfigForm: React.FunctionComponent = () => {
   return (
     <React.Fragment>
       <FormControlLabel
-        label="Allow diff dimentions"
+        label="Allow diff dimensions"
         control={
           <Switch
             checked={config.allowDiffDimensions}
@@ -23,7 +23,7 @@ export const PixelmatchConfigForm: React.FunctionComponent = () => {
         }
       />
       <FormControlLabel
-        label="Ignore anti-alliasing"
+        label="Ignore anti-aliasing"
         control={
           <Switch
             checked={config.ignoreAntialiasing}
