@@ -6,6 +6,7 @@
 
 - clone repo
 - `npm i`
+- `npm run build`
 - Update `.env`
 - `npm run start`
 
