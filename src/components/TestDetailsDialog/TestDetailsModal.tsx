@@ -9,7 +9,6 @@ import {
   IconButton,
   Box,
   makeStyles,
-  Tooltip,
   Select,
   MenuItem,
   LinearProgress,
@@ -43,6 +42,7 @@ import { ApproveRejectButtons } from "../ApproveRejectButtons";
 import { head } from "lodash";
 import { invertIgnoreArea } from "../../_helpers/ignoreArea.helper";
 import { BaseModal } from "../BaseModal";
+import { Tooltip } from "../Tooltip";
 
 const defaultStagePos = {
   x: 0,

@@ -1,9 +1,10 @@
 import React from "react";
-import { Typography, Chip, Grid, IconButton, Tooltip } from "@material-ui/core";
+import { Typography, Chip, Grid, IconButton } from "@material-ui/core";
 import { WarningRounded } from "@material-ui/icons";
 import { staticService } from "../services";
 import useImage from "use-image";
 import { IgnoreArea } from "../types/ignoreArea";
+import { Tooltip } from "./Tooltip";
 
 interface IProps {
   type: "Baseline" | "Image" | "Diff";
