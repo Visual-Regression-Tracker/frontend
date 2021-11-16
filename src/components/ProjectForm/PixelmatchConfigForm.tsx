@@ -2,6 +2,7 @@ import { FormControlLabel, Switch } from "@material-ui/core";
 import React from "react";
 import { TextValidator } from "react-material-ui-form-validator";
 import { PixelmatchConfig } from "../../types/imageComparison";
+import { Tooltip } from "../Tooltip";
 import { useConfigHook } from "./useConfigHook";
 
 export const PixelmatchConfigForm: React.FunctionComponent = () => {
@@ -9,32 +10,40 @@ export const PixelmatchConfigForm: React.FunctionComponent = () => {
 
   return (
     <React.Fragment>
-      <FormControlLabel
-        label="Allow diff dimensions"
-        control={
-          <Switch
-            checked={config.allowDiffDimensions}
-            onChange={(event, checked) =>
-              updateConfig("allowDiffDimensions", checked)
-            }
-            color="primary"
-            name="diffDimensionsFeature"
-          />
-        }
-      />
-      <FormControlLabel
-        label="Ignore anti-aliasing"
-        control={
-          <Switch
-            checked={config.ignoreAntialiasing}
-            onChange={(event, checked) =>
-              updateConfig("ignoreAntialiasing", checked)
-            }
-            color="primary"
-            name="ignoreAntialiasing"
-          />
-        }
-      />
+      <Tooltip
+        title="Enable comparison of images with different sizes."
+      >
+        <FormControlLabel
+          label="Allow diff dimensions"
+          control={
+            <Switch
+              checked={config.allowDiffDimensions}
+              onChange={(event, checked) =>
+                updateConfig("allowDiffDimensions", checked)
+              }
+              color="primary"
+              name="diffDimensionsFeature"
+            />
+          }
+        />
+      </Tooltip>
+      <Tooltip
+        title="Ignore detecting and ignoring anti-aliased pixels."
+      >
+        <FormControlLabel
+          label="Ignore anti-aliasing"
+          control={
+            <Switch
+              checked={config.ignoreAntialiasing}
+              onChange={(event, checked) =>
+                updateConfig("ignoreAntialiasing", checked)
+              }
+              color="primary"
+              name="ignoreAntialiasing"
+            />
+          }
+        />
+      </Tooltip>
       <TextValidator
         name="threshold"
         validators={["minNumber:0", "maxNumber:1"]}
@@ -43,6 +52,7 @@ export const PixelmatchConfigForm: React.FunctionComponent = () => {
         margin="dense"
         id="threshold"
         label="Pixel diff threshold"
+        helperText="The threshold of how much a pixel can deviate until it is detected as change (0-1)."
         type="number"
         fullWidth
         required
