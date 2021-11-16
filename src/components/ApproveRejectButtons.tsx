@@ -1,9 +1,10 @@
-import { Grid, Tooltip, Chip, Button } from "@material-ui/core";
+import { Grid, Chip, Button } from "@material-ui/core";
 import { useSnackbar } from "notistack";
 import { useHotkeys } from "react-hotkeys-hook";
 import React from "react";
 import { testRunService } from "../services";
 import { TestRun } from "../types";
+import { Tooltip } from "./Tooltip";
 
 export const ApproveRejectButtons: React.FunctionComponent<{
   testRun: TestRun;

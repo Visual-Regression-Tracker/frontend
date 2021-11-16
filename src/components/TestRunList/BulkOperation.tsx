@@ -2,7 +2,6 @@ import React from "react";
 import {
   Typography,
   IconButton,
-  Tooltip,
   LinearProgress,
 } from "@material-ui/core";
 import {
@@ -17,6 +16,7 @@ import { Delete, LayersClear, ThumbDown, ThumbUp } from "@material-ui/icons";
 import { testRunService } from "../../services";
 import { TestStatus } from "../../types";
 import { head } from "lodash";
+import { Tooltip } from "../Tooltip";
 
 export const BulkOperation: React.FunctionComponent = () => {
   const props = useGridSlotComponentProps();

@@ -15,7 +15,6 @@ import {
   Menu,
   MenuItem,
   Box,
-  Tooltip,
 } from "@material-ui/core";
 import { MoreVert } from "@material-ui/icons";
 import {
@@ -35,6 +34,7 @@ import { BaseModal } from "../BaseModal";
 import { buildsService } from "../../services";
 import { useHistory } from "react-router";
 import { buildTestRunLocation } from "../../_helpers/route.helpers";
+import { Tooltip } from "../Tooltip";
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({

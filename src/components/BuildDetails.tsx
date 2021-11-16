@@ -5,12 +5,12 @@ import {
   Grid,
   Box,
   LinearProgress,
-  Tooltip,
 } from "@material-ui/core";
 import { BuildStatusChip } from "./BuildStatusChip";
 import { formatDateTime } from "../_helpers/format.helper";
 import { useBuildState } from "../contexts";
 import { LOCATOR_BUILD_DETAILS } from "../constants/help";
+import { Tooltip } from "./Tooltip";
 
 const BuildDetails: React.FunctionComponent = () => {
   const { selectedBuild } = useBuildState();
