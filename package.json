@@ -64,7 +64,7 @@
     "@types/qs": "^6.9.5",
     "@types/react": "^16.9.43",
     "@types/react-dom": "^16.9.8",
-    "@types/react-material-ui-form-validator": "^2.1.0",
+    "@types/react-material-ui-form-validator": "^2.1.1",
     "@types/react-router-dom": "^5.1.5",
     "@types/socket.io-client": "^1.4.33",
     "@visual-regression-tracker/agent-cypress": "^5.0.0",
