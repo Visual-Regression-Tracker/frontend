@@ -13,24 +13,68 @@ import { useUserDispatch, useUserState, logout } from "../contexts";
 import { routes } from "../constants";
 import logo from "../static/logo.png";
 import GuidedTour from "./GuidedTour";
+import { AllInbox, Face, GitHub, HelpOutline, People, SettingsPower } from "@material-ui/icons";
 
 const Header: FunctionComponent = () => {
-  const [menuRef, setMenuRef] = React.useState<null | HTMLElement>(null);
+  const [avatarMenuRef, setAvatarMenuRef] = React.useState<null | HTMLElement>(null);
+  const [helpMenuRef, setHelpMenuRef] = React.useState<null | HTMLElement>(null);
   const { loggedIn, user } = useUserState();
   const authDispatch = useUserDispatch();
 
-  const handleMenuClose = () => {
-    setMenuRef(null);
+  const styleMenuItem = {
+    display: "flex",
+    alignItems: "center",
   };
 
-  const renderMenu = (
+  const handleMenuClose = () => {
+    setAvatarMenuRef(null);
+    setHelpMenuRef(null);
+  };
+
+  const closeMenuAndOpenLink = () => {
+    handleMenuClose();
+    window.open("https://github.com/Visual-Regression-Tracker/Visual-Regression-Tracker/issues/new", "_blank");
+  };
+
+  const renderHelpMenu = (
     <Menu
-      anchorEl={menuRef}
+      anchorEl={helpMenuRef}
       anchorOrigin={{ vertical: "top", horizontal: "right" }}
-      id="headerMenu"
+      id="headerHelpMenu"
       keepMounted
       transformOrigin={{ vertical: "top", horizontal: "right" }}
-      open={!!menuRef}
+      open={!!helpMenuRef}
+      onClose={handleMenuClose}
+    >
+      <MenuItem onClick={handleMenuClose} >
+        <GuidedTour />
+      </MenuItem>
+      <MenuItem onClick={closeMenuAndOpenLink} style={styleMenuItem}>
+        <IconButton size="small">
+          <GitHub />
+        </IconButton>
+        Open an issue in GitHub
+      </MenuItem>
+      <hr />
+      <MenuItem>
+        <span style={{
+          display: "flex",
+          alignItems: "center",
+        }}>
+          VRT Version : {window._env_.VRT_VERSION}
+        </span>
+      </MenuItem>
+    </Menu >
+  );
+
+  const renderAvatarMenu = (
+    <Menu
+      anchorEl={avatarMenuRef}
+      anchorOrigin={{ vertical: "top", horizontal: "right" }}
+      id="headerAvatarMenu"
+      keepMounted
+      transformOrigin={{ vertical: "top", horizontal: "right" }}
+      open={!!avatarMenuRef}
       onClose={handleMenuClose}
     >
       {user?.role === "admin" && (
@@ -38,7 +82,11 @@ const Header: FunctionComponent = () => {
           component={Link}
           to={routes.USER_LIST_PAGE}
           onClick={handleMenuClose}
+          style={styleMenuItem}
         >
+          <IconButton size="small">
+            <People />
+          </IconButton>
           Users
         </MenuItem>
       )}
@@ -46,14 +94,22 @@ const Header: FunctionComponent = () => {
         component={Link}
         to={routes.PROJECT_LIST_PAGE}
         onClick={handleMenuClose}
+        style={styleMenuItem}
       >
+        <IconButton size="small">
+          <AllInbox />
+        </IconButton>
         Projects
       </MenuItem>
       <MenuItem
         component={Link}
         to={routes.PROFILE_PAGE}
         onClick={handleMenuClose}
+        style={styleMenuItem}
       >
+        <IconButton size="small">
+          <Face />
+        </IconButton>
         Profile
       </MenuItem>
       <MenuItem
@@ -63,6 +119,9 @@ const Header: FunctionComponent = () => {
         }}
         data-testid="logoutBtn"
       >
+        <IconButton size="small">
+          <SettingsPower />
+        </IconButton>
         Logout
       </MenuItem>
     </Menu>
@@ -84,11 +143,17 @@ const Header: FunctionComponent = () => {
                 justifyContent="space-between"
                 alignItems="center"
               >
-                <GuidedTour />
+                <IconButton onClick={(event: React.MouseEvent<HTMLElement>) =>
+                  setHelpMenuRef(event.currentTarget)
+                }>
+                  <Avatar>
+                    <HelpOutline />
+                  </Avatar>
+                </IconButton>
                 {loggedIn && (
                   <IconButton
                     onClick={(event: React.MouseEvent<HTMLElement>) =>
-                      setMenuRef(event.currentTarget)
+                      setAvatarMenuRef(event.currentTarget)
                     }
                   >
                     <Avatar>{`${user?.firstName[0]}${user?.lastName[0]}`}</Avatar>
@@ -99,7 +164,8 @@ const Header: FunctionComponent = () => {
           </Grid>
         </Toolbar>
       </AppBar>
-      {renderMenu}
+      {renderAvatarMenu}
+      {renderHelpMenu}
     </React.Fragment>
   );
 };
