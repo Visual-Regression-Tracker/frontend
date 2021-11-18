@@ -1,8 +1,9 @@
-import { IconButton, makeStyles, Tooltip } from "@material-ui/core";
+import { IconButton, makeStyles } from "@material-ui/core";
 import { NavigateNext, NavigateBefore } from "@material-ui/icons";
 import React from "react";
 import { useHotkeys } from "react-hotkeys-hook";
 import { TestRun } from "../../types";
+import { Tooltip } from "../Tooltip";
 
 const useStyles = makeStyles((theme) => ({
   button: {

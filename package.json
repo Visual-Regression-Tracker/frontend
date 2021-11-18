@@ -31,7 +31,7 @@
     "use-image": "^1.0.6"
   },
   "scripts": {
-    "start": "chmod +x ./env.sh && ./env.sh && cp env-config.js ./public/ && react-scripts start",
+    "start": "chmod +x ./env.sh && sh ./env.sh && cp env-config.js ./public/ && react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
     "test:cy": "cypress run-ct"

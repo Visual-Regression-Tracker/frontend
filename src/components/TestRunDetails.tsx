@@ -2,6 +2,7 @@ import React from "react";
 import { Grid, Typography } from "@material-ui/core";
 import { TestRun } from "../types";
 import TestStatusChip from "./TestStatusChip";
+import { Tooltip } from "./Tooltip";
 
 interface IProps {
   testRun: TestRun;
@@ -37,12 +38,16 @@ export const TestRunDetails: React.FunctionComponent<IProps> = ({
         </Grid>
       )}
       <Grid item>
-        <Typography>Diff: {testRun.diffPercent}%</Typography>
+        <Tooltip title="How many percent of pixels are different according to the defined settings.">
+          <Typography>Diff: {testRun.diffPercent}%</Typography>
+        </Tooltip>
       </Grid>
       <Grid item>
-        <Typography>
-          Diff tollerance: {testRun.diffTollerancePercent}%
-        </Typography>
+        <Tooltip title="The allowed diff tolerance. Can be set with the diffTollerancePercent property in the track method.">
+          <Typography>
+            Diff tolerance: {testRun.diffTollerancePercent}%
+          </Typography>
+        </Tooltip>
       </Grid>
       <Grid item>
         <Typography display="inline">Status: </Typography>

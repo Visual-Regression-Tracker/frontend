@@ -1,10 +1,11 @@
 import React from "react";
-import { IconButton, Tooltip } from "@material-ui/core";
+import { IconButton } from "@material-ui/core";
 import { Delete } from "@material-ui/icons";
 import { GridRowId, useGridSlotComponentProps } from "@material-ui/data-grid";
 import { usersService } from "../../services";
 import { useSnackbar } from "notistack";
 import { useUserDispatch, useUserState } from "../../contexts";
+import { Tooltip } from "../Tooltip";
 
 export const ActionButtons: React.FunctionComponent = () => {
   const props = useGridSlotComponentProps();
