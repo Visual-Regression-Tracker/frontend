@@ -36,6 +36,11 @@ const Header: FunctionComponent = () => {
     window.open("https://github.com/Visual-Regression-Tracker/Visual-Regression-Tracker/issues/new", "_blank");
   };
 
+  const getVRTVersion = (): string => {
+    //For cypress tests, window._env_ variable may be undefined, so return a dummy value.
+    return window._env_ ? window._env_.VRT_VERSION : "5.0.0";
+  };
+
   const renderHelpMenu = (
     <Menu
       anchorEl={helpMenuRef}
@@ -56,13 +61,10 @@ const Header: FunctionComponent = () => {
         Open an issue in GitHub
       </MenuItem>
       <hr />
-      <MenuItem>
-        <span style={{
-          display: "flex",
-          alignItems: "center",
-        }}>
-          VRT Version : {window._env_.VRT_VERSION}
-        </span>
+      <MenuItem style={{
+        justifyContent: "center"
+      }}>
+        VRT Version : {getVRTVersion()}
       </MenuItem>
     </Menu >
   );
