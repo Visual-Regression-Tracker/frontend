@@ -14,6 +14,7 @@ describe("Profile page", () => {
     haveUserLogged(TEST_USER);
     haveWindowsEnvSet({
       REACT_APP_API_URL: "http://localhost:4200",
+      VRT_VERSION: "4.20.0",
     });
     projectStub.getAll([TEST_PROJECT]);
   });

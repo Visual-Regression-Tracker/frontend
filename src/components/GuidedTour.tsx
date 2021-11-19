@@ -1,8 +1,8 @@
 import React, { FunctionComponent } from "react";
 import Joyride, { CallBackProps, STATUS } from "react-joyride";
-import { IconButton, Avatar } from "@material-ui/core";
-import { HelpOutline } from "@material-ui/icons";
+import { IconButton } from "@material-ui/core";
 import { useHelpState } from "../contexts";
+import { LiveHelp } from "@material-ui/icons";
 
 const GuidedTour: FunctionComponent = () => {
   const [run, setRun] = React.useState(false);
@@ -40,28 +40,32 @@ const GuidedTour: FunctionComponent = () => {
 
   return (
     <React.Fragment>
-      <IconButton onClick={handleClickStart}>
-        <Avatar>
-          <HelpOutline />
-          <Joyride
-            callback={handleJoyrideCallback}
-            continuous={true}
-            run={run}
-            scrollToFirstStep={true}
-            showProgress={true}
-            showSkipButton={true}
-            steps={getHelpSteps()}
-            disableCloseOnEsc={true}
-            styles={{
-              options: {
-                zIndex: 10000,
-              },
-              buttonNext: { color: "#3f51b5", backgroundColor: "" },
-              buttonBack: { color: "#3f51b5" },
-            }}
-          />
-        </Avatar>
-      </IconButton>
+      <span onClick={handleClickStart} style={{
+        display: "flex",
+        alignItems: "center",
+      }}>
+        <IconButton size="small">
+          <LiveHelp />
+        </IconButton>
+        <Joyride
+          callback={handleJoyrideCallback}
+          continuous={true}
+          run={run}
+          scrollToFirstStep={true}
+          showProgress={true}
+          showSkipButton={true}
+          steps={getHelpSteps()}
+          disableCloseOnEsc={true}
+          styles={{
+            options: {
+              zIndex: 10000,
+            },
+            buttonNext: { color: "#3f51b5", backgroundColor: "" },
+            buttonBack: { color: "#3f51b5" },
+          }}
+        />
+        Take a tour
+      </span>
     </React.Fragment>
   );
 };
