@@ -196,7 +196,7 @@ const TestDetailsModal: React.FunctionComponent<{
 
   const setOriginalSize = () => {
     setStageScale(1);
-    resetPositioin();
+    resetPosition();
   };
 
   const fitStageToScreen = () => {
@@ -207,10 +207,10 @@ const TestDetailsModal: React.FunctionComponent<{
         )
       : 1;
     setStageScale(scale);
-    resetPositioin();
+    resetPosition();
   };
 
-  const resetPositioin = () => {
+  const resetPosition = () => {
     setStagePos(defaultStagePos);
     setStageOffset(defaultStagePos);
   };

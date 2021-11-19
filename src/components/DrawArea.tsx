@@ -185,12 +185,29 @@ export const DrawArea: FunctionComponent<IDrawArea> = ({
               onMouseDown={onStageClick}
               onWheel={(e: Konva.KonvaEventObject<WheelEvent>) => {
                 e.evt.preventDefault();
-                const scaleBy = 1.04;
-                const newScale =
-                  e.evt.deltaY > 0
-                    ? stageScale * scaleBy
-                    : stageScale / scaleBy;
+                var scaleBy = 1.04;
+                if (e.evt.deltaY < 0){
+                  scaleBy = 1 / scaleBy;
+                }
+                const newScale = stageScale * scaleBy;
                 setStageScale(newScale);
+                
+                var dx = ((e.evt.offsetX * newScale) - stageInitPos.x) * (scaleBy - 1);
+                var dy = ((e.evt.offsetY * newScale) - stageInitPos.y) * (scaleBy - 1);
+                
+                setStagePos({
+                  x:  stageInitPos.x - dx,
+                  y:  stageInitPos.y - dy,
+                });
+                setStageOffset({
+                  x:  stageInitPos.x - dx,
+                  y:  stageInitPos.y - dy,
+                });
+                setStageInitPos({
+                  x:  stageInitPos.x - dx,
+                  y:  stageInitPos.y - dy,
+                });
+                
               }}
               style={{
                 transform: `scale(${stageScale})`,
