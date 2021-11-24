@@ -9,6 +9,10 @@
 - Update `.env`
 - `npm run start`
 
+## Image download
+ 
+ - If you want to use image download feature in test runs, you have to have the files in backend imageUploads folder to a folder in this project under public/imageUploads. This can be achieved via manual copy, docker volume mapping to this project folder etc.
+
 ## Local HTTPS config
 
 - Generate keys [here](https://www.selfsignedcertificate.com/)
