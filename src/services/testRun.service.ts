@@ -25,8 +25,8 @@ async function getFiles(urls: { download: string, filename: string }[]): Promise
   const zip = new JSZip();
   urls.forEach((element, index) => {
     fetch(element.download)
-      .then(res => res.blob())
-      .then(blob => zip.file(element.filename, blob))
+      .then((res) => res.blob())
+      .then((blob) => zip.file(element.filename, blob))
       .then(() => {
         if (index === urls.length - 1) {
           zip.generateAsync({ type: 'blob' })
