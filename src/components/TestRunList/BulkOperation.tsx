@@ -12,7 +12,7 @@ import {
 } from "@material-ui/data-grid";
 import { BaseModal } from "../BaseModal";
 import { useSnackbar } from "notistack";
-import { Delete, LayersClear, ThumbDown, ThumbUp } from "@material-ui/icons";
+import { CloudDownload, Delete, LayersClear, ThumbDown, ThumbUp } from "@material-ui/icons";
 import { testRunService } from "../../services";
 import { TestStatus } from "../../types";
 import { head } from "lodash";
@@ -24,9 +24,8 @@ export const BulkOperation: React.FunctionComponent = () => {
   const [approveDialogOpen, setApproveDialogOpen] = React.useState(false);
   const [rejectDialogOpen, setRejectDialogOpen] = React.useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = React.useState(false);
-  const [clearIgnoreDialogOpen, setClearIgnoreDialogOpen] = React.useState(
-    false
-  );
+  const [downloadDialogOpen, setDownloadDialogOpen] = React.useState(false);
+  const [clearIgnoreDialogOpen, setClearIgnoreDialogOpen] = React.useState(false);
   const [isProcessing, setIsProcessing] = React.useState(false);
   const ids: GridRowId[] = React.useMemo(
     () => Object.values(props.state.selection),
@@ -69,6 +68,9 @@ export const BulkOperation: React.FunctionComponent = () => {
   const toggleDeleteDialogOpen = () => {
     setDeleteDialogOpen(!deleteDialogOpen);
   };
+  const toggleDownloadDialogOpen = () => {
+    setDownloadDialogOpen(!downloadDialogOpen);
+  };
   const toggleClearIgnoreDialogOpen = () => {
     setClearIgnoreDialogOpen(!clearIgnoreDialogOpen);
   };
@@ -90,6 +92,9 @@ export const BulkOperation: React.FunctionComponent = () => {
     if (deleteDialogOpen) {
       return "Delete";
     }
+    if (downloadDialogOpen) {
+      return "Download";
+    }
     if (clearIgnoreDialogOpen) {
       return "Clear";
     }
@@ -99,6 +104,9 @@ export const BulkOperation: React.FunctionComponent = () => {
   const closeModal = () => {
     if (deleteDialogOpen) {
       return toggleDeleteDialogOpen();
+    }
+    if (downloadDialogOpen) {
+      return toggleDownloadDialogOpen();
     }
     if (approveDialogOpen) {
       return toggleApproveDialogOpen();
@@ -115,6 +123,20 @@ export const BulkOperation: React.FunctionComponent = () => {
     if (deleteDialogOpen) {
       return testRunService.removeBulk(ids);
     }
+    if (downloadDialogOpen) {
+      let urlsToDownload: { download: string, filename: string }[] = [];
+      ids.forEach((id, index) => {
+        testRunService.getDetails(id.toString())
+          .then(
+            (e) => {
+              urlsToDownload.push({ "download": "imageUploads/" + e.imageName, "filename": e.name });
+              //Call getFile function only when all images names are pushed into the array.
+              if (index === ids.length - 1) {
+                testRunService.getFiles(urlsToDownload);
+              }
+            });
+      });
+    }
     if (rejectDialogOpen) {
       return testRunService.rejectBulk(idsEligibleForApproveOrReject);
     }
@@ -130,6 +152,9 @@ export const BulkOperation: React.FunctionComponent = () => {
   const dismissDialog = () => {
     if (deleteDialogOpen) {
       return toggleDeleteDialogOpen();
+    }
+    if (downloadDialogOpen) {
+      return toggleDownloadDialogOpen();
     }
     if (approveDialogOpen) {
       return toggleApproveDialogOpen();
@@ -159,6 +184,13 @@ export const BulkOperation: React.FunctionComponent = () => {
           </IconButton>
         </span>
       </Tooltip>
+      <Tooltip title="Download images for selected rows." aria-label="download">
+        <span>
+          <IconButton disabled={count === 0} onClick={toggleDownloadDialogOpen}>
+            <CloudDownload />
+          </IconButton>
+        </span>
+      </Tooltip>
       <Tooltip title="Delete selected rows." aria-label="delete">
         <span>
           <IconButton disabled={count === 0} onClick={toggleDeleteDialogOpen}>
@@ -183,6 +215,7 @@ export const BulkOperation: React.FunctionComponent = () => {
       <BaseModal
         open={
           deleteDialogOpen ||
+          downloadDialogOpen ||
           approveDialogOpen ||
           rejectDialogOpen ||
           clearIgnoreDialogOpen
