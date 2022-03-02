@@ -129,7 +129,7 @@ export const BulkOperation: React.FunctionComponent = () => {
         testRunService.getDetails(id.toString())
           .then(
             (e) => {
-              urlsToDownload.push({ "download": "imageUploads/" + e.imageName, "filename": e.name });
+              urlsToDownload.push({ "download": "static/imageUploads/" + e.imageName, "filename": e.name });
               //Call getFile function only when all images names are pushed into the array.
               if (index === ids.length - 1) {
                 testRunService.getFiles(urlsToDownload);
