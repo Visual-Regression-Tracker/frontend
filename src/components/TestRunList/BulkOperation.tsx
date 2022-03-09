@@ -125,13 +125,13 @@ export const BulkOperation: React.FunctionComponent = () => {
     }
     if (downloadDialogOpen) {
       let urlsToDownload: { download: string, filename: string }[] = [];
-      ids.forEach((id, index) => {
+      ids.forEach((id) => {
         testRunService.getDetails(id.toString())
           .then(
             (e) => {
               urlsToDownload.push({ "download": "static/imageUploads/" + e.imageName, "filename": e.name });
               //Call getFile function only when all images names are pushed into the array.
-              if (index === ids.length - 1) {
+              if (urlsToDownload.length === ids.length) {
                 testRunService.getFiles(urlsToDownload);
               }
             });
