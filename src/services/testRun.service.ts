@@ -23,33 +23,28 @@ async function getFiles(urls: { download: string, filename: string }[]): Promise
 
   // Reference : https://www.c-sharpcorner.com/article/download-multiple-file-as-zip-file-using-angular/
   const zip = new JSZip();
-  urls.forEach((element, index) => {
-    fetch(element.download)
-      .then((res) => res.blob())
-      .then((blob) => zip.file(element.filename, blob))
-      .then(() => {
-        if (index === urls.length - 1) {
-          zip.generateAsync({ type: 'blob' })
-            .then((content) => {
-              if (content) {
-                FileSaver.saveAs(content, 'vrt-test-run.zip');
-              }
-            });
-        }
-      });
-
-    // Downloads multiple images as individual files, kept it here for reference
-    // Reference : https://github.com/robertdiers/js-multi-file-download/blob/master/src/main/resources/static/index.html
-    /*
-    urls.forEach(function (e) {
-      fetch(e.download)
-        .then(res => res.blob()) // Gets the response and returns it as a blob
-        .then(blob => {
-          FileSaver.saveAs(blob, e.filename);
-        });
+  for (const eachUrl of urls) {
+    const response = await fetch(eachUrl.download);
+    const blob = await response.blob();
+    zip.file(eachUrl.filename, blob);
+  }
+  await zip.generateAsync({ type: 'blob' })
+    .then((content) => {
+      if (content) {
+        FileSaver.saveAs(content, 'vrt-test-run.zip');
+      }
     });
-    */
+  // Downloads multiple images as individual files, kept it here for reference
+  // Reference : https://github.com/robertdiers/js-multi-file-download/blob/master/src/main/resources/static/index.html
+  /*
+  urls.forEach(function (e) {
+    fetch(e.download)
+      .then(res => res.blob()) // Gets the response and returns it as a blob
+      .then(blob => {
+        FileSaver.saveAs(blob, e.filename);
+      });
   });
+  */
 }
 
 async function getDetails(id: string): Promise<TestRun> {
