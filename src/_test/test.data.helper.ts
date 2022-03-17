@@ -25,7 +25,7 @@ export const TEST_USER: User = {
   email: "some@email.com",
   firstName: "First name",
   lastName: "Last name",
-  role: "admin" as Role,
+  role: "admin",
 };
 
 export const GUEST_USER: User = {
@@ -35,7 +35,7 @@ export const GUEST_USER: User = {
   email: "guest@email.com",
   firstName: "Guest name",
   lastName: "Guest name",
-  role: "guest" as Role,
+  role: "guest",
 };
 
 export const EDITOR_USER: User = {
@@ -45,7 +45,7 @@ export const EDITOR_USER: User = {
   email: "guest@email.com",
   firstName: "Editor name",
   lastName: "Editor name",
-  role: "editor" as Role,
+  role: "editor",
 };
 
 export const testRunMock: TestRun = {
@@ -89,7 +89,6 @@ export const TEST_VARIATION_ONE: TestVariation = {
     {
       id: "some baseline id1",
       baselineName: "baseline1.png",
-      testRunId: "testRunId1",
       testVariationId: "some test variation id",
       createdAt: "2020-09-14T06:57:25.845Z",
       updatedAt: "2020-09-14T06:57:25.845Z",
@@ -99,7 +98,6 @@ export const TEST_VARIATION_ONE: TestVariation = {
     {
       id: "some baseline id2",
       baselineName: "baseline2.png",
-      testRunId: "testRunId2",
       testVariationId: "some test variation id",
       createdAt: "2020-09-12T06:57:25.845Z",
       updatedAt: "2020-09-12T06:57:25.845Z",
@@ -126,7 +124,6 @@ export const TEST_VARIATION_TWO: TestVariation = {
     {
       id: "some baseline id1",
       baselineName: "baseline1.png",
-      testRunId: "testRunId1",
       testVariationId: "some test variation id",
       createdAt: "2020-09-14T06:57:25.845Z",
       updatedAt: "2020-09-14T06:57:25.845Z",
@@ -136,7 +133,6 @@ export const TEST_VARIATION_TWO: TestVariation = {
     {
       id: "some baseline id2",
       baselineName: "baseline2.png",
-      testRunId: "testRunId2",
       testVariationId: "some test variation id",
       createdAt: "2020-09-12T06:57:25.845Z",
       updatedAt: "2020-09-12T06:57:25.845Z",

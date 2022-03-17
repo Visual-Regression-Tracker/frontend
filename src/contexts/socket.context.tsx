@@ -1,5 +1,5 @@
 import * as React from "react";
-import socketIOClient from "socket.io-client";
+import socketIOClient, { Socket } from "socket.io-client";
 import {
   useBuildState,
   useBuildDispatch,
@@ -18,7 +18,7 @@ import { useProjectState } from "./project.context";
 
 interface IConnectAction {
   type: "connect";
-  payload: SocketIOClient.Socket;
+  payload: Socket;
 }
 
 interface IClearAction {
@@ -28,7 +28,7 @@ interface IClearAction {
 type IAction = IConnectAction | IClearAction;
 
 type Dispatch = (action: IAction) => void;
-type State = { socket: SocketIOClient.Socket | undefined };
+type State = { socket: Socket | undefined };
 
 type SocketProviderProps = { children: React.ReactNode };
 
