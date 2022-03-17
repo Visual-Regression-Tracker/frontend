@@ -1,5 +1,5 @@
 import React from "react";
-import { Route, Switch, Redirect } from "react-router-dom";
+import { Route, Routes, Navigate } from "react-router-dom";
 import LoginPage from "./pages/LoginPage";
 import ProjectsListPage from "./pages/ProjectListPage";
 import ProjectPage from "./pages/ProjectPage";
@@ -13,41 +13,35 @@ import TestVariationDetailsPage from "./pages/TestVariationDetailsPage";
 
 function Router() {
   return (
-    <Switch>
-      <Route exact path={routes.LOGIN} component={() => <LoginPage />} />
-      <Route exact path={routes.REGISTER} component={() => <RegisterPage />} />
-      <Redirect exact from={routes.HOME} to={routes.PROJECT_LIST_PAGE} />
-      <PrivateRoute
-        exact
+    <Routes>
+      <Route path={routes.LOGIN} element={<LoginPage />} />
+      <Route path={routes.REGISTER} element={<RegisterPage />} />
+      <Route
         path={routes.PROFILE_PAGE}
-        component={() => <ProfilePage />}
+        element={<PrivateRoute component={ProfilePage} />}
       />
-      <PrivateRoute
-        exact
+      <Route
         path={routes.PROJECT_LIST_PAGE}
-        component={() => <ProjectsListPage />}
+        element={<PrivateRoute component={ProjectsListPage} />}
       />
-      <PrivateRoute
-        exact
+      <Route
         path={routes.USER_LIST_PAGE}
-        component={() => <UserListPage />}
+        element={<PrivateRoute component={UserListPage} />}
       />
-      <PrivateRoute
-        exact
+      <Route
         path={`${routes.HOME}:projectId`}
-        component={() => <ProjectPage />}
+        element={<PrivateRoute component={ProjectPage} />}
       />
-      <PrivateRoute
-        exact
+      <Route
         path={`${routes.VARIATION_LIST_PAGE}/:projectId`}
-        component={() => <TestVariationListPage />}
+        element={<PrivateRoute component={TestVariationListPage} />}
       />
-      <PrivateRoute
-        exact
+      <Route
         path={`${routes.VARIATION_DETAILS_PAGE}/:testVariationId`}
-        component={() => <TestVariationDetailsPage />}
+        element={<PrivateRoute component={TestVariationDetailsPage} />}
       />
-    </Switch>
+      <Route path="*" element={<Navigate to={routes.PROJECT_LIST_PAGE} />} />
+    </Routes>
   );
 }
 

@@ -160,13 +160,12 @@ const ProjectsListPage = () => {
                 </Typography>
               </CardContent>
               <CardActions>
-                <Button color="primary" component={Link} to={`${project.id}`}>
+                <Button color="primary" href={project.id}>
                   Builds
                 </Button>
                 <Button
                   color="primary"
-                  component={Link}
-                  to={`${routes.VARIATION_LIST_PAGE}/${project.id}`}
+                  href={`${routes.VARIATION_LIST_PAGE}/${project.id}`}
                 >
                   Variations
                 </Button>

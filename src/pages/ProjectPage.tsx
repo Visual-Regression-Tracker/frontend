@@ -1,6 +1,6 @@
 import React, { useEffect } from "react";
 import { Grid, Box, makeStyles } from "@material-ui/core";
-import { useParams, useHistory } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import BuildList from "../components/BuildList";
 import ProjectSelect from "../components/ProjectSelect";
 import TestRunList from "../components/TestRunList";
@@ -12,7 +12,9 @@ import {
   LOCATOR_PROJECT_PAGE_BUILD_LIST,
   LOCATOR_PROJECT_PAGE_SELECT_PROJECT,
   LOCATOR_PROJECT_PAGE_TEST_RUN_LIST,
+  routes,
 } from "../constants";
+import { buildProjectPageUrl } from "../_helpers/route.helpers";
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -23,7 +25,7 @@ const useStyles = makeStyles((theme) => ({
 const ProjectPage = () => {
   const classes = useStyles();
   const { projectId } = useParams<{ projectId: string }>();
-  const history = useHistory();
+  const navigate = useNavigate();
   const helpDispatch = useHelpDispatch();
 
   useEffect(() => {
@@ -37,7 +39,7 @@ const ProjectPage = () => {
           <Box height="9%" id={LOCATOR_PROJECT_PAGE_SELECT_PROJECT}>
             <ProjectSelect
               projectId={projectId}
-              onProjectSelect={(id) => history.push(id)}
+              onProjectSelect={(id) => navigate(buildProjectPageUrl(id))}
             />
           </Box>
           <Box height="91%" id={LOCATOR_PROJECT_PAGE_BUILD_LIST}>

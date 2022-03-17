@@ -18,7 +18,7 @@ import { useHotkeys } from "react-hotkeys-hook";
 import { TestRun } from "../../types";
 import { testRunService, staticService } from "../../services";
 import { TestStatus } from "../../types/testStatus";
-import { useHistory } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { IgnoreArea, UpdateIgnoreAreaDto } from "../../types/ignoreArea";
 import { KonvaEventObject } from "konva/types/Node";
 import {
@@ -66,7 +66,7 @@ const TestDetailsModal: React.FunctionComponent<{
   handleClose: () => void;
 }> = ({ testRun, touched, handleClose }) => {
   const classes = useStyles();
-  const history = useHistory();
+  const navigate = useNavigate();
   const { enqueueSnackbar } = useSnackbar();
   const testRunDispatch = useTestRunDispatch();
 
@@ -394,7 +394,7 @@ const TestDetailsModal: React.FunctionComponent<{
               color="primary"
               disabled={!testRun.testVariationId}
               onClick={() => {
-                history.push(
+                navigate(
                   `${routes.VARIATION_DETAILS_PAGE}/${testRun.testVariationId}`
                 );
               }}

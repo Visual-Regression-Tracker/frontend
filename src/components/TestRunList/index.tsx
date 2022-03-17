@@ -25,7 +25,7 @@ import { StatusFilterOperators } from "./StatusFilterOperators";
 import { TagFilterOperators } from "./TagFilterOperators";
 import { TestStatus } from "../../types";
 import { testRunService } from "../../services";
-import { useHistory } from "react-router";
+import { useNavigate } from "react-router";
 import { buildTestRunLocation } from "../../_helpers/route.helpers";
 
 const columnsDef: GridColDef[] = [
@@ -98,7 +98,7 @@ const columnsDef: GridColDef[] = [
 
 const TestRunList: React.FunctionComponent = () => {
   const { enqueueSnackbar } = useSnackbar();
-  const history = useHistory();
+  const navigate = useNavigate();
   const { selectedTestRun, testRuns, loading } = useTestRunState();
   const { selectedBuild } = useBuildState();
   const testRunDispatch = useTestRunDispatch();
@@ -149,7 +149,7 @@ const TestRunList: React.FunctionComponent = () => {
           sortModel={sortModel}
           onSortModelChange={(model) => setSortModel(model)}
           onRowClick={(param: GridRowParams) => {
-            history.push(
+            navigate(
               buildTestRunLocation(
                 selectedBuild.id,
                 param.getValue(param.id, "id")?.toString()

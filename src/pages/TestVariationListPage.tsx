@@ -1,6 +1,6 @@
 import React from "react";
 import TestVariationList from "../components/TestVariationList";
-import { useHistory, useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { TestVariation } from "../types";
 import { testVariationService } from "../services";
 import { Box, Grid } from "@material-ui/core";
@@ -11,11 +11,13 @@ import { useSnackbar } from "notistack";
 import { setHelpSteps, useHelpDispatch } from "../contexts/help.context";
 import {
   LOCATOR_TEST_VARIATION_LIST_PAGE_SELECT_PROJECT,
+  routes,
   TEST_VARIATION_LIST_PAGE,
 } from "../constants";
+import { buildProjectPageUrl } from "../_helpers/route.helpers";
 
 const TestVariationListPage: React.FunctionComponent = () => {
-  const history = useHistory();
+  const navigate = useNavigate();
   const { enqueueSnackbar } = useSnackbar();
   const helpDispatch = useHelpDispatch();
   const { projectId = "" } = useParams<{ projectId: string }>();
@@ -99,7 +101,7 @@ const TestVariationListPage: React.FunctionComponent = () => {
           <Grid item id={LOCATOR_TEST_VARIATION_LIST_PAGE_SELECT_PROJECT}>
             <ProjectSelect
               projectId={projectId}
-              onProjectSelect={(id) => history.push(id)}
+              onProjectSelect={(id) => navigate(`${routes.VARIATION_LIST_PAGE}/${id}`)}
             />
           </Grid>
           <Grid item>

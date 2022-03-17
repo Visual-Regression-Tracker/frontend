@@ -1,30 +1,21 @@
 import React from "react";
-import { Redirect, Route, RouteProps } from "react-router-dom";
+import { Navigate, Route, Outlet, useLocation } from "react-router-dom";
 import { useUserState } from "../contexts";
 import { routes } from "../constants";
 
-const PrivateRoute: React.FunctionComponent<RouteProps> = ({
+interface PropType {
+  component: React.FC;
+}
+
+const PrivateRoute: React.FunctionComponent<PropType> = ({
   component: Component,
-  ...rest
 }) => {
   const { loggedIn } = useUserState();
-  if (!Component) {
-    return null;
-  }
-  return (
-    <Route
-      {...rest}
-      render={(props) =>
-        loggedIn ? (
-          <Component {...props} />
-        ) : (
-          <Redirect
-            to={{ pathname: routes.LOGIN, state: { from: props.location } }}
-          />
-        )
-      }
-    />
-  );
+  const location = useLocation()
+
+  if (loggedIn) return <Component />;
+
+  return <Navigate to={routes.LOGIN} state={{ from: location.pathname }} />;
 };
 
 export default PrivateRoute;
