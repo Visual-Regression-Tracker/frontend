@@ -13,8 +13,10 @@ import { SnackbarProvider } from "notistack";
 
 export const mountVrtComponent = ({
   component,
-  memoryRouterProps,
-  path,
+  memoryRouterProps = {
+    initialEntries: ["/"],
+  },
+  path = "/",
 }: {
   component: React.ReactElement;
   memoryRouterProps?: MemoryRouterProps;
