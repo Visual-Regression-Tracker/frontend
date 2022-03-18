@@ -1,4 +1,3 @@
-/* global cy */
 import React from "react";
 import ProjectListPage from "./ProjectListPage";
 import { haveUserLogged } from "../_test/precondition.helper";

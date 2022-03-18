@@ -1,5 +1,5 @@
 import { PIXELMATCH_DEFAULT_CONFIG } from "../constants";
-import { Build, Project, Role, TestRun, TestVariation, User } from "../types";
+import { Build, Project, TestRun, TestVariation, User } from "../types";
 import { BuildStatus } from "../types/buildStatus";
 import { ImageComparison } from "../types/imageComparison";
 import { TestStatus } from "../types/testStatus";
