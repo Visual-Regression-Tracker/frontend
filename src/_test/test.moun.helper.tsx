@@ -44,6 +44,6 @@ export const mountVrtComponent = ({
       </Routes>
     </MemoryRouter>,
     {
-      stylesheets: ["/src/index.css"],
+      cssFiles: ["src/index.css"],
     }
   );
