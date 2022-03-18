@@ -1,4 +1,3 @@
-/* global cy */
 import React from "react";
 import RegisterPage from "./RegisterPage";
 import { mountVrtComponent } from "../_test/test.moun.helper";

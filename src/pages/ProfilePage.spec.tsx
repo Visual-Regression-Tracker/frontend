@@ -1,4 +1,3 @@
-/* global cy */
 import React from "react";
 import ProfilePage from "./ProfilePage";
 import {

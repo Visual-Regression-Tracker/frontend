@@ -1,4 +1,3 @@
-/* global cy */
 import React from "react";
 import { mountVrtComponent } from "../_test/test.moun.helper";
 import {

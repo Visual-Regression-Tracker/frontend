@@ -1,6 +1,6 @@
 import { Dialog, makeStyles, Typography } from "@material-ui/core";
 import React from "react";
-import { useHistory } from "react-router";
+import { useNavigate } from "react-router";
 import { useBuildState, useTestRunState } from "../../contexts";
 import { buildTestRunLocation } from "../../_helpers/route.helpers";
 import { BaseModal } from "../BaseModal";
@@ -23,7 +23,7 @@ export const TestDetailsDialog: React.FunctionComponent = () => {
     sortedTestRunIds,
   } = useTestRunState();
   const { selectedBuild } = useBuildState();
-  const history = useHistory();
+  const navigate = useNavigate();
   const [notSavedChangesModal, setNotSavedChangesModal] = React.useState(false);
   const [navigationTargetId, setNavigationTargetId] = React.useState<string>();
 
@@ -54,10 +54,10 @@ export const TestDetailsDialog: React.FunctionComponent = () => {
         setNavigationTargetId(id);
         setNotSavedChangesModal(true);
       } else {
-        history.push(buildTestRunLocation(selectedBuild?.id, id));
+        navigate(buildTestRunLocation(selectedBuild?.id, id));
       }
     },
-    [touched, history, selectedBuild?.id]
+    [touched, navigate, selectedBuild?.id]
   );
 
   if (!selectedTestRun) {
@@ -85,7 +85,7 @@ export const TestDetailsDialog: React.FunctionComponent = () => {
           <Typography>{`Are you sure you want to discard changes?`}</Typography>
         }
         onSubmit={() => {
-          history.push(
+          navigate(
             buildTestRunLocation(selectedBuild?.id, navigationTargetId)
           );
           setNotSavedChangesModal(false);

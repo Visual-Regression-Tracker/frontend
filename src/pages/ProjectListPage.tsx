@@ -20,7 +20,6 @@ import {
   useHelpDispatch,
   setHelpSteps,
 } from "../contexts";
-import { Link } from "react-router-dom";
 import { Delete, Add, Edit } from "@material-ui/icons";
 import {
   routes,
@@ -160,13 +159,12 @@ const ProjectsListPage = () => {
                 </Typography>
               </CardContent>
               <CardActions>
-                <Button color="primary" component={Link} to={`${project.id}`}>
+                <Button color="primary" href={project.id}>
                   Builds
                 </Button>
                 <Button
                   color="primary"
-                  component={Link}
-                  to={`${routes.VARIATION_LIST_PAGE}/${project.id}`}
+                  href={`${routes.VARIATION_LIST_PAGE}/${project.id}`}
                 >
                   Variations
                 </Button>

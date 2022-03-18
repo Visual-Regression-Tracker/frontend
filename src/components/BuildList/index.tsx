@@ -32,7 +32,7 @@ import { Pagination } from "@material-ui/lab";
 import { Build } from "../../types";
 import { BaseModal } from "../BaseModal";
 import { buildsService } from "../../services";
-import { useHistory } from "react-router";
+import { useNavigate } from "react-router";
 import { buildTestRunLocation } from "../../_helpers/route.helpers";
 import { Tooltip } from "../Tooltip";
 
@@ -55,7 +55,7 @@ const useStyles = makeStyles((theme: Theme) =>
 
 const BuildList: FunctionComponent = () => {
   const classes = useStyles();
-  const history = useHistory();
+  const navigate = useNavigate();
   const { buildList, selectedBuild, loading, total, take } = useBuildState();
   const buildDispatch = useBuildDispatch();
   const { enqueueSnackbar } = useSnackbar();
@@ -88,8 +88,8 @@ const BuildList: FunctionComponent = () => {
   };
 
   const selectBuildCalback = React.useCallback(
-    (id?: string) => history.push(buildTestRunLocation(id)),
-    [history]
+    (id?: string) => navigate(buildTestRunLocation(id)),
+    [navigate]
   );
 
   const getBuildListCalback = React.useCallback(

@@ -5,5 +5,6 @@
   "screenshotOnRunFailure": false,
   "retries": 0,
   "componentFolder": "src",
-  "testFiles": "**/*.spec.*"
+  "testFiles": "**/*.spec.*",
+  "fixturesFolder": false
 }

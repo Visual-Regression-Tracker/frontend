@@ -1,5 +1,5 @@
 import React from "react";
-import { useParams, useHistory } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { TestVariation } from "../types";
 import { testVariationService, staticService } from "../services";
 import {
@@ -32,7 +32,7 @@ const useStyles = makeStyles({
 
 const TestVariationDetailsPage: React.FunctionComponent = () => {
   const classes = useStyles();
-  const history = useHistory();
+  const navigate = useNavigate();
   const { enqueueSnackbar } = useSnackbar();
   const { testVariationId } = useParams<{ testVariationId: string }>();
   const [testVariation, setTestVariation] = React.useState<TestVariation>();
@@ -71,7 +71,7 @@ const TestVariationDetailsPage: React.FunctionComponent = () => {
                         onClick={() => {
                           const { testRun } = baseline;
                           if (testRun) {
-                            history.push({
+                            navigate({
                               pathname: buildProjectPageUrl(
                                 testVariation.projectId
                               ),

@@ -10,8 +10,11 @@ import { useUserDispatch, login } from "../contexts";
 import { usersService } from "../services";
 import { useSnackbar } from "notistack";
 import { TextValidator, ValidatorForm } from "react-material-ui-form-validator";
+import { useNavigate } from "react-router-dom";
+import { routes } from "../constants";
 
 const RegisterForm = () => {
+  const navigate = useNavigate();
   const { enqueueSnackbar } = useSnackbar();
   const [email, setEmail] = useState("");
   const [firstName, setFirstName] = useState("");
@@ -27,7 +30,7 @@ const RegisterForm = () => {
         enqueueSnackbar("Successfully created account.", {
           variant: "success",
         });
-        login(dispatch, email, password);
+        login(dispatch, email, password).then(() => navigate(routes.HOME));
       })
       .catch((err) =>
         enqueueSnackbar(err, {

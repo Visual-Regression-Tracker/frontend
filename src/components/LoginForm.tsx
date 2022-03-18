@@ -1,5 +1,5 @@
 import React, { useState, FormEvent } from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import {
   Button,
   Grid,
@@ -14,6 +14,9 @@ import { useSnackbar } from "notistack";
 import { TextValidator, ValidatorForm } from "react-material-ui-form-validator";
 
 const LoginForm = () => {
+  const location = useLocation();
+  const navigate = useNavigate();
+
   const { enqueueSnackbar } = useSnackbar();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -21,11 +24,16 @@ const LoginForm = () => {
 
   const handleSubmit = (event: FormEvent) => {
     event.preventDefault();
-    login(dispatch, email, password).catch((err) =>
-      enqueueSnackbar(err, {
-        variant: "error",
+    login(dispatch, email, password)
+      .then(() => {
+        const locationState = location.state as { from: string } | null;
+        navigate(locationState?.from ?? routes.HOME);
       })
-    );
+      .catch((err) =>
+        enqueueSnackbar(err, {
+          variant: "error",
+        })
+      );
   };
 
   const errorForTwoChar = "Enter at least two characters.";

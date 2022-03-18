@@ -7,7 +7,7 @@ import {
 import {
   GridRowData,
   GridRowId,
-  GridSelectionState,
+  GridSelectionModel,
   useGridSlotComponentProps,
 } from "@material-ui/data-grid";
 import { BaseModal } from "../BaseModal";
@@ -56,7 +56,7 @@ export const BulkOperation: React.FunctionComponent = () => {
     [ids]
   );
 
-  const selectedRows: GridSelectionState = props.state.selection;
+  const selectedRows: GridSelectionModel = props.state.selection;
   const count = Object.keys(selectedRows).length;
 
   const toggleApproveDialogOpen = () => {
