@@ -26,8 +26,8 @@ module.exports = (on, config) => {
   });
 
   webpackConfig.resolve.fallback = {
-    fs: false
-  }
+    fs: false,
+  };
 
   // react component tests
   on("dev-server:start", async (options) => {

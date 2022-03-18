@@ -14,7 +14,7 @@ import { useNavigate } from "react-router-dom";
 import { routes } from "../constants";
 
 const RegisterForm = () => {
-  const navigate = useNavigate()
+  const navigate = useNavigate();
   const { enqueueSnackbar } = useSnackbar();
   const [email, setEmail] = useState("");
   const [firstName, setFirstName] = useState("");
@@ -30,8 +30,7 @@ const RegisterForm = () => {
         enqueueSnackbar("Successfully created account.", {
           variant: "success",
         });
-        login(dispatch, email, password)
-          .then(() => navigate(routes.HOME));
+        login(dispatch, email, password).then(() => navigate(routes.HOME));
       })
       .catch((err) =>
         enqueueSnackbar(err, {

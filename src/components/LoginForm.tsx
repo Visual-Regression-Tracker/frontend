@@ -14,8 +14,8 @@ import { useSnackbar } from "notistack";
 import { TextValidator, ValidatorForm } from "react-material-ui-form-validator";
 
 const LoginForm = () => {
-  const location = useLocation()
-  const navigate = useNavigate()
+  const location = useLocation();
+  const navigate = useNavigate();
 
   const { enqueueSnackbar } = useSnackbar();
   const [email, setEmail] = useState("");
@@ -26,8 +26,8 @@ const LoginForm = () => {
     event.preventDefault();
     login(dispatch, email, password)
       .then(() => {
-        const locationState = location.state as { from: string } | null
-        navigate(locationState?.from ?? routes.HOME)
+        const locationState = location.state as { from: string } | null;
+        navigate(locationState?.from ?? routes.HOME);
       })
       .catch((err) =>
         enqueueSnackbar(err, {
