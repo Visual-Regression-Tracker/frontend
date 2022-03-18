@@ -1,4 +1,3 @@
-/* global cy */
 import {
   buildsService,
   projectsService,

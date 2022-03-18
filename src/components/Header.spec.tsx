@@ -1,4 +1,3 @@
-/* global cy */
 import React from "react";
 import Header from "./Header";
 import { haveUserLogged } from "../_test/precondition.helper";
