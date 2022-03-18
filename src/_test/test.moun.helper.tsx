@@ -23,19 +23,22 @@ export const mountVrtComponent = ({
   mount(
     <MemoryRouter {...memoryRouterProps}>
       <Routes>
-        <Route path={path}>
-          <SnackbarProvider>
-            <UserProvider>
-              <ProjectProvider>
-                <BuildProvider>
-                  <HelpProvider>
-                    <TestRunProvider>{component}</TestRunProvider>
-                  </HelpProvider>
-                </BuildProvider>
-              </ProjectProvider>
-            </UserProvider>
-          </SnackbarProvider>
-        </Route>
+        <Route
+          path={path}
+          element={
+            <SnackbarProvider>
+              <UserProvider>
+                <ProjectProvider>
+                  <BuildProvider>
+                    <HelpProvider>
+                      <TestRunProvider>{component}</TestRunProvider>
+                    </HelpProvider>
+                  </BuildProvider>
+                </ProjectProvider>
+              </UserProvider>
+            </SnackbarProvider>
+          }
+        />
       </Routes>
     </MemoryRouter>,
     {

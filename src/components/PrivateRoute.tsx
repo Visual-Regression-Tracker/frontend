@@ -13,7 +13,9 @@ const PrivateRoute: React.FunctionComponent<PropType> = ({
   const { loggedIn } = useUserState();
   const location = useLocation();
 
-  if (loggedIn) return <Component />;
+  if (loggedIn) {
+    return <Component />;
+  }
 
   return <Navigate to={routes.LOGIN} state={{ from: location.pathname }} />;
 };
