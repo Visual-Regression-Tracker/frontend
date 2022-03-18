@@ -1,5 +1,5 @@
 import React from "react";
-import { Navigate, Route, Outlet, useLocation } from "react-router-dom";
+import { Navigate, useLocation } from "react-router-dom";
 import { useUserState } from "../contexts";
 import { routes } from "../constants";
 

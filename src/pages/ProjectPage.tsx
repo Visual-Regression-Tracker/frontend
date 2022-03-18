@@ -12,7 +12,6 @@ import {
   LOCATOR_PROJECT_PAGE_BUILD_LIST,
   LOCATOR_PROJECT_PAGE_SELECT_PROJECT,
   LOCATOR_PROJECT_PAGE_TEST_RUN_LIST,
-  routes,
 } from "../constants";
 import { buildProjectPageUrl } from "../_helpers/route.helpers";
 

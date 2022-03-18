@@ -14,7 +14,6 @@ import {
   routes,
   TEST_VARIATION_LIST_PAGE,
 } from "../constants";
-import { buildProjectPageUrl } from "../_helpers/route.helpers";
 
 const TestVariationListPage: React.FunctionComponent = () => {
   const navigate = useNavigate();
