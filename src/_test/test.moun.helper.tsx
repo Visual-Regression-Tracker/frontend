@@ -7,7 +7,7 @@ import {
   TestRunProvider,
   HelpProvider,
 } from "../contexts";
-import { MemoryRouter, Route } from "react-router-dom";
+import { MemoryRouter, Route, Routes } from "react-router-dom";
 import { MemoryRouterProps } from "react-router";
 import { SnackbarProvider } from "notistack";
 
@@ -22,19 +22,21 @@ export const mountVrtComponent = ({
 }) =>
   mount(
     <MemoryRouter {...memoryRouterProps}>
-      <Route path={path}>
-        <SnackbarProvider>
-          <UserProvider>
-            <ProjectProvider>
-              <BuildProvider>
-                <HelpProvider>
-                  <TestRunProvider>{component}</TestRunProvider>
-                </HelpProvider>
-              </BuildProvider>
-            </ProjectProvider>
-          </UserProvider>
-        </SnackbarProvider>
-      </Route>
+      <Routes>
+        <Route path={path}>
+          <SnackbarProvider>
+            <UserProvider>
+              <ProjectProvider>
+                <BuildProvider>
+                  <HelpProvider>
+                    <TestRunProvider>{component}</TestRunProvider>
+                  </HelpProvider>
+                </BuildProvider>
+              </ProjectProvider>
+            </UserProvider>
+          </SnackbarProvider>
+        </Route>
+      </Routes>
     </MemoryRouter>,
     {
       stylesheets: ["/src/index.css"],

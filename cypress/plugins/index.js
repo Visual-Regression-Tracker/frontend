@@ -17,17 +17,16 @@ const findReactScriptsWebpackConfig = require("@cypress/react/plugins/react-scri
 const {
   addVisualRegressionTrackerPlugin,
 } = require("@visual-regression-tracker/agent-cypress/dist/plugin");
+
 /**
  * @type {Cypress.PluginConfig}
  */
 module.exports = (on, config) => {
-  const webpackConfig = findReactScriptsWebpackConfig(config, {
-    webpackConfigPath: "react-scripts/config/webpack.config",
-  });
+  const webpackConfig = findReactScriptsWebpackConfig(config);
 
-  webpackConfig.resolve.fallback = {
-    fs: false,
-  };
+  // webpackConfig.resolve.fallback = {
+  //   fs: false,
+  // };
 
   // react component tests
   on("dev-server:start", async (options) => {
