@@ -103,6 +103,8 @@ const TestRunList: React.FunctionComponent = () => {
   const { selectedBuild } = useBuildState();
   const testRunDispatch = useTestRunDispatch();
 
+  const [pageSize, setPageSize] = React.useState<number>(10);
+
   const [sortModel, setSortModel] = React.useState<GridSortModel>([
     {
       field: "status",
@@ -136,8 +138,10 @@ const TestRunList: React.FunctionComponent = () => {
         <DataGrid
           rows={testRuns}
           columns={columnsDef}
-          pageSize={10}
+          pageSize={pageSize}
           rowsPerPageOptions={[10, 20, 30]}
+          onPageSizeChange={(newPageSize) => setPageSize(newPageSize)}
+          pagination
           loading={loading}
           components={{
             Toolbar: DataGridCustomToolbar,
