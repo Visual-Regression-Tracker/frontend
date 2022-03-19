@@ -65,6 +65,7 @@ const BuildList: FunctionComponent = () => {
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
   const [menuBuild, setMenuBuild] = React.useState<Build | null>();
   const [newCiBuildId, setNewCiBuildId] = React.useState("");
+  const [paginationPage, setPaginationPage] = React.useState(1);
 
   const handleMenuClick = (
     event: React.MouseEvent<HTMLElement>,
@@ -92,8 +93,9 @@ const BuildList: FunctionComponent = () => {
     [navigate]
   );
 
-  const getBuildListCalback = React.useCallback(
+  const handlePaginationChange = React.useCallback(
     (page: number) => {
+      setPaginationPage(page);
       if (selectedProjectId) {
         buildDispatch({ type: "request" });
         buildsService
@@ -112,8 +114,8 @@ const BuildList: FunctionComponent = () => {
   );
 
   React.useEffect(() => {
-    getBuildListCalback(1);
-  }, [getBuildListCalback]);
+    handlePaginationChange(1);
+  }, [handlePaginationChange]);
 
   return (
     <React.Fragment>
@@ -195,8 +197,9 @@ const BuildList: FunctionComponent = () => {
             <Pagination
               size="small"
               defaultPage={1}
+              page={paginationPage}
               count={Math.ceil(total / take)}
-              onChange={(event, page) => getBuildListCalback(page)}
+              onChange={(event, page) => handlePaginationChange(page)}
             />
           </Grid>
         </Grid>
@@ -297,6 +300,9 @@ const BuildList: FunctionComponent = () => {
                     variant: "success",
                   }
                 );
+              })
+              .then(() => handlePaginationChange(paginationPage))
+              .then(() => {
                 if (menuBuild.id === selectedBuild?.id) {
                   selectBuildCalback();
                 }
