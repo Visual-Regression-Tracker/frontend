@@ -79,7 +79,7 @@ export const LooksSameConfigForm: React.FunctionComponent = () => {
         }
       />
       <FormControlLabel
-        label="Allow diff dimentions"
+        label="Allow diff dimensions"
         control={
           <Switch
             checked={config.allowDiffDimensions}
