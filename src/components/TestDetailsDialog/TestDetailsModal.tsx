@@ -62,9 +62,11 @@ const useStyles = makeStyles((theme) => ({
 
 const TestDetailsModal: React.FunctionComponent<{
   testRun: TestRun;
+  currentRunIndex: number;
+  totalTestRunCount: number;
   touched: boolean;
   handleClose: () => void;
-}> = ({ testRun, touched, handleClose }) => {
+}> = ({ testRun, currentRunIndex, totalTestRunCount, touched, handleClose }) => {
   const classes = useStyles();
   const navigate = useNavigate();
   const { enqueueSnackbar } = useSnackbar();
@@ -278,6 +280,9 @@ const TestDetailsModal: React.FunctionComponent<{
                 </Tooltip>
               </Grid>
             )}
+            <Grid item>
+              <Typography variant="h6">{currentRunIndex+1} of {totalTestRunCount}</Typography>
+            </Grid>
             {(testRun.status === TestStatus.unresolved ||
               testRun.status === TestStatus.new) && (
               <Grid item>

@@ -68,6 +68,8 @@ export const TestDetailsDialog: React.FunctionComponent = () => {
     <Dialog open={true} fullScreen className={classes.modal}>
       <TestDetailsModal
         testRun={selectedTestRun}
+        currentRunIndex={testRuns.findIndex((e) => e.id === selectedTestRun.id)}
+        totalTestRunCount={testRuns.length}
         touched={touched}
         handleClose={() => handleNavigation()}
       />
