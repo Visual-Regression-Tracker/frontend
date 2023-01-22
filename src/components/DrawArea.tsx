@@ -81,10 +81,15 @@ export const DrawArea: FunctionComponent<IDrawArea> = ({
   const handleContentMousedown = (e: any) => {
     if (!isDrawMode) return;
 
+    console.log(`layerX: ${e.evt.layerX}, offsetX: ${e.evt.offsetX}, stageOffset.x: ${stageOffset.x}`)
+    const rectX = e.evt.offsetX
+    const rectY = e.evt.offsetY
     const newArea: IgnoreArea = {
       id: Date.now().toString(),
-      x: Math.round((e.evt.layerX - stageOffset.x) / stageScale),
-      y: Math.round((e.evt.layerY - stageOffset.y) / stageScale),
+      x: Math.round((rectX) / stageScale),
+      y: Math.round((rectY) / stageScale),
+      rectX,
+      rectY,
       width: MIN_RECT_SIDE_PIXEL,
       height: MIN_RECT_SIDE_PIXEL,
     };
@@ -105,8 +110,10 @@ export const DrawArea: FunctionComponent<IDrawArea> = ({
 
     if (isDrawing) {
       // update the current rectangle's width and height based on the mouse position + stage scale
-      const mouseX = (e.evt.layerX - stageOffset.x) / stageScale;
-      const mouseY = (e.evt.layerY - stageOffset.y) / stageScale;
+      console.log(`layerX: ${e.evt.layerX}, offsetX: ${e.evt.offsetX}, stageScale: ${stageScale}.`)
+      const mouseX = e.evt.offsetX / stageScale;
+      const mouseY = e.evt.offsetY / stageScale;
+      console.log(`layerX: ${e.evt.layerX}, offsetX: ${e.evt.offsetX}, mouseX: ${mouseX}, stageScale: ${stageScale}.`)
 
       const newShapesList = ignoreAreas.map((i) => {
         if (i.id === selectedRectId) {
@@ -187,7 +194,7 @@ export const DrawArea: FunctionComponent<IDrawArea> = ({
                 e.evt.preventDefault();
                 const scaleBy = 1.04;
                 const newScale =
-                  e.evt.deltaY > 0
+                  e.evt.deltaY < 0
                     ? stageScale * scaleBy
                     : stageScale / scaleBy;
                 setStageScale(newScale);
@@ -223,8 +230,8 @@ export const DrawArea: FunctionComponent<IDrawArea> = ({
                     <Rectangle
                       key={rect.id}
                       shapeProps={{
-                        x: rect.x,
-                        y: rect.y,
+                        x: rect.rectX,
+                        y: rect.rectY,
                         width: rect.width,
                         height: rect.height,
                       }}
