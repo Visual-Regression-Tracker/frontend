@@ -81,15 +81,10 @@ export const DrawArea: FunctionComponent<IDrawArea> = ({
   const handleContentMousedown = (e: any) => {
     if (!isDrawMode) return;
 
-    console.log(`layerX: ${e.evt.layerX}, offsetX: ${e.evt.offsetX}, stageOffset.x: ${stageOffset.x}`)
-    const rectX = e.evt.offsetX
-    const rectY = e.evt.offsetY
     const newArea: IgnoreArea = {
       id: Date.now().toString(),
-      x: Math.round((rectX) / stageScale),
-      y: Math.round((rectY) / stageScale),
-      rectX,
-      rectY,
+      x: e.evt.offsetX,
+      y: e.evt.offsetY,
       width: MIN_RECT_SIDE_PIXEL,
       height: MIN_RECT_SIDE_PIXEL,
     };
@@ -110,16 +105,11 @@ export const DrawArea: FunctionComponent<IDrawArea> = ({
 
     if (isDrawing) {
       // update the current rectangle's width and height based on the mouse position + stage scale
-      console.log(`layerX: ${e.evt.layerX}, offsetX: ${e.evt.offsetX}, stageScale: ${stageScale}.`)
-      const mouseX = e.evt.offsetX / stageScale;
-      const mouseY = e.evt.offsetY / stageScale;
-      console.log(`layerX: ${e.evt.layerX}, offsetX: ${e.evt.offsetX}, mouseX: ${mouseX}, stageScale: ${stageScale}.`)
-
       const newShapesList = ignoreAreas.map((i) => {
         if (i.id === selectedRectId) {
           // new width and height
-          i.width = Math.max(Math.round(mouseX - i.x), MIN_RECT_SIDE_PIXEL);
-          i.height = Math.max(Math.round(mouseY - i.y), MIN_RECT_SIDE_PIXEL);
+          i.width = Math.max(Math.round(e.evt.offsetX - i.x), MIN_RECT_SIDE_PIXEL);
+          i.height = Math.max(Math.round(e.evt.offsetY - i.y), MIN_RECT_SIDE_PIXEL);
           return i;
         }
         return i;
@@ -230,8 +220,8 @@ export const DrawArea: FunctionComponent<IDrawArea> = ({
                     <Rectangle
                       key={rect.id}
                       shapeProps={{
-                        x: rect.rectX,
-                        y: rect.rectY,
+                        x: rect.x,
+                        y: rect.y,
                         width: rect.width,
                         height: rect.height,
                       }}
