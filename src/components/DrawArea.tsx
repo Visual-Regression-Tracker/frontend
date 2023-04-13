@@ -86,9 +86,9 @@ export const DrawArea: FunctionComponent<IDrawArea> = ({
 
   const scrollContainerRef = React.useRef<HTMLDivElement>(null);
 
-  useEffect(()=>{
+  useEffect(() => {
     scrollContainerRef.current?.scrollTo(stageScollPos.x, stageScollPos.y)
-  }, [stageScollPos])
+  }, [stageScollPos]);
 
   const handleContentMousedown = (e: any) => {
     if (!isDrawMode) return;
@@ -149,11 +149,11 @@ export const DrawArea: FunctionComponent<IDrawArea> = ({
       {imageName && imageStatus === "loaded" && (
         <div className={classes.canvasContainer}   
           ref={scrollContainerRef}
-          onScroll={(event)=>{
+          onScroll={(event) => {
             setStageScrollPos({
               x: (event.target as HTMLElement).scrollLeft,
               y:(event.target as HTMLElement).scrollTop
-            })
+            });
           }}          
           >
           <div className={classes.imageDetailsContainer}>
