@@ -88,11 +88,12 @@ export const DrawArea: FunctionComponent<IDrawArea> = ({
     }
   },[]);
 
+  const isModifierKeyPressed = (e:any) => {
+    return e.altKey || e.ctrlKey || e.shiftKey;
+  };
+
   const handleStageKeyDown = (e:any) => {
-    if(e.altKey || e.ctrlKey || e.shiftKey){
-      return;
-    }
-    if(!deleteIgnoreArea){
+    if(!deleteIgnoreArea || isModifierKeyPressed(e)){
       return;
     }
     if(selectedRectId && (e.key==='Delete' || e.key==='Backspace')){
