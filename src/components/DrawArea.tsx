@@ -83,28 +83,28 @@ export const DrawArea: FunctionComponent<IDrawArea> = ({
 
   React.useEffect(() => {
     if(stageRef.current){
-      const container = stageRef.current.container()
-      container.addEventListener('keydown', handleStageKeyDown)  
+      const container = stageRef.current.container();
+      container.addEventListener('keydown', handleStageKeyDown);
     }
   },[]);
 
-  const handleStageKeyDown = (e:any)=>{
+  const handleStageKeyDown = (e:any) => {
     if(e.altKey || e.ctrlKey || e.shiftKey){
-      return
+      return;
     }
     if(!deleteIgnoreArea){
-      return
+      return;
     }
     if(selectedRectId && (e.key==='Delete' || e.key==='Backspace')){
-      deleteIgnoreArea(selectedRectId)
+      deleteIgnoreArea(selectedRectId);
     }
-  }
+  };
 
   const handleContentMousedown = (e: any) => {
     if(stageRef.current){
-      const container = stageRef.current.container()
-      container.tabIndex=1
-      container.focus()
+      const container = stageRef.current.container();
+      container.tabIndex=1;
+      container.focus();
     }
     if (!isDrawMode) return;
 
@@ -205,7 +205,7 @@ export const DrawArea: FunctionComponent<IDrawArea> = ({
                 y: event.clientY - stageOffset.y,
               });
             }}
-            onKeyDown={(e)=>handleStageKeyDown(e)}
+            onKeyDown={(e) => handleStageKeyDown(e)}
           >
             <Stage
               ref={stageRef}
