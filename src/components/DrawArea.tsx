@@ -87,7 +87,7 @@ export const DrawArea: FunctionComponent<IDrawArea> = ({
   const scrollContainerRef = React.useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    scrollContainerRef.current?.scrollTo(stageScollPos.x, stageScollPos.y)
+    scrollContainerRef.current?.scrollTo(stageScollPos.x, stageScollPos.y);
   }, [stageScollPos]);
 
   const handleContentMousedown = (e: any) => {
