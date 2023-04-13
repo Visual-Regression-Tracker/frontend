@@ -464,6 +464,7 @@ const TestDetailsModal: React.FunctionComponent<{
                 tempIgnoreAreas={JSON.parse(testRun.tempIgnoreAreas)}
                 setIgnoreAreas={handleIgnoreAreaChange}
                 selectedRectId={selectedRectId}
+                deleteIgnoreArea={deleteIgnoreArea}
                 setSelectedRectId={setSelectedRectId}
                 onStageClick={removeSelection}
                 stageScaleState={[stageScale, setStageScale]}
@@ -483,6 +484,7 @@ const TestDetailsModal: React.FunctionComponent<{
                 setIgnoreAreas={handleIgnoreAreaChange}
                 selectedRectId={selectedRectId}
                 setSelectedRectId={setSelectedRectId}
+                deleteIgnoreArea={deleteIgnoreArea}
                 onStageClick={removeSelection}
                 stageScaleState={[stageScale, setStageScale]}
                 stagePosState={[stagePos, setStagePos]}
