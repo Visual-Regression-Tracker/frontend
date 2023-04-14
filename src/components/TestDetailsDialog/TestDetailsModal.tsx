@@ -77,6 +77,7 @@ const TestDetailsModal: React.FunctionComponent<{
   const stageScaleBy = 1.2;
   const [stageScale, setStageScale] = React.useState(1);
   const [stagePos, setStagePos] = React.useState(defaultStagePos);
+  const [stageScrollPos, setStageScrollPos] = React.useState(defaultStagePos);
   const [stageInitPos, setStageInitPos] = React.useState(defaultStagePos);
   const [stageOffset, setStageOffset] = React.useState(defaultStagePos);
   const [processing, setProcessing] = React.useState(false);
@@ -431,7 +432,7 @@ const TestDetailsModal: React.FunctionComponent<{
       <Box
         overflow="hidden"
         minHeight="65%"
-        className={classes.drawAreaContainer}
+        className={classes.drawAreaContainer}          
       >
         <Grid container style={{ height: "100%" }}>
           <Grid item xs={6} className={classes.drawAreaItem}>
@@ -448,6 +449,7 @@ const TestDetailsModal: React.FunctionComponent<{
               onStageClick={removeSelection}
               stageScaleState={[stageScale, setStageScale]}
               stagePosState={[stagePos, setStagePos]}
+              stageScrollPosState={[stageScrollPos, setStageScrollPos]}
               stageInitPosState={[stageInitPos, setStageInitPos]}
               stageOffsetState={[stageOffset, setStageOffset]}
               drawModeState={[false, setIsDrawMode]}
@@ -468,6 +470,7 @@ const TestDetailsModal: React.FunctionComponent<{
                 onStageClick={removeSelection}
                 stageScaleState={[stageScale, setStageScale]}
                 stagePosState={[stagePos, setStagePos]}
+                stageScrollPosState={[stageScrollPos, setStageScrollPos]}
                 stageInitPosState={[stageInitPos, setStageInitPos]}
                 stageOffsetState={[stageOffset, setStageOffset]}
                 drawModeState={[isDrawMode, setIsDrawMode]}
@@ -486,6 +489,7 @@ const TestDetailsModal: React.FunctionComponent<{
                 onStageClick={removeSelection}
                 stageScaleState={[stageScale, setStageScale]}
                 stagePosState={[stagePos, setStagePos]}
+                stageScrollPosState={[stageScrollPos, setStageScrollPos]}
                 stageInitPosState={[stageInitPos, setStageInitPos]}
                 stageOffsetState={[stageOffset, setStageOffset]}
                 drawModeState={[isDrawMode, setIsDrawMode]}

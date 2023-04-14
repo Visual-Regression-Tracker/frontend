@@ -1,4 +1,4 @@
-import React, { FunctionComponent } from "react";
+import React, { FunctionComponent, useEffect } from "react";
 import { Stage, Layer, Image } from "react-konva";
 import Rectangle, { MIN_RECT_SIDE_PIXEL } from "./Rectangle";
 import { IgnoreArea } from "../types/ignoreArea";
@@ -47,6 +47,10 @@ interface IDrawArea {
     { x: number; y: number },
     React.Dispatch<React.SetStateAction<{ x: number; y: number }>>
   ];
+  stageScrollPosState: [
+    { x: number; y: number },
+    React.Dispatch<React.SetStateAction<{ x: number; y: number }>>
+  ];
   stageScaleState: [number, React.Dispatch<React.SetStateAction<number>>];
   drawModeState: [boolean, React.Dispatch<React.SetStateAction<boolean>>];
 }
@@ -65,12 +69,14 @@ export const DrawArea: FunctionComponent<IDrawArea> = ({
   stageOffsetState,
   stageInitPosState,
   stagePosState,
+  stageScrollPosState,
   drawModeState,
 }) => {
   const classes = useStyles();
   const [stageInitPos, setStageInitPos] = stageInitPosState;
   const [stageOffset, setStageOffset] = stageOffsetState;
   const [stagePos, setStagePos] = stagePosState;
+  const [stageScollPos, setStageScrollPos] = stageScrollPosState;
   const [stageScale, setStageScale] = stageScaleState;
   const [isDrag, setIsDrag] = React.useState(false);
 
@@ -78,13 +84,19 @@ export const DrawArea: FunctionComponent<IDrawArea> = ({
   const [isDrawing, setIsDrawing] = React.useState(isDrawMode);
   const [image, imageStatus] = imageState;
 
+  const scrollContainerRef = React.useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    scrollContainerRef.current?.scrollTo(stageScollPos.x, stageScollPos.y);
+  }, [stageScollPos]);
+
   const handleContentMousedown = (e: any) => {
     if (!isDrawMode) return;
 
     const newArea: IgnoreArea = {
       id: Date.now().toString(),
-      x: Math.round((e.evt.layerX - stageOffset.x) / stageScale),
-      y: Math.round((e.evt.layerY - stageOffset.y) / stageScale),
+      x: e.evt.offsetX,
+      y: e.evt.offsetY,
       width: MIN_RECT_SIDE_PIXEL,
       height: MIN_RECT_SIDE_PIXEL,
     };
@@ -105,14 +117,11 @@ export const DrawArea: FunctionComponent<IDrawArea> = ({
 
     if (isDrawing) {
       // update the current rectangle's width and height based on the mouse position + stage scale
-      const mouseX = (e.evt.layerX - stageOffset.x) / stageScale;
-      const mouseY = (e.evt.layerY - stageOffset.y) / stageScale;
-
       const newShapesList = ignoreAreas.map((i) => {
         if (i.id === selectedRectId) {
           // new width and height
-          i.width = Math.max(Math.round(mouseX - i.x), MIN_RECT_SIDE_PIXEL);
-          i.height = Math.max(Math.round(mouseY - i.y), MIN_RECT_SIDE_PIXEL);
+          i.width = Math.max(Math.round(e.evt.offsetX - i.x), MIN_RECT_SIDE_PIXEL);
+          i.height = Math.max(Math.round(e.evt.offsetY - i.y), MIN_RECT_SIDE_PIXEL);
           return i;
         }
         return i;
@@ -138,7 +147,15 @@ export const DrawArea: FunctionComponent<IDrawArea> = ({
       )}
       {(!imageName || imageStatus === "failed") && <NoImagePlaceholder />}
       {imageName && imageStatus === "loaded" && (
-        <div className={classes.canvasContainer}>
+        <div className={classes.canvasContainer}   
+          ref={scrollContainerRef}
+          onScroll={(event) => {
+            setStageScrollPos({
+              x: (event.target as HTMLElement).scrollLeft,
+              y:(event.target as HTMLElement).scrollTop
+            });
+          }}          
+          >
           <div className={classes.imageDetailsContainer}>
             <ImageDetails
               type={type}
@@ -187,7 +204,7 @@ export const DrawArea: FunctionComponent<IDrawArea> = ({
                 e.evt.preventDefault();
                 const scaleBy = 1.04;
                 const newScale =
-                  e.evt.deltaY > 0
+                  e.evt.deltaY < 0
                     ? stageScale * scaleBy
                     : stageScale / scaleBy;
                 setStageScale(newScale);

@@ -139,7 +139,7 @@ const TestRunList: React.FunctionComponent = () => {
           rows={testRuns}
           columns={columnsDef}
           pageSize={pageSize}
-          rowsPerPageOptions={[10, 20, 30]}
+          rowsPerPageOptions={[10, 30, 100]}
           onPageSizeChange={(newPageSize) => setPageSize(newPageSize)}
           pagination
           loading={loading}
