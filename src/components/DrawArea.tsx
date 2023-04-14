@@ -34,6 +34,7 @@ interface IDrawArea {
   setIgnoreAreas: (ignoreAreas: IgnoreArea[]) => void;
   selectedRectId: string | undefined;
   setSelectedRectId: (id: string) => void;
+  deleteIgnoreArea?: (id:string)=>void;
   onStageClick: (event: Konva.KonvaEventObject<MouseEvent>) => void;
   stageOffsetState: [
     { x: number; y: number },
@@ -64,6 +65,7 @@ export const DrawArea: FunctionComponent<IDrawArea> = ({
   setIgnoreAreas,
   selectedRectId,
   setSelectedRectId,
+  deleteIgnoreArea,
   onStageClick,
   stageScaleState,
   stageOffsetState,
@@ -83,6 +85,27 @@ export const DrawArea: FunctionComponent<IDrawArea> = ({
   const [isDrawMode, setIsDrawMode] = drawModeState;
   const [isDrawing, setIsDrawing] = React.useState(isDrawMode);
   const [image, imageStatus] = imageState;
+  const stageRef = React.useRef<Konva.Stage>(null);
+
+  React.useEffect(() => {
+    if(stageRef.current){
+      const container = stageRef.current.container();
+      container.addEventListener('keydown', handleStageKeyDown);
+    }
+  },[]);
+
+  const isModifierKeyPressed = (e:any) => {
+    return e.altKey || e.ctrlKey || e.shiftKey;
+  };
+
+  const handleStageKeyDown = (e:any) => {
+    if(!deleteIgnoreArea || isModifierKeyPressed(e)){
+      return;
+    }
+    if(selectedRectId && (e.key==='Delete' || e.key==='Backspace')){
+      deleteIgnoreArea(selectedRectId);
+    }
+  };
 
   const scrollContainerRef = React.useRef<HTMLDivElement>(null);
 
@@ -91,6 +114,11 @@ export const DrawArea: FunctionComponent<IDrawArea> = ({
   }, [stageScollPos]);
 
   const handleContentMousedown = (e: any) => {
+    if(stageRef.current){
+      const container = stageRef.current.container();
+      container.tabIndex=1;
+      container.focus();
+    }
     if (!isDrawMode) return;
 
     const newArea: IgnoreArea = {
@@ -195,8 +223,10 @@ export const DrawArea: FunctionComponent<IDrawArea> = ({
                 y: event.clientY - stageOffset.y,
               });
             }}
+            onKeyDown={(e) => handleStageKeyDown(e)}
           >
             <Stage
+              ref={stageRef}
               width={image && image.width}
               height={image && image.height}
               onMouseDown={onStageClick}
