@@ -1,10 +1,9 @@
 import React, { FunctionComponent, useEffect } from "react";
 import { Stage, Layer, Image } from "react-konva";
-import Rectangle, { MIN_RECT_SIDE_PIXEL } from "./Rectangle";
-import { IgnoreArea } from "../types/ignoreArea";
+import Rectangle, { MIN_RECT_SIDE_PIXEL } from "../Rectangle";
+import { IgnoreArea } from "../../types/ignoreArea";
 import { Grid, makeStyles, CircularProgress } from "@material-ui/core";
-import { NoImagePlaceholder } from "./NoImageAvailable";
-import ImageDetails from "./ImageDetails";
+import { NoImagePlaceholder } from "../NoImageAvailable";
 import Konva from "konva";
 
 const useStyles = makeStyles((theme) => ({
@@ -25,9 +24,6 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 interface IDrawArea {
-  type: "Baseline" | "Image" | "Diff";
-  imageName: string;
-  branchName: string;
   imageState: [undefined | HTMLImageElement, "loaded" | "loading" | "failed"];
   tempIgnoreAreas: IgnoreArea[];
   ignoreAreas: IgnoreArea[];
@@ -56,9 +52,6 @@ interface IDrawArea {
   drawModeState: [boolean, React.Dispatch<React.SetStateAction<boolean>>];
 }
 export const DrawArea: FunctionComponent<IDrawArea> = ({
-  type,
-  imageName,
-  branchName,
   imageState,
   ignoreAreas,
   tempIgnoreAreas,
@@ -173,8 +166,8 @@ export const DrawArea: FunctionComponent<IDrawArea> = ({
           </Grid>
         </Grid>
       )}
-      {(!imageName || imageStatus === "failed") && <NoImagePlaceholder />}
-      {imageName && imageStatus === "loaded" && (
+      {(imageStatus === "failed") && <NoImagePlaceholder />}
+      {imageStatus === "loaded" && (
         <div className={classes.canvasContainer}   
           ref={scrollContainerRef}
           onScroll={(event) => {
@@ -184,14 +177,6 @@ export const DrawArea: FunctionComponent<IDrawArea> = ({
             });
           }}          
           >
-          <div className={classes.imageDetailsContainer}>
-            <ImageDetails
-              type={type}
-              branchName={branchName}
-              imageName={imageName}
-              ignoreAreas={tempIgnoreAreas}
-            />
-          </div>
           <div
             style={{
               height: image && image?.height * stageScale,

@@ -34,7 +34,7 @@ import { TestRunDetails } from "../TestRunDetails";
 import useImage from "use-image";
 import { routes } from "../../constants";
 import { useTestRunDispatch } from "../../contexts";
-import { DrawArea } from "../DrawArea";
+import { DrawArea } from "./DrawArea";
 import { CommentsPopper } from "../CommentsPopper";
 import { useSnackbar } from "notistack";
 import { ScaleActionsSpeedDial } from "../ZoomSpeedDial";
@@ -43,6 +43,8 @@ import { head } from "lodash";
 import { invertIgnoreArea } from "../../_helpers/ignoreArea.helper";
 import { BaseModal } from "../BaseModal";
 import { Tooltip } from "../Tooltip";
+import ImageDetails from "../ImageDetails";
+
 
 const defaultStagePos = {
   x: 0,
@@ -57,6 +59,12 @@ const useStyles = makeStyles((theme) => ({
   drawAreaItem: {
     padding: theme.spacing(0.5),
     height: "100%",
+  },
+  imageDetailsContainer: {
+    position: "absolute",
+    backgroundColor: "white",
+    zIndex: 1,
+    padding: theme.spacing(1),
   },
 }));
 
@@ -436,10 +444,15 @@ const TestDetailsModal: React.FunctionComponent<{
       >
         <Grid container style={{ height: "100%" }}>
           <Grid item xs={6} className={classes.drawAreaItem}>
-            <DrawArea
+          <div className={classes.imageDetailsContainer}>
+            <ImageDetails
               type="Baseline"
-              imageName={testRun.baselineName}
               branchName={testRun.baselineBranchName}
+              imageName={testRun.baselineName}
+              ignoreAreas={[]}
+            />
+          </div>
+            <DrawArea
               imageState={[baselineImage, baselineImageStatus]}
               ignoreAreas={[]}
               tempIgnoreAreas={[]}
@@ -457,45 +470,59 @@ const TestDetailsModal: React.FunctionComponent<{
           </Grid>
           <Grid item xs={6} className={classes.drawAreaItem}>
             {isDiffShown ? (
-              <DrawArea
-                type="Diff"
-                imageName={testRun.diffName}
-                branchName={testRun.branchName}
-                imageState={[diffImage, diffImageStatus]}
-                ignoreAreas={ignoreAreas}
-                tempIgnoreAreas={JSON.parse(testRun.tempIgnoreAreas)}
-                setIgnoreAreas={handleIgnoreAreaChange}
-                selectedRectId={selectedRectId}
-                deleteIgnoreArea={deleteIgnoreArea}
-                setSelectedRectId={setSelectedRectId}
-                onStageClick={removeSelection}
-                stageScaleState={[stageScale, setStageScale]}
-                stagePosState={[stagePos, setStagePos]}
-                stageScrollPosState={[stageScrollPos, setStageScrollPos]}
-                stageInitPosState={[stageInitPos, setStageInitPos]}
-                stageOffsetState={[stageOffset, setStageOffset]}
-                drawModeState={[isDrawMode, setIsDrawMode]}
-              />
+              <>                        
+                <div className={classes.imageDetailsContainer}>
+                  <ImageDetails
+                    type="Diff"
+                    branchName={testRun.branchName}
+                    imageName={testRun.diffName}
+                    ignoreAreas={JSON.parse(testRun.tempIgnoreAreas)}
+                  />
+                </div>
+                <DrawArea
+                  imageState={[diffImage, diffImageStatus]}
+                  ignoreAreas={ignoreAreas}
+                  tempIgnoreAreas={JSON.parse(testRun.tempIgnoreAreas)}
+                  setIgnoreAreas={handleIgnoreAreaChange}
+                  selectedRectId={selectedRectId}
+                  deleteIgnoreArea={deleteIgnoreArea}
+                  setSelectedRectId={setSelectedRectId}
+                  onStageClick={removeSelection}
+                  stageScaleState={[stageScale, setStageScale]}
+                  stagePosState={[stagePos, setStagePos]}
+                  stageScrollPosState={[stageScrollPos, setStageScrollPos]}
+                  stageInitPosState={[stageInitPos, setStageInitPos]}
+                  stageOffsetState={[stageOffset, setStageOffset]}
+                  drawModeState={[isDrawMode, setIsDrawMode]}
+                />
+            </>
             ) : (
-              <DrawArea
-                type="Image"
-                imageName={testRun.imageName}
-                branchName={testRun.branchName}
-                imageState={[image, imageStatus]}
-                ignoreAreas={ignoreAreas}
-                tempIgnoreAreas={JSON.parse(testRun.tempIgnoreAreas)}
-                setIgnoreAreas={handleIgnoreAreaChange}
-                selectedRectId={selectedRectId}
-                setSelectedRectId={setSelectedRectId}
-                deleteIgnoreArea={deleteIgnoreArea}
-                onStageClick={removeSelection}
-                stageScaleState={[stageScale, setStageScale]}
-                stagePosState={[stagePos, setStagePos]}
-                stageScrollPosState={[stageScrollPos, setStageScrollPos]}
-                stageInitPosState={[stageInitPos, setStageInitPos]}
-                stageOffsetState={[stageOffset, setStageOffset]}
-                drawModeState={[isDrawMode, setIsDrawMode]}
-              />
+              <>
+                <div className={classes.imageDetailsContainer}>
+                  <ImageDetails
+                    type="Image"
+                    branchName={testRun.branchName}
+                    imageName={testRun.imageName}
+                    ignoreAreas={JSON.parse(testRun.tempIgnoreAreas)}
+                  />
+                </div>
+                <DrawArea
+                  imageState={[image, imageStatus]}
+                  ignoreAreas={ignoreAreas}
+                  tempIgnoreAreas={JSON.parse(testRun.tempIgnoreAreas)}
+                  setIgnoreAreas={handleIgnoreAreaChange}
+                  selectedRectId={selectedRectId}
+                  setSelectedRectId={setSelectedRectId}
+                  deleteIgnoreArea={deleteIgnoreArea}
+                  onStageClick={removeSelection}
+                  stageScaleState={[stageScale, setStageScale]}
+                  stagePosState={[stagePos, setStagePos]}
+                  stageScrollPosState={[stageScrollPos, setStageScrollPos]}
+                  stageInitPosState={[stageInitPos, setStageInitPos]}
+                  stageOffsetState={[stageOffset, setStageOffset]}
+                  drawModeState={[isDrawMode, setIsDrawMode]}
+                />
+              </>
             )}
           </Grid>
         </Grid>
