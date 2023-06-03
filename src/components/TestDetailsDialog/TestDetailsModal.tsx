@@ -270,6 +270,35 @@ const TestDetailsModal: React.FunctionComponent<{
   );
   useHotkeys("ESC", handleClose, [handleClose]);
 
+  const diffPanel=(type:any, branchName:string, imageName:string, imageStatus:any, image: undefined|HTMLImageElement)=>{
+    return <>                        
+        <div className={classes.imageDetailsContainer}>
+          <ImageDetails
+            type={type}
+            branchName={branchName}
+            imageName={imageName}
+            ignoreAreas={JSON.parse(testRun.tempIgnoreAreas)}
+          />
+        </div>
+        <DrawArea
+          imageState={[image, imageStatus]}
+          ignoreAreas={ignoreAreas}
+          tempIgnoreAreas={JSON.parse(testRun.tempIgnoreAreas)}
+          setIgnoreAreas={handleIgnoreAreaChange}
+          selectedRectId={selectedRectId}
+          deleteIgnoreArea={deleteIgnoreArea}
+          setSelectedRectId={setSelectedRectId}
+          onStageClick={removeSelection}
+          stageScaleState={[stageScale, setStageScale]}
+          stagePosState={[stagePos, setStagePos]}
+          stageScrollPosState={[stageScrollPos, setStageScrollPos]}
+          stageInitPosState={[stageInitPos, setStageInitPos]}
+          stageOffsetState={[stageOffset, setStageOffset]}
+          drawModeState={[isDrawMode, setIsDrawMode]}
+        />
+    </>
+  }
+
   return (
     <React.Fragment>
       <AppBar position="sticky">
@@ -469,61 +498,9 @@ const TestDetailsModal: React.FunctionComponent<{
             />
           </Grid>
           <Grid item xs={6} className={classes.drawAreaItem}>
-            {isDiffShown ? (
-              <>                        
-                <div className={classes.imageDetailsContainer}>
-                  <ImageDetails
-                    type="Diff"
-                    branchName={testRun.branchName}
-                    imageName={testRun.diffName}
-                    ignoreAreas={JSON.parse(testRun.tempIgnoreAreas)}
-                  />
-                </div>
-                <DrawArea
-                  imageState={[diffImage, diffImageStatus]}
-                  ignoreAreas={ignoreAreas}
-                  tempIgnoreAreas={JSON.parse(testRun.tempIgnoreAreas)}
-                  setIgnoreAreas={handleIgnoreAreaChange}
-                  selectedRectId={selectedRectId}
-                  deleteIgnoreArea={deleteIgnoreArea}
-                  setSelectedRectId={setSelectedRectId}
-                  onStageClick={removeSelection}
-                  stageScaleState={[stageScale, setStageScale]}
-                  stagePosState={[stagePos, setStagePos]}
-                  stageScrollPosState={[stageScrollPos, setStageScrollPos]}
-                  stageInitPosState={[stageInitPos, setStageInitPos]}
-                  stageOffsetState={[stageOffset, setStageOffset]}
-                  drawModeState={[isDrawMode, setIsDrawMode]}
-                />
-            </>
-            ) : (
-              <>
-                <div className={classes.imageDetailsContainer}>
-                  <ImageDetails
-                    type="Image"
-                    branchName={testRun.branchName}
-                    imageName={testRun.imageName}
-                    ignoreAreas={JSON.parse(testRun.tempIgnoreAreas)}
-                  />
-                </div>
-                <DrawArea
-                  imageState={[image, imageStatus]}
-                  ignoreAreas={ignoreAreas}
-                  tempIgnoreAreas={JSON.parse(testRun.tempIgnoreAreas)}
-                  setIgnoreAreas={handleIgnoreAreaChange}
-                  selectedRectId={selectedRectId}
-                  setSelectedRectId={setSelectedRectId}
-                  deleteIgnoreArea={deleteIgnoreArea}
-                  onStageClick={removeSelection}
-                  stageScaleState={[stageScale, setStageScale]}
-                  stagePosState={[stagePos, setStagePos]}
-                  stageScrollPosState={[stageScrollPos, setStageScrollPos]}
-                  stageInitPosState={[stageInitPos, setStageInitPos]}
-                  stageOffsetState={[stageOffset, setStageOffset]}
-                  drawModeState={[isDrawMode, setIsDrawMode]}
-                />
-              </>
-            )}
+            {isDiffShown?
+             diffPanel("Diff", testRun.branchName, testRun.diffName, diffImageStatus, diffImage):
+             diffPanel("Image", testRun.branchName, testRun.imageName, imageStatus, image)}
           </Grid>
         </Grid>
       </Box>
