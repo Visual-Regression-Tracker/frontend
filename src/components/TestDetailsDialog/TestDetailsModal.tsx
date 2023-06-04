@@ -270,32 +270,114 @@ const TestDetailsModal: React.FunctionComponent<{
   );
   useHotkeys("ESC", handleClose, [handleClose]);
 
+  const ignoreAreasToolbar = ()=>{
+    return <>
+      <Grid container alignItems="center" spacing={2}>
+        <Grid item>
+          <Select
+            id="area-select"
+            labelId="areaSelect"
+            value={valueOfIgnoreOrCompare}
+            onChange={(event) =>
+              onIgnoreOrCompareSelectChange(event.target.value as string)
+            }
+          >
+            {["Ignore Areas", "Compare Area"].map((eachItem) => (
+              <MenuItem key={eachItem} value={eachItem}>
+                {eachItem}
+              </MenuItem>
+            ))}
+          </Select>
+        </Grid>
+        <Grid item>
+          <ToggleButton
+            value={"drawMode"}
+            selected={isDrawMode}
+            onClick={() => {
+              setIsDrawMode(!isDrawMode);
+            }}
+          >
+            <Add />
+          </ToggleButton>
+        </Grid>
+        <Grid item>
+          <IconButton
+            disabled={!selectedRectId || ignoreAreas.length === 0}
+            onClick={() =>
+              selectedRectId && deleteIgnoreArea(selectedRectId)
+            }
+          >
+            <Delete />
+          </IconButton>
+        </Grid>
+        <Tooltip title="Clears all ignore areas." aria-label="reject">
+          <Grid item>
+            <IconButton
+              disabled={ignoreAreas.length === 0}
+              onClick={() => {
+                handleIgnoreAreaChange([]);
+              }}
+            >
+              <LayersClear />
+            </IconButton>
+          </Grid>
+        </Tooltip>
+        <Tooltip
+          title={applyIgnoreAreaText}
+          aria-label="apply ignore area"
+        >
+          <Grid item>
+            <IconButton
+              disabled={!selectedRectId || ignoreAreas.length === 0}
+              onClick={() => toggleApplyIgnoreDialogOpen()}
+            >
+              <Collections />
+            </IconButton>
+          </Grid>
+        </Tooltip>
+        <Grid item>
+          <IconButton
+            disabled={!touched}
+            onClick={() => saveIgnoreAreasOrCompareArea()}
+          >
+            <Save />
+          </IconButton>
+        </Grid>
+      </Grid>
+    </>
+  }
+
   const diffPanel=(type:any, branchName:string, imageName:string, imageStatus:any, image: undefined|HTMLImageElement)=>{
-    return <>                        
-        <div className={classes.imageDetailsContainer}>
-          <ImageDetails
-            type={type}
-            branchName={branchName}
-            imageName={imageName}
-            ignoreAreas={JSON.parse(testRun.tempIgnoreAreas)}
+    return <>
+      <Grid container alignItems="center" spacing={2}>  
+          <Grid item xs={4}>
+            <div className={classes.imageDetailsContainer}>
+              <ImageDetails
+                type={type}
+                branchName={branchName}
+                imageName={imageName}
+                ignoreAreas={JSON.parse(testRun.tempIgnoreAreas)}
+              />
+            </div>
+          </Grid>
+          <Grid item xs={8}>{ignoreAreasToolbar()}</Grid>
+      </Grid>
+      <DrawArea
+            imageState={[image, imageStatus]}
+            ignoreAreas={ignoreAreas}
+            tempIgnoreAreas={JSON.parse(testRun.tempIgnoreAreas)}
+            setIgnoreAreas={handleIgnoreAreaChange}
+            selectedRectId={selectedRectId}
+            deleteIgnoreArea={deleteIgnoreArea}
+            setSelectedRectId={setSelectedRectId}
+            onStageClick={removeSelection}
+            stageScaleState={[stageScale, setStageScale]}
+            stagePosState={[stagePos, setStagePos]}
+            stageScrollPosState={[stageScrollPos, setStageScrollPos]}
+            stageInitPosState={[stageInitPos, setStageInitPos]}
+            stageOffsetState={[stageOffset, setStageOffset]}
+            drawModeState={[isDrawMode, setIsDrawMode]}
           />
-        </div>
-        <DrawArea
-          imageState={[image, imageStatus]}
-          ignoreAreas={ignoreAreas}
-          tempIgnoreAreas={JSON.parse(testRun.tempIgnoreAreas)}
-          setIgnoreAreas={handleIgnoreAreaChange}
-          selectedRectId={selectedRectId}
-          deleteIgnoreArea={deleteIgnoreArea}
-          setSelectedRectId={setSelectedRectId}
-          onStageClick={removeSelection}
-          stageScaleState={[stageScale, setStageScale]}
-          stagePosState={[stagePos, setStagePos]}
-          stageScrollPosState={[stageScrollPos, setStageScrollPos]}
-          stageInitPosState={[stageInitPos, setStageInitPos]}
-          stageOffsetState={[stageOffset, setStageOffset]}
-          drawModeState={[isDrawMode, setIsDrawMode]}
-        />
     </>
   }
 
@@ -356,80 +438,6 @@ const TestDetailsModal: React.FunctionComponent<{
                   </Tooltip>
                 </Grid>
               )}
-            </Grid>
-          </Grid>
-          <Grid item>
-            <Grid container alignItems="center" spacing={2}>
-              <Grid item>
-                <Select
-                  id="area-select"
-                  labelId="areaSelect"
-                  value={valueOfIgnoreOrCompare}
-                  onChange={(event) =>
-                    onIgnoreOrCompareSelectChange(event.target.value as string)
-                  }
-                >
-                  {["Ignore Areas", "Compare Area"].map((eachItem) => (
-                    <MenuItem key={eachItem} value={eachItem}>
-                      {eachItem}
-                    </MenuItem>
-                  ))}
-                </Select>
-              </Grid>
-              <Grid item>
-                <ToggleButton
-                  value={"drawMode"}
-                  selected={isDrawMode}
-                  onClick={() => {
-                    setIsDrawMode(!isDrawMode);
-                  }}
-                >
-                  <Add />
-                </ToggleButton>
-              </Grid>
-              <Grid item>
-                <IconButton
-                  disabled={!selectedRectId || ignoreAreas.length === 0}
-                  onClick={() =>
-                    selectedRectId && deleteIgnoreArea(selectedRectId)
-                  }
-                >
-                  <Delete />
-                </IconButton>
-              </Grid>
-              <Tooltip title="Clears all ignore areas." aria-label="reject">
-                <Grid item>
-                  <IconButton
-                    disabled={ignoreAreas.length === 0}
-                    onClick={() => {
-                      handleIgnoreAreaChange([]);
-                    }}
-                  >
-                    <LayersClear />
-                  </IconButton>
-                </Grid>
-              </Tooltip>
-              <Tooltip
-                title={applyIgnoreAreaText}
-                aria-label="apply ignore area"
-              >
-                <Grid item>
-                  <IconButton
-                    disabled={!selectedRectId || ignoreAreas.length === 0}
-                    onClick={() => toggleApplyIgnoreDialogOpen()}
-                  >
-                    <Collections />
-                  </IconButton>
-                </Grid>
-              </Tooltip>
-              <Grid item>
-                <IconButton
-                  disabled={!touched}
-                  onClick={() => saveIgnoreAreasOrCompareArea()}
-                >
-                  <Save />
-                </IconButton>
-              </Grid>
             </Grid>
           </Grid>
           <Grid item>
