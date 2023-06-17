@@ -10,10 +10,6 @@ const useStyles = makeStyles((theme) => ({
   canvasContainer: {
     overflow: "auto",
     backgroundColor: "white",
-    position:"absolute",
-    top: "75px",
-    bottom:"0",
-    width: "49.5%"
   },
   imageDetailsContainer: {
     position: "absolute",

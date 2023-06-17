@@ -479,16 +479,18 @@ const TestDetailsModal: React.FunctionComponent<{
         position="relative"
         className={classes.drawAreaContainer}          
       >
-        <Grid container>
-          <Grid item xs={6} className={classes.drawAreaItem}>
-          <div className={classes.imageDetailsContainer}>
-            <ImageDetails
-              type="Baseline"
-              branchName={testRun.baselineBranchName}
-              imageName={testRun.baselineName}
-              ignoreAreas={[]}
-            />
-          </div>
+        <Grid container justifyContent="center" alignItems="stretch">
+          <Grid item xs={6} className={classes.drawAreaItem} 
+            direction="column"
+            alignItems="stretch">
+            <div className={classes.imageDetailsContainer}>
+              <ImageDetails
+                type="Baseline"
+                branchName={testRun.baselineBranchName}
+                imageName={testRun.baselineName}
+                ignoreAreas={[]}
+              />
+            </div>
             <DrawArea
               imageState={[baselineImage, baselineImageStatus]}
               ignoreAreas={[]}
