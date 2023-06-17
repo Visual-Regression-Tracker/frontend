@@ -28,7 +28,7 @@ const ImageDetails: React.FunctionComponent<IProps> = ({
           <Grid container spacing={2} alignItems={"center"}>
             <Grid item>
               <Typography variant="caption" data-testid="image-details">
-                Real size: {`${image?.width} x ${image?.height}`}
+              {image?`Real size: ${image?.width} x ${image?.height}`:"Loading..."}
               </Typography>
             </Grid>
             <Grid item>

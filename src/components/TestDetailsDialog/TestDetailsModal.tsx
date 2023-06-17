@@ -44,7 +44,7 @@ import { invertIgnoreArea } from "../../_helpers/ignoreArea.helper";
 import { BaseModal } from "../BaseModal";
 import { Tooltip } from "../Tooltip";
 import ImageDetails from "../ImageDetails";
-
+import { calculateScale } from "../../_helpers/scale.helper";
 
 const defaultStagePos = {
   x: 0,
@@ -80,8 +80,6 @@ const TestDetailsModal: React.FunctionComponent<{
   const { enqueueSnackbar } = useSnackbar();
   const testRunDispatch = useTestRunDispatch();
 
-  const stageWidth = (window.innerWidth / 2) * 0.8;
-  const stageHeigth = window.innerHeight * 0.6;
   const stageScaleBy = 1.2;
   const [stageScale, setStageScale] = React.useState(1);
   const [stagePos, setStagePos] = React.useState(defaultStagePos);
@@ -99,6 +97,8 @@ const TestDetailsModal: React.FunctionComponent<{
   const [applyIgnoreDialogOpen, setApplyIgnoreDialogOpen] = React.useState(
     false
   );
+  const leftItemRef = React.useRef<HTMLDivElement>(null);
+  const rightItemRef = React.useRef<HTMLDivElement>(null);
 
   const toggleApplyIgnoreDialogOpen = () => {
     setApplyIgnoreDialogOpen(!applyIgnoreDialogOpen);
@@ -118,17 +118,32 @@ const TestDetailsModal: React.FunctionComponent<{
     "Apply selected ignore area to all images in this build.";
 
   React.useEffect(() => {
-    fitStageToScreen();
-    // eslint-disable-next-line
-  }, [image]);
-
-  React.useEffect(() => {
     setIsDiffShown(!!testRun.diffName);
   }, [testRun.diffName]);
 
   React.useEffect(() => {
     setIgnoreAreas(JSON.parse(testRun.ignoreAreas));
   }, [testRun]);
+
+  React.useEffect(() => {
+    fitImagesToStage()
+  }, [image, baselineImage]);
+
+  const fitImagesToStage=()=>{
+    if(image && leftItemRef.current){
+      fitImageToStage(image, leftItemRef.current);
+    }
+    if(baselineImage && rightItemRef.current){
+      fitImageToStage(baselineImage, rightItemRef.current);
+    }
+  }
+  
+  const fitImageToStage = (image:HTMLImageElement, container:HTMLElement ) => {
+    const scale = calculateScale(image.width, image.height, container.offsetWidth, container.offsetHeight-48)
+    if(scale<stageScale){
+      setStageScale(scale);
+    }
+  };
 
   const isImageSizeDiffer = React.useMemo(
     () =>
@@ -207,17 +222,6 @@ const TestDetailsModal: React.FunctionComponent<{
 
   const setOriginalSize = () => {
     setStageScale(1);
-    resetPositioin();
-  };
-
-  const fitStageToScreen = () => {
-    const scale = image
-      ? Math.min(
-          stageWidth < image.width ? stageWidth / image.width : 1,
-          stageHeigth < image.height ? stageHeigth / image.height : 1
-        )
-      : 1;
-    setStageScale(scale);
     resetPositioin();
   };
 
@@ -479,35 +483,42 @@ const TestDetailsModal: React.FunctionComponent<{
         position="relative"
         className={classes.drawAreaContainer}          
       >
-        <Grid container justifyContent="center" alignItems="stretch">
-          <Grid item xs={6} className={classes.drawAreaItem} 
+        <Grid container justifyContent="center" alignItems="stretch" style={{height:"100%"}}>
+          <Grid container xs={6}
+            ref={leftItemRef}
+            className={classes.drawAreaItem} 
             direction="column"
+            wrap="nowrap"
             alignItems="stretch">
-            <div className={classes.imageDetailsContainer}>
-              <ImageDetails
-                type="Baseline"
-                branchName={testRun.baselineBranchName}
-                imageName={testRun.baselineName}
+            <Grid item>
+              <div className={classes.imageDetailsContainer}>
+                <ImageDetails
+                  type="Baseline"
+                  branchName={testRun.baselineBranchName}
+                  imageName={testRun.baselineName}
+                  ignoreAreas={[]}
+                />
+              </div>
+            </Grid>
+            <Grid item style={{flexGrow: "1"}}>
+              <DrawArea
+                imageState={[baselineImage, baselineImageStatus]}
                 ignoreAreas={[]}
+                tempIgnoreAreas={[]}
+                setIgnoreAreas={handleIgnoreAreaChange}
+                selectedRectId={selectedRectId}
+                setSelectedRectId={setSelectedRectId}
+                onStageClick={removeSelection}
+                stageScaleState={[stageScale, setStageScale]}
+                stagePosState={[stagePos, setStagePos]}
+                stageScrollPosState={[stageScrollPos, setStageScrollPos]}
+                stageInitPosState={[stageInitPos, setStageInitPos]}
+                stageOffsetState={[stageOffset, setStageOffset]}
+                drawModeState={[false, setIsDrawMode]}
               />
-            </div>
-            <DrawArea
-              imageState={[baselineImage, baselineImageStatus]}
-              ignoreAreas={[]}
-              tempIgnoreAreas={[]}
-              setIgnoreAreas={handleIgnoreAreaChange}
-              selectedRectId={selectedRectId}
-              setSelectedRectId={setSelectedRectId}
-              onStageClick={removeSelection}
-              stageScaleState={[stageScale, setStageScale]}
-              stagePosState={[stagePos, setStagePos]}
-              stageScrollPosState={[stageScrollPos, setStageScrollPos]}
-              stageInitPosState={[stageInitPos, setStageInitPos]}
-              stageOffsetState={[stageOffset, setStageOffset]}
-              drawModeState={[false, setIsDrawMode]}
-            />
+            </Grid>
           </Grid>
-          <Grid item xs={6} className={classes.drawAreaItem}>
+          <Grid item xs={6} className={classes.drawAreaItem} ref={rightItemRef}>
             {isDiffShown?
              diffPanel("Diff", testRun.branchName, testRun.diffName, diffImageStatus, diffImage):
              diffPanel("Image", testRun.branchName, testRun.imageName, imageStatus, image)}
@@ -518,7 +529,7 @@ const TestDetailsModal: React.FunctionComponent<{
         onZoomInClick={() => setStageScale(stageScale * stageScaleBy)}
         onZoomOutClick={() => setStageScale(stageScale / stageScaleBy)}
         onOriginalSizeClick={setOriginalSize}
-        onFitIntoScreenClick={fitStageToScreen}
+        onFitIntoScreenClick={fitImagesToStage}
       />
       <BaseModal
         open={applyIgnoreDialogOpen}

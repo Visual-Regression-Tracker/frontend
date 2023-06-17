@@ -16,6 +16,7 @@ const useStyles = makeStyles((theme) => ({
     backgroundColor: "white",
     zIndex: 1,
     padding: theme.spacing(1),
+    height:"48px"
   },
   progressContainer: {
     minHeight: "300px",
@@ -78,6 +79,7 @@ export const DrawArea: FunctionComponent<IDrawArea> = ({
   const [isDrawing, setIsDrawing] = React.useState(isDrawMode);
   const [image, imageStatus] = imageState;
   const stageRef = React.useRef<Konva.Stage>(null);
+  const scrollContainerRef = React.useRef<HTMLDivElement>(null);
 
   React.useEffect(() => {
     if(stageRef.current){
@@ -98,8 +100,6 @@ export const DrawArea: FunctionComponent<IDrawArea> = ({
       deleteIgnoreArea(selectedRectId);
     }
   };
-
-  const scrollContainerRef = React.useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     scrollContainerRef.current?.scrollTo(stageScollPos.x, stageScollPos.y);
