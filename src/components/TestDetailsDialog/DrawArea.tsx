@@ -10,7 +10,10 @@ const useStyles = makeStyles((theme) => ({
   canvasContainer: {
     overflow: "auto",
     backgroundColor: "white",
-    height: "100%",
+    position:"absolute",
+    top: "75px",
+    bottom:"0",
+    width: "49.5%"
   },
   imageDetailsContainer: {
     position: "absolute",
@@ -179,6 +182,7 @@ export const DrawArea: FunctionComponent<IDrawArea> = ({
           <div
             style={{
               height: image && image?.height * stageScale,
+              width:image && image?.width * stageScale,
               transform: `translate3d(${stagePos.x}px, ${stagePos.y}px, 0px)`,
             }}
             onMouseMove={(event) => {

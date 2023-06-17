@@ -54,6 +54,7 @@ const defaultStagePos = {
 const useStyles = makeStyles((theme) => ({
   drawAreaContainer: {
     width: "100%",
+    height:"100%",
     backgroundColor: "#f5f5f5",
   },
   drawAreaItem: {
@@ -475,10 +476,10 @@ const TestDetailsModal: React.FunctionComponent<{
       </Box>
       <Box
         overflow="hidden"
-        minHeight="65%"
+        position="relative"
         className={classes.drawAreaContainer}          
       >
-        <Grid container style={{ height: "100%" }}>
+        <Grid container>
           <Grid item xs={6} className={classes.drawAreaItem}>
           <div className={classes.imageDetailsContainer}>
             <ImageDetails
