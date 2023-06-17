@@ -61,7 +61,6 @@ const useStyles = makeStyles((theme) => ({
     height: "100%",
   },
   imageDetailsContainer: {
-    position: "absolute",
     backgroundColor: "white",
     zIndex: 1,
     padding: theme.spacing(1),

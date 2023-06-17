@@ -110,7 +110,6 @@ export const DrawArea: FunctionComponent<IDrawArea> = ({
     if(stageRef.current){
       const container = stageRef.current.container();
       container.tabIndex=1;
-      container.focus();
     }
     if (!isDrawMode) return;
 
@@ -181,7 +180,6 @@ export const DrawArea: FunctionComponent<IDrawArea> = ({
             style={{
               height: image && image?.height * stageScale,
               transform: `translate3d(${stagePos.x}px, ${stagePos.y}px, 0px)`,
-              marginTop: "75px",
             }}
             onMouseMove={(event) => {
               if (!isDrawMode && isDrag && !selectedRectId) {
