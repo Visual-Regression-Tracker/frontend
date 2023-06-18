@@ -45,6 +45,7 @@ import { BaseModal } from "../BaseModal";
 import { Tooltip } from "../Tooltip";
 import ImageDetails from "../ImageDetails";
 import { calculateScale } from "../../_helpers/scale.helper";
+import TestStatusChip from "../TestStatusChip";
 
 const defaultStagePos = {
   x: 0,
@@ -57,11 +58,16 @@ const useStyles = makeStyles((theme) => ({
     textAlign: "left",
     background: "#efefef",
     borderBottom: "2px solid #DDD",
-    padding: "10px 8px"
+    // padding: "10px 8px"
+    paddingLeft:8,
+    paddingTop:8
   },
   closeIcon:{
     position: "absolute",
     right: 0
+  },
+  testRunDetails:{
+    padding: "0 8px"
   },
   drawAreaContainer: {
     width: "100%",
@@ -398,54 +404,56 @@ const TestDetailsModal: React.FunctionComponent<{
 
   return (
     <React.Fragment>
-      <Grid container alignItems="center" className={classes.header} >
+      <Grid container alignItems="center" className={classes.header} spacing={2}>
         <Grid item>
-          <Typography variant="h6">{`Step ${currentRunIndex+1}/${totalTestRunCount}:  ${testRun.name}`}</Typography>
+          <Typography variant="h6" display="inline">{`Step ${currentRunIndex+1}/${totalTestRunCount}: `}</Typography>
+          <Typography variant="h6" display="inline">{testRun.name}</Typography>
+        </Grid>
+        <Grid item>
+          <TestStatusChip status={testRun.status}/>
         </Grid>
         <IconButton color="inherit" onClick={handleClose} className={classes.closeIcon}>
           <Close />
         </IconButton>
       </Grid>
       {processing && <LinearProgress />}
-      <Box m={1}>
-        <Grid container alignItems="center">
-          <Grid item>
-            <TestRunDetails testRun={testRun} />
-          </Grid>
-          {isImageSizeDiffer && (
-            <Grid item>
-              <Tooltip
-                title={
-                  "Image height/width differ from baseline! Cannot calculate diff!"
-                }
-              >
-                <IconButton>
-                  <WarningRounded color="secondary" />
-                </IconButton>
-              </Tooltip>
-            </Grid>
-          )}
-          <Grid item>
-            <CommentsPopper
-              text={testRun.comment}
-              onSave={(comment) =>
-                testRunService
-                  .update(testRun.id, { comment })
-                  .then(() =>
-                    enqueueSnackbar("Comment updated", {
-                      variant: "success",
-                    })
-                  )
-                  .catch((err) =>
-                    enqueueSnackbar(err, {
-                      variant: "error",
-                    })
-                  )
-              }
-            />
-          </Grid>
+      <Grid container alignItems="center" className={classes.testRunDetails} spacing={2}>
+        <Grid item>
+          <TestRunDetails testRun={testRun} />
         </Grid>
-      </Box>
+        {isImageSizeDiffer && (
+          <Grid item>
+            <Tooltip
+              title={
+                "Image height/width differ from baseline! Cannot calculate diff!"
+              }
+            >
+              <IconButton>
+                <WarningRounded color="secondary" />
+              </IconButton>
+            </Tooltip>
+          </Grid>
+        )}
+        <Grid item>
+          <CommentsPopper
+            text={testRun.comment}
+            onSave={(comment) =>
+              testRunService
+                .update(testRun.id, { comment })
+                .then(() =>
+                  enqueueSnackbar("Comment updated", {
+                    variant: "success",
+                  })
+                )
+                .catch((err) =>
+                  enqueueSnackbar(err, {
+                    variant: "error",
+                  })
+                )
+            }
+          />
+        </Grid>
+      </Grid>
       <Box
         overflow="hidden"
         position="relative"

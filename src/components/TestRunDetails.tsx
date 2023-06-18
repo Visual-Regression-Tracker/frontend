@@ -49,10 +49,6 @@ export const TestRunDetails: React.FunctionComponent<IProps> = ({
           </Typography>
         </Tooltip>
       </Grid>
-      <Grid item>
-        <Typography display="inline">Status: </Typography>
-        <TestStatusChip status={testRun.status} />
-      </Grid>
     </Grid>
   );
 };
