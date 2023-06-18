@@ -11,7 +11,7 @@ export const TestRunDetails: React.FunctionComponent<IProps> = ({
   testRun,
 }) => {
   return (
-    <Grid container spacing={2}>
+    <>
       {testRun.os && (
         <Grid item>
           <Typography>OS: {testRun.os}</Typography>
@@ -49,6 +49,6 @@ export const TestRunDetails: React.FunctionComponent<IProps> = ({
           </Typography>
         </Tooltip>
       </Grid>
-    </Grid>
+    </>
   );
 };

@@ -1,7 +1,5 @@
 import React, { useState } from "react";
 import {
-  AppBar,
-  Toolbar,
   Typography,
   Button,
   Grid,
@@ -58,16 +56,18 @@ const useStyles = makeStyles((theme) => ({
     textAlign: "left",
     background: "#efefef",
     borderBottom: "2px solid #DDD",
-    // padding: "10px 8px"
     paddingLeft:8,
-    paddingTop:8
+  },
+  testRunName:{
+    fontWeight:300,
+    textTransform:"uppercase"
   },
   closeIcon:{
     position: "absolute",
-    right: 0
+    right: "8px"
   },
   testRunDetails:{
-    padding: "0 8px"
+    paddingLeft: 8
   },
   drawAreaContainer: {
     width: "100%",
@@ -75,7 +75,7 @@ const useStyles = makeStyles((theme) => ({
     backgroundColor: "#f5f5f5",
   },
   drawAreaItem: {
-    padding: theme.spacing(0.5),
+    padding: "0 4px",
     height: "100%",
   },
   imageDetailsContainer: {
@@ -401,13 +401,12 @@ const TestDetailsModal: React.FunctionComponent<{
           />
     </>
   }
-
-  return (
-    <React.Fragment>
+  const header = ()=>{
+    return <Box m={1}>
       <Grid container alignItems="center" className={classes.header} spacing={2}>
         <Grid item>
           <Typography variant="h6" display="inline">{`Step ${currentRunIndex+1}/${totalTestRunCount}: `}</Typography>
-          <Typography variant="h6" display="inline">{testRun.name}</Typography>
+          <Typography variant="h6" display="inline" className={classes.testRunName}>{testRun.name}</Typography>
         </Grid>
         <Grid item>
           <TestStatusChip status={testRun.status}/>
@@ -416,11 +415,13 @@ const TestDetailsModal: React.FunctionComponent<{
           <Close />
         </IconButton>
       </Grid>
-      {processing && <LinearProgress />}
-      <Grid container alignItems="center" className={classes.testRunDetails} spacing={2}>
-        <Grid item>
-          <TestRunDetails testRun={testRun} />
-        </Grid>
+    </Box> 
+  }
+
+  const testRunDetails = ()=>{
+    return <Box m={1}>
+      <Grid container alignItems="center" className={classes.testRunDetails} spacing={2} >
+        <TestRunDetails testRun={testRun} />
         {isImageSizeDiffer && (
           <Grid item>
             <Tooltip
@@ -454,6 +455,14 @@ const TestDetailsModal: React.FunctionComponent<{
           />
         </Grid>
       </Grid>
+    </Box>
+  }
+
+  return (
+    <React.Fragment>
+      {header()}
+      {processing && <LinearProgress />}
+      {testRunDetails()}
       <Box
         overflow="hidden"
         position="relative"
