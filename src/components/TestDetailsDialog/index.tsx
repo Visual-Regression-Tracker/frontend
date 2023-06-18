@@ -9,7 +9,7 @@ import TestDetailsModal from "./TestDetailsModal";
 
 const useStyles = makeStyles((theme) => ({
   modal: {
-    margin: 40,
+    margin: "20px 10px 10px 10px",
   },
 }));
 

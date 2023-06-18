@@ -52,6 +52,17 @@ const defaultStagePos = {
 };
 
 const useStyles = makeStyles((theme) => ({
+  header: {
+    position: "relative",
+    textAlign: "left",
+    background: "#efefef",
+    borderBottom: "2px solid #DDD",
+    padding: "10px 8px"
+  },
+  closeIcon:{
+    position: "absolute",
+    right: 0
+  },
   drawAreaContainer: {
     width: "100%",
     height:"100%",
@@ -139,7 +150,7 @@ const TestDetailsModal: React.FunctionComponent<{
   }
   
   const fitImageToStage = (image:HTMLImageElement, container:HTMLElement ) => {
-    const scale = calculateScale(image.width, image.height, container.offsetWidth, container.offsetHeight-48)
+    const scale = calculateScale(image.width+20, image.height+20, container.offsetWidth, container.offsetHeight-48)
     if(scale<stageScale){
       setStageScale(scale);
     }
@@ -387,76 +398,33 @@ const TestDetailsModal: React.FunctionComponent<{
 
   return (
     <React.Fragment>
-      <AppBar position="sticky">
-        <Toolbar>
-          <Grid container justifyContent="space-between">
-            <Grid item>
-              <Typography variant="h6">{testRun.name}</Typography>
-            </Grid>
-            {testRun.diffName && (
-              <Grid item>
-                <Tooltip title={"Hotkey: D"}>
-                  <Switch
-                    checked={isDiffShown}
-                    onChange={() => setIsDiffShown(!isDiffShown)}
-                    name="Toggle diff"
-                  />
-                </Tooltip>
-              </Grid>
-            )}
-            <Grid item>
-              <Typography variant="h6">{currentRunIndex+1} of {totalTestRunCount}</Typography>
-            </Grid>
-            {(testRun.status === TestStatus.unresolved ||
-              testRun.status === TestStatus.new) && (
-              <Grid item>
-                <ApproveRejectButtons testRun={testRun} />
-              </Grid>
-            )}
-            <Grid item>
-              <IconButton color="inherit" onClick={handleClose}>
-                <Close />
-              </IconButton>
-            </Grid>
-          </Grid>
-        </Toolbar>
-      </AppBar>
+      <Grid container alignItems="center" className={classes.header} >
+        <Grid item>
+          <Typography variant="h6">{`Step ${currentRunIndex+1}/${totalTestRunCount}:  ${testRun.name}`}</Typography>
+        </Grid>
+        <IconButton color="inherit" onClick={handleClose} className={classes.closeIcon}>
+          <Close />
+        </IconButton>
+      </Grid>
       {processing && <LinearProgress />}
       <Box m={1}>
         <Grid container alignItems="center">
-          <Grid item xs={12}>
-            <Grid container alignItems="center">
-              <Grid item>
-                <TestRunDetails testRun={testRun} />
-              </Grid>
-              {isImageSizeDiffer && (
-                <Grid item>
-                  <Tooltip
-                    title={
-                      "Image height/width differ from baseline! Cannot calculate diff!"
-                    }
-                  >
-                    <IconButton>
-                      <WarningRounded color="secondary" />
-                    </IconButton>
-                  </Tooltip>
-                </Grid>
-              )}
-            </Grid>
-          </Grid>
           <Grid item>
-            <Button
-              color="primary"
-              disabled={!testRun.testVariationId}
-              onClick={() => {
-                navigate(
-                  `${routes.VARIATION_DETAILS_PAGE}/${testRun.testVariationId}`
-                );
-              }}
-            >
-              Baseline history
-            </Button>
+            <TestRunDetails testRun={testRun} />
           </Grid>
+          {isImageSizeDiffer && (
+            <Grid item>
+              <Tooltip
+                title={
+                  "Image height/width differ from baseline! Cannot calculate diff!"
+                }
+              >
+                <IconButton>
+                  <WarningRounded color="secondary" />
+                </IconButton>
+              </Tooltip>
+            </Grid>
+          )}
           <Grid item>
             <CommentsPopper
               text={testRun.comment}
@@ -490,15 +458,30 @@ const TestDetailsModal: React.FunctionComponent<{
             direction="column"
             wrap="nowrap"
             alignItems="stretch">
-            <Grid item>
-              <div className={classes.imageDetailsContainer}>
+            <Grid container>
+              <Grid item xs={4} className={classes.imageDetailsContainer}>
                 <ImageDetails
-                  type="Baseline"
-                  branchName={testRun.baselineBranchName}
-                  imageName={testRun.baselineName}
-                  ignoreAreas={[]}
-                />
-              </div>
+                    type="Baseline"
+                    branchName={testRun.baselineBranchName}
+                    imageName={testRun.baselineName}
+                    ignoreAreas={[]}
+                  />
+              </Grid>
+              <Grid item container xs={8} alignItems="center" alignContent="center" spacing={2}>
+                  <Grid item>
+                    <Button
+                      color="primary"
+                      disabled={!testRun.testVariationId}
+                      onClick={() => {
+                        navigate(
+                          `${routes.VARIATION_DETAILS_PAGE}/${testRun.testVariationId}`
+                        );
+                      }}
+                    >
+                      History
+                    </Button>
+                </Grid>
+              </Grid>
             </Grid>
             <Grid item style={{flexGrow: "1"}}>
               <DrawArea
@@ -525,6 +508,25 @@ const TestDetailsModal: React.FunctionComponent<{
           </Grid>
         </Grid>
       </Box>
+      <Grid container>
+        {testRun.diffName && (
+          <Grid item>
+            <Tooltip title={"Hotkey: D"}>
+              <Switch
+                checked={isDiffShown}
+                onChange={() => setIsDiffShown(!isDiffShown)}
+                name="Toggle diff"
+              />
+            </Tooltip>
+          </Grid>
+        )}
+        {(testRun.status === TestStatus.unresolved ||
+          testRun.status === TestStatus.new) && (
+          <Grid item>
+            <ApproveRejectButtons testRun={testRun} />
+          </Grid>
+        )}
+      </Grid>
       <ScaleActionsSpeedDial
         onZoomInClick={() => setStageScale(stageScale * stageScaleBy)}
         onZoomOutClick={() => setStageScale(stageScale / stageScaleBy)}
