@@ -10,8 +10,9 @@ import {
   Select,
   MenuItem,
   LinearProgress,
+  Divider,
 } from "@material-ui/core";
-import { ToggleButton } from "@material-ui/lab";
+import { ToggleButton, ToggleButtonGroup } from "@material-ui/lab";
 import { useHotkeys } from "react-hotkeys-hook";
 import { TestRun } from "../../types";
 import { testRunService, staticService } from "../../services";
@@ -28,7 +29,7 @@ import {
   LayersClear,
   Collections,
 } from "@material-ui/icons";
-import { TestRunDetails } from "../TestRunDetails";
+import { TestRunDetails } from "./TestRunDetails";
 import useImage from "use-image";
 import { routes } from "../../constants";
 import { useTestRunDispatch } from "../../contexts";
@@ -55,12 +56,10 @@ const useStyles = makeStyles((theme) => ({
     position: "relative",
     textAlign: "left",
     background: "#efefef",
-    borderBottom: "2px solid #DDD",
     paddingLeft:8,
   },
   testRunName:{
     fontWeight:300,
-    textTransform:"uppercase"
   },
   closeIcon:{
     position: "absolute",
@@ -71,8 +70,7 @@ const useStyles = makeStyles((theme) => ({
   },
   drawAreaContainer: {
     width: "100%",
-    height:"100%",
-    backgroundColor: "#f5f5f5",
+    height:"100%"
   },
   drawAreaItem: {
     padding: "0 4px",
@@ -314,6 +312,7 @@ const TestDetailsModal: React.FunctionComponent<{
           <ToggleButton
             value={"drawMode"}
             selected={isDrawMode}
+            size="small"
             onClick={() => {
               setIsDrawMode(!isDrawMode);
             }}
@@ -323,6 +322,7 @@ const TestDetailsModal: React.FunctionComponent<{
         </Grid>
         <Grid item>
           <IconButton
+            size="small"
             disabled={!selectedRectId || ignoreAreas.length === 0}
             onClick={() =>
               selectedRectId && deleteIgnoreArea(selectedRectId)
@@ -334,6 +334,7 @@ const TestDetailsModal: React.FunctionComponent<{
         <Tooltip title="Clears all ignore areas." aria-label="reject">
           <Grid item>
             <IconButton
+              size="small"
               disabled={ignoreAreas.length === 0}
               onClick={() => {
                 handleIgnoreAreaChange([]);
@@ -349,6 +350,7 @@ const TestDetailsModal: React.FunctionComponent<{
         >
           <Grid item>
             <IconButton
+              size="small"
               disabled={!selectedRectId || ignoreAreas.length === 0}
               onClick={() => toggleApplyIgnoreDialogOpen()}
             >
@@ -358,6 +360,7 @@ const TestDetailsModal: React.FunctionComponent<{
         </Tooltip>
         <Grid item>
           <IconButton
+            size="small"
             disabled={!touched}
             onClick={() => saveIgnoreAreasOrCompareArea()}
           >
@@ -368,20 +371,81 @@ const TestDetailsModal: React.FunctionComponent<{
     </>
   }
 
+  const baselinePanel=()=>{
+    return <Grid container xs={6}
+      ref={leftItemRef}
+      className={classes.drawAreaItem} 
+      direction="column"
+      wrap="nowrap"
+      alignItems="stretch">
+      <Grid container alignItems="center" spacing={2} style={{paddingLeft:5}}>
+        <Grid item className={classes.imageDetailsContainer}>
+          <Typography variant="overline" style={{lineHeight:1,color:"darkslategrey"}}>Baseline</Typography>
+        </Grid>
+        <ImageDetails
+              type="Baseline"
+              branchName={testRun.baselineBranchName}
+              imageName={testRun.baselineName}
+              ignoreAreas={[]}
+            />
+        <Grid item>
+          <Button
+            color="primary"
+            disabled={!testRun.testVariationId}
+            onClick={() => {
+              navigate(
+                `${routes.VARIATION_DETAILS_PAGE}/${testRun.testVariationId}`
+              );
+            }}
+          >
+            History
+          </Button>
+        </Grid>
+      </Grid>
+      <Grid item style={{flexGrow: "1"}}>
+        <DrawArea
+          imageState={[baselineImage, baselineImageStatus]}
+          ignoreAreas={[]}
+          tempIgnoreAreas={[]}
+          setIgnoreAreas={handleIgnoreAreaChange}
+          selectedRectId={selectedRectId}
+          setSelectedRectId={setSelectedRectId}
+          onStageClick={removeSelection}
+          stageScaleState={[stageScale, setStageScale]}
+          stagePosState={[stagePos, setStagePos]}
+          stageScrollPosState={[stageScrollPos, setStageScrollPos]}
+          stageInitPosState={[stageInitPos, setStageInitPos]}
+          stageOffsetState={[stageOffset, setStageOffset]}
+          drawModeState={[false, setIsDrawMode]}
+        />
+      </Grid>
+    </Grid>
+  }
+
   const diffPanel=(type:any, branchName:string, imageName:string, imageStatus:any, image: undefined|HTMLImageElement)=>{
-    return <>
-      <Grid container alignItems="center" spacing={2}>  
-          <Grid item xs={4}>
-            <div className={classes.imageDetailsContainer}>
-              <ImageDetails
-                type={type}
-                branchName={branchName}
-                imageName={imageName}
-                ignoreAreas={JSON.parse(testRun.tempIgnoreAreas)}
-              />
-            </div>
+    return <Grid item xs={6} className={classes.drawAreaItem} ref={rightItemRef}>
+      <Grid item container alignItems="center" spacing={2} style={{paddingLeft:5}}>  
+          <Grid item>
+            <Typography variant="overline" style={{lineHeight:1,color:"darkslategrey"}}>Checkpoint</Typography>
           </Grid>
-          <Grid item xs={8}>{ignoreAreasToolbar()}</Grid>
+          <ImageDetails
+              type={type}
+              branchName={branchName}
+              imageName={imageName}
+              ignoreAreas={JSON.parse(testRun.tempIgnoreAreas)}
+            />
+          {testRun.diffName && (
+            <Grid item style={{padding:0}}>
+              <Tooltip title={"Toggle diff. Hotkey: D"}>
+                <Switch
+                  checked={isDiffShown}
+                  onChange={() => setIsDiffShown(!isDiffShown)}
+                  name="Toggle diff"
+                />
+              </Tooltip>
+            </Grid>
+            )}
+          <Grid item>{ignoreAreasToolbar()}</Grid>
       </Grid>
       <DrawArea
             imageState={[image, imageStatus]}
@@ -399,8 +463,9 @@ const TestDetailsModal: React.FunctionComponent<{
             stageOffsetState={[stageOffset, setStageOffset]}
             drawModeState={[isDrawMode, setIsDrawMode]}
           />
-    </>
+    </Grid>
   }
+
   const header = ()=>{
     return <Box m={1}>
       <Grid container alignItems="center" className={classes.header} spacing={2}>
@@ -419,8 +484,8 @@ const TestDetailsModal: React.FunctionComponent<{
   }
 
   const testRunDetails = ()=>{
-    return <Box m={1}>
-      <Grid container alignItems="center" className={classes.testRunDetails} spacing={2} >
+    return <Box ml={1} mr={1} mt={0} mb={0}>
+      <Grid container alignItems="center" className={classes.testRunDetails} spacing={1} >
         <TestRunDetails testRun={testRun} />
         {isImageSizeDiffer && (
           <Grid item>
@@ -455,12 +520,14 @@ const TestDetailsModal: React.FunctionComponent<{
           />
         </Grid>
       </Grid>
+      <Divider/>
     </Box>
   }
 
   return (
     <React.Fragment>
       {header()}
+      <Divider/>
       {processing && <LinearProgress />}
       {testRunDetails()}
       <Box
@@ -469,74 +536,13 @@ const TestDetailsModal: React.FunctionComponent<{
         className={classes.drawAreaContainer}          
       >
         <Grid container justifyContent="center" alignItems="stretch" style={{height:"100%"}}>
-          <Grid container xs={6}
-            ref={leftItemRef}
-            className={classes.drawAreaItem} 
-            direction="column"
-            wrap="nowrap"
-            alignItems="stretch">
-            <Grid container>
-              <Grid item xs={4} className={classes.imageDetailsContainer}>
-                <ImageDetails
-                    type="Baseline"
-                    branchName={testRun.baselineBranchName}
-                    imageName={testRun.baselineName}
-                    ignoreAreas={[]}
-                  />
-              </Grid>
-              <Grid item container xs={8} alignItems="center" alignContent="center" spacing={2}>
-                  <Grid item>
-                    <Button
-                      color="primary"
-                      disabled={!testRun.testVariationId}
-                      onClick={() => {
-                        navigate(
-                          `${routes.VARIATION_DETAILS_PAGE}/${testRun.testVariationId}`
-                        );
-                      }}
-                    >
-                      History
-                    </Button>
-                </Grid>
-              </Grid>
-            </Grid>
-            <Grid item style={{flexGrow: "1"}}>
-              <DrawArea
-                imageState={[baselineImage, baselineImageStatus]}
-                ignoreAreas={[]}
-                tempIgnoreAreas={[]}
-                setIgnoreAreas={handleIgnoreAreaChange}
-                selectedRectId={selectedRectId}
-                setSelectedRectId={setSelectedRectId}
-                onStageClick={removeSelection}
-                stageScaleState={[stageScale, setStageScale]}
-                stagePosState={[stagePos, setStagePos]}
-                stageScrollPosState={[stageScrollPos, setStageScrollPos]}
-                stageInitPosState={[stageInitPos, setStageInitPos]}
-                stageOffsetState={[stageOffset, setStageOffset]}
-                drawModeState={[false, setIsDrawMode]}
-              />
-            </Grid>
-          </Grid>
-          <Grid item xs={6} className={classes.drawAreaItem} ref={rightItemRef}>
-            {isDiffShown?
-             diffPanel("Diff", testRun.branchName, testRun.diffName, diffImageStatus, diffImage):
-             diffPanel("Image", testRun.branchName, testRun.imageName, imageStatus, image)}
-          </Grid>
+          {baselinePanel()}
+          {isDiffShown?
+            diffPanel("Diff", testRun.branchName, testRun.diffName, diffImageStatus, diffImage):
+            diffPanel("Image", testRun.branchName, testRun.imageName, imageStatus, image)}
         </Grid>
       </Box>
       <Grid container>
-        {testRun.diffName && (
-          <Grid item>
-            <Tooltip title={"Hotkey: D"}>
-              <Switch
-                checked={isDiffShown}
-                onChange={() => setIsDiffShown(!isDiffShown)}
-                name="Toggle diff"
-              />
-            </Tooltip>
-          </Grid>
-        )}
         {(testRun.status === TestStatus.unresolved ||
           testRun.status === TestStatus.new) && (
           <Grid item>
