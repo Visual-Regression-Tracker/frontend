@@ -47,7 +47,7 @@ const ImageDetails: React.FunctionComponent<IProps> = ({
       {imageName ? (
         <React.Fragment>
             <Grid item style={{paddingLeft:0,color:"darkslategrey"}}>
-              <Typography variant="caption">
+              <Typography variant="caption" style={{fontSize:"0.7rem"}}>
                   {image?`(${image?.width} x ${image?.height})`:"Loading..."}
               </Typography>
             </Grid>

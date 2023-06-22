@@ -45,7 +45,7 @@ export const ApproveRejectButtons: React.FunctionComponent<{
   useHotkeys("x", reject, [testRun]);
 
   return (
-    <Grid container spacing={2} alignItems="center">
+    <>
       {testRun.merge && (
         <Grid item>
           <Tooltip title="Will replace target branch baseline if accepted">
@@ -71,6 +71,6 @@ export const ApproveRejectButtons: React.FunctionComponent<{
           </Button>
         </Tooltip>
       </Grid>
-    </Grid>
+    </>
   );
 };

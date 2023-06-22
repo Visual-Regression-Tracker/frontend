@@ -11,6 +11,8 @@ import {
   MenuItem,
   LinearProgress,
   Divider,
+  FormControlLabel,
+  Checkbox,
 } from "@material-ui/core";
 import { ToggleButton, ToggleButtonGroup } from "@material-ui/lab";
 import { useHotkeys } from "react-hotkeys-hook";
@@ -28,6 +30,11 @@ import {
   WarningRounded,
   LayersClear,
   Collections,
+  OpenInNew,
+  ZoomIn,
+  ZoomOut,
+  Fullscreen,
+  FullscreenExit,
 } from "@material-ui/icons";
 import { TestRunDetails } from "./TestRunDetails";
 import useImage from "use-image";
@@ -36,7 +43,6 @@ import { useTestRunDispatch } from "../../contexts";
 import { DrawArea } from "./DrawArea";
 import { CommentsPopper } from "../CommentsPopper";
 import { useSnackbar } from "notistack";
-import { ScaleActionsSpeedDial } from "../ZoomSpeedDial";
 import { ApproveRejectButtons } from "../ApproveRejectButtons";
 import { head } from "lodash";
 import { invertIgnoreArea } from "../../_helpers/ignoreArea.helper";
@@ -57,6 +63,18 @@ const useStyles = makeStyles((theme) => ({
     textAlign: "left",
     background: "#efefef",
     paddingLeft:8,
+  },
+  footer: {
+    background: "#efefef",
+  },
+  scaleActions:{
+    display: "flex",
+    alignItems:"center"
+  },
+  testRunActions:{
+    display: "flex",
+    alignItems: "center",
+    alignContent: "center"
   },
   testRunName:{
     fontWeight:300,
@@ -151,6 +169,7 @@ const TestDetailsModal: React.FunctionComponent<{
     if(baselineImage && rightItemRef.current){
       fitImageToStage(baselineImage, rightItemRef.current);
     }
+    resetPositioin();
   }
   
   const fitImageToStage = (image:HTMLImageElement, container:HTMLElement ) => {
@@ -398,7 +417,7 @@ const TestDetailsModal: React.FunctionComponent<{
               );
             }}
           >
-            History
+            History <OpenInNew fontSize="small"/>
           </Button>
         </Grid>
       </Grid>
@@ -542,20 +561,43 @@ const TestDetailsModal: React.FunctionComponent<{
             diffPanel("Image", testRun.branchName, testRun.imageName, imageStatus, image)}
         </Grid>
       </Box>
-      <Grid container>
+      <Grid container className={classes.footer}>
+        <Grid item xs={4} className={classes.scaleActions}>
+          <Tooltip title={"Zoom In"}>
+            <IconButton onClick={() => setStageScale(stageScale * stageScaleBy)}>
+              <ZoomIn />
+            </IconButton>
+          </Tooltip>
+          <Tooltip title={"Zoom Out"}>
+            <IconButton onClick={() => setStageScale(stageScale / stageScaleBy)}>
+              <ZoomOut />
+            </IconButton>
+          </Tooltip>
+          <Tooltip title={"Original size"}>
+            <IconButton onClick={setOriginalSize}>
+              <Fullscreen/>
+            </IconButton>
+          </Tooltip>
+          <Tooltip title={"Fit into screen"}>
+            <IconButton onClick={fitImagesToStage}>
+              <FullscreenExit/>
+            </IconButton>
+          </Tooltip>
+        </Grid>
         {(testRun.status === TestStatus.unresolved ||
           testRun.status === TestStatus.new) && (
-          <Grid item>
+          <Grid item container xs={4} className={classes.testRunActions} alignContent="center" alignItems="center">
             <ApproveRejectButtons testRun={testRun} />
           </Grid>
         )}
+        <Grid item xs={4} className={classes.testRunActions}>
+          <FormControlLabel
+            value="top"
+            control={<Checkbox/>}
+            label="Go to next after Approve/Reject"
+          />
+        </Grid>
       </Grid>
-      <ScaleActionsSpeedDial
-        onZoomInClick={() => setStageScale(stageScale * stageScaleBy)}
-        onZoomOutClick={() => setStageScale(stageScale / stageScaleBy)}
-        onOriginalSizeClick={setOriginalSize}
-        onFitIntoScreenClick={fitImagesToStage}
-      />
       <BaseModal
         open={applyIgnoreDialogOpen}
         title={applyIgnoreAreaText}
