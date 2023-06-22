@@ -586,11 +586,11 @@ const TestDetailsModal: React.FunctionComponent<{
         </Grid>
         {(testRun.status === TestStatus.unresolved ||
           testRun.status === TestStatus.new) && (
-          <Grid item container xs={4} className={classes.testRunActions} alignContent="center" alignItems="center">
+          <Grid item container xs={4} className={classes.testRunActions} justifyContent="center">
             <ApproveRejectButtons testRun={testRun} />
           </Grid>
         )}
-        <Grid item xs={4} className={classes.testRunActions}>
+        <Grid item container xs={4} className={classes.testRunActions} justifyContent="flex-end">
           <FormControlLabel
             value="top"
             control={<Checkbox/>}
