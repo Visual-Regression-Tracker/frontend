@@ -1,15 +1,23 @@
-import { Grid, Chip, Button } from "@material-ui/core";
+import { Grid, Chip, Button, makeStyles } from "@material-ui/core";
 import { useSnackbar } from "notistack";
 import { useHotkeys } from "react-hotkeys-hook";
 import React from "react";
 import { testRunService } from "../services";
 import { TestRun } from "../types";
 import { Tooltip } from "./Tooltip";
+import { ThumbDown, ThumbUp } from "@material-ui/icons";
+
+const useStyles = makeStyles((theme) => ({
+  actionButton: {
+    width: 120,
+  },
+}))
 
 export const ApproveRejectButtons: React.FunctionComponent<{
   testRun: TestRun;
 }> = ({ testRun }) => {
   const { enqueueSnackbar } = useSnackbar();
+  const classes = useStyles();
 
   const approve = () => {
     testRunService
@@ -47,7 +55,6 @@ export const ApproveRejectButtons: React.FunctionComponent<{
   return (
     <>
       {testRun.merge && (
-        <Grid item>
           <Tooltip title="Will replace target branch baseline if accepted">
             <Chip
               label={`merge into: ${testRun.baselineBranchName}`}
@@ -55,22 +62,19 @@ export const ApproveRejectButtons: React.FunctionComponent<{
               size="small"
             />
           </Tooltip>
-        </Grid>
       )}
-      <Grid item>
         <Tooltip title={"Hotkey: A"}>
-          <Button color="inherit" onClick={approve}>
+          <Button onClick={approve} style={{color:"cornflowerblue"}} variant="contained" className={classes.actionButton}>
             Approve
+            <ThumbUp fontSize="small" style={{ marginTop: -5, marginLeft: 5}}/>
           </Button>
         </Tooltip>
-      </Grid>
-      <Grid item>
         <Tooltip title={"Hotkey: X"}>
-          <Button color="secondary" onClick={reject}>
+          <Button color="secondary" onClick={reject} className={classes.actionButton}>
             Reject
+            <ThumbDown fontSize="small" style={{ marginLeft: 5}}/>
           </Button>
         </Tooltip>
-      </Grid>
     </>
   );
 };
