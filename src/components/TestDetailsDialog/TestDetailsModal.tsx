@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Typography,
   Button,
@@ -134,6 +134,20 @@ const TestDetailsModal: React.FunctionComponent<{
   const [applyIgnoreDialogOpen, setApplyIgnoreDialogOpen] = React.useState(
     false
   );
+
+  const GO_TO_NEXT_KEY = "goToNextAutomatically"
+  const [goToNextAutomatically, setGoToNextAutomatically] = React.useState(() => {
+    const json = localStorage.getItem(GO_TO_NEXT_KEY);
+    if(json){
+      return JSON.parse(json)
+    }
+    return false
+  });
+
+  useEffect(() => {
+    localStorage.setItem(GO_TO_NEXT_KEY, JSON.stringify(goToNextAutomatically));
+  }, [goToNextAutomatically]);
+
   const leftItemRef = React.useRef<HTMLDivElement>(null);
   const rightItemRef = React.useRef<HTMLDivElement>(null);
 
@@ -419,9 +433,7 @@ const TestDetailsModal: React.FunctionComponent<{
             color="primary"
             disabled={!testRun.testVariationId}
             onClick={() => {
-              navigate(
-                `${routes.VARIATION_DETAILS_PAGE}/${testRun.testVariationId}`
-              );
+              window.open(`${routes.VARIATION_DETAILS_PAGE}/${testRun.testVariationId}`, '_blank')
             }}
           >
             History <OpenInNew fontSize="small"/>
@@ -591,29 +603,33 @@ const TestDetailsModal: React.FunctionComponent<{
             </IconButton>
           </Tooltip>
         </Grid>
-        {(testRun.status === TestStatus.unresolved ||
-          testRun.status === TestStatus.new) && (
-          <Grid item xs={4} className={classes.testRunActions} justifyContent="center">
-            <Tooltip title={"Hotkey: ArrowLeft"}>
-              <IconButton color="secondary" 
-                style={{visibility:currentRunIndex > 0?'visible':'hidden'}}
-                onClick={handlePrevious}>
-                <NavigateBefore  />
-              </IconButton>
-            </Tooltip>
+        <Grid item xs={4} className={classes.testRunActions} justifyContent="center">
+          <Tooltip title={"Hotkey: ArrowLeft"}>
+            <IconButton color="secondary" 
+              style={{visibility:currentRunIndex > 0?'visible':'hidden'}}
+              onClick={handlePrevious}>
+              <NavigateBefore  />
+            </IconButton>
+          </Tooltip>
+          {(testRun.status === TestStatus.unresolved ||
+            testRun.status === TestStatus.new) && (
             <ApproveRejectButtons testRun={testRun} />
-            <Tooltip title={"Hotkey: ArrowRight"}>
-              <IconButton color="secondary" 
-                style={{visibility:currentRunIndex + 1 < totalTestRunCount?'visible':'hidden'}}
-                onClick={handleNext}>
-                <NavigateNext/>
-              </IconButton>
-            </Tooltip>
-          </Grid>
-        )}
+          )}
+          <Tooltip title={"Hotkey: ArrowRight"}>
+            <IconButton color="secondary" 
+              style={{visibility:currentRunIndex + 1 < totalTestRunCount?'visible':'hidden'}}
+              onClick={handleNext}>
+              <NavigateNext/>
+            </IconButton>
+          </Tooltip>
+        </Grid>
         <Grid item container xs={4} className={classes.testRunActions} justifyContent="flex-end">
           <FormControlLabel
-            control={<Checkbox color="primary" size="small"/>}
+            control={
+              <Checkbox color="primary" size="small"
+                checked={goToNextAutomatically}
+                onChange={(e)=>setGoToNextAutomatically(e.target.checked)}/>
+            }
             label={<Typography variant="body2" color="textSecondary">Go to the next after Approve/Reject</Typography>}
           />
         </Grid>

@@ -52,7 +52,7 @@ export const TestDetailsDialog: React.FunctionComponent = () => {
     if(index>=0 && index<testRuns.length){
       navigateById(testRuns[index].id)
     }
-  }, [touched, navigate, selectedBuild?.id])
+  }, [testRuns])
 
   const navigateById = React.useCallback(
     (id?: string) => {
