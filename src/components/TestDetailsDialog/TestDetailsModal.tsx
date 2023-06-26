@@ -35,6 +35,8 @@ import {
   ZoomOut,
   Fullscreen,
   FullscreenExit,
+  NavigateNext,
+  NavigateBefore,
 } from "@material-ui/icons";
 import { TestRunDetails } from "./TestRunDetails";
 import useImage from "use-image";
@@ -107,7 +109,9 @@ const TestDetailsModal: React.FunctionComponent<{
   totalTestRunCount: number;
   touched: boolean;
   handleClose: () => void;
-}> = ({ testRun, currentRunIndex, totalTestRunCount, touched, handleClose }) => {
+  handlePrevious: () => void;
+  handleNext: () => void;
+}> = ({ testRun, currentRunIndex, totalTestRunCount, touched, handlePrevious, handleNext, handleClose }) => {
   const classes = useStyles();
   const navigate = useNavigate();
   const { enqueueSnackbar } = useSnackbar();
@@ -161,6 +165,9 @@ const TestDetailsModal: React.FunctionComponent<{
   React.useEffect(() => {
     fitImagesToStage()
   }, [image, baselineImage]);
+
+  useHotkeys("right", handleNext, [currentRunIndex, handleNext]);
+  useHotkeys("left", handlePrevious, [currentRunIndex, handlePrevious]);
 
   const fitImagesToStage=()=>{
     if(image && leftItemRef.current){
@@ -587,7 +594,21 @@ const TestDetailsModal: React.FunctionComponent<{
         {(testRun.status === TestStatus.unresolved ||
           testRun.status === TestStatus.new) && (
           <Grid item xs={4} className={classes.testRunActions} justifyContent="center">
+            <Tooltip title={"Hotkey: ArrowLeft"}>
+              <IconButton color="secondary" 
+                style={{visibility:currentRunIndex > 0?'visible':'hidden'}}
+                onClick={handlePrevious}>
+                <NavigateBefore  />
+              </IconButton>
+            </Tooltip>
             <ApproveRejectButtons testRun={testRun} />
+            <Tooltip title={"Hotkey: ArrowRight"}>
+              <IconButton color="secondary" 
+                style={{visibility:currentRunIndex + 1 < totalTestRunCount?'visible':'hidden'}}
+                onClick={handleNext}>
+                <NavigateNext/>
+              </IconButton>
+            </Tooltip>
           </Grid>
         )}
         <Grid item container xs={4} className={classes.testRunActions} justifyContent="flex-end">

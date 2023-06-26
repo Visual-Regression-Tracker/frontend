@@ -48,7 +48,13 @@ export const TestDetailsDialog: React.FunctionComponent = () => {
     [testRuns, selectedTestRun?.id]
   );
 
-  const handleNavigation = React.useCallback(
+  const navigateByIndex = React.useCallback((index:number)=>{
+    if(index>=0 && index<testRuns.length){
+      navigateById(testRuns[index].id)
+    }
+  }, [touched, navigate, selectedBuild?.id])
+
+  const navigateById = React.useCallback(
     (id?: string) => {
       if (touched) {
         setNavigationTargetId(id);
@@ -71,12 +77,9 @@ export const TestDetailsDialog: React.FunctionComponent = () => {
         currentRunIndex={testRuns.findIndex((e) => e.id === selectedTestRun.id)}
         totalTestRunCount={testRuns.length}
         touched={touched}
-        handleClose={() => handleNavigation()}
-      />
-      <ArrowButtons
-        testRuns={testRuns}
-        selectedTestRunIndex={selectedTestRunIndex}
-        handleNavigation={handleNavigation}
+        handleClose={() => navigateById()}
+        handlePrevious= {() => navigateByIndex(selectedTestRunIndex-1)}
+        handleNext = {() => navigateByIndex(selectedTestRunIndex+1)}
       />
       <BaseModal
         open={notSavedChangesModal}

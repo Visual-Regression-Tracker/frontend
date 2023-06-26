@@ -5,11 +5,12 @@ import React from "react";
 import { testRunService } from "../services";
 import { TestRun } from "../types";
 import { Tooltip } from "./Tooltip";
-import { ThumbDown, ThumbUp } from "@material-ui/icons";
 
 const useStyles = makeStyles((theme) => ({
   actionButton: {
     width: 120,
+    marginLeft:4,
+    marginRight:4
   },
 }))
 
@@ -66,13 +67,11 @@ export const ApproveRejectButtons: React.FunctionComponent<{
         <Tooltip title={"Hotkey: A"}>
           <Button onClick={approve} style={{color:"cornflowerblue"}} variant="contained" className={classes.actionButton}>
             Approve
-            <ThumbUp fontSize="small" style={{ marginTop: -5, marginLeft: 5}}/>
           </Button>
         </Tooltip>
         <Tooltip title={"Hotkey: X"}>
           <Button color="secondary" onClick={reject} className={classes.actionButton}>
             Reject
-            <ThumbDown fontSize="small" style={{ marginLeft: 5}}/>
           </Button>
         </Tooltip>
     </>
