@@ -16,18 +16,21 @@ const useStyles = makeStyles((theme) => ({
 
 export const ApproveRejectButtons: React.FunctionComponent<{
   testRun: TestRun;
-}> = ({ testRun }) => {
+  afterApprove?: ()=>void,
+  afterReject?: ()=>void,
+}> = ({ testRun, afterApprove, afterReject }) => {
   const { enqueueSnackbar } = useSnackbar();
   const classes = useStyles();
 
   const approve = () => {
     testRunService
       .approveBulk([testRun.id], testRun.merge)
-      .then(() =>
+      .then(() =>{
         enqueueSnackbar("Approved", {
           variant: "success",
         })
-      )
+        afterApprove && afterApprove()
+      })
       .catch((err) =>
         enqueueSnackbar(err, {
           variant: "error",
@@ -38,11 +41,12 @@ export const ApproveRejectButtons: React.FunctionComponent<{
   const reject = () => {
     testRunService
       .rejectBulk([testRun.id])
-      .then(() =>
+      .then(() =>{
         enqueueSnackbar("Rejected", {
           variant: "success",
         })
-      )
+        afterReject && afterReject()
+      })
       .catch((err) =>
         enqueueSnackbar(err, {
           variant: "error",

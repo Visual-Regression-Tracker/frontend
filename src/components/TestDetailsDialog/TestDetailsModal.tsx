@@ -148,6 +148,12 @@ const TestDetailsModal: React.FunctionComponent<{
     localStorage.setItem(GO_TO_NEXT_KEY, JSON.stringify(goToNextAutomatically));
   }, [goToNextAutomatically]);
 
+  const handleGoToNextAutomatically=()=>{
+    if(goToNextAutomatically){
+      handleNext()
+    }
+  }
+
   const leftItemRef = React.useRef<HTMLDivElement>(null);
   const rightItemRef = React.useRef<HTMLDivElement>(null);
 
@@ -613,7 +619,7 @@ const TestDetailsModal: React.FunctionComponent<{
           </Tooltip>
           {(testRun.status === TestStatus.unresolved ||
             testRun.status === TestStatus.new) && (
-            <ApproveRejectButtons testRun={testRun} />
+            <ApproveRejectButtons testRun={testRun} afterApprove={handleGoToNextAutomatically} afterReject={handleGoToNextAutomatically}/>
           )}
           <Tooltip title={"Hotkey: ArrowRight"}>
             <IconButton color="secondary" 
