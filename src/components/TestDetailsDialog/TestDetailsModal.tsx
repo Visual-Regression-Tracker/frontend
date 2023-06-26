@@ -45,7 +45,7 @@ import { useTestRunDispatch } from "../../contexts";
 import { DrawArea } from "./DrawArea";
 import { CommentsPopper } from "../CommentsPopper";
 import { useSnackbar } from "notistack";
-import { ApproveRejectButtons } from "../ApproveRejectButtons";
+import { ApproveRejectButtons } from "./ApproveRejectButtons";
 import { head } from "lodash";
 import { invertIgnoreArea } from "../../_helpers/ignoreArea.helper";
 import { BaseModal } from "../BaseModal";
@@ -448,6 +448,7 @@ const TestDetailsModal: React.FunctionComponent<{
       </Grid>
       <Grid item style={{flexGrow: "1"}}>
         <DrawArea
+          imageName={testRun.baselineName}
           imageState={[baselineImage, baselineImageStatus]}
           ignoreAreas={[]}
           tempIgnoreAreas={[]}
@@ -492,6 +493,7 @@ const TestDetailsModal: React.FunctionComponent<{
           <Grid item>{ignoreAreasToolbar()}</Grid>
       </Grid>
       <DrawArea
+            imageName={imageName}
             imageState={[image, imageStatus]}
             ignoreAreas={ignoreAreas}
             tempIgnoreAreas={JSON.parse(testRun.tempIgnoreAreas)}

@@ -3,7 +3,7 @@ import { Stage, Layer, Image } from "react-konva";
 import Rectangle, { MIN_RECT_SIDE_PIXEL } from "../Rectangle";
 import { IgnoreArea } from "../../types/ignoreArea";
 import { Grid, makeStyles, CircularProgress } from "@material-ui/core";
-import { NoImagePlaceholder } from "../NoImageAvailable";
+import { NoImagePlaceholder } from "./NoImageAvailable";
 import Konva from "konva";
 
 const useStyles = makeStyles((theme) => ({
@@ -24,6 +24,7 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 interface IDrawArea {
+  imageName: string|undefined;
   imageState: [undefined | HTMLImageElement, "loaded" | "loading" | "failed"];
   tempIgnoreAreas: IgnoreArea[];
   ignoreAreas: IgnoreArea[];
@@ -52,6 +53,7 @@ interface IDrawArea {
   drawModeState: [boolean, React.Dispatch<React.SetStateAction<boolean>>];
 }
 export const DrawArea: FunctionComponent<IDrawArea> = ({
+  imageName,
   imageState,
   ignoreAreas,
   tempIgnoreAreas,
@@ -149,8 +151,10 @@ export const DrawArea: FunctionComponent<IDrawArea> = ({
     }
   };
 
-  return (
-    <React.Fragment>
+  console.log("image status",imageStatus)
+
+  const imageCanvas = ()=>{
+    return <>
       {imageStatus === "loading" && (
         <Grid
           container
@@ -164,7 +168,7 @@ export const DrawArea: FunctionComponent<IDrawArea> = ({
           </Grid>
         </Grid>
       )}
-      {(imageStatus === "failed") && <NoImagePlaceholder />}
+      {(!imageName || imageStatus === "failed") && <NoImagePlaceholder />}
       {imageStatus === "loaded" && (
         <div className={classes.canvasContainer}   
           ref={scrollContainerRef}
@@ -295,6 +299,14 @@ export const DrawArea: FunctionComponent<IDrawArea> = ({
           </div>
         </div>
       )}
+    </>
+  }
+
+  return (
+    <React.Fragment>
+      {imageName?
+        imageCanvas()
+      :<NoImagePlaceholder />}
     </React.Fragment>
   );
 };

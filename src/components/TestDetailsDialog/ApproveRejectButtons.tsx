@@ -2,9 +2,9 @@ import { Grid, Chip, Button, makeStyles } from "@material-ui/core";
 import { useSnackbar } from "notistack";
 import { useHotkeys } from "react-hotkeys-hook";
 import React from "react";
-import { testRunService } from "../services";
-import { TestRun } from "../types";
-import { Tooltip } from "./Tooltip";
+import { testRunService } from "../../services";
+import { TestRun } from "../../types";
+import { Tooltip } from "../Tooltip";
 
 const useStyles = makeStyles((theme) => ({
   actionButton: {
