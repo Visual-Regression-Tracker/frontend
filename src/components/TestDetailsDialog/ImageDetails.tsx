@@ -1,15 +1,14 @@
 import React from "react";
 import { Typography, Chip, Grid, IconButton, withStyles, colors, makeStyles } from "@material-ui/core";
 import { WarningRounded } from "@material-ui/icons";
-import { staticService } from "../services";
-import useImage from "use-image";
-import { IgnoreArea } from "../types/ignoreArea";
-import { Tooltip } from "./Tooltip";
+import { IgnoreArea } from "../../types/ignoreArea";
+import { Tooltip } from "../Tooltip";
 import AltRouteIcon from '@mui/icons-material/AltRoute';
 
 interface IProps {
   type: "Baseline" | "Image" | "Diff";
   imageName: string;
+  image: undefined | HTMLImageElement;
   branchName: string;
   ignoreAreas?: IgnoreArea[];
 }
@@ -44,37 +43,35 @@ const useStyles = makeStyles((theme) => ({
 
 const ImageDetails: React.FunctionComponent<IProps> = ({
   type,
+  image,
   imageName,
   branchName,
   ignoreAreas,
 }) => {
   const classes = useStyles();
-  const [image] = useImage(staticService.getImage(imageName));
   return (
     <React.Fragment>
-      {imageName &&
-        <Grid item className={classes.container}>
-          <Typography variant="overline" style={{marginRight:3}}>{type=="Baseline"?"Baseline":"Checkpoint"}</Typography>
-          <Typography variant="caption" style={{marginRight:3, fontSize:"0.7rem"}}>
-              {image?`(${image?.width} x ${image?.height})`:"Loading..."}
-          </Typography>
-          <AltRouteIcon fontSize="small"/>  
-          <Tooltip title={`Branch: ${branchName}`}>
-            <span className={classes.branchName}>{branchName}</span>
+      <Grid item className={classes.container}>
+        <Typography variant="overline" style={{marginRight:3}}>{type=="Baseline"?"Baseline":"Checkpoint"}</Typography>
+        {imageName && <Typography variant="caption" style={{marginRight:3, fontSize:"0.7rem"}}>
+            {image?`(${image?.width} x ${image?.height})`:"Loading..."}
+        </Typography>}
+        <AltRouteIcon fontSize="small"/>  
+        <Tooltip title={`Branch: ${branchName}`}>
+          <span className={classes.branchName}>{branchName}</span>
+        </Tooltip>
+        {ignoreAreas && ignoreAreas.length > 0 && (
+          <Tooltip
+            title={
+              "Contains noneditable ignore areas applied during image upload."
+            }
+          >
+            <IconButton>
+              <WarningRounded color="secondary" />
+            </IconButton>
           </Tooltip>
-          {ignoreAreas && ignoreAreas.length > 0 && (
-            <Tooltip
-              title={
-                "Contains noneditable ignore areas applied during image upload."
-              }
-            >
-              <IconButton>
-                <WarningRounded color="secondary" />
-              </IconButton>
-            </Tooltip>
-          )}
-        </Grid>
-      }
+        )}
+      </Grid>
     </React.Fragment>
   );
 };

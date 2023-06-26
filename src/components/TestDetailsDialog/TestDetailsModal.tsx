@@ -50,7 +50,7 @@ import { head } from "lodash";
 import { invertIgnoreArea } from "../../_helpers/ignoreArea.helper";
 import { BaseModal } from "../BaseModal";
 import { Tooltip } from "../Tooltip";
-import ImageDetails from "../ImageDetails";
+import ImageDetails from "./ImageDetails";
 import { calculateScale } from "../../_helpers/scale.helper";
 import TestStatusChip from "../TestStatusChip";
 
@@ -429,6 +429,7 @@ const TestDetailsModal: React.FunctionComponent<{
               type="Baseline"
               branchName={testRun.baselineBranchName}
               imageName={testRun.baselineName}
+              image={baselineImage}
               ignoreAreas={[]}
             />
         <Grid item>
@@ -471,6 +472,7 @@ const TestDetailsModal: React.FunctionComponent<{
               type={type}
               branchName={branchName}
               imageName={imageName}
+              image={image}
               ignoreAreas={JSON.parse(testRun.tempIgnoreAreas)}
             />
           {testRun.diffName && (
