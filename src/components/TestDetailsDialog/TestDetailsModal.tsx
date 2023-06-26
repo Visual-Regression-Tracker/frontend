@@ -96,10 +96,9 @@ const useStyles = makeStyles((theme) => ({
     padding: "0 4px",
     height: "100%",
   },
-  imageDetailsContainer: {
-    backgroundColor: "white",
-    zIndex: 1,
-    padding: theme.spacing(1),
+  imageToolbar: {
+    paddingLeft: 5,
+    height: 52
   },
 }));
 
@@ -362,6 +361,7 @@ const TestDetailsModal: React.FunctionComponent<{
             onClick={() => {
               setIsDrawMode(!isDrawMode);
             }}
+            style={{padding:4}}
           >
             <Add />
           </ToggleButton>
@@ -424,10 +424,7 @@ const TestDetailsModal: React.FunctionComponent<{
       direction="column"
       wrap="nowrap"
       alignItems="stretch">
-      <Grid container alignItems="center" spacing={2} style={{paddingLeft:5}}>
-        <Grid item className={classes.imageDetailsContainer}>
-          <Typography variant="overline" style={{lineHeight:1,color:"darkslategrey"}}>Baseline</Typography>
-        </Grid>
+      <Grid container alignItems="center" spacing={2} className={classes.imageToolbar}>
         <ImageDetails
               type="Baseline"
               branchName={testRun.baselineBranchName}
@@ -469,10 +466,7 @@ const TestDetailsModal: React.FunctionComponent<{
 
   const diffPanel=(type:any, branchName:string, imageName:string, imageStatus:any, image: undefined|HTMLImageElement)=>{
     return <Grid item xs={6} className={classes.drawAreaItem} ref={rightItemRef}>
-      <Grid item container alignItems="center" spacing={2} style={{paddingLeft:5}}>  
-          <Grid item>
-            <Typography variant="overline" style={{lineHeight:1,color:"darkslategrey"}}>Checkpoint</Typography>
-          </Grid>
+      <Grid item container alignItems="center" spacing={2} className={classes.imageToolbar}>  
           <ImageDetails
               type={type}
               branchName={branchName}

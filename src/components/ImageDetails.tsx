@@ -24,14 +24,22 @@ const ColoredChip = withStyles({
 })(Chip);
 
 const useStyles = makeStyles((theme) => ({
+  container: {
+    display: "flex",
+    alignItems: "center",
+    color: "darkslategrey",
+  },
   branchName: {
     cursor:"pointer",
     lineHeight:"20px",
-    // color:'#3f51b5',
     fontWeight:"bolder",
     fontSize:"0.7rem",
-    fontFamily:'"Roboto", "Helvetica", "Arial", sans-serif'
-  },
+    fontFamily:'"Roboto", "Helvetica", "Arial", sans-serif',
+    maxWidth: 195,
+    textOverflow: "ellipsis",
+    whiteSpace: "nowrap",
+    overflow: "hidden"
+  }
 }))
 
 const ImageDetails: React.FunctionComponent<IProps> = ({
@@ -44,39 +52,29 @@ const ImageDetails: React.FunctionComponent<IProps> = ({
   const [image] = useImage(staticService.getImage(imageName));
   return (
     <React.Fragment>
-      {imageName ? (
-        <React.Fragment>
-            <Grid item style={{paddingLeft:0,color:"darkslategrey"}}>
-              <Typography variant="caption" style={{fontSize:"0.7rem"}}>
-                  {image?`(${image?.width} x ${image?.height})`:"Loading..."}
-              </Typography>
-            </Grid>
-            <Grid item style={{padding:0, display:"flex",color:"darkslategrey"}}>
-              <AltRouteIcon fontSize="small"/>  
-              <span className={classes.branchName}>{branchName}</span>
-            </Grid>
-            {/* <Grid item>
-              <Typography variant="caption" data-testid="image-details">
-              {image?`Real size: ${image?.width} x ${image?.height}`:"Loading..."}
-              </Typography>
-            </Grid> */}
-            {ignoreAreas && ignoreAreas.length > 0 && (
-              <Grid item>
-                <Tooltip
-                  title={
-                    "Contains noneditable ignore areas applied during image upload."
-                  }
-                >
-                  <IconButton>
-                    <WarningRounded color="secondary" />
-                  </IconButton>
-                </Tooltip>
-              </Grid>
-            )}
-        </React.Fragment>
-      ) : (
-        <Typography variant="caption">No image</Typography>
-      )}
+      {imageName &&
+        <Grid item className={classes.container}>
+          <Typography variant="overline" style={{marginRight:3}}>{type=="Baseline"?"Baseline":"Checkpoint"}</Typography>
+          <Typography variant="caption" style={{marginRight:3, fontSize:"0.7rem"}}>
+              {image?`(${image?.width} x ${image?.height})`:"Loading..."}
+          </Typography>
+          <AltRouteIcon fontSize="small"/>  
+          <Tooltip title={`Branch: ${branchName}`}>
+            <span className={classes.branchName}>{branchName}</span>
+          </Tooltip>
+          {ignoreAreas && ignoreAreas.length > 0 && (
+            <Tooltip
+              title={
+                "Contains noneditable ignore areas applied during image upload."
+              }
+            >
+              <IconButton>
+                <WarningRounded color="secondary" />
+              </IconButton>
+            </Tooltip>
+          )}
+        </Grid>
+      }
     </React.Fragment>
   );
 };
