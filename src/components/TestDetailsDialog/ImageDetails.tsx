@@ -1,9 +1,16 @@
 import React from "react";
-import { Typography, Chip, Grid, IconButton, withStyles, colors, makeStyles } from "@material-ui/core";
+import {
+  Typography,
+  Chip,
+  Grid,
+  IconButton,
+  withStyles,
+  makeStyles,
+} from "@material-ui/core";
 import { WarningRounded } from "@material-ui/icons";
 import { IgnoreArea } from "../../types/ignoreArea";
 import { Tooltip } from "../Tooltip";
-import AltRouteIcon from '@mui/icons-material/AltRoute';
+import AltRouteIcon from "@mui/icons-material/AltRoute";
 
 interface IProps {
   type: "Baseline" | "Image" | "Diff";
@@ -12,15 +19,6 @@ interface IProps {
   branchName: string;
   ignoreAreas?: IgnoreArea[];
 }
-const ColoredChip = withStyles({
-  root: {
-    backgroundColor:'whitesmoke',
-    lineHeight:20,
-    color:'#3f51b5',
-    fontWeight:"bolder",
-    fontSize:"0.7rem"
-  }
-})(Chip);
 
 const useStyles = makeStyles((theme) => ({
   container: {
@@ -29,17 +27,17 @@ const useStyles = makeStyles((theme) => ({
     color: "darkslategrey",
   },
   branchName: {
-    cursor:"pointer",
-    lineHeight:"20px",
-    fontWeight:"bolder",
-    fontSize:"0.7rem",
-    fontFamily:'"Roboto", "Helvetica", "Arial", sans-serif',
+    cursor: "pointer",
+    lineHeight: "20px",
+    fontWeight: "bolder",
+    fontSize: "0.7rem",
+    fontFamily: '"Roboto", "Helvetica", "Arial", sans-serif',
     maxWidth: 195,
     textOverflow: "ellipsis",
     whiteSpace: "nowrap",
-    overflow: "hidden"
-  }
-}))
+    overflow: "hidden",
+  },
+}));
 
 const ImageDetails: React.FunctionComponent<IProps> = ({
   type,
@@ -52,11 +50,18 @@ const ImageDetails: React.FunctionComponent<IProps> = ({
   return (
     <React.Fragment>
       <Grid item className={classes.container}>
-        <Typography variant="overline" style={{marginRight:3}}>{type=="Baseline"?"Baseline":"Checkpoint"}</Typography>
-        {imageName && <Typography variant="caption" style={{marginRight:3, fontSize:"0.7rem"}}>
-            {image?`(${image?.width} x ${image?.height})`:"Loading..."}
-        </Typography>}
-        <AltRouteIcon fontSize="small"/>  
+        <Typography variant="overline" style={{ marginRight: 3 }}>
+          {type == "Baseline" ? "Baseline" : "Checkpoint"}
+        </Typography>
+        {imageName && (
+          <Typography
+            variant="caption"
+            style={{ marginRight: 3, fontSize: "0.7rem" }}
+          >
+            {image ? `(${image?.width} x ${image?.height})` : "Loading..."}
+          </Typography>
+        )}
+        <AltRouteIcon fontSize="small" />
         <Tooltip title={`Branch: ${branchName}`}>
           <span className={classes.branchName}>{branchName}</span>
         </Tooltip>

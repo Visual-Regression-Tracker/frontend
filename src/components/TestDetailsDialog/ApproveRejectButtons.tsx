@@ -1,4 +1,4 @@
-import { Grid, Chip, Button, makeStyles } from "@material-ui/core";
+import { Chip, Button, makeStyles } from "@material-ui/core";
 import { useSnackbar } from "notistack";
 import { useHotkeys } from "react-hotkeys-hook";
 import React from "react";
@@ -9,15 +9,15 @@ import { Tooltip } from "../Tooltip";
 const useStyles = makeStyles((theme) => ({
   actionButton: {
     width: 120,
-    marginLeft:4,
-    marginRight:4
+    marginLeft: 4,
+    marginRight: 4,
   },
-}))
+}));
 
 export const ApproveRejectButtons: React.FunctionComponent<{
   testRun: TestRun;
-  afterApprove?: ()=>void,
-  afterReject?: ()=>void,
+  afterApprove?: () => void;
+  afterReject?: () => void;
 }> = ({ testRun, afterApprove, afterReject }) => {
   const { enqueueSnackbar } = useSnackbar();
   const classes = useStyles();
@@ -25,11 +25,11 @@ export const ApproveRejectButtons: React.FunctionComponent<{
   const approve = () => {
     testRunService
       .approveBulk([testRun.id], testRun.merge)
-      .then(() =>{
+      .then(() => {
         enqueueSnackbar("Approved", {
           variant: "success",
-        })
-        afterApprove && afterApprove()
+        });
+        afterApprove && afterApprove();
       })
       .catch((err) =>
         enqueueSnackbar(err, {
@@ -41,11 +41,11 @@ export const ApproveRejectButtons: React.FunctionComponent<{
   const reject = () => {
     testRunService
       .rejectBulk([testRun.id])
-      .then(() =>{
+      .then(() => {
         enqueueSnackbar("Rejected", {
           variant: "success",
-        })
-        afterReject && afterReject()
+        });
+        afterReject && afterReject();
       })
       .catch((err) =>
         enqueueSnackbar(err, {
@@ -60,24 +60,33 @@ export const ApproveRejectButtons: React.FunctionComponent<{
   return (
     <>
       {testRun.merge && (
-          <Tooltip title="Will replace target branch baseline if accepted">
-            <Chip
-              label={`merge into: ${testRun.baselineBranchName}`}
-              color="secondary"
-              size="small"
-            />
-          </Tooltip>
+        <Tooltip title="Will replace target branch baseline if accepted">
+          <Chip
+            label={`merge into: ${testRun.baselineBranchName}`}
+            color="secondary"
+            size="small"
+          />
+        </Tooltip>
       )}
-        <Tooltip title={"Hotkey: A"}>
-          <Button onClick={approve} style={{color:"cornflowerblue"}} variant="contained" className={classes.actionButton}>
-            Approve
-          </Button>
-        </Tooltip>
-        <Tooltip title={"Hotkey: X"}>
-          <Button color="secondary" onClick={reject} className={classes.actionButton}>
-            Reject
-          </Button>
-        </Tooltip>
+      <Tooltip title={"Hotkey: A"}>
+        <Button
+          onClick={approve}
+          style={{ color: "cornflowerblue" }}
+          variant="contained"
+          className={classes.actionButton}
+        >
+          Approve
+        </Button>
+      </Tooltip>
+      <Tooltip title={"Hotkey: X"}>
+        <Button
+          color="secondary"
+          onClick={reject}
+          className={classes.actionButton}
+        >
+          Reject
+        </Button>
+      </Tooltip>
     </>
   );
 };

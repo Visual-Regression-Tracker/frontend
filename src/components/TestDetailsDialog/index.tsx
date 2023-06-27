@@ -48,11 +48,14 @@ export const TestDetailsDialog: React.FunctionComponent = () => {
     [testRuns, selectedTestRun?.id]
   );
 
-  const navigateByIndex = React.useCallback((index:number)=>{
-    if(index>=0 && index<testRuns.length){
-      navigateById(testRuns[index].id)
-    }
-  }, [testRuns])
+  const navigateByIndex = React.useCallback(
+    (index: number) => {
+      if (index >= 0 && index < testRuns.length) {
+        navigateById(testRuns[index].id);
+      }
+    },
+    [testRuns]
+  );
 
   const navigateById = React.useCallback(
     (id?: string) => {
@@ -78,8 +81,8 @@ export const TestDetailsDialog: React.FunctionComponent = () => {
         totalTestRunCount={testRuns.length}
         touched={touched}
         handleClose={() => navigateById()}
-        handlePrevious= {() => navigateByIndex(selectedTestRunIndex-1)}
-        handleNext = {() => navigateByIndex(selectedTestRunIndex+1)}
+        handlePrevious={() => navigateByIndex(selectedTestRunIndex - 1)}
+        handleNext={() => navigateByIndex(selectedTestRunIndex + 1)}
       />
       <BaseModal
         open={notSavedChangesModal}
@@ -90,9 +93,7 @@ export const TestDetailsDialog: React.FunctionComponent = () => {
           <Typography>{`Are you sure you want to discard changes?`}</Typography>
         }
         onSubmit={() => {
-          navigate(
-            buildTestRunLocation(selectedBuild?.id, navigationTargetId)
-          );
+          navigate(buildTestRunLocation(selectedBuild?.id, navigationTargetId));
           setNotSavedChangesModal(false);
         }}
       />

@@ -30,17 +30,23 @@ export const TestRunDetails: React.FunctionComponent<IProps> = ({
       )}
       {testRun.viewport && (
         <Grid item>
-          <Typography variant="caption">Viewport: {testRun.viewport}</Typography>
+          <Typography variant="caption">
+            Viewport: {testRun.viewport}
+          </Typography>
         </Grid>
       )}
       {testRun.customTags && (
         <Grid item>
-          <Typography variant="caption">Custom Tags: {testRun.customTags}</Typography>
+          <Typography variant="caption">
+            Custom Tags: {testRun.customTags}
+          </Typography>
         </Grid>
       )}
       <Grid item>
         <Tooltip title="How many percent of pixels are different according to the defined settings.">
-          <Typography variant="caption"><strong>Diff: {_.round(testRun.diffPercent,2)}%</strong></Typography>
+          <Typography variant="caption">
+            <strong>Diff: {_.round(testRun.diffPercent, 2)}%</strong>
+          </Typography>
         </Tooltip>
       </Grid>
       <Grid item>

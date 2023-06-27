@@ -64,33 +64,33 @@ const useStyles = makeStyles((theme) => ({
     position: "relative",
     textAlign: "left",
     background: "#efefef",
-    paddingLeft:8,
+    paddingLeft: 8,
   },
   footer: {
     background: "#efefef",
   },
-  scaleActions:{
-    display: "flex",
-    alignItems:"center"
-  },
-  testRunActions:{
+  scaleActions: {
     display: "flex",
     alignItems: "center",
-    alignContent: "center"
   },
-  testRunName:{
-    fontWeight:300,
+  testRunActions: {
+    display: "flex",
+    alignItems: "center",
+    alignContent: "center",
   },
-  closeIcon:{
+  testRunName: {
+    fontWeight: 300,
+  },
+  closeIcon: {
     position: "absolute",
-    right: "8px"
+    right: "8px",
   },
-  testRunDetails:{
-    paddingLeft: 8
+  testRunDetails: {
+    paddingLeft: 8,
   },
   drawAreaContainer: {
     width: "100%",
-    height:"100%"
+    height: "100%",
   },
   drawAreaItem: {
     padding: "0 4px",
@@ -98,7 +98,7 @@ const useStyles = makeStyles((theme) => ({
   },
   imageToolbar: {
     paddingLeft: 5,
-    height: 52
+    height: 52,
   },
 }));
 
@@ -110,9 +110,16 @@ const TestDetailsModal: React.FunctionComponent<{
   handleClose: () => void;
   handlePrevious: () => void;
   handleNext: () => void;
-}> = ({ testRun, currentRunIndex, totalTestRunCount, touched, handlePrevious, handleNext, handleClose }) => {
+}> = ({
+  testRun,
+  currentRunIndex,
+  totalTestRunCount,
+  touched,
+  handlePrevious,
+  handleNext,
+  handleClose,
+}) => {
   const classes = useStyles();
-  const navigate = useNavigate();
   const { enqueueSnackbar } = useSnackbar();
   const testRunDispatch = useTestRunDispatch();
 
@@ -124,34 +131,34 @@ const TestDetailsModal: React.FunctionComponent<{
   const [stageOffset, setStageOffset] = React.useState(defaultStagePos);
   const [processing, setProcessing] = React.useState(false);
   const [isDrawMode, setIsDrawMode] = useState(false);
-  const [valueOfIgnoreOrCompare, setValueOfIgnoreOrCompare] = useState(
-    "Ignore Areas"
-  );
+  const [valueOfIgnoreOrCompare, setValueOfIgnoreOrCompare] =
+    useState("Ignore Areas");
   const [isDiffShown, setIsDiffShown] = useState(false);
   const [selectedRectId, setSelectedRectId] = React.useState<string>();
   const [ignoreAreas, setIgnoreAreas] = React.useState<IgnoreArea[]>([]);
-  const [applyIgnoreDialogOpen, setApplyIgnoreDialogOpen] = React.useState(
-    false
-  );
+  const [applyIgnoreDialogOpen, setApplyIgnoreDialogOpen] =
+    React.useState(false);
 
-  const GO_TO_NEXT_KEY = "goToNextAutomatically"
-  const [goToNextAutomatically, setGoToNextAutomatically] = React.useState(() => {
-    const json = localStorage.getItem(GO_TO_NEXT_KEY);
-    if(json){
-      return JSON.parse(json)
+  const GO_TO_NEXT_KEY = "goToNextAutomatically";
+  const [goToNextAutomatically, setGoToNextAutomatically] = React.useState(
+    () => {
+      const json = localStorage.getItem(GO_TO_NEXT_KEY);
+      if (json) {
+        return JSON.parse(json);
+      }
+      return false;
     }
-    return false
-  });
+  );
 
   useEffect(() => {
     localStorage.setItem(GO_TO_NEXT_KEY, JSON.stringify(goToNextAutomatically));
   }, [goToNextAutomatically]);
 
-  const handleGoToNextAutomatically=()=>{
-    if(goToNextAutomatically){
-      handleNext()
+  const handleGoToNextAutomatically = () => {
+    if (goToNextAutomatically) {
+      handleNext();
     }
-  }
+  };
 
   const leftItemRef = React.useRef<HTMLDivElement>(null);
   const rightItemRef = React.useRef<HTMLDivElement>(null);
@@ -182,25 +189,30 @@ const TestDetailsModal: React.FunctionComponent<{
   }, [testRun]);
 
   React.useEffect(() => {
-    fitImagesToStage()
+    fitImagesToStage();
   }, [image, baselineImage]);
 
   useHotkeys("right", handleNext, [currentRunIndex, handleNext]);
   useHotkeys("left", handlePrevious, [currentRunIndex, handlePrevious]);
 
-  const fitImagesToStage=()=>{
-    if(image && leftItemRef.current){
+  const fitImagesToStage = () => {
+    if (image && leftItemRef.current) {
       fitImageToStage(image, leftItemRef.current);
     }
-    if(baselineImage && rightItemRef.current){
+    if (baselineImage && rightItemRef.current) {
       fitImageToStage(baselineImage, rightItemRef.current);
     }
     resetPositioin();
-  }
-  
-  const fitImageToStage = (image:HTMLImageElement, container:HTMLElement ) => {
-    const scale = calculateScale(image.width+20, image.height+20, container.offsetWidth, container.offsetHeight-48)
-    if(scale<stageScale){
+  };
+
+  const fitImageToStage = (image: HTMLImageElement, container: HTMLElement) => {
+    const scale = calculateScale(
+      image.width + 20,
+      image.height + 20,
+      container.offsetWidth,
+      container.offsetHeight - 48
+    );
+    if (scale < stageScale) {
       setStageScale(scale);
     }
   };
@@ -334,149 +346,172 @@ const TestDetailsModal: React.FunctionComponent<{
   );
   useHotkeys("ESC", handleClose, [handleClose]);
 
-  const ignoreAreasToolbar = ()=>{
-    return <>
-      <Grid container alignItems="center" spacing={2}>
-        <Grid item>
-          <Select
-            id="area-select"
-            labelId="areaSelect"
-            value={valueOfIgnoreOrCompare}
-            onChange={(event) =>
-              onIgnoreOrCompareSelectChange(event.target.value as string)
-            }
-          >
-            {["Ignore Areas", "Compare Area"].map((eachItem) => (
-              <MenuItem key={eachItem} value={eachItem}>
-                {eachItem}
-              </MenuItem>
-            ))}
-          </Select>
-        </Grid>
-        <Grid item>
-          <ToggleButton
-            value={"drawMode"}
-            selected={isDrawMode}
-            size="small"
-            onClick={() => {
-              setIsDrawMode(!isDrawMode);
-            }}
-            style={{padding:4}}
-          >
-            <Add />
-          </ToggleButton>
-        </Grid>
-        <Grid item>
-          <IconButton
-            size="small"
-            disabled={!selectedRectId || ignoreAreas.length === 0}
-            onClick={() =>
-              selectedRectId && deleteIgnoreArea(selectedRectId)
-            }
-          >
-            <Delete />
-          </IconButton>
-        </Grid>
-        <Tooltip title="Clears all ignore areas." aria-label="reject">
+  const ignoreAreasToolbar = () => {
+    return (
+      <>
+        <Grid container alignItems="center" spacing={2}>
           <Grid item>
-            <IconButton
-              size="small"
-              disabled={ignoreAreas.length === 0}
-              onClick={() => {
-                handleIgnoreAreaChange([]);
-              }}
+            <Select
+              id="area-select"
+              labelId="areaSelect"
+              value={valueOfIgnoreOrCompare}
+              onChange={(event) =>
+                onIgnoreOrCompareSelectChange(event.target.value as string)
+              }
             >
-              <LayersClear />
-            </IconButton>
+              {["Ignore Areas", "Compare Area"].map((eachItem) => (
+                <MenuItem key={eachItem} value={eachItem}>
+                  {eachItem}
+                </MenuItem>
+              ))}
+            </Select>
           </Grid>
-        </Tooltip>
-        <Tooltip
-          title={applyIgnoreAreaText}
-          aria-label="apply ignore area"
-        >
+          <Grid item>
+            <ToggleButton
+              value={"drawMode"}
+              selected={isDrawMode}
+              size="small"
+              onClick={() => {
+                setIsDrawMode(!isDrawMode);
+              }}
+              style={{ padding: 4 }}
+            >
+              <Add />
+            </ToggleButton>
+          </Grid>
           <Grid item>
             <IconButton
               size="small"
               disabled={!selectedRectId || ignoreAreas.length === 0}
-              onClick={() => toggleApplyIgnoreDialogOpen()}
+              onClick={() => selectedRectId && deleteIgnoreArea(selectedRectId)}
             >
-              <Collections />
+              <Delete />
             </IconButton>
           </Grid>
-        </Tooltip>
-        <Grid item>
-          <IconButton
-            size="small"
-            disabled={!touched}
-            onClick={() => saveIgnoreAreasOrCompareArea()}
-          >
-            <Save />
-          </IconButton>
+          <Tooltip title="Clears all ignore areas." aria-label="reject">
+            <Grid item>
+              <IconButton
+                size="small"
+                disabled={ignoreAreas.length === 0}
+                onClick={() => {
+                  handleIgnoreAreaChange([]);
+                }}
+              >
+                <LayersClear />
+              </IconButton>
+            </Grid>
+          </Tooltip>
+          <Tooltip title={applyIgnoreAreaText} aria-label="apply ignore area">
+            <Grid item>
+              <IconButton
+                size="small"
+                disabled={!selectedRectId || ignoreAreas.length === 0}
+                onClick={() => toggleApplyIgnoreDialogOpen()}
+              >
+                <Collections />
+              </IconButton>
+            </Grid>
+          </Tooltip>
+          <Grid item>
+            <IconButton
+              size="small"
+              disabled={!touched}
+              onClick={() => saveIgnoreAreasOrCompareArea()}
+            >
+              <Save />
+            </IconButton>
+          </Grid>
         </Grid>
-      </Grid>
-    </>
-  }
+      </>
+    );
+  };
 
-  const baselinePanel=()=>{
-    return <Grid container xs={6}
-      ref={leftItemRef}
-      className={classes.drawAreaItem} 
-      direction="column"
-      wrap="nowrap"
-      alignItems="stretch">
-      <Grid container alignItems="center" spacing={2} className={classes.imageToolbar}>
-        <ImageDetails
-              type="Baseline"
-              branchName={testRun.baselineBranchName}
-              imageName={testRun.baselineName}
-              image={baselineImage}
-              ignoreAreas={[]}
-            />
-        <Grid item>
-          <Button
-            color="primary"
-            disabled={!testRun.testVariationId}
-            onClick={() => {
-              window.open(`${routes.VARIATION_DETAILS_PAGE}/${testRun.testVariationId}`, '_blank')
-            }}
-          >
-            History <OpenInNew fontSize="small"/>
-          </Button>
-        </Grid>
-      </Grid>
-      <Grid item style={{flexGrow: "1"}}>
-        <DrawArea
-          imageName={testRun.baselineName}
-          imageState={[baselineImage, baselineImageStatus]}
-          ignoreAreas={[]}
-          tempIgnoreAreas={[]}
-          setIgnoreAreas={handleIgnoreAreaChange}
-          selectedRectId={selectedRectId}
-          setSelectedRectId={setSelectedRectId}
-          onStageClick={removeSelection}
-          stageScaleState={[stageScale, setStageScale]}
-          stagePosState={[stagePos, setStagePos]}
-          stageScrollPosState={[stageScrollPos, setStageScrollPos]}
-          stageInitPosState={[stageInitPos, setStageInitPos]}
-          stageOffsetState={[stageOffset, setStageOffset]}
-          drawModeState={[false, setIsDrawMode]}
-        />
-      </Grid>
-    </Grid>
-  }
-
-  const diffPanel=(type:any, branchName:string, imageName:string, imageStatus:any, image: undefined|HTMLImageElement)=>{
-    return <Grid item xs={6} className={classes.drawAreaItem} ref={rightItemRef}>
-      <Grid item container alignItems="center" spacing={2} className={classes.imageToolbar}>  
+  const baselinePanel = () => {
+    return (
+      <Grid
+        container
+        xs={6}
+        ref={leftItemRef}
+        className={classes.drawAreaItem}
+        direction="column"
+        wrap="nowrap"
+        alignItems="stretch"
+      >
+        <Grid
+          container
+          alignItems="center"
+          spacing={2}
+          className={classes.imageToolbar}
+        >
           <ImageDetails
-              type={type}
-              branchName={branchName}
-              imageName={imageName}
-              image={image}
-              ignoreAreas={JSON.parse(testRun.tempIgnoreAreas)}
-            />
+            type="Baseline"
+            branchName={testRun.baselineBranchName}
+            imageName={testRun.baselineName}
+            image={baselineImage}
+            ignoreAreas={[]}
+          />
+          <Grid item>
+            <Button
+              color="primary"
+              disabled={!testRun.testVariationId}
+              onClick={() => {
+                window.open(
+                  `${routes.VARIATION_DETAILS_PAGE}/${testRun.testVariationId}`,
+                  "_blank"
+                );
+              }}
+            >
+              History <OpenInNew fontSize="small" />
+            </Button>
+          </Grid>
+        </Grid>
+        <Grid item style={{ flexGrow: "1" }}>
+          <DrawArea
+            imageName={testRun.baselineName}
+            imageState={[baselineImage, baselineImageStatus]}
+            ignoreAreas={[]}
+            tempIgnoreAreas={[]}
+            setIgnoreAreas={handleIgnoreAreaChange}
+            selectedRectId={selectedRectId}
+            setSelectedRectId={setSelectedRectId}
+            onStageClick={removeSelection}
+            stageScaleState={[stageScale, setStageScale]}
+            stagePosState={[stagePos, setStagePos]}
+            stageScrollPosState={[stageScrollPos, setStageScrollPos]}
+            stageInitPosState={[stageInitPos, setStageInitPos]}
+            stageOffsetState={[stageOffset, setStageOffset]}
+            drawModeState={[false, setIsDrawMode]}
+          />
+        </Grid>
+      </Grid>
+    );
+  };
+
+  const diffPanel = (
+    type: any,
+    branchName: string,
+    imageName: string,
+    imageStatus: any,
+    image: undefined | HTMLImageElement
+  ) => {
+    return (
+      <Grid item xs={6} className={classes.drawAreaItem} ref={rightItemRef}>
+        <Grid
+          item
+          container
+          alignItems="center"
+          spacing={2}
+          className={classes.imageToolbar}
+        >
+          <ImageDetails
+            type={type}
+            branchName={branchName}
+            imageName={imageName}
+            image={image}
+            ignoreAreas={JSON.parse(testRun.tempIgnoreAreas)}
+          />
           {testRun.diffName && (
-            <Grid item style={{padding:0}}>
+            <Grid item style={{ padding: 0 }}>
               <Tooltip title={"Toggle diff. Hotkey: D"}>
                 <Switch
                   checked={isDiffShown}
@@ -485,156 +520,235 @@ const TestDetailsModal: React.FunctionComponent<{
                 />
               </Tooltip>
             </Grid>
-            )}
+          )}
           <Grid item>{ignoreAreasToolbar()}</Grid>
-      </Grid>
-      <DrawArea
-            imageName={imageName}
-            imageState={[image, imageStatus]}
-            ignoreAreas={ignoreAreas}
-            tempIgnoreAreas={JSON.parse(testRun.tempIgnoreAreas)}
-            setIgnoreAreas={handleIgnoreAreaChange}
-            selectedRectId={selectedRectId}
-            deleteIgnoreArea={deleteIgnoreArea}
-            setSelectedRectId={setSelectedRectId}
-            onStageClick={removeSelection}
-            stageScaleState={[stageScale, setStageScale]}
-            stagePosState={[stagePos, setStagePos]}
-            stageScrollPosState={[stageScrollPos, setStageScrollPos]}
-            stageInitPosState={[stageInitPos, setStageInitPos]}
-            stageOffsetState={[stageOffset, setStageOffset]}
-            drawModeState={[isDrawMode, setIsDrawMode]}
-          />
-    </Grid>
-  }
-
-  const header = ()=>{
-    return <Box m={1}>
-      <Grid container alignItems="center" className={classes.header} spacing={2}>
-        <Grid item>
-          <Typography variant="h6" display="inline">{`Step ${currentRunIndex+1}/${totalTestRunCount}: `}</Typography>
-          <Typography variant="h6" display="inline" className={classes.testRunName}>{testRun.name}</Typography>
         </Grid>
-        <Grid item>
-          <TestStatusChip status={testRun.status}/>
-        </Grid>
-        <IconButton color="inherit" onClick={handleClose} className={classes.closeIcon}>
-          <Close />
-        </IconButton>
+        <DrawArea
+          imageName={imageName}
+          imageState={[image, imageStatus]}
+          ignoreAreas={ignoreAreas}
+          tempIgnoreAreas={JSON.parse(testRun.tempIgnoreAreas)}
+          setIgnoreAreas={handleIgnoreAreaChange}
+          selectedRectId={selectedRectId}
+          deleteIgnoreArea={deleteIgnoreArea}
+          setSelectedRectId={setSelectedRectId}
+          onStageClick={removeSelection}
+          stageScaleState={[stageScale, setStageScale]}
+          stagePosState={[stagePos, setStagePos]}
+          stageScrollPosState={[stageScrollPos, setStageScrollPos]}
+          stageInitPosState={[stageInitPos, setStageInitPos]}
+          stageOffsetState={[stageOffset, setStageOffset]}
+          drawModeState={[isDrawMode, setIsDrawMode]}
+        />
       </Grid>
-    </Box> 
-  }
+    );
+  };
 
-  const testRunDetails = ()=>{
-    return <Box ml={1} mr={1} mt={0} mb={0}>
-      <Grid container alignItems="center" className={classes.testRunDetails} spacing={1} >
-        <TestRunDetails testRun={testRun} />
-        {isImageSizeDiffer && (
+  const header = () => {
+    return (
+      <Box m={1}>
+        <Grid
+          container
+          alignItems="center"
+          className={classes.header}
+          spacing={2}
+        >
           <Grid item>
-            <Tooltip
-              title={
-                "Image height/width differ from baseline! Cannot calculate diff!"
-              }
+            <Typography variant="h6" display="inline">{`Step ${
+              currentRunIndex + 1
+            }/${totalTestRunCount}: `}</Typography>
+            <Typography
+              variant="h6"
+              display="inline"
+              className={classes.testRunName}
             >
-              <IconButton>
-                <WarningRounded color="secondary" />
-              </IconButton>
-            </Tooltip>
+              {testRun.name}
+            </Typography>
           </Grid>
-        )}
-        <Grid item>
-          <CommentsPopper
-            text={testRun.comment}
-            onSave={(comment) =>
-              testRunService
-                .update(testRun.id, { comment })
-                .then(() =>
-                  enqueueSnackbar("Comment updated", {
-                    variant: "success",
-                  })
-                )
-                .catch((err) =>
-                  enqueueSnackbar(err, {
-                    variant: "error",
-                  })
-                )
-            }
-          />
+          <Grid item>
+            <TestStatusChip status={testRun.status} />
+          </Grid>
+          <IconButton
+            color="inherit"
+            onClick={handleClose}
+            className={classes.closeIcon}
+          >
+            <Close />
+          </IconButton>
         </Grid>
-      </Grid>
-      <Divider/>
-    </Box>
-  }
+      </Box>
+    );
+  };
+
+  const testRunDetails = () => {
+    return (
+      <Box ml={1} mr={1} mt={0} mb={0}>
+        <Grid
+          container
+          alignItems="center"
+          className={classes.testRunDetails}
+          spacing={1}
+        >
+          <TestRunDetails testRun={testRun} />
+          {isImageSizeDiffer && (
+            <Grid item>
+              <Tooltip
+                title={
+                  "Image height/width differ from baseline! Cannot calculate diff!"
+                }
+              >
+                <IconButton>
+                  <WarningRounded color="secondary" />
+                </IconButton>
+              </Tooltip>
+            </Grid>
+          )}
+          <Grid item>
+            <CommentsPopper
+              text={testRun.comment}
+              onSave={(comment) =>
+                testRunService
+                  .update(testRun.id, { comment })
+                  .then(() =>
+                    enqueueSnackbar("Comment updated", {
+                      variant: "success",
+                    })
+                  )
+                  .catch((err) =>
+                    enqueueSnackbar(err, {
+                      variant: "error",
+                    })
+                  )
+              }
+            />
+          </Grid>
+        </Grid>
+        <Divider />
+      </Box>
+    );
+  };
 
   return (
     <React.Fragment>
       {header()}
-      <Divider/>
+      <Divider />
       {processing && <LinearProgress />}
       {testRunDetails()}
       <Box
         overflow="hidden"
         position="relative"
-        className={classes.drawAreaContainer}          
+        className={classes.drawAreaContainer}
       >
-        <Grid container justifyContent="center" alignItems="stretch" style={{height:"100%"}}>
+        <Grid
+          container
+          justifyContent="center"
+          alignItems="stretch"
+          style={{ height: "100%" }}
+        >
           {baselinePanel()}
-          {isDiffShown?
-            diffPanel("Diff", testRun.branchName, testRun.diffName, diffImageStatus, diffImage):
-            diffPanel("Image", testRun.branchName, testRun.imageName, imageStatus, image)}
+          {isDiffShown
+            ? diffPanel(
+                "Diff",
+                testRun.branchName,
+                testRun.diffName,
+                diffImageStatus,
+                diffImage
+              )
+            : diffPanel(
+                "Image",
+                testRun.branchName,
+                testRun.imageName,
+                imageStatus,
+                image
+              )}
         </Grid>
       </Box>
       <Grid container className={classes.footer}>
         <Grid item xs={4} className={classes.scaleActions}>
           <Tooltip title={"Zoom In"}>
-            <IconButton onClick={() => setStageScale(stageScale * stageScaleBy)}>
+            <IconButton
+              onClick={() => setStageScale(stageScale * stageScaleBy)}
+            >
               <ZoomIn />
             </IconButton>
           </Tooltip>
           <Tooltip title={"Zoom Out"}>
-            <IconButton onClick={() => setStageScale(stageScale / stageScaleBy)}>
+            <IconButton
+              onClick={() => setStageScale(stageScale / stageScaleBy)}
+            >
               <ZoomOut />
             </IconButton>
           </Tooltip>
           <Tooltip title={"Original size"}>
             <IconButton onClick={setOriginalSize}>
-              <Fullscreen/>
+              <Fullscreen />
             </IconButton>
           </Tooltip>
           <Tooltip title={"Fit into screen"}>
             <IconButton onClick={fitImagesToStage}>
-              <FullscreenExit/>
+              <FullscreenExit />
             </IconButton>
           </Tooltip>
         </Grid>
-        <Grid item xs={4} className={classes.testRunActions} justifyContent="center">
+        <Grid
+          item
+          xs={4}
+          className={classes.testRunActions}
+          justifyContent="center"
+        >
           <Tooltip title={"Hotkey: ArrowLeft"}>
-            <IconButton color="secondary" 
-              style={{visibility:currentRunIndex > 0?'visible':'hidden'}}
-              onClick={handlePrevious}>
-              <NavigateBefore  />
+            <IconButton
+              color="secondary"
+              style={{ visibility: currentRunIndex > 0 ? "visible" : "hidden" }}
+              onClick={handlePrevious}
+            >
+              <NavigateBefore />
             </IconButton>
           </Tooltip>
           {(testRun.status === TestStatus.unresolved ||
             testRun.status === TestStatus.new) && (
-            <ApproveRejectButtons testRun={testRun} afterApprove={handleGoToNextAutomatically} afterReject={handleGoToNextAutomatically}/>
+            <ApproveRejectButtons
+              testRun={testRun}
+              afterApprove={handleGoToNextAutomatically}
+              afterReject={handleGoToNextAutomatically}
+            />
           )}
           <Tooltip title={"Hotkey: ArrowRight"}>
-            <IconButton color="secondary" 
-              style={{visibility:currentRunIndex + 1 < totalTestRunCount?'visible':'hidden'}}
-              onClick={handleNext}>
-              <NavigateNext/>
+            <IconButton
+              color="secondary"
+              style={{
+                visibility:
+                  currentRunIndex + 1 < totalTestRunCount
+                    ? "visible"
+                    : "hidden",
+              }}
+              onClick={handleNext}
+            >
+              <NavigateNext />
             </IconButton>
           </Tooltip>
         </Grid>
-        <Grid item container xs={4} className={classes.testRunActions} justifyContent="flex-end">
+        <Grid
+          item
+          container
+          xs={4}
+          className={classes.testRunActions}
+          justifyContent="flex-end"
+        >
           <FormControlLabel
             control={
-              <Checkbox color="primary" size="small"
+              <Checkbox
+                color="primary"
+                size="small"
                 checked={goToNextAutomatically}
-                onChange={(e)=>setGoToNextAutomatically(e.target.checked)}/>
+                onChange={(e) => setGoToNextAutomatically(e.target.checked)}
+              />
             }
-            label={<Typography variant="body2" color="textSecondary">Go to the next after Approve/Reject</Typography>}
+            label={
+              <Typography variant="body2" color="textSecondary">
+                Go to the next after Approve/Reject
+              </Typography>
+            }
           />
         </Grid>
       </Grid>
