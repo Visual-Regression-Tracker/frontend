@@ -4,7 +4,6 @@ import { useNavigate } from "react-router";
 import { useBuildState, useTestRunState } from "../../contexts";
 import { buildTestRunLocation } from "../../_helpers/route.helpers";
 import { BaseModal } from "../BaseModal";
-import { ArrowButtons } from "./ArrowButtons";
 import TestDetailsModal from "./TestDetailsModal";
 
 const useStyles = makeStyles((theme) => ({
@@ -48,15 +47,6 @@ export const TestDetailsDialog: React.FunctionComponent = () => {
     [testRuns, selectedTestRun?.id]
   );
 
-  const navigateByIndex = React.useCallback(
-    (index: number) => {
-      if (index >= 0 && index < testRuns.length) {
-        navigateById(testRuns[index].id);
-      }
-    },
-    [testRuns]
-  );
-
   const navigateById = React.useCallback(
     (id?: string) => {
       if (touched) {
@@ -67,6 +57,15 @@ export const TestDetailsDialog: React.FunctionComponent = () => {
       }
     },
     [touched, navigate, selectedBuild?.id]
+  );
+
+  const navigateByIndex = React.useCallback(
+    (index: number) => {
+      if (index >= 0 && index < testRuns.length) {
+        navigateById(testRuns[index].id);
+      }
+    },
+    [testRuns, navigateById]
   );
 
   if (!selectedTestRun) {

@@ -1,12 +1,5 @@
 import React from "react";
-import {
-  Typography,
-  Chip,
-  Grid,
-  IconButton,
-  withStyles,
-  makeStyles,
-} from "@material-ui/core";
+import { Typography, Grid, IconButton, makeStyles } from "@material-ui/core";
 import { WarningRounded } from "@material-ui/icons";
 import { IgnoreArea } from "../../types/ignoreArea";
 import { Tooltip } from "../Tooltip";
@@ -51,7 +44,7 @@ const ImageDetails: React.FunctionComponent<IProps> = ({
     <React.Fragment>
       <Grid item className={classes.container}>
         <Typography variant="overline" style={{ marginRight: 3 }}>
-          {type == "Baseline" ? "Baseline" : "Checkpoint"}
+          {type === "Baseline" ? "Baseline" : "Checkpoint"}
         </Typography>
         {imageName && (
           <Typography

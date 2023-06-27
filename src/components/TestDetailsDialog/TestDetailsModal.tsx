@@ -14,12 +14,11 @@ import {
   FormControlLabel,
   Checkbox,
 } from "@material-ui/core";
-import { ToggleButton, ToggleButtonGroup } from "@material-ui/lab";
+import { ToggleButton } from "@material-ui/lab";
 import { useHotkeys } from "react-hotkeys-hook";
 import { TestRun } from "../../types";
 import { testRunService, staticService } from "../../services";
 import { TestStatus } from "../../types/testStatus";
-import { useNavigate } from "react-router-dom";
 import { IgnoreArea, UpdateIgnoreAreaDto } from "../../types/ignoreArea";
 import { KonvaEventObject } from "konva/types/Node";
 import {

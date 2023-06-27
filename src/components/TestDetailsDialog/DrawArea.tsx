@@ -1,4 +1,4 @@
-import React, { FunctionComponent, useEffect } from "react";
+import React, { FunctionComponent, useCallback, useEffect } from "react";
 import { Stage, Layer, Image } from "react-konva";
 import Rectangle, { MIN_RECT_SIDE_PIXEL } from "../Rectangle";
 import { IgnoreArea } from "../../types/ignoreArea";
@@ -83,14 +83,17 @@ export const DrawArea: FunctionComponent<IDrawArea> = ({
   const stageRef = React.useRef<Konva.Stage>(null);
   const scrollContainerRef = React.useRef<HTMLDivElement>(null);
 
-  const handleStageKeyDown = (e: any) => {
-    if (!deleteIgnoreArea || isModifierKeyPressed(e)) {
-      return;
-    }
-    if (selectedRectId && (e.key === "Delete" || e.key === "Backspace")) {
-      deleteIgnoreArea(selectedRectId);
-    }
-  };
+  const handleStageKeyDown = useCallback(
+    (e: any) => {
+      if (!deleteIgnoreArea || isModifierKeyPressed(e)) {
+        return;
+      }
+      if (selectedRectId && (e.key === "Delete" || e.key === "Backspace")) {
+        deleteIgnoreArea(selectedRectId);
+      }
+    },
+    [deleteIgnoreArea, selectedRectId]
+  );
 
   React.useEffect(() => {
     if (stageRef.current) {
