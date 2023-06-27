@@ -46,6 +46,7 @@ const ImageDetails: React.FunctionComponent<IProps> = ({
         <Typography
           variant="caption"
           style={{ marginRight: 3, fontSize: "0.7rem" }}
+          data-testid="image-size"
         >
           {image ? `(${image?.width} x ${image?.height})` : "Loading..."}
         </Typography>
