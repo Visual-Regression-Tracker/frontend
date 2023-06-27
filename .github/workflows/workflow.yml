@@ -20,7 +20,7 @@ jobs:
       - name: Run Component tests 🧪
         uses: cypress-io/github-action@v2
         with:
-          command: npm run build
+          command: npm run test:cy
         env:
           VRT_APIURL: "https://visual-regression-tracker.com:4200"
           VRT_PROJECT: "VRT"
