@@ -83,12 +83,16 @@ export const DrawArea: FunctionComponent<IDrawArea> = ({
   const stageRef = React.useRef<Konva.Stage>(null);
   const scrollContainerRef = React.useRef<HTMLDivElement>(null);
 
+  const isDeleteKey = (e: KeyboardEvent) => {
+    return e.key === "Delete" || e.key === "Backspace";
+  };
+
   const handleStageKeyDown = useCallback(
     (e: any) => {
       if (!deleteIgnoreArea || isModifierKeyPressed(e)) {
         return;
       }
-      if (selectedRectId && (e.key === "Delete" || e.key === "Backspace")) {
+      if (selectedRectId && isDeleteKey(e)) {
         deleteIgnoreArea(selectedRectId);
       }
     },
@@ -115,7 +119,9 @@ export const DrawArea: FunctionComponent<IDrawArea> = ({
       const container = stageRef.current.container();
       container.tabIndex = 1;
     }
-    if (!isDrawMode) return;
+    if (!isDrawMode) {
+      return;
+    }
 
     const newArea: IgnoreArea = {
       id: Date.now().toString(),
@@ -160,156 +166,170 @@ export const DrawArea: FunctionComponent<IDrawArea> = ({
     }
   };
 
-  console.log("image status", imageStatus);
+  const imageLoaded = () => {
+    return (
+      imageStatus === "loaded" && (
+        <div
+          className={classes.canvasContainer}
+          ref={scrollContainerRef}
+          onScroll={(event) => {
+            setStageScrollPos({
+              x: (event.target as HTMLElement).scrollLeft,
+              y: (event.target as HTMLElement).scrollTop,
+            });
+          }}
+        >
+          <div
+            style={{
+              height: image && image?.height * stageScale,
+              width: image && image?.width * stageScale,
+              transform: `translate3d(${stagePos.x}px, ${stagePos.y}px, 0px)`,
+            }}
+            onMouseMove={(event) => {
+              if (!isDrawMode && isDrag && !selectedRectId) {
+                event.preventDefault();
+                setStagePos({
+                  x: event.clientX - stageInitPos.x,
+                  y: event.clientY - stageInitPos.y,
+                });
+                setStageOffset(stagePos);
+              }
+            }}
+            onMouseUp={(event) => {
+              setIsDrag(false);
+              setStageInitPos(stagePos);
+            }}
+            onMouseLeave={(event) => {
+              setIsDrag(false);
+              setStageInitPos(stagePos);
+            }}
+            onMouseDown={(event) => {
+              setIsDrag(true);
+              setStageInitPos({
+                x: event.clientX - stageOffset.x,
+                y: event.clientY - stageOffset.y,
+              });
+            }}
+            onKeyDown={(e) => handleStageKeyDown(e)}
+          >
+            <Stage
+              ref={stageRef}
+              width={image && image.width}
+              height={image && image.height}
+              onMouseDown={onStageClick}
+              onWheel={(e: Konva.KonvaEventObject<WheelEvent>) => {
+                e.evt.preventDefault();
+                const scaleBy = 1.04;
+                const newScale =
+                  e.evt.deltaY < 0
+                    ? stageScale * scaleBy
+                    : stageScale / scaleBy;
+                setStageScale(newScale);
+              }}
+              style={{
+                transform: `scale(${stageScale})`,
+                transformOrigin: "top left",
+              }}
+              onContentMousedown={handleContentMousedown}
+              onContentMouseup={handleContentMouseup}
+              onContentMouseMove={handleContentMouseMove}
+            >
+              <Layer>
+                <Image
+                  image={image}
+                  onMouseOver={(event) => {
+                    document.body.style.cursor = isDrawMode
+                      ? "crosshair"
+                      : "grab";
+                  }}
+                  onMouseDown={(event) => {
+                    document.body.style.cursor = "grabbing";
+                  }}
+                  onMouseUp={(event) => {
+                    document.body.style.cursor = "grab";
+                  }}
+                  onMouseLeave={(event) => {
+                    document.body.style.cursor = "default";
+                  }}
+                />
+                {ignoreAreas.map((rect, i) => {
+                  return (
+                    <Rectangle
+                      key={rect.id}
+                      shapeProps={{
+                        x: rect.x,
+                        y: rect.y,
+                        width: rect.width,
+                        height: rect.height,
+                      }}
+                      isSelected={rect.id === selectedRectId}
+                      onSelect={() => setSelectedRectId(rect.id)}
+                      onChange={(newAttrs: Konva.RectConfig) => {
+                        const rects = ignoreAreas.slice();
+
+                        rects[i].x = Math.round(newAttrs.x || 0);
+                        rects[i].y = Math.round(newAttrs.y || 0);
+                        rects[i].width = Math.round(
+                          newAttrs.width || MIN_RECT_SIDE_PIXEL
+                        );
+                        rects[i].height = Math.round(
+                          newAttrs.height || MIN_RECT_SIDE_PIXEL
+                        );
+
+                        setIgnoreAreas(rects);
+                      }}
+                    />
+                  );
+                })}
+                {tempIgnoreAreas.map((rect, i) => {
+                  return (
+                    <Rectangle
+                      key={i}
+                      shapeProps={{
+                        x: rect.x,
+                        y: rect.y,
+                        width: rect.width,
+                        height: rect.height,
+                      }}
+                    />
+                  );
+                })}
+              </Layer>
+            </Stage>
+          </div>
+        </div>
+      )
+    );
+  };
+
+  const imageLoading = () => {
+    return (
+      imageStatus === "loading" && (
+        <Grid
+          container
+          direction="column"
+          alignItems="center"
+          justifyContent="center"
+          className={classes.progressContainer}
+        >
+          <Grid item>
+            <CircularProgress />
+          </Grid>
+        </Grid>
+      )
+    );
+  };
+
+  const imageFailed = () => {
+    return (!imageName || imageStatus === "failed") && <NoImagePlaceholder />;
+  };
 
   const imageCanvas = () => {
     return (
       <>
-        {imageStatus === "loading" && (
-          <Grid
-            container
-            direction="column"
-            alignItems="center"
-            justifyContent="center"
-            className={classes.progressContainer}
-          >
-            <Grid item>
-              <CircularProgress />
-            </Grid>
-          </Grid>
-        )}
-        {(!imageName || imageStatus === "failed") && <NoImagePlaceholder />}
-        {imageStatus === "loaded" && (
-          <div
-            className={classes.canvasContainer}
-            ref={scrollContainerRef}
-            onScroll={(event) => {
-              setStageScrollPos({
-                x: (event.target as HTMLElement).scrollLeft,
-                y: (event.target as HTMLElement).scrollTop,
-              });
-            }}
-          >
-            <div
-              style={{
-                height: image && image?.height * stageScale,
-                width: image && image?.width * stageScale,
-                transform: `translate3d(${stagePos.x}px, ${stagePos.y}px, 0px)`,
-              }}
-              onMouseMove={(event) => {
-                if (!isDrawMode && isDrag && !selectedRectId) {
-                  event.preventDefault();
-                  setStagePos({
-                    x: event.clientX - stageInitPos.x,
-                    y: event.clientY - stageInitPos.y,
-                  });
-                  setStageOffset(stagePos);
-                }
-              }}
-              onMouseUp={(event) => {
-                setIsDrag(false);
-                setStageInitPos(stagePos);
-              }}
-              onMouseLeave={(event) => {
-                setIsDrag(false);
-                setStageInitPos(stagePos);
-              }}
-              onMouseDown={(event) => {
-                setIsDrag(true);
-                setStageInitPos({
-                  x: event.clientX - stageOffset.x,
-                  y: event.clientY - stageOffset.y,
-                });
-              }}
-              onKeyDown={(e) => handleStageKeyDown(e)}
-            >
-              <Stage
-                ref={stageRef}
-                width={image && image.width}
-                height={image && image.height}
-                onMouseDown={onStageClick}
-                onWheel={(e: Konva.KonvaEventObject<WheelEvent>) => {
-                  e.evt.preventDefault();
-                  const scaleBy = 1.04;
-                  const newScale =
-                    e.evt.deltaY < 0
-                      ? stageScale * scaleBy
-                      : stageScale / scaleBy;
-                  setStageScale(newScale);
-                }}
-                style={{
-                  transform: `scale(${stageScale})`,
-                  transformOrigin: "top left",
-                }}
-                onContentMousedown={handleContentMousedown}
-                onContentMouseup={handleContentMouseup}
-                onContentMouseMove={handleContentMouseMove}
-              >
-                <Layer>
-                  <Image
-                    image={image}
-                    onMouseOver={(event) => {
-                      document.body.style.cursor = isDrawMode
-                        ? "crosshair"
-                        : "grab";
-                    }}
-                    onMouseDown={(event) => {
-                      document.body.style.cursor = "grabbing";
-                    }}
-                    onMouseUp={(event) => {
-                      document.body.style.cursor = "grab";
-                    }}
-                    onMouseLeave={(event) => {
-                      document.body.style.cursor = "default";
-                    }}
-                  />
-                  {ignoreAreas.map((rect, i) => {
-                    return (
-                      <Rectangle
-                        key={rect.id}
-                        shapeProps={{
-                          x: rect.x,
-                          y: rect.y,
-                          width: rect.width,
-                          height: rect.height,
-                        }}
-                        isSelected={rect.id === selectedRectId}
-                        onSelect={() => setSelectedRectId(rect.id)}
-                        onChange={(newAttrs: Konva.RectConfig) => {
-                          const rects = ignoreAreas.slice();
-
-                          rects[i].x = Math.round(newAttrs.x || 0);
-                          rects[i].y = Math.round(newAttrs.y || 0);
-                          rects[i].width = Math.round(
-                            newAttrs.width || MIN_RECT_SIDE_PIXEL
-                          );
-                          rects[i].height = Math.round(
-                            newAttrs.height || MIN_RECT_SIDE_PIXEL
-                          );
-
-                          setIgnoreAreas(rects);
-                        }}
-                      />
-                    );
-                  })}
-                  {tempIgnoreAreas.map((rect, i) => {
-                    return (
-                      <Rectangle
-                        key={i}
-                        shapeProps={{
-                          x: rect.x,
-                          y: rect.y,
-                          width: rect.width,
-                          height: rect.height,
-                        }}
-                      />
-                    );
-                  })}
-                </Layer>
-              </Stage>
-            </div>
-          </div>
-        )}
+        {imageFailed()}
+        {imageLoading()}
+        {imageLoaded()}
       </>
     );
   };

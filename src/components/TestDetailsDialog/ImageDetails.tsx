@@ -40,20 +40,25 @@ const ImageDetails: React.FunctionComponent<IProps> = ({
   ignoreAreas,
 }) => {
   const classes = useStyles();
+  const imageSize = () => {
+    return (
+      imageName && (
+        <Typography
+          variant="caption"
+          style={{ marginRight: 3, fontSize: "0.7rem" }}
+        >
+          {image ? `(${image?.width} x ${image?.height})` : "Loading..."}
+        </Typography>
+      )
+    );
+  };
   return (
     <React.Fragment>
       <Grid item className={classes.container}>
         <Typography variant="overline" style={{ marginRight: 3 }}>
           {type === "Baseline" ? "Baseline" : "Checkpoint"}
         </Typography>
-        {imageName && (
-          <Typography
-            variant="caption"
-            style={{ marginRight: 3, fontSize: "0.7rem" }}
-          >
-            {image ? `(${image?.width} x ${image?.height})` : "Loading..."}
-          </Typography>
-        )}
+        {imageSize()}
         <AltRouteIcon fontSize="small" />
         <Tooltip title={`Branch: ${branchName}`}>
           <span className={classes.branchName}>{branchName}</span>

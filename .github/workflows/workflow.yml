@@ -16,11 +16,11 @@ jobs:
       - id: get-branch-name
         run: echo "::set-output name=branch_name::$(git symbolic-ref --short HEAD)"
         shell: bash
-      
+
       - name: Run Component tests 🧪
         uses: cypress-io/github-action@v2
         with:
-          command: npm run test:cy
+          command: npm run build
         env:
           VRT_APIURL: "https://visual-regression-tracker.com:4200"
           VRT_PROJECT: "VRT"

@@ -5,6 +5,7 @@ import { useBuildState, useTestRunState } from "../../contexts";
 import { buildTestRunLocation } from "../../_helpers/route.helpers";
 import { BaseModal } from "../BaseModal";
 import TestDetailsModal from "./TestDetailsModal";
+import { TestRun } from "../../types";
 
 const useStyles = makeStyles((theme) => ({
   modal: {
@@ -61,8 +62,9 @@ export const TestDetailsDialog: React.FunctionComponent = () => {
 
   const navigateByIndex = React.useCallback(
     (index: number) => {
-      if (index >= 0 && index < testRuns.length) {
-        navigateById(testRuns[index].id);
+      const testRun: TestRun | undefined = testRuns.at(index);
+      if (testRun) {
+        navigateById(testRun.id);
       }
     },
     [testRuns, navigateById]

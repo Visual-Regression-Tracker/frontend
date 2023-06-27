@@ -201,7 +201,7 @@ const TestDetailsModal: React.FunctionComponent<{
     if (baselineImage && rightItemRef.current) {
       fitImageToStage(baselineImage, rightItemRef.current);
     }
-    resetPositioin();
+    resetPosition();
   };
 
   const fitImageToStage = (image: HTMLImageElement, container: HTMLElement) => {
@@ -293,10 +293,10 @@ const TestDetailsModal: React.FunctionComponent<{
 
   const setOriginalSize = () => {
     setStageScale(1);
-    resetPositioin();
+    resetPosition();
   };
 
-  const resetPositioin = () => {
+  const resetPosition = () => {
     setStagePos(defaultStagePos);
     setStageOffset(defaultStagePos);
   };
@@ -344,6 +344,13 @@ const TestDetailsModal: React.FunctionComponent<{
     [testRun.diffName]
   );
   useHotkeys("ESC", handleClose, [handleClose]);
+
+  const openHistoryTab = () => {
+    window.open(
+      `${routes.VARIATION_DETAILS_PAGE}/${testRun.testVariationId}`,
+      "_blank"
+    );
+  };
 
   const ignoreAreasToolbar = () => {
     return (
@@ -453,12 +460,7 @@ const TestDetailsModal: React.FunctionComponent<{
             <Button
               color="primary"
               disabled={!testRun.testVariationId}
-              onClick={() => {
-                window.open(
-                  `${routes.VARIATION_DETAILS_PAGE}/${testRun.testVariationId}`,
-                  "_blank"
-                );
-              }}
+              onClick={openHistoryTab}
             >
               History <OpenInNew fontSize="small" />
             </Button>
