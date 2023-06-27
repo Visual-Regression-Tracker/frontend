@@ -1,7 +1,6 @@
 import React from "react";
 import { Grid, Typography } from "@material-ui/core";
 import { TestRun } from "../../types";
-import TestStatusChip from "../TestStatusChip";
 import { Tooltip } from "../Tooltip";
 import _ from "lodash";
 
