@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import {
   Typography,
   Button,
@@ -179,21 +179,6 @@ const TestDetailsModal: React.FunctionComponent<{
   const applyIgnoreAreaText =
     "Apply selected ignore area to all images in this build.";
 
-  React.useEffect(() => {
-    setIsDiffShown(!!testRun.diffName);
-  }, [testRun.diffName]);
-
-  React.useEffect(() => {
-    setIgnoreAreas(JSON.parse(testRun.ignoreAreas));
-  }, [testRun]);
-
-  React.useEffect(() => {
-    fitImagesToStage();
-  }, [image, baselineImage]);
-
-  useHotkeys("right", handleNext, [currentRunIndex, handleNext]);
-  useHotkeys("left", handlePrevious, [currentRunIndex, handlePrevious]);
-
   const fitImagesToStage = () => {
     if (image && leftItemRef.current) {
       fitImageToStage(image, leftItemRef.current);
@@ -204,17 +189,35 @@ const TestDetailsModal: React.FunctionComponent<{
     resetPosition();
   };
 
-  const fitImageToStage = (image: HTMLImageElement, container: HTMLElement) => {
-    const scale = calculateScale(
-      image.width + 20,
-      image.height + 20,
-      container.offsetWidth,
-      container.offsetHeight - 48
-    );
-    if (scale < stageScale) {
-      setStageScale(scale);
-    }
-  };
+  const fitImageToStage = useCallback(
+    (image: HTMLImageElement, container: HTMLElement) => {
+      const scale = calculateScale(
+        image.width + 20,
+        image.height + 20,
+        container.offsetWidth,
+        container.offsetHeight - 48
+      );
+      if (scale < stageScale) {
+        setStageScale(scale);
+      }
+    },
+    []
+  );
+
+  React.useEffect(() => {
+    setIsDiffShown(!!testRun.diffName);
+  }, [testRun.diffName]);
+
+  React.useEffect(() => {
+    setIgnoreAreas(JSON.parse(testRun.ignoreAreas));
+  }, [testRun]);
+
+  React.useEffect(() => {
+    fitImagesToStage();
+  }, [image, baselineImage, fitImagesToStage]);
+
+  useHotkeys("right", handleNext, [currentRunIndex, handleNext]);
+  useHotkeys("left", handlePrevious, [currentRunIndex, handlePrevious]);
 
   const isImageSizeDiffer = React.useMemo(
     () =>
