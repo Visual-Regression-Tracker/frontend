@@ -179,16 +179,6 @@ const TestDetailsModal: React.FunctionComponent<{
   const applyIgnoreAreaText =
     "Apply selected ignore area to all images in this build.";
 
-  const fitImagesToStage = () => {
-    if (image && leftItemRef.current) {
-      fitImageToStage(image, leftItemRef.current);
-    }
-    if (baselineImage && rightItemRef.current) {
-      fitImageToStage(baselineImage, rightItemRef.current);
-    }
-    resetPosition();
-  };
-
   const fitImageToStage = useCallback(
     (image: HTMLImageElement, container: HTMLElement) => {
       const scale = calculateScale(
@@ -201,8 +191,18 @@ const TestDetailsModal: React.FunctionComponent<{
         setStageScale(scale);
       }
     },
-    []
+    [stageScale]
   );
+
+  const fitImagesToStage = useCallback(() => {
+    if (image && leftItemRef.current) {
+      fitImageToStage(image, leftItemRef.current);
+    }
+    if (baselineImage && rightItemRef.current) {
+      fitImageToStage(baselineImage, rightItemRef.current);
+    }
+    resetPosition();
+  }, [image, baselineImage, fitImageToStage]);
 
   React.useEffect(() => {
     setIsDiffShown(!!testRun.diffName);
