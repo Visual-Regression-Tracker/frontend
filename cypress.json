@@ -6,5 +6,14 @@
   "retries": 0,
   "componentFolder": "src",
   "testFiles": "**/*.spec.*",
-  "fixturesFolder": false
+  "fixturesFolder": false,
+  "env": {
+    "visualRegressionTracker": {
+      "apiUrl": "http://localhost:4200",
+      "apiKey": "DEFAULTUSERAPIKEYTOBECHANGED",
+      "project": "d721cfed-f004-4fad-9b00-a7ab1207af93",
+      "branchName": "master",
+      "enableSoftAssert": true
+    }
+  }
 }
