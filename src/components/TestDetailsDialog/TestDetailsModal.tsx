@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Typography,
   Button,
@@ -166,6 +166,7 @@ const TestDetailsModal: React.FunctionComponent<{
     setApplyIgnoreDialogOpen(!applyIgnoreDialogOpen);
   };
 
+  console.log("rerender TestDetailsModal");
   const [image, imageStatus] = useImage(
     staticService.getImage(testRun.imageName)
   );
@@ -179,22 +180,19 @@ const TestDetailsModal: React.FunctionComponent<{
   const applyIgnoreAreaText =
     "Apply selected ignore area to all images in this build.";
 
-  const fitImageToStage = useCallback(
-    (image: HTMLImageElement, container: HTMLElement) => {
-      const scale = calculateScale(
-        image.width + 20,
-        image.height + 20,
-        container.offsetWidth,
-        container.offsetHeight - 48
-      );
-      if (scale < stageScale) {
-        setStageScale(scale);
-      }
-    },
-    [stageScale]
-  );
+  const fitImageToStage = (image: HTMLImageElement, container: HTMLElement) => {
+    const scale = calculateScale(
+      image.width + 20,
+      image.height + 20,
+      container.offsetWidth,
+      container.offsetHeight - 48
+    );
+    if (scale < stageScale) {
+      setStageScale(scale);
+    }
+  };
 
-  const fitImagesToStage = useCallback(() => {
+  const fitImagesToStage = () => {
     if (image && leftItemRef.current) {
       fitImageToStage(image, leftItemRef.current);
     }
@@ -202,7 +200,7 @@ const TestDetailsModal: React.FunctionComponent<{
       fitImageToStage(baselineImage, rightItemRef.current);
     }
     resetPosition();
-  }, [image, baselineImage, fitImageToStage]);
+  };
 
   React.useEffect(() => {
     setIsDiffShown(!!testRun.diffName);
@@ -214,7 +212,8 @@ const TestDetailsModal: React.FunctionComponent<{
 
   React.useEffect(() => {
     fitImagesToStage();
-  }, [image, baselineImage, fitImagesToStage]);
+    // eslint-disable-next-line
+  }, [baselineImage, image]);
 
   useHotkeys("right", handleNext, [currentRunIndex, handleNext]);
   useHotkeys("left", handlePrevious, [currentRunIndex, handlePrevious]);
