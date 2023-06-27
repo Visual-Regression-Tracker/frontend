@@ -1,6 +1,6 @@
 import React from "react";
 import { makeStyles } from "@material-ui/core";
-import noImage from "../static/no-image.png";
+import noImage from "../../static/no-image.png";
 
 const useStyles = makeStyles((theme) => ({
   img: {

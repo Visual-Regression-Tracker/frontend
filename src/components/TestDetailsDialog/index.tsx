@@ -4,12 +4,12 @@ import { useNavigate } from "react-router";
 import { useBuildState, useTestRunState } from "../../contexts";
 import { buildTestRunLocation } from "../../_helpers/route.helpers";
 import { BaseModal } from "../BaseModal";
-import { ArrowButtons } from "./ArrowButtons";
 import TestDetailsModal from "./TestDetailsModal";
+import { TestRun } from "../../types";
 
 const useStyles = makeStyles((theme) => ({
   modal: {
-    margin: 40,
+    margin: "20px 10px 10px 10px",
   },
 }));
 
@@ -48,7 +48,7 @@ export const TestDetailsDialog: React.FunctionComponent = () => {
     [testRuns, selectedTestRun?.id]
   );
 
-  const handleNavigation = React.useCallback(
+  const navigateById = React.useCallback(
     (id?: string) => {
       if (touched) {
         setNavigationTargetId(id);
@@ -58,6 +58,16 @@ export const TestDetailsDialog: React.FunctionComponent = () => {
       }
     },
     [touched, navigate, selectedBuild?.id]
+  );
+
+  const navigateByIndex = React.useCallback(
+    (index: number) => {
+      const testRun: TestRun | undefined = testRuns.at(index);
+      if (testRun) {
+        navigateById(testRun.id);
+      }
+    },
+    [testRuns, navigateById]
   );
 
   if (!selectedTestRun) {
@@ -71,12 +81,9 @@ export const TestDetailsDialog: React.FunctionComponent = () => {
         currentRunIndex={testRuns.findIndex((e) => e.id === selectedTestRun.id)}
         totalTestRunCount={testRuns.length}
         touched={touched}
-        handleClose={() => handleNavigation()}
-      />
-      <ArrowButtons
-        testRuns={testRuns}
-        selectedTestRunIndex={selectedTestRunIndex}
-        handleNavigation={handleNavigation}
+        handleClose={() => navigateById()}
+        handlePrevious={() => navigateByIndex(selectedTestRunIndex - 1)}
+        handleNext={() => navigateByIndex(selectedTestRunIndex + 1)}
       />
       <BaseModal
         open={notSavedChangesModal}
@@ -87,9 +94,7 @@ export const TestDetailsDialog: React.FunctionComponent = () => {
           <Typography>{`Are you sure you want to discard changes?`}</Typography>
         }
         onSubmit={() => {
-          navigate(
-            buildTestRunLocation(selectedBuild?.id, navigationTargetId)
-          );
+          navigate(buildTestRunLocation(selectedBuild?.id, navigationTargetId));
           setNotSavedChangesModal(false);
         }}
       />

@@ -1,23 +1,22 @@
-import React, { FunctionComponent, useEffect } from "react";
+import React, { FunctionComponent, useCallback, useEffect } from "react";
 import { Stage, Layer, Image } from "react-konva";
-import Rectangle, { MIN_RECT_SIDE_PIXEL } from "./Rectangle";
-import { IgnoreArea } from "../types/ignoreArea";
+import Rectangle, { MIN_RECT_SIDE_PIXEL } from "../Rectangle";
+import { IgnoreArea } from "../../types/ignoreArea";
 import { Grid, makeStyles, CircularProgress } from "@material-ui/core";
 import { NoImagePlaceholder } from "./NoImageAvailable";
-import ImageDetails from "./ImageDetails";
 import Konva from "konva";
 
 const useStyles = makeStyles((theme) => ({
   canvasContainer: {
     overflow: "auto",
     backgroundColor: "white",
-    height: "100%",
   },
   imageDetailsContainer: {
     position: "absolute",
     backgroundColor: "white",
     zIndex: 1,
     padding: theme.spacing(1),
+    height: "48px",
   },
   progressContainer: {
     minHeight: "300px",
@@ -25,16 +24,14 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 interface IDrawArea {
-  type: "Baseline" | "Image" | "Diff";
-  imageName: string;
-  branchName: string;
+  imageName: string | undefined;
   imageState: [undefined | HTMLImageElement, "loaded" | "loading" | "failed"];
   tempIgnoreAreas: IgnoreArea[];
   ignoreAreas: IgnoreArea[];
   setIgnoreAreas: (ignoreAreas: IgnoreArea[]) => void;
   selectedRectId: string | undefined;
   setSelectedRectId: (id: string) => void;
-  deleteIgnoreArea?: (id:string)=>void;
+  deleteIgnoreArea?: (id: string) => void;
   onStageClick: (event: Konva.KonvaEventObject<MouseEvent>) => void;
   stageOffsetState: [
     { x: number; y: number },
@@ -56,9 +53,7 @@ interface IDrawArea {
   drawModeState: [boolean, React.Dispatch<React.SetStateAction<boolean>>];
 }
 export const DrawArea: FunctionComponent<IDrawArea> = ({
-  type,
   imageName,
-  branchName,
   imageState,
   ignoreAreas,
   tempIgnoreAreas,
@@ -86,40 +81,47 @@ export const DrawArea: FunctionComponent<IDrawArea> = ({
   const [isDrawing, setIsDrawing] = React.useState(isDrawMode);
   const [image, imageStatus] = imageState;
   const stageRef = React.useRef<Konva.Stage>(null);
+  const scrollContainerRef = React.useRef<HTMLDivElement>(null);
+
+  const isDeleteKey = (e: KeyboardEvent) => {
+    return e.key === "Delete" || e.key === "Backspace";
+  };
+
+  const handleStageKeyDown = useCallback(
+    (e: any) => {
+      if (!deleteIgnoreArea || isModifierKeyPressed(e)) {
+        return;
+      }
+      if (selectedRectId && isDeleteKey(e)) {
+        deleteIgnoreArea(selectedRectId);
+      }
+    },
+    [deleteIgnoreArea, selectedRectId]
+  );
 
   React.useEffect(() => {
-    if(stageRef.current){
+    if (stageRef.current) {
       const container = stageRef.current.container();
-      container.addEventListener('keydown', handleStageKeyDown);
+      container.addEventListener("keydown", handleStageKeyDown);
     }
-  },[]);
+  }, [handleStageKeyDown]);
 
-  const isModifierKeyPressed = (e:any) => {
+  const isModifierKeyPressed = (e: any) => {
     return e.altKey || e.ctrlKey || e.shiftKey;
   };
-
-  const handleStageKeyDown = (e:any) => {
-    if(!deleteIgnoreArea || isModifierKeyPressed(e)){
-      return;
-    }
-    if(selectedRectId && (e.key==='Delete' || e.key==='Backspace')){
-      deleteIgnoreArea(selectedRectId);
-    }
-  };
-
-  const scrollContainerRef = React.useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     scrollContainerRef.current?.scrollTo(stageScollPos.x, stageScollPos.y);
   }, [stageScollPos]);
 
   const handleContentMousedown = (e: any) => {
-    if(stageRef.current){
+    if (stageRef.current) {
       const container = stageRef.current.container();
-      container.tabIndex=1;
-      container.focus();
+      container.tabIndex = 1;
     }
-    if (!isDrawMode) return;
+    if (!isDrawMode) {
+      return;
+    }
 
     const newArea: IgnoreArea = {
       id: Date.now().toString(),
@@ -148,8 +150,14 @@ export const DrawArea: FunctionComponent<IDrawArea> = ({
       const newShapesList = ignoreAreas.map((i) => {
         if (i.id === selectedRectId) {
           // new width and height
-          i.width = Math.max(Math.round(e.evt.offsetX - i.x), MIN_RECT_SIDE_PIXEL);
-          i.height = Math.max(Math.round(e.evt.offsetY - i.y), MIN_RECT_SIDE_PIXEL);
+          i.width = Math.max(
+            Math.round(e.evt.offsetX - i.x),
+            MIN_RECT_SIDE_PIXEL
+          );
+          i.height = Math.max(
+            Math.round(e.evt.offsetY - i.y),
+            MIN_RECT_SIDE_PIXEL
+          );
           return i;
         }
         return i;
@@ -158,45 +166,24 @@ export const DrawArea: FunctionComponent<IDrawArea> = ({
     }
   };
 
-  return (
-    <React.Fragment>
-      {imageStatus === "loading" && (
-        <Grid
-          container
-          direction="column"
-          alignItems="center"
-          justifyContent="center"
-          className={classes.progressContainer}
-        >
-          <Grid item>
-            <CircularProgress />
-          </Grid>
-        </Grid>
-      )}
-      {(!imageName || imageStatus === "failed") && <NoImagePlaceholder />}
-      {imageName && imageStatus === "loaded" && (
-        <div className={classes.canvasContainer}   
+  const imageLoaded = () => {
+    return (
+      imageStatus === "loaded" && (
+        <div
+          className={classes.canvasContainer}
           ref={scrollContainerRef}
           onScroll={(event) => {
             setStageScrollPos({
               x: (event.target as HTMLElement).scrollLeft,
-              y:(event.target as HTMLElement).scrollTop
+              y: (event.target as HTMLElement).scrollTop,
             });
-          }}          
-          >
-          <div className={classes.imageDetailsContainer}>
-            <ImageDetails
-              type={type}
-              branchName={branchName}
-              imageName={imageName}
-              ignoreAreas={tempIgnoreAreas}
-            />
-          </div>
+          }}
+        >
           <div
             style={{
               height: image && image?.height * stageScale,
+              width: image && image?.width * stageScale,
               transform: `translate3d(${stagePos.x}px, ${stagePos.y}px, 0px)`,
-              marginTop: "75px",
             }}
             onMouseMove={(event) => {
               if (!isDrawMode && isDrag && !selectedRectId) {
@@ -311,7 +298,45 @@ export const DrawArea: FunctionComponent<IDrawArea> = ({
             </Stage>
           </div>
         </div>
-      )}
+      )
+    );
+  };
+
+  const imageLoading = () => {
+    return (
+      imageStatus === "loading" && (
+        <Grid
+          container
+          direction="column"
+          alignItems="center"
+          justifyContent="center"
+          className={classes.progressContainer}
+        >
+          <Grid item>
+            <CircularProgress />
+          </Grid>
+        </Grid>
+      )
+    );
+  };
+
+  const imageFailed = () => {
+    return (!imageName || imageStatus === "failed") && <NoImagePlaceholder />;
+  };
+
+  const imageCanvas = () => {
+    return (
+      <>
+        {imageFailed()}
+        {imageLoading()}
+        {imageLoaded()}
+      </>
+    );
+  };
+
+  return (
+    <React.Fragment>
+      {imageName ? imageCanvas() : <NoImagePlaceholder />}
     </React.Fragment>
   );
 };
