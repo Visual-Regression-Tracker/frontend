@@ -5,7 +5,7 @@
             "dom", "dom.iterable", "esnext"
         ],
         "types": [
-            "vite/client", "cypress", "@visual-regression-tracker/agent-cypress/dist"
+            "vite/client", "cypress", "@testing-library/jest-dom", "@visual-regression-tracker/agent-cypress/dist"
         ],
         "allowJs": true,
         "skipLibCheck": true,
@@ -13,7 +13,7 @@
         "allowSyntheticDefaultImports": true,
         "strict": true,
         "forceConsistentCasingInFileNames": true,
-        "module": "esnext",
+        "module": "ESNext",
         "moduleResolution": "node",
         "resolveJsonModule": true,
         "isolatedModules": true,

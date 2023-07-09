@@ -1,5 +1,4 @@
 const { startDevServer } = require("@cypress/webpack-dev-server");
-const findReactScriptsWebpackConfig = require("@cypress/react/plugins/react-scripts/findReactScriptsWebpackConfig");
 const {
   addVisualRegressionTrackerPlugin,
 } = require("@visual-regression-tracker/agent-cypress/dist/plugin");
@@ -8,17 +7,12 @@ const {
  * @type {Cypress.PluginConfig}
  */
 module.exports = (on, config) => {
-  const webpackConfig = findReactScriptsWebpackConfig(config);
-
-  webpackConfig.resolve.fallback = {
-    fs: false,
-  };
+  console.log('cypress plugins index has config:', config);
 
   // react component tests
   on("dev-server:start", async (options) => {
     return startDevServer({
       options,
-      webpackConfig,
     });
   });
   config.env.reactDevtools = true;
