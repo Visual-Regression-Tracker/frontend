@@ -19,6 +19,8 @@ export default defineConfig({
 function manualChunks(id) {
     if (id.includes('node_modules/react')) {
         return 'react';
+    } else if (id.includes('node_modules/@material-ui')) {
+        return 'material';
     } else if (id.includes('node_modules')) {
         return 'vendor';
     }
