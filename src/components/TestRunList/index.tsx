@@ -9,16 +9,16 @@ import {
 import { useSnackbar } from "notistack";
 import {
   DataGrid,
-  GridCellParams,
-  GridColDef,
-  GridRowParams,
-  GridValueGetterParams,
-  GridValueFormatterParams,
-  GridCellValue,
-  GridSortCellParams,
-  GridStateChangeParams,
-  GridSortDirection,
-  GridSortModel,
+  type GridCellParams,
+  type GridColDef,
+  type GridRowParams,
+  type GridValueGetterParams,
+  type GridValueFormatterParams,
+  type GridCellValue,
+  type GridSortCellParams,
+  type GridStateChangeParams,
+  type GridSortDirection,
+  type GridSortModel,
 } from "@material-ui/data-grid";
 import { DataGridCustomToolbar } from "./DataGridCustomToolbar";
 import { StatusFilterOperators } from "./StatusFilterOperators";

@@ -1,7 +1,10 @@
 import React from "react";
 import { IconButton } from "@material-ui/core";
 import { Delete } from "@material-ui/icons";
-import { GridRowId, useGridSlotComponentProps } from "@material-ui/data-grid";
+import {
+  type GridRowId,
+  useGridSlotComponentProps,
+} from "@material-ui/data-grid";
 import { usersService } from "../../services";
 import { useSnackbar } from "notistack";
 import { useUserDispatch, useUserState } from "../../contexts";
@@ -38,7 +41,9 @@ export const ActionButtons: React.FunctionComponent = () => {
                     });
                     userDispatch({
                       type: "getAll",
-                      payload: userList.filter((user) => !ids.includes(user.id)),
+                      payload: userList.filter(
+                        (user) => !ids.includes(user.id)
+                      ),
                     });
                   })
                   .catch((err) =>

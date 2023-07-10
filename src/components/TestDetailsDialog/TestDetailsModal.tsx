@@ -20,7 +20,7 @@ import { TestRun } from "../../types";
 import { testRunService, staticService } from "../../services";
 import { TestStatus } from "../../types/testStatus";
 import { IgnoreArea, UpdateIgnoreAreaDto } from "../../types/ignoreArea";
-import { KonvaEventObject } from "konva/types/Node";
+import { type KonvaEventObject } from "konva/types";
 import {
   Close,
   Add,
@@ -304,7 +304,9 @@ const TestDetailsModal: React.FunctionComponent<{
   };
 
   const applyIgnoreArea = () => {
-    const newIgnoreArea = ignoreAreas.find((area) => selectedRectId! === area.id);
+    const newIgnoreArea = ignoreAreas.find(
+      (area) => selectedRectId! === area.id
+    );
     if (newIgnoreArea) {
       setProcessing(true);
       testRunService

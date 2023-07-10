@@ -1,5 +1,5 @@
 import React, { FunctionComponent } from "react";
-import Joyride, { CallBackProps, STATUS } from "react-joyride";
+import Joyride, { type CallBackProps, STATUS } from "react-joyride";
 import { IconButton } from "@material-ui/core";
 import { useHelpState } from "../contexts";
 import { LiveHelp } from "@material-ui/icons";
@@ -40,10 +40,13 @@ const GuidedTour: FunctionComponent = () => {
 
   return (
     <React.Fragment>
-      <span onClick={handleClickStart} style={{
-        display: "flex",
-        alignItems: "center",
-      }}>
+      <span
+        onClick={handleClickStart}
+        style={{
+          display: "flex",
+          alignItems: "center",
+        }}
+      >
         <IconButton size="small">
           <LiveHelp />
         </IconButton>

@@ -6,7 +6,7 @@ import {
   makeStyles,
   MenuItem,
   Select,
-  Theme,
+  type Theme,
 } from "@material-ui/core";
 import {
   useProjectState,

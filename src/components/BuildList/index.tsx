@@ -6,7 +6,7 @@ import {
   ListItemSecondaryAction,
   IconButton,
   makeStyles,
-  Theme,
+  type Theme,
   createStyles,
   Chip,
   Typography,

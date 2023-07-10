@@ -8,7 +8,7 @@ import {
   HelpProvider,
 } from "../contexts";
 import { MemoryRouter, Route, Routes } from "react-router-dom";
-import { MemoryRouterProps } from "react-router";
+import { type MemoryRouterProps } from "react-router";
 import { SnackbarProvider } from "notistack";
 
 export const mountVrtComponent = ({
