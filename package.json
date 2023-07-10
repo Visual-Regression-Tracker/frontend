@@ -39,7 +39,7 @@
         "start": "chmod +x ./env.sh && sh ./env.sh && cp env-config.js ./public/ && vite",
         "test": "jest",
         "build": "vite build",
-        "lint": "eslint . --ext .ts,.tsx,.jsx,.js",
+        "lint": "eslint --ignore-path .gitignore . --ext .ts,.tsx,.jsx,.js",
         "typescheck": "tsc --noEmit",
         "test:cy": "cypress run-ct --browser chrome"
     },
