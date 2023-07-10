@@ -304,14 +304,14 @@ const TestDetailsModal: React.FunctionComponent<{
   };
 
   const applyIgnoreArea = () => {
-    let newIgnoreArea = ignoreAreas.find((area) => selectedRectId! === area.id);
+    const newIgnoreArea = ignoreAreas.find((area) => selectedRectId! === area.id);
     if (newIgnoreArea) {
       setProcessing(true);
       testRunService
         .getList(testRun.buildId)
         .then((testRuns: TestRun[]) => {
-          let allIds = testRuns.map((item) => item.id);
-          let data: UpdateIgnoreAreaDto = {
+          const allIds = testRuns.map((item) => item.id);
+          const data: UpdateIgnoreAreaDto = {
             ids: allIds,
             ignoreAreas: [newIgnoreArea!],
           };

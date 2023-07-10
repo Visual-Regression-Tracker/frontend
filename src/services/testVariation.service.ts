@@ -4,7 +4,7 @@ import { API_URL } from "../_config/env.config";
 
 const ENDPOINT_URL = "/test-variations";
 
-async function getList(projectId: String): Promise<TestVariation[]> {
+async function getList(projectId: string): Promise<TestVariation[]> {
   const requestOptions = {
     method: "GET",
     headers: authHeader(),
@@ -16,7 +16,7 @@ async function getList(projectId: String): Promise<TestVariation[]> {
   ).then(handleResponse);
 }
 
-async function getDetails(id: String): Promise<TestVariation> {
+async function getDetails(id: string): Promise<TestVariation> {
   const requestOptions = {
     method: "GET",
     headers: authHeader(),
@@ -28,9 +28,9 @@ async function getDetails(id: String): Promise<TestVariation> {
 }
 
 async function merge(
-  projectId: String,
-  fromBranch: String,
-  toBranch: String
+  projectId: string,
+  fromBranch: string,
+  toBranch: string
 ): Promise<Build> {
   const requestOptions = {
     method: "GET",
@@ -43,7 +43,7 @@ async function merge(
   ).then(handleResponse);
 }
 
-async function remove(id: String): Promise<TestVariation> {
+async function remove(id: string): Promise<TestVariation> {
   const requestOptions = {
     method: "DELETE",
     headers: authHeader(),

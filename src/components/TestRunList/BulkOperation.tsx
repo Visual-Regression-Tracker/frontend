@@ -124,7 +124,7 @@ export const BulkOperation: React.FunctionComponent = () => {
       return testRunService.removeBulk(ids);
     }
     if (downloadDialogOpen) {
-      let urlsToDownload: { download: string, filename: string }[] = [];
+      const urlsToDownload: { download: string, filename: string }[] = [];
       ids.forEach((id) => {
         testRunService.getDetails(id.toString())
           .then(
