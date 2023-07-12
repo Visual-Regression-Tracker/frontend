@@ -20,7 +20,7 @@ import { TestRun } from "../../types";
 import { testRunService, staticService } from "../../services";
 import { TestStatus } from "../../types/testStatus";
 import { IgnoreArea, UpdateIgnoreAreaDto } from "../../types/ignoreArea";
-import { type KonvaEventObject } from "konva/types";
+import  Konva from "konva";
 import {
   Close,
   Add,
@@ -235,7 +235,7 @@ const TestDetailsModal: React.FunctionComponent<{
     });
   };
 
-  const removeSelection = (event: KonvaEventObject<MouseEvent>) => {
+  const removeSelection = (event: Konva.KonvaEventObject<MouseEvent>) => {
     // deselect when clicked not on Rect
     const isRectClicked = event.target.className === "Rect";
     if (!isRectClicked) {
