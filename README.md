@@ -9,6 +9,8 @@
 - Update `.env`
 - `npm run start`
 
+The testing related `.spec.tsx` files are used with Cypress for browser tests, and the `.test.tsx` files with Jest for unit tests.
+
 ## Image download
  
  - If you want to use image download feature in test runs, you have to have the files in backend imageUploads folder to a folder in this project under public/static/imageUploads. This can be achieved via manual copy, docker volume mapping to this project folder etc.
