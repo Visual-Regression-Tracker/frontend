@@ -1,5 +1,6 @@
 ### STAGE 1: Build ###
-FROM node:16 AS builder
+# This image is around 50 megabytes
+FROM node:18-alpine3.18 AS builder
 
 # Create app directory
 WORKDIR /app
@@ -8,14 +9,15 @@ WORKDIR /app
 COPY package*.json ./
 
 # Install app dependencies
-RUN npm install
+RUN npm ci
 
 COPY . .
 
 RUN npm run build
 
 ### STAGE 2: Run ###
-FROM nginx:alpine
+# This image is around 5 megabytes
+FROM nginx:1.25-alpine3.17-slim
 
 RUN apk add --no-cache bash
 
