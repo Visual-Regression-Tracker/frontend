@@ -1,5 +1,5 @@
 ### STAGE 1: Build ###
-FROM node:12 AS builder
+FROM node:16 AS builder
 
 # Create app directory
 WORKDIR /app
