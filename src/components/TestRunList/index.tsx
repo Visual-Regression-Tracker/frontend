@@ -160,16 +160,16 @@ const TestRunList: React.FunctionComponent = () => {
               )
             );
           }}
-          onStateChange={(props: GridStateChangeParams) => {
+          onStateChange={({ state }: GridStateChangeParams) => {
             if (!selectedTestRun) {
               // only if testRun modal is not shown
               testRunDispatch({
                 type: "filter",
-                payload: props.state.visibleRows.visibleRows,
+                payload: state.visibleRows.visibleRows,
               });
               testRunDispatch({
                 type: "sort",
-                payload: props.state.sorting.sortedRows,
+                payload: state.sorting.sortedRows,
               });
             }
           }}

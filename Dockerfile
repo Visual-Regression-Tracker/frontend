@@ -25,7 +25,6 @@ RUN chmod +x env.sh && ./env.sh
 FROM nginx:1.25-alpine3.17-slim
 
 COPY /nginx /etc/nginx/conf.d
-RUN chown -R nginx /etc/nginx /var/run /run
 
 EXPOSE 8080
 EXPOSE 443

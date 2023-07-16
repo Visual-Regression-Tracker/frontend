@@ -21,7 +21,7 @@ import { head } from "lodash";
 import { Tooltip } from "../Tooltip";
 
 export const BulkOperation: React.FunctionComponent = () => {
-  const props = useGridSlotComponentProps();
+  const { rows, state } = useGridSlotComponentProps();
   const { enqueueSnackbar } = useSnackbar();
   const [approveDialogOpen, setApproveDialogOpen] = React.useState(false);
   const [rejectDialogOpen, setRejectDialogOpen] = React.useState(false);
@@ -31,22 +31,20 @@ export const BulkOperation: React.FunctionComponent = () => {
     React.useState(false);
   const [isProcessing, setIsProcessing] = React.useState(false);
   const ids: GridRowId[] = React.useMemo(
-    () => Object.values(props.state.selection),
-    [props.state.selection]
+    () => Object.values(state.selection),
+    [state.selection]
   );
   const isMerge: boolean = React.useMemo(
     () =>
       !!head(
-        props.rows.filter((value: GridRowData) =>
-          ids.includes(value.id.toString())
-        )
+        rows.filter((value: GridRowData) => ids.includes(value.id.toString()))
       )?.merge,
     // eslint-disable-next-line
     [ids]
   );
   const idsEligibleForApproveOrReject: string[] = React.useMemo(
     () =>
-      props.rows
+      rows
         .filter(
           (value: GridRowData) =>
             ids.includes(value.id.toString()) &&
@@ -59,7 +57,7 @@ export const BulkOperation: React.FunctionComponent = () => {
     [ids]
   );
 
-  const selectedRows: GridSelectionModel = props.state.selection;
+  const selectedRows: GridSelectionModel = state.selection;
   const count = Object.keys(selectedRows).length;
 
   const toggleApproveDialogOpen = () => {

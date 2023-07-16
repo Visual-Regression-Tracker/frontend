@@ -11,14 +11,14 @@ import { useUserDispatch, useUserState } from "../../contexts";
 import { Tooltip } from "../Tooltip";
 
 export const ActionButtons: React.FunctionComponent = () => {
-  const props = useGridSlotComponentProps();
+  const { state } = useGridSlotComponentProps();
   const { enqueueSnackbar } = useSnackbar();
   const userDispatch = useUserDispatch();
   const { userList, user } = useUserState();
 
   const ids: GridRowId[] = React.useMemo(
-    () => Object.values(props.state.selection),
-    [props.state.selection]
+    () => Object.values(state.selection),
+    [state.selection]
   );
   return (
     <>
