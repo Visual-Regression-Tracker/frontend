@@ -13,11 +13,22 @@ import { useUserDispatch, useUserState, logout } from "../contexts";
 import { routes } from "../constants";
 import logo from "../static/logo.png";
 import GuidedTour from "./GuidedTour";
-import { AllInbox, Face, GitHub, HelpOutline, People, SettingsPower } from "@material-ui/icons";
+import {
+  AllInbox,
+  Face,
+  GitHub,
+  HelpOutline,
+  People,
+  SettingsPower,
+} from "@material-ui/icons";
 
 const Header: FunctionComponent = () => {
-  const [avatarMenuRef, setAvatarMenuRef] = React.useState<null | HTMLElement>(null);
-  const [helpMenuRef, setHelpMenuRef] = React.useState<null | HTMLElement>(null);
+  const [avatarMenuRef, setAvatarMenuRef] = React.useState<null | HTMLElement>(
+    null,
+  );
+  const [helpMenuRef, setHelpMenuRef] = React.useState<null | HTMLElement>(
+    null,
+  );
   const { loggedIn, user } = useUserState();
   const authDispatch = useUserDispatch();
 
@@ -33,7 +44,10 @@ const Header: FunctionComponent = () => {
 
   const closeMenuAndOpenLink = () => {
     handleMenuClose();
-    window.open("https://github.com/Visual-Regression-Tracker/Visual-Regression-Tracker/issues/new", "_blank");
+    window.open(
+      "https://github.com/Visual-Regression-Tracker/Visual-Regression-Tracker/issues/new",
+      "_blank",
+    );
   };
 
   const getVRTVersion = (): string => {
@@ -51,7 +65,7 @@ const Header: FunctionComponent = () => {
       open={!!helpMenuRef}
       onClose={handleMenuClose}
     >
-      <MenuItem onClick={handleMenuClose} >
+      <MenuItem onClick={handleMenuClose}>
         <GuidedTour />
       </MenuItem>
       <MenuItem onClick={closeMenuAndOpenLink} style={styleMenuItem}>
@@ -61,12 +75,14 @@ const Header: FunctionComponent = () => {
         Open an issue in GitHub
       </MenuItem>
       <hr />
-      <MenuItem style={{
-        justifyContent: "center"
-      }}>
+      <MenuItem
+        style={{
+          justifyContent: "center",
+        }}
+      >
         VRT Version : {getVRTVersion()}
       </MenuItem>
-    </Menu >
+    </Menu>
   );
 
   const renderAvatarMenu = (
@@ -145,9 +161,11 @@ const Header: FunctionComponent = () => {
                 justifyContent="space-between"
                 alignItems="center"
               >
-                <IconButton onClick={(event: React.MouseEvent<HTMLElement>) =>
-                  setHelpMenuRef(event.currentTarget)
-                }>
+                <IconButton
+                  onClick={(event: React.MouseEvent<HTMLElement>) =>
+                    setHelpMenuRef(event.currentTarget)
+                  }
+                >
                   <Avatar>
                     <HelpOutline />
                   </Avatar>

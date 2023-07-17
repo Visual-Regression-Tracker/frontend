@@ -12,7 +12,7 @@ export const useConfigHook = <T extends ImageComparisonConfig>() => {
 
   const config: T = React.useMemo(
     () => JSON.parse(project.imageComparisonConfig),
-    [project.imageComparisonConfig]
+    [project.imageComparisonConfig],
   );
 
   const updateConfig = React.useCallback(
@@ -29,7 +29,7 @@ export const useConfigHook = <T extends ImageComparisonConfig>() => {
         imageComparisonConfig,
       });
     },
-    [projectDispatch, project]
+    [projectDispatch, project],
   );
 
   return [config, updateConfig] as const;

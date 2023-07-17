@@ -45,7 +45,7 @@ const columnsDef: GridColDef[] = [
       ];
       return tags.reduce(
         (prev, curr) => prev.concat(curr ? `${curr};` : ""),
-        ""
+        "",
       );
     },
     renderCell: (params: GridCellParams) => (
@@ -63,7 +63,7 @@ const columnsDef: GridColDef[] = [
                   label={tag}
                   style={{ margin: "1px" }}
                 />
-              )
+              ),
           )}
       </React.Fragment>
     ),
@@ -84,7 +84,7 @@ const columnsDef: GridColDef[] = [
       v1: GridCellValue,
       v2: GridCellValue,
       cellParams1: GridSortCellParams,
-      cellParams2: GridSortCellParams
+      cellParams2: GridSortCellParams,
     ) => {
       const statusOrder = Object.values(TestStatus);
       return (
@@ -121,7 +121,7 @@ const TestRunList: React.FunctionComponent = () => {
         .catch((err: string) =>
           enqueueSnackbar(err, {
             variant: "error",
-          })
+          }),
         );
     } else {
       testRunDispatch({ type: "get", payload: [] });
@@ -156,8 +156,8 @@ const TestRunList: React.FunctionComponent = () => {
             navigate(
               buildTestRunLocation(
                 selectedBuild.id,
-                param.getValue(param.id, "id")?.toString()
-              )
+                param.getValue(param.id, "id")?.toString(),
+              ),
             );
           }}
           onStateChange={({ state }: GridStateChangeParams) => {

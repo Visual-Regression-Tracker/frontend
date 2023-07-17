@@ -12,7 +12,7 @@ async function getList(projectId: string): Promise<TestVariation[]> {
 
   return fetch(
     `${API_URL}${ENDPOINT_URL}?projectId=${projectId}`,
-    requestOptions
+    requestOptions,
   ).then(handleResponse);
 }
 
@@ -23,14 +23,14 @@ async function getDetails(id: string): Promise<TestVariation> {
   };
 
   return fetch(`${API_URL}${ENDPOINT_URL}/details/${id}`, requestOptions).then(
-    handleResponse
+    handleResponse,
   );
 }
 
 async function merge(
   projectId: string,
   fromBranch: string,
-  toBranch: string
+  toBranch: string,
 ): Promise<Build> {
   const requestOptions = {
     method: "GET",
@@ -39,7 +39,7 @@ async function merge(
 
   return fetch(
     `${API_URL}${ENDPOINT_URL}/merge?projectId=${projectId}&fromBranch=${fromBranch}&toBranch=${toBranch}`,
-    requestOptions
+    requestOptions,
   ).then(handleResponse);
 }
 
@@ -50,7 +50,7 @@ async function remove(id: string): Promise<TestVariation> {
   };
 
   return fetch(`${API_URL}${ENDPOINT_URL}/${id}`, requestOptions).then(
-    handleResponse
+    handleResponse,
   );
 }
 

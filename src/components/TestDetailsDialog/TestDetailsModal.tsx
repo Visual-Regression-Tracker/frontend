@@ -20,7 +20,7 @@ import { TestRun } from "../../types";
 import { testRunService, staticService } from "../../services";
 import { TestStatus } from "../../types/testStatus";
 import { IgnoreArea, UpdateIgnoreAreaDto } from "../../types/ignoreArea";
-import  Konva from "konva";
+import Konva from "konva";
 import {
   Close,
   Add,
@@ -146,7 +146,7 @@ const TestDetailsModal: React.FunctionComponent<{
         return JSON.parse(json);
       }
       return false;
-    }
+    },
   );
 
   useEffect(() => {
@@ -168,13 +168,13 @@ const TestDetailsModal: React.FunctionComponent<{
 
   console.log("rerender TestDetailsModal");
   const [image, imageStatus] = useImage(
-    staticService.getImage(testRun.imageName)
+    staticService.getImage(testRun.imageName),
   );
   const [baselineImage, baselineImageStatus] = useImage(
-    staticService.getImage(testRun.baselineName)
+    staticService.getImage(testRun.baselineName),
   );
   const [diffImage, diffImageStatus] = useImage(
-    staticService.getImage(testRun.diffName)
+    staticService.getImage(testRun.diffName),
   );
 
   const applyIgnoreAreaText =
@@ -185,7 +185,7 @@ const TestDetailsModal: React.FunctionComponent<{
       image.width + 20,
       image.height + 20,
       container.offsetWidth,
-      container.offsetHeight - 48
+      container.offsetHeight - 48,
     );
     if (scale < stageScale) {
       setStageScale(scale);
@@ -224,7 +224,7 @@ const TestDetailsModal: React.FunctionComponent<{
       testRun.imageName &&
       (image?.height !== baselineImage?.height ||
         image?.width !== baselineImage?.width),
-    [image, baselineImage, testRun.baselineName, testRun.imageName]
+    [image, baselineImage, testRun.baselineName, testRun.imageName],
   );
 
   const handleIgnoreAreaChange = (ignoreAreas: IgnoreArea[]) => {
@@ -262,7 +262,7 @@ const TestDetailsModal: React.FunctionComponent<{
       .catch((err) =>
         enqueueSnackbar(err, {
           variant: "error",
-        })
+        }),
       );
   };
 
@@ -273,13 +273,13 @@ const TestDetailsModal: React.FunctionComponent<{
       const invertedIgnoreAreas = invertIgnoreArea(
         image!.width,
         image!.height,
-        head(ignoreAreas)
+        head(ignoreAreas),
       );
 
       handleIgnoreAreaChange(invertedIgnoreAreas);
       saveTestRun(
         invertedIgnoreAreas,
-        "Selected area has been inverted to ignore areas and saved."
+        "Selected area has been inverted to ignore areas and saved.",
       );
     }
     testRunDispatch({ type: "touched", payload: false });
@@ -305,7 +305,7 @@ const TestDetailsModal: React.FunctionComponent<{
 
   const applyIgnoreArea = () => {
     const newIgnoreArea = ignoreAreas.find(
-      (area) => selectedRectId! === area.id
+      (area) => selectedRectId! === area.id,
     );
     if (newIgnoreArea) {
       setProcessing(true);
@@ -324,7 +324,7 @@ const TestDetailsModal: React.FunctionComponent<{
               "Ignore areas are updated in all images in this build.",
               {
                 variant: "success",
-              }
+              },
             );
           });
         })
@@ -337,7 +337,7 @@ const TestDetailsModal: React.FunctionComponent<{
     } else {
       enqueueSnackbar(
         "There was an error determining which ignore area to apply.",
-        { variant: "error" }
+        { variant: "error" },
       );
     }
   };
@@ -345,14 +345,14 @@ const TestDetailsModal: React.FunctionComponent<{
   useHotkeys(
     "d",
     () => !!testRun.diffName && setIsDiffShown((isDiffShown) => !isDiffShown),
-    [testRun.diffName]
+    [testRun.diffName],
   );
   useHotkeys("ESC", handleClose, [handleClose]);
 
   const openHistoryTab = () => {
     window.open(
       `${routes.VARIATION_DETAILS_PAGE}/${testRun.testVariationId}`,
-      "_blank"
+      "_blank",
     );
   };
 
@@ -497,7 +497,7 @@ const TestDetailsModal: React.FunctionComponent<{
     branchName: string,
     imageName: string,
     imageStatus: any,
-    image: undefined | HTMLImageElement
+    image: undefined | HTMLImageElement,
   ) => {
     return (
       <Grid item xs={6} className={classes.drawAreaItem} ref={rightItemRef}>
@@ -617,12 +617,12 @@ const TestDetailsModal: React.FunctionComponent<{
                   .then(() =>
                     enqueueSnackbar("Comment updated", {
                       variant: "success",
-                    })
+                    }),
                   )
                   .catch((err) =>
                     enqueueSnackbar(err, {
                       variant: "error",
-                    })
+                    }),
                   )
               }
             />
@@ -657,14 +657,14 @@ const TestDetailsModal: React.FunctionComponent<{
                 testRun.branchName,
                 testRun.diffName,
                 diffImageStatus,
-                diffImage
+                diffImage,
               )
             : diffPanel(
                 "Image",
                 testRun.branchName,
                 testRun.imageName,
                 imageStatus,
-                image
+                image,
               )}
         </Grid>
       </Box>

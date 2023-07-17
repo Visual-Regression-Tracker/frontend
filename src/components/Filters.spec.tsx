@@ -39,7 +39,7 @@ describe("Filters", () => {
         viewportState={["100x200", cy.stub()]}
         customTagsState={["customTags", cy.stub()]}
         testStatusState={[TestStatus.ok, cy.stub()]}
-      />
+      />,
     );
 
     cy.get("[data-cy-root]").vrtTrack("Filters");

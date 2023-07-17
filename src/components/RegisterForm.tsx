@@ -35,7 +35,7 @@ const RegisterForm = () => {
       .catch((err) =>
         enqueueSnackbar(err, {
           variant: "error",
-        })
+        }),
       );
   };
 

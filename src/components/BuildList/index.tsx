@@ -50,7 +50,7 @@ const useStyles = makeStyles((theme: Theme) =>
         visibility: "inherit",
       },
     },
-  })
+  }),
 );
 
 const BuildList: FunctionComponent = () => {
@@ -69,7 +69,7 @@ const BuildList: FunctionComponent = () => {
 
   const handleMenuClick = (
     event: React.MouseEvent<HTMLElement>,
-    build: Build
+    build: Build,
   ) => {
     event.stopPropagation();
     setAnchorEl(event.currentTarget);
@@ -90,7 +90,7 @@ const BuildList: FunctionComponent = () => {
 
   const selectBuildCalback = React.useCallback(
     (id?: string) => navigate(buildTestRunLocation(id)),
-    [navigate]
+    [navigate],
   );
 
   const handlePaginationChange = React.useCallback(
@@ -106,11 +106,11 @@ const BuildList: FunctionComponent = () => {
           .catch((err: string) =>
             enqueueSnackbar(err, {
               variant: "error",
-            })
+            }),
           );
       }
     },
-    [buildDispatch, enqueueSnackbar, selectedProjectId, take]
+    [buildDispatch, enqueueSnackbar, selectedProjectId, take],
   );
 
   React.useEffect(() => {
@@ -215,12 +215,12 @@ const BuildList: FunctionComponent = () => {
                   .then((b) =>
                     enqueueSnackbar(`${menuBuild.id} finished`, {
                       variant: "success",
-                    })
+                    }),
                   )
                   .catch((err) =>
                     enqueueSnackbar(err, {
                       variant: "error",
-                    })
+                    }),
                   );
                 handleMenuClose();
               }}
@@ -273,7 +273,7 @@ const BuildList: FunctionComponent = () => {
               .catch((err) =>
                 enqueueSnackbar(err, {
                   variant: "error",
-                })
+                }),
               );
             handleMenuClose();
           }}
@@ -298,7 +298,7 @@ const BuildList: FunctionComponent = () => {
                   `Build #${menuBuild.number || menuBuild.id} deleted`,
                   {
                     variant: "success",
-                  }
+                  },
                 );
               })
               .then(() => handlePaginationChange(paginationPage))
@@ -310,7 +310,7 @@ const BuildList: FunctionComponent = () => {
               .catch((err) =>
                 enqueueSnackbar(err, {
                   variant: "error",
-                })
+                }),
               );
             handleMenuClose();
           }}

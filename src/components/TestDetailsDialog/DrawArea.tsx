@@ -35,19 +35,19 @@ interface IDrawArea {
   onStageClick: (event: Konva.KonvaEventObject<MouseEvent>) => void;
   stageOffsetState: [
     { x: number; y: number },
-    React.Dispatch<React.SetStateAction<{ x: number; y: number }>>
+    React.Dispatch<React.SetStateAction<{ x: number; y: number }>>,
   ];
   stageInitPosState: [
     { x: number; y: number },
-    React.Dispatch<React.SetStateAction<{ x: number; y: number }>>
+    React.Dispatch<React.SetStateAction<{ x: number; y: number }>>,
   ];
   stagePosState: [
     { x: number; y: number },
-    React.Dispatch<React.SetStateAction<{ x: number; y: number }>>
+    React.Dispatch<React.SetStateAction<{ x: number; y: number }>>,
   ];
   stageScrollPosState: [
     { x: number; y: number },
-    React.Dispatch<React.SetStateAction<{ x: number; y: number }>>
+    React.Dispatch<React.SetStateAction<{ x: number; y: number }>>,
   ];
   stageScaleState: [number, React.Dispatch<React.SetStateAction<number>>];
   drawModeState: [boolean, React.Dispatch<React.SetStateAction<boolean>>];
@@ -96,7 +96,7 @@ export const DrawArea: FunctionComponent<IDrawArea> = ({
         deleteIgnoreArea(selectedRectId);
       }
     },
-    [deleteIgnoreArea, selectedRectId]
+    [deleteIgnoreArea, selectedRectId],
   );
 
   React.useEffect(() => {
@@ -152,11 +152,11 @@ export const DrawArea: FunctionComponent<IDrawArea> = ({
           // new width and height
           i.width = Math.max(
             Math.round(e.evt.offsetX - i.x),
-            MIN_RECT_SIDE_PIXEL
+            MIN_RECT_SIDE_PIXEL,
           );
           i.height = Math.max(
             Math.round(e.evt.offsetY - i.y),
-            MIN_RECT_SIDE_PIXEL
+            MIN_RECT_SIDE_PIXEL,
           );
           return i;
         }
@@ -270,10 +270,10 @@ export const DrawArea: FunctionComponent<IDrawArea> = ({
                         rects[i].x = Math.round(newAttrs.x || 0);
                         rects[i].y = Math.round(newAttrs.y || 0);
                         rects[i].width = Math.round(
-                          newAttrs.width || MIN_RECT_SIDE_PIXEL
+                          newAttrs.width || MIN_RECT_SIDE_PIXEL,
                         );
                         rects[i].height = Math.round(
-                          newAttrs.height || MIN_RECT_SIDE_PIXEL
+                          newAttrs.height || MIN_RECT_SIDE_PIXEL,
                         );
 
                         setIgnoreAreas(rects);

@@ -60,11 +60,11 @@ const UserList = () => {
           .catch((err) =>
             enqueueSnackbar(err, {
               variant: "error",
-            })
+            }),
           );
       }
     },
-    [enqueueSnackbar]
+    [enqueueSnackbar],
   );
 
   return (

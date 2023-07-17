@@ -3,7 +3,6 @@ import { Grid } from "@material-ui/core";
 import RegisterForm from "../components/RegisterForm";
 
 const RegisterPage = () => {
-
   return (
     <Grid
       container

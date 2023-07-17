@@ -32,15 +32,15 @@ export const BulkOperation: React.FunctionComponent = () => {
   const [isProcessing, setIsProcessing] = React.useState(false);
   const ids: GridRowId[] = React.useMemo(
     () => Object.values(state.selection),
-    [state.selection]
+    [state.selection],
   );
   const isMerge: boolean = React.useMemo(
     () =>
       !!head(
-        rows.filter((value: GridRowData) => ids.includes(value.id.toString()))
+        rows.filter((value: GridRowData) => ids.includes(value.id.toString())),
       )?.merge,
     // eslint-disable-next-line
-    [ids]
+    [ids],
   );
   const idsEligibleForApproveOrReject: string[] = React.useMemo(
     () =>
@@ -49,12 +49,12 @@ export const BulkOperation: React.FunctionComponent = () => {
           (value: GridRowData) =>
             ids.includes(value.id.toString()) &&
             [TestStatus.new, TestStatus.unresolved].includes(
-              value.status.toString()
-            )
+              value.status.toString(),
+            ),
         )
         .map((value: GridRowData) => value.id.toString()),
     // eslint-disable-next-line
-    [ids]
+    [ids],
   );
 
   const selectedRows: GridSelectionModel = state.selection;

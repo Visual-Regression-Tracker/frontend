@@ -55,7 +55,7 @@ type BuildProviderProps = { children: React.ReactNode };
 
 const BuildStateContext = React.createContext<State | undefined>(undefined);
 const BuildDispatchContext = React.createContext<Dispatch | undefined>(
-  undefined
+  undefined,
 );
 
 const initialState: State = {

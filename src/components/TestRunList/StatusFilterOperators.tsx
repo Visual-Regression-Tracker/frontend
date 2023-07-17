@@ -18,7 +18,7 @@ const StatusInputComponent = (props: GridFilterInputValueProps) => {
   };
 
   const filterOptions: Array<TestStatus> = Array.from(
-    new Set(testRuns.map((item) => item.status))
+    new Set(testRuns.map((item) => item.status)),
   );
 
   return (

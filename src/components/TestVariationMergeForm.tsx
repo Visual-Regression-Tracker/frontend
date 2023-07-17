@@ -43,7 +43,7 @@ export const TestVariationMergeForm: React.FunctionComponent<IProps> = ({
       .catch((err) =>
         enqueueSnackbar(err, {
           variant: "error",
-        })
+        }),
       );
   };
 
@@ -84,7 +84,12 @@ export const TestVariationMergeForm: React.FunctionComponent<IProps> = ({
           />
         </Grid>
         <Grid item>
-          <Button type="submit" color="primary" variant="contained" id={LOCATOR_TEST_VARIATION_SELECT_BRANCH}>
+          <Button
+            type="submit"
+            color="primary"
+            variant="contained"
+            id={LOCATOR_TEST_VARIATION_SELECT_BRANCH}
+          >
             Merge
           </Button>
         </Grid>

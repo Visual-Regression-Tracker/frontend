@@ -18,7 +18,7 @@ export const ActionButtons: React.FunctionComponent = () => {
 
   const ids: GridRowId[] = React.useMemo(
     () => Object.values(state.selection),
-    [state.selection]
+    [state.selection],
   );
   return (
     <>
@@ -42,14 +42,14 @@ export const ActionButtons: React.FunctionComponent = () => {
                     userDispatch({
                       type: "getAll",
                       payload: userList.filter(
-                        (user) => !ids.includes(user.id)
+                        (user) => !ids.includes(user.id),
                       ),
                     });
                   })
                   .catch((err) =>
                     enqueueSnackbar(err, {
                       variant: "error",
-                    })
+                    }),
                   );
               }
             }}

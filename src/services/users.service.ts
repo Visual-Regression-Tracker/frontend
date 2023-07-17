@@ -28,7 +28,7 @@ function register(
   firstName: string,
   lastName: string,
   email: string,
-  password: string
+  password: string,
 ): Promise<User> {
   const requestOptions = {
     method: "POST",
@@ -75,7 +75,7 @@ function changePassword(password: string): Promise<boolean> {
   };
 
   return fetch(`${API_URL}${ENDPOINT_URL}/password`, requestOptions).then(
-    handleResponse
+    handleResponse,
   );
 }
 
@@ -101,7 +101,7 @@ async function assignRole(id: string | number, role: Role): Promise<User> {
   };
 
   return fetch(`${API_URL}${ENDPOINT_URL}/assignRole`, requestOptions).then(
-    handleResponse
+    handleResponse,
   );
 }
 
@@ -113,7 +113,7 @@ async function remove(ids: (string | number)[]): Promise<boolean> {
   };
 
   return fetch(`${API_URL}${ENDPOINT_URL}`, requestOptions).then(
-    handleResponse
+    handleResponse,
   );
 }
 
