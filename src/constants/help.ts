@@ -1,4 +1,4 @@
-import { Step } from "react-joyride";
+import { type Step } from "react-joyride";
 
 export const LOCATOR_LOGIN_FORM = "loginform-1";
 export const LOCATOR_BUILD_DETAILS = "build-details";

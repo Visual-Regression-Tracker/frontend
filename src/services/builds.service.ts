@@ -8,7 +8,7 @@ const ENDPOINT_URL = "/builds";
 async function getList(
   projectId: string,
   take: number,
-  skip: number
+  skip: number,
 ): Promise<PaginatedData<Build>> {
   const requestOptions = {
     method: "GET",
@@ -17,7 +17,7 @@ async function getList(
 
   return fetch(
     `${API_URL}${ENDPOINT_URL}?projectId=${projectId}&take=${take}&skip=${skip}`,
-    requestOptions
+    requestOptions,
   ).then(handleResponse);
 }
 
@@ -28,7 +28,7 @@ async function getDetails(id: string): Promise<Build> {
   };
 
   return fetch(`${API_URL}${ENDPOINT_URL}/${id}`, requestOptions).then(
-    handleResponse
+    handleResponse,
   );
 }
 
@@ -39,7 +39,7 @@ async function remove(id: string): Promise<Build> {
   };
 
   return fetch(`${API_URL}${ENDPOINT_URL}/${id}`, requestOptions).then(
-    handleResponse
+    handleResponse,
   );
 }
 
@@ -51,7 +51,7 @@ async function update(id: string, body: BuildDto): Promise<Build> {
   };
 
   return fetch(`${API_URL}${ENDPOINT_URL}/${id}`, requestOptions).then(
-    handleResponse
+    handleResponse,
   );
 }
 
@@ -63,7 +63,7 @@ async function approve(id: string, merge: boolean): Promise<void> {
 
   return fetch(
     `${API_URL}${ENDPOINT_URL}/${id}/approve?merge=${merge}`,
-    requestOptions
+    requestOptions,
   ).then(handleResponse);
 }
 

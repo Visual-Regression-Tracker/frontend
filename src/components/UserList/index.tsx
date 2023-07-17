@@ -2,11 +2,11 @@ import React from "react";
 import { Box, Toolbar } from "@material-ui/core";
 import {
   DataGrid,
-  GridColDef,
+  type GridColDef,
   GridToolbarDensitySelector,
   GridToolbarFilterButton,
-  GridValueFormatterParams,
-  GridCellEditCommitParams,
+  type GridValueFormatterParams,
+  type GridCellEditCommitParams,
 } from "@material-ui/data-grid";
 import { ActionButtons } from "./ActionButtons";
 import { usersService } from "../../services";
@@ -60,11 +60,11 @@ const UserList = () => {
           .catch((err) =>
             enqueueSnackbar(err, {
               variant: "error",
-            })
+            }),
           );
       }
     },
-    [enqueueSnackbar]
+    [enqueueSnackbar],
   );
 
   return (

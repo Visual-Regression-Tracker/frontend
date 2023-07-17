@@ -4,7 +4,7 @@ import { IgnoreArea } from "../types/ignoreArea";
 export const invertIgnoreArea = (
   imageWidth: number,
   imageHeight: number,
-  ignoreArea?: IgnoreArea
+  ignoreArea?: IgnoreArea,
 ): IgnoreArea[] => {
   if (!ignoreArea) {
     return [];

@@ -2,7 +2,7 @@ import { FormControl, InputLabel, Select } from "@material-ui/core";
 import React from "react";
 import { useTestRunState } from "../../contexts";
 import {
-  GridFilterInputValueProps,
+  type GridFilterInputValueProps,
   getGridStringOperators,
 } from "@material-ui/data-grid";
 
@@ -21,8 +21,8 @@ const TagInputComponent = (props: GridFilterInputValueProps) => {
         .concat(testRuns.map((item) => item.browser))
         .concat(testRuns.map((item) => item.device))
         .concat(testRuns.map((item) => item.viewport))
-        .concat(testRuns.map((item) => item.customTags))
-    )
+        .concat(testRuns.map((item) => item.customTags)),
+    ),
   );
 
   return (
@@ -44,7 +44,7 @@ const TagInputComponent = (props: GridFilterInputValueProps) => {
               <option key={item} value={item}>
                 {item}
               </option>
-            )
+            ),
         )}
       </Select>
     </FormControl>

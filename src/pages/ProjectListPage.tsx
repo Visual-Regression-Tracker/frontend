@@ -96,7 +96,7 @@ const ProjectsListPage = () => {
                 .catch((err) =>
                   enqueueSnackbar(err, {
                     variant: "error",
-                  })
+                  }),
                 )
             }
           />
@@ -118,7 +118,7 @@ const ProjectsListPage = () => {
                 .catch((err) =>
                   enqueueSnackbar(err, {
                     variant: "error",
-                  })
+                  }),
                 )
             }
           />
@@ -142,7 +142,7 @@ const ProjectsListPage = () => {
                 .catch((err) =>
                   enqueueSnackbar(err, {
                     variant: "error",
-                  })
+                  }),
                 )
             }
           />

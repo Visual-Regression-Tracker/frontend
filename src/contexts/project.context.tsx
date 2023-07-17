@@ -60,7 +60,7 @@ type ProjectProviderProps = { children: React.ReactNode };
 
 const ProjectStateContext = React.createContext<State | undefined>(undefined);
 const ProjectDispatchContext = React.createContext<Dispatch | undefined>(
-  undefined
+  undefined,
 );
 
 function projectReducer(state: State, action: IAction): State {
@@ -184,7 +184,7 @@ function ProjectProvider({ children }: ProjectProviderProps) {
       getProjectList(dispatch).catch((err) =>
         enqueueSnackbar(err, {
           variant: "error",
-        })
+        }),
       );
   }, [enqueueSnackbar, loggedIn]);
 

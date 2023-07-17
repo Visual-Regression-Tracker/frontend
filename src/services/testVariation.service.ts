@@ -4,7 +4,7 @@ import { API_URL } from "../_config/env.config";
 
 const ENDPOINT_URL = "/test-variations";
 
-async function getList(projectId: String): Promise<TestVariation[]> {
+async function getList(projectId: string): Promise<TestVariation[]> {
   const requestOptions = {
     method: "GET",
     headers: authHeader(),
@@ -12,25 +12,25 @@ async function getList(projectId: String): Promise<TestVariation[]> {
 
   return fetch(
     `${API_URL}${ENDPOINT_URL}?projectId=${projectId}`,
-    requestOptions
+    requestOptions,
   ).then(handleResponse);
 }
 
-async function getDetails(id: String): Promise<TestVariation> {
+async function getDetails(id: string): Promise<TestVariation> {
   const requestOptions = {
     method: "GET",
     headers: authHeader(),
   };
 
   return fetch(`${API_URL}${ENDPOINT_URL}/details/${id}`, requestOptions).then(
-    handleResponse
+    handleResponse,
   );
 }
 
 async function merge(
-  projectId: String,
-  fromBranch: String,
-  toBranch: String
+  projectId: string,
+  fromBranch: string,
+  toBranch: string,
 ): Promise<Build> {
   const requestOptions = {
     method: "GET",
@@ -39,18 +39,18 @@ async function merge(
 
   return fetch(
     `${API_URL}${ENDPOINT_URL}/merge?projectId=${projectId}&fromBranch=${fromBranch}&toBranch=${toBranch}`,
-    requestOptions
+    requestOptions,
   ).then(handleResponse);
 }
 
-async function remove(id: String): Promise<TestVariation> {
+async function remove(id: string): Promise<TestVariation> {
   const requestOptions = {
     method: "DELETE",
     headers: authHeader(),
   };
 
   return fetch(`${API_URL}${ENDPOINT_URL}/${id}`, requestOptions).then(
-    handleResponse
+    handleResponse,
   );
 }
 

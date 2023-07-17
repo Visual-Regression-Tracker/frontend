@@ -21,7 +21,7 @@ const TestVariationListPage: React.FunctionComponent = () => {
   const helpDispatch = useHelpDispatch();
   const { projectId = "" } = useParams<{ projectId: string }>();
   const [testVariations, setTestVariations] = React.useState<TestVariation[]>(
-    []
+    [],
   );
 
   // filter
@@ -48,7 +48,7 @@ const TestVariationListPage: React.FunctionComponent = () => {
         .catch((err) =>
           enqueueSnackbar(err, {
             variant: "error",
-          })
+          }),
         );
     }
   }, [projectId, enqueueSnackbar]);
@@ -63,8 +63,8 @@ const TestVariationListPage: React.FunctionComponent = () => {
           (device ? t.device === device : true) && // by device
           (viewport ? t.viewport === viewport : true) && // by viewport
           (customTags ? t.customTags === customTags : true) && // by customTags
-          (browser ? t.browser === browser : true) // by browser
-      )
+          (browser ? t.browser === browser : true), // by browser
+      ),
     );
   }, [
     query,
@@ -89,7 +89,7 @@ const TestVariationListPage: React.FunctionComponent = () => {
       .catch((err) =>
         enqueueSnackbar(err, {
           variant: "error",
-        })
+        }),
       );
   };
 
@@ -100,14 +100,16 @@ const TestVariationListPage: React.FunctionComponent = () => {
           <Grid item id={LOCATOR_TEST_VARIATION_LIST_PAGE_SELECT_PROJECT}>
             <ProjectSelect
               projectId={projectId}
-              onProjectSelect={(id) => navigate(`${routes.VARIATION_LIST_PAGE}/${id}`)}
+              onProjectSelect={(id) =>
+                navigate(`${routes.VARIATION_LIST_PAGE}/${id}`)
+              }
             />
           </Grid>
           <Grid item>
             <TestVariationMergeForm
               projectId={projectId}
               items={Array.from(
-                new Set(testVariations.map((t) => t.branchName))
+                new Set(testVariations.map((t) => t.branchName)),
               )}
             />
           </Grid>

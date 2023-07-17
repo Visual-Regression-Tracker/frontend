@@ -1,5 +1,5 @@
 import React from "react";
-import { Step } from "react-joyride";
+import { type Step } from "react-joyride";
 
 interface ISetStepAction {
   type: "setSteps";

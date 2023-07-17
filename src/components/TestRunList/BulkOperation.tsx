@@ -1,62 +1,63 @@
 import React from "react";
+import { Typography, IconButton, LinearProgress } from "@material-ui/core";
 import {
-  Typography,
-  IconButton,
-  LinearProgress,
-} from "@material-ui/core";
-import {
-  GridRowData,
-  GridRowId,
-  GridSelectionModel,
+  type GridRowData,
+  type GridRowId,
+  type GridSelectionModel,
   useGridSlotComponentProps,
 } from "@material-ui/data-grid";
 import { BaseModal } from "../BaseModal";
 import { useSnackbar } from "notistack";
-import { CloudDownload, Delete, LayersClear, ThumbDown, ThumbUp } from "@material-ui/icons";
+import {
+  CloudDownload,
+  Delete,
+  LayersClear,
+  ThumbDown,
+  ThumbUp,
+} from "@material-ui/icons";
 import { testRunService } from "../../services";
 import { TestStatus } from "../../types";
 import { head } from "lodash";
 import { Tooltip } from "../Tooltip";
 
 export const BulkOperation: React.FunctionComponent = () => {
-  const props = useGridSlotComponentProps();
+  const { rows, state } = useGridSlotComponentProps();
   const { enqueueSnackbar } = useSnackbar();
   const [approveDialogOpen, setApproveDialogOpen] = React.useState(false);
   const [rejectDialogOpen, setRejectDialogOpen] = React.useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = React.useState(false);
   const [downloadDialogOpen, setDownloadDialogOpen] = React.useState(false);
-  const [clearIgnoreDialogOpen, setClearIgnoreDialogOpen] = React.useState(false);
+  const [clearIgnoreDialogOpen, setClearIgnoreDialogOpen] =
+    React.useState(false);
   const [isProcessing, setIsProcessing] = React.useState(false);
   const ids: GridRowId[] = React.useMemo(
-    () => Object.values(props.state.selection),
-    [props.state.selection]
+    () => Object.values(state.selection),
+    [state.selection],
   );
   const isMerge: boolean = React.useMemo(
     () =>
       !!head(
-        props.rows.filter((value: GridRowData) =>
-          ids.includes(value.id.toString())
-        )
+        rows.filter((value: GridRowData) => ids.includes(value.id.toString())),
       )?.merge,
     // eslint-disable-next-line
-    [ids]
+    [ids],
   );
   const idsEligibleForApproveOrReject: string[] = React.useMemo(
     () =>
-      props.rows
+      rows
         .filter(
           (value: GridRowData) =>
             ids.includes(value.id.toString()) &&
             [TestStatus.new, TestStatus.unresolved].includes(
-              value.status.toString()
-            )
+              value.status.toString(),
+            ),
         )
         .map((value: GridRowData) => value.id.toString()),
     // eslint-disable-next-line
-    [ids]
+    [ids],
   );
 
-  const selectedRows: GridSelectionModel = props.state.selection;
+  const selectedRows: GridSelectionModel = state.selection;
   const count = Object.keys(selectedRows).length;
 
   const toggleApproveDialogOpen = () => {
@@ -124,17 +125,18 @@ export const BulkOperation: React.FunctionComponent = () => {
       return testRunService.removeBulk(ids);
     }
     if (downloadDialogOpen) {
-      let urlsToDownload: { download: string, filename: string }[] = [];
+      const urlsToDownload: { download: string; filename: string }[] = [];
       ids.forEach((id) => {
-        testRunService.getDetails(id.toString())
-          .then(
-            (e) => {
-              urlsToDownload.push({ "download": "static/imageUploads/" + e.imageName, "filename": e.name });
-              //Call getFile function only when all images names are pushed into the array.
-              if (urlsToDownload.length === ids.length) {
-                testRunService.getFiles(urlsToDownload);
-              }
-            });
+        testRunService.getDetails(id.toString()).then((e) => {
+          urlsToDownload.push({
+            download: "static/imageUploads/" + e.imageName,
+            filename: e.name,
+          });
+          //Call getFile function only when all images names are pushed into the array.
+          if (urlsToDownload.length === ids.length) {
+            testRunService.getFiles(urlsToDownload);
+          }
+        });
       });
     }
     if (rejectDialogOpen) {

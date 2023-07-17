@@ -2,10 +2,10 @@ import { FormControl, InputLabel, Select } from "@material-ui/core";
 import React from "react";
 import { useTestRunState } from "../../contexts";
 import {
-  GridFilterInputValueProps,
+  type GridFilterInputValueProps,
   getGridStringOperators,
-  GridFilterItem,
-  GridCellParams,
+  type GridFilterItem,
+  type GridCellParams,
 } from "@material-ui/data-grid";
 import { TestStatus } from "../../types";
 
@@ -18,7 +18,7 @@ const StatusInputComponent = (props: GridFilterInputValueProps) => {
   };
 
   const filterOptions: Array<TestStatus> = Array.from(
-    new Set(testRuns.map((item) => item.status))
+    new Set(testRuns.map((item) => item.status)),
   );
 
   return (

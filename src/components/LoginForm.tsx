@@ -32,7 +32,7 @@ const LoginForm = () => {
       .catch((err) =>
         enqueueSnackbar(err, {
           variant: "error",
-        })
+        }),
       );
   };
 

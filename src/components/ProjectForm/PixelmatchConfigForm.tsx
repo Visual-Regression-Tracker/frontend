@@ -10,9 +10,7 @@ export const PixelmatchConfigForm: React.FunctionComponent = () => {
 
   return (
     <React.Fragment>
-      <Tooltip
-        title="Enable comparison of images with different sizes."
-      >
+      <Tooltip title="Enable comparison of images with different sizes.">
         <FormControlLabel
           label="Allow diff dimensions"
           control={
@@ -27,9 +25,7 @@ export const PixelmatchConfigForm: React.FunctionComponent = () => {
           }
         />
       </Tooltip>
-      <Tooltip
-        title="Ignore detecting and ignoring anti-aliased pixels."
-      >
+      <Tooltip title="Ignore detecting and ignoring anti-aliased pixels.">
         <FormControlLabel
           label="Ignore anti-aliasing"
           control={

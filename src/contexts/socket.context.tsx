@@ -34,7 +34,7 @@ type SocketProviderProps = { children: React.ReactNode };
 
 const SocketStateContext = React.createContext<State | undefined>(undefined);
 const SocketDispatchContext = React.createContext<Dispatch | undefined>(
-  undefined
+  undefined,
 );
 
 const initialState: State = {
@@ -75,7 +75,7 @@ function SocketProvider({ children }: SocketProviderProps) {
       state.socket.on("build_updated", function (builds: Array<Build>) {
         updateBuild(
           buildDispatch,
-          builds.filter((build) => build.projectId === selectedProjectId)
+          builds.filter((build) => build.projectId === selectedProjectId),
         );
       });
 
@@ -89,7 +89,7 @@ function SocketProvider({ children }: SocketProviderProps) {
         }
         addTestRun(
           testRunDispatch,
-          testRuns.filter((tr) => tr.buildId === selectedBuild.id)
+          testRuns.filter((tr) => tr.buildId === selectedBuild.id),
         );
       });
 
@@ -99,7 +99,7 @@ function SocketProvider({ children }: SocketProviderProps) {
         }
         updateTestRun(
           testRunDispatch,
-          testRuns.filter((tr) => tr.buildId === selectedBuild.id)
+          testRuns.filter((tr) => tr.buildId === selectedBuild.id),
         );
       });
 
@@ -111,7 +111,7 @@ function SocketProvider({ children }: SocketProviderProps) {
           testRunDispatch,
           testRuns
             .filter((tr) => tr.buildId === selectedBuild.id)
-            .map((testRun) => testRun.id)
+            .map((testRun) => testRun.id),
         );
       });
     }

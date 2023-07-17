@@ -39,7 +39,7 @@ const TestVariationList: React.FunctionComponent<IProps> = ({
 }) => {
   const classes = useStyles();
   const [selectedItem, setSelectedItem] = React.useState<TestVariation | null>(
-    null
+    null,
   );
 
   const handleClose = () => {

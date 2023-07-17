@@ -6,7 +6,7 @@ import {
   makeStyles,
   MenuItem,
   Select,
-  Theme,
+  type Theme,
 } from "@material-ui/core";
 import {
   useProjectState,
@@ -22,7 +22,7 @@ const useStyles = makeStyles((theme: Theme) =>
     input: {
       margin: theme.spacing(1),
     },
-  })
+  }),
 );
 
 const ProjectSelect: FunctionComponent<{

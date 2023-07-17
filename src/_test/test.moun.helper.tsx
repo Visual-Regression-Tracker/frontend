@@ -8,8 +8,9 @@ import {
   HelpProvider,
 } from "../contexts";
 import { MemoryRouter, Route, Routes } from "react-router-dom";
-import { MemoryRouterProps } from "react-router";
+import { type MemoryRouterProps } from "react-router";
 import { SnackbarProvider } from "notistack";
+import "../index.css";
 
 export const mountVrtComponent = ({
   component,
@@ -43,7 +44,4 @@ export const mountVrtComponent = ({
         />
       </Routes>
     </MemoryRouter>,
-    {
-      cssFiles: ["src/index.css"],
-    }
   );

@@ -34,7 +34,7 @@ export const ApproveRejectButtons: React.FunctionComponent<{
       .catch((err) =>
         enqueueSnackbar(err, {
           variant: "error",
-        })
+        }),
       );
   };
 
@@ -50,7 +50,7 @@ export const ApproveRejectButtons: React.FunctionComponent<{
       .catch((err) =>
         enqueueSnackbar(err, {
           variant: "error",
-        })
+        }),
       );
   };
 

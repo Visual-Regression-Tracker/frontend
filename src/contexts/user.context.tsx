@@ -25,7 +25,7 @@ type UserProviderProps = { children: React.ReactNode };
 
 const UserStateContext = React.createContext<State | undefined>(undefined);
 const UserDispatchContext = React.createContext<Dispatch | undefined>(
-  undefined
+  undefined,
 );
 
 function UserReducer(state: State, action: IAction): State {
@@ -98,7 +98,7 @@ async function update(
     firstName,
     lastName,
     email,
-  }: { firstName: string; lastName: string; email: string }
+  }: { firstName: string; lastName: string; email: string },
 ) {
   return usersService
     .update({
