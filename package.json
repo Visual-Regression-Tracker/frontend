@@ -44,7 +44,7 @@
         "build": "vite build",
         "lint": "eslint --ignore-path .gitignore . --ext .ts,.tsx,.jsx,.js",
         "typescheck": "tsc --noEmit",
-        "test:cy": "cypress run-ct --browser chrome"
+        "test:cy": "cypress run --component --browser chrome"
     },
     "browserslist": [
         ">0.3%", "not ie 11", "not dead", "not op_mini all"
@@ -58,8 +58,7 @@
         "src/**/*.{js,jsx,ts,tsx,json,css,scss,md}": ["prettier --write"]
     },
     "devDependencies": {
-        "@cypress/react": "^5.12.5",
-        "@cypress/webpack-dev-server": "^1.8.4",
+        "@cypress/react": "^7.0.3",
         "@types/file-saver": "^2.0.5",
         "@types/jest": "^29.5.2",
         "@types/lodash": "^4.14.195",
@@ -74,7 +73,7 @@
         "@typescript-eslint/parser": "^5.61.0",
         "@visual-regression-tracker/agent-cypress": "^5.6.0",
         "@vitejs/plugin-react": "^4.0.2",
-        "cypress": "^9.7.0",
+        "cypress": "^12.17.1",
         "eslint": "^8.44.0",
         "eslint-config-prettier": "^8.8.0",
         "eslint-plugin-cypress": "^2.13.3",

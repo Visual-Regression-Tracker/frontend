@@ -11,7 +11,7 @@ describe("Header", () => {
       localStorage.clear();
       mountVrtComponent({ component: <Header /> });
 
-      cy.get("#__cy_root").vrtTrack("Header. Guest");
+      cy.get("[data-cy-root]").vrtTrack("Header. Guest");
     });
 
     it("Logged", () => {
@@ -20,7 +20,7 @@ describe("Header", () => {
 
       mountVrtComponent({ component: <Header /> });
 
-      cy.get("#__cy_root").vrtTrack("Header. Logged");
+      cy.get("[data-cy-root]").vrtTrack("Header. Logged");
     });
   });
 });

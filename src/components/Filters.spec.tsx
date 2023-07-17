@@ -42,6 +42,6 @@ describe("Filters", () => {
       />
     );
 
-    cy.get("#__cy_root").vrtTrack("Filters");
+    cy.get("[data-cy-root]").vrtTrack("Filters");
   });
 });
