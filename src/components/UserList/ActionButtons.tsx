@@ -14,14 +14,15 @@ import { Tooltip } from "../Tooltip";
 export const ActionButtons: React.FunctionComponent = () => {
   const apiRef = useGridApiRef();
   const state = apiRef.current.state;
+  const selection = gridSelectionStateSelector(state);
 
   const { enqueueSnackbar } = useSnackbar();
   const userDispatch = useUserDispatch();
   const { userList, user } = useUserState();
 
   const ids: GridRowId[] = React.useMemo(
-    () => Object.values(gridSelectionStateSelector(state)),
-    [gridSelectionStateSelector(state)]
+    () => Object.values(selection),
+    [selection],
   );
   return (
     <>
@@ -45,14 +46,14 @@ export const ActionButtons: React.FunctionComponent = () => {
                     userDispatch({
                       type: "getAll",
                       payload: userList.filter(
-                        (user) => !ids.includes(user.id)
+                        (user) => !ids.includes(user.id),
                       ),
                     });
                   })
                   .catch((err) =>
                     enqueueSnackbar(err, {
                       variant: "error",
-                    })
+                    }),
                   );
               }
             }}

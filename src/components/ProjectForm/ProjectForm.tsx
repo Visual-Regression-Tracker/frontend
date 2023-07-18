@@ -149,7 +149,8 @@ export const ProjectForm: React.FunctionComponent = () => {
                   ? getDefaultConfig(imageComparison)
                   : project.imageComparisonConfig,
             });
-          }}>
+          }}
+        >
           <MenuItem value={ImageComparison.pixelmatch}>
             {ImageComparison.pixelmatch}
           </MenuItem>

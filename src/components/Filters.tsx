@@ -105,7 +105,8 @@ const Filters: React.FunctionComponent<IProps> = ({
               id="filter_os"
               value={os}
               displayEmpty
-              onChange={(event) => setOs(event.target.value as string)}>
+              onChange={(event) => setOs(event.target.value as string)}
+            >
               <MenuItem value="">
                 <em>All</em>
               </MenuItem>
@@ -129,7 +130,8 @@ const Filters: React.FunctionComponent<IProps> = ({
               id="filter_device"
               value={device}
               displayEmpty
-              onChange={(event) => setDevice(event.target.value as string)}>
+              onChange={(event) => setDevice(event.target.value as string)}
+            >
               <MenuItem value="">
                 <em>All</em>
               </MenuItem>
@@ -153,7 +155,8 @@ const Filters: React.FunctionComponent<IProps> = ({
               id="filter_browser"
               value={browser}
               displayEmpty
-              onChange={(event) => setBrowser(event.target.value as string)}>
+              onChange={(event) => setBrowser(event.target.value as string)}
+            >
               <MenuItem value="">
                 <em>All</em>
               </MenuItem>
@@ -177,7 +180,8 @@ const Filters: React.FunctionComponent<IProps> = ({
               id="filter_viewport"
               value={viewport}
               displayEmpty
-              onChange={(event) => setViewport(event.target.value as string)}>
+              onChange={(event) => setViewport(event.target.value as string)}
+            >
               <MenuItem value="">
                 <em>All</em>
               </MenuItem>
@@ -201,7 +205,8 @@ const Filters: React.FunctionComponent<IProps> = ({
               id="filter_customTags"
               value={customTags}
               displayEmpty
-              onChange={(event) => setCustomTags(event.target.value as string)}>
+              onChange={(event) => setCustomTags(event.target.value as string)}
+            >
               <MenuItem value="">
                 <em>All</em>
               </MenuItem>
@@ -225,7 +230,8 @@ const Filters: React.FunctionComponent<IProps> = ({
               id="filter_testStatus"
               value={testStatus}
               displayEmpty
-              onChange={(event) => setTestStatus(event.target.value as string)}>
+              onChange={(event) => setTestStatus(event.target.value as string)}
+            >
               <MenuItem value="">
                 <em>All</em>
               </MenuItem>
@@ -249,7 +255,8 @@ const Filters: React.FunctionComponent<IProps> = ({
               id="filter_branchName"
               value={branchName}
               displayEmpty
-              onChange={(event) => setBranchName(event.target.value as string)}>
+              onChange={(event) => setBranchName(event.target.value as string)}
+            >
               <MenuItem value="">
                 <em>All</em>
               </MenuItem>

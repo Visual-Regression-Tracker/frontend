@@ -1,6 +1,5 @@
 import React from "react";
-import { Box } from "@mui/material";
-import { Skeleton } from "@mui/lab";
+import { Box, Skeleton } from "@mui/material";
 
 export const SkeletonList: React.FunctionComponent = () => {
   const list = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11];

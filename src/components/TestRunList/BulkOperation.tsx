@@ -28,6 +28,7 @@ export const BulkOperation: React.FunctionComponent = () => {
   const rows = gridVisibleSortedRowEntriesSelector(state).map((row) => {
     return [row.id, row.model];
   });
+  const selection = gridSelectionStateSelector(state);
 
   const { enqueueSnackbar } = useSnackbar();
   const [approveDialogOpen, setApproveDialogOpen] = React.useState(false);
@@ -38,17 +39,17 @@ export const BulkOperation: React.FunctionComponent = () => {
     React.useState(false);
   const [isProcessing, setIsProcessing] = React.useState(false);
   const ids: GridRowId[] = React.useMemo(
-    () => Object.values(gridSelectionStateSelector(state)),
-    [gridSelectionStateSelector(state)]
+    () => Object.values(selection),
+    [selection],
   );
   const isMerge: boolean = React.useMemo(
     () =>
       !!head(
-        rows.filter((value: GridRowModel) => ids.includes(value.id.toString()))
-      )?.merge,
-    // eslint-disable-next-line
-    [ids]
+        rows.filter((value: GridRowModel) => ids.includes(value.id.toString())),
+      ),
+    [ids],
   );
+
   const idsEligibleForApproveOrReject: string[] = React.useMemo(
     () =>
       rows
@@ -56,12 +57,12 @@ export const BulkOperation: React.FunctionComponent = () => {
           (value: GridRowModel) =>
             ids.includes(value.id.toString()) &&
             [TestStatus.new, TestStatus.unresolved].includes(
-              value.status.toString()
-            )
+              value.status.toString(),
+            ),
         )
         .map((value: GridRowModel) => value.id.toString()),
     // eslint-disable-next-line
-    [ids]
+    [ids],
   );
 
   const selectedRows: GridSelectionModel = gridSelectionStateSelector(state);

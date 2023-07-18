@@ -96,7 +96,7 @@ const ProjectsListPage = () => {
                 .catch((err) =>
                   enqueueSnackbar(err, {
                     variant: "error",
-                  })
+                  }),
                 )
             }
           />
@@ -118,7 +118,7 @@ const ProjectsListPage = () => {
                 .catch((err) =>
                   enqueueSnackbar(err, {
                     variant: "error",
-                  })
+                  }),
                 )
             }
           />
@@ -142,7 +142,7 @@ const ProjectsListPage = () => {
                 .catch((err) =>
                   enqueueSnackbar(err, {
                     variant: "error",
-                  })
+                  }),
                 )
             }
           />
@@ -173,7 +173,8 @@ const ProjectsListPage = () => {
                     toggleUpdateDialogOpen();
                     setProjectEditState(projectDispatch, project);
                   }}
-                  size="large">
+                  size="large"
+                >
                   <Edit />
                 </IconButton>
                 <IconButton
@@ -181,7 +182,8 @@ const ProjectsListPage = () => {
                     toggleDeleteDialogOpen();
                     setProjectEditState(projectDispatch, project);
                   }}
-                  size="large">
+                  size="large"
+                >
                   <Delete />
                 </IconButton>
               </CardActions>

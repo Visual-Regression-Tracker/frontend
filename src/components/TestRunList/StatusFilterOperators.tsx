@@ -18,7 +18,7 @@ const StatusInputComponent = (props: GridFilterInputValueProps) => {
   };
 
   const filterOptions: Array<TestStatus> = Array.from(
-    new Set(testRuns.map((item) => item.status))
+    new Set(testRuns.map((item) => item.status)),
   );
 
   return (
@@ -32,7 +32,8 @@ const StatusInputComponent = (props: GridFilterInputValueProps) => {
         native
         displayEmpty
         value={item.value}
-        onChange={handleFilterChange}>
+        onChange={handleFilterChange}
+      >
         <option aria-label="All" value="" />
         {filterOptions.map((item) => (
           <option key={item} value={item}>

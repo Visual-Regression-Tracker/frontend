@@ -14,7 +14,6 @@ import {
   type GridRowParams,
   type GridValueGetterParams,
   type GridRenderCellParams,
-  type GridSortCellParams,
   type GridSortDirection,
   type GridSortModel,
 } from "@mui/x-data-grid";
@@ -43,17 +42,16 @@ const columnsDef: GridColDef[] = [
       ];
       return tags.reduce(
         (prev, curr) => prev.concat(curr ? `${curr};` : ""),
-        ""
+        "",
       );
     },
     renderCell: (params: GridCellParams) => (
       <React.Fragment>
-        {params
-          .getValue(params.id, "tags")
+        {params.row["tags"]
           ?.toString()
           .split(";")
           .map(
-            (tag) =>
+            (tag: any) =>
               tag && (
                 <Chip
                   key={tag}
@@ -61,7 +59,7 @@ const columnsDef: GridColDef[] = [
                   label={tag}
                   style={{ margin: "1px" }}
                 />
-              )
+              ),
           )}
       </React.Fragment>
     ),
@@ -72,23 +70,11 @@ const columnsDef: GridColDef[] = [
     headerName: "Status",
     flex: 0.3,
     renderCell: (params: GridRenderCellParams) => {
-      return (
-        <TestStatusChip
-          status={params.getValue(params.id, "status")?.toString()}
-        />
-      );
+      return <TestStatusChip status={params.row["status"]?.toString()} />;
     },
-    sortComparator: (
-      v1: any,
-      v2: any,
-      cellParams1: GridSortCellParams,
-      cellParams2: GridSortCellParams
-    ) => {
+    sortComparator: (v1: TestStatus, v2: TestStatus) => {
       const statusOrder = Object.values(TestStatus);
-      return (
-        statusOrder.indexOf(v2 as TestStatus) -
-        statusOrder.indexOf(v1 as TestStatus)
-      );
+      return statusOrder.indexOf(v2) - statusOrder.indexOf(v1);
     },
     filterOperators: StatusFilterOperators,
   },
@@ -119,7 +105,7 @@ const TestRunList: React.FunctionComponent = () => {
         .catch((err: string) =>
           enqueueSnackbar(err, {
             variant: "error",
-          })
+          }),
         );
     } else {
       testRunDispatch({ type: "get", payload: [] });
@@ -154,8 +140,8 @@ const TestRunList: React.FunctionComponent = () => {
             navigate(
               buildTestRunLocation(
                 selectedBuild.id,
-                param.getValue(param.id, "id")?.toString()
-              )
+                param.row["id"]?.toString(),
+              ),
             );
           }}
           onStateChange={(state) => {

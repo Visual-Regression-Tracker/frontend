@@ -5,7 +5,7 @@ import {
   type GridColDef,
   GridToolbarDensitySelector,
   GridToolbarFilterButton,
-  type GridValueFormatterParams,
+  type GridRenderCellParams,
   type GridCellEditCommitParams,
 } from "@mui/x-data-grid";
 import { ActionButtons } from "./ActionButtons";
@@ -27,7 +27,7 @@ const columnsDef: GridColDef[] = [
     valueOptions: Object.entries(Role).map(([key, value]) => {
       return { value: key, label: value };
     }),
-    renderCell: (params: GridValueFormatterParams) => {
+    renderCell: (params: GridRenderCellParams) => {
       const role = params.value as keyof typeof Role;
       return Role[role];
     },
@@ -60,11 +60,11 @@ const UserList = () => {
           .catch((err) =>
             enqueueSnackbar(err, {
               variant: "error",
-            })
+            }),
           );
       }
     },
-    [enqueueSnackbar]
+    [enqueueSnackbar],
   );
 
   return (

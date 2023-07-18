@@ -38,7 +38,7 @@ export const TestDetailsDialog: React.FunctionComponent = () => {
           .slice()
           .sort(
             (a, b) =>
-              sortedTestRunIds.indexOf(a.id) - sortedTestRunIds.indexOf(b.id)
+              sortedTestRunIds.indexOf(a.id) - sortedTestRunIds.indexOf(b.id),
           )
       : filtered;
     return sorted;
@@ -46,7 +46,7 @@ export const TestDetailsDialog: React.FunctionComponent = () => {
 
   const selectedTestRunIndex = React.useMemo(
     () => testRuns.findIndex((t) => t.id === selectedTestRun?.id),
-    [testRuns, selectedTestRun?.id]
+    [testRuns, selectedTestRun?.id],
   );
 
   const navigateById = React.useCallback(
@@ -58,7 +58,7 @@ export const TestDetailsDialog: React.FunctionComponent = () => {
         navigate(buildTestRunLocation(selectedBuild?.id, id));
       }
     },
-    [touched, navigate, selectedBuild?.id]
+    [touched, navigate, selectedBuild?.id],
   );
 
   const navigateByIndex = React.useCallback(
@@ -68,7 +68,7 @@ export const TestDetailsDialog: React.FunctionComponent = () => {
         navigateById(testRun.id);
       }
     },
-    [testRuns, navigateById]
+    [testRuns, navigateById],
   );
 
   if (!selectedTestRun) {

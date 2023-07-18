@@ -21,8 +21,8 @@ const TagInputComponent = (props: GridFilterInputValueProps) => {
         .concat(testRuns.map((item) => item.browser))
         .concat(testRuns.map((item) => item.device))
         .concat(testRuns.map((item) => item.viewport))
-        .concat(testRuns.map((item) => item.customTags))
-    )
+        .concat(testRuns.map((item) => item.customTags)),
+    ),
   );
 
   return (
@@ -36,7 +36,8 @@ const TagInputComponent = (props: GridFilterInputValueProps) => {
         native
         displayEmpty
         value={item.value}
-        onChange={handleFilterChange}>
+        onChange={handleFilterChange}
+      >
         <option aria-label="All" value="" />
         {filterOptions.map(
           (item) =>
@@ -44,7 +45,7 @@ const TagInputComponent = (props: GridFilterInputValueProps) => {
               <option key={item} value={item}>
                 {item}
               </option>
-            )
+            ),
         )}
       </Select>
     </FormControl>

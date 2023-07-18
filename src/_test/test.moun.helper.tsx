@@ -48,5 +48,5 @@ export const mountVrtComponent = ({
           }
         />
       </Routes>
-    </MemoryRouter>
+    </MemoryRouter>,
   );

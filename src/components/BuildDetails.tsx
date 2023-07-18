@@ -10,7 +10,7 @@ const BuildDetails: React.FunctionComponent = () => {
   const { selectedBuild } = useBuildState();
   const buildNumber = React.useMemo(
     () => `#${selectedBuild?.number} ${selectedBuild?.ciBuildId || ""}`,
-    [selectedBuild?.number, selectedBuild?.ciBuildId]
+    [selectedBuild?.number, selectedBuild?.ciBuildId],
   );
 
   if (!selectedBuild) {

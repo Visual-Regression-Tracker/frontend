@@ -15,7 +15,7 @@ const useStyles = makeStyles((theme) =>
     input: {
       margin: theme.spacing(1),
     },
-  })
+  }),
 );
 
 const ProjectSelect: FunctionComponent<{

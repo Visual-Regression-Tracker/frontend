@@ -49,7 +49,7 @@ export const TestVariationMergeForm: React.FunctionComponent<IProps> = ({
       .catch((err) =>
         enqueueSnackbar(err, {
           variant: "error",
-        })
+        }),
       );
   };
 
