@@ -120,9 +120,10 @@ const TestRunList: React.FunctionComponent = () => {
     getTestRunListCallback();
   }, [getTestRunListCallback]);
   const apiRef = useGridApiRef();
-  return (
-    <React.Fragment>
-      {selectedBuild ? (
+
+  if (selectedBuild) {
+    return (
+      <>
         <DataGrid
           apiRef={apiRef}
           rows={testRuns}
@@ -166,10 +167,13 @@ const TestRunList: React.FunctionComponent = () => {
             }
           }}
         />
-      ) : (
-        <Typography variant="h5">Select build from list</Typography>
-      )}
-    </React.Fragment>
+      </>
+    );
+  }
+  return (
+    <>
+      <Typography variant="h5">Select build from list</Typography>
+    </>
   );
 };
 

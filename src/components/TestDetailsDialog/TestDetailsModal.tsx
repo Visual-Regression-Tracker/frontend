@@ -12,9 +12,9 @@ import {
   Divider,
   FormControlLabel,
   Checkbox,
+  ToggleButton,
 } from "@mui/material";
 import { makeStyles } from "@mui/styles";
-import { ToggleButton } from "@mui/lab";
 import { useHotkeys } from "react-hotkeys-hook";
 import { TestRun } from "../../types";
 import { testRunService, staticService } from "../../services";
@@ -441,7 +441,6 @@ const TestDetailsModal: React.FunctionComponent<{
     return (
       <Grid
         container
-        xs={6}
         ref={leftItemRef}
         className={classes.drawAreaItem}
         direction="column"
@@ -461,7 +460,7 @@ const TestDetailsModal: React.FunctionComponent<{
             image={baselineImage}
             ignoreAreas={[]}
           />
-          <Grid item>
+          <Grid item xs={6}>
             <Button
               color="primary"
               disabled={!testRun.testVariationId}

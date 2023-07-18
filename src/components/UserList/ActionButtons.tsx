@@ -3,7 +3,7 @@ import { IconButton } from "@mui/material";
 import { Delete } from "@mui/icons-material";
 import {
   type GridRowId,
-  useGridApiRef,
+  useGridApiContext,
   gridRowSelectionStateSelector,
 } from "@mui/x-data-grid";
 import { usersService } from "../../services";
@@ -12,7 +12,7 @@ import { useUserDispatch, useUserState } from "../../contexts";
 import { Tooltip } from "../Tooltip";
 
 export const ActionButtons: React.FunctionComponent = () => {
-  const apiRef = useGridApiRef();
+  const apiRef = useGridApiContext();
   const state = apiRef.current.state;
   const selection = gridRowSelectionStateSelector(state);
 

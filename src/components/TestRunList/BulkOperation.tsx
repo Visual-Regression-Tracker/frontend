@@ -4,7 +4,7 @@ import {
   type GridRowModel,
   type GridRowId,
   type GridRowSelectionModel,
-  useGridApiRef,
+  useGridApiContext,
   gridRowSelectionStateSelector,
   gridExpandedSortedRowEntriesSelector,
 } from "@mui/x-data-grid";
@@ -23,7 +23,7 @@ import { head } from "lodash";
 import { Tooltip } from "../Tooltip";
 
 export const BulkOperation: React.FunctionComponent = () => {
-  const apiRef = useGridApiRef();
+  const apiRef = useGridApiContext();
   const state = apiRef.current.state;
   const rows = gridExpandedSortedRowEntriesSelector(state).map((row) => {
     return [row.id, row.model];
