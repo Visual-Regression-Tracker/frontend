@@ -2,11 +2,11 @@ import React from "react";
 import { Box, Toolbar } from "@mui/material";
 import {
   DataGrid,
+  useGridApiRef,
   type GridColDef,
   GridToolbarDensitySelector,
   GridToolbarFilterButton,
   type GridRenderCellParams,
-  type GridCellEditCommitParams,
 } from "@mui/x-data-grid";
 import { ActionButtons } from "./ActionButtons";
 import { usersService } from "../../services";
@@ -15,7 +15,7 @@ import { useSnackbar } from "notistack";
 import { useUserDispatch, useUserState } from "../../contexts";
 
 const columnsDef: GridColDef[] = [
-  { field: "id", hide: true, filterable: false },
+  { field: "id", filterable: false },
   { field: "email", headerName: "Email", flex: 2 },
   { field: "firstName", headerName: "First name", flex: 1 },
   { field: "lastName", headerName: "Last name", flex: 1 },
@@ -47,7 +47,7 @@ const UserList = () => {
   }, [userDispatch]);
 
   const handleEditCellChangeCommitted = React.useCallback(
-    (params: GridCellEditCommitParams) => {
+    (params) => {
       const { id, field, value } = params;
       if (field === "role") {
         usersService
@@ -67,17 +67,22 @@ const UserList = () => {
     [enqueueSnackbar],
   );
 
+  const apiRef = useGridApiRef();
   return (
     <DataGrid
+      apiRef={apiRef}
       rows={userList}
       columns={columnsDef}
+      columnVisibilityModel={{
+        id: false,
+      }}
       checkboxSelection
       disableColumnMenu
-      disableSelectionOnClick
-      components={{
-        Toolbar: DataGridCustomToolbar,
+      disableRowSelectionOnClick
+      slots={{
+        toolbar: DataGridCustomToolbar,
       }}
-      onCellEditCommit={handleEditCellChangeCommitted}
+      onCellEditStop={handleEditCellChangeCommitted}
     />
   );
 };
@@ -86,12 +91,14 @@ export default UserList;
 
 const DataGridCustomToolbar: React.FunctionComponent = () => {
   return (
-    <Toolbar variant="dense">
-      <GridToolbarFilterButton />
-      <GridToolbarDensitySelector />
-      <Box marginLeft="auto">
-        <ActionButtons />
-      </Box>
-    </Toolbar>
+    <>
+      <Toolbar variant="dense">
+        <GridToolbarFilterButton />
+        <GridToolbarDensitySelector />
+        <Box marginLeft="auto">
+          <ActionButtons />
+        </Box>
+      </Toolbar>
+    </>
   );
 };

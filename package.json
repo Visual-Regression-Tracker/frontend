@@ -15,7 +15,7 @@
         "@mui/lab": "^5.0.0-alpha.136",
         "@mui/material": "^5.14.0",
         "@mui/styles": "^5.14.0",
-        "@mui/x-data-grid": "^5.17.26",
+        "@mui/x-data-grid": "^6.10.0",
         "@testing-library/jest-dom": "^5.16.5",
         "@testing-library/react": "^12.1.5",
         "@testing-library/user-event": "^12.8.3",

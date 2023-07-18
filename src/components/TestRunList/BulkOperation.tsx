@@ -3,10 +3,10 @@ import { Typography, IconButton, LinearProgress } from "@mui/material";
 import {
   type GridRowModel,
   type GridRowId,
-  type GridSelectionModel,
+  type GridRowSelectionModel,
   useGridApiRef,
-  gridSelectionStateSelector,
-  gridVisibleSortedRowEntriesSelector,
+  gridRowSelectionStateSelector,
+  gridExpandedSortedRowEntriesSelector,
 } from "@mui/x-data-grid";
 import { BaseModal } from "../BaseModal";
 import { useSnackbar } from "notistack";
@@ -25,10 +25,10 @@ import { Tooltip } from "../Tooltip";
 export const BulkOperation: React.FunctionComponent = () => {
   const apiRef = useGridApiRef();
   const state = apiRef.current.state;
-  const rows = gridVisibleSortedRowEntriesSelector(state).map((row) => {
+  const rows = gridExpandedSortedRowEntriesSelector(state).map((row) => {
     return [row.id, row.model];
   });
-  const selection = gridSelectionStateSelector(state);
+  const selection = gridRowSelectionStateSelector(state);
 
   const { enqueueSnackbar } = useSnackbar();
   const [approveDialogOpen, setApproveDialogOpen] = React.useState(false);
@@ -65,7 +65,8 @@ export const BulkOperation: React.FunctionComponent = () => {
     [ids],
   );
 
-  const selectedRows: GridSelectionModel = gridSelectionStateSelector(state);
+  const selectedRows: GridRowSelectionModel =
+    gridRowSelectionStateSelector(state);
   const count = Object.keys(selectedRows).length;
 
   const toggleApproveDialogOpen = () => {

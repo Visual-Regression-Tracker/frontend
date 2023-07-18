@@ -4,7 +4,7 @@ import { Delete } from "@mui/icons-material";
 import {
   type GridRowId,
   useGridApiRef,
-  gridSelectionStateSelector,
+  gridRowSelectionStateSelector,
 } from "@mui/x-data-grid";
 import { usersService } from "../../services";
 import { useSnackbar } from "notistack";
@@ -14,7 +14,7 @@ import { Tooltip } from "../Tooltip";
 export const ActionButtons: React.FunctionComponent = () => {
   const apiRef = useGridApiRef();
   const state = apiRef.current.state;
-  const selection = gridSelectionStateSelector(state);
+  const selection = gridRowSelectionStateSelector(state);
 
   const { enqueueSnackbar } = useSnackbar();
   const userDispatch = useUserDispatch();

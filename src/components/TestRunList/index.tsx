@@ -9,6 +9,7 @@ import {
 import { useSnackbar } from "notistack";
 import {
   DataGrid,
+  useGridApiRef,
   type GridCellParams,
   type GridColDef,
   type GridRowParams,
@@ -26,7 +27,7 @@ import { useNavigate } from "react-router";
 import { buildTestRunLocation } from "../../_helpers/route.helpers";
 
 const columnsDef: GridColDef[] = [
-  { field: "id", hide: true, filterable: false },
+  { field: "id", filterable: false },
   { field: "name", headerName: "Name", flex: 1 },
   {
     field: "tags",
@@ -87,7 +88,10 @@ const TestRunList: React.FunctionComponent = () => {
   const { selectedBuild } = useBuildState();
   const testRunDispatch = useTestRunDispatch();
 
-  const [pageSize, setPageSize] = React.useState<number>(10);
+  const [paginationModel, setPaginationModel] = React.useState({
+    pageSize: 10,
+    page: 0,
+  });
 
   const [sortModel, setSortModel] = React.useState<GridSortModel>([
     {
@@ -115,25 +119,29 @@ const TestRunList: React.FunctionComponent = () => {
   React.useEffect(() => {
     getTestRunListCallback();
   }, [getTestRunListCallback]);
-
+  const apiRef = useGridApiRef();
   return (
     <React.Fragment>
       {selectedBuild ? (
         <DataGrid
+          apiRef={apiRef}
           rows={testRuns}
           columns={columnsDef}
-          pageSize={pageSize}
-          rowsPerPageOptions={[10, 30, 100]}
-          onPageSizeChange={(newPageSize) => setPageSize(newPageSize)}
+          columnVisibilityModel={{
+            id: false,
+          }}
+          pageSizeOptions={[10, 30, 100]}
+          paginationModel={paginationModel}
+          onPaginationModelChange={setPaginationModel}
           pagination
           loading={loading}
-          components={{
-            Toolbar: DataGridCustomToolbar,
+          slots={{
+            toolbar: DataGridCustomToolbar,
           }}
           checkboxSelection
           disableColumnSelector
           disableColumnMenu
-          disableSelectionOnClick
+          disableRowSelectionOnClick
           sortModel={sortModel}
           onSortModelChange={(model) => setSortModel(model)}
           onRowClick={(param: GridRowParams) => {
