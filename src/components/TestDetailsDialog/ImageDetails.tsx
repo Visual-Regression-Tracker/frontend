@@ -1,19 +1,19 @@
 import React from "react";
-import { styled } from "@mui/material/styles";
+import { styled } from '@mui/material/styles';
 import { Typography, Grid, IconButton } from "@mui/material";
 import { WarningRounded, AltRoute } from "@mui/icons-material";
 import { IgnoreArea } from "../../types/ignoreArea";
 import { Tooltip } from "../Tooltip";
 
-const PREFIX = "ImageDetails";
+const PREFIX = 'ImageDetails';
 
 const classes = {
   container: `${PREFIX}-container`,
-  branchName: `${PREFIX}-branchName`,
+  branchName: `${PREFIX}-branchName`
 };
 
 // TODO jss-to-styled codemod: The Fragment root was replaced by div. Change the tag if needed.
-const Root = styled("div")(() => ({
+const Root = styled('div')(() => ({
   [`& .${classes.container}`]: {
     display: "flex",
     alignItems: "center",
@@ -30,7 +30,7 @@ const Root = styled("div")(() => ({
     textOverflow: "ellipsis",
     whiteSpace: "nowrap",
     overflow: "hidden",
-  },
+  }
 }));
 
 export interface ImageDetailsProps {
@@ -48,6 +48,7 @@ const ImageDetails: React.FunctionComponent<ImageDetailsProps> = ({
   branchName,
   ignoreAreas,
 }) => {
+
   const imageSize = () => {
     return (
       imageName && (

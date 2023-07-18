@@ -1,5 +1,5 @@
 import React, { FunctionComponent } from "react";
-import { styled } from "@mui/material/styles";
+import { styled } from '@mui/material/styles';
 import {
   FormControl,
   InputLabel,
@@ -13,28 +13,33 @@ import {
   selectProject,
 } from "../contexts";
 
-const PREFIX = "ProjectSelect";
+const PREFIX = 'ProjectSelect';
 
 const classes = {
   formControl: `${PREFIX}-formControl`,
-  input: `${PREFIX}-input`,
+  input: `${PREFIX}-input`
 };
 
 // TODO jss-to-styled codemod: The Fragment root was replaced by div. Change the tag if needed.
-const Root = styled("div")(({ theme }) => ({
+const Root = styled('div')((
+  {
+    theme
+  }
+) => ({
   [`& .${classes.formControl}`]: {
     width: "100%",
   },
 
   [`& .${classes.input}`]: {
     margin: theme.spacing(1),
-  },
+  }
 }));
 
 const ProjectSelect: FunctionComponent<{
   projectId?: string;
   onProjectSelect: (id: string) => void;
 }> = ({ projectId, onProjectSelect }) => {
+
   const { projectList, selectedProjectId } = useProjectState();
   const projectDispatch = useProjectDispatch();
 

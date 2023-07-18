@@ -1,5 +1,5 @@
 import React, { FunctionComponent } from "react";
-import { styled } from "@mui/material/styles";
+import { styled } from '@mui/material/styles';
 import {
   List,
   ListItemButton,
@@ -34,33 +34,35 @@ import { useNavigate } from "react-router";
 import { buildTestRunLocation } from "../../_helpers/route.helpers";
 import { Tooltip } from "../Tooltip";
 
-const PREFIX = "index";
+const PREFIX = 'index';
 
 const classes = {
   listContainer: `${PREFIX}-listContainer`,
   listItemSecondaryAction: `${PREFIX}-listItemSecondaryAction`,
-  listItem: `${PREFIX}-listItem`,
+  listItem: `${PREFIX}-listItem`
 };
 
 // TODO jss-to-styled codemod: The Fragment root was replaced by div. Change the tag if needed.
-const Root = styled("div")(() => ({
-  [`& .${classes.listContainer}`]: {
-    height: "100%",
-    overflow: "auto",
-  },
-
-  [`& .${classes.listItemSecondaryAction}`]: {
-    visibility: "hidden",
-  },
-
-  [`& .${classes.listItem}`]: {
-    "&:hover $listItemSecondaryAction": {
-      visibility: "inherit",
+const Root = styled('div')(() =>
+  ({
+    [`& .${classes.listContainer}`]: {
+      height: "100%",
+      overflow: "auto",
     },
-  },
-}));
+
+    [`& .${classes.listItemSecondaryAction}`]: {
+      visibility: "hidden",
+    },
+
+    [`& .${classes.listItem}`]: {
+      "&:hover $listItemSecondaryAction": {
+        visibility: "inherit",
+      },
+    }
+  }));
 
 const BuildList: FunctionComponent = () => {
+
   const navigate = useNavigate();
   const { buildList, selectedBuild, loading, total, take } = useBuildState();
   const buildDispatch = useBuildDispatch();

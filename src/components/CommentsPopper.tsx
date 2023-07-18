@@ -1,5 +1,5 @@
 import React from "react";
-import { styled } from "@mui/material/styles";
+import { styled } from '@mui/material/styles';
 import { Button, Popper, Fade, Paper, TextField, Badge } from "@mui/material";
 import {
   usePopupState,
@@ -7,22 +7,26 @@ import {
   bindPopper,
 } from "material-ui-popup-state/hooks";
 
-const PREFIX = "CommentsPopper";
+const PREFIX = 'CommentsPopper';
 
 const classes = {
   popperContainer: `${PREFIX}-popperContainer`,
-  contentContainer: `${PREFIX}-contentContainer`,
+  contentContainer: `${PREFIX}-contentContainer`
 };
 
 // TODO jss-to-styled codemod: The Fragment root was replaced by div. Change the tag if needed.
-const Root = styled("div")(({ theme }) => ({
+const Root = styled('div')((
+  {
+    theme
+  }
+) => ({
   [`& .${classes.popperContainer}`]: {
     zIndex: 1400,
   },
 
   [`& .${classes.contentContainer}`]: {
     padding: theme.spacing(2),
-  },
+  }
 }));
 
 interface IProps {
@@ -34,6 +38,7 @@ export const CommentsPopper: React.FunctionComponent<IProps> = ({
   text,
   onSave,
 }) => {
+
   const popupState = usePopupState({
     variant: "popper",
     popupId: "commentPopper",

@@ -1,5 +1,5 @@
 import React, { useEffect } from "react";
-import { styled } from "@mui/material/styles";
+import { styled } from '@mui/material/styles';
 import { Grid, Box } from "@mui/material";
 import { useParams, useNavigate } from "react-router-dom";
 import BuildList from "../components/BuildList";
@@ -16,20 +16,21 @@ import {
 } from "../constants";
 import { buildProjectPageUrl } from "../_helpers/route.helpers";
 
-const PREFIX = "ProjectPage";
+const PREFIX = 'ProjectPage';
 
 const classes = {
-  root: `${PREFIX}-root`,
+  root: `${PREFIX}-root`
 };
 
 // TODO jss-to-styled codemod: The Fragment root was replaced by div. Change the tag if needed.
-const Root = styled("div")(() => ({
+const Root = styled('div')(() => ({
   [`& .${classes.root}`]: {
     height: "100%",
-  },
+  }
 }));
 
 const ProjectPage = () => {
+
   const { projectId } = useParams<{ projectId: string }>();
   const navigate = useNavigate();
   const helpDispatch = useHelpDispatch();

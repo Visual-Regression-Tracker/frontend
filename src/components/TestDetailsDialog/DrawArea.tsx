@@ -1,6 +1,6 @@
 /* eslint-disable jsx-a11y/no-static-element-interactions */
 import React, { FunctionComponent, useCallback } from "react";
-import { styled } from "@mui/material/styles";
+import { styled } from '@mui/material/styles';
 import { Stage, Layer, Image } from "react-konva";
 import Rectangle, { MIN_RECT_SIDE_PIXEL } from "../Rectangle";
 import { IgnoreArea } from "../../types/ignoreArea";
@@ -8,16 +8,20 @@ import { Grid, CircularProgress } from "@mui/material";
 import { NoImagePlaceholder } from "./NoImageAvailable";
 import Konva from "konva";
 
-const PREFIX = "DrawArea";
+const PREFIX = 'DrawArea';
 
 const classes = {
   canvasContainer: `${PREFIX}-canvasContainer`,
   imageDetailsContainer: `${PREFIX}-imageDetailsContainer`,
-  progressContainer: `${PREFIX}-progressContainer`,
+  progressContainer: `${PREFIX}-progressContainer`
 };
 
 // TODO jss-to-styled codemod: The Fragment root was replaced by div. Change the tag if needed.
-const Root = styled("div")(({ theme }) => ({
+const Root = styled('div')((
+  {
+    theme
+  }
+) => ({
   [`& .${classes.canvasContainer}`]: {
     overflow: "auto",
     backgroundColor: "white",
@@ -33,7 +37,7 @@ const Root = styled("div")(({ theme }) => ({
 
   [`& .${classes.progressContainer}`]: {
     minHeight: "300px",
-  },
+  }
 }));
 
 export type ImageStateLoad = "loaded" | "loading" | "failed";
@@ -83,6 +87,7 @@ export const DrawArea: FunctionComponent<IDrawArea> = ({
   stageScrollPosState,
   drawModeState,
 }) => {
+
   const [stageInitPos, setStageInitPos] = stageInitPosState;
   const [stageOffset, setStageOffset] = stageOffsetState;
   const [stagePos, setStagePos] = stagePosState;
@@ -349,5 +354,9 @@ export const DrawArea: FunctionComponent<IDrawArea> = ({
   );
 
   // TODO: Separate SVG with reason...
-  return <Root>{imageName ? imageCanvas() : <NoImagePlaceholder />}</Root>;
+  return (
+    <Root>
+      {imageName ? imageCanvas() : <NoImagePlaceholder />}
+    </Root>
+  );
 };

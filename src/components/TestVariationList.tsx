@@ -1,5 +1,5 @@
 import React from "react";
-import { styled } from "@mui/material/styles";
+import { styled } from '@mui/material/styles';
 import { TestVariation } from "../types";
 import {
   Card,
@@ -18,15 +18,15 @@ import { TestVariationDetails } from "./TestVariationDetails";
 import { Delete } from "@mui/icons-material";
 import { BaseModal } from "./BaseModal";
 
-const PREFIX = "TestVariationList";
+const PREFIX = 'TestVariationList';
 
 const classes = {
   card: `${PREFIX}-card`,
-  media: `${PREFIX}-media`,
+  media: `${PREFIX}-media`
 };
 
 // TODO jss-to-styled codemod: The Fragment root was replaced by div. Change the tag if needed.
-const Root = styled("div")({
+const Root = styled('div')({
   [`& .${classes.card}`]: {
     maxWidth: 345,
   },
@@ -45,6 +45,7 @@ const TestVariationList: React.FunctionComponent<IProps> = ({
   items,
   onDeleteClick,
 }) => {
+
   const [selectedItem, setSelectedItem] = React.useState<TestVariation | null>(
     null,
   );

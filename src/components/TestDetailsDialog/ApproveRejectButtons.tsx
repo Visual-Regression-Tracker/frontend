@@ -1,5 +1,5 @@
 import { Chip, Button } from "@mui/material";
-import { styled } from "@mui/material/styles";
+import { styled } from '@mui/material/styles';
 import { useSnackbar } from "notistack";
 import { useHotkeys } from "react-hotkeys-hook";
 import React from "react";
@@ -7,19 +7,19 @@ import { testRunService } from "../../services";
 import { TestRun } from "../../types";
 import { Tooltip } from "../Tooltip";
 
-const PREFIX = "ApproveRejectButtons";
+const PREFIX = 'ApproveRejectButtons';
 
 const classes = {
-  actionButton: `${PREFIX}-actionButton`,
+  actionButton: `${PREFIX}-actionButton`
 };
 
 // TODO jss-to-styled codemod: The Fragment root was replaced by div. Change the tag if needed.
-const Root = styled("div")(() => ({
+const Root = styled('div')(() => ({
   [`& .${classes.actionButton}`]: {
     width: 120,
     marginLeft: 4,
     marginRight: 4,
-  },
+  }
 }));
 
 export const ApproveRejectButtons: React.FunctionComponent<{
@@ -28,6 +28,7 @@ export const ApproveRejectButtons: React.FunctionComponent<{
   afterReject?: () => void;
 }> = ({ testRun, afterApprove, afterReject }) => {
   const { enqueueSnackbar } = useSnackbar();
+
 
   const approve = () => {
     testRunService

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { styled } from "@mui/material/styles";
+import { styled } from '@mui/material/styles';
 import {
   Typography,
   Button,
@@ -53,7 +53,7 @@ import ImageDetails, { ImageDetailsProps } from "./ImageDetails";
 import { calculateScale } from "../../_helpers/scale.helper";
 import TestStatusChip from "../TestStatusChip";
 
-const PREFIX = "TestDetailsModal";
+const PREFIX = 'TestDetailsModal';
 
 const classes = {
   header: `${PREFIX}-header`,
@@ -65,11 +65,11 @@ const classes = {
   testRunDetails: `${PREFIX}-testRunDetails`,
   drawAreaContainer: `${PREFIX}-drawAreaContainer`,
   drawAreaItem: `${PREFIX}-drawAreaItem`,
-  imageToolbar: `${PREFIX}-imageToolbar`,
+  imageToolbar: `${PREFIX}-imageToolbar`
 };
 
 // TODO jss-to-styled codemod: The Fragment root was replaced by div. Change the tag if needed.
-const Root = styled("div")(() => ({
+const Root = styled('div')(() => ({
   [`& .${classes.header}`]: {
     position: "relative",
     textAlign: "left",
@@ -119,7 +119,7 @@ const Root = styled("div")(() => ({
   [`& .${classes.imageToolbar}`]: {
     paddingLeft: 5,
     height: 52,
-  },
+  }
 }));
 
 const defaultStagePos = {
@@ -146,6 +146,7 @@ const TestDetailsModal: React.FunctionComponent<TestDetailsModalProps> = ({
   handleNext,
   handleClose,
 }) => {
+
   const { enqueueSnackbar } = useSnackbar();
   const testRunDispatch = useTestRunDispatch();
 
@@ -626,7 +627,11 @@ const TestDetailsModal: React.FunctionComponent<TestDetailsModalProps> = ({
           <TestStatusChip status={testRun.status} />
         </Grid>
         <Grid item className={classes.closeIcon}>
-          <IconButton color="inherit" onClick={handleClose} size="large">
+          <IconButton
+            color="inherit"
+            onClick={handleClose}
+            size="large"
+          >
             <Close />
           </IconButton>
         </Grid>
