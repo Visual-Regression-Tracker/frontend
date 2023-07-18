@@ -1,11 +1,13 @@
 import React from "react";
-import { Typography, IconButton, LinearProgress } from "@material-ui/core";
+import { Typography, IconButton, LinearProgress } from "@mui/material";
 import {
-  type GridRowData,
+  type GridRowModel,
   type GridRowId,
   type GridSelectionModel,
-  useGridSlotComponentProps,
-} from "@material-ui/data-grid";
+  useGridApiRef,
+  gridSelectionStateSelector,
+  gridVisibleSortedRowEntriesSelector,
+} from "@mui/x-data-grid";
 import { BaseModal } from "../BaseModal";
 import { useSnackbar } from "notistack";
 import {
@@ -14,14 +16,19 @@ import {
   LayersClear,
   ThumbDown,
   ThumbUp,
-} from "@material-ui/icons";
+} from "@mui/icons-material";
 import { testRunService } from "../../services";
 import { TestStatus } from "../../types";
 import { head } from "lodash";
 import { Tooltip } from "../Tooltip";
 
 export const BulkOperation: React.FunctionComponent = () => {
-  const { rows, state } = useGridSlotComponentProps();
+  const apiRef = useGridApiRef();
+  const state = apiRef.current.state;
+  const rows = gridVisibleSortedRowEntriesSelector(state).map((row) => {
+    return [row.id, row.model];
+  });
+
   const { enqueueSnackbar } = useSnackbar();
   const [approveDialogOpen, setApproveDialogOpen] = React.useState(false);
   const [rejectDialogOpen, setRejectDialogOpen] = React.useState(false);
@@ -31,33 +38,33 @@ export const BulkOperation: React.FunctionComponent = () => {
     React.useState(false);
   const [isProcessing, setIsProcessing] = React.useState(false);
   const ids: GridRowId[] = React.useMemo(
-    () => Object.values(state.selection),
-    [state.selection],
+    () => Object.values(gridSelectionStateSelector(state)),
+    [gridSelectionStateSelector(state)]
   );
   const isMerge: boolean = React.useMemo(
     () =>
       !!head(
-        rows.filter((value: GridRowData) => ids.includes(value.id.toString())),
+        rows.filter((value: GridRowModel) => ids.includes(value.id.toString()))
       )?.merge,
     // eslint-disable-next-line
-    [ids],
+    [ids]
   );
   const idsEligibleForApproveOrReject: string[] = React.useMemo(
     () =>
       rows
         .filter(
-          (value: GridRowData) =>
+          (value: GridRowModel) =>
             ids.includes(value.id.toString()) &&
             [TestStatus.new, TestStatus.unresolved].includes(
-              value.status.toString(),
-            ),
+              value.status.toString()
+            )
         )
-        .map((value: GridRowData) => value.id.toString()),
+        .map((value: GridRowModel) => value.id.toString()),
     // eslint-disable-next-line
-    [ids],
+    [ids]
   );
 
-  const selectedRows: GridSelectionModel = state.selection;
+  const selectedRows: GridSelectionModel = gridSelectionStateSelector(state);
   const count = Object.keys(selectedRows).length;
 
   const toggleApproveDialogOpen = () => {
@@ -174,28 +181,44 @@ export const BulkOperation: React.FunctionComponent = () => {
         aria-label="approve"
       >
         <span>
-          <IconButton disabled={count === 0} onClick={toggleApproveDialogOpen}>
+          <IconButton
+            disabled={count === 0}
+            onClick={toggleApproveDialogOpen}
+            size="large"
+          >
             <ThumbUp />
           </IconButton>
         </span>
       </Tooltip>
       <Tooltip title="Reject unresolved in selected rows." aria-label="reject">
         <span>
-          <IconButton disabled={count === 0} onClick={toggleRejectDialogOpen}>
+          <IconButton
+            disabled={count === 0}
+            onClick={toggleRejectDialogOpen}
+            size="large"
+          >
             <ThumbDown />
           </IconButton>
         </span>
       </Tooltip>
       <Tooltip title="Download images for selected rows." aria-label="download">
         <span>
-          <IconButton disabled={count === 0} onClick={toggleDownloadDialogOpen}>
+          <IconButton
+            disabled={count === 0}
+            onClick={toggleDownloadDialogOpen}
+            size="large"
+          >
             <CloudDownload />
           </IconButton>
         </span>
       </Tooltip>
       <Tooltip title="Delete selected rows." aria-label="delete">
         <span>
-          <IconButton disabled={count === 0} onClick={toggleDeleteDialogOpen}>
+          <IconButton
+            disabled={count === 0}
+            onClick={toggleDeleteDialogOpen}
+            size="large"
+          >
             <Delete />
           </IconButton>
         </span>
@@ -208,6 +231,7 @@ export const BulkOperation: React.FunctionComponent = () => {
           <IconButton
             disabled={count === 0}
             onClick={toggleClearIgnoreDialogOpen}
+            size="large"
           >
             <LayersClear />
           </IconButton>

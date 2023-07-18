@@ -1,5 +1,5 @@
 import React from "react";
-import { Box, Toolbar } from "@material-ui/core";
+import { Box, Toolbar } from "@mui/material";
 import {
   DataGrid,
   type GridColDef,
@@ -7,7 +7,7 @@ import {
   GridToolbarFilterButton,
   type GridValueFormatterParams,
   type GridCellEditCommitParams,
-} from "@material-ui/data-grid";
+} from "@mui/x-data-grid";
 import { ActionButtons } from "./ActionButtons";
 import { usersService } from "../../services";
 import { Role } from "../../types";
@@ -60,11 +60,11 @@ const UserList = () => {
           .catch((err) =>
             enqueueSnackbar(err, {
               variant: "error",
-            }),
+            })
           );
       }
     },
-    [enqueueSnackbar],
+    [enqueueSnackbar]
   );
 
   return (

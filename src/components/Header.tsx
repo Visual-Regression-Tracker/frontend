@@ -7,7 +7,7 @@ import {
   Avatar,
   Menu,
   MenuItem,
-} from "@material-ui/core";
+} from "@mui/material";
 import { Link } from "react-router-dom";
 import { useUserDispatch, useUserState, logout } from "../contexts";
 import { routes } from "../constants";
@@ -20,14 +20,14 @@ import {
   HelpOutline,
   People,
   SettingsPower,
-} from "@material-ui/icons";
+} from "@mui/icons-material";
 
 const Header: FunctionComponent = () => {
   const [avatarMenuRef, setAvatarMenuRef] = React.useState<null | HTMLElement>(
-    null,
+    null
   );
   const [helpMenuRef, setHelpMenuRef] = React.useState<null | HTMLElement>(
-    null,
+    null
   );
   const { loggedIn, user } = useUserState();
   const authDispatch = useUserDispatch();
@@ -46,7 +46,7 @@ const Header: FunctionComponent = () => {
     handleMenuClose();
     window.open(
       "https://github.com/Visual-Regression-Tracker/Visual-Regression-Tracker/issues/new",
-      "_blank",
+      "_blank"
     );
   };
 
@@ -165,7 +165,7 @@ const Header: FunctionComponent = () => {
                   onClick={(event: React.MouseEvent<HTMLElement>) =>
                     setHelpMenuRef(event.currentTarget)
                   }
-                >
+                  size="large">
                   <Avatar>
                     <HelpOutline />
                   </Avatar>
@@ -175,7 +175,7 @@ const Header: FunctionComponent = () => {
                     onClick={(event: React.MouseEvent<HTMLElement>) =>
                       setAvatarMenuRef(event.currentTarget)
                     }
-                  >
+                    size="large">
                     <Avatar>{`${user?.firstName[0]}${user?.lastName[0]}`}</Avatar>
                   </IconButton>
                 )}

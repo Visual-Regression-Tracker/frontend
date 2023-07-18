@@ -1,24 +1,27 @@
 import React from "react";
-import { IconButton } from "@material-ui/core";
-import { Delete } from "@material-ui/icons";
+import { IconButton } from "@mui/material";
+import { Delete } from "@mui/icons-material";
 import {
   type GridRowId,
-  useGridSlotComponentProps,
-} from "@material-ui/data-grid";
+  useGridApiRef,
+  gridSelectionStateSelector,
+} from "@mui/x-data-grid";
 import { usersService } from "../../services";
 import { useSnackbar } from "notistack";
 import { useUserDispatch, useUserState } from "../../contexts";
 import { Tooltip } from "../Tooltip";
 
 export const ActionButtons: React.FunctionComponent = () => {
-  const { state } = useGridSlotComponentProps();
+  const apiRef = useGridApiRef();
+  const state = apiRef.current.state;
+
   const { enqueueSnackbar } = useSnackbar();
   const userDispatch = useUserDispatch();
   const { userList, user } = useUserState();
 
   const ids: GridRowId[] = React.useMemo(
-    () => Object.values(state.selection),
-    [state.selection],
+    () => Object.values(gridSelectionStateSelector(state)),
+    [gridSelectionStateSelector(state)]
   );
   return (
     <>
@@ -42,17 +45,18 @@ export const ActionButtons: React.FunctionComponent = () => {
                     userDispatch({
                       type: "getAll",
                       payload: userList.filter(
-                        (user) => !ids.includes(user.id),
+                        (user) => !ids.includes(user.id)
                       ),
                     });
                   })
                   .catch((err) =>
                     enqueueSnackbar(err, {
                       variant: "error",
-                    }),
+                    })
                   );
               }
             }}
+            size="large"
           >
             <Delete />
           </IconButton>

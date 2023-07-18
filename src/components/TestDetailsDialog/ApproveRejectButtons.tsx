@@ -1,4 +1,5 @@
-import { Chip, Button, makeStyles } from "@material-ui/core";
+import { Chip, Button } from "@mui/material";
+import { makeStyles } from "@mui/styles";
 import { useSnackbar } from "notistack";
 import { useHotkeys } from "react-hotkeys-hook";
 import React from "react";
@@ -34,7 +35,7 @@ export const ApproveRejectButtons: React.FunctionComponent<{
       .catch((err) =>
         enqueueSnackbar(err, {
           variant: "error",
-        }),
+        })
       );
   };
 
@@ -50,7 +51,7 @@ export const ApproveRejectButtons: React.FunctionComponent<{
       .catch((err) =>
         enqueueSnackbar(err, {
           variant: "error",
-        }),
+        })
       );
   };
 

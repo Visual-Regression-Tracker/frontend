@@ -1,5 +1,6 @@
-import { IconButton, makeStyles } from "@material-ui/core";
-import { NavigateNext, NavigateBefore } from "@material-ui/icons";
+import { IconButton } from "@mui/material";
+import { makeStyles } from "@mui/styles";
+import { NavigateNext, NavigateBefore } from "@mui/icons-material";
 import React from "react";
 import { useHotkeys } from "react-hotkeys-hook";
 import { TestRun } from "../../types";
@@ -55,6 +56,7 @@ export const ArrowButtons: React.FunctionComponent<{
               right: 0,
             }}
             onClick={navigateNext}
+            size="large"
           >
             <NavigateNext className={classes.icon} />
           </IconButton>
@@ -69,6 +71,7 @@ export const ArrowButtons: React.FunctionComponent<{
               left: 0,
             }}
             onClick={navigateBefore}
+            size="large"
           >
             <NavigateBefore className={classes.icon} />
           </IconButton>

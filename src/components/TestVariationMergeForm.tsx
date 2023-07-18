@@ -1,5 +1,12 @@
 import React from "react";
-import { Grid, Select, MenuItem, Button, TextField } from "@material-ui/core";
+import {
+  Autocomplete,
+  Grid,
+  Select,
+  MenuItem,
+  Button,
+  TextField,
+} from "@mui/material";
 import { testVariationService } from "../services";
 import { useNavigate } from "react-router-dom";
 import {
@@ -8,7 +15,6 @@ import {
 } from "../_helpers/route.helpers";
 import { useSnackbar } from "notistack";
 import { selectBuild, useBuildDispatch } from "../contexts";
-import { Autocomplete } from "@material-ui/lab";
 import { LOCATOR_TEST_VARIATION_SELECT_BRANCH } from "../constants/help";
 
 interface IProps {
@@ -43,7 +49,7 @@ export const TestVariationMergeForm: React.FunctionComponent<IProps> = ({
       .catch((err) =>
         enqueueSnackbar(err, {
           variant: "error",
-        }),
+        })
       );
   };
 
@@ -52,6 +58,7 @@ export const TestVariationMergeForm: React.FunctionComponent<IProps> = ({
       <Grid container spacing={2} alignItems="flex-end">
         <Grid item xs>
           <Select
+            variant="standard"
             required
             fullWidth
             displayEmpty
@@ -76,7 +83,12 @@ export const TestVariationMergeForm: React.FunctionComponent<IProps> = ({
             freeSolo
             fullWidth
             renderInput={(params) => (
-              <TextField {...params} required label="To branch" />
+              <TextField
+                variant="standard"
+                {...params}
+                required
+                label="To branch"
+              />
             )}
             onInputChange={(_, value) => {
               setToBranch(value);

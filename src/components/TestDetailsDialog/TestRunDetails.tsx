@@ -1,5 +1,5 @@
 import React from "react";
-import { Grid, Typography } from "@material-ui/core";
+import { Grid, Typography } from "@mui/material";
 import { TestRun } from "../../types";
 import { Tooltip } from "../Tooltip";
 import _ from "lodash";

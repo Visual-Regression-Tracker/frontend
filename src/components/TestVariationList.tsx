@@ -5,17 +5,17 @@ import {
   Grid,
   CardMedia,
   CardContent,
-  makeStyles,
   CardActions,
   Button,
   IconButton,
   Typography,
-} from "@material-ui/core";
+} from "@mui/material";
+import { makeStyles } from "@mui/styles";
 import { staticService } from "../services";
 import { Link } from "react-router-dom";
 import { routes } from "../constants";
 import { TestVariationDetails } from "./TestVariationDetails";
-import { Delete } from "@material-ui/icons";
+import { Delete } from "@mui/icons-material";
 import { BaseModal } from "./BaseModal";
 
 interface IProps {
@@ -39,7 +39,7 @@ const TestVariationList: React.FunctionComponent<IProps> = ({
 }) => {
   const classes = useStyles();
   const [selectedItem, setSelectedItem] = React.useState<TestVariation | null>(
-    null,
+    null
   );
 
   const handleClose = () => {
@@ -76,6 +76,7 @@ const TestVariationList: React.FunctionComponent<IProps> = ({
                   onClick={(event: React.MouseEvent<HTMLElement>) =>
                     setSelectedItem(t)
                   }
+                  size="large"
                 >
                   <Delete />
                 </IconButton>

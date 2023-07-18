@@ -5,7 +5,7 @@ import {
   DialogContent,
   DialogActions,
   Button,
-} from "@material-ui/core";
+} from "@mui/material";
 import { ValidatorForm } from "react-material-ui-form-validator";
 
 interface IProps {

@@ -5,7 +5,7 @@ import {
   MenuItem,
   Select,
   Switch,
-} from "@material-ui/core";
+} from "@mui/material";
 import React from "react";
 import { TextValidator } from "react-material-ui-form-validator";
 import {
@@ -130,11 +130,12 @@ export const ProjectForm: React.FunctionComponent = () => {
           />
         }
       />
-      <FormControl fullWidth>
+      <FormControl variant="standard" fullWidth>
         <InputLabel id="imageComparisonSelect">
           Image comparison library
         </InputLabel>
         <Select
+          variant="standard"
           id="imageComparisonSelect"
           labelId="imageComparisonSelect"
           value={project.imageComparison}
@@ -148,8 +149,7 @@ export const ProjectForm: React.FunctionComponent = () => {
                   ? getDefaultConfig(imageComparison)
                   : project.imageComparisonConfig,
             });
-          }}
-        >
+          }}>
           <MenuItem value={ImageComparison.pixelmatch}>
             {ImageComparison.pixelmatch}
           </MenuItem>

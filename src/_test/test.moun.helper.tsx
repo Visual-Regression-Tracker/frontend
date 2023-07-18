@@ -11,6 +11,9 @@ import { MemoryRouter, Route, Routes } from "react-router-dom";
 import { type MemoryRouterProps } from "react-router";
 import { SnackbarProvider } from "notistack";
 import "../index.css";
+import { ThemeProvider, createTheme } from "@mui/material/styles";
+
+const theme = createTheme();
 
 export const mountVrtComponent = ({
   component,
@@ -29,19 +32,21 @@ export const mountVrtComponent = ({
         <Route
           path={path}
           element={
-            <SnackbarProvider>
-              <UserProvider>
-                <ProjectProvider>
-                  <BuildProvider>
-                    <HelpProvider>
-                      <TestRunProvider>{component}</TestRunProvider>
-                    </HelpProvider>
-                  </BuildProvider>
-                </ProjectProvider>
-              </UserProvider>
-            </SnackbarProvider>
+            <ThemeProvider theme={theme}>
+              <SnackbarProvider>
+                <UserProvider>
+                  <ProjectProvider>
+                    <BuildProvider>
+                      <HelpProvider>
+                        <TestRunProvider>{component}</TestRunProvider>
+                      </HelpProvider>
+                    </BuildProvider>
+                  </ProjectProvider>
+                </UserProvider>
+              </SnackbarProvider>
+            </ThemeProvider>
           }
         />
       </Routes>
-    </MemoryRouter>,
+    </MemoryRouter>
   );

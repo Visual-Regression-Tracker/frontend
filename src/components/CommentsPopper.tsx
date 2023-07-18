@@ -1,13 +1,6 @@
 import React from "react";
-import {
-  Button,
-  Popper,
-  Fade,
-  Paper,
-  makeStyles,
-  TextField,
-  Badge,
-} from "@material-ui/core";
+import { Button, Popper, Fade, Paper, TextField, Badge } from "@mui/material";
+import { makeStyles } from "@mui/styles";
 import {
   usePopupState,
   bindToggle,
@@ -75,7 +68,7 @@ export const CommentsPopper: React.FunctionComponent<IProps> = ({
                   placeholder={"Add any additional data here"}
                   multiline
                   rows={4}
-                  rowsMax={10}
+                  maxRows={10}
                   fullWidth
                   onChange={(event) =>
                     setComment((event.target as HTMLInputElement).value)

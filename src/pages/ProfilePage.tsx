@@ -13,7 +13,7 @@ import {
   Tab,
   Select,
   MenuItem,
-} from "@material-ui/core";
+} from "@mui/material";
 import {
   useUserDispatch,
   useUserState,
@@ -51,12 +51,12 @@ const ProfilePage = () => {
         .then(() =>
           enqueueSnackbar("User updated", {
             variant: "success",
-          }),
+          })
         )
         .catch((err) =>
           enqueueSnackbar(err, {
             variant: "error",
-          }),
+          })
         );
     }
   };
@@ -72,12 +72,12 @@ const ProfilePage = () => {
         .then(() =>
           enqueueSnackbar("Password updated", {
             variant: "success",
-          }),
+          })
         )
         .catch((err) =>
           enqueueSnackbar(err, {
             variant: "error",
-          }),
+          })
         );
     }
   };
@@ -110,7 +110,7 @@ const ProfilePage = () => {
                           inputProps={{
                             onChange: (event: any) =>
                               setFirstName(
-                                (event.target as HTMLInputElement).value,
+                                (event.target as HTMLInputElement).value
                               ),
                             "data-testid": "firstName",
                           }}
@@ -131,7 +131,7 @@ const ProfilePage = () => {
                           inputProps={{
                             onChange: (event: any) =>
                               setLastName(
-                                (event.target as HTMLInputElement).value,
+                                (event.target as HTMLInputElement).value
                               ),
                             "data-testid": "lastName",
                           }}
@@ -152,7 +152,7 @@ const ProfilePage = () => {
                           inputProps={{
                             onChange: (event: any) =>
                               setEmail(
-                                (event.target as HTMLInputElement).value,
+                                (event.target as HTMLInputElement).value
                               ),
                             "data-testid": "email",
                           }}
@@ -160,13 +160,13 @@ const ProfilePage = () => {
                       </Grid>
                       <Grid item xs={12}>
                         <Select
+                          variant="standard"
                           id="role"
                           labelId="role"
                           displayEmpty
                           fullWidth
                           disabled
-                          value={user?.role}
-                        >
+                          value={user?.role}>
                           {Object.entries(Role).map(([key, value]) => (
                             <MenuItem key={key} value={key}>
                               {value}
@@ -217,7 +217,7 @@ const ProfilePage = () => {
                           inputProps={{
                             onChange: (event: any) =>
                               setPassword(
-                                (event.target as HTMLInputElement).value,
+                                (event.target as HTMLInputElement).value
                               ),
                             "data-testid": "password",
                           }}
@@ -268,7 +268,7 @@ const ProfilePage = () => {
                     textColor="primary"
                     onChange={(
                       event: React.ChangeEvent<{}>,
-                      newValue: number,
+                      newValue: number
                     ) => {
                       setTabIndex(newValue);
                     }}

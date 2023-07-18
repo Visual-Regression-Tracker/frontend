@@ -1,20 +1,13 @@
 import React, { FunctionComponent } from "react";
-import {
-  createStyles,
-  FormControl,
-  InputLabel,
-  makeStyles,
-  MenuItem,
-  Select,
-  type Theme,
-} from "@material-ui/core";
+import { FormControl, InputLabel, MenuItem, Select } from "@mui/material";
+import { makeStyles, createStyles } from "@mui/styles";
 import {
   useProjectState,
   useProjectDispatch,
   selectProject,
 } from "../contexts";
 
-const useStyles = makeStyles((theme: Theme) =>
+const useStyles = makeStyles((theme) =>
   createStyles({
     formControl: {
       width: "100%",
@@ -22,7 +15,7 @@ const useStyles = makeStyles((theme: Theme) =>
     input: {
       margin: theme.spacing(1),
     },
-  }),
+  })
 );
 
 const ProjectSelect: FunctionComponent<{
@@ -42,11 +35,12 @@ const ProjectSelect: FunctionComponent<{
   return (
     <React.Fragment>
       {projectList.length > 0 && (
-        <FormControl className={classes.formControl}>
+        <FormControl variant="standard" className={classes.formControl}>
           <InputLabel id="projectSelect" shrink>
             Project
           </InputLabel>
           <Select
+            variant="standard"
             id="project-select"
             labelId="projectSelect"
             className={classes.input}

@@ -1,6 +1,7 @@
 import React from "react";
-import { Typography, Grid, IconButton, makeStyles } from "@material-ui/core";
-import { WarningRounded } from "@material-ui/icons";
+import { Typography, Grid, IconButton } from "@mui/material";
+import { makeStyles } from "@mui/styles";
+import { WarningRounded } from "@mui/icons-material";
 import { IgnoreArea } from "../../types/ignoreArea";
 import { Tooltip } from "../Tooltip";
 import AltRouteIcon from "@mui/icons-material/AltRoute";
@@ -70,7 +71,7 @@ const ImageDetails: React.FunctionComponent<IProps> = ({
               "Contains noneditable ignore areas applied during image upload."
             }
           >
-            <IconButton>
+            <IconButton size="large">
               <WarningRounded color="secondary" />
             </IconButton>
           </Tooltip>

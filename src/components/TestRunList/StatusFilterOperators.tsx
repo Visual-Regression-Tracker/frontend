@@ -1,4 +1,4 @@
-import { FormControl, InputLabel, Select } from "@material-ui/core";
+import { FormControl, InputLabel, Select } from "@mui/material";
 import React from "react";
 import { useTestRunState } from "../../contexts";
 import {
@@ -6,7 +6,7 @@ import {
   getGridStringOperators,
   type GridFilterItem,
   type GridCellParams,
-} from "@material-ui/data-grid";
+} from "@mui/x-data-grid";
 import { TestStatus } from "../../types";
 
 const StatusInputComponent = (props: GridFilterInputValueProps) => {
@@ -18,21 +18,21 @@ const StatusInputComponent = (props: GridFilterInputValueProps) => {
   };
 
   const filterOptions: Array<TestStatus> = Array.from(
-    new Set(testRuns.map((item) => item.status)),
+    new Set(testRuns.map((item) => item.status))
   );
 
   return (
-    <FormControl fullWidth>
+    <FormControl variant="standard" fullWidth>
       <InputLabel shrink id="statusFilter">
         Value
       </InputLabel>
       <Select
+        variant="standard"
         id="statusFilter"
         native
         displayEmpty
         value={item.value}
-        onChange={handleFilterChange}
-      >
+        onChange={handleFilterChange}>
         <option aria-label="All" value="" />
         {filterOptions.map((item) => (
           <option key={item} value={item}>

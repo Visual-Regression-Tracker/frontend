@@ -1,10 +1,10 @@
-import { FormControl, InputLabel, Select } from "@material-ui/core";
+import { FormControl, InputLabel, Select } from "@mui/material";
 import React from "react";
 import { useTestRunState } from "../../contexts";
 import {
   type GridFilterInputValueProps,
   getGridStringOperators,
-} from "@material-ui/data-grid";
+} from "@mui/x-data-grid";
 
 const TagInputComponent = (props: GridFilterInputValueProps) => {
   const { item, applyValue } = props;
@@ -21,22 +21,22 @@ const TagInputComponent = (props: GridFilterInputValueProps) => {
         .concat(testRuns.map((item) => item.browser))
         .concat(testRuns.map((item) => item.device))
         .concat(testRuns.map((item) => item.viewport))
-        .concat(testRuns.map((item) => item.customTags)),
-    ),
+        .concat(testRuns.map((item) => item.customTags))
+    )
   );
 
   return (
-    <FormControl fullWidth>
+    <FormControl variant="standard" fullWidth>
       <InputLabel shrink id="tagFilter">
         Value
       </InputLabel>
       <Select
+        variant="standard"
         id="tagFilter"
         native
         displayEmpty
         value={item.value}
-        onChange={handleFilterChange}
-      >
+        onChange={handleFilterChange}>
         <option aria-label="All" value="" />
         {filterOptions.map(
           (item) =>
@@ -44,7 +44,7 @@ const TagInputComponent = (props: GridFilterInputValueProps) => {
               <option key={item} value={item}>
                 {item}
               </option>
-            ),
+            )
         )}
       </Select>
     </FormControl>

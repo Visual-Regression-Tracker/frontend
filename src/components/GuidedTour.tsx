@@ -1,8 +1,8 @@
 import React, { FunctionComponent } from "react";
 import Joyride, { type CallBackProps, STATUS } from "react-joyride";
-import { IconButton } from "@material-ui/core";
+import { IconButton } from "@mui/material";
 import { useHelpState } from "../contexts";
-import { LiveHelp } from "@material-ui/icons";
+import { LiveHelp } from "@mui/icons-material";
 
 const GuidedTour: FunctionComponent = () => {
   const [run, setRun] = React.useState(false);

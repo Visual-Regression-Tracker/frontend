@@ -1,5 +1,5 @@
 import React from "react";
-import { Grid, Typography, Chip } from "@material-ui/core";
+import { Grid, Typography, Chip } from "@mui/material";
 import { TestVariation } from "../types";
 
 interface IProps {

@@ -8,11 +8,11 @@ import {
   Grid,
   Card,
   CardMedia,
-  makeStyles,
   CardActions,
   Button,
   Typography,
-} from "@material-ui/core";
+} from "@mui/material";
+import { makeStyles } from "@mui/styles";
 import {
   buildProjectPageUrl,
   buildTestRunLocation,
@@ -47,7 +47,7 @@ const TestVariationDetailsPage: React.FunctionComponent = () => {
         .catch((err) =>
           enqueueSnackbar(err, {
             variant: "error",
-          }),
+          })
         );
     }
   }, [testVariationId, enqueueSnackbar]);
@@ -73,11 +73,11 @@ const TestVariationDetailsPage: React.FunctionComponent = () => {
                           if (testRun) {
                             navigate({
                               pathname: buildProjectPageUrl(
-                                testVariation.projectId,
+                                testVariation.projectId
                               ),
                               ...buildTestRunLocation(
                                 testRun.buildId,
-                                testRun.id,
+                                testRun.id
                               ),
                             });
                           }

@@ -7,7 +7,7 @@ import {
   CardContent,
   CardActions,
   Typography,
-} from "@material-ui/core";
+} from "@mui/material";
 import { useUserDispatch, login } from "../contexts";
 import { LOCATOR_LOGIN_FORM, routes } from "../constants";
 import { useSnackbar } from "notistack";
@@ -32,7 +32,7 @@ const LoginForm = () => {
       .catch((err) =>
         enqueueSnackbar(err, {
           variant: "error",
-        }),
+        })
       );
   };
 

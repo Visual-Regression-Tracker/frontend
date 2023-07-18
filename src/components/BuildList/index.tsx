@@ -5,9 +5,7 @@ import {
   ListItemText,
   ListItemSecondaryAction,
   IconButton,
-  makeStyles,
   type Theme,
-  createStyles,
   Chip,
   Typography,
   Grid,
@@ -15,8 +13,10 @@ import {
   Menu,
   MenuItem,
   Box,
-} from "@material-ui/core";
-import { MoreVert } from "@material-ui/icons";
+} from "@mui/material";
+import { makeStyles } from "@mui/styles";
+import { createStyles } from "@mui/styles";
+import { MoreVert } from "@mui/icons-material";
 import {
   useBuildState,
   useBuildDispatch,
@@ -28,7 +28,7 @@ import { SkeletonList } from "../SkeletonList";
 import { formatDateTime } from "../../_helpers/format.helper";
 import { useSnackbar } from "notistack";
 import { TextValidator } from "react-material-ui-form-validator";
-import { Pagination } from "@material-ui/lab";
+import { Pagination } from "@mui/lab";
 import { Build } from "../../types";
 import { BaseModal } from "../BaseModal";
 import { buildsService } from "../../services";
@@ -50,7 +50,7 @@ const useStyles = makeStyles((theme: Theme) =>
         visibility: "inherit",
       },
     },
-  }),
+  })
 );
 
 const BuildList: FunctionComponent = () => {
@@ -69,7 +69,7 @@ const BuildList: FunctionComponent = () => {
 
   const handleMenuClick = (
     event: React.MouseEvent<HTMLElement>,
-    build: Build,
+    build: Build
   ) => {
     event.stopPropagation();
     setAnchorEl(event.currentTarget);
@@ -90,7 +90,7 @@ const BuildList: FunctionComponent = () => {
 
   const selectBuildCalback = React.useCallback(
     (id?: string) => navigate(buildTestRunLocation(id)),
-    [navigate],
+    [navigate]
   );
 
   const handlePaginationChange = React.useCallback(
@@ -106,11 +106,11 @@ const BuildList: FunctionComponent = () => {
           .catch((err: string) =>
             enqueueSnackbar(err, {
               variant: "error",
-            }),
+            })
           );
       }
     },
-    [buildDispatch, enqueueSnackbar, selectedProjectId, take],
+    [buildDispatch, enqueueSnackbar, selectedProjectId, take]
   );
 
   React.useEffect(() => {
@@ -180,6 +180,7 @@ const BuildList: FunctionComponent = () => {
                   >
                     <IconButton
                       onClick={(event) => handleMenuClick(event, build)}
+                      size="large"
                     >
                       <MoreVert />
                     </IconButton>
@@ -215,12 +216,12 @@ const BuildList: FunctionComponent = () => {
                   .then((b) =>
                     enqueueSnackbar(`${menuBuild.id} finished`, {
                       variant: "success",
-                    }),
+                    })
                   )
                   .catch((err) =>
                     enqueueSnackbar(err, {
                       variant: "error",
-                    }),
+                    })
                   );
                 handleMenuClose();
               }}
@@ -273,7 +274,7 @@ const BuildList: FunctionComponent = () => {
               .catch((err) =>
                 enqueueSnackbar(err, {
                   variant: "error",
-                }),
+                })
               );
             handleMenuClose();
           }}
@@ -298,7 +299,7 @@ const BuildList: FunctionComponent = () => {
                   `Build #${menuBuild.number || menuBuild.id} deleted`,
                   {
                     variant: "success",
-                  },
+                  }
                 );
               })
               .then(() => handlePaginationChange(paginationPage))
@@ -310,7 +311,7 @@ const BuildList: FunctionComponent = () => {
               .catch((err) =>
                 enqueueSnackbar(err, {
                   variant: "error",
-                }),
+                })
               );
             handleMenuClose();
           }}

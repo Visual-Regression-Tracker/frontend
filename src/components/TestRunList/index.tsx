@@ -1,5 +1,5 @@
 import React from "react";
-import { Chip, Typography } from "@material-ui/core";
+import { Chip, Typography } from "@mui/material";
 import TestStatusChip from "../TestStatusChip";
 import {
   useTestRunState,
@@ -13,13 +13,11 @@ import {
   type GridColDef,
   type GridRowParams,
   type GridValueGetterParams,
-  type GridValueFormatterParams,
-  type GridCellValue,
+  type GridRenderCellParams,
   type GridSortCellParams,
-  type GridStateChangeParams,
   type GridSortDirection,
   type GridSortModel,
-} from "@material-ui/data-grid";
+} from "@mui/x-data-grid";
 import { DataGridCustomToolbar } from "./DataGridCustomToolbar";
 import { StatusFilterOperators } from "./StatusFilterOperators";
 import { TagFilterOperators } from "./TagFilterOperators";
@@ -45,7 +43,7 @@ const columnsDef: GridColDef[] = [
       ];
       return tags.reduce(
         (prev, curr) => prev.concat(curr ? `${curr};` : ""),
-        "",
+        ""
       );
     },
     renderCell: (params: GridCellParams) => (
@@ -63,7 +61,7 @@ const columnsDef: GridColDef[] = [
                   label={tag}
                   style={{ margin: "1px" }}
                 />
-              ),
+              )
           )}
       </React.Fragment>
     ),
@@ -73,7 +71,7 @@ const columnsDef: GridColDef[] = [
     field: "status",
     headerName: "Status",
     flex: 0.3,
-    renderCell: (params: GridValueFormatterParams) => {
+    renderCell: (params: GridRenderCellParams) => {
       return (
         <TestStatusChip
           status={params.getValue(params.id, "status")?.toString()}
@@ -81,10 +79,10 @@ const columnsDef: GridColDef[] = [
       );
     },
     sortComparator: (
-      v1: GridCellValue,
-      v2: GridCellValue,
+      v1: any,
+      v2: any,
       cellParams1: GridSortCellParams,
-      cellParams2: GridSortCellParams,
+      cellParams2: GridSortCellParams
     ) => {
       const statusOrder = Object.values(TestStatus);
       return (
@@ -121,7 +119,7 @@ const TestRunList: React.FunctionComponent = () => {
         .catch((err: string) =>
           enqueueSnackbar(err, {
             variant: "error",
-          }),
+          })
         );
     } else {
       testRunDispatch({ type: "get", payload: [] });
@@ -156,16 +154,16 @@ const TestRunList: React.FunctionComponent = () => {
             navigate(
               buildTestRunLocation(
                 selectedBuild.id,
-                param.getValue(param.id, "id")?.toString(),
-              ),
+                param.getValue(param.id, "id")?.toString()
+              )
             );
           }}
-          onStateChange={({ state }: GridStateChangeParams) => {
+          onStateChange={(state) => {
             if (!selectedTestRun) {
               // only if testRun modal is not shown
               testRunDispatch({
                 type: "filter",
-                payload: state.visibleRows.visibleRows,
+                payload: state.visibleRows,
               });
               testRunDispatch({
                 type: "sort",

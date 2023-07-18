@@ -1,12 +1,12 @@
 import React from "react";
-import { Chip } from "@material-ui/core";
+import { Chip } from "@mui/material";
 import { BuildStatus } from "../types/buildStatus";
 
 export const BuildStatusChip: React.FunctionComponent<{
   status: BuildStatus;
 }> = ({ status }) => {
   let color: "inherit" | "primary" | "secondary" | "default" | undefined;
-  let variant: "default" | "outlined" | undefined;
+  let variant: "filled" | "outlined" | undefined;
   switch (status) {
     case BuildStatus.passed:
       color = "primary";

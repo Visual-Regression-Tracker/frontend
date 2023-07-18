@@ -3,7 +3,7 @@ import TestVariationList from "../components/TestVariationList";
 import { useNavigate, useParams } from "react-router-dom";
 import { TestVariation } from "../types";
 import { testVariationService } from "../services";
-import { Box, Grid } from "@material-ui/core";
+import { Box, Grid } from "@mui/material";
 import ProjectSelect from "../components/ProjectSelect";
 import Filters from "../components/Filters";
 import { TestVariationMergeForm } from "../components/TestVariationMergeForm";
@@ -21,7 +21,7 @@ const TestVariationListPage: React.FunctionComponent = () => {
   const helpDispatch = useHelpDispatch();
   const { projectId = "" } = useParams<{ projectId: string }>();
   const [testVariations, setTestVariations] = React.useState<TestVariation[]>(
-    [],
+    []
   );
 
   // filter
@@ -48,7 +48,7 @@ const TestVariationListPage: React.FunctionComponent = () => {
         .catch((err) =>
           enqueueSnackbar(err, {
             variant: "error",
-          }),
+          })
         );
     }
   }, [projectId, enqueueSnackbar]);
@@ -63,8 +63,8 @@ const TestVariationListPage: React.FunctionComponent = () => {
           (device ? t.device === device : true) && // by device
           (viewport ? t.viewport === viewport : true) && // by viewport
           (customTags ? t.customTags === customTags : true) && // by customTags
-          (browser ? t.browser === browser : true), // by browser
-      ),
+          (browser ? t.browser === browser : true) // by browser
+      )
     );
   }, [
     query,
@@ -89,7 +89,7 @@ const TestVariationListPage: React.FunctionComponent = () => {
       .catch((err) =>
         enqueueSnackbar(err, {
           variant: "error",
-        }),
+        })
       );
   };
 
@@ -109,7 +109,7 @@ const TestVariationListPage: React.FunctionComponent = () => {
             <TestVariationMergeForm
               projectId={projectId}
               items={Array.from(
-                new Set(testVariations.map((t) => t.branchName)),
+                new Set(testVariations.map((t) => t.branchName))
               )}
             />
           </Grid>

@@ -1,4 +1,4 @@
-import { Tooltip as MuiTooltip, type TooltipProps } from "@material-ui/core";
+import { Tooltip as MuiTooltip, type TooltipProps } from "@mui/material";
 import React from "react";
 
 export const Tooltip: React.FunctionComponent<TooltipProps> = ({

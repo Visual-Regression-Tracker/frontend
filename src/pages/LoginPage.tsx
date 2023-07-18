@@ -1,5 +1,5 @@
 import React, { useEffect } from "react";
-import { Grid } from "@material-ui/core";
+import { Grid } from "@mui/material";
 import LoginForm from "../components/LoginForm";
 import { setHelpSteps, useHelpDispatch } from "../contexts";
 import { LOGIN_PAGE_STEPS } from "../constants";
