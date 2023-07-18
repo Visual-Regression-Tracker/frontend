@@ -1,13 +1,13 @@
 import React from "react";
-import { Box, Toolbar } from "@material-ui/core";
+import { Box, Toolbar } from "@mui/material";
 import {
   DataGrid,
-  type GridColDef,
+  useGridApiRef,
+  GridColDef,
   GridToolbarDensitySelector,
   GridToolbarFilterButton,
-  type GridValueFormatterParams,
-  type GridCellEditCommitParams,
-} from "@material-ui/data-grid";
+  GridRenderCellParams,
+} from "@mui/x-data-grid";
 import { ActionButtons } from "./ActionButtons";
 import { usersService } from "../../services";
 import { Role } from "../../types";
@@ -15,19 +15,35 @@ import { useSnackbar } from "notistack";
 import { useUserDispatch, useUserState } from "../../contexts";
 
 const columnsDef: GridColDef[] = [
-  { field: "id", hide: true, filterable: false },
-  { field: "email", headerName: "Email", flex: 2 },
-  { field: "firstName", headerName: "First name", flex: 1 },
-  { field: "lastName", headerName: "Last name", flex: 1 },
+  {
+    field: "id",
+    filterable: false,
+  },
+  {
+    field: "email",
+    headerName: "Email",
+    flex: 2,
+  },
+  {
+    field: "firstName",
+    headerName: "First name",
+    flex: 1,
+  },
+  {
+    field: "lastName",
+    headerName: "Last name",
+    flex: 1,
+  },
   {
     field: "role",
     headerName: "Role",
     type: "singleSelect",
     editable: true,
-    valueOptions: Object.entries(Role).map(([key, value]) => {
-      return { value: key, label: value };
-    }),
-    renderCell: (params: GridValueFormatterParams) => {
+    valueOptions: Object.entries(Role).map(([key, value]) => ({
+      value: key,
+      label: value,
+    })),
+    renderCell: (params: GridRenderCellParams) => {
       const role = params.value as keyof typeof Role;
       return Role[role];
     },
@@ -41,14 +57,16 @@ const UserList = () => {
   const { userList } = useUserState();
 
   React.useEffect(() => {
-    usersService
-      .getAll()
-      .then((users) => userDispatch({ type: "getAll", payload: users }));
+    usersService.getAll().then((users) =>
+      userDispatch({
+        type: "getAll",
+        payload: users,
+      }),
+    );
   }, [userDispatch]);
 
   const handleEditCellChangeCommitted = React.useCallback(
-    (params: GridCellEditCommitParams) => {
-      const { id, field, value } = params;
+    ({ id, field, value }) => {
       if (field === "role") {
         usersService
           .assignRole(id, value as Role)
@@ -67,25 +85,31 @@ const UserList = () => {
     [enqueueSnackbar],
   );
 
+  const apiRef = useGridApiRef();
+
   return (
     <DataGrid
+      apiRef={apiRef}
       rows={userList}
       columns={columnsDef}
+      columnVisibilityModel={{
+        id: false,
+      }}
       checkboxSelection
       disableColumnMenu
-      disableSelectionOnClick
-      components={{
-        Toolbar: DataGridCustomToolbar,
+      disableRowSelectionOnClick
+      slots={{
+        toolbar: DataGridCustomToolbar,
       }}
-      onCellEditCommit={handleEditCellChangeCommitted}
+      onCellEditStop={handleEditCellChangeCommitted}
     />
   );
 };
 
 export default UserList;
 
-const DataGridCustomToolbar: React.FunctionComponent = () => {
-  return (
+const DataGridCustomToolbar: React.FunctionComponent = () => (
+  <React.Fragment>
     <Toolbar variant="dense">
       <GridToolbarFilterButton />
       <GridToolbarDensitySelector />
@@ -93,5 +117,5 @@ const DataGridCustomToolbar: React.FunctionComponent = () => {
         <ActionButtons />
       </Box>
     </Toolbar>
-  );
-};
+  </React.Fragment>
+);

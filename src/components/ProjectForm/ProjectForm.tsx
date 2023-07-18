@@ -5,7 +5,8 @@ import {
   MenuItem,
   Select,
   Switch,
-} from "@material-ui/core";
+  SelectChangeEvent,
+} from "@mui/material";
 import React from "react";
 import { TextValidator } from "react-material-ui-form-validator";
 import {
@@ -27,10 +28,13 @@ export const ProjectForm: React.FunctionComponent = () => {
     switch (project.imageComparison) {
       case ImageComparison.pixelmatch:
         return <PixelmatchConfigForm />;
+
       case ImageComparison.lookSame:
         return <LooksSameConfigForm />;
+
       case ImageComparison.odiff:
         return <OdiffConfigForm />;
+
       default:
         return null;
     }
@@ -49,10 +53,10 @@ export const ProjectForm: React.FunctionComponent = () => {
         fullWidth
         required
         value={project.name}
-        onChange={(event) => {
+        onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
           setProjectEditState(projectDispatch, {
             ...project,
-            name: (event.target as HTMLInputElement).value,
+            name: event.target.value,
           });
         }}
       />
@@ -67,10 +71,10 @@ export const ProjectForm: React.FunctionComponent = () => {
         fullWidth
         required
         value={project.mainBranchName}
-        onChange={(event) =>
+        onChange={(event: React.ChangeEvent<HTMLInputElement>) =>
           setProjectEditState(projectDispatch, {
             ...project,
-            mainBranchName: (event.target as HTMLInputElement).value,
+            mainBranchName: event.target.value,
           })
         }
       />
@@ -78,7 +82,12 @@ export const ProjectForm: React.FunctionComponent = () => {
         name="buildCount"
         validators={["minNumber:1"]}
         errorMessages={["Enter greater than 1"]}
-        InputProps={{ inputProps: { min: 1, step: 1 } }}
+        InputProps={{
+          inputProps: {
+            min: 1,
+            step: 1,
+          },
+        }}
         margin="dense"
         id="buildCount"
         label="Number of builds to keep"
@@ -86,8 +95,9 @@ export const ProjectForm: React.FunctionComponent = () => {
         fullWidth
         required
         value={project.maxBuildAllowed}
-        onChange={(event) => {
-          const value = (event.target as HTMLInputElement).value;
+        onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
+          const { value } = event.target;
+
           setProjectEditState(projectDispatch, {
             ...project,
             maxBuildAllowed: parseInt(value),
@@ -98,7 +108,12 @@ export const ProjectForm: React.FunctionComponent = () => {
         name="maxBranchLifetime"
         validators={["minNumber:1"]}
         errorMessages={["Enter greater than 1"]}
-        InputProps={{ inputProps: { min: 1, step: 1 } }}
+        InputProps={{
+          inputProps: {
+            min: 1,
+            step: 1,
+          },
+        }}
         margin="dense"
         id="maxBranchLifetime"
         label="Max branch lifetime (days)"
@@ -106,8 +121,9 @@ export const ProjectForm: React.FunctionComponent = () => {
         fullWidth
         required
         value={project.maxBranchLifetime}
-        onChange={(event) => {
-          const value = (event.target as HTMLInputElement).value;
+        onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
+          const { value } = event.target;
+
           setProjectEditState(projectDispatch, {
             ...project,
             maxBranchLifetime: parseInt(value),
@@ -130,16 +146,18 @@ export const ProjectForm: React.FunctionComponent = () => {
           />
         }
       />
-      <FormControl fullWidth>
+      <FormControl variant="standard" fullWidth>
         <InputLabel id="imageComparisonSelect">
           Image comparison library
         </InputLabel>
         <Select
+          variant="standard"
           id="imageComparisonSelect"
           labelId="imageComparisonSelect"
           value={project.imageComparison}
-          onChange={(event) => {
+          onChange={(event: SelectChangeEvent<HTMLInputElement>) => {
             const imageComparison = event.target.value as ImageComparison;
+
             setProjectEditState(projectDispatch, {
               ...project,
               imageComparison,
@@ -161,7 +179,6 @@ export const ProjectForm: React.FunctionComponent = () => {
           </MenuItem>
         </Select>
       </FormControl>
-
       {config}
     </React.Fragment>
   );

@@ -18,9 +18,22 @@ function manualChunks(id : string) {
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [react()],
+  server: {
+    fs: {
+      // Allow using "npm link" for packages when developing, that are in different base path
+      strict: false,
+    },
+  },
+  optimizeDeps: {
+    // Enable using "npm link" for this package when developing
+    include: ["@visual-regression-tracker/agent-playwright"],
+  },
   build: {
     outDir: "build",
     sourcemap: true,
+
+    // When false, all CSS will be extracted into a single CSS file.
+    cssCodeSplit: false,
 
     // https://rollupjs.org/configuration-options/
     /*
@@ -30,5 +43,9 @@ export default defineConfig({
             }
         }
         */
+  },
+  define: {
+    // Some libraries use the global object, even though it doesn't exist in the browser.
+    global: {},
   },
 });

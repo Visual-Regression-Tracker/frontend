@@ -1,4 +1,5 @@
 import React from "react";
+import { styled } from "@mui/material/styles";
 import { useParams, useNavigate } from "react-router-dom";
 import { TestVariation } from "../types";
 import { testVariationService, staticService } from "../services";
@@ -8,11 +9,10 @@ import {
   Grid,
   Card,
   CardMedia,
-  makeStyles,
   CardActions,
   Button,
   Typography,
-} from "@material-ui/core";
+} from "@mui/material";
 import {
   buildProjectPageUrl,
   buildTestRunLocation,
@@ -23,15 +23,21 @@ import { formatDateTime } from "../_helpers/format.helper";
 import TestStatusChip from "../components/TestStatusChip";
 import { Baseline } from "../types/baseline";
 
-const useStyles = makeStyles({
-  media: {
+const PREFIX = "TestVariationDetailsPage";
+
+const classes = {
+  media: `${PREFIX}-media`,
+};
+
+// TODO jss-to-styled codemod: The Fragment root was replaced by div. Change the tag if needed.
+const Root = styled("div")({
+  [`& .${classes.media}`]: {
     height: 600,
     objectFit: "contain",
   },
 });
 
 const TestVariationDetailsPage: React.FunctionComponent = () => {
-  const classes = useStyles();
   const navigate = useNavigate();
   const { enqueueSnackbar } = useSnackbar();
   const { testVariationId } = useParams<{ testVariationId: string }>();
@@ -53,7 +59,7 @@ const TestVariationDetailsPage: React.FunctionComponent = () => {
   }, [testVariationId, enqueueSnackbar]);
 
   return (
-    <React.Fragment>
+    <Root>
       <Container>
         <Box mt={2}>
           {testVariation && (
@@ -109,7 +115,7 @@ const TestVariationDetailsPage: React.FunctionComponent = () => {
           )}
         </Box>
       </Container>
-    </React.Fragment>
+    </Root>
   );
 };
 

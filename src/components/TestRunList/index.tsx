@@ -1,5 +1,5 @@
 import React from "react";
-import { Chip, Typography } from "@material-ui/core";
+import { Chip, Typography } from "@mui/material";
 import TestStatusChip from "../TestStatusChip";
 import {
   useTestRunState,
@@ -9,17 +9,15 @@ import {
 import { useSnackbar } from "notistack";
 import {
   DataGrid,
-  type GridCellParams,
-  type GridColDef,
-  type GridRowParams,
-  type GridValueGetterParams,
-  type GridValueFormatterParams,
-  type GridCellValue,
-  type GridSortCellParams,
-  type GridStateChangeParams,
-  type GridSortDirection,
-  type GridSortModel,
-} from "@material-ui/data-grid";
+  useGridApiRef,
+  GridCellParams,
+  GridColDef,
+  GridRowParams,
+  GridValueGetterParams,
+  GridRenderCellParams,
+  GridSortDirection,
+  GridSortModel,
+} from "@mui/x-data-grid";
 import { DataGridCustomToolbar } from "./DataGridCustomToolbar";
 import { StatusFilterOperators } from "./StatusFilterOperators";
 import { TagFilterOperators } from "./TagFilterOperators";
@@ -28,21 +26,30 @@ import { testRunService } from "../../services";
 import { useNavigate } from "react-router";
 import { buildTestRunLocation } from "../../_helpers/route.helpers";
 
+// https://mui.com/x/react-data-grid/column-definition/
 const columnsDef: GridColDef[] = [
-  { field: "id", hide: true, filterable: false },
-  { field: "name", headerName: "Name", flex: 1 },
+  {
+    field: "id",
+    filterable: false,
+  },
+  {
+    field: "name",
+    headerName: "Name",
+    flex: 1,
+  },
   {
     field: "tags",
     headerName: "Tags",
     flex: 1,
     valueGetter: (params: GridValueGetterParams) => {
-      const tags: Array<string> = [
+      const tags: string[] = [
         params.row["os"],
         params.row["device"],
         params.row["browser"],
         params.row["viewport"],
         params.row["customTags"],
       ];
+
       return tags.reduce(
         (prev, curr) => prev.concat(curr ? `${curr};` : ""),
         "",
@@ -50,18 +57,19 @@ const columnsDef: GridColDef[] = [
     },
     renderCell: (params: GridCellParams) => (
       <React.Fragment>
-        {params
-          .getValue(params.id, "tags")
+        {params.row["tags"]
           ?.toString()
           .split(";")
           .map(
-            (tag) =>
+            (tag: string | null) =>
               tag && (
                 <Chip
                   key={tag}
                   size="small"
                   label={tag}
-                  style={{ margin: "1px" }}
+                  style={{
+                    margin: "1px",
+                  }}
                 />
               ),
           )}
@@ -73,37 +81,29 @@ const columnsDef: GridColDef[] = [
     field: "status",
     headerName: "Status",
     flex: 0.3,
-    renderCell: (params: GridValueFormatterParams) => {
-      return (
-        <TestStatusChip
-          status={params.getValue(params.id, "status")?.toString()}
-        />
-      );
-    },
-    sortComparator: (
-      v1: GridCellValue,
-      v2: GridCellValue,
-      cellParams1: GridSortCellParams,
-      cellParams2: GridSortCellParams,
-    ) => {
+    renderCell: (params: GridRenderCellParams) => (
+      <TestStatusChip status={params.row["status"]?.toString()} />
+    ),
+    sortComparator: (v1: TestStatus, v2: TestStatus) => {
       const statusOrder = Object.values(TestStatus);
-      return (
-        statusOrder.indexOf(v2 as TestStatus) -
-        statusOrder.indexOf(v1 as TestStatus)
-      );
+      return statusOrder.indexOf(v2) - statusOrder.indexOf(v1);
     },
     filterOperators: StatusFilterOperators,
   },
 ];
 
 const TestRunList: React.FunctionComponent = () => {
+  const apiRef = useGridApiRef();
   const { enqueueSnackbar } = useSnackbar();
   const navigate = useNavigate();
-  const { selectedTestRun, testRuns, loading } = useTestRunState();
+  const { testRuns, loading } = useTestRunState();
   const { selectedBuild } = useBuildState();
   const testRunDispatch = useTestRunDispatch();
 
-  const [pageSize, setPageSize] = React.useState<number>(10);
+  const [paginationModel, setPaginationModel] = React.useState({
+    pageSize: 10,
+    page: 0,
+  });
 
   const [sortModel, setSortModel] = React.useState<GridSortModel>([
     {
@@ -113,18 +113,28 @@ const TestRunList: React.FunctionComponent = () => {
   ]);
 
   const getTestRunListCallback = React.useCallback(() => {
-    testRunDispatch({ type: "request" });
+    testRunDispatch({
+      type: "request",
+    });
     if (selectedBuild?.id) {
       testRunService
         .getList(selectedBuild.id)
-        .then((payload) => testRunDispatch({ type: "get", payload }))
+        .then((payload) =>
+          testRunDispatch({
+            type: "get",
+            payload,
+          }),
+        )
         .catch((err: string) =>
           enqueueSnackbar(err, {
             variant: "error",
           }),
         );
     } else {
-      testRunDispatch({ type: "get", payload: [] });
+      testRunDispatch({
+        type: "get",
+        payload: [],
+      });
     }
   }, [testRunDispatch, enqueueSnackbar, selectedBuild?.id]);
 
@@ -132,51 +142,46 @@ const TestRunList: React.FunctionComponent = () => {
     getTestRunListCallback();
   }, [getTestRunListCallback]);
 
-  return (
-    <React.Fragment>
-      {selectedBuild ? (
+  if (selectedBuild) {
+    return (
+      <React.Fragment>
         <DataGrid
+          apiRef={apiRef}
           rows={testRuns}
           columns={columnsDef}
-          pageSize={pageSize}
-          rowsPerPageOptions={[10, 30, 100]}
-          onPageSizeChange={(newPageSize) => setPageSize(newPageSize)}
+          columnVisibilityModel={{
+            id: false,
+          }}
+          pageSizeOptions={[10, 30, 100]}
+          paginationModel={paginationModel}
+          onPaginationModelChange={setPaginationModel}
           pagination
           loading={loading}
-          components={{
-            Toolbar: DataGridCustomToolbar,
+          slots={{
+            toolbar: DataGridCustomToolbar,
           }}
           checkboxSelection
           disableColumnSelector
           disableColumnMenu
-          disableSelectionOnClick
+          disableRowSelectionOnClick
           sortModel={sortModel}
           onSortModelChange={(model) => setSortModel(model)}
           onRowClick={(param: GridRowParams) => {
             navigate(
               buildTestRunLocation(
                 selectedBuild.id,
-                param.getValue(param.id, "id")?.toString(),
+                param.row["id"].toString(),
               ),
             );
           }}
-          onStateChange={({ state }: GridStateChangeParams) => {
-            if (!selectedTestRun) {
-              // only if testRun modal is not shown
-              testRunDispatch({
-                type: "filter",
-                payload: state.visibleRows.visibleRows,
-              });
-              testRunDispatch({
-                type: "sort",
-                payload: state.sorting.sortedRows,
-              });
-            }
-          }}
         />
-      ) : (
-        <Typography variant="h5">Select build from list</Typography>
-      )}
+      </React.Fragment>
+    );
+  }
+
+  return (
+    <React.Fragment>
+      <Typography variant="h5">Select build from list</Typography>
     </React.Fragment>
   );
 };

@@ -1,20 +1,28 @@
-import { FormControl, InputLabel, Select } from "@material-ui/core";
+import {
+  FormControl,
+  InputLabel,
+  Select,
+  SelectChangeEvent,
+} from "@mui/material";
 import React from "react";
 import { useTestRunState } from "../../contexts";
 import {
-  type GridFilterInputValueProps,
   getGridStringOperators,
-} from "@material-ui/data-grid";
+  GridFilterOperator,
+  GridFilterInputValueProps,
+} from "@mui/x-data-grid";
 
-const TagInputComponent = (props: GridFilterInputValueProps) => {
-  const { item, applyValue } = props;
+const TagInputComponent = ({ item, applyValue }: GridFilterInputValueProps) => {
   const { testRuns } = useTestRunState();
 
-  const handleFilterChange = (event: any) => {
-    applyValue({ ...item, value: event.target.value as string });
+  const handleFilterChange = (event: SelectChangeEvent<HTMLSelectElement>) => {
+    applyValue({
+      ...item,
+      value: event.target.value,
+    });
   };
 
-  const filterOptions: Array<string> = Array.from(
+  const filterOptions: string[] = Array.from(
     new Set(
       testRuns
         .map((item) => item.os)
@@ -26,11 +34,12 @@ const TagInputComponent = (props: GridFilterInputValueProps) => {
   );
 
   return (
-    <FormControl fullWidth>
+    <FormControl variant="standard" fullWidth>
       <InputLabel shrink id="tagFilter">
         Value
       </InputLabel>
       <Select
+        variant="standard"
         id="tagFilter"
         native
         displayEmpty
@@ -51,7 +60,7 @@ const TagInputComponent = (props: GridFilterInputValueProps) => {
   );
 };
 
-export const TagFilterOperators = getGridStringOperators()
+export const TagFilterOperators: GridFilterOperator[] = getGridStringOperators()
   .filter((operator) => operator.value === "contains")
   .map((operator) => ({
     ...operator,

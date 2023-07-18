@@ -1,25 +1,26 @@
 import React from "react";
-import { Typography, Grid, IconButton, makeStyles } from "@material-ui/core";
-import { WarningRounded } from "@material-ui/icons";
+import { styled } from "@mui/material/styles";
+import { Typography, Grid, IconButton } from "@mui/material";
+import { WarningRounded, AltRoute } from "@mui/icons-material";
 import { IgnoreArea } from "../../types/ignoreArea";
 import { Tooltip } from "../Tooltip";
-import AltRouteIcon from "@mui/icons-material/AltRoute";
 
-interface IProps {
-  type: "Baseline" | "Image" | "Diff";
-  imageName: string;
-  image: undefined | HTMLImageElement;
-  branchName: string;
-  ignoreAreas?: IgnoreArea[];
-}
+const PREFIX = "ImageDetails";
 
-const useStyles = makeStyles((theme) => ({
-  container: {
+const classes = {
+  container: `${PREFIX}-container`,
+  branchName: `${PREFIX}-branchName`,
+};
+
+// TODO jss-to-styled codemod: The Fragment root was replaced by div. Change the tag if needed.
+const Root = styled("div")(() => ({
+  [`& .${classes.container}`]: {
     display: "flex",
     alignItems: "center",
     color: "darkslategrey",
   },
-  branchName: {
+
+  [`& .${classes.branchName}`]: {
     cursor: "pointer",
     lineHeight: "20px",
     fontWeight: "bolder",
@@ -32,14 +33,21 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-const ImageDetails: React.FunctionComponent<IProps> = ({
+export interface ImageDetailsProps {
+  type: "Baseline" | "Image" | "Diff";
+  imageName: string;
+  image: HTMLImageElement | undefined;
+  branchName: string;
+  ignoreAreas?: IgnoreArea[];
+}
+
+const ImageDetails: React.FunctionComponent<ImageDetailsProps> = ({
   type,
   image,
   imageName,
   branchName,
   ignoreAreas,
 }) => {
-  const classes = useStyles();
   const imageSize = () => {
     return (
       imageName && (
@@ -54,13 +62,13 @@ const ImageDetails: React.FunctionComponent<IProps> = ({
     );
   };
   return (
-    <React.Fragment>
+    <Root>
       <Grid item className={classes.container}>
         <Typography variant="overline" style={{ marginRight: 3 }}>
           {type === "Baseline" ? "Baseline" : "Checkpoint"}
         </Typography>
         {imageSize()}
-        <AltRouteIcon fontSize="small" />
+        <AltRoute fontSize="small" />
         <Tooltip title={`Branch: ${branchName}`}>
           <span className={classes.branchName}>{branchName}</span>
         </Tooltip>
@@ -70,13 +78,13 @@ const ImageDetails: React.FunctionComponent<IProps> = ({
               "Contains noneditable ignore areas applied during image upload."
             }
           >
-            <IconButton>
+            <IconButton size="large">
               <WarningRounded color="secondary" />
             </IconButton>
           </Tooltip>
         )}
       </Grid>
-    </React.Fragment>
+    </Root>
   );
 };
 

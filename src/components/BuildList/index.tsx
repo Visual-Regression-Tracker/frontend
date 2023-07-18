@@ -1,22 +1,21 @@
 import React, { FunctionComponent } from "react";
+import { styled } from "@mui/material/styles";
 import {
   List,
-  ListItem,
+  ListItemButton,
   ListItemText,
   ListItemSecondaryAction,
   IconButton,
-  makeStyles,
-  type Theme,
-  createStyles,
   Chip,
   Typography,
   Grid,
+  Pagination,
   LinearProgress,
   Menu,
   MenuItem,
   Box,
-} from "@material-ui/core";
-import { MoreVert } from "@material-ui/icons";
+} from "@mui/material";
+import { MoreVert } from "@mui/icons-material";
 import {
   useBuildState,
   useBuildDispatch,
@@ -28,7 +27,6 @@ import { SkeletonList } from "../SkeletonList";
 import { formatDateTime } from "../../_helpers/format.helper";
 import { useSnackbar } from "notistack";
 import { TextValidator } from "react-material-ui-form-validator";
-import { Pagination } from "@material-ui/lab";
 import { Build } from "../../types";
 import { BaseModal } from "../BaseModal";
 import { buildsService } from "../../services";
@@ -36,25 +34,33 @@ import { useNavigate } from "react-router";
 import { buildTestRunLocation } from "../../_helpers/route.helpers";
 import { Tooltip } from "../Tooltip";
 
-const useStyles = makeStyles((theme: Theme) =>
-  createStyles({
-    listContainer: {
-      height: "100%",
-      overflow: "auto",
+const PREFIX = "index";
+
+const classes = {
+  listContainer: `${PREFIX}-listContainer`,
+  listItemSecondaryAction: `${PREFIX}-listItemSecondaryAction`,
+  listItem: `${PREFIX}-listItem`,
+};
+
+// TODO jss-to-styled codemod: The Fragment root was replaced by div. Change the tag if needed.
+const Root = styled("div")(() => ({
+  [`& .${classes.listContainer}`]: {
+    height: "100%",
+    overflow: "auto",
+  },
+
+  [`& .${classes.listItemSecondaryAction}`]: {
+    visibility: "hidden",
+  },
+
+  [`& .${classes.listItem}`]: {
+    "&:hover $listItemSecondaryAction": {
+      visibility: "inherit",
     },
-    listItemSecondaryAction: {
-      visibility: "hidden",
-    },
-    listItem: {
-      "&:hover $listItemSecondaryAction": {
-        visibility: "inherit",
-      },
-    },
-  }),
-);
+  },
+}));
 
 const BuildList: FunctionComponent = () => {
-  const classes = useStyles();
   const navigate = useNavigate();
   const { buildList, selectedBuild, loading, total, take } = useBuildState();
   const buildDispatch = useBuildDispatch();
@@ -118,7 +124,7 @@ const BuildList: FunctionComponent = () => {
   }, [handlePaginationChange]);
 
   return (
-    <React.Fragment>
+    <Root>
       <Box height="91%" overflow="auto">
         <List>
           {loading ? (
@@ -128,12 +134,11 @@ const BuildList: FunctionComponent = () => {
           ) : (
             buildList.map((build) => (
               <React.Fragment key={build.id}>
-                <ListItem
+                <ListItemButton
                   selected={selectedBuild?.id === build.id}
-                  button
                   onClick={() => selectBuildCalback(build.id)}
                   classes={{
-                    container: classes.listItem,
+                    root: classes.listItem,
                   }}
                 >
                   <ListItemText
@@ -180,11 +185,12 @@ const BuildList: FunctionComponent = () => {
                   >
                     <IconButton
                       onClick={(event) => handleMenuClick(event, build)}
+                      size="large"
                     >
                       <MoreVert />
                     </IconButton>
                   </ListItemSecondaryAction>
-                </ListItem>
+                </ListItemButton>
                 {build.isRunning && <LinearProgress />}
               </React.Fragment>
             ))
@@ -212,7 +218,7 @@ const BuildList: FunctionComponent = () => {
               onClick={() => {
                 buildsService
                   .update(menuBuild.id, { isRunning: false })
-                  .then((b) =>
+                  .then(() =>
                     enqueueSnackbar(`${menuBuild.id} finished`, {
                       variant: "success",
                     }),
@@ -255,8 +261,8 @@ const BuildList: FunctionComponent = () => {
                 required
                 value={newCiBuildId}
                 inputProps={{
-                  onChange: (event: any) =>
-                    setNewCiBuildId((event.target as HTMLInputElement).value),
+                  onChange: (event: React.ChangeEvent<HTMLInputElement>) =>
+                    setNewCiBuildId(event.target.value),
                   "data-testId": "newCiBuildId",
                 }}
               />
@@ -267,7 +273,7 @@ const BuildList: FunctionComponent = () => {
               .update(menuBuild.id, {
                 ciBuildId: newCiBuildId,
               })
-              .then((b) => {
+              .then(() => {
                 toggleEditDialogOpen();
               })
               .catch((err) =>
@@ -292,7 +298,7 @@ const BuildList: FunctionComponent = () => {
           }
           onSubmit={() => {
             deleteBuild(buildDispatch, menuBuild.id)
-              .then((build) => {
+              .then(() => {
                 toggleDeleteDialogOpen();
                 enqueueSnackbar(
                   `Build #${menuBuild.number || menuBuild.id} deleted`,
@@ -316,7 +322,7 @@ const BuildList: FunctionComponent = () => {
           }}
         />
       )}
-    </React.Fragment>
+    </Root>
   );
 };
 

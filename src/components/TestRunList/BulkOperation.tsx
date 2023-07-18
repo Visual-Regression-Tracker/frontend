@@ -1,11 +1,12 @@
 import React from "react";
-import { Typography, IconButton, LinearProgress } from "@material-ui/core";
+import { Typography, IconButton, LinearProgress } from "@mui/material";
 import {
-  type GridRowData,
-  type GridRowId,
-  type GridSelectionModel,
-  useGridSlotComponentProps,
-} from "@material-ui/data-grid";
+  GridRowModel,
+  GridRowId,
+  useGridApiContext,
+  gridRowSelectionStateSelector,
+  gridExpandedSortedRowEntriesSelector,
+} from "@mui/x-data-grid";
 import { BaseModal } from "../BaseModal";
 import { useSnackbar } from "notistack";
 import {
@@ -14,64 +15,75 @@ import {
   LayersClear,
   ThumbDown,
   ThumbUp,
-} from "@material-ui/icons";
+} from "@mui/icons-material";
 import { testRunService } from "../../services";
 import { TestStatus } from "../../types";
-import { head } from "lodash";
 import { Tooltip } from "../Tooltip";
 
 export const BulkOperation: React.FunctionComponent = () => {
-  const { rows, state } = useGridSlotComponentProps();
+  const apiRef = useGridApiContext();
+  const { state } = apiRef.current;
+  const rows = gridExpandedSortedRowEntriesSelector(
+    state,
+    apiRef.current.instanceId,
+  );
+
+  const selectedRows = gridRowSelectionStateSelector(state);
+
   const { enqueueSnackbar } = useSnackbar();
   const [approveDialogOpen, setApproveDialogOpen] = React.useState(false);
   const [rejectDialogOpen, setRejectDialogOpen] = React.useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = React.useState(false);
   const [downloadDialogOpen, setDownloadDialogOpen] = React.useState(false);
+
   const [clearIgnoreDialogOpen, setClearIgnoreDialogOpen] =
     React.useState(false);
+
   const [isProcessing, setIsProcessing] = React.useState(false);
-  const ids: GridRowId[] = React.useMemo(
-    () => Object.values(state.selection),
-    [state.selection],
+  const selectedIds: GridRowId[] = React.useMemo(
+    () => Object.values(selectedRows),
+    [selectedRows],
   );
+
   const isMerge: boolean = React.useMemo(
     () =>
-      !!head(
-        rows.filter((value: GridRowData) => ids.includes(value.id.toString())),
-      )?.merge,
-    // eslint-disable-next-line
-    [ids],
+      !!rows.find((row: GridRowModel) =>
+        selectedIds.includes(row.id.toString()),
+      ),
+    [selectedIds, rows],
   );
+
+  // The ids of those rows that have status "new" or "resolved"
   const idsEligibleForApproveOrReject: string[] = React.useMemo(
     () =>
       rows
         .filter(
-          (value: GridRowData) =>
-            ids.includes(value.id.toString()) &&
+          (row: GridRowModel) =>
+            selectedIds.includes(row.id.toString()) &&
             [TestStatus.new, TestStatus.unresolved].includes(
-              value.status.toString(),
+              row.model.status.toString(),
             ),
         )
-        .map((value: GridRowData) => value.id.toString()),
-    // eslint-disable-next-line
-    [ids],
+        .map((row: GridRowModel) => row.id.toString()),
+    [selectedIds, rows],
   );
-
-  const selectedRows: GridSelectionModel = state.selection;
-  const count = Object.keys(selectedRows).length;
 
   const toggleApproveDialogOpen = () => {
     setApproveDialogOpen(!approveDialogOpen);
   };
+
   const toggleRejectDialogOpen = () => {
     setRejectDialogOpen(!rejectDialogOpen);
   };
+
   const toggleDeleteDialogOpen = () => {
     setDeleteDialogOpen(!deleteDialogOpen);
   };
+
   const toggleDownloadDialogOpen = () => {
     setDownloadDialogOpen(!downloadDialogOpen);
   };
+
   const toggleClearIgnoreDialogOpen = () => {
     setClearIgnoreDialogOpen(!clearIgnoreDialogOpen);
   };
@@ -80,6 +92,7 @@ export const BulkOperation: React.FunctionComponent = () => {
     if (clearIgnoreDialogOpen) {
       return "Clear Ignore Area For Selected Items";
     }
+
     return submitButtonText() + " Test Runs";
   };
 
@@ -87,18 +100,23 @@ export const BulkOperation: React.FunctionComponent = () => {
     if (approveDialogOpen) {
       return "Approve";
     }
+
     if (rejectDialogOpen) {
       return "Reject";
     }
+
     if (deleteDialogOpen) {
       return "Delete";
     }
+
     if (downloadDialogOpen) {
       return "Download";
     }
+
     if (clearIgnoreDialogOpen) {
       return "Clear";
     }
+
     return "";
   };
 
@@ -106,15 +124,19 @@ export const BulkOperation: React.FunctionComponent = () => {
     if (deleteDialogOpen) {
       return toggleDeleteDialogOpen();
     }
+
     if (downloadDialogOpen) {
       return toggleDownloadDialogOpen();
     }
+
     if (approveDialogOpen) {
       return toggleApproveDialogOpen();
     }
+
     if (rejectDialogOpen) {
       return toggleRejectDialogOpen();
     }
+
     if (clearIgnoreDialogOpen) {
       return toggleClearIgnoreDialogOpen();
     }
@@ -122,31 +144,42 @@ export const BulkOperation: React.FunctionComponent = () => {
 
   const getBulkAction = () => {
     if (deleteDialogOpen) {
-      return testRunService.removeBulk(ids);
+      return testRunService.removeBulk(
+        selectedIds.map((item: GridRowId) => item.toString()),
+      );
     }
+
     if (downloadDialogOpen) {
-      const urlsToDownload: { download: string; filename: string }[] = [];
-      ids.forEach((id) => {
-        testRunService.getDetails(id.toString()).then((e) => {
+      const urlsToDownload: {
+        download: string;
+        filename: string;
+      }[] = [];
+
+      for (const id of selectedIds) {
+        testRunService.getDetails(id.toString()).then((testRun) => {
           urlsToDownload.push({
-            download: "static/imageUploads/" + e.imageName,
-            filename: e.name,
+            download: "static/imageUploads/" + testRun.imageName,
+            filename: testRun.name,
           });
+
           //Call getFile function only when all images names are pushed into the array.
-          if (urlsToDownload.length === ids.length) {
+          if (urlsToDownload.length === selectedIds.length) {
             testRunService.getFiles(urlsToDownload);
           }
         });
-      });
+      }
     }
+
     if (rejectDialogOpen) {
       return testRunService.rejectBulk(idsEligibleForApproveOrReject);
     }
+
     if (approveDialogOpen) {
       return testRunService.approveBulk(idsEligibleForApproveOrReject, isMerge);
     }
+
     return testRunService.updateIgnoreAreas({
-      ids,
+      ids: selectedIds.map((item: GridRowId) => item.toString()),
       ignoreAreas: [],
     });
   };
@@ -155,47 +188,67 @@ export const BulkOperation: React.FunctionComponent = () => {
     if (deleteDialogOpen) {
       return toggleDeleteDialogOpen();
     }
+
     if (downloadDialogOpen) {
       return toggleDownloadDialogOpen();
     }
+
     if (approveDialogOpen) {
       return toggleApproveDialogOpen();
     }
+
     if (clearIgnoreDialogOpen) {
       return toggleClearIgnoreDialogOpen();
     }
+
     return toggleRejectDialogOpen();
   };
 
   return (
-    <>
+    <React.Fragment>
       <Tooltip
         title="Approve unresolved in selected rows."
         aria-label="approve"
       >
         <span>
-          <IconButton disabled={count === 0} onClick={toggleApproveDialogOpen}>
+          <IconButton
+            disabled={selectedRows.length === 0}
+            onClick={toggleApproveDialogOpen}
+            size="large"
+          >
             <ThumbUp />
           </IconButton>
         </span>
       </Tooltip>
       <Tooltip title="Reject unresolved in selected rows." aria-label="reject">
         <span>
-          <IconButton disabled={count === 0} onClick={toggleRejectDialogOpen}>
+          <IconButton
+            disabled={selectedRows.length === 0}
+            onClick={toggleRejectDialogOpen}
+            size="large"
+          >
             <ThumbDown />
           </IconButton>
         </span>
       </Tooltip>
       <Tooltip title="Download images for selected rows." aria-label="download">
         <span>
-          <IconButton disabled={count === 0} onClick={toggleDownloadDialogOpen}>
+          <IconButton
+            disabled={selectedRows.length === 0}
+            onClick={toggleDownloadDialogOpen}
+            size="large"
+          >
             <CloudDownload />
           </IconButton>
         </span>
       </Tooltip>
       <Tooltip title="Delete selected rows." aria-label="delete">
         <span>
-          <IconButton disabled={count === 0} onClick={toggleDeleteDialogOpen}>
+          <IconButton
+            disabled={selectedRows.length === 0}
+            onClick={toggleDeleteDialogOpen}
+            size="large"
+          >
             <Delete />
           </IconButton>
         </span>
@@ -206,14 +259,14 @@ export const BulkOperation: React.FunctionComponent = () => {
       >
         <span>
           <IconButton
-            disabled={count === 0}
+            disabled={selectedRows.length === 0}
             onClick={toggleClearIgnoreDialogOpen}
+            size="large"
           >
             <LayersClear />
           </IconButton>
         </span>
       </Tooltip>
-
       <BaseModal
         open={
           deleteDialogOpen ||
@@ -227,7 +280,9 @@ export const BulkOperation: React.FunctionComponent = () => {
         onCancel={dismissDialog}
         content={
           <Typography>
-            {`Are you sure you want to ${submitButtonText().toLowerCase()} ${count} items?`}
+            {`Are you sure you want to ${submitButtonText().toLowerCase()} ${
+              selectedRows.length
+            } items?`}
           </Typography>
         }
         onSubmit={() => {
@@ -235,7 +290,7 @@ export const BulkOperation: React.FunctionComponent = () => {
           getBulkAction()
             .then(() => {
               setIsProcessing(false);
-              enqueueSnackbar(`${count} test runs processed.`, {
+              enqueueSnackbar(`${selectedRows.length} test runs processed.`, {
                 variant: "success",
               });
             })
@@ -249,6 +304,6 @@ export const BulkOperation: React.FunctionComponent = () => {
         }}
       />
       {isProcessing && <LinearProgress />}
-    </>
+    </React.Fragment>
   );
 };

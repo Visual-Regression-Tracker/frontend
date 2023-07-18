@@ -1,12 +1,21 @@
-import { IconButton, makeStyles } from "@material-ui/core";
-import { NavigateNext, NavigateBefore } from "@material-ui/icons";
+import { IconButton } from "@mui/material";
+import { styled } from "@mui/material/styles";
+import { NavigateNext, NavigateBefore } from "@mui/icons-material";
 import React from "react";
 import { useHotkeys } from "react-hotkeys-hook";
 import { TestRun } from "../../types";
 import { Tooltip } from "../Tooltip";
 
-const useStyles = makeStyles((theme) => ({
-  button: {
+const PREFIX = "ArrowButtons";
+
+const classes = {
+  button: `${PREFIX}-button`,
+  icon: `${PREFIX}-icon`,
+};
+
+// TODO jss-to-styled codemod: The Fragment root was replaced by div. Change the tag if needed.
+const Root = styled("div")(() => ({
+  [`& .${classes.button}`]: {
     width: 64,
     height: 64,
     padding: 0,
@@ -14,7 +23,8 @@ const useStyles = makeStyles((theme) => ({
     top: "50%",
     zIndex: 4000,
   },
-  icon: {
+
+  [`& .${classes.icon}`]: {
     width: 64,
     height: 64,
   },
@@ -25,10 +35,8 @@ export const ArrowButtons: React.FunctionComponent<{
   selectedTestRunIndex: number;
   handleNavigation: (testRunId: string) => void;
 }> = ({ testRuns, selectedTestRunIndex, handleNavigation }) => {
-  const classes = useStyles();
-
   const navigateNext = () => {
-    if (selectedTestRunIndex + 1 < testRuns.length) {
+    if (testRuns.length > selectedTestRunIndex + 1) {
       const next = testRuns[selectedTestRunIndex + 1];
       handleNavigation(next.id);
     }
@@ -45,8 +53,8 @@ export const ArrowButtons: React.FunctionComponent<{
   useHotkeys("left", navigateBefore, [selectedTestRunIndex, handleNavigation]);
 
   return (
-    <React.Fragment>
-      {selectedTestRunIndex + 1 < testRuns.length && (
+    <Root>
+      {testRuns.length > selectedTestRunIndex + 1 && (
         <Tooltip title={"Hotkey: ArrowRight"}>
           <IconButton
             color="secondary"
@@ -55,6 +63,7 @@ export const ArrowButtons: React.FunctionComponent<{
               right: 0,
             }}
             onClick={navigateNext}
+            size="large"
           >
             <NavigateNext className={classes.icon} />
           </IconButton>
@@ -69,11 +78,12 @@ export const ArrowButtons: React.FunctionComponent<{
               left: 0,
             }}
             onClick={navigateBefore}
+            size="large"
           >
             <NavigateBefore className={classes.icon} />
           </IconButton>
         </Tooltip>
       )}
-    </React.Fragment>
+    </Root>
   );
 };

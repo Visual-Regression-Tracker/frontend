@@ -30,7 +30,7 @@ interface IAddAction {
 
 interface IUpdateAction {
   type: "update";
-  payload: Array<Build>;
+  payload: Build[];
 }
 
 type IAction =
@@ -40,7 +40,6 @@ type IAction =
   | IAddAction
   | IUpdateAction
   | ISelectAction;
-
 type Dispatch = (action: IAction) => void;
 type State = {
   selectedBuild?: Build;
@@ -50,8 +49,9 @@ type State = {
   skip: number;
   loading: boolean;
 };
-
-type BuildProviderProps = { children: React.ReactNode };
+type BuildProviderProps = {
+  children: React.ReactNode;
+};
 
 const BuildStateContext = React.createContext<State | undefined>(undefined);
 const BuildDispatchContext = React.createContext<Dispatch | undefined>(
@@ -73,14 +73,18 @@ function buildReducer(state: State, action: IAction): State {
         ...state,
         selectedBuild: action.payload,
       };
+
     case "request":
       return {
         ...state,
         buildList: [],
         loading: true,
       };
+
     case "get":
+      // eslint-disable-next-line no-case-declarations
       const { data, take, skip, total } = action.payload;
+
       return {
         ...state,
         buildList: data,
@@ -89,17 +93,19 @@ function buildReducer(state: State, action: IAction): State {
         total,
         loading: false,
       };
-    case "delete": {
+
+    case "delete":
       return {
         ...state,
         buildList: state.buildList.filter((p) => p.id !== action.payload),
       };
-    }
+
     case "add":
       return {
         ...state,
         buildList: [action.payload, ...state.buildList],
       };
+
     case "update":
       return {
         ...state,
@@ -108,12 +114,15 @@ function buildReducer(state: State, action: IAction): State {
           state.selectedBuild,
         buildList: state.buildList.map((b) => {
           const item = action.payload.find((i) => i.id === b.id);
+
           if (item) {
             return item;
           }
+
           return b;
         }),
       };
+
     default:
       return state;
   }
@@ -126,6 +135,7 @@ function BuildProvider({ children }: BuildProviderProps) {
 
   React.useEffect(() => {
     const { buildId: id } = getQueryParams(location.search);
+
     if (buildId !== id) {
       selectBuild(dispatch, id);
       setBuildId(id);
@@ -143,43 +153,61 @@ function BuildProvider({ children }: BuildProviderProps) {
 
 function useBuildState() {
   const context = React.useContext(BuildStateContext);
+
   if (context === undefined) {
-    throw new Error("must be used within a BuildProvider");
+    throw Error("must be used within a BuildProvider");
   }
+
   return context;
 }
 
 function useBuildDispatch() {
   const context = React.useContext(BuildDispatchContext);
+
   if (context === undefined) {
-    throw new Error("must be used within a BuildProvider");
+    throw Error("must be used within a BuildProvider");
   }
+
   return context;
 }
 
-async function deleteBuild(dispatch: Dispatch, id: string) {
+function deleteBuild(dispatch: Dispatch, id: string) {
   return buildsService.remove(id).then((build) => {
-    dispatch({ type: "delete", payload: id });
+    dispatch({
+      type: "delete",
+      payload: id,
+    });
     return build;
   });
 }
 
-async function selectBuild(dispatch: Dispatch, id?: string) {
+function selectBuild(dispatch: Dispatch, id?: string) {
   if (!id) {
-    dispatch({ type: "select" });
+    dispatch({
+      type: "select",
+    });
   } else {
     return buildsService.getDetails(id).then((build) => {
-      dispatch({ type: "select", payload: build });
+      dispatch({
+        type: "select",
+        payload: build,
+      });
     });
   }
 }
 
-async function addBuild(dispatch: Dispatch, build: Build) {
-  dispatch({ type: "add", payload: build });
+function addBuild(dispatch: Dispatch, build: Build) {
+  dispatch({
+    type: "add",
+    payload: build,
+  });
 }
 
-async function updateBuild(dispatch: Dispatch, builds: Array<Build>) {
-  dispatch({ type: "update", payload: builds });
+function updateBuild(dispatch: Dispatch, builds: Build[]) {
+  dispatch({
+    type: "update",
+    payload: builds,
+  });
 }
 
 export {

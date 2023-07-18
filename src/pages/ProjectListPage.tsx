@@ -9,7 +9,7 @@ import {
   Fab,
   Button,
   Box,
-} from "@material-ui/core";
+} from "@mui/material";
 import {
   useProjectState,
   useProjectDispatch,
@@ -20,7 +20,7 @@ import {
   useHelpDispatch,
   setHelpSteps,
 } from "../contexts";
-import { Delete, Add, Edit } from "@material-ui/icons";
+import { Delete, Add, Edit } from "@mui/icons-material";
 import {
   routes,
   LOCATOR_PROJECT_LIST_PAGE_PROJECT_LIST,
@@ -169,18 +169,20 @@ const ProjectsListPage = () => {
                   Variations
                 </Button>
                 <IconButton
-                  onClick={(event: React.MouseEvent<HTMLElement>) => {
+                  onClick={() => {
                     toggleUpdateDialogOpen();
                     setProjectEditState(projectDispatch, project);
                   }}
+                  size="large"
                 >
                   <Edit />
                 </IconButton>
                 <IconButton
-                  onClick={(event: React.MouseEvent<HTMLElement>) => {
+                  onClick={() => {
                     toggleDeleteDialogOpen();
                     setProjectEditState(projectDispatch, project);
                   }}
+                  size="large"
                   data-testId="delete"
                 >
                   <Delete />

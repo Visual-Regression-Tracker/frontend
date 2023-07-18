@@ -26,11 +26,13 @@ interface IClearAction {
 }
 
 type IAction = IConnectAction | IClearAction;
-
 type Dispatch = (action: IAction) => void;
-type State = { socket: Socket | undefined };
-
-type SocketProviderProps = { children: React.ReactNode };
+type State = {
+  socket: Socket | undefined;
+};
+type SocketProviderProps = {
+  children: React.ReactNode;
+};
 
 const SocketStateContext = React.createContext<State | undefined>(undefined);
 const SocketDispatchContext = React.createContext<Dispatch | undefined>(
@@ -43,9 +45,11 @@ const initialState: State = {
 
 function socketReducer(state: State, action: IAction): State {
   switch (action.type) {
-    case "connect": {
-      return { socket: action.payload };
-    }
+    case "connect":
+      return {
+        socket: action.payload,
+      };
+
     default:
       return state;
   }
@@ -72,7 +76,7 @@ function SocketProvider({ children }: SocketProviderProps) {
         }
       });
 
-      state.socket.on("build_updated", function (builds: Array<Build>) {
+      state.socket.on("build_updated", function (builds: Build[]) {
         updateBuild(
           buildDispatch,
           builds.filter((build) => build.projectId === selectedProjectId),
@@ -80,33 +84,39 @@ function SocketProvider({ children }: SocketProviderProps) {
       });
 
       state.socket.on("build_deleted", function (build: Build) {
-        buildDispatch({ type: "delete", payload: build.id });
+        buildDispatch({
+          type: "delete",
+          payload: build.id,
+        });
       });
 
-      state.socket.on("testRun_created", function (testRuns: Array<TestRun>) {
+      state.socket.on("testRun_created", function (testRuns: TestRun[]) {
         if (!selectedBuild) {
           return;
         }
+
         addTestRun(
           testRunDispatch,
           testRuns.filter((tr) => tr.buildId === selectedBuild.id),
         );
       });
 
-      state.socket.on("testRun_updated", function (testRuns: Array<TestRun>) {
+      state.socket.on("testRun_updated", function (testRuns: TestRun[]) {
         if (!selectedBuild) {
           return;
         }
+
         updateTestRun(
           testRunDispatch,
           testRuns.filter((tr) => tr.buildId === selectedBuild.id),
         );
       });
 
-      state.socket.on("testRun_deleted", function (testRuns: Array<TestRun>) {
+      state.socket.on("testRun_deleted", function (testRuns: TestRun[]) {
         if (!selectedBuild) {
           return;
         }
+
         deleteTestRun(
           testRunDispatch,
           testRuns
@@ -134,27 +144,31 @@ function SocketProvider({ children }: SocketProviderProps) {
 
 function useSocketState() {
   const context = React.useContext(SocketStateContext);
+
   if (context === undefined) {
-    throw new Error("must be used within a SocketProvider");
+    throw Error("must be used within a SocketProvider");
   }
+
   return context;
 }
 
 function useSocketDispatch() {
   const context = React.useContext(SocketDispatchContext);
+
   if (context === undefined) {
-    throw new Error("must be used within a SocketProvider");
+    throw Error("must be used within a SocketProvider");
   }
+
   return context;
 }
 
 function connect(dispatch: Dispatch) {
   if (API_URL) {
     const socket = socketIOClient(API_URL);
-    dispatch({ type: "connect", payload: socket });
-    console.log("Socket connected");
-  } else {
-    console.log("API url is not provided");
+    dispatch({
+      type: "connect",
+      payload: socket,
+    });
   }
 }
 

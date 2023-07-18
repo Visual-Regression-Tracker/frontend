@@ -1,18 +1,23 @@
 import React from "react";
-import { makeStyles } from "@material-ui/core";
+import { styled } from "@mui/material/styles";
 import noImage from "../../static/no-image.png";
 
-const useStyles = makeStyles((theme) => ({
-  img: {
+const PREFIX = "NoImagePlaceholder";
+
+const classes = {
+  img: `${PREFIX}-img`,
+};
+
+const Root = styled("img")(() => ({
+  [`&.${classes.img}`]: {
     display: "block",
     marginLeft: "auto",
     marginRight: "auto",
-    width: "50%",
+    width: "fit-content",
   },
 }));
 
+// TODO: Use SVG and more specific text to describe reason...
 export const NoImagePlaceholder: React.FunctionComponent = () => {
-  const classes = useStyles();
-
-  return <img src={noImage} alt="Not available" className={classes.img} />;
+  return <Root src={noImage} alt="Not available" className={classes.img} />;
 };

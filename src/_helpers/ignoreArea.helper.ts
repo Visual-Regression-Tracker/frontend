@@ -1,5 +1,5 @@
-import { uniqueId } from "lodash";
 import { IgnoreArea } from "../types/ignoreArea";
+import { v4 as uniqueId } from "uuid";
 
 export const invertIgnoreArea = (
   imageWidth: number,

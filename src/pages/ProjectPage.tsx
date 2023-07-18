@@ -1,5 +1,6 @@
 import React, { useEffect } from "react";
-import { Grid, Box, makeStyles } from "@material-ui/core";
+import { styled } from "@mui/material/styles";
+import { Grid, Box } from "@mui/material";
 import { useParams, useNavigate } from "react-router-dom";
 import BuildList from "../components/BuildList";
 import ProjectSelect from "../components/ProjectSelect";
@@ -15,14 +16,20 @@ import {
 } from "../constants";
 import { buildProjectPageUrl } from "../_helpers/route.helpers";
 
-const useStyles = makeStyles((theme) => ({
-  root: {
+const PREFIX = "ProjectPage";
+
+const classes = {
+  root: `${PREFIX}-root`,
+};
+
+// TODO jss-to-styled codemod: The Fragment root was replaced by div. Change the tag if needed.
+const Root = styled("div")(() => ({
+  [`& .${classes.root}`]: {
     height: "100%",
   },
 }));
 
 const ProjectPage = () => {
-  const classes = useStyles();
   const { projectId } = useParams<{ projectId: string }>();
   const navigate = useNavigate();
   const helpDispatch = useHelpDispatch();
@@ -32,7 +39,7 @@ const ProjectPage = () => {
   });
 
   return (
-    <React.Fragment>
+    <Root>
       <Grid container className={classes.root}>
         <Grid item xs={3} className={classes.root}>
           <Box height="9%" id={LOCATOR_PROJECT_PAGE_SELECT_PROJECT}>
@@ -55,7 +62,7 @@ const ProjectPage = () => {
         </Grid>
       </Grid>
       <TestDetailsDialog />
-    </React.Fragment>
+    </Root>
   );
 };
 

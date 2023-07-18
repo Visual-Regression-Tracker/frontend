@@ -6,8 +6,11 @@ import FileSaver from "file-saver";
 import JSZip from "jszip";
 
 const ENDPOINT_URL = "/test-runs";
+const DEFAULT_HEADERS = {
+  "Content-Type": "application/json",
+};
 
-async function getList(buildId: string): Promise<TestRun[]> {
+function getList(buildId: string): Promise<TestRun[]> {
   const requestOptions = {
     method: "GET",
     headers: authHeader(),
@@ -20,20 +23,29 @@ async function getList(buildId: string): Promise<TestRun[]> {
 }
 
 async function getFiles(
-  urls: { download: string; filename: string }[],
+  urls: {
+    download: string;
+    filename: string;
+  }[],
 ): Promise<void> {
   // Reference : https://www.c-sharpcorner.com/article/download-multiple-file-as-zip-file-using-angular/
   const zip = new JSZip();
+
   for (const eachUrl of urls) {
     const response = await fetch(eachUrl.download);
     const blob = await response.blob();
     zip.file(eachUrl.filename, blob);
   }
-  await zip.generateAsync({ type: "blob" }).then((content) => {
-    if (content) {
-      FileSaver.saveAs(content, "vrt-test-run.zip");
-    }
-  });
+
+  await zip
+    .generateAsync({
+      type: "blob",
+    })
+    .then((content) => {
+      if (content) {
+        FileSaver.saveAs(content, "vrt-test-run.zip");
+      }
+    });
   // Downloads multiple images as individual files, kept it here for reference
   // Reference : https://github.com/robertdiers/js-multi-file-download/blob/master/src/main/resources/static/index.html
   /*
@@ -47,7 +59,7 @@ async function getFiles(
   */
 }
 
-async function getDetails(id: string): Promise<TestRun> {
+function getDetails(id: string): Promise<TestRun> {
   const requestOptions = {
     method: "GET",
     headers: authHeader(),
@@ -58,10 +70,13 @@ async function getDetails(id: string): Promise<TestRun> {
   );
 }
 
-async function removeBulk(ids: (string | number)[]): Promise<void> {
+function removeBulk(ids: string[] | number[]): Promise<void> {
   const requestOptions = {
     method: "POST",
-    headers: { "Content-Type": "application/json", ...authHeader() },
+    headers: {
+      ...DEFAULT_HEADERS,
+      ...authHeader(),
+    },
     body: JSON.stringify(ids),
   };
 
@@ -70,10 +85,13 @@ async function removeBulk(ids: (string | number)[]): Promise<void> {
   );
 }
 
-async function rejectBulk(ids: (string | number)[]): Promise<void> {
+function rejectBulk(ids: string[] | number[]): Promise<void> {
   const requestOptions = {
     method: "POST",
-    headers: { "Content-Type": "application/json", ...authHeader() },
+    headers: {
+      ...DEFAULT_HEADERS,
+      ...authHeader(),
+    },
     body: JSON.stringify(ids),
   };
 
@@ -82,13 +100,13 @@ async function rejectBulk(ids: (string | number)[]): Promise<void> {
   );
 }
 
-async function approveBulk(
-  ids: (string | number)[],
-  merge: boolean,
-): Promise<void> {
+function approveBulk(ids: string[] | number[], merge: boolean): Promise<void> {
   const requestOptions = {
     method: "POST",
-    headers: { "Content-Type": "application/json", ...authHeader() },
+    headers: {
+      ...DEFAULT_HEADERS,
+      ...authHeader(),
+    },
     body: JSON.stringify(ids),
   };
 
@@ -98,10 +116,13 @@ async function approveBulk(
   ).then(handleResponse);
 }
 
-async function updateIgnoreAreas(data: UpdateIgnoreAreaDto): Promise<void> {
+function updateIgnoreAreas(data: UpdateIgnoreAreaDto): Promise<void> {
   const requestOptions = {
     method: "POST",
-    headers: { "Content-Type": "application/json", ...authHeader() },
+    headers: {
+      ...DEFAULT_HEADERS,
+      ...authHeader(),
+    },
     body: JSON.stringify(data),
   };
 
@@ -111,10 +132,13 @@ async function updateIgnoreAreas(data: UpdateIgnoreAreaDto): Promise<void> {
   ).then(handleResponse);
 }
 
-async function addIgnoreAreas(data: UpdateIgnoreAreaDto): Promise<void> {
+function addIgnoreAreas(data: UpdateIgnoreAreaDto): Promise<void> {
   const requestOptions = {
     method: "POST",
-    headers: { "Content-Type": "application/json", ...authHeader() },
+    headers: {
+      ...DEFAULT_HEADERS,
+      ...authHeader(),
+    },
     body: JSON.stringify(data),
   };
 
@@ -124,10 +148,18 @@ async function addIgnoreAreas(data: UpdateIgnoreAreaDto): Promise<void> {
   ).then(handleResponse);
 }
 
-async function update(id: string, data: { comment: string }): Promise<TestRun> {
+function update(
+  id: string,
+  data: {
+    comment: string;
+  },
+): Promise<TestRun> {
   const requestOptions = {
     method: "PATCH",
-    headers: { "Content-Type": "application/json", ...authHeader() },
+    headers: {
+      ...DEFAULT_HEADERS,
+      ...authHeader(),
+    },
     body: JSON.stringify(data),
   };
 

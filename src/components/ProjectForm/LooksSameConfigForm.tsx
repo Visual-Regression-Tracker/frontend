@@ -1,4 +1,4 @@
-import { FormControlLabel, Switch } from "@material-ui/core";
+import { FormControlLabel, Switch } from "@mui/material";
 import React from "react";
 import { TextValidator } from "react-material-ui-form-validator";
 import { LooksSameConfig } from "../../types/imageComparison";
@@ -24,7 +24,12 @@ export const LooksSameConfigForm: React.FunctionComponent = () => {
         name="tolerance"
         validators={["minNumber:0"]}
         errorMessages={["Enter greater than 0"]}
-        InputProps={{ inputProps: { min: 0, step: 0.001 } }}
+        InputProps={{
+          inputProps: {
+            min: 0,
+            step: 0.001,
+          },
+        }}
         margin="dense"
         id="tolerance"
         label="Tolerance"
@@ -32,8 +37,8 @@ export const LooksSameConfigForm: React.FunctionComponent = () => {
         fullWidth
         helperText="Default tolerance in non-strict mode is 2.3 which is enough for the most cases. Setting tolerance to 0 will produce the same result as strict: true, but strict mode is faster. Attempt to set tolerance in strict mode will produce an error."
         value={config.tolerance}
-        onChange={(event) => {
-          const value = (event.target as HTMLInputElement).value;
+        onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
+          const { value } = event.target;
           updateConfig("tolerance", parseFloat(value));
         }}
       />
@@ -54,7 +59,12 @@ export const LooksSameConfigForm: React.FunctionComponent = () => {
         name="antialiasingTolerance"
         validators={["minNumber:0"]}
         errorMessages={["Enter greater than 0"]}
-        InputProps={{ inputProps: { min: 0, step: 0.001 } }}
+        InputProps={{
+          inputProps: {
+            min: 0,
+            step: 0.001,
+          },
+        }}
         margin="dense"
         id="antialiasingTolerance"
         label="Antialiasing tolerance"
@@ -62,8 +72,8 @@ export const LooksSameConfigForm: React.FunctionComponent = () => {
         fullWidth
         helperText="Minimum difference in brightness (zero by default) between the darkest/lightest pixel (which is adjacent to the antialiasing pixel) and theirs adjacent pixels."
         value={config.antialiasingTolerance}
-        onChange={(event) => {
-          const value = (event.target as HTMLInputElement).value;
+        onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
+          const { value } = event.target;
           updateConfig("antialiasingTolerance", parseFloat(value));
         }}
       />

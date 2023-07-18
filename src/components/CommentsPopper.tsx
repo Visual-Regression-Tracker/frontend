@@ -1,48 +1,50 @@
 import React from "react";
-import {
-  Button,
-  Popper,
-  Fade,
-  Paper,
-  makeStyles,
-  TextField,
-  Badge,
-} from "@material-ui/core";
+import { styled } from "@mui/material/styles";
+import { Button, Popper, Fade, Paper, TextField, Badge } from "@mui/material";
 import {
   usePopupState,
   bindToggle,
   bindPopper,
 } from "material-ui-popup-state/hooks";
 
-const useStyles = makeStyles((theme) => ({
-  popperContainer: {
+const PREFIX = "CommentsPopper";
+
+const classes = {
+  popperContainer: `${PREFIX}-popperContainer`,
+  contentContainer: `${PREFIX}-contentContainer`,
+};
+
+// TODO jss-to-styled codemod: The Fragment root was replaced by div. Change the tag if needed.
+const Root = styled("div")(({ theme }) => ({
+  [`& .${classes.popperContainer}`]: {
     zIndex: 1400,
   },
-  contentContainer: {
+
+  [`& .${classes.contentContainer}`]: {
     padding: theme.spacing(2),
   },
 }));
 
 interface IProps {
   text: string | undefined;
-  onSave: (comment: string) => Promise<any>;
+  onSave: (comment: string) => Promise<void | string | number>;
 }
 
 export const CommentsPopper: React.FunctionComponent<IProps> = ({
   text,
   onSave,
 }) => {
-  const classes = useStyles();
   const popupState = usePopupState({
     variant: "popper",
     popupId: "commentPopper",
   });
+
   const [comment, setComment] = React.useState("");
 
-  React.useEffect(() => setComment(text ? text : ""), [text]);
+  React.useEffect(() => setComment(text || ""), [text]);
 
   return (
-    <React.Fragment>
+    <Root>
       <Badge
         color="secondary"
         variant="dot"
@@ -75,16 +77,16 @@ export const CommentsPopper: React.FunctionComponent<IProps> = ({
                   placeholder={"Add any additional data here"}
                   multiline
                   rows={4}
-                  rowsMax={10}
                   fullWidth
-                  onChange={(event) =>
-                    setComment((event.target as HTMLInputElement).value)
+                  onChange={(event: React.ChangeEvent<HTMLInputElement>) =>
+                    setComment(event.target.value)
                   }
                   inputProps={{
                     "data-testId": "comment",
                   }}
                 />
                 <Button
+                  variant="outlined"
                   onClick={() => {
                     onSave(comment).then(() => popupState.close());
                   }}
@@ -96,6 +98,6 @@ export const CommentsPopper: React.FunctionComponent<IProps> = ({
           </Fade>
         )}
       </Popper>
-    </React.Fragment>
+    </Root>
   );
 };

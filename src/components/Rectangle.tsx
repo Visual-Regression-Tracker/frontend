@@ -39,9 +39,11 @@ const Rectangle: React.FunctionComponent<IProps> = ({
   if (rectProps.draggable && onChange) {
     rectProps.dragBoundFunc = (pos) => {
       const component = shapeRef.current;
+
       if (!component) {
         return pos;
       }
+
       const rectWidth = component.width() * component.scaleX();
       const rectHeight = component.height() * component.scaleY();
       const layerSize = component.getLayer()!.getSize();
@@ -59,15 +61,17 @@ const Rectangle: React.FunctionComponent<IProps> = ({
         y: e.target.y(),
       });
 
-    rectProps.onTransformEnd = (e) => {
+    rectProps.onTransformEnd = () => {
       // transformer is changing scale of the node
       // and NOT its width or height
       // but in the store we have only width and height
       // to match the data better we will reset scale on transform end
       const node = shapeRef.current;
+
       if (!node) {
         return;
       }
+
       const scaleX = node.scaleX();
       const scaleY = node.scaleY();
 
@@ -84,19 +88,20 @@ const Rectangle: React.FunctionComponent<IProps> = ({
       });
     };
 
-    rectProps.onMouseOver = (event: Konva.KonvaEventObject<MouseEvent>) => {
+    rectProps.onMouseOver = () => {
       document.body.style.cursor = "pointer";
     };
-    rectProps.onMouseDown = (event: Konva.KonvaEventObject<MouseEvent>) => {
+    rectProps.onMouseDown = () => {
       document.body.style.cursor = "grabbing";
     };
-    rectProps.onMouseUp = (event: Konva.KonvaEventObject<MouseEvent>) => {
+    rectProps.onMouseUp = () => {
       document.body.style.cursor = "grab";
     };
-    rectProps.onMouseLeave = (event: Konva.KonvaEventObject<MouseEvent>) => {
+    rectProps.onMouseLeave = () => {
       document.body.style.cursor = "default";
     };
   }
+
   return (
     <React.Fragment>
       <Rect ref={shapeRef} {...rectProps} />
@@ -112,6 +117,7 @@ const Rectangle: React.FunctionComponent<IProps> = ({
             ) {
               return oldBox;
             }
+
             return newBox;
           }}
         />

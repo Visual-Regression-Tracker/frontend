@@ -7,7 +7,7 @@ import {
   CardContent,
   CardActions,
   Typography,
-} from "@material-ui/core";
+} from "@mui/material";
 import { useUserDispatch, login } from "../contexts";
 import { LOCATOR_LOGIN_FORM, routes } from "../constants";
 import { useSnackbar } from "notistack";
@@ -56,8 +56,8 @@ const LoginForm = () => {
                 required
                 fullWidth
                 inputProps={{
-                  onChange: (event: any) =>
-                    setEmail((event.target as HTMLInputElement).value),
+                  onChange: (event: React.ChangeEvent<HTMLInputElement>) =>
+                    setEmail(event.target.value),
                   "data-testId": "email",
                 }}
               />
@@ -76,8 +76,8 @@ const LoginForm = () => {
                 required
                 fullWidth
                 inputProps={{
-                  onChange: (event: any) =>
-                    setPassword((event.target as HTMLInputElement).value),
+                  onChange: (event: React.ChangeEvent<HTMLInputElement>) =>
+                    setPassword(event.target.value),
                   "data-testId": "password",
                 }}
               />

@@ -4,8 +4,11 @@ import { API_URL } from "../_config/env.config";
 import { BuildDto } from "../types/dto/build.dto";
 
 const ENDPOINT_URL = "/builds";
+const DEFAULT_HEADERS = {
+  "Content-Type": "application/json",
+};
 
-async function getList(
+function getList(
   projectId: string,
   take: number,
   skip: number,
@@ -21,7 +24,7 @@ async function getList(
   ).then(handleResponse);
 }
 
-async function getDetails(id: string): Promise<Build> {
+function getDetails(id: string): Promise<Build> {
   const requestOptions = {
     method: "GET",
     headers: authHeader(),
@@ -32,7 +35,7 @@ async function getDetails(id: string): Promise<Build> {
   );
 }
 
-async function remove(id: string): Promise<Build> {
+function remove(id: string): Promise<Build> {
   const requestOptions = {
     method: "DELETE",
     headers: authHeader(),
@@ -43,10 +46,13 @@ async function remove(id: string): Promise<Build> {
   );
 }
 
-async function update(id: string, body: BuildDto): Promise<Build> {
+function update(id: string, body: BuildDto): Promise<Build> {
   const requestOptions = {
     method: "PATCH",
-    headers: { "Content-Type": "application/json", ...authHeader() },
+    headers: {
+      ...DEFAULT_HEADERS,
+      ...authHeader(),
+    },
     body: JSON.stringify(body),
   };
 
@@ -55,7 +61,7 @@ async function update(id: string, body: BuildDto): Promise<Build> {
   );
 }
 
-async function approve(id: string, merge: boolean): Promise<void> {
+function approve(id: string, merge: boolean): Promise<void> {
   const requestOptions = {
     method: "PATCH",
     headers: authHeader(),

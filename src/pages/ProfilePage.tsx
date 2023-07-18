@@ -13,7 +13,7 @@ import {
   Tab,
   Select,
   MenuItem,
-} from "@material-ui/core";
+} from "@mui/material";
 import {
   useUserDispatch,
   useUserState,
@@ -66,7 +66,7 @@ const ProfilePage = () => {
     if (user && password) {
       usersService
         .changePassword(password)
-        .then((isChanged) => {
+        .then(() => {
           setPassword("");
         })
         .then(() =>
@@ -108,10 +108,9 @@ const ProfilePage = () => {
                           required
                           fullWidth
                           inputProps={{
-                            onChange: (event: any) =>
-                              setFirstName(
-                                (event.target as HTMLInputElement).value,
-                              ),
+                            onChange: (
+                              event: React.ChangeEvent<HTMLInputElement>,
+                            ) => setFirstName(event.target.value),
                             "data-testId": "firstName",
                           }}
                         />
@@ -129,10 +128,9 @@ const ProfilePage = () => {
                           required
                           fullWidth
                           inputProps={{
-                            onChange: (event: any) =>
-                              setLastName(
-                                (event.target as HTMLInputElement).value,
-                              ),
+                            onChange: (
+                              event: React.ChangeEvent<HTMLInputElement>,
+                            ) => setLastName(event.target.value),
                             "data-testId": "lastName",
                           }}
                         />
@@ -150,16 +148,16 @@ const ProfilePage = () => {
                           required
                           fullWidth
                           inputProps={{
-                            onChange: (event: any) =>
-                              setEmail(
-                                (event.target as HTMLInputElement).value,
-                              ),
+                            onChange: (
+                              event: React.ChangeEvent<HTMLInputElement>,
+                            ) => setEmail(event.target.value),
                             "data-testId": "email",
                           }}
                         />
                       </Grid>
                       <Grid item xs={12}>
                         <Select
+                          variant="standard"
                           id="role"
                           labelId="role"
                           displayEmpty
@@ -215,10 +213,9 @@ const ProfilePage = () => {
                           required
                           fullWidth
                           inputProps={{
-                            onChange: (event: any) =>
-                              setPassword(
-                                (event.target as HTMLInputElement).value,
-                              ),
+                            onChange: (
+                              event: React.ChangeEvent<HTMLInputElement>,
+                            ) => setPassword(event.target.value),
                             "data-testId": "password",
                           }}
                         />
@@ -267,7 +264,7 @@ const ProfilePage = () => {
                     indicatorColor="primary"
                     textColor="primary"
                     onChange={(
-                      event: React.ChangeEvent<{}>,
+                      event: React.ChangeEvent<unknown>,
                       newValue: number,
                     ) => {
                       setTabIndex(newValue);

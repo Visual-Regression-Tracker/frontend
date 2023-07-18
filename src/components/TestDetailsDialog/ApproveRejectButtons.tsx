@@ -1,4 +1,5 @@
-import { Chip, Button, makeStyles } from "@material-ui/core";
+import { Chip, Button } from "@mui/material";
+import { styled } from "@mui/material/styles";
 import { useSnackbar } from "notistack";
 import { useHotkeys } from "react-hotkeys-hook";
 import React from "react";
@@ -6,8 +7,15 @@ import { testRunService } from "../../services";
 import { TestRun } from "../../types";
 import { Tooltip } from "../Tooltip";
 
-const useStyles = makeStyles((theme) => ({
-  actionButton: {
+const PREFIX = "ApproveRejectButtons";
+
+const classes = {
+  actionButton: `${PREFIX}-actionButton`,
+};
+
+// TODO jss-to-styled codemod: The Fragment root was replaced by div. Change the tag if needed.
+const Root = styled("div")(() => ({
+  [`& .${classes.actionButton}`]: {
     width: 120,
     marginLeft: 4,
     marginRight: 4,
@@ -20,7 +28,6 @@ export const ApproveRejectButtons: React.FunctionComponent<{
   afterReject?: () => void;
 }> = ({ testRun, afterApprove, afterReject }) => {
   const { enqueueSnackbar } = useSnackbar();
-  const classes = useStyles();
 
   const approve = () => {
     testRunService
@@ -58,7 +65,7 @@ export const ApproveRejectButtons: React.FunctionComponent<{
   useHotkeys("x", reject, [testRun]);
 
   return (
-    <>
+    <Root>
       {testRun.merge && (
         <Tooltip title="Will replace target branch baseline if accepted">
           <Chip
@@ -71,7 +78,6 @@ export const ApproveRejectButtons: React.FunctionComponent<{
       <Tooltip title={"Hotkey: A"}>
         <Button
           onClick={approve}
-          style={{ color: "cornflowerblue" }}
           variant="contained"
           className={classes.actionButton}
         >
@@ -87,6 +93,6 @@ export const ApproveRejectButtons: React.FunctionComponent<{
           Reject
         </Button>
       </Tooltip>
-    </>
+    </Root>
   );
 };

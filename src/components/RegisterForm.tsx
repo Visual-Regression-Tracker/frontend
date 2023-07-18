@@ -1,11 +1,5 @@
 import React, { useState, FormEvent } from "react";
-import {
-  Button,
-  Grid,
-  Card,
-  CardContent,
-  CardActions,
-} from "@material-ui/core";
+import { Button, Grid, Card, CardContent, CardActions } from "@mui/material";
 import { useUserDispatch, login } from "../contexts";
 import { usersService } from "../services";
 import { useSnackbar } from "notistack";
@@ -59,8 +53,8 @@ const RegisterForm = () => {
                 required
                 fullWidth
                 inputProps={{
-                  onChange: (event: any) =>
-                    setFirstName((event.target as HTMLInputElement).value),
+                  onChange: (event: React.FormEvent<HTMLInputElement>) =>
+                    setFirstName(event.target.value),
                   "data-testId": "firstName",
                 }}
               />
@@ -78,8 +72,8 @@ const RegisterForm = () => {
                 required
                 fullWidth
                 inputProps={{
-                  onChange: (event: any) =>
-                    setLastName((event.target as HTMLInputElement).value),
+                  onChange: (event: React.FormEvent<HTMLInputElement>) =>
+                    setLastName(event.target.value),
                   "data-testId": "lastName",
                 }}
               />
@@ -97,8 +91,8 @@ const RegisterForm = () => {
                 required
                 fullWidth
                 inputProps={{
-                  onChange: (event: any) =>
-                    setEmail((event.target as HTMLInputElement).value),
+                  onChange: (event: React.FormEvent<HTMLInputElement>) =>
+                    setEmail(event.target.value),
                   "data-testId": "email",
                 }}
               />
@@ -116,8 +110,8 @@ const RegisterForm = () => {
                 required
                 fullWidth
                 inputProps={{
-                  onChange: (event: any) =>
-                    setPassword((event.target as HTMLInputElement).value),
+                  onChange: (event: React.FormEvent<HTMLInputElement>) =>
+                    setPassword(event.target.value),
                   "data-testId": "password",
                 }}
               />

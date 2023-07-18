@@ -1,35 +1,40 @@
 import React, { FunctionComponent } from "react";
+import { styled } from "@mui/material/styles";
 import {
-  createStyles,
   FormControl,
   InputLabel,
-  makeStyles,
   MenuItem,
   Select,
-  type Theme,
-} from "@material-ui/core";
+  type SelectChangeEvent,
+} from "@mui/material";
 import {
   useProjectState,
   useProjectDispatch,
   selectProject,
 } from "../contexts";
 
-const useStyles = makeStyles((theme: Theme) =>
-  createStyles({
-    formControl: {
-      width: "100%",
-    },
-    input: {
-      margin: theme.spacing(1),
-    },
-  }),
-);
+const PREFIX = "ProjectSelect";
+
+const classes = {
+  formControl: `${PREFIX}-formControl`,
+  input: `${PREFIX}-input`,
+};
+
+// TODO jss-to-styled codemod: The Fragment root was replaced by div. Change the tag if needed.
+const Root = styled("div")(({ theme }) => ({
+  [`& .${classes.formControl}`]: {
+    width: "100%",
+  },
+
+  [`& .${classes.input}`]: {
+    margin: theme.spacing(1),
+  },
+}));
 
 const ProjectSelect: FunctionComponent<{
   projectId?: string;
   onProjectSelect: (id: string) => void;
 }> = ({ projectId, onProjectSelect }) => {
-  const classes = useStyles();
   const { projectList, selectedProjectId } = useProjectState();
   const projectDispatch = useProjectDispatch();
 
@@ -40,19 +45,22 @@ const ProjectSelect: FunctionComponent<{
   }, [projectId, selectedProjectId, projectDispatch]);
 
   return (
-    <React.Fragment>
+    <Root>
       {projectList.length > 0 && (
-        <FormControl className={classes.formControl}>
+        <FormControl variant="standard" className={classes.formControl}>
           <InputLabel id="projectSelect" shrink>
             Project
           </InputLabel>
           <Select
+            variant="standard"
             id="project-select"
             labelId="projectSelect"
             className={classes.input}
             displayEmpty
             value={selectedProjectId ?? ""}
-            onChange={(event) => onProjectSelect(event.target.value as string)}
+            onChange={(event: SelectChangeEvent<HTMLInputElement>) =>
+              onProjectSelect(event.target.value as string)
+            }
           >
             <MenuItem value="" disabled>
               <em>Select project</em>
@@ -65,7 +73,7 @@ const ProjectSelect: FunctionComponent<{
           </Select>
         </FormControl>
       )}
-    </React.Fragment>
+    </Root>
   );
 };
 
