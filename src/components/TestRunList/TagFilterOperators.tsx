@@ -1,4 +1,9 @@
-import { FormControl, InputLabel, Select } from "@mui/material";
+import {
+  FormControl,
+  InputLabel,
+  Select,
+  type SelectChangeEvent,
+} from "@mui/material";
 import React from "react";
 import { useTestRunState } from "../../contexts";
 import {
@@ -10,8 +15,8 @@ const TagInputComponent = (props: GridFilterInputValueProps) => {
   const { item, applyValue } = props;
   const { testRuns } = useTestRunState();
 
-  const handleFilterChange = (event: any) => {
-    applyValue({ ...item, value: event.target.value as string });
+  const handleFilterChange = (event: SelectChangeEvent) => {
+    applyValue({ ...item, value: event.target.value });
   };
 
   const filterOptions: Array<string> = Array.from(

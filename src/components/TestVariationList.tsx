@@ -72,12 +72,7 @@ const TestVariationList: React.FunctionComponent<IProps> = ({
                 >
                   History
                 </Button>
-                <IconButton
-                  onClick={(event: React.MouseEvent<HTMLElement>) =>
-                    setSelectedItem(t)
-                  }
-                  size="large"
-                >
+                <IconButton onClick={() => setSelectedItem(t)} size="large">
                   <Delete />
                 </IconButton>
               </CardActions>

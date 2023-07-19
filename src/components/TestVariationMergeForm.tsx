@@ -79,7 +79,9 @@ export const TestVariationMergeForm: React.FunctionComponent<IProps> = ({
           <Autocomplete
             id="toBranch"
             options={items.map((i) => ({ title: i }))}
-            getOptionLabel={(option) => option.title}
+            getOptionLabel={(option) =>
+              typeof option === "string" ? option : option.title
+            }
             freeSolo
             fullWidth
             renderInput={(params) => (

@@ -53,7 +53,7 @@ const RegisterForm = () => {
                 required
                 fullWidth
                 inputProps={{
-                  onChange: (event: any) =>
+                  onChange: (event: React.FormEvent<HTMLInputElement>) =>
                     setFirstName((event.target as HTMLInputElement).value),
                   "data-testid": "firstName",
                 }}
@@ -72,7 +72,7 @@ const RegisterForm = () => {
                 required
                 fullWidth
                 inputProps={{
-                  onChange: (event: any) =>
+                  onChange: (event: React.FormEvent<HTMLInputElement>) =>
                     setLastName((event.target as HTMLInputElement).value),
                   "data-testid": "lastName",
                 }}
@@ -91,7 +91,7 @@ const RegisterForm = () => {
                 required
                 fullWidth
                 inputProps={{
-                  onChange: (event: any) =>
+                  onChange: (event: React.FormEvent<HTMLInputElement>) =>
                     setEmail((event.target as HTMLInputElement).value),
                   "data-testid": "email",
                 }}
@@ -110,7 +110,7 @@ const RegisterForm = () => {
                 required
                 fullWidth
                 inputProps={{
-                  onChange: (event: any) =>
+                  onChange: (event: React.FormEvent<HTMLInputElement>) =>
                     setPassword((event.target as HTMLInputElement).value),
                   "data-testid": "password",
                 }}

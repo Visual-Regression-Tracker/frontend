@@ -56,11 +56,7 @@ export const StatusFilterOperators = [
     label: "not",
     value: "not",
     getApplyFilterFn: (filterItem: GridFilterItem) => {
-      if (
-        !filterItem.columnField ||
-        !filterItem.value ||
-        !filterItem.operatorValue
-      ) {
+      if (!filterItem.field || !filterItem.value || !filterItem.operator) {
         return null;
       }
 

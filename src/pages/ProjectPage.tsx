@@ -16,7 +16,7 @@ import {
 } from "../constants";
 import { buildProjectPageUrl } from "../_helpers/route.helpers";
 
-const useStyles = makeStyles((theme) => ({
+const useStyles = makeStyles(() => ({
   root: {
     height: "100%",
   },

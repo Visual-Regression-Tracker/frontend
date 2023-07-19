@@ -169,7 +169,7 @@ const ProjectsListPage = () => {
                   Variations
                 </Button>
                 <IconButton
-                  onClick={(event: React.MouseEvent<HTMLElement>) => {
+                  onClick={() => {
                     toggleUpdateDialogOpen();
                     setProjectEditState(projectDispatch, project);
                   }}
@@ -178,7 +178,7 @@ const ProjectsListPage = () => {
                   <Edit />
                 </IconButton>
                 <IconButton
-                  onClick={(event: React.MouseEvent<HTMLElement>) => {
+                  onClick={() => {
                     toggleDeleteDialogOpen();
                     setProjectEditState(projectDispatch, project);
                   }}

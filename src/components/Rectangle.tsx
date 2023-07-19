@@ -1,6 +1,6 @@
 import Konva from "konva";
 import React from "react";
-import { KonvaNodeEvents, Rect, Transformer } from "react-konva";
+import { type KonvaNodeEvents, Rect, Transformer } from "react-konva";
 
 export const MIN_RECT_SIDE_PIXEL = 5;
 

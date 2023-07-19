@@ -82,6 +82,7 @@ const columnsDef: GridColDef[] = [
 ];
 
 const TestRunList: React.FunctionComponent = () => {
+  const apiRef = useGridApiRef();
   const { enqueueSnackbar } = useSnackbar();
   const navigate = useNavigate();
   const { selectedTestRun, testRuns, loading } = useTestRunState();
@@ -114,12 +115,11 @@ const TestRunList: React.FunctionComponent = () => {
     } else {
       testRunDispatch({ type: "get", payload: [] });
     }
-  }, [testRunDispatch, enqueueSnackbar, selectedBuild?.id]);
+  }, [selectedBuild?.id]);
 
   React.useEffect(() => {
     getTestRunListCallback();
   }, [getTestRunListCallback]);
-  const apiRef = useGridApiRef();
 
   if (selectedBuild) {
     return (

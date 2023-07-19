@@ -25,7 +25,10 @@ import { Tooltip } from "../Tooltip";
 export const BulkOperation: React.FunctionComponent = () => {
   const apiRef = useGridApiContext();
   const state = apiRef.current.state;
-  const rows = gridExpandedSortedRowEntriesSelector(state).map((row) => {
+  const rows = gridExpandedSortedRowEntriesSelector(
+    state,
+    apiRef.current.instanceId,
+  ).map((row) => {
     return [row.id, row.model];
   });
   const selection = gridRowSelectionStateSelector(state);
