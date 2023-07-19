@@ -2,9 +2,6 @@
 # This image is around 50 megabytes
 FROM node:18-alpine3.18 AS builder
 
-# Environment variable generation script needs bash
-RUN apk add --no-cache bash
-
 # Create app directory
 WORKDIR /app
 
@@ -18,7 +15,7 @@ RUN npm ci --verbose
 RUN npm run build
 
 # Create environment variable js file
-RUN chmod +x env.sh && ./env.sh
+RUN node generate-env-browser.js
 
 ### STAGE 2: Run ###
 # This image is around 5 megabytes
