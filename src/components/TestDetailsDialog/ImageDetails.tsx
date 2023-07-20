@@ -1,10 +1,9 @@
 import React from "react";
 import { Typography, Grid, IconButton } from "@mui/material";
 import { makeStyles } from "@mui/styles";
-import { WarningRounded } from "@mui/icons-material";
+import { WarningRounded, AltRoute } from "@mui/icons-material";
 import { IgnoreArea } from "../../types/ignoreArea";
 import { Tooltip } from "../Tooltip";
-import AltRouteIcon from "@mui/icons-material/AltRoute";
 
 interface IProps {
   type: "Baseline" | "Image" | "Diff";
@@ -14,7 +13,7 @@ interface IProps {
   ignoreAreas?: IgnoreArea[];
 }
 
-const useStyles = makeStyles((theme) => ({
+const useStyles = makeStyles(() => ({
   container: {
     display: "flex",
     alignItems: "center",
@@ -61,7 +60,7 @@ const ImageDetails: React.FunctionComponent<IProps> = ({
           {type === "Baseline" ? "Baseline" : "Checkpoint"}
         </Typography>
         {imageSize()}
-        <AltRouteIcon fontSize="small" />
+        <AltRoute fontSize="small" />
         <Tooltip title={`Branch: ${branchName}`}>
           <span className={classes.branchName}>{branchName}</span>
         </Tooltip>

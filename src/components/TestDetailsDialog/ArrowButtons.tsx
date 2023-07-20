@@ -6,7 +6,7 @@ import { useHotkeys } from "react-hotkeys-hook";
 import { TestRun } from "../../types";
 import { Tooltip } from "../Tooltip";
 
-const useStyles = makeStyles((theme) => ({
+const useStyles = makeStyles(() => ({
   button: {
     width: 64,
     height: 64,
