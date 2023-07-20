@@ -115,7 +115,7 @@ const TestRunList: React.FunctionComponent = () => {
     } else {
       testRunDispatch({ type: "get", payload: [] });
     }
-  }, [selectedBuild?.id]);
+  }, [testRunDispatch, enqueueSnackbar, selectedBuild?.id]);
 
   React.useEffect(() => {
     getTestRunListCallback();
@@ -149,11 +149,13 @@ const TestRunList: React.FunctionComponent = () => {
             navigate(
               buildTestRunLocation(
                 selectedBuild.id,
-                param.row["id"]?.toString(),
+                param.row["id"].toString(),
               ),
             );
           }}
+          /*
           onStateChange={(state) => {
+            console.log("DataGrid onStateChange");
             if (!selectedTestRun) {
               // only if testRun modal is not shown
               testRunDispatch({
@@ -165,7 +167,7 @@ const TestRunList: React.FunctionComponent = () => {
                 payload: state.sorting.sortedRows,
               });
             }
-          }}
+          }}*/
         />
       </>
     );
