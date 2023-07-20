@@ -3,6 +3,9 @@ import { Role, User } from "../types/user";
 import { API_URL } from "../_config/env.config";
 
 const ENDPOINT_URL = "/users";
+const DEFAULT_HEADERS = {
+  "Content-Type": "application/json",
+};
 
 function setUserInLocalStorage(user: User) {
   // store user details and jwt token in local storage to keep user logged in between page refreshes
@@ -12,7 +15,9 @@ function setUserInLocalStorage(user: User) {
 function login(email: string, password: string): Promise<User> {
   const requestOptions = {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: {
+      ...DEFAULT_HEADERS,
+    },
     body: JSON.stringify({ email, password }),
   };
 
@@ -32,7 +37,9 @@ function register(
 ): Promise<User> {
   const requestOptions = {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: {
+      ...DEFAULT_HEADERS,
+    },
     body: JSON.stringify({ firstName, lastName, email, password }),
   };
 
@@ -55,7 +62,10 @@ function update({
 }): Promise<User> {
   const requestOptions = {
     method: "PUT",
-    headers: { "Content-Type": "application/json", ...authHeader() },
+    headers: {
+      ...DEFAULT_HEADERS,
+      ...authHeader(),
+    },
     body: JSON.stringify({ firstName, lastName, email }),
   };
 
@@ -70,7 +80,10 @@ function update({
 function changePassword(password: string): Promise<boolean> {
   const requestOptions = {
     method: "PUT",
-    headers: { "Content-Type": "application/json", ...authHeader() },
+    headers: {
+      ...DEFAULT_HEADERS,
+      ...authHeader(),
+    },
     body: JSON.stringify({ password }),
   };
 
@@ -96,7 +109,10 @@ async function getAll(): Promise<User[]> {
 async function assignRole(id: string | number, role: Role): Promise<User> {
   const requestOptions = {
     method: "PATCH",
-    headers: { "Content-Type": "application/json", ...authHeader() },
+    headers: {
+      ...DEFAULT_HEADERS,
+      ...authHeader(),
+    },
     body: JSON.stringify({ id, role }),
   };
 
@@ -108,7 +124,10 @@ async function assignRole(id: string | number, role: Role): Promise<User> {
 async function remove(ids: (string | number)[]): Promise<boolean> {
   const requestOptions = {
     method: "DELETE",
-    headers: { "Content-Type": "application/json", ...authHeader() },
+    headers: {
+      ...DEFAULT_HEADERS,
+      ...authHeader(),
+    },
     body: JSON.stringify(ids),
   };
 

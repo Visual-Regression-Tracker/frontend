@@ -153,21 +153,6 @@ const TestRunList: React.FunctionComponent = () => {
               ),
             );
           }}
-          /*
-          onStateChange={(state) => {
-            console.log("DataGrid onStateChange");
-            if (!selectedTestRun) {
-              // only if testRun modal is not shown
-              testRunDispatch({
-                type: "filter",
-                payload: state.visibleRows,
-              });
-              testRunDispatch({
-                type: "sort",
-                payload: state.sorting.sortedRows,
-              });
-            }
-          }}*/
         />
       </>
     );

@@ -4,6 +4,9 @@ import { API_URL } from "../_config/env.config";
 import { BuildDto } from "../types/dto/build.dto";
 
 const ENDPOINT_URL = "/builds";
+const DEFAULT_HEADERS = {
+  "Content-Type": "application/json",
+};
 
 async function getList(
   projectId: string,
@@ -46,7 +49,10 @@ async function remove(id: string): Promise<Build> {
 async function update(id: string, body: BuildDto): Promise<Build> {
   const requestOptions = {
     method: "PATCH",
-    headers: { "Content-Type": "application/json", ...authHeader() },
+    headers: {
+      ...DEFAULT_HEADERS,
+      ...authHeader(),
+    },
     body: JSON.stringify(body),
   };
 
