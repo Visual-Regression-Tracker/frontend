@@ -27,7 +27,6 @@ test.beforeEach(async ({ page }) => {
     TEST_BUILD_PASSED,
     TEST_BUILD_UNRESOLVED,
   ]);
-
   await mockGetBuildDetails(page, TEST_BUILD_FAILED);
   await mockGetTestRuns(page, TEST_BUILD_FAILED.id, [
     TEST_UNRESOLVED,
@@ -35,9 +34,7 @@ test.beforeEach(async ({ page }) => {
     TEST_RUN_NEW,
     TEST_RUN_OK,
   ]);
-
   await mockTestRun(page, TEST_UNRESOLVED);
-
   await mockImage(page, "baseline.png");
   await mockImage(page, "diff.png");
   await mockImage(page, "image.png");
