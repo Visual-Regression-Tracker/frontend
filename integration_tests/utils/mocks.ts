@@ -91,6 +91,20 @@ export const mockGetUsers = async (page: Page, users: User[]) => {
   );
 };
 
+export const mockGetTestVariations = async (
+  page: Page,
+  projectId: string,
+  testVariations: TestVariation[]
+) => {
+  return page.route(
+    `${API_URL}/test-variations?projectId=${projectId}`,
+    (route) =>
+      route.fulfill({
+        body: JSON.stringify(testVariations),
+      })
+  );
+};
+
 export const mockGetTestVariationDetails = async (
   page: Page,
   testVariation: TestVariation

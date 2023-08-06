@@ -75,7 +75,7 @@ export const testRunMock: TestRun = {
 export const TEST_VARIATION_ONE: TestVariation = {
   id: "testVariationId",
   name: "test run name",
-  baselineName: "baselineName.png",
+  baselineName: "baseline1.png",
   os: "OS",
   browser: "browser",
   viewport: "viewport",

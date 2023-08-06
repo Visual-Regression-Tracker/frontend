@@ -3,6 +3,7 @@ import { PlaywrightVisualRegressionTracker } from "@visual-regression-tracker/ag
 import { LoginPage, ProfilePage, ProjectListPage, ProjectPage } from "pages";
 import { RegisterPage } from "pages/RegisterPage";
 import { TestVariationDetailsPage } from "pages/TestVariationDetailsPage";
+import { TestVariationListPage } from "pages/TestVariationListPage";
 import { UserListPage } from "pages/UserListPage";
 
 type Fixtures = {
@@ -14,6 +15,9 @@ type Fixtures = {
     buildId?: string,
     testRunId?: string
   ) => Promise<ProjectPage>;
+  openTestVariationListPage: (
+    projectId: string
+  ) => Promise<TestVariationListPage>;
   openTestVariationDetailsPage: (
     id: string
   ) => Promise<TestVariationDetailsPage>;
@@ -65,7 +69,12 @@ export const test = base.extend<Fixtures>({
       return new ProjectPage(page);
     });
   },
-
+  openTestVariationListPage: async ({ page, authUser }, use) => {
+    await use(async (projectId) => {
+      await page.goto(`/variations/${projectId}`);
+      return new TestVariationListPage(page);
+    });
+  },
   openTestVariationDetailsPage: async ({ page, authUser }, use) => {
     await use(async (id) => {
       await page.goto(`/variations/details/${id}`);
