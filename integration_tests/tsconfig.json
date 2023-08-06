@@ -1,0 +1,16 @@
+{
+  "compilerOptions": {
+    "baseUrl": "../src",
+    "paths": {
+      "~client/*": [
+        "../src/*"
+      ],
+      "~integration_tests/*": [
+        "../integration_tests/*"
+      ]
+    },
+  },
+  "exclude": [
+    "../src/**/*.png"
+  ]
+}
