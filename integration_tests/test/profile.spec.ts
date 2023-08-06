@@ -9,6 +9,5 @@ test.beforeEach(async ({ page }) => {
 });
 
 test("renders", async ({ profilePage, page, vrt }) => {
-  await page.waitForTimeout(1000);
   await vrt.trackPage(page, "Profile page");
 });
