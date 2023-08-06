@@ -1,10 +1,7 @@
 import { expect } from "@playwright/test";
-import { test } from "~integration_tests/fixtures";
+import { test } from "fixtures";
 import { TEST_PROJECT } from "~client/_test/test.data.helper";
-import {
-  mockDeleteProject,
-  mockGetProjects,
-} from "~integration_tests/utils/mocks";
+import { mockDeleteProject, mockGetProjects } from "utils/mocks";
 
 const project = TEST_PROJECT;
 

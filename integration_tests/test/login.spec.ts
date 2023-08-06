@@ -1,4 +1,4 @@
-import { test } from "~integration_tests/fixtures";
+import { test } from "fixtures";
 import { expect } from "@playwright/test";
 
 test("renders", async ({ page, vrt }) => {

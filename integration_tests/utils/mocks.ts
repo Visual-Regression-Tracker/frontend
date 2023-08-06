@@ -1,5 +1,5 @@
 import { Page } from "@playwright/test";
-import { Build, Project, TestRun } from "~client/types";
+import type { Build, Project, TestRun } from "~client/types";
 
 export const API_URL = "http://localhost:4200";
 

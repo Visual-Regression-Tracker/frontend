@@ -1,4 +1,4 @@
-import { test } from "~integration_tests/fixtures";
+import { test } from "fixtures";
 import {
   TEST_BUILD_FAILED,
   TEST_BUILD_PASSED,
@@ -16,7 +16,7 @@ import {
   mockGetTestRuns,
   mockImage,
   mockTestRun,
-} from "~integration_tests/utils/mocks";
+} from "utils/mocks";
 
 const project = TEST_PROJECT;
 

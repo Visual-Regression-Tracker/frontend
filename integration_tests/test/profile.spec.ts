@@ -1,6 +1,6 @@
-import { test } from "~integration_tests/fixtures";
+import { test } from "fixtures";
 import { TEST_PROJECT } from "~client/_test/test.data.helper";
-import { mockGetProjects } from "~integration_tests/utils/mocks";
+import { mockGetProjects } from "utils/mocks";
 
 const project = TEST_PROJECT;
 

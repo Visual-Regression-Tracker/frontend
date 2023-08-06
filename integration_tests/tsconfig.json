@@ -1,16 +1,8 @@
 {
   "compilerOptions": {
-    "baseUrl": "../src",
+    "baseUrl": "./",
     "paths": {
-      "~client/*": [
-        "../src/*"
-      ],
-      "~integration_tests/*": [
-        "../integration_tests/*"
-      ]
-    },
-  },
-  "exclude": [
-    "../src/**/*.png"
-  ]
+      "~client/*": ["../src/*"]
+    }
+  }
 }
