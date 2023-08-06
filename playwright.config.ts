@@ -21,4 +21,5 @@ export default defineConfig({
   expect: {
     timeout: 10 * 1000,
   },
+  forbidOnly: !!process.env.CI,
 });

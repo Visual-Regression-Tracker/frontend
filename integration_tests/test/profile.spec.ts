@@ -1,15 +1,11 @@
 import { test } from "~integration_tests/fixtures";
-import { API_URL, getProjectsGetUrl } from "~integration_tests/utils/data";
 import { TEST_PROJECT } from "~client/_test/test.data.helper";
+import { mockGetProjects } from "~integration_tests/utils/mocks";
 
 const project = TEST_PROJECT;
 
 test.beforeEach(async ({ page }) => {
-  await page.route(getProjectsGetUrl(API_URL), (route) =>
-    route.fulfill({
-      body: JSON.stringify([project]),
-    })
-  );
+  await mockGetProjects(page, [project]);
 });
 
 test("renders", async ({ profilePage, page, vrt }) => {
