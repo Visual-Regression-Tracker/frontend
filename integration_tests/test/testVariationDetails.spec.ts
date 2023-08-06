@@ -21,5 +21,7 @@ test("renders", async ({ openTestVariationDetailsPage, page, vrt }) => {
     TEST_VARIATION_ONE.id
   );
 
-  await vrt.trackPage(page, "TestVariationDetails page");
+  await vrt.trackPage(page, "TestVariationDetails page", {
+    screenshotOptions: { fullPage: true },
+  });
 });
