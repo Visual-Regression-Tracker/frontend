@@ -8,7 +8,9 @@ on:
 jobs:
   test:
     timeout-minutes: 5
-    runs-on: macos-12
+    runs-on: ubuntu-latest
+    container:
+      image: mcr.microsoft.com/playwright:v1.36.2-focal
     steps:
       - uses: actions/checkout@v3
 
@@ -18,9 +20,6 @@ jobs:
 
       - name: Install dependencies
         run: npm ci
-
-      - name: Install depths
-        run: npm run test:pw:install
 
       - id: get-branch-name
         run: echo "::set-output name=branch_name::$(git symbolic-ref --short HEAD)"
