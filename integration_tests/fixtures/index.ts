@@ -1,10 +1,12 @@
 import { test as base } from "@playwright/test";
 import { PlaywrightVisualRegressionTracker } from "@visual-regression-tracker/agent-playwright";
 import { LoginPage, ProfilePage, ProjectListPage, ProjectPage } from "pages";
+import { RegisterPage } from "pages/RegisterPage";
 
 type Fixtures = {
   vrt: PlaywrightVisualRegressionTracker;
   loginPage: LoginPage;
+  registerPage: RegisterPage;
   openProjectPage: (
     id: string,
     buildId?: string,
@@ -41,7 +43,11 @@ export const test = base.extend<Fixtures>({
 
     await use(new ProfilePage(page));
   },
+  registerPage: async ({ page }, use) => {
+    await page.goto("/register");
 
+    await use(new RegisterPage(page));
+  },
   openProjectPage: async ({ page, authUser }, use) => {
     await use(async (id, buildId, testRunId) => {
       await page.goto(`${id}`);

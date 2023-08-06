@@ -32,7 +32,7 @@ const LoginForm = () => {
       .catch((err) =>
         enqueueSnackbar(err, {
           variant: "error",
-        }),
+        })
       );
   };
 
@@ -58,7 +58,7 @@ const LoginForm = () => {
                 inputProps={{
                   onChange: (event: any) =>
                     setEmail((event.target as HTMLInputElement).value),
-                  "data-testid": "email",
+                  "data-testId": "email",
                 }}
               />
             </Grid>
@@ -78,7 +78,7 @@ const LoginForm = () => {
                 inputProps={{
                   onChange: (event: any) =>
                     setPassword((event.target as HTMLInputElement).value),
-                  "data-testid": "password",
+                  "data-testId": "password",
                 }}
               />
             </Grid>
@@ -96,7 +96,7 @@ const LoginForm = () => {
                 type="submit"
                 color="primary"
                 variant="outlined"
-                data-testid="loginBtn"
+                data-testId="loginBtn"
               >
                 Login
               </Button>

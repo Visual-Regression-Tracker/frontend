@@ -134,7 +134,7 @@ const Header: FunctionComponent = () => {
           handleMenuClose();
           logout(authDispatch);
         }}
-        data-testid="logoutBtn"
+        data-testId="logoutBtn"
       >
         <IconButton size="small">
           <SettingsPower />

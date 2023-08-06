@@ -81,7 +81,7 @@ export const CommentsPopper: React.FunctionComponent<IProps> = ({
                     setComment((event.target as HTMLInputElement).value)
                   }
                   inputProps={{
-                    "data-testid": "comment",
+                    "data-testId": "comment",
                   }}
                 />
                 <Button

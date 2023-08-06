@@ -35,7 +35,7 @@ const RegisterForm = () => {
       .catch((err) =>
         enqueueSnackbar(err, {
           variant: "error",
-        }),
+        })
       );
   };
 
@@ -61,7 +61,7 @@ const RegisterForm = () => {
                 inputProps={{
                   onChange: (event: any) =>
                     setFirstName((event.target as HTMLInputElement).value),
-                  "data-testid": "firstName",
+                  "data-testId": "firstName",
                 }}
               />
             </Grid>
@@ -80,7 +80,7 @@ const RegisterForm = () => {
                 inputProps={{
                   onChange: (event: any) =>
                     setLastName((event.target as HTMLInputElement).value),
-                  "data-testid": "lastName",
+                  "data-testId": "lastName",
                 }}
               />
             </Grid>
@@ -99,7 +99,7 @@ const RegisterForm = () => {
                 inputProps={{
                   onChange: (event: any) =>
                     setEmail((event.target as HTMLInputElement).value),
-                  "data-testid": "email",
+                  "data-testId": "email",
                 }}
               />
             </Grid>
@@ -118,7 +118,7 @@ const RegisterForm = () => {
                 inputProps={{
                   onChange: (event: any) =>
                     setPassword((event.target as HTMLInputElement).value),
-                  "data-testid": "password",
+                  "data-testId": "password",
                 }}
               />
             </Grid>
@@ -131,7 +131,7 @@ const RegisterForm = () => {
                 type="submit"
                 color="primary"
                 variant="outlined"
-                data-testid="submit"
+                data-testId="submit"
               >
                 Submit
               </Button>
