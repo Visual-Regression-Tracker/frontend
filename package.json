@@ -45,7 +45,7 @@
     "lint": "eslint --ignore-path .gitignore . --ext .ts,.tsx,.jsx,.js",
     "typescheck": "tsc --noEmit",
     "test:pw:install": "npx playwright install chromium",
-    "test:pw": "npm run test:pw:install && VRT_CIBUILDID=$(date +%H:%M:%S_%d-%m-%Y) playwright test",
+    "test:pw": "npm run test:pw:install && playwright test",
     "test:pw:debug": "npm run test:pw:install && PWDEBUG=1 playwright test",
     "test:cy": "cypress run --component --browser chrome"
   },

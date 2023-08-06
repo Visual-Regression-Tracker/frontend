@@ -1,11 +1,7 @@
-import { Page } from "@playwright/test";
+import { BasePage } from "./BasePage";
 
-export class LoginPage {
-    email = this.page.getByTestId('email');
-    password = this.page.getByTestId('password');
-    loginBtn = this.page.getByTestId('loginBtn');
-
-    constructor(public page: Page) {
-        this.page = page;
-    }
+export class LoginPage extends BasePage {
+  email = this.page.getByTestId("email");
+  password = this.page.getByTestId("password");
+  loginBtn = this.page.getByTestId("loginBtn");
 }
