@@ -43,7 +43,7 @@ test.beforeEach(async ({ page }) => {
   await mockImage(page, "image.png");
 });
 
-test.only("renders", async ({ openProjectPage, page, vrt }) => {
+test("renders", async ({ openProjectPage, page, vrt }) => {
   const projectPage = await openProjectPage(project.id);
   await projectPage.getBuildLocator(TEST_BUILD_FAILED.number).click();
 
