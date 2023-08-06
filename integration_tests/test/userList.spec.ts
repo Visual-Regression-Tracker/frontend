@@ -12,6 +12,6 @@ test.beforeEach(async ({ page }) => {
   await mockGetUsers(page, [TEST_USER, EDITOR_USER, GUEST_USER]);
 });
 
-test.only("renders", async ({ userListPage, page, vrt }) => {
+test("renders", async ({ userListPage, page, vrt }) => {
   await vrt.trackPage(page, "User list page");
 });

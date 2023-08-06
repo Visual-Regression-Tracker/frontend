@@ -1,5 +1,11 @@
 import { Page } from "@playwright/test";
-import type { Build, Project, TestRun, User } from "~client/types";
+import type {
+  Build,
+  Project,
+  TestRun,
+  TestVariation,
+  User,
+} from "~client/types";
 
 export const API_URL = "http://localhost:4200";
 
@@ -82,5 +88,18 @@ export const mockGetUsers = async (page: Page, users: User[]) => {
     route.fulfill({
       body: JSON.stringify(users),
     })
+  );
+};
+
+export const mockGetTestVariationDetails = async (
+  page: Page,
+  testVariation: TestVariation
+) => {
+  return page.route(
+    `${API_URL}/test-variations/details/${testVariation.id}`,
+    (route) =>
+      route.fulfill({
+        body: JSON.stringify(testVariation),
+      })
   );
 };
