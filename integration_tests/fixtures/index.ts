@@ -2,6 +2,7 @@ import { test as base } from "@playwright/test";
 import { PlaywrightVisualRegressionTracker } from "@visual-regression-tracker/agent-playwright";
 import { LoginPage, ProfilePage, ProjectListPage, ProjectPage } from "pages";
 import { RegisterPage } from "pages/RegisterPage";
+import { UserListPage } from "pages/UserListPage";
 
 type Fixtures = {
   vrt: PlaywrightVisualRegressionTracker;
@@ -14,6 +15,7 @@ type Fixtures = {
   ) => Promise<ProjectPage>;
   projectListPage: ProjectListPage;
   profilePage: ProfilePage;
+  userListPage: UserListPage;
   authUser: void;
 };
 
@@ -47,6 +49,11 @@ export const test = base.extend<Fixtures>({
     await page.goto("/register");
 
     await use(new RegisterPage(page));
+  },
+  userListPage: async ({ page, authUser }, use) => {
+    await page.goto("/users");
+
+    await use(new UserListPage(page));
   },
   openProjectPage: async ({ page, authUser }, use) => {
     await use(async (id, buildId, testRunId) => {

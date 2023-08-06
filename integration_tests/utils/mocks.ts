@@ -1,5 +1,5 @@
 import { Page } from "@playwright/test";
-import type { Build, Project, TestRun } from "~client/types";
+import type { Build, Project, TestRun, User } from "~client/types";
 
 export const API_URL = "http://localhost:4200";
 
@@ -73,6 +73,14 @@ export const mockImage = async (page: Page, image: string) => {
   return page.route(`${API_URL}/${image}`, (route) =>
     route.fulfill({
       path: `integration_tests/images/${image}`,
+    })
+  );
+};
+
+export const mockGetUsers = async (page: Page, users: User[]) => {
+  return page.route(`${API_URL}/users/all`, (route) =>
+    route.fulfill({
+      body: JSON.stringify(users),
     })
   );
 };
