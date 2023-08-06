@@ -47,11 +47,9 @@ test("renders", async ({ openProjectPage, page, vrt }) => {
   const projectPage = await openProjectPage(project.id);
   await projectPage.getBuildLocator(TEST_BUILD_FAILED.number).click();
 
-  await page.waitForTimeout(1000);
   await vrt.trackPage(page, "Project page. Test run list");
 
   await projectPage.getTestRunLocator(TEST_UNRESOLVED.name).click();
-  await page.waitForTimeout(1000);
 
   await vrt.trackPage(page, "Project page. Test run details");
 });
