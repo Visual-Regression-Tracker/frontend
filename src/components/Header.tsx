@@ -24,10 +24,10 @@ import {
 
 const Header: FunctionComponent = () => {
   const [avatarMenuRef, setAvatarMenuRef] = React.useState<null | HTMLElement>(
-    null,
+    null
   );
   const [helpMenuRef, setHelpMenuRef] = React.useState<null | HTMLElement>(
-    null,
+    null
   );
   const { loggedIn, user } = useUserState();
   const authDispatch = useUserDispatch();
@@ -46,13 +46,12 @@ const Header: FunctionComponent = () => {
     handleMenuClose();
     window.open(
       "https://github.com/Visual-Regression-Tracker/Visual-Regression-Tracker/issues/new",
-      "_blank",
+      "_blank"
     );
   };
 
   const getVRTVersion = (): string => {
-    //For cypress tests, window._env_ variable may be undefined, so return a dummy value.
-    return window._env_ ? window._env_.VRT_VERSION : "5.0.0";
+    return window._env_.VRT_VERSION;
   };
 
   const renderHelpMenu = (

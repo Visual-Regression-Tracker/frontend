@@ -9,13 +9,11 @@
 vrt.json
 .nyc_output/
 /coverage
-/cypress/screenshots
 
 # production
 /secrets
 /build
 env-config.js
-cypress.env.json
 
 # misc
 .idea/
