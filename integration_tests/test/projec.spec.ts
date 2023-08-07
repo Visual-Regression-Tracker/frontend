@@ -43,6 +43,7 @@ test.beforeEach(async ({ page }) => {
 test("renders", async ({ openProjectPage, page, vrt }) => {
   const projectPage = await openProjectPage(project.id);
   await projectPage.getBuildLocator(TEST_BUILD_FAILED.number).click();
+  await page.waitForTimeout(500); //TODO: fixt flacky screen
 
   await vrt.trackPage(page, "Project page. Test run list");
 
