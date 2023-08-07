@@ -12,6 +12,7 @@ test.beforeEach(async ({ page }) => {
   await mockGetUsers(page, [TEST_USER, EDITOR_USER, GUEST_USER]);
 });
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 test("renders", async ({ userListPage, page, vrt }) => {
   await vrt.trackPage(page, "User list page");
 });

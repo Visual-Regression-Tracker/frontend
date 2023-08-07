@@ -10,11 +10,7 @@ type Fixtures = {
   vrt: PlaywrightVisualRegressionTracker;
   loginPage: LoginPage;
   registerPage: RegisterPage;
-  openProjectPage: (
-    id: string,
-    buildId?: string,
-    testRunId?: string
-  ) => Promise<ProjectPage>;
+  openProjectPage: (id: string) => Promise<ProjectPage>;
   openTestVariationListPage: (
     projectId: string
   ) => Promise<TestVariationListPage>;
@@ -43,11 +39,13 @@ export const test = base.extend<Fixtures>({
     },
     { auto: true },
   ],
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   projectListPage: async ({ page, authUser }, use) => {
     await page.goto("/projects");
 
     await use(new ProjectListPage(page));
   },
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   profilePage: async ({ page, authUser }, use) => {
     await page.goto("/profile");
 
@@ -58,23 +56,27 @@ export const test = base.extend<Fixtures>({
 
     await use(new RegisterPage(page));
   },
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   userListPage: async ({ page, authUser }, use) => {
     await page.goto("/users");
 
     await use(new UserListPage(page));
   },
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   openProjectPage: async ({ page, authUser }, use) => {
-    await use(async (id, buildId, testRunId) => {
+    await use(async (id) => {
       await page.goto(`${id}`);
       return new ProjectPage(page);
     });
   },
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   openTestVariationListPage: async ({ page, authUser }, use) => {
     await use(async (projectId) => {
       await page.goto(`/variations/${projectId}`);
       return new TestVariationListPage(page);
     });
   },
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   openTestVariationDetailsPage: async ({ page, authUser }, use) => {
     await use(async (id) => {
       await page.goto(`/variations/details/${id}`);

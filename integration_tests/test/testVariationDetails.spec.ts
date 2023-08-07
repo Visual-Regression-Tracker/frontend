@@ -17,9 +17,7 @@ test.beforeEach(async ({ page }) => {
 });
 
 test("renders", async ({ openTestVariationDetailsPage, page, vrt }) => {
-  const testVariationDetailsPage = await openTestVariationDetailsPage(
-    TEST_VARIATION_ONE.id
-  );
+  await openTestVariationDetailsPage(TEST_VARIATION_ONE.id);
 
   await vrt.trackPage(page, "TestVariationDetails page", {
     screenshotOptions: { fullPage: true },
