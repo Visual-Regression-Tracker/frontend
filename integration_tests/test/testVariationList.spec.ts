@@ -1,10 +1,5 @@
 import { test } from "fixtures";
-import {
-  mockGetProjects,
-  mockGetTestVariationDetails,
-  mockGetTestVariations,
-  mockImage,
-} from "utils/mocks";
+import { mockGetProjects, mockGetTestVariations, mockImage } from "utils/mocks";
 import {
   TEST_PROJECT,
   TEST_VARIATION_ONE,
@@ -22,9 +17,7 @@ test.beforeEach(async ({ page }) => {
 });
 
 test("renders", async ({ openTestVariationListPage, page, vrt }) => {
-  const testVariationListPage = await openTestVariationListPage(
-    TEST_PROJECT.id
-  );
+  await openTestVariationListPage(TEST_PROJECT.id);
 
   await vrt.trackPage(page, "TestVariationList page");
 });

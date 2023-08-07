@@ -19,7 +19,7 @@ export default defineConfig({
     navigationTimeout: 5000,
     trace: "retry-with-trace",
   },
-  retries: !!process.env.CI ? 1 : 0,
+  retries: process.env.CI ? 1 : 0,
   expect: {
     timeout: 10 * 1000,
   },
