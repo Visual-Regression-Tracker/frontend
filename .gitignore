@@ -9,13 +9,11 @@
 vrt.json
 .nyc_output/
 /coverage
-/cypress/screenshots
 
 # production
 /secrets
 /build
 env-config.js
-cypress.env.json
 
 # misc
 .idea/
@@ -28,3 +26,6 @@ cypress.env.json
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+/test-results/
+/playwright-report/
+/playwright/.cache/

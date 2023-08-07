@@ -51,12 +51,12 @@ const ProfilePage = () => {
         .then(() =>
           enqueueSnackbar("User updated", {
             variant: "success",
-          }),
+          })
         )
         .catch((err) =>
           enqueueSnackbar(err, {
             variant: "error",
-          }),
+          })
         );
     }
   };
@@ -72,12 +72,12 @@ const ProfilePage = () => {
         .then(() =>
           enqueueSnackbar("Password updated", {
             variant: "success",
-          }),
+          })
         )
         .catch((err) =>
           enqueueSnackbar(err, {
             variant: "error",
-          }),
+          })
         );
     }
   };
@@ -110,9 +110,9 @@ const ProfilePage = () => {
                           inputProps={{
                             onChange: (event: any) =>
                               setFirstName(
-                                (event.target as HTMLInputElement).value,
+                                (event.target as HTMLInputElement).value
                               ),
-                            "data-testid": "firstName",
+                            "data-testId": "firstName",
                           }}
                         />
                       </Grid>
@@ -131,9 +131,9 @@ const ProfilePage = () => {
                           inputProps={{
                             onChange: (event: any) =>
                               setLastName(
-                                (event.target as HTMLInputElement).value,
+                                (event.target as HTMLInputElement).value
                               ),
-                            "data-testid": "lastName",
+                            "data-testId": "lastName",
                           }}
                         />
                       </Grid>
@@ -152,9 +152,9 @@ const ProfilePage = () => {
                           inputProps={{
                             onChange: (event: any) =>
                               setEmail(
-                                (event.target as HTMLInputElement).value,
+                                (event.target as HTMLInputElement).value
                               ),
-                            "data-testid": "email",
+                            "data-testId": "email",
                           }}
                         />
                       </Grid>
@@ -183,7 +183,7 @@ const ProfilePage = () => {
                           type="submit"
                           color="primary"
                           variant="outlined"
-                          data-testid="submit"
+                          data-testId="submit"
                         >
                           Update
                         </Button>
@@ -217,9 +217,9 @@ const ProfilePage = () => {
                           inputProps={{
                             onChange: (event: any) =>
                               setPassword(
-                                (event.target as HTMLInputElement).value,
+                                (event.target as HTMLInputElement).value
                               ),
-                            "data-testid": "password",
+                            "data-testId": "password",
                           }}
                         />
                       </Grid>
@@ -232,7 +232,7 @@ const ProfilePage = () => {
                           type="submit"
                           color="primary"
                           variant="outlined"
-                          data-testid="submit"
+                          data-testId="submit"
                         >
                           Update
                         </Button>
@@ -268,7 +268,7 @@ const ProfilePage = () => {
                     textColor="primary"
                     onChange={(
                       event: React.ChangeEvent<{}>,
-                      newValue: number,
+                      newValue: number
                     ) => {
                       setTabIndex(newValue);
                     }}

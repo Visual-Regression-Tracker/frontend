@@ -1,0 +1,43 @@
+name: Playwright Tests
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+
+jobs:
+  test:
+    timeout-minutes: 5
+    runs-on: ubuntu-latest
+    container:
+      image: mcr.microsoft.com/playwright:v1.36.2-focal
+    steps:
+      - uses: actions/checkout@v3
+
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 18
+
+      - name: Install dependencies
+        run: npm ci
+
+      - id: get-branch-name
+        run: echo "::set-output name=branch_name::$(git symbolic-ref --short HEAD)"
+        shell: bash
+
+      - name: Run Playwright tests
+        run: npx playwright test
+        env:
+          VRT_APIURL: "https://visual-regression-tracker.com:4200"
+          VRT_PROJECT: "VRT"
+          VRT_ENABLESOFTASSERT: false
+          VRT_APIKEY: ${{ secrets.VRT_API_KEY }}
+          VRT_BRANCHNAME: ${{ github.head_ref || steps.get-branch-name.outputs.branch_name }}
+          VRT_CIBUILDID: "Github run_id:  ${{ github.run_id }}"
+
+      - uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 30

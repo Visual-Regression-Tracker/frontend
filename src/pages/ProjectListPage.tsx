@@ -181,6 +181,7 @@ const ProjectsListPage = () => {
                     toggleDeleteDialogOpen();
                     setProjectEditState(projectDispatch, project);
                   }}
+                  data-testId="delete"
                 >
                   <Delete />
                 </IconButton>
