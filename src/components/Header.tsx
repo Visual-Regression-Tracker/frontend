@@ -24,10 +24,10 @@ import {
 
 const Header: FunctionComponent = () => {
   const [avatarMenuRef, setAvatarMenuRef] = React.useState<null | HTMLElement>(
-    null
+    null,
   );
   const [helpMenuRef, setHelpMenuRef] = React.useState<null | HTMLElement>(
-    null
+    null,
   );
   const { loggedIn, user } = useUserState();
   const authDispatch = useUserDispatch();
@@ -46,7 +46,7 @@ const Header: FunctionComponent = () => {
     handleMenuClose();
     window.open(
       "https://github.com/Visual-Regression-Tracker/Visual-Regression-Tracker/issues/new",
-      "_blank"
+      "_blank",
     );
   };
 

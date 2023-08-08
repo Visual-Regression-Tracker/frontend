@@ -12,10 +12,10 @@ type Fixtures = {
   registerPage: RegisterPage;
   openProjectPage: (id: string) => Promise<ProjectPage>;
   openTestVariationListPage: (
-    projectId: string
+    projectId: string,
   ) => Promise<TestVariationListPage>;
   openTestVariationDetailsPage: (
-    id: string
+    id: string,
   ) => Promise<TestVariationDetailsPage>;
   projectListPage: ProjectListPage;
   profilePage: ProfilePage;
@@ -95,8 +95,8 @@ export const test = base.extend<Fixtures>({
           apiKey: "ASJDHGAKJSDGASD",
           role: "admin",
           token: "eyJsgOE8Bw2bFwhZAugRRGm8U",
-        })
-      )
+        }),
+      ),
     );
 
     await use();
