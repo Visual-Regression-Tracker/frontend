@@ -21,12 +21,6 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Branch name 1
-        run: echo running on branch ${GITHUB_REF##*/}
-
-      - name: Branch name 2
-        run: echo running on branch ${{ github.head_ref || github.ref_name }}
-
       - name: Run Playwright tests
         run: npx playwright test
         env:
