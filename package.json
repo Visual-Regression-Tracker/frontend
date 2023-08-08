@@ -41,6 +41,7 @@
   "scripts": {
     "start": "node generate-env-browser.js && cp env-config.js ./public/ && vite",
     "test": "jest",
+    "format": "prettier --write integration_tests src *.js *.ts *.md",
     "build": "vite build",
     "lint": "eslint --ignore-path .gitignore . --ext .ts,.tsx,.jsx,.js",
     "typescheck": "tsc --noEmit",

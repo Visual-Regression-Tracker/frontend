@@ -21,6 +21,6 @@ test("can delete project", async ({ projectListPage, page }) => {
   await projectListPage.modal.confirmBtn.click();
 
   await expect(projectListPage.notification.message).toHaveText(
-    "Project name deleted"
+    "Project name deleted",
   );
 });

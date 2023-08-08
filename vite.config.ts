@@ -1,4 +1,4 @@
-import {defineConfig} from "vite";
+import { defineConfig } from "vite";
 
 import react from "@vitejs/plugin-react";
 
@@ -17,18 +17,18 @@ function manualChunks(id : string) {
 
 // https://vitejs.dev/config/
 export default defineConfig({
-    plugins: [react()],
-    build: {
-        outDir: 'build',
-        sourcemap: true,
+  plugins: [react()],
+  build: {
+    outDir: "build",
+    sourcemap: true,
 
-        // https://rollupjs.org/configuration-options/
-        /*
+    // https://rollupjs.org/configuration-options/
+    /*
         rollupOptions: {
             output: {
                 manualChunks: manualChunks
             }
         }
         */
-    }
+  },
 });
