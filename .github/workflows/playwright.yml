@@ -21,10 +21,6 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - id: get-branch-name
-        run: echo "::set-output name=branch_name::$(git symbolic-ref --short HEAD)"
-        shell: bash
-
       - name: Run Playwright tests
         run: npx playwright test
         env:
@@ -32,7 +28,7 @@ jobs:
           VRT_PROJECT: "VRT"
           VRT_ENABLESOFTASSERT: false
           VRT_APIKEY: ${{ secrets.VRT_API_KEY }}
-          VRT_BRANCHNAME: ${{ github.head_ref || steps.get-branch-name.outputs.branch_name }}
+          VRT_BRANCHNAME: ${{ github.head_ref || github.ref_name }}
           VRT_CIBUILDID: "Github run_id:  ${{ github.run_id }}"
 
       - uses: actions/upload-artifact@v3
