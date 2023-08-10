@@ -53,7 +53,7 @@ import ImageDetails, { ImageDetailsProps } from "./ImageDetails";
 import { calculateScale } from "../../_helpers/scale.helper";
 import TestStatusChip from "../TestStatusChip";
 
-const useStyles = makeStyles((theme) => ({
+const useStyles = makeStyles(() => ({
   header: {
     position: "relative",
     textAlign: "left",

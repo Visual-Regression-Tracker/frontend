@@ -35,7 +35,7 @@ import { useNavigate } from "react-router";
 import { buildTestRunLocation } from "../../_helpers/route.helpers";
 import { Tooltip } from "../Tooltip";
 
-const useStyles = makeStyles((theme: Theme) =>
+const useStyles = makeStyles(() =>
   createStyles({
     listContainer: {
       height: "100%",
