@@ -1,5 +1,4 @@
 import React from "react";
-import { styled } from '@mui/material/styles';
 import { TestVariation } from "../types";
 import {
   Card,
@@ -17,20 +16,13 @@ import { routes } from "../constants";
 import { TestVariationDetails } from "./TestVariationDetails";
 import { Delete } from "@mui/icons-material";
 import { BaseModal } from "./BaseModal";
+import { makeStyles } from "@mui/styles";
 
-const PREFIX = 'TestVariationList';
-
-const classes = {
-  card: `${PREFIX}-card`,
-  media: `${PREFIX}-media`
-};
-
-// TODO jss-to-styled codemod: The Fragment root was replaced by div. Change the tag if needed.
-const Root = styled('div')({
-  [`& .${classes.card}`]: {
+const useStyles = makeStyles({
+  card: {
     maxWidth: 345,
   },
-  [`& .${classes.media}`]: {
+  media: {
     height: 140,
     objectFit: "contain",
   },
@@ -45,7 +37,7 @@ const TestVariationList: React.FunctionComponent<IProps> = ({
   items,
   onDeleteClick,
 }) => {
-
+  const classes = useStyles();
   const [selectedItem, setSelectedItem] = React.useState<TestVariation | null>(
     null,
   );
@@ -55,7 +47,7 @@ const TestVariationList: React.FunctionComponent<IProps> = ({
   };
 
   return (
-    <Root>
+    <>
       <Grid container>
         {items.length === 0 && (
           <Typography variant="h5">No variations</Typography>
@@ -104,7 +96,7 @@ const TestVariationList: React.FunctionComponent<IProps> = ({
           }}
         />
       )}
-    </Root>
+    </>
   );
 };
 

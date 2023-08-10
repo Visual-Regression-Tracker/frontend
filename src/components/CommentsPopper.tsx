@@ -1,33 +1,21 @@
 import React from "react";
-import { styled } from '@mui/material/styles';
-import { Button, Popper, Fade, Paper, TextField, Badge } from "@mui/material";
+import { makeStyles } from '@mui/styles';
+import { Button, Popper, Fade, Paper, TextField, Badge, type Theme } from "@mui/material";
 import {
   usePopupState,
   bindToggle,
   bindPopper,
 } from "material-ui-popup-state/hooks";
 
-const PREFIX = 'CommentsPopper';
-
-const classes = {
-  popperContainer: `${PREFIX}-popperContainer`,
-  contentContainer: `${PREFIX}-contentContainer`
-};
-
-// TODO jss-to-styled codemod: The Fragment root was replaced by div. Change the tag if needed.
-const Root = styled('div')((
-  {
-    theme
-  }
-) => ({
-  [`& .${classes.popperContainer}`]: {
+const useStyles = makeStyles((theme: Theme) => ({
+  popperContainer: {
     zIndex: 1400,
   },
-
-  [`& .${classes.contentContainer}`]: {
+  contentContainer: {
     padding: theme.spacing(2),
-  }
+  },
 }));
+
 
 interface IProps {
   text: string | undefined;
@@ -38,7 +26,7 @@ export const CommentsPopper: React.FunctionComponent<IProps> = ({
   text,
   onSave,
 }) => {
-
+  const classes = useStyles();
   const popupState = usePopupState({
     variant: "popper",
     popupId: "commentPopper",
@@ -49,7 +37,7 @@ export const CommentsPopper: React.FunctionComponent<IProps> = ({
   React.useEffect(() => setComment(text || ""), [text]);
 
   return (
-    <Root>
+    <>
       <Badge
         color="secondary"
         variant="dot"
@@ -87,11 +75,10 @@ export const CommentsPopper: React.FunctionComponent<IProps> = ({
                     setComment(event.target.value)
                   }
                   inputProps={{
-                    "data-testId": "comment",
+                    "data-testid": "comment",
                   }}
                 />
                 <Button
-                  variant="outlined"
                   onClick={() => {
                     onSave(comment).then(() => popupState.close());
                   }}
@@ -103,6 +90,6 @@ export const CommentsPopper: React.FunctionComponent<IProps> = ({
           </Fade>
         )}
       </Popper>
-    </Root>
+    </>
   );
 };

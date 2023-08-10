@@ -55,7 +55,7 @@ const RegisterForm = () => {
                 inputProps={{
                   onChange: (event: React.FormEvent<HTMLInputElement>) =>
                     setFirstName(event.target.value),
-                  "data-testId": "firstName",
+                  "data-testid": "firstName",
                 }}
               />
             </Grid>
@@ -74,7 +74,7 @@ const RegisterForm = () => {
                 inputProps={{
                   onChange: (event: React.FormEvent<HTMLInputElement>) =>
                     setLastName(event.target.value),
-                  "data-testId": "lastName",
+                  "data-testid": "lastName",
                 }}
               />
             </Grid>
@@ -93,7 +93,7 @@ const RegisterForm = () => {
                 inputProps={{
                   onChange: (event: React.FormEvent<HTMLInputElement>) =>
                     setEmail(event.target.value),
-                  "data-testId": "email",
+                  "data-testid": "email",
                 }}
               />
             </Grid>
@@ -112,7 +112,7 @@ const RegisterForm = () => {
                 inputProps={{
                   onChange: (event: React.FormEvent<HTMLInputElement>) =>
                     setPassword(event.target.value),
-                  "data-testId": "password",
+                  "data-testid": "password",
                 }}
               />
             </Grid>
@@ -125,7 +125,7 @@ const RegisterForm = () => {
                 type="submit"
                 color="primary"
                 variant="outlined"
-                data-testId="submit"
+                data-testid="submit"
               >
                 Submit
               </Button>

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { styled } from '@mui/material/styles';
+import { makeStyles } from '@mui/styles';
 import {
   Typography,
   Button,
@@ -53,73 +53,47 @@ import ImageDetails, { ImageDetailsProps } from "./ImageDetails";
 import { calculateScale } from "../../_helpers/scale.helper";
 import TestStatusChip from "../TestStatusChip";
 
-const PREFIX = 'TestDetailsModal';
-
-const classes = {
-  header: `${PREFIX}-header`,
-  footer: `${PREFIX}-footer`,
-  scaleActions: `${PREFIX}-scaleActions`,
-  testRunActions: `${PREFIX}-testRunActions`,
-  testRunName: `${PREFIX}-testRunName`,
-  closeIcon: `${PREFIX}-closeIcon`,
-  testRunDetails: `${PREFIX}-testRunDetails`,
-  drawAreaContainer: `${PREFIX}-drawAreaContainer`,
-  drawAreaItem: `${PREFIX}-drawAreaItem`,
-  imageToolbar: `${PREFIX}-imageToolbar`
-};
-
-// TODO jss-to-styled codemod: The Fragment root was replaced by div. Change the tag if needed.
-const Root = styled('div')(() => ({
-  [`& .${classes.header}`]: {
+const useStyles = makeStyles((theme) => ({
+  header: {
     position: "relative",
     textAlign: "left",
     background: "#efefef",
     paddingLeft: 8,
-    paddingBottom: 8,
   },
-
-  [`& .${classes.footer}`]: {
+  footer: {
     background: "#efefef",
   },
-
-  [`& .${classes.scaleActions}`]: {
+  scaleActions: {
     display: "flex",
     alignItems: "center",
   },
-
-  [`& .${classes.testRunActions}`]: {
+  testRunActions: {
     display: "flex",
     alignItems: "center",
     alignContent: "center",
   },
-
-  [`& .${classes.testRunName}`]: {
+  testRunName: {
     fontWeight: 300,
   },
-
-  [`& .${classes.closeIcon}`]: {
+  closeIcon: {
     position: "absolute",
     right: "8px",
   },
-
-  [`& .${classes.testRunDetails}`]: {
+  testRunDetails: {
     paddingLeft: 8,
   },
-
-  [`& .${classes.drawAreaContainer}`]: {
+  drawAreaContainer: {
     width: "100%",
     height: "100%",
   },
-
-  [`& .${classes.drawAreaItem}`]: {
+  drawAreaItem: {
     padding: "0 4px",
     height: "100%",
   },
-
-  [`& .${classes.imageToolbar}`]: {
+  imageToolbar: {
     paddingLeft: 5,
     height: 52,
-  }
+  },
 }));
 
 const defaultStagePos = {
@@ -146,7 +120,7 @@ const TestDetailsModal: React.FunctionComponent<TestDetailsModalProps> = ({
   handleNext,
   handleClose,
 }) => {
-
+  const classes = useStyles();
   const { enqueueSnackbar } = useSnackbar();
   const testRunDispatch = useTestRunDispatch();
 
@@ -688,7 +662,7 @@ const TestDetailsModal: React.FunctionComponent<TestDetailsModalProps> = ({
   );
 
   return (
-    <Root>
+    <>
       {header()}
       <Divider />
       {processing && <LinearProgress />}
@@ -833,7 +807,7 @@ const TestDetailsModal: React.FunctionComponent<TestDetailsModalProps> = ({
           applyIgnoreArea();
         }}
       />
-    </Root>
+    </>
   );
 };
 

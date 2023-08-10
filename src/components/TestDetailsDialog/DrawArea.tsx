@@ -1,43 +1,28 @@
 /* eslint-disable jsx-a11y/no-static-element-interactions */
 import React, { FunctionComponent, useCallback } from "react";
-import { styled } from '@mui/material/styles';
 import { Stage, Layer, Image } from "react-konva";
 import Rectangle, { MIN_RECT_SIDE_PIXEL } from "../Rectangle";
 import { IgnoreArea } from "../../types/ignoreArea";
-import { Grid, CircularProgress } from "@mui/material";
+import { Grid, CircularProgress, type Theme } from "@mui/material";
 import { NoImagePlaceholder } from "./NoImageAvailable";
 import Konva from "konva";
+import { makeStyles } from "@mui/styles";
 
-const PREFIX = 'DrawArea';
-
-const classes = {
-  canvasContainer: `${PREFIX}-canvasContainer`,
-  imageDetailsContainer: `${PREFIX}-imageDetailsContainer`,
-  progressContainer: `${PREFIX}-progressContainer`
-};
-
-// TODO jss-to-styled codemod: The Fragment root was replaced by div. Change the tag if needed.
-const Root = styled('div')((
-  {
-    theme
-  }
-) => ({
-  [`& .${classes.canvasContainer}`]: {
+const useStyles = makeStyles((theme: Theme) => ({
+  canvasContainer: {
     overflow: "auto",
     backgroundColor: "white",
   },
-
-  [`& .${classes.imageDetailsContainer}`]: {
+  imageDetailsContainer: {
     position: "absolute",
     backgroundColor: "white",
     zIndex: 1,
     padding: theme.spacing(1),
     height: "48px",
   },
-
-  [`& .${classes.progressContainer}`]: {
+  progressContainer: {
     minHeight: "300px",
-  }
+  },
 }));
 
 export type ImageStateLoad = "loaded" | "loading" | "failed";
@@ -87,7 +72,7 @@ export const DrawArea: FunctionComponent<IDrawArea> = ({
   stageScrollPosState,
   drawModeState,
 }) => {
-
+  const classes = useStyles();
   const [stageInitPos, setStageInitPos] = stageInitPosState;
   const [stageOffset, setStageOffset] = stageOffsetState;
   const [stagePos, setStagePos] = stagePosState;
@@ -355,8 +340,8 @@ export const DrawArea: FunctionComponent<IDrawArea> = ({
 
   // TODO: Separate SVG with reason...
   return (
-    <Root>
+    <>
       {imageName ? imageCanvas() : <NoImagePlaceholder />}
-    </Root>
+    </>
   );
 };
