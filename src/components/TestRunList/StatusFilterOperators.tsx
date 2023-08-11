@@ -26,7 +26,9 @@ const StatusInputComponent = ({ item, applyValue }: GridFilterInputValueProps) =
     });
   };
 
-  const filterOptions: TestStatus[] = testRuns.map((item: TestRun) => item.status);
+  const filterOptions: Array<TestStatus> = Array.from(
+    new Set(testRuns.map((item) => item.status)),
+  );
 
   return (
     <FormControl variant="standard" fullWidth>

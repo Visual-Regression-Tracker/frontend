@@ -59,6 +59,7 @@ const useStyles = makeStyles(() => ({
     textAlign: "left",
     background: "#efefef",
     paddingLeft: 8,
+    paddingBottom: 8,
   },
   footer: {
     background: "#efefef",
@@ -465,6 +466,7 @@ const TestDetailsModal: React.FunctionComponent<TestDetailsModalProps> = ({
   const baselinePanel = () => (
     <Grid
       item
+      xs={6}
       ref={leftItemRef}
       className={classes.drawAreaItem}
       alignItems="stretch"

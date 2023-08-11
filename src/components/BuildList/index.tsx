@@ -44,6 +44,7 @@ const useStyles = makeStyles(() =>
       visibility: "hidden",
     },
     listItem: {
+      paddingRight: 48,
       "&:hover $listItemSecondaryAction": {
         visibility: "inherit",
       },
