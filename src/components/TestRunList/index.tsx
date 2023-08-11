@@ -57,7 +57,7 @@ const columnsDef: GridColDef[] = [
     },
     renderCell: (params: GridCellParams) => (
       <React.Fragment>
-        {params.row["tags"]
+        {params.formattedValue
           ?.toString()
           .split(";")
           .map(
