@@ -484,7 +484,7 @@ const TestDetailsModal: React.FunctionComponent<TestDetailsModalProps> = ({
           image={baselineImage}
           ignoreAreas={[]}
         />
-        <Grid item xs={6}>
+        <Grid item>
           <Button
             color="primary"
             disabled={!testRun.testVariationId}
