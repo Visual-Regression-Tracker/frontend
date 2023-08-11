@@ -1,26 +1,17 @@
 import React from "react";
-import { styled } from "@mui/material/styles";
 import { Typography, Grid, IconButton } from "@mui/material";
 import { WarningRounded, AltRoute } from "@mui/icons-material";
 import { IgnoreArea } from "../../types/ignoreArea";
 import { Tooltip } from "../Tooltip";
+import { makeStyles } from "@mui/styles";
 
-const PREFIX = "ImageDetails";
-
-const classes = {
-  container: `${PREFIX}-container`,
-  branchName: `${PREFIX}-branchName`,
-};
-
-// TODO jss-to-styled codemod: The Fragment root was replaced by div. Change the tag if needed.
-const Root = styled("div")(() => ({
-  [`& .${classes.container}`]: {
+const useStyles = makeStyles(() => ({
+  container: {
     display: "flex",
     alignItems: "center",
     color: "darkslategrey",
   },
-
-  [`& .${classes.branchName}`]: {
+  branchName: {
     cursor: "pointer",
     lineHeight: "20px",
     fontWeight: "bolder",
@@ -48,13 +39,14 @@ const ImageDetails: React.FunctionComponent<ImageDetailsProps> = ({
   branchName,
   ignoreAreas,
 }) => {
+  const classes = useStyles();
   const imageSize = () => {
     return (
       imageName && (
         <Typography
           variant="caption"
           style={{ marginRight: 3, fontSize: "0.7rem" }}
-          data-testId="image-size"
+          data-testid="image-size"
         >
           {image ? `(${image?.width} x ${image?.height})` : "Loading..."}
         </Typography>
@@ -62,29 +54,27 @@ const ImageDetails: React.FunctionComponent<ImageDetailsProps> = ({
     );
   };
   return (
-    <Root>
-      <Grid item className={classes.container}>
-        <Typography variant="overline" style={{ marginRight: 3 }}>
-          {type === "Baseline" ? "Baseline" : "Checkpoint"}
-        </Typography>
-        {imageSize()}
-        <AltRoute fontSize="small" />
-        <Tooltip title={`Branch: ${branchName}`}>
-          <span className={classes.branchName}>{branchName}</span>
+    <Grid item className={classes.container}>
+      <Typography variant="overline" style={{ marginRight: 3 }}>
+        {type === "Baseline" ? "Baseline" : "Checkpoint"}
+      </Typography>
+      {imageSize()}
+      <AltRoute fontSize="small" />
+      <Tooltip title={`Branch: ${branchName}`}>
+        <span className={classes.branchName}>{branchName}</span>
+      </Tooltip>
+      {ignoreAreas && ignoreAreas.length > 0 && (
+        <Tooltip
+          title={
+            "Contains noneditable ignore areas applied during image upload."
+          }
+        >
+          <IconButton size="large">
+            <WarningRounded color="secondary" />
+          </IconButton>
         </Tooltip>
-        {ignoreAreas && ignoreAreas.length > 0 && (
-          <Tooltip
-            title={
-              "Contains noneditable ignore areas applied during image upload."
-            }
-          >
-            <IconButton size="large">
-              <WarningRounded color="secondary" />
-            </IconButton>
-          </Tooltip>
-        )}
-      </Grid>
-    </Root>
+      )}
+    </Grid>
   );
 };
 

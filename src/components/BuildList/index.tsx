@@ -1,5 +1,5 @@
 import React, { FunctionComponent } from "react";
-import { styled } from "@mui/material/styles";
+import { makeStyles, createStyles } from '@mui/styles';
 import {
   List,
   ListItemButton,
@@ -34,33 +34,25 @@ import { useNavigate } from "react-router";
 import { buildTestRunLocation } from "../../_helpers/route.helpers";
 import { Tooltip } from "../Tooltip";
 
-const PREFIX = "index";
-
-const classes = {
-  listContainer: `${PREFIX}-listContainer`,
-  listItemSecondaryAction: `${PREFIX}-listItemSecondaryAction`,
-  listItem: `${PREFIX}-listItem`,
-};
-
-// TODO jss-to-styled codemod: The Fragment root was replaced by div. Change the tag if needed.
-const Root = styled("div")(() => ({
-  [`& .${classes.listContainer}`]: {
-    height: "100%",
-    overflow: "auto",
-  },
-
-  [`& .${classes.listItemSecondaryAction}`]: {
-    visibility: "hidden",
-  },
-
-  [`& .${classes.listItem}`]: {
-    "&:hover $listItemSecondaryAction": {
-      visibility: "inherit",
+const useStyles = makeStyles(() =>
+  createStyles({
+    listContainer: {
+      height: "100%",
+      overflow: "auto",
     },
-  },
-}));
+    listItemSecondaryAction: {
+      visibility: "hidden",
+    },
+    listItem: {
+      "&:hover $listItemSecondaryAction": {
+        visibility: "inherit",
+      },
+    },
+  }),
+);
 
 const BuildList: FunctionComponent = () => {
+  const classes = useStyles();
   const navigate = useNavigate();
   const { buildList, selectedBuild, loading, total, take } = useBuildState();
   const buildDispatch = useBuildDispatch();
@@ -124,7 +116,7 @@ const BuildList: FunctionComponent = () => {
   }, [handlePaginationChange]);
 
   return (
-    <Root>
+    <>
       <Box height="91%" overflow="auto">
         <List>
           {loading ? (
@@ -263,7 +255,7 @@ const BuildList: FunctionComponent = () => {
                 inputProps={{
                   onChange: (event: React.ChangeEvent<HTMLInputElement>) =>
                     setNewCiBuildId(event.target.value),
-                  "data-testId": "newCiBuildId",
+                  "data-testid": "newCiBuildId",
                 }}
               />
             </React.Fragment>
@@ -322,7 +314,7 @@ const BuildList: FunctionComponent = () => {
           }}
         />
       )}
-    </Root>
+    </>
   );
 };
 

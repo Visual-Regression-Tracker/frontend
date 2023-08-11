@@ -1,21 +1,13 @@
 import { IconButton } from "@mui/material";
-import { styled } from "@mui/material/styles";
 import { NavigateNext, NavigateBefore } from "@mui/icons-material";
 import React from "react";
 import { useHotkeys } from "react-hotkeys-hook";
 import { TestRun } from "../../types";
 import { Tooltip } from "../Tooltip";
+import { makeStyles } from "@mui/styles";
 
-const PREFIX = "ArrowButtons";
-
-const classes = {
-  button: `${PREFIX}-button`,
-  icon: `${PREFIX}-icon`,
-};
-
-// TODO jss-to-styled codemod: The Fragment root was replaced by div. Change the tag if needed.
-const Root = styled("div")(() => ({
-  [`& .${classes.button}`]: {
+const useStyles = makeStyles(() => ({
+  button: {
     width: 64,
     height: 64,
     padding: 0,
@@ -23,8 +15,7 @@ const Root = styled("div")(() => ({
     top: "50%",
     zIndex: 4000,
   },
-
-  [`& .${classes.icon}`]: {
+  icon: {
     width: 64,
     height: 64,
   },
@@ -35,6 +26,8 @@ export const ArrowButtons: React.FunctionComponent<{
   selectedTestRunIndex: number;
   handleNavigation: (testRunId: string) => void;
 }> = ({ testRuns, selectedTestRunIndex, handleNavigation }) => {
+  const classes = useStyles();
+
   const navigateNext = () => {
     if (testRuns.length > selectedTestRunIndex + 1) {
       const next = testRuns[selectedTestRunIndex + 1];
@@ -53,7 +46,7 @@ export const ArrowButtons: React.FunctionComponent<{
   useHotkeys("left", navigateBefore, [selectedTestRunIndex, handleNavigation]);
 
   return (
-    <Root>
+    <>
       {testRuns.length > selectedTestRunIndex + 1 && (
         <Tooltip title={"Hotkey: ArrowRight"}>
           <IconButton
@@ -84,6 +77,6 @@ export const ArrowButtons: React.FunctionComponent<{
           </IconButton>
         </Tooltip>
       )}
-    </Root>
+    </>
   );
 };

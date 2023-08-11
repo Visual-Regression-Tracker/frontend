@@ -86,6 +86,7 @@ const Filters: React.FunctionComponent<IProps> = ({
     <Grid container spacing={2} alignItems="flex-end">
       <Grid item xs>
         <DebounceInput
+          variant="standard"
           fullWidth
           label="Name"
           value={query}

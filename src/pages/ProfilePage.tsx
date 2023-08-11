@@ -111,7 +111,7 @@ const ProfilePage = () => {
                             onChange: (
                               event: React.ChangeEvent<HTMLInputElement>,
                             ) => setFirstName(event.target.value),
-                            "data-testId": "firstName",
+                            "data-testid": "firstName",
                           }}
                         />
                       </Grid>
@@ -131,7 +131,7 @@ const ProfilePage = () => {
                             onChange: (
                               event: React.ChangeEvent<HTMLInputElement>,
                             ) => setLastName(event.target.value),
-                            "data-testId": "lastName",
+                            "data-testid": "lastName",
                           }}
                         />
                       </Grid>
@@ -151,7 +151,7 @@ const ProfilePage = () => {
                             onChange: (
                               event: React.ChangeEvent<HTMLInputElement>,
                             ) => setEmail(event.target.value),
-                            "data-testId": "email",
+                            "data-testid": "email",
                           }}
                         />
                       </Grid>
@@ -181,7 +181,7 @@ const ProfilePage = () => {
                           type="submit"
                           color="primary"
                           variant="outlined"
-                          data-testId="submit"
+                          data-testid="submit"
                         >
                           Update
                         </Button>
@@ -216,7 +216,7 @@ const ProfilePage = () => {
                             onChange: (
                               event: React.ChangeEvent<HTMLInputElement>,
                             ) => setPassword(event.target.value),
-                            "data-testId": "password",
+                            "data-testid": "password",
                           }}
                         />
                       </Grid>
@@ -229,7 +229,7 @@ const ProfilePage = () => {
                           type="submit"
                           color="primary"
                           variant="outlined"
-                          data-testId="submit"
+                          data-testid="submit"
                         >
                           Update
                         </Button>

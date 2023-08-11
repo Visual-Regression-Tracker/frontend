@@ -1,5 +1,5 @@
 import { Dialog, Typography } from "@mui/material";
-import { styled } from "@mui/material/styles";
+import { styled } from '@mui/material/styles';
 import React from "react";
 import { useNavigate } from "react-router";
 import { useBuildState, useTestRunState } from "../../contexts";
@@ -8,19 +8,20 @@ import { BaseModal } from "../BaseModal";
 import TestDetailsModal from "./TestDetailsModal";
 import { TestRun } from "../../types";
 
-const PREFIX = "TestDetailsDialog";
+const PREFIX = 'TestDetailsDialog';
 
 const classes = {
-  modal: `${PREFIX}-modal`,
+  modal: `${PREFIX}-modal`
 };
 
 const StyledDialog = styled(Dialog)(() => ({
   [`&.${classes.modal}`]: {
     margin: "20px 10px 10px 10px",
-  },
+  }
 }));
 
 export const TestDetailsDialog: React.FunctionComponent = () => {
+
   const {
     selectedTestRun,
     touched,

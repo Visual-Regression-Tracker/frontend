@@ -183,7 +183,7 @@ const ProjectsListPage = () => {
                     setProjectEditState(projectDispatch, project);
                   }}
                   size="large"
-                  data-testId="delete"
+                  data-testid="delete"
                 >
                   <Delete />
                 </IconButton>

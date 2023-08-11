@@ -5,8 +5,7 @@ body {
   font-family: Roboto, sans-serif;
 }
 
-#root,
-[data-cy-root] {
+#root {
   height: 100%;
 }
 

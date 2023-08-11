@@ -58,7 +58,7 @@ const LoginForm = () => {
                 inputProps={{
                   onChange: (event: React.ChangeEvent<HTMLInputElement>) =>
                     setEmail(event.target.value),
-                  "data-testId": "email",
+                  "data-testid": "email",
                 }}
               />
             </Grid>
@@ -78,7 +78,7 @@ const LoginForm = () => {
                 inputProps={{
                   onChange: (event: React.ChangeEvent<HTMLInputElement>) =>
                     setPassword(event.target.value),
-                  "data-testId": "password",
+                  "data-testid": "password",
                 }}
               />
             </Grid>
@@ -96,7 +96,7 @@ const LoginForm = () => {
                 type="submit"
                 color="primary"
                 variant="outlined"
-                data-testId="loginBtn"
+                data-testid="loginBtn"
               >
                 Login
               </Button>
