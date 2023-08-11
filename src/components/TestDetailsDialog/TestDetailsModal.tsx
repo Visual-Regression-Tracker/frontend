@@ -474,7 +474,7 @@ const TestDetailsModal: React.FunctionComponent<TestDetailsModalProps> = ({
       <Grid
         container
         alignItems="center"
-        spacing={2}
+        spacing={1}
         className={classes.imageToolbar}
       >
         <ImageDetails
@@ -531,7 +531,7 @@ const TestDetailsModal: React.FunctionComponent<TestDetailsModalProps> = ({
       <Grid
         container
         alignItems="center"
-        spacing={2}
+        spacing={1}
         className={classes.imageToolbar}
       >
         <ImageDetails

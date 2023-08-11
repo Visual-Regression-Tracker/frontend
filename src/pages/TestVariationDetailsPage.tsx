@@ -85,10 +85,12 @@ const TestVariationDetailsPage: React.FunctionComponent = () => {
                       Test Run
                     </Button>
                     {baseline.testRun && (
-                      <TestStatusChip status={baseline.testRun.status} />
+                      <Box ml={1}>
+                        <TestStatusChip status={baseline.testRun.status} />
+                      </Box>
                     )}
                     {baseline.user && (
-                      <Typography>
+                      <Typography ml={1}>
                         {`${baseline.user.firstName} ${baseline.user.lastName} <${baseline.user.email}>`}
                       </Typography>
                     )}
