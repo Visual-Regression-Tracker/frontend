@@ -9,7 +9,7 @@ interface IProps {
 export const TestVariationDetails: React.FunctionComponent<IProps> = ({
   testVariation,
 }) => (
-  <Grid container direction="column" spacing={2}>
+  <Grid container direction="column" spacing={1}>
     <Typography>{testVariation.name}</Typography>
     <Grid container spacing={2}>
       {testVariation.os && (
