@@ -3,6 +3,7 @@ import { TestRun } from "../types";
 import { useLocation } from "react-router-dom";
 import { getQueryParams } from "../_helpers/route.helpers";
 import { testRunService } from "../services";
+import { GridRowId } from "@mui/x-data-grid";
 
 interface IRequestAction {
   type: "request";
@@ -43,14 +44,9 @@ interface IRejectAction {
   payload: TestRun;
 }
 
-interface IFilterAction {
-  type: "filter";
-  payload?: string[] | number[];
-}
-
-interface ISortAction {
-  type: "sort";
-  payload?: string[] | number[];
+interface IFilterSortAction {
+  type: "filterSort";
+  payload?: GridRowId[];
 }
 
 interface ITouchedAction {
@@ -66,15 +62,13 @@ type IAction =
   | IUpdateAction
   | IApproveAction
   | IRejectAction
-  | IFilterAction
-  | ISortAction
+  | IFilterSortAction
   | ITouchedAction
   | ISelectAction;
 type Dispatch = (action: IAction) => void;
 type State = {
   selectedTestRun?: TestRun;
-  sortedTestRunIds?: string[] | number[];
-  filteredTestRunIds?: string[] | number[];
+  filteredSortedTestRunIds?: GridRowId[];
   testRuns: TestRun[];
   touched: boolean;
   loading: boolean;
@@ -85,7 +79,7 @@ type TestRunProviderProps = {
 
 const TestRunStateContext = React.createContext<State | undefined>(undefined);
 const TestRunDispatchContext = React.createContext<Dispatch | undefined>(
-  undefined,
+  undefined
 );
 
 const initialState: State = {
@@ -103,16 +97,10 @@ function testRunReducer(state: State, action: IAction): State {
         selectedTestRun: action.payload,
       };
 
-    case "filter":
+    case "filterSort":
       return {
         ...state,
-        filteredTestRunIds: action.payload,
-      };
-
-    case "sort":
-      return {
-        ...state,
-        sortedTestRunIds: action.payload,
+        filteredSortedTestRunIds: action.payload,
       };
 
     case "request":
@@ -142,7 +130,7 @@ function testRunReducer(state: State, action: IAction): State {
           ...state.testRuns,
           ...action.payload.filter(
             // remove duplicates
-            (i) => !state.testRuns.find((tr) => tr.id === i.id),
+            (i) => !state.testRuns.find((tr) => tr.id === i.id)
           ),
         ],
       };
