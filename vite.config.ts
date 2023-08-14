@@ -44,8 +44,4 @@ export default defineConfig({
         }
         */
   },
-  define: {
-    // Some libraries use the global object, even though it doesn't exist in the browser.
-    global: {},
-  },
 });
