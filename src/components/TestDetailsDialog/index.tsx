@@ -1,5 +1,4 @@
 import { Dialog, Typography } from "@mui/material";
-import { styled } from '@mui/material/styles';
 import React from "react";
 import { useNavigate } from "react-router";
 import { useBuildState, useTestRunState } from "../../contexts";
@@ -7,27 +6,21 @@ import { buildTestRunLocation } from "../../_helpers/route.helpers";
 import { BaseModal } from "../BaseModal";
 import TestDetailsModal from "./TestDetailsModal";
 import { TestRun } from "../../types";
+import { makeStyles } from "@mui/styles";
 
-const PREFIX = 'TestDetailsDialog';
-
-const classes = {
-  modal: `${PREFIX}-modal`
-};
-
-const StyledDialog = styled(Dialog)(() => ({
-  [`&.${classes.modal}`]: {
+const useStyles = makeStyles(() => ({
+  modal: {
     margin: "20px 10px 10px 10px",
-  }
+  },
 }));
 
 export const TestDetailsDialog: React.FunctionComponent = () => {
-
+  const classes = useStyles();
   const {
     selectedTestRun,
     touched,
     testRuns: allTestRuns,
-    filteredTestRunIds,
-    sortedTestRunIds,
+    filteredSortedTestRunIds,
   } = useTestRunState();
   const { selectedBuild } = useBuildState();
   const navigate = useNavigate();
@@ -35,20 +28,16 @@ export const TestDetailsDialog: React.FunctionComponent = () => {
   const [navigationTargetId, setNavigationTargetId] = React.useState<string>();
 
   const testRuns = React.useMemo(() => {
-    const filtered = filteredTestRunIds
-      ? allTestRuns.filter((tr) => filteredTestRunIds.includes(tr.id))
-      : allTestRuns;
-
-    const sorted = sortedTestRunIds
-      ? filtered
-          .slice()
-          .sort(
-            (a, b) =>
-              sortedTestRunIds.indexOf(a.id) - sortedTestRunIds.indexOf(b.id),
-          )
-      : filtered;
-    return sorted;
-  }, [allTestRuns, filteredTestRunIds, sortedTestRunIds]);
+    if(filteredSortedTestRunIds) {
+      return allTestRuns
+      .filter((tr) => filteredSortedTestRunIds.includes(tr.id))
+      .sort(
+        (a, b) =>
+        filteredSortedTestRunIds.indexOf(a.id) - filteredSortedTestRunIds.indexOf(b.id),
+      )
+    }
+    return allTestRuns;
+  }, [allTestRuns, filteredSortedTestRunIds]);
 
   const selectedTestRunIndex = React.useMemo(
     () => testRuns.findIndex((t) => t.id === selectedTestRun?.id),
@@ -82,7 +71,7 @@ export const TestDetailsDialog: React.FunctionComponent = () => {
   }
 
   return (
-    <StyledDialog open={true} fullScreen className={classes.modal}>
+    <Dialog open={true} fullScreen className={classes.modal}>
       <TestDetailsModal
         testRun={selectedTestRun}
         currentRunIndex={testRuns.findIndex(
@@ -107,6 +96,6 @@ export const TestDetailsDialog: React.FunctionComponent = () => {
           setNotSavedChangesModal(false);
         }}
       />
-    </StyledDialog>
+    </Dialog>
   );
 };

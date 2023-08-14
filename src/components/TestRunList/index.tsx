@@ -17,6 +17,7 @@ import {
   GridRenderCellParams,
   GridSortDirection,
   GridSortModel,
+  gridFilteredSortedRowIdsSelector,
 } from "@mui/x-data-grid";
 import { DataGridCustomToolbar } from "./DataGridCustomToolbar";
 import { StatusFilterOperators } from "./StatusFilterOperators";
@@ -52,7 +53,7 @@ const columnsDef: GridColDef[] = [
 
       return tags.reduce(
         (prev, curr) => prev.concat(curr ? `${curr};` : ""),
-        "",
+        ""
       );
     },
     renderCell: (params: GridCellParams) => (
@@ -71,7 +72,7 @@ const columnsDef: GridColDef[] = [
                     margin: "1px",
                   }}
                 />
-              ),
+              )
           )}
       </React.Fragment>
     ),
@@ -96,7 +97,7 @@ const TestRunList: React.FunctionComponent = () => {
   const apiRef = useGridApiRef();
   const { enqueueSnackbar } = useSnackbar();
   const navigate = useNavigate();
-  const { testRuns, loading } = useTestRunState();
+  const { selectedTestRun, testRuns, loading } = useTestRunState();
   const { selectedBuild } = useBuildState();
   const testRunDispatch = useTestRunDispatch();
 
@@ -123,12 +124,12 @@ const TestRunList: React.FunctionComponent = () => {
           testRunDispatch({
             type: "get",
             payload,
-          }),
+          })
         )
         .catch((err: string) =>
           enqueueSnackbar(err, {
             variant: "error",
-          }),
+          })
         );
     } else {
       testRunDispatch({
@@ -141,6 +142,29 @@ const TestRunList: React.FunctionComponent = () => {
   React.useEffect(() => {
     getTestRunListCallback();
   }, [getTestRunListCallback]);
+
+  // workaround https://github.com/mui/mui-x/issues/1106
+  React.useEffect(() => {
+    let unsubscribe: () => void;
+    const handleStateChange = () => {
+      unsubscribe?.();
+      if (!selectedTestRun) {
+        testRunDispatch({
+          type: "filterSort",
+          payload: gridFilteredSortedRowIdsSelector(apiRef),
+        });
+      }
+      unsubscribe?.();
+    };
+    return apiRef.current.subscribeEvent?.(
+      "stateChange",
+      () =>
+        (unsubscribe = apiRef.current.subscribeEvent(
+          "stateChange",
+          handleStateChange
+        ))
+    );
+  }, [apiRef, apiRef.current.instanceId]);
 
   if (selectedBuild) {
     return (
@@ -168,10 +192,7 @@ const TestRunList: React.FunctionComponent = () => {
           onSortModelChange={(model) => setSortModel(model)}
           onRowClick={(param: GridRowParams) => {
             navigate(
-              buildTestRunLocation(
-                selectedBuild.id,
-                param.row["id"].toString(),
-              ),
+              buildTestRunLocation(selectedBuild.id, param.row["id"].toString())
             );
           }}
         />
