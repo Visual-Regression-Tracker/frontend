@@ -3,7 +3,7 @@ import TestVariationList from "../components/TestVariationList";
 import { useNavigate, useParams } from "react-router-dom";
 import { TestVariation } from "../types";
 import { testVariationService } from "../services";
-import { Box, Grid } from "@material-ui/core";
+import { Box, Grid } from "@mui/material";
 import ProjectSelect from "../components/ProjectSelect";
 import Filters from "../components/Filters";
 import { TestVariationMergeForm } from "../components/TestVariationMergeForm";

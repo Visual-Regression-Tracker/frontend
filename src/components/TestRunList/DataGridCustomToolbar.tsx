@@ -1,21 +1,19 @@
 import React from "react";
-import { Toolbar, Box } from "@material-ui/core";
+import { Toolbar, Box } from "@mui/material";
 import {
   GridToolbarDensitySelector,
   GridToolbarFilterButton,
-} from "@material-ui/data-grid";
+} from "@mui/x-data-grid";
 import { BulkOperation } from "./BulkOperation";
 
-export const DataGridCustomToolbar: React.FunctionComponent = () => {
-  return (
-    <>
-      <Toolbar variant="dense">
-        <GridToolbarFilterButton />
-        <GridToolbarDensitySelector />
-        <Box marginLeft="auto">
-          <BulkOperation />
-        </Box>
-      </Toolbar>
-    </>
-  );
-};
+export const DataGridCustomToolbar: React.FunctionComponent = () => (
+  <React.Fragment>
+    <Toolbar variant="dense">
+      <GridToolbarFilterButton />
+      <GridToolbarDensitySelector />
+      <Box marginLeft="auto">
+        <BulkOperation />
+      </Box>
+    </Toolbar>
+  </React.Fragment>
+);

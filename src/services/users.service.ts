@@ -3,6 +3,9 @@ import { Role, User } from "../types/user";
 import { API_URL } from "../_config/env.config";
 
 const ENDPOINT_URL = "/users";
+const DEFAULT_HEADERS = {
+  "Content-Type": "application/json",
+};
 
 function setUserInLocalStorage(user: User) {
   // store user details and jwt token in local storage to keep user logged in between page refreshes
@@ -12,8 +15,13 @@ function setUserInLocalStorage(user: User) {
 function login(email: string, password: string): Promise<User> {
   const requestOptions = {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ email, password }),
+    headers: {
+      ...DEFAULT_HEADERS,
+    },
+    body: JSON.stringify({
+      email,
+      password,
+    }),
   };
 
   return fetch(`${API_URL}${ENDPOINT_URL}/login`, requestOptions)
@@ -32,8 +40,15 @@ function register(
 ): Promise<User> {
   const requestOptions = {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ firstName, lastName, email, password }),
+    headers: {
+      ...DEFAULT_HEADERS,
+    },
+    body: JSON.stringify({
+      firstName,
+      lastName,
+      email,
+      password,
+    }),
   };
 
   return fetch(`${API_URL}${ENDPOINT_URL}/register`, requestOptions)
@@ -44,19 +59,18 @@ function register(
     });
 }
 
-function update({
-  firstName,
-  lastName,
-  email,
-}: {
-  firstName: string;
-  lastName: string;
-  email: string;
-}): Promise<User> {
+function update({ firstName, lastName, email }): Promise<User> {
   const requestOptions = {
     method: "PUT",
-    headers: { "Content-Type": "application/json", ...authHeader() },
-    body: JSON.stringify({ firstName, lastName, email }),
+    headers: {
+      ...DEFAULT_HEADERS,
+      ...authHeader(),
+    },
+    body: JSON.stringify({
+      firstName,
+      lastName,
+      email,
+    }),
   };
 
   return fetch(`${API_URL}${ENDPOINT_URL}`, requestOptions)
@@ -70,8 +84,13 @@ function update({
 function changePassword(password: string): Promise<boolean> {
   const requestOptions = {
     method: "PUT",
-    headers: { "Content-Type": "application/json", ...authHeader() },
-    body: JSON.stringify({ password }),
+    headers: {
+      ...DEFAULT_HEADERS,
+      ...authHeader(),
+    },
+    body: JSON.stringify({
+      password,
+    }),
   };
 
   return fetch(`${API_URL}${ENDPOINT_URL}/password`, requestOptions).then(
@@ -90,14 +109,21 @@ async function getAll(): Promise<User[]> {
   };
 
   const response = await fetch(`${API_URL}${ENDPOINT_URL}/all`, requestOptions);
+
   return handleResponse(response);
 }
 
-async function assignRole(id: string | number, role: Role): Promise<User> {
+function assignRole(id: string | number, role: Role): Promise<User> {
   const requestOptions = {
     method: "PATCH",
-    headers: { "Content-Type": "application/json", ...authHeader() },
-    body: JSON.stringify({ id, role }),
+    headers: {
+      ...DEFAULT_HEADERS,
+      ...authHeader(),
+    },
+    body: JSON.stringify({
+      id,
+      role,
+    }),
   };
 
   return fetch(`${API_URL}${ENDPOINT_URL}/assignRole`, requestOptions).then(
@@ -105,10 +131,13 @@ async function assignRole(id: string | number, role: Role): Promise<User> {
   );
 }
 
-async function remove(ids: (string | number)[]): Promise<boolean> {
+function remove(ids: string[] | number[]): Promise<boolean> {
   const requestOptions = {
     method: "DELETE",
-    headers: { "Content-Type": "application/json", ...authHeader() },
+    headers: {
+      ...DEFAULT_HEADERS,
+      ...authHeader(),
+    },
     body: JSON.stringify(ids),
   };
 

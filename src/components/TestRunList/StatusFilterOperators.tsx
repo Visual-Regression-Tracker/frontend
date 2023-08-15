@@ -1,20 +1,28 @@
-import { FormControl, InputLabel, Select } from "@material-ui/core";
 import React from "react";
+import {
+  FormControl,
+  InputLabel,
+  Select,
+  SelectChangeEvent,
+} from "@mui/material";
 import { useTestRunState } from "../../contexts";
 import {
-  type GridFilterInputValueProps,
   getGridStringOperators,
-  type GridFilterItem,
-  type GridCellParams,
-} from "@material-ui/data-grid";
+  GridFilterItem,
+  GridCellParams,
+  GridFilterOperator,
+  GridFilterInputValueProps
+} from "@mui/x-data-grid";
 import { TestStatus } from "../../types";
 
-const StatusInputComponent = (props: GridFilterInputValueProps) => {
-  const { item, applyValue } = props;
+const StatusInputComponent = ({ item, applyValue }: GridFilterInputValueProps) => {
   const { testRuns } = useTestRunState();
 
-  const handleFilterChange = (event: any) => {
-    applyValue({ ...item, value: event.target.value as string });
+  const handleFilterChange = (event: SelectChangeEvent<HTMLSelectElement>) => {
+    applyValue({
+      ...item,
+      value: event.target.value as string,
+    });
   };
 
   const filterOptions: Array<TestStatus> = Array.from(
@@ -22,11 +30,12 @@ const StatusInputComponent = (props: GridFilterInputValueProps) => {
   );
 
   return (
-    <FormControl fullWidth>
+    <FormControl variant="standard" fullWidth>
       <InputLabel shrink id="statusFilter">
         Value
       </InputLabel>
       <Select
+        variant="standard"
         id="statusFilter"
         native
         displayEmpty
@@ -43,8 +52,7 @@ const StatusInputComponent = (props: GridFilterInputValueProps) => {
     </FormControl>
   );
 };
-
-export const StatusFilterOperators = [
+export const StatusFilterOperators: GridFilterOperator[]  = [
   ...getGridStringOperators()
     .filter((operator) => operator.value === "equals")
     .map((operator) => ({
@@ -55,19 +63,16 @@ export const StatusFilterOperators = [
     label: "not",
     value: "not",
     getApplyFilterFn: (filterItem: GridFilterItem) => {
-      if (
-        !filterItem.columnField ||
-        !filterItem.value ||
-        !filterItem.operatorValue
-      ) {
+      if (!filterItem.field || !filterItem.value || !filterItem.operator) {
         return null;
       }
 
-      return (params: GridCellParams): boolean => {
-        return params.value !== filterItem.value;
-      };
+      return (params: GridCellParams): boolean =>
+        params.value !== filterItem.value;
     },
     InputComponent: StatusInputComponent,
-    InputComponentProps: { type: "string" },
+    InputComponentProps: {
+      type: "string",
+    },
   },
 ];

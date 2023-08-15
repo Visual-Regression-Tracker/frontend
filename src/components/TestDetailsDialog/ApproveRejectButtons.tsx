@@ -1,12 +1,13 @@
-import { Chip, Button, makeStyles } from "@material-ui/core";
+import { Chip, Button } from "@mui/material";
 import { useSnackbar } from "notistack";
 import { useHotkeys } from "react-hotkeys-hook";
 import React from "react";
 import { testRunService } from "../../services";
 import { TestRun } from "../../types";
 import { Tooltip } from "../Tooltip";
+import { makeStyles } from "@mui/styles";
 
-const useStyles = makeStyles((theme) => ({
+const useStyles = makeStyles(() => ({
   actionButton: {
     width: 120,
     marginLeft: 4,
@@ -71,7 +72,6 @@ export const ApproveRejectButtons: React.FunctionComponent<{
       <Tooltip title={"Hotkey: A"}>
         <Button
           onClick={approve}
-          style={{ color: "cornflowerblue" }}
           variant="contained"
           className={classes.actionButton}
         >

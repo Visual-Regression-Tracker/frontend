@@ -1,8 +1,8 @@
 import React from "react";
-import { makeStyles } from "@material-ui/core";
 import noImage from "../../static/no-image.png";
+import { makeStyles } from "@mui/styles";
 
-const useStyles = makeStyles((theme) => ({
+const useStyles = makeStyles(() => ({
   img: {
     display: "block",
     marginLeft: "auto",
@@ -11,6 +11,7 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
+// TODO: Use SVG and more specific text to describe reason...
 export const NoImagePlaceholder: React.FunctionComponent = () => {
   const classes = useStyles();
 

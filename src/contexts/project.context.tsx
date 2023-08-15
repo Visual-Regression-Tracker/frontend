@@ -48,15 +48,15 @@ type IAction =
   | ICreateAction
   | IDeleteAction
   | IUpdateAction;
-
 type Dispatch = (action: IAction) => void;
 type State = {
   selectedProjectId: string | null;
   projectEditState: ProjectDto;
   projectList: Project[];
 };
-
-type ProjectProviderProps = { children: React.ReactNode };
+type ProjectProviderProps = {
+  children: React.ReactNode;
+};
 
 const ProjectStateContext = React.createContext<State | undefined>(undefined);
 const ProjectDispatchContext = React.createContext<Dispatch | undefined>(
@@ -70,16 +70,19 @@ function projectReducer(state: State, action: IAction): State {
         ...state,
         projectList: action.payload,
       };
+
     case "select":
       return {
         ...state,
         selectedProjectId: action.payload,
       };
+
     case "create":
       return {
         ...state,
         projectList: [action.payload, ...state.projectList],
       };
+
     case "update":
       return {
         ...state,
@@ -87,19 +90,23 @@ function projectReducer(state: State, action: IAction): State {
           if (p.id === action.payload.id) {
             return action.payload;
           }
+
           return p;
         }),
       };
+
     case "delete":
       return {
         ...state,
         projectList: state.projectList.filter((p) => p.id !== action.payload),
       };
+
     case "setProjectEditState":
       return {
         ...state,
         projectEditState: action.payload,
       };
+
     default:
       return state;
   }
@@ -107,61 +114,88 @@ function projectReducer(state: State, action: IAction): State {
 
 function useProjectState() {
   const context = React.useContext(ProjectStateContext);
+
   if (context === undefined) {
-    throw new Error("must be used within a ProjectProvider");
+    throw Error("must be used within a ProjectProvider");
   }
+
   return context;
 }
 
 function useProjectDispatch() {
   const context = React.useContext(ProjectDispatchContext);
+
   if (context === undefined) {
-    throw new Error("must be used within a ProjectProvider");
+    throw Error("must be used within a ProjectProvider");
   }
+
   return context;
 }
 
-async function getProjectList(dispatch: Dispatch): Promise<Project[]> {
-  dispatch({ type: "request" });
+function getProjectList(dispatch: Dispatch): Promise<Project[]> {
+  dispatch({
+    type: "request",
+  });
 
   return projectsService.getAll().then((projects) => {
-    dispatch({ type: "get", payload: projects });
+    dispatch({
+      type: "get",
+      payload: projects,
+    });
     return projects;
   });
 }
 
-async function selectProject(dispatch: Dispatch, id: string) {
-  dispatch({ type: "select", payload: id });
+function selectProject(dispatch: Dispatch, id: string) {
+  dispatch({
+    type: "select",
+    payload: id,
+  });
 }
 
-async function createProject(dispatch: Dispatch, project: ProjectDto) {
-  dispatch({ type: "request" });
+function createProject(dispatch: Dispatch, project: ProjectDto) {
+  dispatch({
+    type: "request",
+  });
 
   return projectsService.create(project).then((project: Project) => {
-    dispatch({ type: "create", payload: project });
+    dispatch({
+      type: "create",
+      payload: project,
+    });
     return project;
   });
 }
 
-async function updateProject(dispatch: Dispatch, project: ProjectDto) {
-  dispatch({ type: "request" });
+function updateProject(dispatch: Dispatch, project: ProjectDto) {
+  dispatch({
+    type: "request",
+  });
 
   return projectsService.update(project).then((project: Project) => {
-    dispatch({ type: "update", payload: project });
+    dispatch({
+      type: "update",
+      payload: project,
+    });
     return project;
   });
 }
 
-async function deleteProject(dispatch: Dispatch, id: string) {
-  dispatch({ type: "request" });
+function deleteProject(dispatch: Dispatch, id: string) {
+  dispatch({
+    type: "request",
+  });
 
   return projectsService.remove(id).then((project) => {
-    dispatch({ type: "delete", payload: id });
+    dispatch({
+      type: "delete",
+      payload: id,
+    });
     return project;
   });
 }
 
-async function setProjectEditState(dispatch: Dispatch, project?: ProjectDto) {
+function setProjectEditState(dispatch: Dispatch, project?: ProjectDto) {
   dispatch({
     type: "setProjectEditState",
     payload: project ?? DEFAULT_PROJECT_EDIT_STATE,

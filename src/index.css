@@ -2,10 +2,10 @@ body {
   height: 100vh;
   margin: 0;
   text-align: center;
+  font-family: Roboto, sans-serif;
 }
 
-#root,
-[data-cy-root] {
+#root {
   height: 100%;
 }
 

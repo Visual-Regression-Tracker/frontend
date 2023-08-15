@@ -1,5 +1,5 @@
 import React from "react";
-import { Typography, Chip, Grid, Box, LinearProgress } from "@material-ui/core";
+import { Typography, Chip, Grid, Box, LinearProgress } from "@mui/material";
 import { BuildStatusChip } from "./BuildStatusChip";
 import { formatDateTime } from "../_helpers/format.helper";
 import { useBuildState } from "../contexts";

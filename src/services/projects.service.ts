@@ -2,6 +2,10 @@ import { Project } from "../types";
 import { handleResponse, authHeader } from "../_helpers/service.helpers";
 import { API_URL } from "../_config/env.config";
 
+const DEFAULT_HEADERS = {
+  "Content-Type": "application/json",
+};
+
 async function getAll(): Promise<Project[]> {
   const requestOptions = {
     method: "GET",
@@ -25,7 +29,10 @@ async function remove(id: string): Promise<Project> {
 async function create(project: Partial<Project>): Promise<Project> {
   const requestOptions = {
     method: "POST",
-    headers: { "Content-Type": "application/json", ...authHeader() },
+    headers: {
+      ...DEFAULT_HEADERS,
+      ...authHeader(),
+    },
     body: JSON.stringify(project),
   };
 
@@ -36,7 +43,10 @@ async function create(project: Partial<Project>): Promise<Project> {
 async function update(project: Partial<Project>): Promise<Project> {
   const requestOptions = {
     method: "PUT",
-    headers: { "Content-Type": "application/json", ...authHeader() },
+    headers: {
+      ...DEFAULT_HEADERS,
+      ...authHeader(),
+    },
     body: JSON.stringify(project),
   };
 

@@ -5,7 +5,7 @@ import {
   DialogContent,
   DialogActions,
   Button,
-} from "@material-ui/core";
+} from "@mui/material";
 import { ValidatorForm } from "react-material-ui-form-validator";
 
 interface IProps {
@@ -24,26 +24,24 @@ export const BaseModal: React.FunctionComponent<IProps> = ({
   content,
   onSubmit,
   onCancel,
-}) => {
-  return (
-    <Dialog
-      open={open}
-      onClose={onCancel}
-      aria-labelledby="form-dialog-title"
-      fullWidth
-    >
-      <DialogTitle id="form-dialog-title">{title}</DialogTitle>
-      <ValidatorForm onSubmit={onSubmit} instantValidate>
-        <DialogContent>{content}</DialogContent>
-        <DialogActions>
-          <Button onClick={onCancel} color="primary">
-            Cancel
-          </Button>
-          <Button type="submit" color="primary" data-testId="submitButton">
-            {submitButtonText}
-          </Button>
-        </DialogActions>
-      </ValidatorForm>
-    </Dialog>
-  );
-};
+}) => (
+  <Dialog
+    open={open}
+    onClose={onCancel}
+    aria-labelledby="form-dialog-title"
+    fullWidth
+  >
+    <DialogTitle id="form-dialog-title">{title}</DialogTitle>
+    <ValidatorForm onSubmit={onSubmit} instantValidate>
+      <DialogContent>{content}</DialogContent>
+      <DialogActions>
+        <Button onClick={onCancel} color="primary">
+          Cancel
+        </Button>
+        <Button type="submit" color="primary" data-testid="submitButton">
+          {submitButtonText}
+        </Button>
+      </DialogActions>
+    </ValidatorForm>
+  </Dialog>
+);

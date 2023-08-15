@@ -7,7 +7,7 @@ import {
   Avatar,
   Menu,
   MenuItem,
-} from "@material-ui/core";
+} from "@mui/material";
 import { Link } from "react-router-dom";
 import { useUserDispatch, useUserState, logout } from "../contexts";
 import { routes } from "../constants";
@@ -20,15 +20,17 @@ import {
   HelpOutline,
   People,
   SettingsPower,
-} from "@material-ui/icons";
+} from "@mui/icons-material";
 
 const Header: FunctionComponent = () => {
   const [avatarMenuRef, setAvatarMenuRef] = React.useState<null | HTMLElement>(
     null,
   );
+
   const [helpMenuRef, setHelpMenuRef] = React.useState<null | HTMLElement>(
     null,
   );
+
   const { loggedIn, user } = useUserState();
   const authDispatch = useUserDispatch();
 
@@ -57,10 +59,16 @@ const Header: FunctionComponent = () => {
   const renderHelpMenu = (
     <Menu
       anchorEl={helpMenuRef}
-      anchorOrigin={{ vertical: "top", horizontal: "right" }}
+      anchorOrigin={{
+        vertical: "top",
+        horizontal: "right",
+      }}
       id="headerHelpMenu"
       keepMounted
-      transformOrigin={{ vertical: "top", horizontal: "right" }}
+      transformOrigin={{
+        vertical: "top",
+        horizontal: "right",
+      }}
       open={!!helpMenuRef}
       onClose={handleMenuClose}
     >
@@ -78,6 +86,7 @@ const Header: FunctionComponent = () => {
         style={{
           justifyContent: "center",
         }}
+        disabled
       >
         VRT Version : {getVRTVersion()}
       </MenuItem>
@@ -87,10 +96,16 @@ const Header: FunctionComponent = () => {
   const renderAvatarMenu = (
     <Menu
       anchorEl={avatarMenuRef}
-      anchorOrigin={{ vertical: "top", horizontal: "right" }}
+      anchorOrigin={{
+        vertical: "top",
+        horizontal: "right",
+      }}
       id="headerAvatarMenu"
       keepMounted
-      transformOrigin={{ vertical: "top", horizontal: "right" }}
+      transformOrigin={{
+        vertical: "top",
+        horizontal: "right",
+      }}
       open={!!avatarMenuRef}
       onClose={handleMenuClose}
     >
@@ -134,7 +149,7 @@ const Header: FunctionComponent = () => {
           handleMenuClose();
           logout(authDispatch);
         }}
-        data-testId="logoutBtn"
+        data-testid="logoutBtn"
       >
         <IconButton size="small">
           <SettingsPower />
@@ -164,6 +179,8 @@ const Header: FunctionComponent = () => {
                   onClick={(event: React.MouseEvent<HTMLElement>) =>
                     setHelpMenuRef(event.currentTarget)
                   }
+                  size="large"
+                  color="secondary"
                 >
                   <Avatar>
                     <HelpOutline />
@@ -174,6 +191,8 @@ const Header: FunctionComponent = () => {
                     onClick={(event: React.MouseEvent<HTMLElement>) =>
                       setAvatarMenuRef(event.currentTarget)
                     }
+                    size="large"
+                    color="secondary"
                   >
                     <Avatar>{`${user?.firstName[0]}${user?.lastName[0]}`}</Avatar>
                   </IconButton>

@@ -18,10 +18,15 @@ interface IGetAllAction {
 }
 
 type IAction = ISuccessAction | ILogoutAction | IGetAllAction;
-
 type Dispatch = (action: IAction) => void;
-type State = { loggedIn: boolean; user?: User; userList: User[] };
-type UserProviderProps = { children: React.ReactNode };
+type State = {
+  loggedIn: boolean;
+  user?: User;
+  userList: User[];
+};
+type UserProviderProps = {
+  children: React.ReactNode;
+};
 
 const UserStateContext = React.createContext<State | undefined>(undefined);
 const UserDispatchContext = React.createContext<Dispatch | undefined>(
@@ -36,17 +41,20 @@ function UserReducer(state: State, action: IAction): State {
         loggedIn: true,
         user: action.payload,
       };
+
     case "logout":
       return {
         ...state,
         loggedIn: false,
         user: undefined,
       };
+
     case "getAll":
       return {
         ...state,
         userList: action.payload,
       };
+
     default:
       return state;
   }
@@ -61,6 +69,7 @@ function UserProvider({ children }: UserProviderProps) {
   };
 
   const [state, dispatch] = React.useReducer(UserReducer, initialState);
+
   return (
     <UserStateContext.Provider value={state}>
       <UserDispatchContext.Provider value={dispatch}>
@@ -72,34 +81,34 @@ function UserProvider({ children }: UserProviderProps) {
 
 function useUserState() {
   const context = React.useContext(UserStateContext);
+
   if (context === undefined) {
-    throw new Error("must be used within a UserProvider");
+    throw Error("must be used within a UserProvider");
   }
+
   return context;
 }
 
 function useUserDispatch() {
   const context = React.useContext(UserDispatchContext);
+
   if (context === undefined) {
-    throw new Error("must be used within a UserProvider");
+    throw Error("must be used within a UserProvider");
   }
+
   return context;
 }
 
-async function login(dispatch: Dispatch, email: string, password: string) {
+function login(dispatch: Dispatch, email: string, password: string) {
   return usersService.login(email, password).then((user) => {
-    dispatch({ type: "success", payload: user });
+    dispatch({
+      type: "success",
+      payload: user,
+    });
   });
 }
 
-async function update(
-  dispatch: Dispatch,
-  {
-    firstName,
-    lastName,
-    email,
-  }: { firstName: string; lastName: string; email: string },
-) {
+function update(dispatch: Dispatch, { firstName, lastName, email }) {
   return usersService
     .update({
       firstName,
@@ -107,13 +116,18 @@ async function update(
       email,
     })
     .then((user) => {
-      dispatch({ type: "success", payload: user });
+      dispatch({
+        type: "success",
+        payload: user,
+      });
     });
 }
 
 function logout(dispatch: Dispatch) {
   usersService.logout();
-  dispatch({ type: "logout" });
+  dispatch({
+    type: "logout",
+  });
 }
 
 export { UserProvider, useUserState, useUserDispatch, login, logout, update };

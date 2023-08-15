@@ -1,20 +1,13 @@
 import React from "react";
-import {
-  Button,
-  Popper,
-  Fade,
-  Paper,
-  makeStyles,
-  TextField,
-  Badge,
-} from "@material-ui/core";
+import { makeStyles } from '@mui/styles';
+import { Button, Popper, Fade, Paper, TextField, Badge, type Theme } from "@mui/material";
 import {
   usePopupState,
   bindToggle,
   bindPopper,
 } from "material-ui-popup-state/hooks";
 
-const useStyles = makeStyles((theme) => ({
+const useStyles = makeStyles((theme: Theme) => ({
   popperContainer: {
     zIndex: 1400,
   },
@@ -23,9 +16,10 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
+
 interface IProps {
   text: string | undefined;
-  onSave: (comment: string) => Promise<any>;
+  onSave: (comment: string) => Promise<void | string | number>;
 }
 
 export const CommentsPopper: React.FunctionComponent<IProps> = ({
@@ -37,12 +31,13 @@ export const CommentsPopper: React.FunctionComponent<IProps> = ({
     variant: "popper",
     popupId: "commentPopper",
   });
+
   const [comment, setComment] = React.useState("");
 
-  React.useEffect(() => setComment(text ? text : ""), [text]);
+  React.useEffect(() => setComment(text || ""), [text]);
 
   return (
-    <React.Fragment>
+    <>
       <Badge
         color="secondary"
         variant="dot"
@@ -75,13 +70,12 @@ export const CommentsPopper: React.FunctionComponent<IProps> = ({
                   placeholder={"Add any additional data here"}
                   multiline
                   rows={4}
-                  rowsMax={10}
                   fullWidth
-                  onChange={(event) =>
-                    setComment((event.target as HTMLInputElement).value)
+                  onChange={(event: React.ChangeEvent<HTMLInputElement>) =>
+                    setComment(event.target.value)
                   }
                   inputProps={{
-                    "data-testId": "comment",
+                    "data-testid": "comment",
                   }}
                 />
                 <Button
@@ -96,6 +90,6 @@ export const CommentsPopper: React.FunctionComponent<IProps> = ({
           </Fade>
         )}
       </Popper>
-    </React.Fragment>
+    </>
   );
 };

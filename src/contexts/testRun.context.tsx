@@ -3,6 +3,7 @@ import { TestRun } from "../types";
 import { useLocation } from "react-router-dom";
 import { getQueryParams } from "../_helpers/route.helpers";
 import { testRunService } from "../services";
+import { GridRowId } from "@mui/x-data-grid";
 
 interface IRequestAction {
   type: "request";
@@ -10,7 +11,7 @@ interface IRequestAction {
 
 interface IGetAction {
   type: "get";
-  payload: Array<TestRun>;
+  payload: TestRun[];
 }
 
 interface ISelectAction {
@@ -20,17 +21,17 @@ interface ISelectAction {
 
 interface IDeleteAction {
   type: "delete";
-  payload: Array<string>;
+  payload: string[];
 }
 
 interface IAddAction {
   type: "add";
-  payload: Array<TestRun>;
+  payload: TestRun[];
 }
 
 interface IUpdateAction {
   type: "update";
-  payload: Array<TestRun>;
+  payload: TestRun[];
 }
 
 interface IApproveAction {
@@ -43,14 +44,9 @@ interface IRejectAction {
   payload: TestRun;
 }
 
-interface IFilterAction {
-  type: "filter";
-  payload?: Array<string | number>;
-}
-
-interface ISortAction {
-  type: "sort";
-  payload?: Array<string | number>;
+interface IFilterSortAction {
+  type: "filterSort";
+  payload?: GridRowId[];
 }
 
 interface ITouchedAction {
@@ -66,26 +62,24 @@ type IAction =
   | IUpdateAction
   | IApproveAction
   | IRejectAction
-  | IFilterAction
-  | ISortAction
+  | IFilterSortAction
   | ITouchedAction
   | ISelectAction;
-
 type Dispatch = (action: IAction) => void;
 type State = {
   selectedTestRun?: TestRun;
-  sortedTestRunIds?: Array<string | number>;
-  filteredTestRunIds?: Array<string | number>;
-  testRuns: Array<TestRun>;
+  filteredSortedTestRunIds?: GridRowId[];
+  testRuns: TestRun[];
   touched: boolean;
   loading: boolean;
 };
-
-type TestRunProviderProps = { children: React.ReactNode };
+type TestRunProviderProps = {
+  children: React.ReactNode;
+};
 
 const TestRunStateContext = React.createContext<State | undefined>(undefined);
 const TestRunDispatchContext = React.createContext<Dispatch | undefined>(
-  undefined,
+  undefined
 );
 
 const initialState: State = {
@@ -102,33 +96,33 @@ function testRunReducer(state: State, action: IAction): State {
         touched: false,
         selectedTestRun: action.payload,
       };
-    case "filter":
+
+    case "filterSort":
       return {
         ...state,
-        filteredTestRunIds: action.payload,
+        filteredSortedTestRunIds: action.payload,
       };
-    case "sort":
-      return {
-        ...state,
-        sortedTestRunIds: action.payload,
-      };
+
     case "request":
       return {
         ...state,
         testRuns: [],
         loading: true,
       };
+
     case "get":
       return {
         ...state,
         testRuns: action.payload,
         loading: false,
       };
+
     case "delete":
       return {
         ...state,
         testRuns: state.testRuns.filter((p) => !action.payload.includes(p.id)),
       };
+
     case "add":
       return {
         ...state,
@@ -136,29 +130,34 @@ function testRunReducer(state: State, action: IAction): State {
           ...state.testRuns,
           ...action.payload.filter(
             // remove duplicates
-            (i) => !state.testRuns.find((tr) => tr.id === i.id),
+            (i) => !state.testRuns.find((tr) => tr.id === i.id)
           ),
         ],
       };
+
     case "update":
       return {
         ...state,
         testRuns: state.testRuns.map((t) => {
           const item = action.payload.find((i) => i.id === t.id);
+
           if (item) {
             return item;
           }
+
           return t;
         }),
         selectedTestRun:
           action.payload.find((i) => i.id === state.selectedTestRun?.id) ??
           state.selectedTestRun,
       };
+
     case "touched":
       return {
         ...state,
         touched: action.payload,
       };
+
     default:
       return state;
   }
@@ -170,11 +169,17 @@ function TestRunProvider({ children }: TestRunProviderProps) {
 
   React.useEffect(() => {
     const { testId } = getQueryParams(location.search);
+
     if (!testId) {
-      dispatch({ type: "select" });
+      dispatch({
+        type: "select",
+      });
     } else {
       testRunService.getDetails(testId).then((payload) => {
-        dispatch({ type: "select", payload });
+        dispatch({
+          type: "select",
+          payload,
+        });
       });
     }
   }, [location.search]);
@@ -190,30 +195,43 @@ function TestRunProvider({ children }: TestRunProviderProps) {
 
 function useTestRunState() {
   const context = React.useContext(TestRunStateContext);
+
   if (context === undefined) {
-    throw new Error("must be used within a TestRunProvider");
+    throw Error("must be used within a TestRunProvider");
   }
+
   return context;
 }
 
 function useTestRunDispatch() {
   const context = React.useContext(TestRunDispatchContext);
+
   if (context === undefined) {
-    throw new Error("must be used within a TestRunProvider");
+    throw Error("must be used within a TestRunProvider");
   }
+
   return context;
 }
 
-async function deleteTestRun(dispatch: Dispatch, ids: Array<string>) {
-  dispatch({ type: "delete", payload: ids });
+function deleteTestRun(dispatch: Dispatch, ids: string[]) {
+  dispatch({
+    type: "delete",
+    payload: ids,
+  });
 }
 
-async function addTestRun(dispatch: Dispatch, testRuns: Array<TestRun>) {
-  dispatch({ type: "add", payload: testRuns });
+function addTestRun(dispatch: Dispatch, testRuns: TestRun[]) {
+  dispatch({
+    type: "add",
+    payload: testRuns,
+  });
 }
 
-async function updateTestRun(dispatch: Dispatch, testRuns: Array<TestRun>) {
-  dispatch({ type: "update", payload: testRuns });
+function updateTestRun(dispatch: Dispatch, testRuns: TestRun[]) {
+  dispatch({
+    type: "update",
+    payload: testRuns,
+  });
 }
 
 export {

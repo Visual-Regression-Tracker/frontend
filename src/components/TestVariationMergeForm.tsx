@@ -1,5 +1,13 @@
 import React from "react";
-import { Grid, Select, MenuItem, Button, TextField } from "@material-ui/core";
+import {
+  Autocomplete,
+  Grid,
+  Select,
+  MenuItem,
+  Button,
+  TextField,
+  SelectChangeEvent,
+} from "@mui/material";
 import { testVariationService } from "../services";
 import { useNavigate } from "react-router-dom";
 import {
@@ -8,8 +16,9 @@ import {
 } from "../_helpers/route.helpers";
 import { useSnackbar } from "notistack";
 import { selectBuild, useBuildDispatch } from "../contexts";
-import { Autocomplete } from "@material-ui/lab";
 import { LOCATOR_TEST_VARIATION_SELECT_BRANCH } from "../constants/help";
+
+const isString = (a): a is string => typeof a === "string";
 
 interface IProps {
   projectId: string;
@@ -52,11 +61,14 @@ export const TestVariationMergeForm: React.FunctionComponent<IProps> = ({
       <Grid container spacing={2} alignItems="flex-end">
         <Grid item xs>
           <Select
+            variant="standard"
             required
             fullWidth
             displayEmpty
             value={fromBranch}
-            onChange={(event) => setFromBranch(event.target.value as string)}
+            onChange={(event: SelectChangeEvent<HTMLInputElement>) =>
+              setFromBranch(event.target.value as string)
+            }
           >
             <MenuItem value="">
               <em>From branch</em>
@@ -71,12 +83,21 @@ export const TestVariationMergeForm: React.FunctionComponent<IProps> = ({
         <Grid item xs>
           <Autocomplete
             id="toBranch"
-            options={items.map((i) => ({ title: i }))}
-            getOptionLabel={(option) => option.title}
+            options={items.map((i) => ({
+              title: i,
+            }))}
+            getOptionLabel={(option) =>
+              isString(option) ? option : option.title
+            }
             freeSolo
             fullWidth
             renderInput={(params) => (
-              <TextField {...params} required label="To branch" />
+              <TextField
+                variant="standard"
+                {...params}
+                required
+                label="To branch"
+              />
             )}
             onInputChange={(_, value) => {
               setToBranch(value);

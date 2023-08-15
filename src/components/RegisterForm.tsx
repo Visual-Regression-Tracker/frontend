@@ -1,11 +1,5 @@
 import React, { useState, FormEvent } from "react";
-import {
-  Button,
-  Grid,
-  Card,
-  CardContent,
-  CardActions,
-} from "@material-ui/core";
+import { Button, Grid, Card, CardContent, CardActions } from "@mui/material";
 import { useUserDispatch, login } from "../contexts";
 import { usersService } from "../services";
 import { useSnackbar } from "notistack";
@@ -59,9 +53,9 @@ const RegisterForm = () => {
                 required
                 fullWidth
                 inputProps={{
-                  onChange: (event: any) =>
-                    setFirstName((event.target as HTMLInputElement).value),
-                  "data-testId": "firstName",
+                  onChange: (event: React.FormEvent<HTMLInputElement>) =>
+                    setFirstName(event.target.value),
+                  "data-testid": "firstName",
                 }}
               />
             </Grid>
@@ -78,9 +72,9 @@ const RegisterForm = () => {
                 required
                 fullWidth
                 inputProps={{
-                  onChange: (event: any) =>
-                    setLastName((event.target as HTMLInputElement).value),
-                  "data-testId": "lastName",
+                  onChange: (event: React.FormEvent<HTMLInputElement>) =>
+                    setLastName(event.target.value),
+                  "data-testid": "lastName",
                 }}
               />
             </Grid>
@@ -97,9 +91,9 @@ const RegisterForm = () => {
                 required
                 fullWidth
                 inputProps={{
-                  onChange: (event: any) =>
-                    setEmail((event.target as HTMLInputElement).value),
-                  "data-testId": "email",
+                  onChange: (event: React.FormEvent<HTMLInputElement>) =>
+                    setEmail(event.target.value),
+                  "data-testid": "email",
                 }}
               />
             </Grid>
@@ -116,9 +110,9 @@ const RegisterForm = () => {
                 required
                 fullWidth
                 inputProps={{
-                  onChange: (event: any) =>
-                    setPassword((event.target as HTMLInputElement).value),
-                  "data-testId": "password",
+                  onChange: (event: React.FormEvent<HTMLInputElement>) =>
+                    setPassword(event.target.value),
+                  "data-testid": "password",
                 }}
               />
             </Grid>
@@ -131,7 +125,7 @@ const RegisterForm = () => {
                 type="submit"
                 color="primary"
                 variant="outlined"
-                data-testId="submit"
+                data-testid="submit"
               >
                 Submit
               </Button>

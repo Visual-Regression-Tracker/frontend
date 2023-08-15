@@ -1,5 +1,6 @@
 import React, { useEffect } from "react";
-import { Grid, Box, makeStyles } from "@material-ui/core";
+import { makeStyles } from '@mui/styles';
+import { Grid, Box } from "@mui/material";
 import { useParams, useNavigate } from "react-router-dom";
 import BuildList from "../components/BuildList";
 import ProjectSelect from "../components/ProjectSelect";
@@ -15,11 +16,12 @@ import {
 } from "../constants";
 import { buildProjectPageUrl } from "../_helpers/route.helpers";
 
-const useStyles = makeStyles((theme) => ({
+const useStyles = makeStyles(() => ({
   root: {
     height: "100%",
   },
 }));
+
 
 const ProjectPage = () => {
   const classes = useStyles();
@@ -32,7 +34,7 @@ const ProjectPage = () => {
   });
 
   return (
-    <React.Fragment>
+    <>
       <Grid container className={classes.root}>
         <Grid item xs={3} className={classes.root}>
           <Box height="9%" id={LOCATOR_PROJECT_PAGE_SELECT_PROJECT}>
@@ -55,7 +57,7 @@ const ProjectPage = () => {
         </Grid>
       </Grid>
       <TestDetailsDialog />
-    </React.Fragment>
+    </>
   );
 };
 

@@ -1,4 +1,4 @@
-import { FormControlLabel, Switch } from "@material-ui/core";
+import { FormControlLabel, Switch } from "@mui/material";
 import React from "react";
 import { TextValidator } from "react-material-ui-form-validator";
 import { PixelmatchConfig } from "../../types/imageComparison";
@@ -44,7 +44,13 @@ export const PixelmatchConfigForm: React.FunctionComponent = () => {
         name="threshold"
         validators={["minNumber:0", "maxNumber:1"]}
         errorMessages={["Enter greater than 0", "Enter less than 1"]}
-        InputProps={{ inputProps: { min: 0, max: 1, step: 0.001 } }}
+        InputProps={{
+          inputProps: {
+            min: 0,
+            max: 1,
+            step: 0.001,
+          },
+        }}
         margin="dense"
         id="threshold"
         label="Pixel diff threshold"
@@ -53,8 +59,8 @@ export const PixelmatchConfigForm: React.FunctionComponent = () => {
         fullWidth
         required
         value={config.threshold}
-        onChange={(event) => {
-          const value = (event.target as HTMLInputElement).value;
+        onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
+          const { value } = event.target;
           updateConfig("threshold", parseFloat(value));
         }}
       />

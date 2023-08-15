@@ -5,23 +5,18 @@ import {
   Grid,
   CardMedia,
   CardContent,
-  makeStyles,
   CardActions,
   Button,
   IconButton,
   Typography,
-} from "@material-ui/core";
+} from "@mui/material";
 import { staticService } from "../services";
 import { Link } from "react-router-dom";
 import { routes } from "../constants";
 import { TestVariationDetails } from "./TestVariationDetails";
-import { Delete } from "@material-ui/icons";
+import { Delete } from "@mui/icons-material";
 import { BaseModal } from "./BaseModal";
-
-interface IProps {
-  items: TestVariation[];
-  onDeleteClick: (id: string) => void;
-}
+import { makeStyles } from "@mui/styles";
 
 const useStyles = makeStyles({
   card: {
@@ -32,6 +27,11 @@ const useStyles = makeStyles({
     objectFit: "contain",
   },
 });
+
+interface IProps {
+  items: TestVariation[];
+  onDeleteClick: (id: string) => void;
+}
 
 const TestVariationList: React.FunctionComponent<IProps> = ({
   items,
@@ -47,7 +47,7 @@ const TestVariationList: React.FunctionComponent<IProps> = ({
   };
 
   return (
-    <React.Fragment>
+    <>
       <Grid container>
         {items.length === 0 && (
           <Typography variant="h5">No variations</Typography>
@@ -72,11 +72,7 @@ const TestVariationList: React.FunctionComponent<IProps> = ({
                 >
                   History
                 </Button>
-                <IconButton
-                  onClick={(event: React.MouseEvent<HTMLElement>) =>
-                    setSelectedItem(t)
-                  }
-                >
+                <IconButton onClick={() => setSelectedItem(t)} size="large">
                   <Delete />
                 </IconButton>
               </CardActions>
@@ -100,7 +96,7 @@ const TestVariationList: React.FunctionComponent<IProps> = ({
           }}
         />
       )}
-    </React.Fragment>
+    </>
   );
 };
 

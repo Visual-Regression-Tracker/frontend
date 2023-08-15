@@ -1,4 +1,4 @@
-import { Dialog, makeStyles, Typography } from "@material-ui/core";
+import { Dialog, Typography } from "@mui/material";
 import React from "react";
 import { useNavigate } from "react-router";
 import { useBuildState, useTestRunState } from "../../contexts";
@@ -6,8 +6,9 @@ import { buildTestRunLocation } from "../../_helpers/route.helpers";
 import { BaseModal } from "../BaseModal";
 import TestDetailsModal from "./TestDetailsModal";
 import { TestRun } from "../../types";
+import { makeStyles } from "@mui/styles";
 
-const useStyles = makeStyles((theme) => ({
+const useStyles = makeStyles(() => ({
   modal: {
     margin: "20px 10px 10px 10px",
   },
@@ -19,8 +20,7 @@ export const TestDetailsDialog: React.FunctionComponent = () => {
     selectedTestRun,
     touched,
     testRuns: allTestRuns,
-    filteredTestRunIds,
-    sortedTestRunIds,
+    filteredSortedTestRunIds,
   } = useTestRunState();
   const { selectedBuild } = useBuildState();
   const navigate = useNavigate();
@@ -28,20 +28,16 @@ export const TestDetailsDialog: React.FunctionComponent = () => {
   const [navigationTargetId, setNavigationTargetId] = React.useState<string>();
 
   const testRuns = React.useMemo(() => {
-    const filtered = filteredTestRunIds
-      ? allTestRuns.filter((tr) => filteredTestRunIds.includes(tr.id))
-      : allTestRuns;
-
-    const sorted = sortedTestRunIds
-      ? filtered
-          .slice()
-          .sort(
-            (a, b) =>
-              sortedTestRunIds.indexOf(a.id) - sortedTestRunIds.indexOf(b.id),
-          )
-      : filtered;
-    return sorted;
-  }, [allTestRuns, filteredTestRunIds, sortedTestRunIds]);
+    if(filteredSortedTestRunIds) {
+      return allTestRuns
+      .filter((tr) => filteredSortedTestRunIds.includes(tr.id))
+      .sort(
+        (a, b) =>
+        filteredSortedTestRunIds.indexOf(a.id) - filteredSortedTestRunIds.indexOf(b.id),
+      )
+    }
+    return allTestRuns;
+  }, [allTestRuns, filteredSortedTestRunIds]);
 
   const selectedTestRunIndex = React.useMemo(
     () => testRuns.findIndex((t) => t.id === selectedTestRun?.id),
@@ -78,7 +74,9 @@ export const TestDetailsDialog: React.FunctionComponent = () => {
     <Dialog open={true} fullScreen className={classes.modal}>
       <TestDetailsModal
         testRun={selectedTestRun}
-        currentRunIndex={testRuns.findIndex((e) => e.id === selectedTestRun.id)}
+        currentRunIndex={testRuns.findIndex(
+          (item) => item.id === selectedTestRun.id,
+        )}
         totalTestRunCount={testRuns.length}
         touched={touched}
         handleClose={() => navigateById()}

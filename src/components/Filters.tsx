@@ -7,13 +7,16 @@ import {
   FormControl,
   InputLabel,
   Button,
-} from "@material-ui/core";
+  SelectChangeEvent,
+} from "@mui/material";
 import { TestRun, TestVariation } from "../types";
 import { DebounceInput } from "react-debounce-input";
 import { LOCATOR_RESET_FILTER } from "../constants/help";
 
+const emptyFn = () => undefined;
+
 interface IProps {
-  items: (TestRun | TestVariation)[];
+  items: TestRun[] | TestVariation[];
   queryState: [string, React.Dispatch<React.SetStateAction<string>>];
   osState: [string, React.Dispatch<React.SetStateAction<string>>];
   deviceState: [string, React.Dispatch<React.SetStateAction<string>>];
@@ -41,12 +44,10 @@ const Filters: React.FunctionComponent<IProps> = ({
   const [browser, setBrowser] = browserState;
   const [viewport, setViewport] = viewportState;
   const [customTags, setCustomTags] = customTagsState;
-  const [testStatus, setTestStatus] = testStatusState
-    ? testStatusState
-    : [null, () => {}];
-  const [branchName, setBranchName] = branchNameState
-    ? branchNameState
-    : [null, () => {}];
+
+  const [testStatus, setTestStatus] = testStatusState || [null, emptyFn];
+
+  const [branchName, setBranchName] = branchNameState || [null, emptyFn];
 
   const osList = items
     .map((t) => t.os)
@@ -85,6 +86,7 @@ const Filters: React.FunctionComponent<IProps> = ({
     <Grid container spacing={2} alignItems="flex-end">
       <Grid item xs>
         <DebounceInput
+          variant="standard"
           fullWidth
           label="Name"
           value={query}
@@ -96,15 +98,18 @@ const Filters: React.FunctionComponent<IProps> = ({
       </Grid>
       {osList.length > 0 && (
         <Grid item xs>
-          <FormControl fullWidth>
+          <FormControl variant="standard" fullWidth>
             <InputLabel shrink id="filter_os">
               OS
             </InputLabel>
             <Select
+              variant="standard"
               id="filter_os"
               value={os}
               displayEmpty
-              onChange={(event) => setOs(event.target.value as string)}
+              onChange={(event: SelectChangeEvent<HTMLInputElement>) =>
+                setOs(event.target.value as string)
+              }
             >
               <MenuItem value="">
                 <em>All</em>
@@ -120,15 +125,18 @@ const Filters: React.FunctionComponent<IProps> = ({
       )}
       {deviceList.length > 0 && (
         <Grid item xs>
-          <FormControl fullWidth>
+          <FormControl variant="standard" fullWidth>
             <InputLabel shrink id="filter_device">
               Device
             </InputLabel>
             <Select
+              variant="standard"
               id="filter_device"
               value={device}
               displayEmpty
-              onChange={(event) => setDevice(event.target.value as string)}
+              onChange={(event: SelectChangeEvent<HTMLInputElement>) =>
+                setDevice(event.target.value as string)
+              }
             >
               <MenuItem value="">
                 <em>All</em>
@@ -144,15 +152,18 @@ const Filters: React.FunctionComponent<IProps> = ({
       )}
       {browserList.length > 0 && (
         <Grid item xs>
-          <FormControl fullWidth>
+          <FormControl variant="standard" fullWidth>
             <InputLabel shrink id="filter_browser">
               Browser
             </InputLabel>
             <Select
+              variant="standard"
               id="filter_browser"
               value={browser}
               displayEmpty
-              onChange={(event) => setBrowser(event.target.value as string)}
+              onChange={(event: SelectChangeEvent<HTMLInputElement>) =>
+                setBrowser(event.target.value as string)
+              }
             >
               <MenuItem value="">
                 <em>All</em>
@@ -168,15 +179,18 @@ const Filters: React.FunctionComponent<IProps> = ({
       )}
       {viewportList.length > 0 && (
         <Grid item xs>
-          <FormControl fullWidth>
+          <FormControl variant="standard" fullWidth>
             <InputLabel shrink id="filter_viewport">
               Viewport
             </InputLabel>
             <Select
+              variant="standard"
               id="filter_viewport"
               value={viewport}
               displayEmpty
-              onChange={(event) => setViewport(event.target.value as string)}
+              onChange={(event: SelectChangeEvent<HTMLInputElement>) =>
+                setViewport(event.target.value as string)
+              }
             >
               <MenuItem value="">
                 <em>All</em>
@@ -192,15 +206,18 @@ const Filters: React.FunctionComponent<IProps> = ({
       )}
       {customTagsList.length > 0 && (
         <Grid item xs>
-          <FormControl fullWidth>
+          <FormControl variant="standard" fullWidth>
             <InputLabel shrink id="filter_customTags">
               Custom Tags
             </InputLabel>
             <Select
+              variant="standard"
               id="filter_customTags"
               value={customTags}
               displayEmpty
-              onChange={(event) => setCustomTags(event.target.value as string)}
+              onChange={(event: SelectChangeEvent<HTMLInputElement>) =>
+                setCustomTags(event.target.value as string)
+              }
             >
               <MenuItem value="">
                 <em>All</em>
@@ -216,15 +233,18 @@ const Filters: React.FunctionComponent<IProps> = ({
       )}
       {testStatusList && testStatusList.length > 0 && (
         <Grid item xs>
-          <FormControl fullWidth>
+          <FormControl variant="standard" fullWidth>
             <InputLabel shrink id="filter_testStatus">
               Status
             </InputLabel>
             <Select
+              variant="standard"
               id="filter_testStatus"
               value={testStatus}
               displayEmpty
-              onChange={(event) => setTestStatus(event.target.value as string)}
+              onChange={(event: SelectChangeEvent<HTMLInputElement>) =>
+                setTestStatus(event.target.value as string)
+              }
             >
               <MenuItem value="">
                 <em>All</em>
@@ -240,15 +260,18 @@ const Filters: React.FunctionComponent<IProps> = ({
       )}
       {branchNameList && branchNameList.length > 0 && (
         <Grid item xs>
-          <FormControl fullWidth id={LOCATOR_RESET_FILTER}>
+          <FormControl variant="standard" fullWidth id={LOCATOR_RESET_FILTER}>
             <InputLabel shrink id="filter_branchName">
               Branch
             </InputLabel>
             <Select
+              variant="standard"
               id="filter_branchName"
               value={branchName}
               displayEmpty
-              onChange={(event) => setBranchName(event.target.value as string)}
+              onChange={(event: SelectChangeEvent<HTMLInputElement>) =>
+                setBranchName(event.target.value as string)
+              }
             >
               <MenuItem value="">
                 <em>All</em>

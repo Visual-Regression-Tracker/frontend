@@ -5,8 +5,7 @@ export interface IgnoreArea {
   width: number;
   height: number;
 }
-
 export interface UpdateIgnoreAreaDto {
-  ids: (string | number)[];
+  ids: string[] | number[];
   ignoreAreas: IgnoreArea[];
 }

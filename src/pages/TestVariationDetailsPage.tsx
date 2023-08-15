@@ -8,11 +8,10 @@ import {
   Grid,
   Card,
   CardMedia,
-  makeStyles,
   CardActions,
   Button,
   Typography,
-} from "@material-ui/core";
+} from "@mui/material";
 import {
   buildProjectPageUrl,
   buildTestRunLocation,
@@ -22,6 +21,7 @@ import { useSnackbar } from "notistack";
 import { formatDateTime } from "../_helpers/format.helper";
 import TestStatusChip from "../components/TestStatusChip";
 import { Baseline } from "../types/baseline";
+import { makeStyles } from "@mui/styles";
 
 const useStyles = makeStyles({
   media: {
@@ -47,69 +47,69 @@ const TestVariationDetailsPage: React.FunctionComponent = () => {
         .catch((err) =>
           enqueueSnackbar(err, {
             variant: "error",
-          }),
+          })
         );
     }
   }, [testVariationId, enqueueSnackbar]);
 
   return (
-    <React.Fragment>
-      <Container>
-        <Box mt={2}>
-          {testVariation && (
-            <Grid container direction="column" spacing={2}>
-              <Grid item>
-                <TestVariationDetails testVariation={testVariation} />
-              </Grid>
-              {testVariation.baselines.map((baseline: Baseline) => (
-                <Grid item key={baseline.id}>
-                  <Card>
-                    <CardActions>
-                      <Button
-                        color="primary"
-                        disabled={!baseline.testRun}
-                        onClick={() => {
-                          const { testRun } = baseline;
-                          if (testRun) {
-                            navigate({
-                              pathname: buildProjectPageUrl(
-                                testVariation.projectId,
-                              ),
-                              ...buildTestRunLocation(
-                                testRun.buildId,
-                                testRun.id,
-                              ),
-                            });
-                          }
-                        }}
-                      >
-                        Test Run
-                      </Button>
-                      {baseline.testRun && (
-                        <TestStatusChip status={baseline.testRun.status} />
-                      )}
-                      {baseline.user && (
-                        <Typography>
-                          {`${baseline.user.firstName} ${baseline.user.lastName} <${baseline.user.email}>`}
-                        </Typography>
-                      )}
-                      <Typography>
-                        {formatDateTime(baseline.createdAt)}
-                      </Typography>
-                    </CardActions>
-                    <CardMedia
-                      component="img"
-                      className={classes.media}
-                      image={staticService.getImage(baseline.baselineName)}
-                    />
-                  </Card>
-                </Grid>
-              ))}
+    <Container>
+      <Box mt={2}>
+        {testVariation && (
+          <Grid container direction="column" spacing={2}>
+            <Grid item>
+              <TestVariationDetails testVariation={testVariation} />
             </Grid>
-          )}
-        </Box>
-      </Container>
-    </React.Fragment>
+            {testVariation.baselines.map((baseline: Baseline) => (
+              <Grid item key={baseline.id}>
+                <Card>
+                  <CardActions>
+                    <Button
+                      color="primary"
+                      disabled={!baseline.testRun}
+                      onClick={() => {
+                        const { testRun } = baseline;
+                        if (testRun) {
+                          navigate({
+                            pathname: buildProjectPageUrl(
+                              testVariation.projectId
+                            ),
+                            ...buildTestRunLocation(
+                              testRun.buildId,
+                              testRun.id
+                            ),
+                          });
+                        }
+                      }}
+                    >
+                      Test Run
+                    </Button>
+                    {baseline.testRun && (
+                      <Box ml={1}>
+                        <TestStatusChip status={baseline.testRun.status} />
+                      </Box>
+                    )}
+                    {baseline.user && (
+                      <Typography ml={1}>
+                        {`${baseline.user.firstName} ${baseline.user.lastName} <${baseline.user.email}>`}
+                      </Typography>
+                    )}
+                    <Typography>
+                      {formatDateTime(baseline.createdAt)}
+                    </Typography>
+                  </CardActions>
+                  <CardMedia
+                    component="img"
+                    className={classes.media}
+                    image={staticService.getImage(baseline.baselineName)}
+                  />
+                </Card>
+              </Grid>
+            ))}
+          </Grid>
+        )}
+      </Box>
+    </Container>
   );
 };
 

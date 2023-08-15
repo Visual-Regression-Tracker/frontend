@@ -1,31 +1,33 @@
 import React, { FunctionComponent } from "react";
-import Joyride, { type CallBackProps, STATUS } from "react-joyride";
-import { IconButton } from "@material-ui/core";
+import Joyride, { CallBackProps, STATUS } from "react-joyride";
+import { Button } from "@mui/material";
 import { useHelpState } from "../contexts";
-import { LiveHelp } from "@material-ui/icons";
+import { LiveHelp } from "@mui/icons-material";
 
 const GuidedTour: FunctionComponent = () => {
   const [run, setRun] = React.useState(false);
   const { helpSteps } = useHelpState();
 
   const getHelpSteps = React.useCallback(() => {
-    const firstStep = helpSteps[0];
+    const [firstStep] = helpSteps;
+
     //Below line is to prevent application breaking if element is not present for any reason (e.g. if the user deletes build or if there is no data.)
     if (
       firstStep &&
       document.getElementById(firstStep.target.toString().slice(1))
     ) {
-      helpSteps.forEach((e) => {
-        e.disableBeacon = true;
-        e.hideCloseButton = true;
-      });
+      for (const step of helpSteps) {
+        step.disableBeacon = true;
+        step.hideCloseButton = true;
+      }
+
       return helpSteps;
     }
+
     return [];
   }, [helpSteps]);
 
-  const handleJoyrideCallback = (data: CallBackProps) => {
-    const { status } = data;
+  const handleJoyrideCallback = ({ status }: CallBackProps) => {
     const finishedStatuses: string[] = [STATUS.FINISHED, STATUS.SKIPPED];
 
     if (finishedStatuses.includes(status)) {
@@ -33,23 +35,14 @@ const GuidedTour: FunctionComponent = () => {
     }
   };
 
-  const handleClickStart = (e: React.MouseEvent<HTMLElement>) => {
-    e.preventDefault();
+  const handleClickStart = (event: React.MouseEvent<HTMLElement>) => {
+    event.preventDefault();
     setRun(true);
   };
 
   return (
     <React.Fragment>
-      <span
-        onClick={handleClickStart}
-        style={{
-          display: "flex",
-          alignItems: "center",
-        }}
-      >
-        <IconButton size="small">
-          <LiveHelp />
-        </IconButton>
+      <Button startIcon={<LiveHelp />} onClick={handleClickStart}>
         <Joyride
           callback={handleJoyrideCallback}
           continuous={true}
@@ -63,12 +56,17 @@ const GuidedTour: FunctionComponent = () => {
             options: {
               zIndex: 10000,
             },
-            buttonNext: { color: "#3f51b5", backgroundColor: "" },
-            buttonBack: { color: "#3f51b5" },
+            buttonNext: {
+              color: "#3f51b5",
+              backgroundColor: "",
+            },
+            buttonBack: {
+              color: "#3f51b5",
+            },
           }}
         />
         Take a tour
-      </span>
+      </Button>
     </React.Fragment>
   );
 };

@@ -1,13 +1,13 @@
 import React, { FunctionComponent } from "react";
+import { makeStyles, createStyles } from '@mui/styles';
 import {
-  createStyles,
   FormControl,
   InputLabel,
-  makeStyles,
   MenuItem,
   Select,
   type Theme,
-} from "@material-ui/core";
+  type SelectChangeEvent,
+} from "@mui/material";
 import {
   useProjectState,
   useProjectDispatch,
@@ -40,19 +40,22 @@ const ProjectSelect: FunctionComponent<{
   }, [projectId, selectedProjectId, projectDispatch]);
 
   return (
-    <React.Fragment>
+    <>
       {projectList.length > 0 && (
-        <FormControl className={classes.formControl}>
+        <FormControl variant="standard" className={classes.formControl}>
           <InputLabel id="projectSelect" shrink>
             Project
           </InputLabel>
           <Select
+            variant="standard"
             id="project-select"
             labelId="projectSelect"
             className={classes.input}
             displayEmpty
             value={selectedProjectId ?? ""}
-            onChange={(event) => onProjectSelect(event.target.value as string)}
+            onChange={(event: SelectChangeEvent<HTMLInputElement>) =>
+              onProjectSelect(event.target.value as string)
+            }
           >
             <MenuItem value="" disabled>
               <em>Select project</em>
@@ -65,7 +68,7 @@ const ProjectSelect: FunctionComponent<{
           </Select>
         </FormControl>
       )}
-    </React.Fragment>
+    </>
   );
 };
 

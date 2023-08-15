@@ -1,19 +1,11 @@
 import React from "react";
-import { Typography, Grid, IconButton, makeStyles } from "@material-ui/core";
-import { WarningRounded } from "@material-ui/icons";
+import { Typography, Grid, IconButton } from "@mui/material";
+import { WarningRounded, AltRoute } from "@mui/icons-material";
 import { IgnoreArea } from "../../types/ignoreArea";
 import { Tooltip } from "../Tooltip";
-import AltRouteIcon from "@mui/icons-material/AltRoute";
+import { makeStyles } from "@mui/styles";
 
-interface IProps {
-  type: "Baseline" | "Image" | "Diff";
-  imageName: string;
-  image: undefined | HTMLImageElement;
-  branchName: string;
-  ignoreAreas?: IgnoreArea[];
-}
-
-const useStyles = makeStyles((theme) => ({
+const useStyles = makeStyles(() => ({
   container: {
     display: "flex",
     alignItems: "center",
@@ -32,7 +24,15 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-const ImageDetails: React.FunctionComponent<IProps> = ({
+export interface ImageDetailsProps {
+  type: "Baseline" | "Image" | "Diff";
+  imageName: string;
+  image: HTMLImageElement | undefined;
+  branchName: string;
+  ignoreAreas?: IgnoreArea[];
+}
+
+const ImageDetails: React.FunctionComponent<ImageDetailsProps> = ({
   type,
   image,
   imageName,
@@ -46,7 +46,7 @@ const ImageDetails: React.FunctionComponent<IProps> = ({
         <Typography
           variant="caption"
           style={{ marginRight: 3, fontSize: "0.7rem" }}
-          data-testId="image-size"
+          data-testid="image-size"
         >
           {image ? `(${image?.width} x ${image?.height})` : "Loading..."}
         </Typography>
@@ -54,29 +54,27 @@ const ImageDetails: React.FunctionComponent<IProps> = ({
     );
   };
   return (
-    <React.Fragment>
-      <Grid item className={classes.container}>
-        <Typography variant="overline" style={{ marginRight: 3 }}>
-          {type === "Baseline" ? "Baseline" : "Checkpoint"}
-        </Typography>
-        {imageSize()}
-        <AltRouteIcon fontSize="small" />
-        <Tooltip title={`Branch: ${branchName}`}>
-          <span className={classes.branchName}>{branchName}</span>
+    <Grid item className={classes.container}>
+      <Typography variant="overline" style={{ marginRight: 3 }}>
+        {type === "Baseline" ? "Baseline" : "Checkpoint"}
+      </Typography>
+      {imageSize()}
+      <AltRoute fontSize="small" />
+      <Tooltip title={`Branch: ${branchName}`}>
+        <span className={classes.branchName}>{branchName}</span>
+      </Tooltip>
+      {ignoreAreas && ignoreAreas.length > 0 && (
+        <Tooltip
+          title={
+            "Contains noneditable ignore areas applied during image upload."
+          }
+        >
+          <IconButton size="large">
+            <WarningRounded color="secondary" />
+          </IconButton>
         </Tooltip>
-        {ignoreAreas && ignoreAreas.length > 0 && (
-          <Tooltip
-            title={
-              "Contains noneditable ignore areas applied during image upload."
-            }
-          >
-            <IconButton>
-              <WarningRounded color="secondary" />
-            </IconButton>
-          </Tooltip>
-        )}
-      </Grid>
-    </React.Fragment>
+      )}
+    </Grid>
   );
 };
 
