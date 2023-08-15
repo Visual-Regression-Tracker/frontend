@@ -13,7 +13,7 @@ import { TestRun, TestVariation } from "../types";
 import { DebounceInput } from "react-debounce-input";
 import { LOCATOR_RESET_FILTER } from "../constants/help";
 
-const noop = () => {};
+const emptyFn = () => undefined;
 
 interface IProps {
   items: TestRun[] | TestVariation[];
@@ -45,9 +45,9 @@ const Filters: React.FunctionComponent<IProps> = ({
   const [viewport, setViewport] = viewportState;
   const [customTags, setCustomTags] = customTagsState;
 
-  const [testStatus, setTestStatus] = testStatusState || [null, noop];
+  const [testStatus, setTestStatus] = testStatusState || [null, emptyFn];
 
-  const [branchName, setBranchName] = branchNameState || [null, noop];
+  const [branchName, setBranchName] = branchNameState || [null, emptyFn];
 
   const osList = items
     .map((t) => t.os)

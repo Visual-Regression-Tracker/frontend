@@ -13,8 +13,7 @@ import {
   GridFilterOperator,
   GridFilterInputValueProps
 } from "@mui/x-data-grid";
-
-import { TestStatus, TestRun } from "../../types";
+import { TestStatus } from "../../types";
 
 const StatusInputComponent = ({ item, applyValue }: GridFilterInputValueProps) => {
   const { testRuns } = useTestRunState();
