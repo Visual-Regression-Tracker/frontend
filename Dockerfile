@@ -6,7 +6,6 @@ FROM node:18-alpine3.18 AS builder
 WORKDIR /app
 
 # Copy all files from the repo to /app
-# COPY . .
 COPY /public ./public
 COPY /src ./src
 COPY index.html .
