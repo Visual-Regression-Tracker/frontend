@@ -6,8 +6,13 @@ FROM node:18-alpine3.18 AS builder
 # Create app directory
 WORKDIR /app
 
-# Copy all files from the repo to /app
-COPY . .
+# Copy all needed files from the repo to /app
+COPY /public ./public
+COPY /src ./src
+COPY index.html .
+COPY package*.json .
+COPY tsconfig.json .
+COPY vite.config.ts .
 
 # Install app dependencies
 RUN npm ci --verbose
