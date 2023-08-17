@@ -27,6 +27,7 @@ import { useSnackbar } from "notistack";
 import ProjectSelect from "../components/ProjectSelect";
 import { TextValidator, ValidatorForm } from "react-material-ui-form-validator";
 import { Role } from "../types";
+import PasswordField from "../components/PasswordField";
 
 const ProfilePage = () => {
   const { enqueueSnackbar } = useSnackbar();
@@ -201,23 +202,10 @@ const ProfilePage = () => {
                   <CardContent>
                     <Grid container spacing={2}>
                       <Grid item xs={12}>
-                        <TextValidator
-                          validators={["minStringLength:2"]}
-                          errorMessages={[errorForTwoChar]}
-                          id="password"
-                          name="password"
-                          value={password}
+                        <PasswordField
+                          password={password}
+                          setPassword={setPassword}
                           label={"New password"}
-                          type="password"
-                          variant="outlined"
-                          required
-                          fullWidth
-                          inputProps={{
-                            onChange: (
-                              event: React.ChangeEvent<HTMLInputElement>,
-                            ) => setPassword(event.target.value),
-                            "data-testid": "password",
-                          }}
                         />
                       </Grid>
                     </Grid>

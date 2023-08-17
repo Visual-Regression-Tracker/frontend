@@ -1,11 +1,18 @@
 import React, { useState, FormEvent } from "react";
-import { Button, Grid, Card, CardContent, CardActions } from "@mui/material";
+import {
+  Button,
+  Grid,
+  Card,
+  CardContent,
+  CardActions,
+} from "@mui/material";
 import { useUserDispatch, login } from "../contexts";
 import { usersService } from "../services";
 import { useSnackbar } from "notistack";
 import { TextValidator, ValidatorForm } from "react-material-ui-form-validator";
 import { useNavigate } from "react-router-dom";
 import { routes } from "../constants";
+import PasswordField from "../components/PasswordField";
 
 const RegisterForm = () => {
   const navigate = useNavigate();
@@ -32,7 +39,7 @@ const RegisterForm = () => {
         }),
       );
   };
-
+  
   const errorForTwoChar = "Enter at least two characters.";
 
   return (
@@ -98,22 +105,9 @@ const RegisterForm = () => {
               />
             </Grid>
             <Grid item>
-              <TextValidator
-                validators={["minStringLength:2"]}
-                errorMessages={[errorForTwoChar]}
-                id="password"
-                name="password"
-                value={password}
-                label={"Password"}
-                type="password"
-                variant="outlined"
-                required
-                fullWidth
-                inputProps={{
-                  onChange: (event: React.FormEvent<HTMLInputElement>) =>
-                    setPassword(event.target.value),
-                  "data-testid": "password",
-                }}
+              <PasswordField
+                password={password}
+                setPassword={setPassword}
               />
             </Grid>
           </Grid>

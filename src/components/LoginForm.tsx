@@ -12,6 +12,7 @@ import { useUserDispatch, login } from "../contexts";
 import { LOCATOR_LOGIN_FORM, routes } from "../constants";
 import { useSnackbar } from "notistack";
 import { TextValidator, ValidatorForm } from "react-material-ui-form-validator";
+import PasswordField from "../components/PasswordField";
 
 const LoginForm = () => {
   const location = useLocation();
@@ -35,8 +36,6 @@ const LoginForm = () => {
         }),
       );
   };
-
-  const errorForTwoChar = "Enter at least two characters.";
 
   return (
     <ValidatorForm onSubmit={handleSubmit} instantValidate>
@@ -64,22 +63,9 @@ const LoginForm = () => {
             </Grid>
 
             <Grid item>
-              <TextValidator
-                validators={["minStringLength:2"]}
-                errorMessages={[errorForTwoChar]}
-                id="password"
-                name="password"
-                value={password}
-                label={"Password"}
-                type="password"
-                variant="outlined"
-                required
-                fullWidth
-                inputProps={{
-                  onChange: (event: React.ChangeEvent<HTMLInputElement>) =>
-                    setPassword(event.target.value),
-                  "data-testid": "password",
-                }}
+              <PasswordField
+                password={password}
+                setPassword={setPassword}
               />
             </Grid>
           </Grid>
