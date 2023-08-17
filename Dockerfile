@@ -1,5 +1,6 @@
 ### STAGE 1: Build ###
-# This image is around 50 megabytes
+# This image is around 53 megabytes
+# https://hub.docker.com/_/node/tags?page=1&name=alpine
 FROM node:18-alpine3.18 AS builder
 
 # Create app directory
@@ -14,19 +15,25 @@ RUN npm ci --verbose
 # Build the ui
 RUN npm run build
 
-# Create environment variable js file
-RUN node generate-env-browser.js
-
 ### STAGE 2: Run ###
 # This image is around 5 megabytes
-FROM nginx:1.25-alpine3.17-slim
+# https://hub.docker.com/_/nginx/tags?page=1&name=slim
+FROM nginx:1.25-alpine3.18-slim
+
+# Install Node.js LTS version needed for env variable generation
+RUN apk add --update nodejs
 
 COPY /nginx /etc/nginx/conf.d
 
 EXPOSE 8080
 EXPOSE 443
 
+# Copy web application which was build in stage 1
 COPY --from=builder /app/build /usr/share/nginx/html
-COPY --from=builder /app/env-config.js /usr/share/nginx/html/
 
-# Nginx server will now start automatically.
+# Environment variables adjust the running environment
+COPY generate-env-browser.js /usr/share/nginx/html/generate-env-browser.mjs
+COPY .env .
+
+# Start Nginx server with override ENV variables script
+CMD ["/bin/sh", "-c", "node /usr/share/nginx/html/generate-env-browser.mjs && nginx -g \"daemon off;\""]
