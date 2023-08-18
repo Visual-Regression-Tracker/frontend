@@ -10,7 +10,6 @@ export default defineConfig({
     command: "npm run start",
     url: baseURL,
     reuseExistingServer: true,
-    timeout: 300 * 1000,
   },
   use: {
     headless: true,
@@ -20,8 +19,5 @@ export default defineConfig({
     trace: "retry-with-trace",
   },
   retries: process.env.CI ? 1 : 0,
-  expect: {
-    timeout: 10 * 1000,
-  },
   forbidOnly: !!process.env.CI,
 });

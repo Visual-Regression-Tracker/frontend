@@ -59,7 +59,11 @@ function register(
     });
 }
 
-function update({ firstName, lastName, email }): Promise<User> {
+function update({
+  firstName,
+  lastName,
+  email,
+}: Pick<User, "firstName" | "lastName" | "email">): Promise<User> {
   const requestOptions = {
     method: "PUT",
     headers: {
