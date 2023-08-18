@@ -10,7 +10,7 @@ import {
 } from "@mui/x-data-grid";
 import { ActionButtons } from "./ActionButtons";
 import { usersService } from "../../services";
-import { Role } from "../../types";
+import { Role, User } from "../../types";
 import { useSnackbar } from "notistack";
 import { useUserDispatch, useUserState } from "../../contexts";
 
@@ -61,15 +61,15 @@ const UserList = () => {
       userDispatch({
         type: "getAll",
         payload: users,
-      }),
+      })
     );
   }, [userDispatch]);
 
-  const handleEditCellChangeCommitted = React.useCallback(
-    ({ id, field, value }) => {
-      if (field === "role") {
+  const processRowUpdate = React.useCallback(
+    (newState: User, oldState: User) => {
+      if (newState.role !== oldState.role) {
         usersService
-          .assignRole(id, value as Role)
+          .assignRole(oldState.id, newState.role as Role)
           .then(() => {
             enqueueSnackbar("Updated", {
               variant: "success",
@@ -78,11 +78,12 @@ const UserList = () => {
           .catch((err) =>
             enqueueSnackbar(err, {
               variant: "error",
-            }),
+            })
           );
       }
+      return newState;
     },
-    [enqueueSnackbar],
+    [enqueueSnackbar]
   );
 
   const apiRef = useGridApiRef();
@@ -101,7 +102,7 @@ const UserList = () => {
       slots={{
         toolbar: DataGridCustomToolbar,
       }}
-      onCellEditStop={handleEditCellChangeCommitted}
+      processRowUpdate={processRowUpdate}
     />
   );
 };
