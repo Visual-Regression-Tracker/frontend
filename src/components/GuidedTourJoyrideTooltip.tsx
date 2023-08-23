@@ -1,5 +1,5 @@
 import React from "react";
-import { Button, IconButton } from "@mui/material";
+import { Button, IconButton, Grid } from "@mui/material";
 import { Close } from "@mui/icons-material";
 import { TooltipRenderProps } from "react-joyride";
 
@@ -29,20 +29,21 @@ const GuidedTourJoyrideTooltip = ({
 
   const { back, close, last, next, skip } = step.locale;
 
-  const primaryButton = () => {  
+  const primaryButton = () => {
     let output = close;
     if (continuous) {
       output = isLastStep ? last : next;
     }
     return (
       <Button
-            data-testid="tour-button-next"
-            color="primary"
-            {...primaryProps}
-          >
-          {output}
-          {continuous && showProgress && ` (${index + 1}/${size})`}
-        </Button>
+        data-testid="tour-button-next"
+        variant="contained"
+        color="primary"
+        {...primaryProps}
+      >
+        {output}
+        {continuous && showProgress && ` (${index + 1}/${size})`}
+      </Button>
     );
   };
 
@@ -61,7 +62,8 @@ const GuidedTourJoyrideTooltip = ({
   const backButton = () => {
     return (
       <Button
-        style={styles?.buttonBack}
+        variant="contained"
+        color="secondary"
         data-testid="tour-button-back"
         {...backProps}
       >
@@ -96,15 +98,23 @@ const GuidedTourJoyrideTooltip = ({
             {title}
           </h4>
         )}
-        <div id="help-description" style={styles?.tooltipContent}>{content}</div>
+        <div id="help-description" style={styles?.tooltipContent}>
+          {content}
+        </div>
       </div>
       {!hideFooter && (
         <div style={styles?.tooltipFooter}>
-          <div style={styles?.tooltipFooterSpacer}>
-            {showSkipButton && !isLastStep && skipButton()}
-          </div>
-          {!hideBackButton && index > 0 && backButton()}
-          {primaryButton()}
+          <Grid container spacing={2}>
+            <Grid item xs={4}>
+              {showSkipButton && !isLastStep && skipButton()}
+            </Grid>
+            <Grid item xs={4}>
+              {!hideBackButton && index > 0 && backButton()}
+            </Grid>
+            <Grid item xs={4}>
+              {primaryButton()}
+            </Grid>
+          </Grid>
         </div>
       )}
       {!hideCloseButton && closeButton()}
