@@ -1,6 +1,14 @@
 import React from "react";
-import { makeStyles } from '@mui/styles';
-import { Button, Popper, Fade, Paper, TextField, Badge, type Theme } from "@mui/material";
+import { makeStyles } from "@mui/styles";
+import {
+  Button,
+  Popper,
+  Fade,
+  Paper,
+  TextField,
+  Badge,
+  type Theme,
+} from "@mui/material";
 import {
   usePopupState,
   bindToggle,
@@ -15,7 +23,6 @@ const useStyles = makeStyles((theme: Theme) => ({
     padding: theme.spacing(2),
   },
 }));
-
 
 interface IProps {
   text: string | undefined;

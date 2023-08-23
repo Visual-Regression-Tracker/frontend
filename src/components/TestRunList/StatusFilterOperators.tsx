@@ -11,11 +11,14 @@ import {
   GridFilterItem,
   GridCellParams,
   GridFilterOperator,
-  GridFilterInputValueProps
+  GridFilterInputValueProps,
 } from "@mui/x-data-grid";
 import { TestStatus } from "../../types";
 
-const StatusInputComponent = ({ item, applyValue }: GridFilterInputValueProps) => {
+const StatusInputComponent = ({
+  item,
+  applyValue,
+}: GridFilterInputValueProps) => {
   const { testRuns } = useTestRunState();
 
   const handleFilterChange = (event: SelectChangeEvent<HTMLSelectElement>) => {
@@ -52,7 +55,7 @@ const StatusInputComponent = ({ item, applyValue }: GridFilterInputValueProps) =
     </FormControl>
   );
 };
-export const StatusFilterOperators: GridFilterOperator[]  = [
+export const StatusFilterOperators: GridFilterOperator[] = [
   ...getGridStringOperators()
     .filter((operator) => operator.value === "equals")
     .map((operator) => ({

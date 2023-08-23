@@ -47,7 +47,7 @@ const TestVariationDetailsPage: React.FunctionComponent = () => {
         .catch((err) =>
           enqueueSnackbar(err, {
             variant: "error",
-          })
+          }),
         );
     }
   }, [testVariationId, enqueueSnackbar]);
@@ -72,11 +72,11 @@ const TestVariationDetailsPage: React.FunctionComponent = () => {
                         if (testRun) {
                           navigate({
                             pathname: buildProjectPageUrl(
-                              testVariation.projectId
+                              testVariation.projectId,
                             ),
                             ...buildTestRunLocation(
                               testRun.buildId,
-                              testRun.id
+                              testRun.id,
                             ),
                           });
                         }

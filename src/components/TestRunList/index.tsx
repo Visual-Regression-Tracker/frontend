@@ -53,7 +53,7 @@ const columnsDef: GridColDef[] = [
 
       return tags.reduce(
         (prev, curr) => prev.concat(curr ? `${curr};` : ""),
-        ""
+        "",
       );
     },
     renderCell: (params: GridCellParams) => (
@@ -72,7 +72,7 @@ const columnsDef: GridColDef[] = [
                     margin: "1px",
                   }}
                 />
-              )
+              ),
           )}
       </React.Fragment>
     ),
@@ -124,12 +124,12 @@ const TestRunList: React.FunctionComponent = () => {
           testRunDispatch({
             type: "get",
             payload,
-          })
+          }),
         )
         .catch((err: string) =>
           enqueueSnackbar(err, {
             variant: "error",
-          })
+          }),
         );
     } else {
       testRunDispatch({
@@ -161,8 +161,8 @@ const TestRunList: React.FunctionComponent = () => {
       () =>
         (unsubscribe = apiRef.current.subscribeEvent(
           "stateChange",
-          handleStateChange
-        ))
+          handleStateChange,
+        )),
     );
   }, [apiRef, apiRef.current.instanceId]);
 
@@ -192,7 +192,10 @@ const TestRunList: React.FunctionComponent = () => {
           onSortModelChange={(model) => setSortModel(model)}
           onRowClick={(param: GridRowParams) => {
             navigate(
-              buildTestRunLocation(selectedBuild.id, param.row["id"].toString())
+              buildTestRunLocation(
+                selectedBuild.id,
+                param.row["id"].toString(),
+              ),
             );
           }}
         />

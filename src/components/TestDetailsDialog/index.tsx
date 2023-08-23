@@ -28,13 +28,14 @@ export const TestDetailsDialog: React.FunctionComponent = () => {
   const [navigationTargetId, setNavigationTargetId] = React.useState<string>();
 
   const testRuns = React.useMemo(() => {
-    if(filteredSortedTestRunIds) {
+    if (filteredSortedTestRunIds) {
       return allTestRuns
-      .filter((tr) => filteredSortedTestRunIds.includes(tr.id))
-      .sort(
-        (a, b) =>
-        filteredSortedTestRunIds.indexOf(a.id) - filteredSortedTestRunIds.indexOf(b.id),
-      )
+        .filter((tr) => filteredSortedTestRunIds.includes(tr.id))
+        .sort(
+          (a, b) =>
+            filteredSortedTestRunIds.indexOf(a.id) -
+            filteredSortedTestRunIds.indexOf(b.id),
+        );
     }
     return allTestRuns;
   }, [allTestRuns, filteredSortedTestRunIds]);

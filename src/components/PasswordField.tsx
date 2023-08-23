@@ -1,18 +1,19 @@
 import React, { useState } from "react";
-import {
-  IconButton,
-  InputAdornment,
-} from "@mui/material";
+import { IconButton, InputAdornment } from "@mui/material";
 import { Visibility, VisibilityOff } from "@mui/icons-material";
 import { TextValidator } from "react-material-ui-form-validator";
 
 interface PasswordFieldProps {
-    password: string;
-    setPassword: React.Dispatch<React.SetStateAction<string>>;
-    label?: string;
+  password: string;
+  setPassword: React.Dispatch<React.SetStateAction<string>>;
+  label?: string;
 }
 
-const PasswordField = ({password, setPassword, label = "Password" }: PasswordFieldProps) => {
+const PasswordField = ({
+  password,
+  setPassword,
+  label = "Password",
+}: PasswordFieldProps) => {
   const [showPassword, setShowPassword] = useState<boolean>(false);
 
   const handleClickShowPassword = () => setShowPassword((show) => !show);

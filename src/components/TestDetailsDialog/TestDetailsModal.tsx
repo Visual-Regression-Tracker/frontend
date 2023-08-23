@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { makeStyles } from '@mui/styles';
+import { makeStyles } from "@mui/styles";
 import {
   Typography,
   Button,
@@ -603,11 +603,7 @@ const TestDetailsModal: React.FunctionComponent<TestDetailsModalProps> = ({
           <TestStatusChip status={testRun.status} />
         </Grid>
         <Grid item className={classes.closeIcon}>
-          <IconButton
-            color="inherit"
-            onClick={handleClose}
-            size="large"
-          >
+          <IconButton color="inherit" onClick={handleClose} size="large">
             <Close />
           </IconButton>
         </Grid>
