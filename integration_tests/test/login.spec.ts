@@ -24,8 +24,8 @@ test("show and hide password", async ({ loginPage }) => {
   await loginPage.password.type("123456");
 
   await loginPage.showPasswordBtn.click();
-  expect(await loginPage.password.getAttribute('type')).toBe('text');
+  expect(await loginPage.password.getAttribute("type")).toBe("text");
 
   await loginPage.showPasswordBtn.click();
-  expect(await loginPage.password.getAttribute('type')).toBe('password');
+  expect(await loginPage.password.getAttribute("type")).toBe("password");
 });

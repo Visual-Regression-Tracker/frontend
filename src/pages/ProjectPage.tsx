@@ -1,5 +1,5 @@
 import React, { useEffect } from "react";
-import { makeStyles } from '@mui/styles';
+import { makeStyles } from "@mui/styles";
 import { Grid, Box } from "@mui/material";
 import { useParams, useNavigate } from "react-router-dom";
 import BuildList from "../components/BuildList";
@@ -21,7 +21,6 @@ const useStyles = makeStyles(() => ({
     height: "100%",
   },
 }));
-
 
 const ProjectPage = () => {
   const classes = useStyles();

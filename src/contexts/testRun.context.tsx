@@ -79,7 +79,7 @@ type TestRunProviderProps = {
 
 const TestRunStateContext = React.createContext<State | undefined>(undefined);
 const TestRunDispatchContext = React.createContext<Dispatch | undefined>(
-  undefined
+  undefined,
 );
 
 const initialState: State = {
@@ -130,7 +130,7 @@ function testRunReducer(state: State, action: IAction): State {
           ...state.testRuns,
           ...action.payload.filter(
             // remove duplicates
-            (i) => !state.testRuns.find((tr) => tr.id === i.id)
+            (i) => !state.testRuns.find((tr) => tr.id === i.id),
           ),
         ],
       };

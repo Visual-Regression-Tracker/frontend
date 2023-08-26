@@ -61,7 +61,7 @@ const UserList = () => {
       userDispatch({
         type: "getAll",
         payload: users,
-      })
+      }),
     );
   }, [userDispatch]);
 
@@ -78,12 +78,12 @@ const UserList = () => {
           .catch((err) =>
             enqueueSnackbar(err, {
               variant: "error",
-            })
+            }),
           );
       }
       return newState;
     },
-    [enqueueSnackbar]
+    [enqueueSnackbar],
   );
 
   const apiRef = useGridApiRef();

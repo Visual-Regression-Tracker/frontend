@@ -1,5 +1,5 @@
 import React, { FunctionComponent } from "react";
-import { makeStyles, createStyles } from '@mui/styles';
+import { makeStyles, createStyles } from "@mui/styles";
 import {
   List,
   ListItemButton,

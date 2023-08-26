@@ -63,10 +63,7 @@ const LoginForm = () => {
             </Grid>
 
             <Grid item>
-              <PasswordField
-                password={password}
-                setPassword={setPassword}
-              />
+              <PasswordField password={password} setPassword={setPassword} />
             </Grid>
           </Grid>
         </CardContent>

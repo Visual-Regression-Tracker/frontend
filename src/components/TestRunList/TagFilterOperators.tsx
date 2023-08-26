@@ -6,7 +6,11 @@ import {
 } from "@mui/material";
 import React from "react";
 import { useTestRunState } from "../../contexts";
-import { getGridStringOperators, GridFilterOperator, GridFilterInputValueProps } from "@mui/x-data-grid";
+import {
+  getGridStringOperators,
+  GridFilterOperator,
+  GridFilterInputValueProps,
+} from "@mui/x-data-grid";
 
 const TagInputComponent = ({ item, applyValue }: GridFilterInputValueProps) => {
   const { testRuns } = useTestRunState();

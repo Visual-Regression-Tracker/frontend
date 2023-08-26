@@ -339,9 +339,5 @@ export const DrawArea: FunctionComponent<IDrawArea> = ({
   );
 
   // TODO: Separate SVG with reason...
-  return (
-    <>
-      {imageName ? imageCanvas() : <NoImagePlaceholder />}
-    </>
-  );
+  return <>{imageName ? imageCanvas() : <NoImagePlaceholder />}</>;
 };
