@@ -1,4 +1,5 @@
 import { Dialog, Typography } from "@mui/material";
+import { styled } from "@mui/material/styles";
 import React from "react";
 import { useNavigate } from "react-router";
 import { useBuildState, useTestRunState } from "../../contexts";
@@ -6,16 +7,19 @@ import { buildTestRunLocation } from "../../_helpers/route.helpers";
 import { BaseModal } from "../BaseModal";
 import TestDetailsModal from "./TestDetailsModal";
 import { TestRun } from "../../types";
-import { makeStyles } from "@mui/styles";
+const PREFIX = "TestDetailsDialog";
 
-const useStyles = makeStyles(() => ({
-  modal: {
+const classes = {
+  modal: `${PREFIX}-modal`,
+};
+
+const StyledDialog = styled(Dialog)(() => ({
+  [`&.${classes.modal}`]: {
     margin: "20px 10px 10px 10px",
   },
 }));
 
 export const TestDetailsDialog: React.FunctionComponent = () => {
-  const classes = useStyles();
   const {
     selectedTestRun,
     touched,
@@ -72,7 +76,7 @@ export const TestDetailsDialog: React.FunctionComponent = () => {
   }
 
   return (
-    <Dialog open={true} fullScreen className={classes.modal}>
+    <StyledDialog open={true} fullScreen className={classes.modal}>
       <TestDetailsModal
         testRun={selectedTestRun}
         currentRunIndex={testRuns.findIndex(
@@ -97,6 +101,6 @@ export const TestDetailsDialog: React.FunctionComponent = () => {
           setNotSavedChangesModal(false);
         }}
       />
-    </Dialog>
+    </StyledDialog>
   );
 };

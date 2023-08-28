@@ -1,5 +1,5 @@
 import React, { FunctionComponent } from "react";
-import { makeStyles, createStyles } from "@mui/styles";
+import { styled } from "@mui/material/styles";
 import {
   List,
   ListItemButton,
@@ -34,26 +34,34 @@ import { useNavigate } from "react-router";
 import { buildTestRunLocation } from "../../_helpers/route.helpers";
 import { Tooltip } from "../Tooltip";
 
-const useStyles = makeStyles(() =>
-  createStyles({
-    listContainer: {
-      height: "100%",
-      overflow: "auto",
+const PREFIX = "index";
+
+const classes = {
+  listContainer: `${PREFIX}-listContainer`,
+  listItemSecondaryAction: `${PREFIX}-listItemSecondaryAction`,
+  listItem: `${PREFIX}-listItem`,
+};
+
+// TODO jss-to-styled codemod: The Fragment root was replaced by div. Change the tag if needed.
+const Root = styled("div")(() => ({
+  [`& .${classes.listContainer}`]: {
+    height: "100%",
+    overflow: "auto",
+  },
+
+  [`& .${classes.listItemSecondaryAction}`]: {
+    visibility: "hidden",
+  },
+
+  [`& .${classes.listItem}`]: {
+    paddingRight: 48,
+    "&:hover $listItemSecondaryAction": {
+      visibility: "inherit",
     },
-    listItemSecondaryAction: {
-      visibility: "hidden",
-    },
-    listItem: {
-      paddingRight: 48,
-      "&:hover $listItemSecondaryAction": {
-        visibility: "inherit",
-      },
-    },
-  }),
-);
+  },
+}));
 
 const BuildList: FunctionComponent = () => {
-  const classes = useStyles();
   const navigate = useNavigate();
   const { buildList, selectedBuild, loading, total, take } = useBuildState();
   const buildDispatch = useBuildDispatch();
@@ -117,7 +125,7 @@ const BuildList: FunctionComponent = () => {
   }, [handlePaginationChange]);
 
   return (
-    <>
+    <Root>
       <Box height="91%" overflow="auto">
         <List>
           {loading ? (
@@ -203,7 +211,6 @@ const BuildList: FunctionComponent = () => {
           </Grid>
         </Grid>
       </Box>
-
       {menuBuild && (
         <Menu anchorEl={anchorEl} open={!!menuBuild} onClose={handleMenuClose}>
           {menuBuild.isRunning && (
@@ -315,7 +322,7 @@ const BuildList: FunctionComponent = () => {
           }}
         />
       )}
-    </>
+    </Root>
   );
 };
 
