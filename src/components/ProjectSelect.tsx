@@ -1,11 +1,9 @@
 import React, { FunctionComponent } from "react";
-import { styled } from "@mui/material/styles";
 import {
   FormControl,
   InputLabel,
   MenuItem,
   Select,
-  type Theme,
   type SelectChangeEvent,
 } from "@mui/material";
 import {
@@ -13,24 +11,6 @@ import {
   useProjectDispatch,
   selectProject,
 } from "../contexts";
-
-const PREFIX = "ProjectSelect";
-
-const classes = {
-  formControl: `${PREFIX}-formControl`,
-  input: `${PREFIX}-input`,
-};
-
-// TODO jss-to-styled codemod: The Fragment root was replaced by div. Change the tag if needed.
-const Root = styled("div")(({ theme: Theme }) => ({
-  [`& .${classes.formControl}`]: {
-    width: "100%",
-  },
-
-  [`& .${classes.input}`]: {
-    margin: theme.spacing(1),
-  },
-}));
 
 const ProjectSelect: FunctionComponent<{
   projectId?: string;
@@ -46,9 +26,9 @@ const ProjectSelect: FunctionComponent<{
   }, [projectId, selectedProjectId, projectDispatch]);
 
   return (
-    <Root>
+    <>
       {projectList.length > 0 && (
-        <FormControl variant="standard" className={classes.formControl}>
+        <FormControl variant="standard" sx={{width: "100%"}}>
           <InputLabel id="projectSelect" shrink>
             Project
           </InputLabel>
@@ -56,8 +36,8 @@ const ProjectSelect: FunctionComponent<{
             variant="standard"
             id="project-select"
             labelId="projectSelect"
-            className={classes.input}
             displayEmpty
+            sx={{m: "16px"}}
             value={selectedProjectId ?? ""}
             onChange={(event: SelectChangeEvent<HTMLInputElement>) =>
               onProjectSelect(event.target.value as string)
@@ -74,7 +54,7 @@ const ProjectSelect: FunctionComponent<{
           </Select>
         </FormControl>
       )}
-    </Root>
+    </>
   );
 };
 
