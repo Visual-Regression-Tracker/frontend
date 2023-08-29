@@ -1,11 +1,9 @@
 import React, { FunctionComponent } from "react";
-import { makeStyles, createStyles } from "@mui/styles";
 import {
   FormControl,
   InputLabel,
   MenuItem,
   Select,
-  type Theme,
   type SelectChangeEvent,
 } from "@mui/material";
 import {
@@ -14,22 +12,10 @@ import {
   selectProject,
 } from "../contexts";
 
-const useStyles = makeStyles((theme: Theme) =>
-  createStyles({
-    formControl: {
-      width: "100%",
-    },
-    input: {
-      margin: theme.spacing(1),
-    },
-  }),
-);
-
 const ProjectSelect: FunctionComponent<{
   projectId?: string;
   onProjectSelect: (id: string) => void;
 }> = ({ projectId, onProjectSelect }) => {
-  const classes = useStyles();
   const { projectList, selectedProjectId } = useProjectState();
   const projectDispatch = useProjectDispatch();
 
@@ -42,7 +28,7 @@ const ProjectSelect: FunctionComponent<{
   return (
     <>
       {projectList.length > 0 && (
-        <FormControl variant="standard" className={classes.formControl}>
+        <FormControl variant="standard" sx={{width: "100%"}}>
           <InputLabel id="projectSelect" shrink>
             Project
           </InputLabel>
@@ -50,8 +36,8 @@ const ProjectSelect: FunctionComponent<{
             variant="standard"
             id="project-select"
             labelId="projectSelect"
-            className={classes.input}
             displayEmpty
+            sx={{m: "16px"}}
             value={selectedProjectId ?? ""}
             onChange={(event: SelectChangeEvent<HTMLInputElement>) =>
               onProjectSelect(event.target.value as string)

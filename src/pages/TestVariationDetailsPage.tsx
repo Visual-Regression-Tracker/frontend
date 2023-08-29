@@ -1,4 +1,5 @@
 import React from "react";
+import { styled } from "@mui/material/styles";
 import { useParams, useNavigate } from "react-router-dom";
 import { TestVariation } from "../types";
 import { testVariationService, staticService } from "../services";
@@ -21,17 +22,20 @@ import { useSnackbar } from "notistack";
 import { formatDateTime } from "../_helpers/format.helper";
 import TestStatusChip from "../components/TestStatusChip";
 import { Baseline } from "../types/baseline";
-import { makeStyles } from "@mui/styles";
+const PREFIX = "TestVariationDetailsPage";
 
-const useStyles = makeStyles({
-  media: {
+const classes = {
+  media: `${PREFIX}-media`,
+};
+
+const StyledContainer = styled(Container)({
+  [`& .${classes.media}`]: {
     height: 600,
     objectFit: "contain",
   },
 });
 
 const TestVariationDetailsPage: React.FunctionComponent = () => {
-  const classes = useStyles();
   const navigate = useNavigate();
   const { enqueueSnackbar } = useSnackbar();
   const { testVariationId } = useParams<{ testVariationId: string }>();
@@ -53,7 +57,7 @@ const TestVariationDetailsPage: React.FunctionComponent = () => {
   }, [testVariationId, enqueueSnackbar]);
 
   return (
-    <Container>
+    <StyledContainer>
       <Box mt={2}>
         {testVariation && (
           <Grid container direction="column" spacing={2}>
@@ -109,7 +113,7 @@ const TestVariationDetailsPage: React.FunctionComponent = () => {
           </Grid>
         )}
       </Box>
-    </Container>
+    </StyledContainer>
   );
 };
 

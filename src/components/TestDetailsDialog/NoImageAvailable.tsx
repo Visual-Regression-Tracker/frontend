@@ -1,9 +1,14 @@
 import React from "react";
+import { styled } from "@mui/material/styles";
 import noImage from "../../static/no-image.png";
-import { makeStyles } from "@mui/styles";
+const PREFIX = "NoImagePlaceholder";
 
-const useStyles = makeStyles(() => ({
-  img: {
+const classes = {
+  img: `${PREFIX}-img`,
+};
+
+const Root = styled("img")(() => ({
+  [`&.${classes.img}`]: {
     display: "block",
     marginLeft: "auto",
     marginRight: "auto",
@@ -13,7 +18,5 @@ const useStyles = makeStyles(() => ({
 
 // TODO: Use SVG and more specific text to describe reason...
 export const NoImagePlaceholder: React.FunctionComponent = () => {
-  const classes = useStyles();
-
-  return <img src={noImage} alt="Not available" className={classes.img} />;
+  return <Root src={noImage} alt="Not available" className={classes.img} />;
 };
