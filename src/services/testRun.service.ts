@@ -2,8 +2,6 @@ import { TestRun } from "../types";
 import { handleResponse, authHeader } from "../_helpers/service.helpers";
 import { API_URL } from "../_config/env.config";
 import { UpdateIgnoreAreaDto } from "../types/ignoreArea";
-import FileSaver from "file-saver";
-import JSZip from "jszip";
 
 const ENDPOINT_URL = "/test-runs";
 const DEFAULT_HEADERS = {
@@ -18,45 +16,8 @@ function getList(buildId: string): Promise<TestRun[]> {
 
   return fetch(
     `${API_URL}${ENDPOINT_URL}?buildId=${buildId}`,
-    requestOptions,
+    requestOptions
   ).then(handleResponse);
-}
-
-async function getFiles(
-  urls: {
-    download: string;
-    filename: string;
-  }[],
-): Promise<void> {
-  // Reference : https://www.c-sharpcorner.com/article/download-multiple-file-as-zip-file-using-angular/
-  const zip = new JSZip();
-
-  for (const eachUrl of urls) {
-    const response = await fetch(eachUrl.download);
-    const blob = await response.blob();
-    zip.file(eachUrl.filename, blob);
-  }
-
-  await zip
-    .generateAsync({
-      type: "blob",
-    })
-    .then((content) => {
-      if (content) {
-        FileSaver.saveAs(content, "vrt-test-run.zip");
-      }
-    });
-  // Downloads multiple images as individual files, kept it here for reference
-  // Reference : https://github.com/robertdiers/js-multi-file-download/blob/master/src/main/resources/static/index.html
-  /*
-  urls.forEach(function (e) {
-    fetch(e.download)
-      .then(res => res.blob()) // Gets the response and returns it as a blob
-      .then(blob => {
-        FileSaver.saveAs(blob, e.filename);
-      });
-  });
-  */
 }
 
 function getDetails(id: string): Promise<TestRun> {
@@ -66,7 +27,7 @@ function getDetails(id: string): Promise<TestRun> {
   };
 
   return fetch(`${API_URL}${ENDPOINT_URL}/${id}`, requestOptions).then(
-    handleResponse,
+    handleResponse
   );
 }
 
@@ -81,7 +42,7 @@ function removeBulk(ids: string[] | number[]): Promise<void> {
   };
 
   return fetch(`${API_URL}${ENDPOINT_URL}/delete`, requestOptions).then(
-    handleResponse,
+    handleResponse
   );
 }
 
@@ -96,7 +57,7 @@ function rejectBulk(ids: string[] | number[]): Promise<void> {
   };
 
   return fetch(`${API_URL}${ENDPOINT_URL}/reject`, requestOptions).then(
-    handleResponse,
+    handleResponse
   );
 }
 
@@ -112,7 +73,7 @@ function approveBulk(ids: string[] | number[], merge: boolean): Promise<void> {
 
   return fetch(
     `${API_URL}${ENDPOINT_URL}/approve?merge=${merge}`,
-    requestOptions,
+    requestOptions
   ).then(handleResponse);
 }
 
@@ -128,7 +89,7 @@ function updateIgnoreAreas(data: UpdateIgnoreAreaDto): Promise<void> {
 
   return fetch(
     `${API_URL}${ENDPOINT_URL}/ignoreAreas/update`,
-    requestOptions,
+    requestOptions
   ).then(handleResponse);
 }
 
@@ -144,7 +105,7 @@ function addIgnoreAreas(data: UpdateIgnoreAreaDto): Promise<void> {
 
   return fetch(
     `${API_URL}${ENDPOINT_URL}/ignoreAreas/add`,
-    requestOptions,
+    requestOptions
   ).then(handleResponse);
 }
 
@@ -152,7 +113,7 @@ function update(
   id: string,
   data: {
     comment: string;
-  },
+  }
 ): Promise<TestRun> {
   const requestOptions = {
     method: "PATCH",
@@ -164,7 +125,7 @@ function update(
   };
 
   return fetch(`${API_URL}${ENDPOINT_URL}/update/${id}`, requestOptions).then(
-    handleResponse,
+    handleResponse
   );
 }
 
@@ -177,5 +138,4 @@ export const testRunService = {
   updateIgnoreAreas,
   addIgnoreAreas,
   update,
-  getFiles,
 };

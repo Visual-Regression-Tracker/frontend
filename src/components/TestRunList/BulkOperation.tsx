@@ -16,20 +16,21 @@ import {
   ThumbDown,
   ThumbUp,
 } from "@mui/icons-material";
-import { testRunService } from "../../services";
+import { staticService, testRunService } from "../../services";
 import { TestStatus } from "../../types";
 import { Tooltip } from "../Tooltip";
+import { useTestRunState } from "../../contexts";
 
 export const BulkOperation: React.FunctionComponent = () => {
   const apiRef = useGridApiContext();
   const { state } = apiRef.current;
   const rows = gridExpandedSortedRowEntriesSelector(
     state,
-    apiRef.current.instanceId,
+    apiRef.current.instanceId
   );
 
   const selectedRows = gridRowSelectionStateSelector(state);
-
+  const { testRuns } = useTestRunState();
   const { enqueueSnackbar } = useSnackbar();
   const [approveDialogOpen, setApproveDialogOpen] = React.useState(false);
   const [rejectDialogOpen, setRejectDialogOpen] = React.useState(false);
@@ -42,15 +43,15 @@ export const BulkOperation: React.FunctionComponent = () => {
   const [isProcessing, setIsProcessing] = React.useState(false);
   const selectedIds: GridRowId[] = React.useMemo(
     () => Object.values(selectedRows),
-    [selectedRows],
+    [selectedRows]
   );
 
   const isMerge: boolean = React.useMemo(
     () =>
       !!rows.find((row: GridRowModel) =>
-        selectedIds.includes(row.id.toString()),
+        selectedIds.includes(row.id.toString())
       ),
-    [selectedIds, rows],
+    [selectedIds, rows]
   );
 
   // The ids of those rows that have status "new" or "resolved"
@@ -61,11 +62,11 @@ export const BulkOperation: React.FunctionComponent = () => {
           (row: GridRowModel) =>
             selectedIds.includes(row.id.toString()) &&
             [TestStatus.new, TestStatus.unresolved].includes(
-              row.model.status.toString(),
-            ),
+              row.model.status.toString()
+            )
         )
         .map((row: GridRowModel) => row.id.toString()),
-    [selectedIds, rows],
+    [selectedIds, rows]
   );
 
   const toggleApproveDialogOpen = () => {
@@ -145,29 +146,19 @@ export const BulkOperation: React.FunctionComponent = () => {
   const getBulkAction = () => {
     if (deleteDialogOpen) {
       return testRunService.removeBulk(
-        selectedIds.map((item: GridRowId) => item.toString()),
+        selectedIds.map((item: GridRowId) => item.toString())
       );
     }
 
     if (downloadDialogOpen) {
-      const urlsToDownload: {
-        download: string;
-        filename: string;
-      }[] = [];
+      const images = testRuns
+        .filter((testRun) => selectedIds.includes(testRun.id))
+        .map((item) => ({
+          filename: item.name,
+          url: staticService.getImage(item.imageName),
+        }));
 
-      for (const id of selectedIds) {
-        testRunService.getDetails(id.toString()).then((testRun) => {
-          urlsToDownload.push({
-            download: "static/imageUploads/" + testRun.imageName,
-            filename: testRun.name,
-          });
-
-          //Call getFile function only when all images names are pushed into the array.
-          if (urlsToDownload.length === selectedIds.length) {
-            testRunService.getFiles(urlsToDownload);
-          }
-        });
-      }
+      return staticService.downloadAsZip(images);
     }
 
     if (rejectDialogOpen) {

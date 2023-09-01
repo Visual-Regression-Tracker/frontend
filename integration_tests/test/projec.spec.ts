@@ -1,3 +1,4 @@
+import { expect } from "@playwright/test";
 import { test } from "fixtures";
 import {
   TEST_BUILD_FAILED,
@@ -42,12 +43,25 @@ test.beforeEach(async ({ page }) => {
 
 test("renders", async ({ openProjectPage, page, vrt }) => {
   const projectPage = await openProjectPage(project.id);
-  await projectPage.getBuildLocator(TEST_BUILD_FAILED.number).click();
-  await page.waitForTimeout(500); //TODO: fixt flacky screen
+  await projectPage.buildList.getBuildLocator(TEST_BUILD_FAILED.number).click();
 
   await vrt.trackPage(page, "Project page. Test run list");
 
-  await projectPage.getTestRunLocator(TEST_UNRESOLVED.name).click();
+  await projectPage.testRunList.getRow(TEST_UNRESOLVED.id).click();
 
   await vrt.trackPage(page, "Project page. Test run details");
+});
+
+test("can download images", async ({ openProjectPage, page }) => {
+  const projectPage = await openProjectPage(project.id, TEST_BUILD_FAILED.id);
+
+  await projectPage.testRunList.checkRow(TEST_UNRESOLVED.id);
+  await projectPage.testRunList.checkRow(TEST_RUN_NEW.id);
+
+  await projectPage.testRunList.downloadBtn.click();
+  await projectPage.modal.confirmBtn.click();
+
+  await expect(projectPage.notification.message).toHaveText(
+    "2 test runs processed."
+  );
 });

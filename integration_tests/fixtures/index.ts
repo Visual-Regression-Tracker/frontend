@@ -10,12 +10,16 @@ type Fixtures = {
   vrt: PlaywrightVisualRegressionTracker;
   loginPage: LoginPage;
   registerPage: RegisterPage;
-  openProjectPage: (id: string) => Promise<ProjectPage>;
+  openProjectPage: (
+    id: string,
+    buildId?: string,
+    testId?: string
+  ) => Promise<ProjectPage>;
   openTestVariationListPage: (
-    projectId: string,
+    projectId: string
   ) => Promise<TestVariationListPage>;
   openTestVariationDetailsPage: (
-    id: string,
+    id: string
   ) => Promise<TestVariationDetailsPage>;
   projectListPage: ProjectListPage;
   profilePage: ProfilePage;
@@ -64,8 +68,15 @@ export const test = base.extend<Fixtures>({
   },
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   openProjectPage: async ({ page, authUser }, use) => {
-    await use(async (id) => {
-      await page.goto(`${id}`);
+    await use(async (id, buildId, testId) => {
+      let url = `${id}`;
+      if (buildId) {
+        url = url.concat(`?buildId=${buildId}`);
+        if (testId) {
+          url = url.concat(`&testId=${testId}`);
+        }
+      }
+      await page.goto(url);
       return new ProjectPage(page);
     });
   },
@@ -95,8 +106,8 @@ export const test = base.extend<Fixtures>({
           apiKey: "ASJDHGAKJSDGASD",
           role: "admin",
           token: "eyJsgOE8Bw2bFwhZAugRRGm8U",
-        }),
-      ),
+        })
+      )
     );
 
     await use();

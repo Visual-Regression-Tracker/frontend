@@ -1,14 +1,15 @@
+import { Page } from "@playwright/test";
 import { BasePage } from "./BasePage";
+import { TestRunList } from "./components/TestRunList";
+import { BuildList } from "./components/BuildList";
 
 export class ProjectPage extends BasePage {
-  buildList = this.page.locator("#build-list");
-  testRunList = this.page.locator("#test-run-list");
+  testRunList: TestRunList;
+  buildList: BuildList;
 
-  getBuildLocator(number: number) {
-    return this.buildList.getByText(`#${number}`);
-  }
-
-  getTestRunLocator(name: string) {
-    return this.testRunList.getByText(name);
+  constructor(page: Page) {
+    super(page);
+    this.testRunList = new TestRunList(page);
+    this.buildList = new BuildList(page);
   }
 }
