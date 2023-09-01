@@ -223,8 +223,8 @@ export const TEST_UNRESOLVED: TestRun = {
 export const TEST_RUN_APPROVED: TestRun = {
   id: "some_test_run_id2",
   buildId: "some build id",
-  imageName: "imageName",
-  diffName: "diffName",
+  imageName: "image.png",
+  diffName: "diff.png",
   diffPercent: 1.24,
   diffTollerancePercent: 3.21,
   status: TestStatus.approved,
@@ -247,8 +247,8 @@ export const TEST_RUN_APPROVED: TestRun = {
 export const TEST_RUN_NEW: TestRun = {
   id: "some_test_run_id3",
   buildId: "some build id",
-  imageName: "imageName",
-  diffName: "diffName",
+  imageName: "image.png",
+  diffName: "diff.png",
   diffPercent: 1.24,
   diffTollerancePercent: 3.21,
   status: TestStatus.new,
@@ -271,8 +271,8 @@ export const TEST_RUN_NEW: TestRun = {
 export const TEST_RUN_OK: TestRun = {
   id: "some_test_run_id4",
   buildId: "some build id",
-  imageName: "imageName",
-  diffName: "diffName",
+  imageName: "image.png",
+  diffName: "diff.png",
   diffPercent: 1.24,
   diffTollerancePercent: 3.21,
   status: TestStatus.ok,
