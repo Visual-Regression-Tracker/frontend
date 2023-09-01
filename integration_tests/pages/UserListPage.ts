@@ -1,4 +1,4 @@
-import { Locator, Page } from "@playwright/test";
+import { Page } from "@playwright/test";
 import { BasePage } from "./BasePage";
 import { type Role } from "~client/types";
 import { Table } from "./components/Table";

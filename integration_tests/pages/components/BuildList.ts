@@ -1,5 +1,4 @@
 import { Page } from "@playwright/test";
-import { Table } from "./Table";
 
 export class BuildList {
   buildList = this.page.locator("#build-list");
