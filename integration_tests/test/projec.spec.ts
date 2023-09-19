@@ -62,6 +62,6 @@ test("can download images", async ({ openProjectPage, page }) => {
   await projectPage.modal.confirmBtn.click();
 
   await expect(projectPage.notification.message).toHaveText(
-    "2 test runs processed."
+    "2 test runs processed.",
   );
 });

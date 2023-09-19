@@ -13,13 +13,13 @@ async function downloadAsZip(
   items: {
     url: string;
     filename: string;
-  }[]
+  }[],
 ): Promise<void> {
   const zip = new JSZip();
   const downloadFilePromises = items.map((item) =>
     axios.get(item.url, { responseType: "blob" }).then((resp) => {
       zip.file(item.filename.concat(".png"), resp.data);
-    })
+    }),
   );
 
   return Promise.all(downloadFilePromises).then(() => {
