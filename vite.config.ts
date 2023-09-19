@@ -2,18 +2,27 @@ import { defineConfig } from "vite";
 
 import react from "@vitejs/plugin-react";
 
-/*
-Saved for later use once other libraries are being updated.
-function manualChunks(id : string) {
-    if (id.includes('node_modules/react')) {
-        return 'react';
-    } else if (id.includes('node_modules/@material-ui')) {
-        return 'material';
-    } else if (id.includes('node_modules')) {
-        return 'vendor';
-    }
+
+// Saved for later use once other libraries are being updated.
+function manualChunks(id: string): string | void {
+  if (id.includes('node_modules/react-')) {
+      return 'react-libs';
+  } else if (id.includes('konva')) {
+      return 'konva';
+  } else if (id.includes('node_modules/react')) {
+      return 'react';
+  } else if (id.includes('node_modules/@mui/x-')) {
+      return 'mui-x';
+  } else if (id.includes('node_modules/@mui')) {
+      return 'mui';
+  } else if (id.includes('node_modules')) {
+      return 'vendor';
+  }
+
+  // Here's the odd fix. You cannot return void, it must return a string
+  return "index";
 }
-*/
+
 
 // https://vitejs.dev/config/
 export default defineConfig({
@@ -36,12 +45,11 @@ export default defineConfig({
     cssCodeSplit: false,
 
     // https://rollupjs.org/configuration-options/
-    /*
-        rollupOptions: {
-            output: {
-                manualChunks: manualChunks
-            }
+
+    rollupOptions: {
+        output: {
+            manualChunks: manualChunks
         }
-        */
+    }
   },
 });
