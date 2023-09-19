@@ -21,7 +21,7 @@
     "@testing-library/user-event": "^12.8.3",
     "file-saver": "^2.0.5",
     "jszip": "^3.10.1",
-    "konva": "^7.2.5",
+    "konva": "^9.2.1",
     "material-ui-popup-state": "^5.0.9",
     "notistack": "^3.0.1",
     "qs": "^6.11.2",
