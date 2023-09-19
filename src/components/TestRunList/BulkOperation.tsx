@@ -26,7 +26,7 @@ export const BulkOperation: React.FunctionComponent = () => {
   const { state } = apiRef.current;
   const rows = gridExpandedSortedRowEntriesSelector(
     state,
-    apiRef.current.instanceId
+    apiRef.current.instanceId,
   );
 
   const selectedRows = gridRowSelectionStateSelector(state);
@@ -43,15 +43,15 @@ export const BulkOperation: React.FunctionComponent = () => {
   const [isProcessing, setIsProcessing] = React.useState(false);
   const selectedIds: GridRowId[] = React.useMemo(
     () => Object.values(selectedRows),
-    [selectedRows]
+    [selectedRows],
   );
 
   const isMerge: boolean = React.useMemo(
     () =>
       !!rows.find((row: GridRowModel) =>
-        selectedIds.includes(row.id.toString())
+        selectedIds.includes(row.id.toString()),
       ),
-    [selectedIds, rows]
+    [selectedIds, rows],
   );
 
   // The ids of those rows that have status "new" or "resolved"
@@ -62,11 +62,11 @@ export const BulkOperation: React.FunctionComponent = () => {
           (row: GridRowModel) =>
             selectedIds.includes(row.id.toString()) &&
             [TestStatus.new, TestStatus.unresolved].includes(
-              row.model.status.toString()
-            )
+              row.model.status.toString(),
+            ),
         )
         .map((row: GridRowModel) => row.id.toString()),
-    [selectedIds, rows]
+    [selectedIds, rows],
   );
 
   const toggleApproveDialogOpen = () => {
@@ -146,7 +146,7 @@ export const BulkOperation: React.FunctionComponent = () => {
   const getBulkAction = () => {
     if (deleteDialogOpen) {
       return testRunService.removeBulk(
-        selectedIds.map((item: GridRowId) => item.toString())
+        selectedIds.map((item: GridRowId) => item.toString()),
       );
     }
 

@@ -16,7 +16,7 @@ function getList(buildId: string): Promise<TestRun[]> {
 
   return fetch(
     `${API_URL}${ENDPOINT_URL}?buildId=${buildId}`,
-    requestOptions
+    requestOptions,
   ).then(handleResponse);
 }
 
@@ -27,7 +27,7 @@ function getDetails(id: string): Promise<TestRun> {
   };
 
   return fetch(`${API_URL}${ENDPOINT_URL}/${id}`, requestOptions).then(
-    handleResponse
+    handleResponse,
   );
 }
 
@@ -42,7 +42,7 @@ function removeBulk(ids: string[] | number[]): Promise<void> {
   };
 
   return fetch(`${API_URL}${ENDPOINT_URL}/delete`, requestOptions).then(
-    handleResponse
+    handleResponse,
   );
 }
 
@@ -57,7 +57,7 @@ function rejectBulk(ids: string[] | number[]): Promise<void> {
   };
 
   return fetch(`${API_URL}${ENDPOINT_URL}/reject`, requestOptions).then(
-    handleResponse
+    handleResponse,
   );
 }
 
@@ -73,7 +73,7 @@ function approveBulk(ids: string[] | number[], merge: boolean): Promise<void> {
 
   return fetch(
     `${API_URL}${ENDPOINT_URL}/approve?merge=${merge}`,
-    requestOptions
+    requestOptions,
   ).then(handleResponse);
 }
 
@@ -89,7 +89,7 @@ function updateIgnoreAreas(data: UpdateIgnoreAreaDto): Promise<void> {
 
   return fetch(
     `${API_URL}${ENDPOINT_URL}/ignoreAreas/update`,
-    requestOptions
+    requestOptions,
   ).then(handleResponse);
 }
 
@@ -105,7 +105,7 @@ function addIgnoreAreas(data: UpdateIgnoreAreaDto): Promise<void> {
 
   return fetch(
     `${API_URL}${ENDPOINT_URL}/ignoreAreas/add`,
-    requestOptions
+    requestOptions,
   ).then(handleResponse);
 }
 
@@ -113,7 +113,7 @@ function update(
   id: string,
   data: {
     comment: string;
-  }
+  },
 ): Promise<TestRun> {
   const requestOptions = {
     method: "PATCH",
@@ -125,7 +125,7 @@ function update(
   };
 
   return fetch(`${API_URL}${ENDPOINT_URL}/update/${id}`, requestOptions).then(
-    handleResponse
+    handleResponse,
   );
 }
 
