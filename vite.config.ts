@@ -45,10 +45,14 @@ export default defineConfig({
     cssCodeSplit: false,
 
     // https://rollupjs.org/configuration-options/
-
     rollupOptions: {
         output: {
             manualChunks: manualChunks
+        },
+        treeshake: {
+          // https://rollupjs.org/configuration-options/#treeshake
+          preset: 'smallest',
+          moduleSideEffects: true
         }
     }
   },
