@@ -5,18 +5,8 @@ import react from "@vitejs/plugin-react";
 
 // Saved for later use once other libraries are being updated.
 function manualChunks(id: string): string | void {
-  if (id.includes('node_modules/react-')) {
-      return 'react-libs';
-  } else if (id.includes('konva')) {
-      return 'konva';
-  } else if (id.includes('node_modules/react')) {
-      return 'react';
-  } else if (id.includes('node_modules/@mui/x-')) {
-      return 'mui-x';
-  } else if (id.includes('node_modules/@mui')) {
+  if (id.includes('node_modules/@mui')) {
       return 'mui';
-  } else if (id.includes('node_modules')) {
-      return 'vendor';
   }
 
   // Here's the odd fix. You cannot return void, it must return a string
@@ -40,20 +30,21 @@ export default defineConfig({
   build: {
     outDir: "build",
     sourcemap: true,
+    minify: false, //"esbuild",
 
     // When false, all CSS will be extracted into a single CSS file.
     cssCodeSplit: false,
 
     // https://rollupjs.org/configuration-options/
     rollupOptions: {
-        output: {
-            manualChunks: manualChunks
-        },
-        treeshake: {
-          // https://rollupjs.org/configuration-options/#treeshake
-          preset: 'smallest',
-          moduleSideEffects: true
-        }
+      //preserveEntrySignatures: "strict",
+      output: {
+        compact: true,
+        manualChunks: manualChunks,
+        generatedCode: "es2015",
+        //preserveModules: true,
+        //dir: "build"
+      }
     }
   },
 });
