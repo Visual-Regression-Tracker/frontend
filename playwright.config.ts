@@ -17,6 +17,7 @@ export default defineConfig({
     actionTimeout: 5000,
     navigationTimeout: 5000,
     trace: "retry-with-trace",
+    colorScheme: 'light',
   },
   retries: process.env.CI ? 1 : 0,
   forbidOnly: !!process.env.CI,
