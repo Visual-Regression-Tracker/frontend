@@ -23,4 +23,7 @@ export default defineConfig({
     cssCodeSplit: false,
 
   },
+  define: {
+    global: {},
+  },
 });
