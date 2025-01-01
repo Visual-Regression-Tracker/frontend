@@ -5,7 +5,7 @@ import axios from "axios";
 import FileSaver from "file-saver";
 
 function getImage(name: string): string {
-  if (name) return `${API_URL}/${name}`;
+  if (name) return `${API_URL}/images/${name}`;
   return noImage;
 }
 
