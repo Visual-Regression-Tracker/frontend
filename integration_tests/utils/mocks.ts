@@ -76,7 +76,7 @@ export const mockTestRun = async (page: Page, testRun: TestRun) => {
 };
 
 export const mockImage = async (page: Page, image: string) => {
-  return page.route(`${API_URL}/${image}`, (route) =>
+  return page.route(`${API_URL}/images/${image}`, (route) =>
     route.fulfill({
       path: `integration_tests/images/${image}`,
     }),
