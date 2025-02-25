@@ -130,6 +130,35 @@ export const ProjectForm: React.FunctionComponent = () => {
           });
         }}
       />
+      <TextValidator
+        name="protectedBranch"
+        validators={project.protectedBranch ? ["minStringLength:2"] : []}
+        errorMessages={["Enter at least two characters."]}
+        margin="dense"
+        id="protectedBranch"
+        label="Protected branch"
+        type="text"
+        fullWidth
+        helperText={
+          <>
+            PostgreSQL{" "}
+            <a
+              target="_blank"
+              rel="noreferrer"
+              href="https://www.postgresql.org/docs/current/functions-matching.html#FUNCTIONS-SIMILARTO-REGEXP"
+            >
+              SIMILAR TO Regular Expression
+            </a>
+          </>
+        }
+        value={project.protectedBranch || ""}
+        onChange={(event: React.ChangeEvent<HTMLInputElement>) =>
+          setProjectEditState(projectDispatch, {
+            ...project,
+            protectedBranch: event.target.value,
+          })
+        }
+      />
       <FormControlLabel
         label="Auto approve feature"
         control={
