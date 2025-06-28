@@ -47,7 +47,10 @@ export const BulkOperation: React.FunctionComponent = () => {
   );
 
   const isMerge: boolean = React.useMemo(
-    () => !!rows.find((row: GridRowModel) => selectedIds.includes(row.id.toString()))?.model.merge,
+    () =>
+      !!rows.find((row: GridRowModel) =>
+        selectedIds.includes(row.id.toString()),
+      )?.model.merge,
     [selectedIds, rows],
   );
 
@@ -268,7 +271,9 @@ export const BulkOperation: React.FunctionComponent = () => {
         onCancel={dismissDialog}
         content={
           <Typography>
-            {`Are you sure you want to ${submitButtonText().toLowerCase()} ${selectedRows.length} items?`}
+            {`Are you sure you want to ${submitButtonText().toLowerCase()} ${
+              selectedRows.length
+            } items?`}
           </Typography>
         }
         onSubmit={() => {

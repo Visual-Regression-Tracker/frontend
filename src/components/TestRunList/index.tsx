@@ -156,58 +156,49 @@ const TestRunList: React.FunctionComponent = () => {
       }
       unsubscribe?.();
     };
-    return apiRef.current.subscribeEvent?.(
+    return apiRef.current?.subscribeEvent?.(
       "stateChange",
       () =>
-        (unsubscribe = apiRef.current.subscribeEvent(
+        (unsubscribe = apiRef.current?.subscribeEvent(
           "stateChange",
           handleStateChange,
         )),
     );
-  }, [apiRef, apiRef.current.instanceId]);
+  }, [apiRef, apiRef.current?.instanceId]);
 
   if (selectedBuild) {
     return (
-      <React.Fragment>
-        <DataGrid
-          apiRef={apiRef}
-          rows={testRuns}
-          columns={columnsDef}
-          columnVisibilityModel={{
-            id: false,
-          }}
-          pageSizeOptions={[10, 30, 100]}
-          paginationModel={paginationModel}
-          onPaginationModelChange={setPaginationModel}
-          pagination
-          loading={loading}
-          slots={{
-            toolbar: DataGridCustomToolbar,
-          }}
-          checkboxSelection
-          disableColumnSelector
-          disableColumnMenu
-          disableRowSelectionOnClick
-          sortModel={sortModel}
-          onSortModelChange={(model) => setSortModel(model)}
-          onRowClick={(param: GridRowParams) => {
-            navigate(
-              buildTestRunLocation(
-                selectedBuild.id,
-                param.row["id"].toString(),
-              ),
-            );
-          }}
-        />
-      </React.Fragment>
+      <DataGrid
+        apiRef={apiRef}
+        rows={testRuns}
+        columns={columnsDef}
+        columnVisibilityModel={{
+          id: false,
+        }}
+        pageSizeOptions={[10, 30, 100]}
+        paginationModel={paginationModel}
+        onPaginationModelChange={setPaginationModel}
+        pagination
+        loading={loading}
+        slots={{
+          toolbar: DataGridCustomToolbar,
+        }}
+        checkboxSelection
+        disableColumnSelector
+        disableColumnMenu
+        disableRowSelectionOnClick
+        sortModel={sortModel}
+        onSortModelChange={(model) => setSortModel(model)}
+        onRowClick={(param: GridRowParams) => {
+          navigate(
+            buildTestRunLocation(selectedBuild.id, param.row["id"].toString()),
+          );
+        }}
+      />
     );
   }
 
-  return (
-    <React.Fragment>
-      <Typography variant="h5">Select build from list</Typography>
-    </React.Fragment>
-  );
+  return <Typography variant="h5">Select build from list</Typography>;
 };
 
 export default TestRunList;
