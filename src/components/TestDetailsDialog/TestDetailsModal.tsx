@@ -38,6 +38,7 @@ import {
   NavigateNext,
   NavigateBefore,
 } from "@mui/icons-material";
+import { useTheme } from '@mui/material/styles';
 import { TestRunDetails } from "./TestRunDetails";
 import useImage from "use-image";
 import { routes } from "../../constants";
@@ -52,50 +53,6 @@ import { Tooltip } from "../Tooltip";
 import ImageDetails, { ImageDetailsProps } from "./ImageDetails";
 import { calculateScale } from "../../_helpers/scale.helper";
 import TestStatusChip from "../TestStatusChip";
-
-const useStyles = makeStyles(() => ({
-  header: {
-    position: "relative",
-    textAlign: "left",
-    background: "#efefef",
-    paddingLeft: 8,
-    paddingBottom: 8,
-  },
-  footer: {
-    background: "#efefef",
-  },
-  scaleActions: {
-    display: "flex",
-    alignItems: "center",
-  },
-  testRunActions: {
-    display: "flex",
-    alignItems: "center",
-    alignContent: "center",
-  },
-  testRunName: {
-    fontWeight: 300,
-  },
-  closeIcon: {
-    position: "absolute",
-    right: "8px",
-  },
-  testRunDetails: {
-    paddingLeft: 8,
-  },
-  drawAreaContainer: {
-    width: "100%",
-    height: "100%",
-  },
-  drawAreaItem: {
-    padding: "0 4px",
-    height: "100%",
-  },
-  imageToolbar: {
-    paddingLeft: 5,
-    height: 52,
-  },
-}));
 
 const defaultStagePos = {
   x: 0,
@@ -121,6 +78,51 @@ const TestDetailsModal: React.FunctionComponent<TestDetailsModalProps> = ({
   handleNext,
   handleClose,
 }) => {
+
+  const theme = useTheme();
+  const useStyles = makeStyles(() => ({
+    header: {
+      position: "relative",
+      textAlign: "left",
+      background: theme.palette.divider,
+      paddingLeft: 8,
+      paddingBottom: 8,
+    },
+    footer: {
+      background: theme.palette.divider,
+    },
+    scaleActions: {
+      display: "flex",
+      alignItems: "center",
+    },
+    testRunActions: {
+      display: "flex",
+      alignItems: "center",
+      alignContent: "center",
+    },
+    testRunName: {
+      fontWeight: 300,
+    },
+    closeIcon: {
+      position: "absolute",
+      right: "8px",
+    },
+    testRunDetails: {
+      paddingLeft: 8,
+    },
+    drawAreaContainer: {
+      width: "100%",
+      height: "100%",
+    },
+    drawAreaItem: {
+      padding: "0 4px",
+      height: "100%",
+    },
+    imageToolbar: {
+      paddingLeft: 5,
+      height: 52,
+    },
+  }));
   const classes = useStyles();
   const { enqueueSnackbar } = useSnackbar();
   const testRunDispatch = useTestRunDispatch();

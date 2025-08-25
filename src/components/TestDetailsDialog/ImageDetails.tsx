@@ -9,7 +9,6 @@ const useStyles = makeStyles(() => ({
   container: {
     display: "flex",
     alignItems: "center",
-    color: "darkslategrey",
   },
   branchName: {
     cursor: "pointer",
@@ -45,7 +44,7 @@ const ImageDetails: React.FunctionComponent<ImageDetailsProps> = ({
       imageName && (
         <Typography
           variant="caption"
-          style={{ marginRight: 3, fontSize: "0.7rem" }}
+          sx={{mr: 0.5, fontSize: "0.7rem"}}
           data-testid="image-size"
         >
           {image ? `(${image?.width} x ${image?.height})` : "Loading..."}
@@ -55,7 +54,7 @@ const ImageDetails: React.FunctionComponent<ImageDetailsProps> = ({
   };
   return (
     <Grid item className={classes.container}>
-      <Typography variant="overline" style={{ marginRight: 3 }}>
+      <Typography variant="overline" sx={{mr: 0.5}}>
         {type === "Baseline" ? "Baseline" : "Checkpoint"}
       </Typography>
       {imageSize()}

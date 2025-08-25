@@ -3,22 +3,14 @@ import React, { FunctionComponent, useCallback } from "react";
 import { Stage, Layer, Image } from "react-konva";
 import Rectangle, { MIN_RECT_SIDE_PIXEL } from "../Rectangle";
 import { IgnoreArea } from "../../types/ignoreArea";
-import { Grid, CircularProgress, type Theme } from "@mui/material";
+import { Grid, CircularProgress } from "@mui/material";
 import { NoImagePlaceholder } from "./NoImageAvailable";
 import Konva from "konva";
 import { makeStyles } from "@mui/styles";
 
-const useStyles = makeStyles((theme: Theme) => ({
+const useStyles = makeStyles(() => ({
   canvasContainer: {
     overflow: "auto",
-    backgroundColor: "white",
-  },
-  imageDetailsContainer: {
-    position: "absolute",
-    backgroundColor: "white",
-    zIndex: 1,
-    padding: theme.spacing(1),
-    height: "48px",
   },
   progressContainer: {
     minHeight: "300px",

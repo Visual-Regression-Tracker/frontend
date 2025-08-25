@@ -78,7 +78,7 @@ const LoginForm = () => {
               <Button
                 type="submit"
                 color="primary"
-                variant="outlined"
+                variant="contained"
                 data-testid="loginBtn"
               >
                 Login
