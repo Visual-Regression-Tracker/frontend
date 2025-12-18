@@ -18,6 +18,7 @@ import { ImageComparison } from "../../types/imageComparison";
 import { LooksSameConfigForm } from "./LooksSameConfigForm";
 import { OdiffConfigForm } from "./OdiffConfigForm";
 import { PixelmatchConfigForm } from "./PixelmatchConfigForm";
+import { VlmConfigForm } from "./VlmConfigForm";
 import { getDefaultConfig } from "./utils";
 
 export const ProjectForm: React.FunctionComponent = () => {
@@ -34,6 +35,9 @@ export const ProjectForm: React.FunctionComponent = () => {
 
       case ImageComparison.odiff:
         return <OdiffConfigForm />;
+
+      case ImageComparison.vlm:
+        return <VlmConfigForm />;
 
       default:
         return null;
@@ -176,6 +180,9 @@ export const ProjectForm: React.FunctionComponent = () => {
           </MenuItem>
           <MenuItem value={ImageComparison.odiff}>
             {ImageComparison.odiff}
+          </MenuItem>
+          <MenuItem value={ImageComparison.vlm}>
+            {ImageComparison.vlm}
           </MenuItem>
         </Select>
       </FormControl>

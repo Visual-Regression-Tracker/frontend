@@ -1,12 +1,14 @@
 export type ImageComparisonConfig =
   | PixelmatchConfig
   | LooksSameConfig
-  | OdiffConfig;
+  | OdiffConfig
+  | VlmConfig;
 
 export enum ImageComparison {
   pixelmatch = "pixelmatch",
   lookSame = "lookSame",
   odiff = "odiff",
+  vlm = "vlm",
 }
 
 export interface PixelmatchConfig {
@@ -48,4 +50,11 @@ export interface OdiffConfig {
   threshold: number;
   /** If this is true, antialiased pixels are not counted to the diff of an image */
   antialiasing: boolean;
+}
+
+export interface VlmConfig {
+  model: string;
+  prompt: string;
+  temperature: number;
+  useThinking?: boolean;
 }

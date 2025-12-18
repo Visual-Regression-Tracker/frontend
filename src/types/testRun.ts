@@ -22,4 +22,5 @@ export interface TestRun {
   branchName: string;
   baselineBranchName: string;
   merge: boolean;
+  vlmDescription?: string;
 }

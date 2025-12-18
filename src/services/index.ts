@@ -4,3 +4,4 @@ export * from "./builds.service";
 export * from "./static.service";
 export * from "./testVariation.service";
 export * from "./testRun.service";
+export * from "./ollama.service";
