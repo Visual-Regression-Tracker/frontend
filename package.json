@@ -5,7 +5,7 @@
   "license": "Apache-2.0",
   "type": "module",
   "engines": {
-    "node": ">=16"
+    "node": ">=20"
   },
   "dependencies": {
     "@babel/runtime": "^7.22.15",
@@ -41,7 +41,7 @@
     "build": "vite build",
     "lint": "eslint --ignore-path .gitignore . --ext .ts,.tsx,.jsx,.js",
     "typescheck": "tsc --noEmit",
-    "test:pw:install": "npx playwright install chromium",
+    "test:pw:install": "NODE_TLS_REJECT_UNAUTHORIZED=0 npx playwright install --with-deps chromium",
     "test:pw:local": "npm run test:pw:install && playwright test",
     "test:pw:debug": "npm run test:pw:install && PWDEBUG=1 playwright test"
   },
@@ -62,7 +62,7 @@
     ]
   },
   "devDependencies": {
-    "@playwright/test": "^1.38.0",
+    "@playwright/test": "^1.57.0",
     "@testing-library/jest-dom": "^6.1.3",
     "@testing-library/react": "^12.1.5",
     "@testing-library/user-event": "^12.8.3",
