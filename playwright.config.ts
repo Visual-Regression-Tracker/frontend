@@ -25,6 +25,7 @@ export default defineConfig({
       maxDiffPixels: 100,
     },
   },
+  snapshotPathTemplate: "{testDir}/{testFileName}-snapshots/{arg}{ext}",
   retries: process.env.CI ? 1 : 0,
   forbidOnly: !!process.env.CI,
 });
