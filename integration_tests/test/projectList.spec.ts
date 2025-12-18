@@ -10,8 +10,8 @@ test.beforeEach(async ({ page }) => {
 });
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-test("renders", async ({ projectListPage, page, vrt }) => {
-  await vrt.trackPage(page, "Projects list page");
+test("renders", async ({ projectListPage, page }) => {
+  await expect(page).toHaveScreenshot("projects-list-page.png");
 });
 
 test("can delete project", async ({ projectListPage, page }) => {

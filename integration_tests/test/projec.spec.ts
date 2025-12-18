@@ -41,15 +41,15 @@ test.beforeEach(async ({ page }) => {
   await mockImage(page, "image.png");
 });
 
-test("renders", async ({ openProjectPage, page, vrt }) => {
+test("renders", async ({ openProjectPage, page }) => {
   const projectPage = await openProjectPage(project.id);
   await projectPage.buildList.getBuildLocator(TEST_BUILD_FAILED.number).click();
 
-  await vrt.trackPage(page, "Project page. Test run list");
+  await expect(page).toHaveScreenshot("project-page-test-run-list.png");
 
   await projectPage.testRunList.getRow(TEST_UNRESOLVED.id).click();
 
-  await vrt.trackPage(page, "Project page. Test run details");
+  await expect(page).toHaveScreenshot("project-page-test-run-details.png");
 });
 
 test("can download images", async ({ openProjectPage, page }) => {

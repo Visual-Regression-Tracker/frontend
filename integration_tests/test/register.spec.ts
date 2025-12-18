@@ -2,8 +2,8 @@ import { test } from "fixtures";
 import { expect } from "@playwright/test";
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-test("renders", async ({ registerPage, page, vrt }) => {
-  await vrt.trackPage(page, "Register page");
+test("renders", async ({ registerPage, page }) => {
+  await expect(page).toHaveScreenshot("register-page.png");
 });
 
 test("can register", async ({ registerPage }) => {

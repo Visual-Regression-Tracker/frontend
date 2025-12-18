@@ -17,6 +17,13 @@ export default defineConfig({
     actionTimeout: 5000,
     navigationTimeout: 5000,
     trace: "retry-with-trace",
+    screenshot: "only-on-failure",
+  },
+  expect: {
+    toHaveScreenshot: {
+      threshold: 0.2,
+      maxDiffPixels: 100,
+    },
   },
   retries: process.env.CI ? 1 : 0,
   forbidOnly: !!process.env.CI,

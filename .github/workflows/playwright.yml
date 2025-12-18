@@ -23,13 +23,6 @@ jobs:
 
       - name: Run Playwright tests
         run: npx playwright test
-        env:
-          VRT_APIURL: "https://visual-regression-tracker.com:4200"
-          VRT_PROJECT: "VRT"
-          VRT_ENABLESOFTASSERT: false
-          VRT_APIKEY: ${{ secrets.VRT_API_KEY }}
-          VRT_BRANCHNAME: ${{ github.head_ref || github.ref_name }}
-          VRT_CIBUILDID: "Github run_id:  ${{ github.run_id }}"
 
       - uses: actions/upload-artifact@v4
         if: always()

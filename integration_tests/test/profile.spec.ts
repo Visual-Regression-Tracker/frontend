@@ -1,3 +1,4 @@
+import { expect } from "@playwright/test";
 import { test } from "fixtures";
 import { TEST_PROJECT } from "~client/_test/test.data.helper";
 import { mockGetProjects } from "utils/mocks";
@@ -9,6 +10,6 @@ test.beforeEach(async ({ page }) => {
 });
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-test("renders", async ({ profilePage, page, vrt }) => {
-  await vrt.trackPage(page, "Profile page");
+test("renders", async ({ profilePage, page }) => {
+  await expect(page).toHaveScreenshot("profile-page.png");
 });
