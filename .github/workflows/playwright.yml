@@ -7,7 +7,7 @@ on:
 
 jobs:
   test:
-    timeout-minutes: 5
+    timeout-minutes: 10
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -22,8 +22,34 @@ jobs:
       - name: Install Playwright browsers
         run: npx playwright install --with-deps chromium
 
+      - name: Build and start frontend container
+        run: |
+          docker compose build ui
+          docker compose up -d ui
+
+      - name: Wait for frontend to be ready
+        run: |
+          timeout=60
+          counter=0
+          until curl -f http://localhost:8080 || [ $counter -eq $timeout ]; do
+            sleep 1
+            counter=$((counter+1))
+          done
+          if [ $counter -eq $timeout ]; then
+            echo "Frontend did not become ready in time"
+            docker compose logs ui
+            exit 1
+          fi
+
       - name: Run Playwright tests
         run: npx playwright test
+        env:
+          CI: true
+          BASE_URL: http://localhost:8080
+
+      - name: Stop frontend container
+        if: always()
+        run: docker compose down
 
       - uses: actions/upload-artifact@v4
         if: always()

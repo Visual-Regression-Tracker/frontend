@@ -43,7 +43,9 @@
     "typescheck": "tsc --noEmit",
     "test:pw:install": "NODE_TLS_REJECT_UNAUTHORIZED=0 npx playwright install --with-deps chromium",
     "test:pw:local": "npm run test:pw:install && playwright test",
-    "test:pw:debug": "npm run test:pw:install && PWDEBUG=1 playwright test"
+    "test:pw:debug": "npm run test:pw:install && PWDEBUG=1 playwright test",
+    "test:pw:docker": "chmod +x ./test-docker.sh && ./test-docker.sh",
+    "test:pw:docker:update": "chmod +x ./test-docker.sh && ./test-docker.sh --update-snapshots"
   },
   "browserslist": [
     ">0.3%",

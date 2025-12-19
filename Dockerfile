@@ -1,6 +1,6 @@
 ### STAGE 1: Build ###
 # This image is around 50 megabytes
-FROM node:18-alpine3.18 AS builder
+FROM node:20-alpine AS builder
 
 # Create app directory
 WORKDIR /app

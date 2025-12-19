@@ -1,16 +1,22 @@
 import { defineConfig } from "@playwright/test";
 
-const baseURL = "http://localhost:5173";
+const baseURL = process.env.BASE_URL || "http://localhost:5173";
+const isCI = !!process.env.CI;
 
 export default defineConfig({
   testDir: "integration_tests/test",
   fullyParallel: true,
   reporter: "html",
-  webServer: {
-    command: "npm run start",
-    url: baseURL,
-    reuseExistingServer: true,
-  },
+  // Only start web server if not in CI (where Docker container is used)
+  ...(isCI
+    ? {}
+    : {
+        webServer: {
+          command: "npm run start",
+          url: baseURL,
+          reuseExistingServer: true,
+        },
+      }),
   use: {
     headless: true,
     baseURL,
@@ -26,6 +32,6 @@ export default defineConfig({
     },
   },
   snapshotPathTemplate: "{testDir}/{testFileName}-snapshots/{arg}{ext}",
-  retries: process.env.CI ? 1 : 0,
-  forbidOnly: !!process.env.CI,
+  retries: isCI ? 1 : 0,
+  forbidOnly: isCI,
 });
