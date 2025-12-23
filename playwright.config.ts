@@ -1,22 +1,17 @@
 import { defineConfig } from "@playwright/test";
 
-const baseURL = process.env.BASE_URL || "http://localhost:5173";
+const baseURL = "http://localhost:5173";
 const isCI = !!process.env.CI;
 
 export default defineConfig({
   testDir: "integration_tests/test",
   fullyParallel: true,
   reporter: "html",
-  // Only start web server if not in CI (where Docker container is used)
-  ...(isCI
-    ? {}
-    : {
-        webServer: {
-          command: "npm run start",
-          url: baseURL,
-          reuseExistingServer: true,
-        },
-      }),
+  webServer: {
+    command: "npm run start",
+    url: baseURL,
+    reuseExistingServer: true,
+  },
   use: {
     headless: true,
     baseURL,

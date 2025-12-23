@@ -19,22 +19,10 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Install Playwright browsers
-        run: npx playwright install --with-deps chromium
-
-      - name: Build and start frontend container
-        run: |
-          docker compose up -d ui
-
       - name: Run Playwright tests
-        run: npx playwright test
+        run: npm test:pw:docker
         env:
           CI: true
-          BASE_URL: http://localhost:8080
-
-      - name: Stop frontend container
-        if: always()
-        run: docker compose down
 
       - uses: actions/upload-artifact@v4
         if: always()
