@@ -15,8 +15,8 @@ test.beforeEach(async ({ page }) => {
 });
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-test("renders", async ({ userListPage, page, vrt }) => {
-  await vrt.trackPage(page, "User list page");
+test("renders", async ({ userListPage, page }) => {
+  await expect(page).toHaveScreenshot("user-list-page.png");
 });
 
 const assignRoleCases: [User, keyof typeof Role][] = [

@@ -11,8 +11,7 @@ export default defineConfig({
     },
   },
   optimizeDeps: {
-    // Enable using "npm link" for this package when developing
-    include: ["@visual-regression-tracker/agent-playwright"],
+    // Dependencies to pre-bundle
   },
   build: {
     outDir: "build",

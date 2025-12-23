@@ -1,3 +1,4 @@
+import { expect } from "@playwright/test";
 import { test } from "fixtures";
 import {
   mockGetProjects,
@@ -16,10 +17,10 @@ test.beforeEach(async ({ page }) => {
   await mockImage(page, "baseline2.png");
 });
 
-test("renders", async ({ openTestVariationDetailsPage, page, vrt }) => {
+test("renders", async ({ openTestVariationDetailsPage, page }) => {
   await openTestVariationDetailsPage(TEST_VARIATION_ONE.id);
 
-  await vrt.trackPage(page, "TestVariationDetails page", {
-    screenshotOptions: { fullPage: true },
+  await expect(page).toHaveScreenshot("test-variation-details-page.png", {
+    fullPage: true,
   });
 });

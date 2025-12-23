@@ -7,29 +7,22 @@ on:
 
 jobs:
   test:
-    timeout-minutes: 5
+    timeout-minutes: 10
     runs-on: ubuntu-latest
-    container:
-      image: mcr.microsoft.com/playwright:v1.38.0-focal
     steps:
       - uses: actions/checkout@v3
 
       - uses: actions/setup-node@v3
         with:
-          node-version: 18
+          node-version: 20
 
       - name: Install dependencies
         run: npm ci
 
       - name: Run Playwright tests
-        run: npx playwright test
+        run: npm run test:pw:docker
         env:
-          VRT_APIURL: "https://visual-regression-tracker.com:4200"
-          VRT_PROJECT: "VRT"
-          VRT_ENABLESOFTASSERT: false
-          VRT_APIKEY: ${{ secrets.VRT_API_KEY }}
-          VRT_BRANCHNAME: ${{ github.head_ref || github.ref_name }}
-          VRT_CIBUILDID: "Github run_id:  ${{ github.run_id }}"
+          CI: true
 
       - uses: actions/upload-artifact@v4
         if: always()

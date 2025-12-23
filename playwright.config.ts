@@ -1,6 +1,7 @@
 import { defineConfig } from "@playwright/test";
 
 const baseURL = "http://localhost:5173";
+const isCI = !!process.env.CI;
 
 export default defineConfig({
   testDir: "integration_tests/test",
@@ -17,7 +18,15 @@ export default defineConfig({
     actionTimeout: 5000,
     navigationTimeout: 5000,
     trace: "retry-with-trace",
+    screenshot: "only-on-failure",
   },
-  retries: process.env.CI ? 1 : 0,
-  forbidOnly: !!process.env.CI,
+  expect: {
+    toHaveScreenshot: {
+      threshold: 0.2,
+      maxDiffPixels: 100,
+    },
+  },
+  snapshotPathTemplate: "{testDir}/{testFileName}-snapshots/{arg}{ext}",
+  retries: isCI ? 1 : 0,
+  forbidOnly: isCI,
 });

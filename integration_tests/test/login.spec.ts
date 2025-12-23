@@ -1,8 +1,8 @@
 import { test } from "fixtures";
 import { expect } from "@playwright/test";
 
-test("renders", async ({ page, vrt }) => {
-  await vrt.trackPage(page, "Login page");
+test("renders", async ({ page }) => {
+  await expect(page).toHaveScreenshot("login-page.png");
 });
 
 test("can login", async ({ loginPage }) => {

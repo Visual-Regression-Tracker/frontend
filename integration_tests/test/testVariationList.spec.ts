@@ -1,3 +1,4 @@
+import { expect } from "@playwright/test";
 import { test } from "fixtures";
 import { mockGetProjects, mockGetTestVariations, mockImage } from "utils/mocks";
 import {
@@ -16,8 +17,8 @@ test.beforeEach(async ({ page }) => {
   await mockImage(page, "baseline2.png");
 });
 
-test("renders", async ({ openTestVariationListPage, page, vrt }) => {
+test("renders", async ({ openTestVariationListPage, page }) => {
   await openTestVariationListPage(TEST_PROJECT.id);
 
-  await vrt.trackPage(page, "TestVariationList page");
+  await expect(page).toHaveScreenshot("test-variation-list-page.png");
 });
