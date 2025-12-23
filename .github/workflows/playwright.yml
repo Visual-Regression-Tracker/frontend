@@ -20,7 +20,7 @@ jobs:
         run: npm ci
 
       - name: Run Playwright tests
-        run: npm test:pw:docker
+        run: npm run test:pw:docker
         env:
           CI: true
 
