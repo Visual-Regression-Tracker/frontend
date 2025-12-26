@@ -21,4 +21,7 @@ export default defineConfig({
     // When false, all CSS will be extracted into a single CSS file.
     cssCodeSplit: false,
   },
+  define: {
+    global: {},
+  },
 });

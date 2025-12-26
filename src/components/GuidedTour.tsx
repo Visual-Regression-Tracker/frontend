@@ -3,6 +3,7 @@ import Joyride, { CallBackProps, STATUS } from "react-joyride";
 import { Button } from "@mui/material";
 import { useHelpState } from "../contexts";
 import { LiveHelp } from "@mui/icons-material";
+import GuidedTourJoyrideTooltip from "./GuidedTourJoyrideTooltip";
 
 const GuidedTour: FunctionComponent = () => {
   const [run, setRun] = React.useState(false);
@@ -44,6 +45,7 @@ const GuidedTour: FunctionComponent = () => {
     <React.Fragment>
       <Button startIcon={<LiveHelp />} onClick={handleClickStart}>
         <Joyride
+          tooltipComponent={GuidedTourJoyrideTooltip}
           callback={handleJoyrideCallback}
           continuous={true}
           run={run}
@@ -55,13 +57,6 @@ const GuidedTour: FunctionComponent = () => {
           styles={{
             options: {
               zIndex: 10000,
-            },
-            buttonNext: {
-              color: "#3f51b5",
-              backgroundColor: "",
-            },
-            buttonBack: {
-              color: "#3f51b5",
             },
           }}
         />
