@@ -5,11 +5,6 @@ import { GeminiVlmConfig } from "../../types/imageComparison";
 import { Tooltip } from "../Tooltip";
 import { useConfigHook } from "./useConfigHook";
 import {
-  useProjectState,
-  useProjectDispatch,
-  setProjectEditState,
-} from "../../contexts";
-import {
   VlmPromptField,
   VlmTemperatureField,
   VlmUseThinkingField,
@@ -17,8 +12,6 @@ import {
 
 export const GeminiConfigForm: React.FunctionComponent = () => {
   const [config, updateConfig] = useConfigHook<GeminiVlmConfig>();
-  const { projectEditState: project } = useProjectState();
-  const projectDispatch = useProjectDispatch();
 
   return (
     <React.Fragment>
@@ -68,14 +61,7 @@ export const GeminiConfigForm: React.FunctionComponent = () => {
             required
             value={config.apiKey || ""}
             onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
-              const updatedConfig: GeminiVlmConfig = {
-                ...config,
-                apiKey: event.target.value,
-              };
-              setProjectEditState(projectDispatch, {
-                ...project,
-                imageComparisonConfig: JSON.stringify(updatedConfig),
-              });
+              updateConfig("apiKey", event.target.value);
             }}
             helperText="Enter your Google Gemini API key"
           />
