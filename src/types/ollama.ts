@@ -4,4 +4,3 @@ export interface OllamaModel {
   digest?: string;
   modified_at?: string;
 }
-

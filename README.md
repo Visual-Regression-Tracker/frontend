@@ -14,7 +14,9 @@ The testing related `.spec.tsx` files are used with Playwright for browser tests
 ## Running Tests
 
 ### Unit Tests (Jest)
+
 Run Jest unit tests:
+
 ```bash
 npm run test
 ```
@@ -22,7 +24,9 @@ npm run test
 ### Integration Tests (Playwright)
 
 #### Local Testing
+
 Run Playwright tests locally (requires local dev server):
+
 ```bash
 npm run test:pw:local
 ```
