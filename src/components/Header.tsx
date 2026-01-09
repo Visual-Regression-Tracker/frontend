@@ -14,6 +14,12 @@ import { routes } from "../constants";
 import logo from "../static/logo.png";
 import GuidedTour from "./GuidedTour";
 import {
+  HEADER_HELP_MENU_ID,
+  HEADER_AVATAR_MENU_ID,
+  HEADER_HELP_MENU_BUTTON_TEST_ID,
+  HEADER_LOGOUT_BUTTON_TEST_ID,
+} from "./Header.locators";
+import {
   AllInbox,
   Face,
   GitHub,
@@ -63,7 +69,7 @@ const Header: FunctionComponent = () => {
         vertical: "top",
         horizontal: "right",
       }}
-      id="headerHelpMenu"
+      data-testid={HEADER_HELP_MENU_ID}
       keepMounted
       transformOrigin={{
         vertical: "top",
@@ -100,7 +106,7 @@ const Header: FunctionComponent = () => {
         vertical: "top",
         horizontal: "right",
       }}
-      id="headerAvatarMenu"
+      id={HEADER_AVATAR_MENU_ID}
       keepMounted
       transformOrigin={{
         vertical: "top",
@@ -149,7 +155,7 @@ const Header: FunctionComponent = () => {
           handleMenuClose();
           logout(authDispatch);
         }}
-        data-testid="logoutBtn"
+        data-testid={HEADER_LOGOUT_BUTTON_TEST_ID}
       >
         <IconButton size="small">
           <SettingsPower />
@@ -181,6 +187,7 @@ const Header: FunctionComponent = () => {
                   }
                   size="large"
                   color="secondary"
+                  data-testid={HEADER_HELP_MENU_BUTTON_TEST_ID}
                 >
                   <Avatar>
                     <HelpOutline />
