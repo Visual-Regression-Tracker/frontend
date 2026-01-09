@@ -20,5 +20,3 @@ async function listModels(): Promise<OllamaModel[]> {
 export const ollamaService = {
   listModels,
 };
-
-

@@ -8,6 +8,7 @@ export const LOOKSSAME_DEFAULT_CONFIG =
 export const ODIFF_DEFAULT_CONFIG =
   '{"threshold":0,"antialiasing":true,"failOnLayoutDiff":true,"outputDiffMask":true}';
 export const VLM_DEFAULT_CONFIG = JSON.stringify({
+  provider: "ollama",
   model: "",
   prompt: `You are provided with three images:
 1. First image: baseline screenshot

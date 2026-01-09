@@ -181,9 +181,7 @@ export const ProjectForm: React.FunctionComponent = () => {
           <MenuItem value={ImageComparison.odiff}>
             {ImageComparison.odiff}
           </MenuItem>
-          <MenuItem value={ImageComparison.vlm}>
-            {ImageComparison.vlm}
-          </MenuItem>
+          <MenuItem value={ImageComparison.vlm}>{ImageComparison.vlm}</MenuItem>
         </Select>
       </FormControl>
       {config}
