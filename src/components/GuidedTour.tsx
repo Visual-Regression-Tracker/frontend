@@ -3,71 +3,74 @@ import Joyride, { CallBackProps, STATUS } from "react-joyride";
 import { Button } from "@mui/material";
 import { useHelpState } from "../contexts";
 import { LiveHelp } from "@mui/icons-material";
+import { TAKE_TOUR_BUTTON_TEST_ID } from "./GuidedTour.locators";
 
 const GuidedTour: FunctionComponent = () => {
   const [run, setRun] = React.useState(false);
   const { helpSteps } = useHelpState();
 
   const getHelpSteps = React.useCallback(() => {
-    const [firstStep] = helpSteps;
-
-    //Below line is to prevent application breaking if element is not present for any reason (e.g. if the user deletes build or if there is no data.)
-    if (
-      firstStep &&
-      document.getElementById(firstStep.target.toString().slice(1))
-    ) {
-      for (const step of helpSteps) {
-        step.disableBeacon = true;
-        step.hideCloseButton = true;
-      }
-
-      return helpSteps;
+    if (!helpSteps?.length) {
+      return [];
     }
 
-    return [];
+    for (const step of helpSteps) {
+      step.disableBeacon = true;
+      step.hideCloseButton = true;
+    }
+
+    return helpSteps;
   }, [helpSteps]);
 
   const handleJoyrideCallback = ({ status }: CallBackProps) => {
-    const finishedStatuses: string[] = [STATUS.FINISHED, STATUS.SKIPPED];
-
-    if (finishedStatuses.includes(status)) {
+    if (status === STATUS.FINISHED || status === STATUS.SKIPPED) {
       setRun(false);
     }
   };
 
   const handleClickStart = (event: React.MouseEvent<HTMLElement>) => {
     event.preventDefault();
+
+    const [firstStep] = helpSteps;
+    if (firstStep && typeof firstStep.target === 'string') {
+      const targetId = firstStep.target.startsWith('#')
+        ? firstStep.target.slice(1)
+        : firstStep.target;
+
+      if (!document.getElementById(targetId)) {
+        return;
+      }
+    }
+
     setRun(true);
   };
 
   return (
-    <React.Fragment>
-      <Button startIcon={<LiveHelp />} onClick={handleClickStart}>
-        <Joyride
-          callback={handleJoyrideCallback}
-          continuous={true}
-          run={run}
-          scrollToFirstStep={true}
-          showProgress={true}
-          showSkipButton={true}
-          steps={getHelpSteps()}
-          disableCloseOnEsc={true}
-          styles={{
-            options: {
-              zIndex: 10000,
-            },
-            buttonNext: {
-              color: "#3f51b5",
-              backgroundColor: "",
-            },
-            buttonBack: {
-              color: "#3f51b5",
-            },
-          }}
-        />
-        Take a tour
-      </Button>
-    </React.Fragment>
+    <Button startIcon={<LiveHelp />} onClick={handleClickStart} data-testid={TAKE_TOUR_BUTTON_TEST_ID}>
+      <Joyride
+        callback={handleJoyrideCallback}
+        continuous={true}
+        run={run}
+        scrollToFirstStep={true}
+        showProgress={true}
+        showSkipButton={true}
+        steps={getHelpSteps()}
+        disableCloseOnEsc={true}
+        styles={{
+          options: {
+            zIndex: 10000,
+          },
+          buttonNext: {
+            color: "#3f51b5",
+            backgroundColor: "",
+          },
+          buttonBack: {
+            color: "#3f51b5",
+          },
+        }}
+      />
+      Take a tour
+    </Button>
   );
 };
 
