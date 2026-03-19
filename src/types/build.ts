@@ -10,6 +10,7 @@ export interface Build {
   branchName: string;
   status: BuildStatus;
   createdAt: string;
+  updatedAt: string;
   createdBy: string;
   testRuns: TestRun[];
 
