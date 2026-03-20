@@ -153,6 +153,13 @@ const BuildList: FunctionComponent = () => {
                             {formatDateTime(build.createdAt)}
                           </Typography>
                         </Grid>
+                        {build.updatedAt && (
+                          <Grid item>
+                            <Typography variant="caption" color="textSecondary">
+                              Last run: {formatDateTime(build.updatedAt)}
+                            </Typography>
+                          </Grid>
+                        )}
                         <Grid item>
                           <Grid container justifyContent="space-between">
                             <Grid item>

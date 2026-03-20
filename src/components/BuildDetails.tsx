@@ -57,6 +57,13 @@ const BuildDetails: React.FunctionComponent = () => {
                 {formatDateTime(selectedBuild.createdAt)}
               </Typography>
             </Grid>
+            {selectedBuild.updatedAt && (
+              <Grid item>
+                <Typography variant="caption" color="textSecondary">
+                  Last run: {formatDateTime(selectedBuild.updatedAt)}
+                </Typography>
+              </Grid>
+            )}
           </Grid>
         </Box>
       </Grid>
