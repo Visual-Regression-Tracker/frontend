@@ -77,6 +77,23 @@ function approveBulk(ids: string[] | number[], merge: boolean): Promise<void> {
   ).then(handleResponse);
 }
 
+export interface MatchingVariations {
+  variations: TestRun[];
+  skipped: (TestRun & { reason: string })[];
+}
+
+function getMatchingVariations(id: string): Promise<MatchingVariations> {
+  const requestOptions = {
+    method: "GET",
+    headers: authHeader(),
+  };
+
+  return fetch(
+    `${API_URL}${ENDPOINT_URL}/matchingSiblings/${id}`,
+    requestOptions,
+  ).then(handleResponse);
+}
+
 function updateIgnoreAreas(data: UpdateIgnoreAreaDto): Promise<void> {
   const requestOptions = {
     method: "POST",
@@ -135,6 +152,7 @@ export const testRunService = {
   removeBulk,
   rejectBulk,
   approveBulk,
+  getMatchingVariations,
   updateIgnoreAreas,
   addIgnoreAreas,
   update,
