@@ -8,6 +8,10 @@
 
     <title>Visual Regression Tracker</title>
 
+    <script>
+      // Polyfill for libraries (e.g. react-joyride) that expect the Node.js global object.
+      window.global = window;
+    </script>
     <script src="/env-config.js"></script>
   </head>
   <body>
