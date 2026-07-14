@@ -31,4 +31,6 @@ export const DEFAULT_PROJECT_EDIT_STATE: ProjectDto = {
   imageComparisonConfig: PIXELMATCH_DEFAULT_CONFIG,
   maxBuildAllowed: 100,
   maxBranchLifetime: 30,
+  bulkApproveVariations: false,
+  bulkApproveGroupBy: "customTags",
 };

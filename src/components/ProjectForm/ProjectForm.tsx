@@ -15,6 +15,7 @@ import {
   setProjectEditState,
 } from "../../contexts";
 import { ImageComparison } from "../../types/imageComparison";
+import { Tooltip } from "../Tooltip";
 import { LooksSameConfigForm } from "./LooksSameConfigForm";
 import { OdiffConfigForm } from "./OdiffConfigForm";
 import { PixelmatchConfigForm } from "./PixelmatchConfigForm";
@@ -150,6 +151,49 @@ export const ProjectForm: React.FunctionComponent = () => {
           />
         }
       />
+      <Tooltip title="Review and bulk approve or reject a screen's variations (e.g. all locales) in one dialog. Only variations with the same change are pre-selected; different ones are left for manual review.">
+        <FormControlLabel
+          label="Bulk approve/reject variations"
+          control={
+            <Switch
+              checked={project.bulkApproveVariations}
+              onChange={(event, checked) =>
+                setProjectEditState(projectDispatch, {
+                  ...project,
+                  bulkApproveVariations: checked,
+                })
+              }
+              color="primary"
+              name="bulkApproveVariations"
+            />
+          }
+        />
+      </Tooltip>
+      {project.bulkApproveVariations && (
+        <Tooltip title="Which test-variation axis differs within a group. Screens that match on everything except this axis are reviewed together — e.g. customTags for per-locale screenshots.">
+        <FormControl variant="standard" fullWidth>
+          <InputLabel id="bulkApproveGroupBySelect">Group variations by</InputLabel>
+          <Select
+            variant="standard"
+            id="bulkApproveGroupBySelect"
+            labelId="bulkApproveGroupBySelect"
+            value={project.bulkApproveGroupBy}
+            onChange={(event: SelectChangeEvent<HTMLInputElement>) =>
+              setProjectEditState(projectDispatch, {
+                ...project,
+                bulkApproveGroupBy: event.target.value as string,
+              })
+            }
+          >
+            <MenuItem value="customTags">customTags</MenuItem>
+            <MenuItem value="os">os</MenuItem>
+            <MenuItem value="device">device</MenuItem>
+            <MenuItem value="viewport">viewport</MenuItem>
+            <MenuItem value="browser">browser</MenuItem>
+          </Select>
+        </FormControl>
+        </Tooltip>
+      )}
       <FormControl variant="standard" fullWidth>
         <InputLabel id="imageComparisonSelect">
           Image comparison library

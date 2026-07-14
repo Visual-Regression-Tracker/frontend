@@ -40,12 +40,16 @@ import {
 } from "@mui/icons-material";
 import { TestRunDetails } from "./TestRunDetails";
 import useImage from "use-image";
-import { routes } from "../../constants";
-import { useTestRunDispatch } from "../../contexts";
+import { routes, GO_TO_NEXT_KEY } from "../../constants";
+import { useTestRunDispatch, useProjectState } from "../../contexts";
 import { DrawArea, ImageStateLoad } from "./DrawArea";
 import { CommentsPopper } from "../CommentsPopper";
 import { useSnackbar } from "notistack";
 import { ApproveRejectButtons } from "./ApproveRejectButtons";
+import {
+  MatchingVariationsDialog,
+  MatchingVariationsMode,
+} from "./MatchingVariationsDialog";
 import { invertIgnoreArea } from "../../_helpers/ignoreArea.helper";
 import { BaseModal } from "../BaseModal";
 import { Tooltip } from "../Tooltip";
@@ -72,6 +76,13 @@ const useStyles = makeStyles(() => ({
     display: "flex",
     alignItems: "center",
     alignContent: "center",
+  },
+  centerActions: {
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    flexWrap: "wrap",
+    gap: 4,
   },
   testRunName: {
     fontWeight: 300,
@@ -124,6 +135,10 @@ const TestDetailsModal: React.FunctionComponent<TestDetailsModalProps> = ({
   const classes = useStyles();
   const { enqueueSnackbar } = useSnackbar();
   const testRunDispatch = useTestRunDispatch();
+  const { selectedProjectId, projectList } = useProjectState();
+  const project = projectList.find((item) => item.id === selectedProjectId);
+  const [variationsMode, setVariationsMode] =
+    useState<MatchingVariationsMode | null>(null);
 
   const stageScaleBy = 1.2;
   const [stageScale, setStageScale] = React.useState(1);
@@ -143,8 +158,6 @@ const TestDetailsModal: React.FunctionComponent<TestDetailsModalProps> = ({
 
   const [applyIgnoreDialogOpen, setApplyIgnoreDialogOpen] =
     React.useState(false);
-
-  const GO_TO_NEXT_KEY = "goToNextAutomatically";
 
   const [goToNextAutomatically, setGoToNextAutomatically] = React.useState(
     () => {
@@ -697,7 +710,7 @@ const TestDetailsModal: React.FunctionComponent<TestDetailsModalProps> = ({
         </Grid>
       </Box>
       <Grid container className={classes.footer}>
-        <Grid item xs={4} className={classes.scaleActions}>
+        <Grid item xs={3} className={classes.scaleActions}>
           <Tooltip title={"Zoom In"}>
             <IconButton
               onClick={() => setStageScale(stageScale * stageScaleBy)}
@@ -725,12 +738,7 @@ const TestDetailsModal: React.FunctionComponent<TestDetailsModalProps> = ({
             </IconButton>
           </Tooltip>
         </Grid>
-        <Grid
-          item
-          xs={4}
-          className={classes.testRunActions}
-          justifyContent="center"
-        >
+        <Grid item xs={6} className={classes.centerActions}>
           <Tooltip title={"Hotkey: ArrowLeft"}>
             <IconButton
               color="secondary"
@@ -749,6 +757,7 @@ const TestDetailsModal: React.FunctionComponent<TestDetailsModalProps> = ({
               testRun={testRun}
               afterApprove={handleGoToNextAutomatically}
               afterReject={handleGoToNextAutomatically}
+              onOpenVariations={setVariationsMode}
             />
           )}
           <Tooltip title={"Hotkey: ArrowRight"}>
@@ -769,7 +778,7 @@ const TestDetailsModal: React.FunctionComponent<TestDetailsModalProps> = ({
         </Grid>
         <Grid
           item
-          xs={4}
+          xs={3}
           className={classes.testRunActions}
           justifyContent="flex-end"
         >
@@ -804,6 +813,13 @@ const TestDetailsModal: React.FunctionComponent<TestDetailsModalProps> = ({
           toggleApplyIgnoreDialogOpen();
           applyIgnoreArea();
         }}
+      />
+      <MatchingVariationsDialog
+        key={testRun.id}
+        mode={variationsMode}
+        testRun={testRun}
+        groupBy={project?.bulkApproveGroupBy}
+        onClose={() => setVariationsMode(null)}
       />
     </>
   );

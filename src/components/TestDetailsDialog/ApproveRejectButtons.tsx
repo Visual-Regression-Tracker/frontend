@@ -3,13 +3,20 @@ import { useSnackbar } from "notistack";
 import { useHotkeys } from "react-hotkeys-hook";
 import React from "react";
 import { testRunService } from "../../services";
+import { useProjectState, useTestRunState } from "../../contexts";
 import { TestRun } from "../../types";
+import { TestStatus } from "../../types/testStatus";
 import { Tooltip } from "../Tooltip";
 import { makeStyles } from "@mui/styles";
+import { MatchingVariationsMode } from "./MatchingVariationsDialog";
 
 const useStyles = makeStyles(() => ({
   actionButton: {
     width: 120,
+    marginLeft: 4,
+    marginRight: 4,
+  },
+  wideActionButton: {
     marginLeft: 4,
     marginRight: 4,
   },
@@ -19,9 +26,25 @@ export const ApproveRejectButtons: React.FunctionComponent<{
   testRun: TestRun;
   afterApprove?: () => void;
   afterReject?: () => void;
-}> = ({ testRun, afterApprove, afterReject }) => {
+  onOpenVariations: (mode: MatchingVariationsMode) => void;
+}> = ({ testRun, afterApprove, afterReject, onOpenVariations }) => {
   const { enqueueSnackbar } = useSnackbar();
   const classes = useStyles();
+  const { selectedProjectId, projectList } = useProjectState();
+  const { testRuns } = useTestRunState();
+  const project = projectList.find((item) => item.id === selectedProjectId);
+  // Only worth showing when there is at least one other run of the same screen
+  // still to review — otherwise "variations" is just a single approve/reject.
+  const hasSiblingsToReview = testRuns.some(
+    (run) =>
+      run.id !== testRun.id &&
+      run.name === testRun.name &&
+      (run.status === TestStatus.unresolved || run.status === TestStatus.new),
+  );
+  const variationsEnabled =
+    !!project?.bulkApproveVariations &&
+    testRun.status === TestStatus.unresolved &&
+    hasSiblingsToReview;
 
   const approve = () => {
     testRunService
@@ -78,6 +101,29 @@ export const ApproveRejectButtons: React.FunctionComponent<{
           Approve
         </Button>
       </Tooltip>
+      {variationsEnabled && (
+        <Tooltip title="Review and approve this screen's matching variations (e.g. all locales) before applying">
+          <Button
+            onClick={() => onOpenVariations("approve")}
+            variant="outlined"
+            className={classes.wideActionButton}
+          >
+            Approve variations
+          </Button>
+        </Tooltip>
+      )}
+      {variationsEnabled && (
+        <Tooltip title="Review and reject this screen's matching variations (e.g. all locales) before applying">
+          <Button
+            color="secondary"
+            onClick={() => onOpenVariations("reject")}
+            variant="outlined"
+            className={classes.wideActionButton}
+          >
+            Reject variations
+          </Button>
+        </Tooltip>
+      )}
       <Tooltip title={"Hotkey: X"}>
         <Button
           color="secondary"
