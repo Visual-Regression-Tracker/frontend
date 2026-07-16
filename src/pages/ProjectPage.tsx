@@ -47,10 +47,10 @@ const ProjectPage = () => {
           </Box>
         </Grid>
         <Grid item xs={9} className={classes.root}>
-          <Box height="15%">
+          <Box height="11%">
             <BuildDetails />
           </Box>
-          <Box height="85%" id={LOCATOR_PROJECT_PAGE_TEST_RUN_LIST}>
+          <Box height="89%" id={LOCATOR_PROJECT_PAGE_TEST_RUN_LIST}>
             <TestRunList />
           </Box>
         </Grid>
