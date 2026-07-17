@@ -6,6 +6,7 @@ import {
   ListItemText,
   ListItemSecondaryAction,
   IconButton,
+  Checkbox,
   Chip,
   Typography,
   Grid,
@@ -15,7 +16,7 @@ import {
   MenuItem,
   Box,
 } from "@mui/material";
-import { MoreVert } from "@mui/icons-material";
+import { MoreVert, DeleteOutline, Close } from "@mui/icons-material";
 import {
   useBuildState,
   useBuildDispatch,
@@ -65,6 +66,28 @@ const BuildList: FunctionComponent = () => {
   const [menuBuild, setMenuBuild] = React.useState<Build | null>();
   const [newCiBuildId, setNewCiBuildId] = React.useState("");
   const [paginationPage, setPaginationPage] = React.useState(1);
+  const [selectedIds, setSelectedIds] = React.useState<string[]>([]);
+  const [bulkDeleteDialogOpen, setBulkDeleteDialogOpen] = React.useState(false);
+  const [bulkDeleting, setBulkDeleting] = React.useState(false);
+
+  const pageIds = buildList.map((build) => build.id);
+  const allOnPageSelected =
+    pageIds.length > 0 && pageIds.every((id) => selectedIds.includes(id));
+  const someOnPageSelected = selectedIds.length > 0 && !allOnPageSelected;
+
+  const toggleSelect = (id: string) =>
+    setSelectedIds((prev) =>
+      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id],
+    );
+
+  const toggleSelectAllOnPage = () =>
+    setSelectedIds((prev) =>
+      allOnPageSelected
+        ? prev.filter((id) => !pageIds.includes(id))
+        : Array.from(new Set([...prev, ...pageIds])),
+    );
+
+  const clearSelection = () => setSelectedIds([]);
 
   const handleMenuClick = (
     event: React.MouseEvent<HTMLElement>,
@@ -116,86 +139,180 @@ const BuildList: FunctionComponent = () => {
     handlePaginationChange(1);
   }, [handlePaginationChange]);
 
+  React.useEffect(() => {
+    setSelectedIds([]);
+  }, [selectedProjectId]);
+
+  const handleBulkDelete = () => {
+    if (bulkDeleting) {
+      return;
+    }
+    setBulkDeleting(true);
+    setBulkDeleteDialogOpen(false);
+    const ids = [...selectedIds];
+
+    Promise.all(
+      ids.map((id) =>
+        deleteBuild(buildDispatch, id)
+          .then(() => ({ id, ok: true }))
+          .catch(() => ({ id, ok: false })),
+      ),
+    ).then((results) => {
+      const deleted = results.filter((r) => r.ok);
+      const failed = results.filter((r) => !r.ok);
+
+      if (deleted.length > 0) {
+        enqueueSnackbar(`${deleted.length} build(s) deleted`, {
+          variant: "success",
+        });
+      }
+      if (failed.length > 0) {
+        enqueueSnackbar(`Failed to delete ${failed.length} build(s)`, {
+          variant: "error",
+        });
+      }
+      if (deleted.some((r) => r.id === selectedBuild?.id)) {
+        selectBuildCalback();
+      }
+
+      setBulkDeleting(false);
+      clearSelection();
+
+      const remaining = total - deleted.length;
+      const lastPage = Math.max(1, Math.ceil(remaining / take));
+      handlePaginationChange(Math.min(paginationPage, lastPage));
+    });
+  };
+
   return (
     <>
-      <Box height="91%" overflow="auto">
-        <List>
-          {loading ? (
-            <SkeletonList />
-          ) : buildList.length === 0 ? (
-            <Typography variant="h5">No builds</Typography>
-          ) : (
-            buildList.map((build) => (
-              <React.Fragment key={build.id}>
-                <ListItemButton
-                  selected={selectedBuild?.id === build.id}
-                  onClick={() => selectBuildCalback(build.id)}
-                  classes={{
-                    root: classes.listItem,
-                  }}
+      <Box height="91%" display="flex" flexDirection="column">
+        {selectedIds.length > 0 && (
+          <Box
+            display="flex"
+            alignItems="center"
+            paddingX={1}
+            paddingY={0.5}
+            borderBottom={1}
+            borderColor="divider"
+          >
+            <Checkbox
+              size="small"
+              checked={allOnPageSelected}
+              indeterminate={someOnPageSelected}
+              onChange={toggleSelectAllOnPage}
+            />
+            <Typography variant="body2">
+              {selectedIds.length} selected
+            </Typography>
+            <Box marginLeft="auto">
+              <Tooltip title="Delete selected">
+                <IconButton
+                  color="error"
+                  size="small"
+                  disabled={bulkDeleting}
+                  onClick={() => setBulkDeleteDialogOpen(true)}
                 >
-                  <ListItemText
-                    disableTypography
-                    primary={
-                      <Typography
-                        variant="subtitle2"
-                        style={{
-                          wordWrap: "break-word",
-                        }}
-                      >
-                        {`#${build.number} ${build.ciBuildId || ""}`}
-                      </Typography>
-                    }
-                    secondary={
-                      <Grid container direction="column">
-                        <Grid item>
-                          <Typography variant="caption" color="textPrimary">
-                            {formatDateTime(build.createdAt)}
-                          </Typography>
-                        </Grid>
-                        {build.updatedAt && (
+                  <DeleteOutline />
+                </IconButton>
+              </Tooltip>
+              <Tooltip title="Clear selection">
+                <IconButton size="small" onClick={clearSelection}>
+                  <Close />
+                </IconButton>
+              </Tooltip>
+            </Box>
+          </Box>
+        )}
+        <Box flex={1} overflow="auto">
+          <List>
+            {loading ? (
+              <SkeletonList />
+            ) : buildList.length === 0 ? (
+              <Typography variant="h5">No builds</Typography>
+            ) : (
+              buildList.map((build) => (
+                <React.Fragment key={build.id}>
+                  <ListItemButton
+                    selected={selectedBuild?.id === build.id}
+                    onClick={() => selectBuildCalback(build.id)}
+                    classes={{
+                      root: classes.listItem,
+                    }}
+                  >
+                    <Checkbox
+                      edge="start"
+                      size="small"
+                      checked={selectedIds.includes(build.id)}
+                      onClick={(event) => event.stopPropagation()}
+                      onChange={() => toggleSelect(build.id)}
+                    />
+                    <ListItemText
+                      disableTypography
+                      primary={
+                        <Typography
+                          variant="subtitle2"
+                          style={{
+                            wordWrap: "break-word",
+                          }}
+                        >
+                          {`#${build.number} ${build.ciBuildId || ""}`}
+                        </Typography>
+                      }
+                      secondary={
+                        <Grid container direction="column">
                           <Grid item>
-                            <Typography variant="caption" color="textSecondary">
-                              Last run: {formatDateTime(build.updatedAt)}
+                            <Typography variant="caption" color="textPrimary">
+                              {formatDateTime(build.createdAt)}
                             </Typography>
                           </Grid>
-                        )}
-                        <Grid item>
-                          <Grid container justifyContent="space-between">
+                          {build.updatedAt && (
                             <Grid item>
-                              <Tooltip title={build.branchName}>
-                                <Chip
-                                  size="small"
-                                  label={build.branchName}
-                                  style={{ maxWidth: 180 }}
-                                />
-                              </Tooltip>
+                              <Typography
+                                variant="caption"
+                                color="textSecondary"
+                              >
+                                Last run: {formatDateTime(build.updatedAt)}
+                              </Typography>
                             </Grid>
-                            <Grid item>
-                              <BuildStatusChip status={build.status} />
+                          )}
+                          <Grid item>
+                            <Grid container justifyContent="space-between">
+                              <Grid item>
+                                <Tooltip title={build.branchName}>
+                                  <Chip
+                                    size="small"
+                                    label={build.branchName}
+                                    style={{ maxWidth: 180 }}
+                                  />
+                                </Tooltip>
+                              </Grid>
+                              <Grid item>
+                                <BuildStatusChip status={build.status} />
+                              </Grid>
                             </Grid>
                           </Grid>
                         </Grid>
-                      </Grid>
-                    }
-                  />
+                      }
+                    />
 
-                  <ListItemSecondaryAction
-                    className={classes.listItemSecondaryAction}
-                  >
-                    <IconButton
-                      onClick={(event) => handleMenuClick(event, build)}
-                      size="large"
+                    <ListItemSecondaryAction
+                      className={classes.listItemSecondaryAction}
                     >
-                      <MoreVert />
-                    </IconButton>
-                  </ListItemSecondaryAction>
-                </ListItemButton>
-                {build.isRunning && <LinearProgress />}
-              </React.Fragment>
-            ))
-          )}
-        </List>
+                      <IconButton
+                        onClick={(event) => handleMenuClick(event, build)}
+                        size="large"
+                      >
+                        <MoreVert />
+                      </IconButton>
+                    </ListItemSecondaryAction>
+                  </ListItemButton>
+                  {build.isRunning && <LinearProgress />}
+                </React.Fragment>
+              ))
+            )}
+          </List>
+        </Box>
       </Box>
       <Box height="9%">
         <Grid container justifyContent="center">
@@ -307,7 +424,10 @@ const BuildList: FunctionComponent = () => {
                   },
                 );
               })
-              .then(() => handlePaginationChange(paginationPage))
+              .then(() => {
+                const lastPage = Math.max(1, Math.ceil((total - 1) / take));
+                handlePaginationChange(Math.min(paginationPage, lastPage));
+              })
               .then(() => {
                 if (menuBuild.id === selectedBuild?.id) {
                   selectBuildCalback();
@@ -322,6 +442,21 @@ const BuildList: FunctionComponent = () => {
           }}
         />
       )}
+      <BaseModal
+        open={bulkDeleteDialogOpen}
+        title={"Delete Builds"}
+        submitButtonText={"Delete"}
+        onCancel={() => setBulkDeleteDialogOpen(false)}
+        content={
+          <>
+            <Typography>
+              {`Are you sure you want to delete ${selectedIds.length} build(s)?`}
+            </Typography>
+            <Typography>This also removes their test runs.</Typography>
+          </>
+        }
+        onSubmit={handleBulkDelete}
+      />
     </>
   );
 };
