@@ -1,5 +1,5 @@
 import React from "react";
-import { Chip, Typography } from "@mui/material";
+import { Box, Chip, Typography } from "@mui/material";
 import TestStatusChip from "../TestStatusChip";
 import {
   useTestRunState,
@@ -20,9 +20,8 @@ import {
   gridFilteredSortedRowIdsSelector,
 } from "@mui/x-data-grid";
 import { DataGridCustomToolbar } from "./DataGridCustomToolbar";
-import { StatusFilterOperators } from "./StatusFilterOperators";
-import { TagFilterOperators } from "./TagFilterOperators";
-import { TestStatus } from "../../types";
+import TestRunFilters from "./TestRunFilters";
+import { TestRun, TestStatus } from "../../types";
 import { testRunService } from "../../services";
 import { useNavigate } from "react-router";
 import { buildTestRunLocation } from "../../_helpers/route.helpers";
@@ -37,11 +36,13 @@ const columnsDef: GridColDef[] = [
     field: "name",
     headerName: "Name",
     flex: 1,
+    filterable: false,
   },
   {
     field: "tags",
     headerName: "Tags",
     flex: 1,
+    filterable: false,
     valueGetter: (params: GridValueGetterParams) => {
       const tags: string[] = [
         params.row["os"],
@@ -76,12 +77,12 @@ const columnsDef: GridColDef[] = [
           )}
       </React.Fragment>
     ),
-    filterOperators: TagFilterOperators,
   },
   {
     field: "status",
     headerName: "Status",
     flex: 0.3,
+    filterable: false,
     renderCell: (params: GridRenderCellParams) => (
       <TestStatusChip status={params.row["status"]?.toString()} />
     ),
@@ -89,9 +90,34 @@ const columnsDef: GridColDef[] = [
       const statusOrder = Object.values(TestStatus);
       return statusOrder.indexOf(v2) - statusOrder.indexOf(v1);
     },
-    filterOperators: StatusFilterOperators,
   },
 ];
+
+const TAG_FIELDS: Array<keyof TestRun> = [
+  "os",
+  "device",
+  "browser",
+  "viewport",
+  "customTags",
+];
+
+const STATUS_ORDER = Object.values(TestStatus);
+
+type TagGroups = Array<[keyof TestRun, Set<string>]>;
+
+const matchesNameQuery = (run: TestRun, query: string): boolean =>
+  !query || run.name.toLowerCase().includes(query);
+
+const matchesStatuses = (run: TestRun, statuses: TestStatus[]): boolean =>
+  statuses.length === 0 || statuses.includes(run.status);
+
+const matchesTagGroups = (run: TestRun, groups: TagGroups): boolean =>
+  groups.every(([field, values]) => values.has(String(run[field] ?? "")));
+
+const runTagValues = (run: TestRun): string[] =>
+  TAG_FIELDS.map((field) => run[field]).filter(
+    (v): v is string => typeof v === "string" && Boolean(v),
+  );
 
 const TestRunList: React.FunctionComponent = () => {
   const apiRef = useGridApiRef();
@@ -112,6 +138,116 @@ const TestRunList: React.FunctionComponent = () => {
       sort: "desc" as GridSortDirection,
     },
   ]);
+
+  const [nameFilter, setNameFilter] = React.useState("");
+  const [statusFilter, setStatusFilter] = React.useState<TestStatus[]>([]);
+  const [tagFilter, setTagFilter] = React.useState<string[]>([]);
+
+  const resetFilters = React.useCallback(() => {
+    setNameFilter("");
+    setStatusFilter([]);
+    setTagFilter([]);
+  }, []);
+
+  const tagFieldByValue = React.useMemo(() => {
+    const map = new Map<string, keyof TestRun>();
+    testRuns.forEach((run) => {
+      TAG_FIELDS.forEach((field) => {
+        const value = run[field];
+        if (typeof value === "string" && value) {
+          map.set(value, field);
+        }
+      });
+    });
+    return map;
+  }, [testRuns]);
+
+  const selectedTagsByField = React.useMemo(() => {
+    const grouped = new Map<keyof TestRun, Set<string>>();
+    tagFilter.forEach((tag) => {
+      const field = tagFieldByValue.get(tag);
+      if (!field) {
+        return;
+      }
+      const values = grouped.get(field) ?? new Set<string>();
+      values.add(tag);
+      grouped.set(field, values);
+    });
+    return grouped;
+  }, [tagFilter, tagFieldByValue]);
+
+  const query = nameFilter.trim().toLowerCase();
+  const tagGroups = React.useMemo(
+    () => Array.from(selectedTagsByField.entries()),
+    [selectedTagsByField],
+  );
+
+  const filteredRows = React.useMemo(
+    () =>
+      testRuns.filter(
+        (run) =>
+          matchesNameQuery(run, query) &&
+          matchesStatuses(run, statusFilter) &&
+          matchesTagGroups(run, tagGroups),
+      ),
+    [testRuns, query, statusFilter, tagGroups],
+  );
+
+  // Options for each filter are derived from rows matching all OTHER filters,
+  // so only values that would actually return results are offered.
+  const statusOptions = React.useMemo(() => {
+    const present = new Set<TestStatus>(statusFilter);
+    testRuns.forEach((run) => {
+      if (matchesNameQuery(run, query) && matchesTagGroups(run, tagGroups)) {
+        present.add(run.status);
+      }
+    });
+    return Array.from(present).sort(
+      (a, b) => STATUS_ORDER.indexOf(a) - STATUS_ORDER.indexOf(b),
+    );
+  }, [testRuns, query, tagGroups, statusFilter]);
+
+  const tagOptions = React.useMemo(() => {
+    const present = new Set<string>(tagFilter);
+    testRuns.forEach((run) => {
+      if (matchesNameQuery(run, query) && matchesStatuses(run, statusFilter)) {
+        runTagValues(run).forEach((value) => present.add(value));
+      }
+    });
+    const fieldIndex = (value: string): number => {
+      const field = tagFieldByValue.get(value);
+      return field ? TAG_FIELDS.indexOf(field) : TAG_FIELDS.length;
+    };
+    return Array.from(present).sort(
+      (a, b) => fieldIndex(a) - fieldIndex(b) || a.localeCompare(b),
+    );
+  }, [testRuns, query, statusFilter, tagFilter, tagFieldByValue]);
+
+  React.useEffect(() => {
+    setPaginationModel((prev) => ({ ...prev, page: 0 }));
+  }, [nameFilter, statusFilter, tagFilter]);
+
+  // Drop selected filter values that no longer exist in the data
+  // (e.g. after their test runs were deleted).
+  React.useEffect(() => {
+    if (testRuns.length === 0) {
+      return;
+    }
+    const existingTags = new Set<string>();
+    const existingStatuses = new Set<TestStatus>();
+    testRuns.forEach((run) => {
+      runTagValues(run).forEach((value) => existingTags.add(value));
+      existingStatuses.add(run.status);
+    });
+    setTagFilter((prev) => {
+      const next = prev.filter((tag) => existingTags.has(tag));
+      return next.length === prev.length ? prev : next;
+    });
+    setStatusFilter((prev) => {
+      const next = prev.filter((status) => existingStatuses.has(status));
+      return next.length === prev.length ? prev : next;
+    });
+  }, [testRuns]);
 
   const getTestRunListCallback = React.useCallback(() => {
     testRunDispatch({
@@ -168,33 +304,53 @@ const TestRunList: React.FunctionComponent = () => {
 
   if (selectedBuild) {
     return (
-      <DataGrid
-        apiRef={apiRef}
-        rows={testRuns}
-        columns={columnsDef}
-        columnVisibilityModel={{
-          id: false,
-        }}
-        pageSizeOptions={[10, 30, 100]}
-        paginationModel={paginationModel}
-        onPaginationModelChange={setPaginationModel}
-        pagination
-        loading={loading}
-        slots={{
-          toolbar: DataGridCustomToolbar,
-        }}
-        checkboxSelection
-        disableColumnSelector
-        disableColumnMenu
-        disableRowSelectionOnClick
-        sortModel={sortModel}
-        onSortModelChange={(model) => setSortModel(model)}
-        onRowClick={(param: GridRowParams) => {
-          navigate(
-            buildTestRunLocation(selectedBuild.id, param.row["id"].toString()),
-          );
-        }}
-      />
+      <Box display="flex" flexDirection="column" height="100%">
+        <Box paddingX={2} paddingTop={1} paddingBottom={1}>
+          <TestRunFilters
+            tagOptions={tagOptions}
+            statusOptions={statusOptions}
+            name={nameFilter}
+            statuses={statusFilter}
+            tags={tagFilter}
+            onNameChange={setNameFilter}
+            onStatusesChange={setStatusFilter}
+            onTagsChange={setTagFilter}
+            onReset={resetFilters}
+          />
+        </Box>
+        <Box flex={1} minHeight={0}>
+          <DataGrid
+            apiRef={apiRef}
+            rows={filteredRows}
+            columns={columnsDef}
+            columnVisibilityModel={{
+              id: false,
+            }}
+            pageSizeOptions={[10, 30, 100]}
+            paginationModel={paginationModel}
+            onPaginationModelChange={setPaginationModel}
+            pagination
+            loading={loading}
+            slots={{
+              toolbar: DataGridCustomToolbar,
+            }}
+            checkboxSelection
+            disableColumnSelector
+            disableColumnMenu
+            disableRowSelectionOnClick
+            sortModel={sortModel}
+            onSortModelChange={(model) => setSortModel(model)}
+            onRowClick={(param: GridRowParams) => {
+              navigate(
+                buildTestRunLocation(
+                  selectedBuild.id,
+                  param.row["id"].toString(),
+                ),
+              );
+            }}
+          />
+        </Box>
+      </Box>
     );
   }
 
