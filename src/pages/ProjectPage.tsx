@@ -46,11 +46,14 @@ const ProjectPage = () => {
             <BuildList />
           </Box>
         </Grid>
-        <Grid item xs={9} className={classes.root}>
-          <Box height="11%">
-            <BuildDetails />
-          </Box>
-          <Box height="89%" id={LOCATOR_PROJECT_PAGE_TEST_RUN_LIST}>
+        <Grid
+          item
+          xs={9}
+          className={classes.root}
+          sx={{ display: "flex", flexDirection: "column" }}
+        >
+          <BuildDetails />
+          <Box flex={1} minHeight={0} id={LOCATOR_PROJECT_PAGE_TEST_RUN_LIST}>
             <TestRunList />
           </Box>
         </Grid>
