@@ -146,6 +146,11 @@ const BuildList: FunctionComponent = () => {
     setSelectedIds([]);
   }, [selectedProjectId, searchQuery]);
 
+  // another project's builds must not linger while its list is being fetched
+  React.useEffect(() => {
+    buildDispatch({ type: "reset" });
+  }, [buildDispatch, selectedProjectId]);
+
   const handleBulkDelete = () => {
     if (bulkDeleting) {
       return;
@@ -199,9 +204,10 @@ const BuildList: FunctionComponent = () => {
             element={TextField}
             debounceTimeout={300}
             onChange={(event) => setSearchQuery(event.target.value)}
-            inputProps={{ "data-testid": "buildSearch" }}
+            inputProps={{ "data-testid": "buildSearch", autoComplete: "off" }}
           />
         </Box>
+        <Box height={4}>{loading && <LinearProgress />}</Box>
         {selectedIds.length > 0 && (
           <Box
             display="flex"
@@ -241,7 +247,7 @@ const BuildList: FunctionComponent = () => {
         )}
         <Box flex={1} overflow="auto">
           <List>
-            {loading ? (
+            {loading && buildList.length === 0 ? (
               <SkeletonList />
             ) : buildList.length === 0 ? (
               <Typography variant="h5">

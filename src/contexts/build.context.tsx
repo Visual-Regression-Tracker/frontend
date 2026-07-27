@@ -8,6 +8,10 @@ interface IRequestAction {
   type: "request";
 }
 
+interface IResetAction {
+  type: "reset";
+}
+
 interface IGetAction {
   type: "get";
   payload: PaginatedData<Build>;
@@ -35,6 +39,7 @@ interface IUpdateAction {
 
 type IAction =
   | IRequestAction
+  | IResetAction
   | IGetAction
   | IDeleteAction
   | IAddAction
@@ -74,10 +79,18 @@ function buildReducer(state: State, action: IAction): State {
         selectedBuild: action.payload,
       };
 
+    // keeps the current items on screen so refetching does not flash the skeletons
     case "request":
       return {
         ...state,
+        loading: true,
+      };
+
+    case "reset":
+      return {
+        ...state,
         buildList: [],
+        total: 0,
         loading: true,
       };
 
