@@ -52,6 +52,25 @@ test("renders", async ({ openProjectPage, page }) => {
   await expect(page).toHaveScreenshot("project-page-test-run-details.png");
 });
 
+test("searches builds by ci build id", async ({ openProjectPage, page }) => {
+  await mockGetBuilds(
+    page,
+    project.id,
+    [TEST_BUILD_FAILED],
+    TEST_BUILD_FAILED.ciBuildId,
+  );
+  const projectPage = await openProjectPage(project.id);
+
+  await projectPage.buildList.searchInput.fill(TEST_BUILD_FAILED.ciBuildId);
+
+  await expect(
+    projectPage.buildList.getBuildLocator(TEST_BUILD_FAILED.number),
+  ).toBeVisible();
+  await expect(
+    projectPage.buildList.getBuildLocator(TEST_BUILD_PASSED.number),
+  ).toBeHidden();
+});
+
 test("can download images", async ({ openProjectPage, page }) => {
   const projectPage = await openProjectPage(project.id, TEST_BUILD_FAILED.id);
 

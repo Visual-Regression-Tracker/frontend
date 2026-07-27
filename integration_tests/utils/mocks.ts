@@ -32,16 +32,19 @@ export const mockGetBuilds = async (
   page: Page,
   projectId: string,
   builds: Build[],
+  ciBuildId?: string,
 ) => {
+  const search = ciBuildId ? `&ciBuildId=${encodeURIComponent(ciBuildId)}` : "";
+
   return page.route(
-    `${API_URL}/builds?projectId=${projectId}&take=10&skip=0`,
+    `${API_URL}/builds?projectId=${projectId}&take=10&skip=0${search}`,
     (route) =>
       route.fulfill({
         body: JSON.stringify({
           data: builds,
           skip: 0,
           take: 10,
-          total: 3,
+          total: builds.length,
         }),
       }),
   );
