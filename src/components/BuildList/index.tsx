@@ -195,11 +195,13 @@ const BuildList: FunctionComponent = () => {
   return (
     <>
       <Box height="91%" display="flex" flexDirection="column">
-        <Box paddingX={1} paddingBottom={0.5}>
+        <Box padding={1}>
           <DebounceInput
-            variant="standard"
+            size="small"
+            variant="outlined"
             fullWidth
             label="Search build"
+            placeholder="Search by CI build id"
             value={searchQuery}
             element={TextField}
             debounceTimeout={300}
@@ -207,7 +209,6 @@ const BuildList: FunctionComponent = () => {
             inputProps={{ "data-testid": "buildSearch", autoComplete: "off" }}
           />
         </Box>
-        <Box height={4}>{loading && <LinearProgress />}</Box>
         {selectedIds.length > 0 && (
           <Box
             display="flex"
