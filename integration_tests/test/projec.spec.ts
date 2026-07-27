@@ -112,6 +112,28 @@ test("zooms towards the cursor", async ({ openProjectPage, page }) => {
   expect(scroll.left).toBeGreaterThan(0);
 });
 
+test("holds the zoom buttons to the same limits as the wheel", async ({
+  openProjectPage,
+  page,
+}) => {
+  const projectPage = await openProjectPage(project.id, TEST_BUILD_FAILED.id);
+  await projectPage.testRunList.getRow(TEST_UNRESOLVED.id).click();
+
+  const pane = page.getByTestId("drawArea").first();
+  await expect(pane).toBeVisible();
+  const zoomOut = page.getByTestId("ZoomOutIcon");
+
+  for (let i = 0; i < 60; i++) {
+    await zoomOut.click();
+  }
+
+  // unclamped this shrinks the image to a fraction of a pixel
+  const width = await pane.evaluate(
+    (el) => (el.firstElementChild as HTMLElement).offsetWidth,
+  );
+  expect(width).toBeGreaterThan(100);
+});
+
 test("can download images", async ({ openProjectPage, page }) => {
   const projectPage = await openProjectPage(project.id, TEST_BUILD_FAILED.id);
 

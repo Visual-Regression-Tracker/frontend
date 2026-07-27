@@ -7,6 +7,7 @@ import { Grid, CircularProgress, type Theme } from "@mui/material";
 import { NoImagePlaceholder } from "./NoImageAvailable";
 import Konva from "konva";
 import { makeStyles } from "@mui/styles";
+import { clampScale } from "../../_helpers/scale.helper";
 
 const useStyles = makeStyles((theme: Theme) => ({
   canvasContainer: {
@@ -28,8 +29,6 @@ const useStyles = makeStyles((theme: Theme) => ({
 export type ImageStateLoad = "loaded" | "loading" | "failed";
 
 const SCALE_BY = 1.04;
-const MIN_SCALE = 0.1;
-const MAX_SCALE = 10;
 
 type StageOffsetPosition = {
   x: number;
@@ -136,12 +135,8 @@ export const DrawArea: FunctionComponent<IDrawArea> = ({
     const zoom = (event: WheelEvent) => {
       event.preventDefault();
 
-      const scale = Math.min(
-        MAX_SCALE,
-        Math.max(
-          MIN_SCALE,
-          event.deltaY < 0 ? stageScale * SCALE_BY : stageScale / SCALE_BY,
-        ),
+      const scale = clampScale(
+        event.deltaY < 0 ? stageScale * SCALE_BY : stageScale / SCALE_BY,
       );
       const bounds = container.getBoundingClientRect();
       const pointerX = event.clientX - bounds.left;
