@@ -29,9 +29,10 @@ const useStyles = makeStyles((theme: Theme) => ({
 export type ImageStateLoad = "loaded" | "loading" | "failed";
 
 const SCALE_BY = 1.04;
-// share of the remaining distance covered each frame; lower eases out longer
-const ZOOM_EASING = 0.18;
+// how long the zoom keeps coasting; higher glides longer, lower is snappier
+const ZOOM_TIME_CONSTANT_MS = 140;
 const ZOOM_SETTLED = 0.001;
+const FRAME_MS = 1000 / 60;
 
 type StageOffsetPosition = {
   x: number;
@@ -94,6 +95,7 @@ export const DrawArea: FunctionComponent<IDrawArea> = ({
   const scaleRef = React.useRef(stageScale);
   const targetScaleRef = React.useRef(stageScale);
   const frameRef = React.useRef<number>();
+  const lastFrameRef = React.useRef<number>();
   const anchorRef = React.useRef<{
     pointerX: number;
     pointerY: number;
@@ -150,19 +152,25 @@ export const DrawArea: FunctionComponent<IDrawArea> = ({
       return;
     }
 
-    const step = () => {
+    const step = (now: number) => {
       const target = targetScaleRef.current;
       const anchor = anchorRef.current;
       const remaining = target - scaleRef.current;
 
       if (!anchor || Math.abs(remaining) < ZOOM_SETTLED) {
         frameRef.current = undefined;
+        lastFrameRef.current = undefined;
         return;
       }
 
-      // easing out: each frame covers a share of what is left, so the zoom
-      // coasts to a stop instead of cutting off with the last wheel tick
-      const scale = scaleRef.current + remaining * ZOOM_EASING;
+      // easing out over elapsed time rather than per frame, so the gesture
+      // takes as long on a 120Hz display as it does on a 60Hz one
+      const elapsed = now - (lastFrameRef.current ?? now - FRAME_MS);
+      lastFrameRef.current = now;
+
+      const scale =
+        scaleRef.current +
+        remaining * (1 - Math.exp(-elapsed / ZOOM_TIME_CONSTANT_MS));
       scaleRef.current = scale;
 
       setStageScale(scale);
@@ -284,6 +292,12 @@ export const DrawArea: FunctionComponent<IDrawArea> = ({
         data-testid="drawArea"
         ref={scrollContainerRef}
         onScroll={(event: React.SyntheticEvent<HTMLElement>) => {
+          // while zooming the scroll position is already being driven from the
+          // animation; echoing it back would render the pane twice a frame
+          if (frameRef.current) {
+            return;
+          }
+
           setStageScrollPos({
             x: (event.target as HTMLElement).scrollLeft,
             y: (event.target as HTMLElement).scrollTop,
