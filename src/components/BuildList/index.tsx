@@ -66,6 +66,7 @@ const BuildList: FunctionComponent = () => {
   const [menuBuild, setMenuBuild] = React.useState<Build | null>();
   const [newCiBuildId, setNewCiBuildId] = React.useState("");
   const [paginationPage, setPaginationPage] = React.useState(1);
+  const listRef = React.useRef<HTMLDivElement>(null);
   const [selectedIds, setSelectedIds] = React.useState<string[]>([]);
   const [bulkDeleteDialogOpen, setBulkDeleteDialogOpen] = React.useState(false);
   const [bulkDeleting, setBulkDeleting] = React.useState(false);
@@ -118,6 +119,7 @@ const BuildList: FunctionComponent = () => {
   const handlePaginationChange = React.useCallback(
     (page: number) => {
       setPaginationPage(page);
+      listRef.current?.scrollTo({ top: 0 });
       if (selectedProjectId) {
         buildDispatch({ type: "request" });
         buildsService
@@ -224,7 +226,12 @@ const BuildList: FunctionComponent = () => {
             </Box>
           </Box>
         )}
-        <Box flex={1} overflow="auto">
+        <Box
+          flex={1}
+          overflow="auto"
+          ref={listRef}
+          data-testid="buildListScroll"
+        >
           <List>
             {loading ? (
               <SkeletonList />
