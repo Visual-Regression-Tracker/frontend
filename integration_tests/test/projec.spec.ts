@@ -52,13 +52,7 @@ test("renders", async ({ openProjectPage, page }) => {
   await expect(page).toHaveScreenshot("project-page-test-run-details.png");
 });
 
-test("searches builds by ci build id", async ({ openProjectPage, page }) => {
-  await mockGetBuilds(
-    page,
-    project.id,
-    [TEST_BUILD_FAILED],
-    TEST_BUILD_FAILED.ciBuildId,
-  );
+test("searches builds by ci build id", async ({ openProjectPage }) => {
   const projectPage = await openProjectPage(project.id);
 
   await projectPage.buildList.searchInput.fill(TEST_BUILD_FAILED.ciBuildId);
@@ -76,7 +70,7 @@ test("keeps the empty search message inside the sidebar", async ({
   page,
 }) => {
   const query = "3".repeat(40);
-  await mockGetBuilds(page, project.id, [], query);
+  await mockGetBuilds(page, project.id, []);
   const projectPage = await openProjectPage(project.id);
 
   await projectPage.buildList.searchInput.fill(query);
@@ -88,6 +82,30 @@ test("keeps the empty search message inside the sidebar", async ({
     (el) => el.scrollWidth - el.clientWidth,
   );
   expect(overflow).toBeLessThanOrEqual(0);
+});
+
+test("scrolls back to the top of the list on page change", async ({
+  openProjectPage,
+  page,
+}) => {
+  const builds = Array.from({ length: 25 }, (_, i) => ({
+    ...TEST_BUILD_PASSED,
+    id: `build-${i}`,
+    number: 100 + i,
+  }));
+  await mockGetBuilds(page, project.id, builds);
+  const projectPage = await openProjectPage(project.id);
+  await expect(projectPage.buildList.getBuildLocator(100)).toBeVisible();
+
+  await projectPage.buildList.scrollContainer.evaluate((el) =>
+    el.scrollTo(0, el.scrollHeight),
+  );
+  expect(await projectPage.buildList.scrollTop()).toBeGreaterThan(0);
+
+  await projectPage.buildList.goToPage(2);
+
+  await expect(projectPage.buildList.getBuildLocator(110)).toBeVisible();
+  expect(await projectPage.buildList.scrollTop()).toBe(0);
 });
 
 test("keeps wheel zoom inside the image pane", async ({

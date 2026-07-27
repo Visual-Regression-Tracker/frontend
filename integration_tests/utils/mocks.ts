@@ -32,21 +32,32 @@ export const mockGetBuilds = async (
   page: Page,
   projectId: string,
   builds: Build[],
-  ciBuildId?: string,
 ) => {
-  const search = ciBuildId ? `&ciBuildId=${encodeURIComponent(ciBuildId)}` : "";
-
   return page.route(
-    `${API_URL}/builds?projectId=${projectId}&take=10&skip=0${search}`,
-    (route) =>
-      route.fulfill({
+    (url) =>
+      url.pathname === "/builds" &&
+      url.searchParams.get("projectId") === projectId,
+    (route, request) => {
+      const params = new URL(request.url()).searchParams;
+      const take = Number(params.get("take"));
+      const skip = Number(params.get("skip"));
+      const ciBuildId = params.get("ciBuildId");
+      const matching = ciBuildId
+        ? builds.filter(
+            (build) =>
+              build.ciBuildId?.toLowerCase().includes(ciBuildId.toLowerCase()),
+          )
+        : builds;
+
+      return route.fulfill({
         body: JSON.stringify({
-          data: builds,
-          skip: 0,
-          take: 10,
-          total: builds.length,
+          data: matching.slice(skip, skip + take),
+          skip,
+          take,
+          total: matching.length,
         }),
-      }),
+      });
+    },
   );
 };
 
