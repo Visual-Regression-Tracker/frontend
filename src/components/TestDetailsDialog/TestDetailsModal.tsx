@@ -54,7 +54,7 @@ import { invertIgnoreArea } from "../../_helpers/ignoreArea.helper";
 import { BaseModal } from "../BaseModal";
 import { Tooltip } from "../Tooltip";
 import ImageDetails, { ImageDetailsProps } from "./ImageDetails";
-import { calculateScale } from "../../_helpers/scale.helper";
+import { calculateScale, clampScale } from "../../_helpers/scale.helper";
 import TestStatusChip from "../TestStatusChip";
 
 const useStyles = makeStyles(() => ({
@@ -713,7 +713,9 @@ const TestDetailsModal: React.FunctionComponent<TestDetailsModalProps> = ({
         <Grid item xs={3} className={classes.scaleActions}>
           <Tooltip title={"Zoom In"}>
             <IconButton
-              onClick={() => setStageScale(stageScale * stageScaleBy)}
+              onClick={() =>
+                setStageScale(clampScale(stageScale * stageScaleBy))
+              }
               size="large"
             >
               <ZoomIn />
@@ -721,7 +723,9 @@ const TestDetailsModal: React.FunctionComponent<TestDetailsModalProps> = ({
           </Tooltip>
           <Tooltip title={"Zoom Out"}>
             <IconButton
-              onClick={() => setStageScale(stageScale / stageScaleBy)}
+              onClick={() =>
+                setStageScale(clampScale(stageScale / stageScaleBy))
+              }
               size="large"
             >
               <ZoomOut />
