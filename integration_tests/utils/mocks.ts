@@ -34,16 +34,23 @@ export const mockGetBuilds = async (
   builds: Build[],
 ) => {
   return page.route(
-    `${API_URL}/builds?projectId=${projectId}&take=10&skip=0`,
-    (route) =>
-      route.fulfill({
+    (url) =>
+      url.pathname === "/builds" &&
+      url.searchParams.get("projectId") === projectId,
+    (route, request) => {
+      const params = new URL(request.url()).searchParams;
+      const take = Number(params.get("take"));
+      const skip = Number(params.get("skip"));
+
+      return route.fulfill({
         body: JSON.stringify({
-          data: builds,
-          skip: 0,
-          take: 10,
-          total: 3,
+          data: builds.slice(skip, skip + take),
+          skip,
+          take,
+          total: builds.length,
         }),
-      }),
+      });
+    },
   );
 };
 
