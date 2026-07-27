@@ -251,7 +251,13 @@ const BuildList: FunctionComponent = () => {
             {loading && buildList.length === 0 ? (
               <SkeletonList />
             ) : buildList.length === 0 ? (
-              <Typography variant="h5">
+              <Typography
+                variant="subtitle1"
+                align="center"
+                color="textSecondary"
+                sx={{ padding: 2, overflowWrap: "anywhere" }}
+                data-testid="buildListEmpty"
+              >
                 {searchQuery ? `No builds match "${searchQuery}"` : "No builds"}
               </Typography>
             ) : (

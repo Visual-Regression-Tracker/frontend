@@ -71,6 +71,25 @@ test("searches builds by ci build id", async ({ openProjectPage, page }) => {
   ).toBeHidden();
 });
 
+test("keeps the empty search message inside the sidebar", async ({
+  openProjectPage,
+  page,
+}) => {
+  const query = "3".repeat(40);
+  await mockGetBuilds(page, project.id, [], query);
+  const projectPage = await openProjectPage(project.id);
+
+  await projectPage.buildList.searchInput.fill(query);
+
+  const message = projectPage.buildList.emptyMessage;
+  await expect(message).toHaveText(`No builds match "${query}"`);
+
+  const overflow = await message.evaluate(
+    (el) => el.scrollWidth - el.clientWidth,
+  );
+  expect(overflow).toBeLessThanOrEqual(0);
+});
+
 test("can download images", async ({ openProjectPage, page }) => {
   const projectPage = await openProjectPage(project.id, TEST_BUILD_FAILED.id);
 
