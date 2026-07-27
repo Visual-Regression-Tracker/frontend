@@ -80,6 +80,37 @@ test("keeps wheel zoom inside the image pane", async ({
   expect(prevented).toBe(true);
 });
 
+test("zooms with the cursor off the artwork", async ({
+  openProjectPage,
+  page,
+}) => {
+  const projectPage = await openProjectPage(project.id, TEST_BUILD_FAILED.id);
+  await projectPage.testRunList.getRow(TEST_UNRESOLVED.id).click();
+
+  const pane = page.getByTestId("drawArea").first();
+  await expect(pane).toBeVisible();
+  const canvas = page.locator("canvas").first();
+  const bounds = await pane.boundingBox();
+
+  // shrink the image until it no longer reaches the far side of the pane
+  await page.mouse.move(bounds.x + bounds.width / 2, bounds.y + 20);
+  for (let i = 0; i < 40; i++) {
+    await page.mouse.wheel(0, 120);
+  }
+
+  const shrunk = await canvas.boundingBox();
+  expect(shrunk.x + shrunk.width).toBeLessThan(bounds.x + bounds.width - 20);
+
+  // the empty half of the pane has to zoom the image just the same
+  await page.mouse.move(bounds.x + bounds.width - 10, bounds.y + 20);
+  for (let i = 0; i < 10; i++) {
+    await page.mouse.wheel(0, -120);
+  }
+
+  const grown = await canvas.boundingBox();
+  expect(grown.width).toBeGreaterThan(shrunk.width);
+});
+
 test("zooms towards the cursor", async ({ openProjectPage, page }) => {
   const projectPage = await openProjectPage(project.id, TEST_BUILD_FAILED.id);
   await projectPage.testRunList.getRow(TEST_UNRESOLVED.id).click();
