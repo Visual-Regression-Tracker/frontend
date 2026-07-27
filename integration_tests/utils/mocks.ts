@@ -41,13 +41,20 @@ export const mockGetBuilds = async (
       const params = new URL(request.url()).searchParams;
       const take = Number(params.get("take"));
       const skip = Number(params.get("skip"));
+      const ciBuildId = params.get("ciBuildId");
+      const matching = ciBuildId
+        ? builds.filter(
+            (build) =>
+              build.ciBuildId?.toLowerCase().includes(ciBuildId.toLowerCase()),
+          )
+        : builds;
 
       return route.fulfill({
         body: JSON.stringify({
-          data: builds.slice(skip, skip + take),
+          data: matching.slice(skip, skip + take),
           skip,
           take,
-          total: builds.length,
+          total: matching.length,
         }),
       });
     },

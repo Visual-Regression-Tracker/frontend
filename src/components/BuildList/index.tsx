@@ -15,8 +15,10 @@ import {
   Menu,
   MenuItem,
   Box,
+  TextField,
 } from "@mui/material";
 import { MoreVert, DeleteOutline, Close } from "@mui/icons-material";
+import { DebounceInput } from "react-debounce-input";
 import {
   useBuildState,
   useBuildDispatch,
@@ -66,6 +68,7 @@ const BuildList: FunctionComponent = () => {
   const [menuBuild, setMenuBuild] = React.useState<Build | null>();
   const [newCiBuildId, setNewCiBuildId] = React.useState("");
   const [paginationPage, setPaginationPage] = React.useState(1);
+  const [searchQuery, setSearchQuery] = React.useState("");
   const listRef = React.useRef<HTMLDivElement>(null);
   const [selectedIds, setSelectedIds] = React.useState<string[]>([]);
   const [bulkDeleteDialogOpen, setBulkDeleteDialogOpen] = React.useState(false);
@@ -123,7 +126,7 @@ const BuildList: FunctionComponent = () => {
       if (selectedProjectId) {
         buildDispatch({ type: "request" });
         buildsService
-          .getList(selectedProjectId, take, take * (page - 1))
+          .getList(selectedProjectId, take, take * (page - 1), searchQuery)
           .then((payload) => {
             buildDispatch({ type: "get", payload });
           })
@@ -134,7 +137,7 @@ const BuildList: FunctionComponent = () => {
           );
       }
     },
-    [buildDispatch, enqueueSnackbar, selectedProjectId, take],
+    [buildDispatch, enqueueSnackbar, selectedProjectId, take, searchQuery],
   );
 
   React.useEffect(() => {
@@ -143,7 +146,12 @@ const BuildList: FunctionComponent = () => {
 
   React.useEffect(() => {
     setSelectedIds([]);
-  }, [selectedProjectId]);
+  }, [selectedProjectId, searchQuery]);
+
+  // another project's builds must not linger while its list is being fetched
+  React.useEffect(() => {
+    buildDispatch({ type: "reset" });
+  }, [buildDispatch, selectedProjectId]);
 
   const handleBulkDelete = () => {
     if (bulkDeleting) {
@@ -189,6 +197,20 @@ const BuildList: FunctionComponent = () => {
   return (
     <>
       <Box height="91%" display="flex" flexDirection="column">
+        <Box padding={1}>
+          <DebounceInput
+            size="small"
+            variant="outlined"
+            fullWidth
+            label="Search build"
+            placeholder="Search by CI build id"
+            value={searchQuery}
+            element={TextField}
+            debounceTimeout={300}
+            onChange={(event) => setSearchQuery(event.target.value)}
+            inputProps={{ "data-testid": "buildSearch", autoComplete: "off" }}
+          />
+        </Box>
         {selectedIds.length > 0 && (
           <Box
             display="flex"
@@ -233,10 +255,18 @@ const BuildList: FunctionComponent = () => {
           data-testid="buildListScroll"
         >
           <List>
-            {loading ? (
+            {loading && buildList.length === 0 ? (
               <SkeletonList />
             ) : buildList.length === 0 ? (
-              <Typography variant="h5">No builds</Typography>
+              <Typography
+                variant="subtitle1"
+                align="center"
+                color="textSecondary"
+                sx={{ padding: 2, overflowWrap: "anywhere" }}
+                data-testid="buildListEmpty"
+              >
+                {searchQuery ? `No builds match "${searchQuery}"` : "No builds"}
+              </Typography>
             ) : (
               buildList.map((build) => (
                 <React.Fragment key={build.id}>

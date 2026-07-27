@@ -52,6 +52,38 @@ test("renders", async ({ openProjectPage, page }) => {
   await expect(page).toHaveScreenshot("project-page-test-run-details.png");
 });
 
+test("searches builds by ci build id", async ({ openProjectPage }) => {
+  const projectPage = await openProjectPage(project.id);
+
+  await projectPage.buildList.searchInput.fill(TEST_BUILD_FAILED.ciBuildId);
+
+  await expect(
+    projectPage.buildList.getBuildLocator(TEST_BUILD_FAILED.number),
+  ).toBeVisible();
+  await expect(
+    projectPage.buildList.getBuildLocator(TEST_BUILD_PASSED.number),
+  ).toBeHidden();
+});
+
+test("keeps the empty search message inside the sidebar", async ({
+  openProjectPage,
+  page,
+}) => {
+  const query = "3".repeat(40);
+  await mockGetBuilds(page, project.id, []);
+  const projectPage = await openProjectPage(project.id);
+
+  await projectPage.buildList.searchInput.fill(query);
+
+  const message = projectPage.buildList.emptyMessage;
+  await expect(message).toHaveText(`No builds match "${query}"`);
+
+  const overflow = await message.evaluate(
+    (el) => el.scrollWidth - el.clientWidth,
+  );
+  expect(overflow).toBeLessThanOrEqual(0);
+});
+
 test("scrolls back to the top of the list on page change", async ({
   openProjectPage,
   page,

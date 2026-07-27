@@ -2,6 +2,8 @@ import { Page } from "@playwright/test";
 
 export class BuildList {
   buildList = this.page.locator("#build-list");
+  searchInput = this.page.getByTestId("buildSearch");
+  emptyMessage = this.page.getByTestId("buildListEmpty");
   scrollContainer = this.page.getByTestId("buildListScroll");
 
   constructor(public page: Page) {

@@ -12,14 +12,16 @@ function getList(
   projectId: string,
   take: number,
   skip: number,
+  ciBuildId?: string,
 ): Promise<PaginatedData<Build>> {
   const requestOptions = {
     method: "GET",
     headers: authHeader(),
   };
+  const search = ciBuildId ? `&ciBuildId=${encodeURIComponent(ciBuildId)}` : "";
 
   return fetch(
-    `${API_URL}${ENDPOINT_URL}?projectId=${projectId}&take=${take}&skip=${skip}`,
+    `${API_URL}${ENDPOINT_URL}?projectId=${projectId}&take=${take}&skip=${skip}${search}`,
     requestOptions,
   ).then(handleResponse);
 }

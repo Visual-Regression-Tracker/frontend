@@ -35,14 +35,19 @@ const ProjectPage = () => {
   return (
     <>
       <Grid container className={classes.root}>
-        <Grid item xs={3} className={classes.root}>
-          <Box height="9%" id={LOCATOR_PROJECT_PAGE_SELECT_PROJECT}>
+        <Grid
+          item
+          xs={3}
+          className={classes.root}
+          sx={{ display: "flex", flexDirection: "column" }}
+        >
+          <Box id={LOCATOR_PROJECT_PAGE_SELECT_PROJECT}>
             <ProjectSelect
               projectId={projectId}
               onProjectSelect={(id) => navigate(buildProjectPageUrl(id))}
             />
           </Box>
-          <Box height="91%" id={LOCATOR_PROJECT_PAGE_BUILD_LIST}>
+          <Box flex={1} minHeight={0} id={LOCATOR_PROJECT_PAGE_BUILD_LIST}>
             <BuildList />
           </Box>
         </Grid>
