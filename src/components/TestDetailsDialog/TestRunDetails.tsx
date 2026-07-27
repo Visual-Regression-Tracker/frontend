@@ -1,5 +1,5 @@
 import React from "react";
-import { Grid, Typography, Paper, type Theme } from "@mui/material";
+import { Chip, Grid, Typography, Paper, type Theme } from "@mui/material";
 import { makeStyles } from "@mui/styles";
 import { TestRun } from "../../types";
 import { Tooltip } from "../Tooltip";
@@ -34,37 +34,25 @@ export const TestRunDetails: React.FunctionComponent<IProps> = ({
 }) => {
   const classes = useStyles();
 
+  const attributes = [
+    { name: "OS", value: testRun.os },
+    { name: "Device", value: testRun.device },
+    { name: "Browser", value: testRun.browser },
+    { name: "Viewport", value: testRun.viewport },
+    { name: "Custom Tags", value: testRun.customTags },
+  ];
+
   return (
     <React.Fragment>
-      {testRun.os && (
-        <Grid item>
-          <Typography variant="caption">OS: {testRun.os}</Typography>
-        </Grid>
-      )}
-      {testRun.device && (
-        <Grid item>
-          <Typography variant="caption">Device: {testRun.device}</Typography>
-        </Grid>
-      )}
-      {testRun.browser && (
-        <Grid item>
-          <Typography variant="caption">Browser: {testRun.browser}</Typography>
-        </Grid>
-      )}
-      {testRun.viewport && (
-        <Grid item>
-          <Typography variant="caption">
-            Viewport: {testRun.viewport}
-          </Typography>
-        </Grid>
-      )}
-      {testRun.customTags && (
-        <Grid item>
-          <Typography variant="caption">
-            Custom Tags: {testRun.customTags}
-          </Typography>
-        </Grid>
-      )}
+      {attributes
+        .filter((attribute) => attribute.value)
+        .map((attribute) => (
+          <Grid item key={attribute.name}>
+            <Tooltip title={attribute.name}>
+              <Chip size="small" label={attribute.value} />
+            </Tooltip>
+          </Grid>
+        ))}
       <Grid item>
         <Tooltip title="How many percent of pixels are different according to the defined settings.">
           <Typography variant="caption">

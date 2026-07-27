@@ -7,6 +7,7 @@ import { Grid, CircularProgress, type Theme } from "@mui/material";
 import { NoImagePlaceholder } from "./NoImageAvailable";
 import Konva from "konva";
 import { makeStyles } from "@mui/styles";
+import { clampScale } from "../../_helpers/scale.helper";
 
 const useStyles = makeStyles((theme: Theme) => ({
   canvasContainer: {
@@ -26,6 +27,12 @@ const useStyles = makeStyles((theme: Theme) => ({
 }));
 
 export type ImageStateLoad = "loaded" | "loading" | "failed";
+
+const SCALE_BY = 1.04;
+// how long the zoom keeps coasting; higher glides longer, lower is snappier
+const ZOOM_TIME_CONSTANT_MS = 140;
+const ZOOM_SETTLED = 0.001;
+const FRAME_MS = 1000 / 60;
 
 type StageOffsetPosition = {
   x: number;
@@ -85,6 +92,16 @@ export const DrawArea: FunctionComponent<IDrawArea> = ({
   const [image, imageStatus] = imageState;
   const stageRef = React.useRef<Konva.Stage>(null);
   const scrollContainerRef = React.useRef<HTMLDivElement>(null);
+  const scaleRef = React.useRef(stageScale);
+  const targetScaleRef = React.useRef(stageScale);
+  const frameRef = React.useRef<number>();
+  const lastFrameRef = React.useRef<number>();
+  const anchorRef = React.useRef<{
+    pointerX: number;
+    pointerY: number;
+    imageX: number;
+    imageY: number;
+  }>();
 
   const isDeleteKey = (event: KeyboardEvent) => {
     return event.key === "Delete" || event.key === "Backspace";
@@ -117,6 +134,96 @@ export const DrawArea: FunctionComponent<IDrawArea> = ({
   React.useEffect(() => {
     scrollContainerRef.current?.scrollTo(stageScollPos.x, stageScollPos.y);
   }, [stageScollPos]);
+
+  React.useEffect(() => {
+    scaleRef.current = stageScale;
+
+    // zoom buttons and fit-to-screen set the scale outright; adopt it as the
+    // target unless an animation is the one driving the change
+    if (!frameRef.current) {
+      targetScaleRef.current = stageScale;
+    }
+  }, [stageScale]);
+
+  React.useEffect(() => {
+    const container = scrollContainerRef.current;
+
+    if (!container) {
+      return;
+    }
+
+    const step = (now: number) => {
+      const target = targetScaleRef.current;
+      const anchor = anchorRef.current;
+      const remaining = target - scaleRef.current;
+
+      if (!anchor || Math.abs(remaining) < ZOOM_SETTLED) {
+        frameRef.current = undefined;
+        lastFrameRef.current = undefined;
+        return;
+      }
+
+      // easing out over elapsed time rather than per frame, so the gesture
+      // takes as long on a 120Hz display as it does on a 60Hz one
+      const elapsed = now - (lastFrameRef.current ?? now - FRAME_MS);
+      lastFrameRef.current = now;
+
+      const scale =
+        scaleRef.current +
+        remaining * (1 - Math.exp(-elapsed / ZOOM_TIME_CONSTANT_MS));
+      scaleRef.current = scale;
+
+      setStageScale(scale);
+      setStageScrollPos({
+        x: anchor.imageX * scale - anchor.pointerX + stagePos.x,
+        y: anchor.imageY * scale - anchor.pointerY + stagePos.y,
+      });
+
+      frameRef.current = requestAnimationFrame(step);
+    };
+
+    // The canvas shrinks as you zoom out, so a listener on it stops receiving
+    // the wheel once it slips out from under the cursor and the browser zooms
+    // the page instead. The container keeps its size, so it owns the gesture.
+    // React 17 registers onWheel passively, hence the manual listener.
+    const zoom = (event: WheelEvent) => {
+      event.preventDefault();
+
+      const bounds = container.getBoundingClientRect();
+      const pointerX = event.clientX - bounds.left;
+      const pointerY = event.clientY - bounds.top;
+
+      targetScaleRef.current = clampScale(
+        event.deltaY < 0
+          ? targetScaleRef.current * SCALE_BY
+          : targetScaleRef.current / SCALE_BY,
+      );
+      // the image point under the cursor has to stay under the cursor for the
+      // whole animation, so it is resolved once against the scale on screen
+      anchorRef.current = {
+        pointerX,
+        pointerY,
+        imageX:
+          (container.scrollLeft + pointerX - stagePos.x) / scaleRef.current,
+        imageY:
+          (container.scrollTop + pointerY - stagePos.y) / scaleRef.current,
+      };
+
+      if (!frameRef.current) {
+        frameRef.current = requestAnimationFrame(step);
+      }
+    };
+
+    container.addEventListener("wheel", zoom, { passive: false });
+    return () => {
+      container.removeEventListener("wheel", zoom);
+
+      if (frameRef.current) {
+        cancelAnimationFrame(frameRef.current);
+        frameRef.current = undefined;
+      }
+    };
+  }, [image, setStageScale, setStageScrollPos, stagePos]);
 
   const handleContentMousedown = (
     event: Konva.KonvaEventObject<MouseEvent>,
@@ -182,8 +289,15 @@ export const DrawArea: FunctionComponent<IDrawArea> = ({
     return (
       <div
         className={classes.canvasContainer}
+        data-testid="drawArea"
         ref={scrollContainerRef}
         onScroll={(event: React.SyntheticEvent<HTMLElement>) => {
+          // while zooming the scroll position is already being driven from the
+          // animation; echoing it back would render the pane twice a frame
+          if (frameRef.current) {
+            return;
+          }
+
           setStageScrollPos({
             x: (event.target as HTMLElement).scrollLeft,
             y: (event.target as HTMLElement).scrollTop,
@@ -228,16 +342,6 @@ export const DrawArea: FunctionComponent<IDrawArea> = ({
             width={image?.width}
             height={image?.height}
             onMouseDown={onStageClick}
-            onWheel={(event: Konva.KonvaEventObject<WheelEvent>) => {
-              event.evt.preventDefault();
-              const scaleBy = 1.04;
-              const newScale =
-                event.evt.deltaY < 0
-                  ? stageScale * scaleBy
-                  : stageScale / scaleBy;
-
-              setStageScale(newScale);
-            }}
             style={{
               transform: `scale(${stageScale})`,
               transformOrigin: "top left",

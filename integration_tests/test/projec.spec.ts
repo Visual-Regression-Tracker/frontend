@@ -76,6 +76,159 @@ test("scrolls back to the top of the list on page change", async ({
   expect(await projectPage.buildList.scrollTop()).toBe(0);
 });
 
+test("keeps wheel zoom inside the image pane", async ({
+  openProjectPage,
+  page,
+}) => {
+  const projectPage = await openProjectPage(project.id, TEST_BUILD_FAILED.id);
+  await projectPage.testRunList.getRow(TEST_UNRESOLVED.id).click();
+
+  const pane = page.getByTestId("drawArea").first();
+  await expect(pane).toBeVisible();
+
+  // a wheel over the pane but off the artwork must still be handled by the
+  // dialog, otherwise the browser zooms the whole page instead
+  const prevented = await pane.evaluate((el) => {
+    const box = el.getBoundingClientRect();
+    const event = new WheelEvent("wheel", {
+      deltaY: 120,
+      clientX: box.right - 5,
+      clientY: box.bottom - 5,
+      bubbles: true,
+      cancelable: true,
+    });
+    el.dispatchEvent(event);
+    return event.defaultPrevented;
+  });
+
+  expect(prevented).toBe(true);
+});
+
+test("zooms with the cursor off the artwork", async ({
+  openProjectPage,
+  page,
+}) => {
+  const projectPage = await openProjectPage(project.id, TEST_BUILD_FAILED.id);
+  await projectPage.testRunList.getRow(TEST_UNRESOLVED.id).click();
+
+  const pane = page.getByTestId("drawArea").first();
+  await expect(pane).toBeVisible();
+  const canvas = page.locator("canvas").first();
+  const bounds = await pane.boundingBox();
+
+  // shrink the image until it no longer reaches the far side of the pane
+  await page.mouse.move(bounds.x + bounds.width / 2, bounds.y + 20);
+  for (let i = 0; i < 40; i++) {
+    await page.mouse.wheel(0, 120);
+  }
+
+  const shrunk = await canvas.boundingBox();
+  expect(shrunk.x + shrunk.width).toBeLessThan(bounds.x + bounds.width - 20);
+
+  // the empty half of the pane has to zoom the image just the same
+  await page.mouse.move(bounds.x + bounds.width - 10, bounds.y + 20);
+  for (let i = 0; i < 10; i++) {
+    await page.mouse.wheel(0, -120);
+  }
+
+  const grown = await canvas.boundingBox();
+  expect(grown.width).toBeGreaterThan(shrunk.width);
+});
+
+test("zooms towards the cursor", async ({ openProjectPage, page }) => {
+  const projectPage = await openProjectPage(project.id, TEST_BUILD_FAILED.id);
+  await projectPage.testRunList.getRow(TEST_UNRESOLVED.id).click();
+
+  const pane = page.getByTestId("drawArea").first();
+  await expect(pane).toBeVisible();
+
+  // zooming in near the right edge has to pull that edge into view; anchoring
+  // at the top left would leave the pane scrolled to 0. Only the horizontal
+  // axis is checked because the pane grows in height instead of scrolling.
+  const scroll = await pane.evaluate(async (el) => {
+    const box = el.getBoundingClientRect();
+
+    for (let i = 0; i < 20; i++) {
+      el.dispatchEvent(
+        new WheelEvent("wheel", {
+          deltaY: -120,
+          clientX: box.right - 20,
+          clientY: box.bottom - 20,
+          bubbles: true,
+          cancelable: true,
+        }),
+      );
+      await new Promise((resolve) => requestAnimationFrame(resolve));
+    }
+
+    return { left: el.scrollLeft, top: el.scrollTop };
+  });
+
+  expect(scroll.left).toBeGreaterThan(0);
+});
+
+test("holds the zoom buttons to the same limits as the wheel", async ({
+  openProjectPage,
+  page,
+}) => {
+  const projectPage = await openProjectPage(project.id, TEST_BUILD_FAILED.id);
+  await projectPage.testRunList.getRow(TEST_UNRESOLVED.id).click();
+
+  const pane = page.getByTestId("drawArea").first();
+  await expect(pane).toBeVisible();
+  const zoomOut = page.getByTestId("ZoomOutIcon");
+
+  for (let i = 0; i < 60; i++) {
+    await zoomOut.click();
+  }
+
+  // unclamped this shrinks the image to a fraction of a pixel
+  const width = await pane.evaluate(
+    (el) => (el.firstElementChild as HTMLElement).offsetWidth,
+  );
+  expect(width).toBeGreaterThan(100);
+});
+
+test("eases the zoom out instead of stopping dead", async ({
+  openProjectPage,
+  page,
+}) => {
+  const projectPage = await openProjectPage(project.id, TEST_BUILD_FAILED.id);
+  await projectPage.testRunList.getRow(TEST_UNRESOLVED.id).click();
+
+  const pane = page.getByTestId("drawArea").first();
+  await expect(pane).toBeVisible();
+
+  const widths = await pane.evaluate(async (el) => {
+    const canvas = el.querySelector("canvas") as HTMLCanvasElement;
+    const box = el.getBoundingClientRect();
+
+    for (let i = 0; i < 20; i++) {
+      el.dispatchEvent(
+        new WheelEvent("wheel", {
+          deltaY: -120,
+          clientX: box.left + 20,
+          clientY: box.top + 20,
+          bubbles: true,
+          cancelable: true,
+        }),
+      );
+    }
+
+    const samples: number[] = [];
+
+    for (let frame = 0; frame < 12; frame++) {
+      await new Promise((resolve) => requestAnimationFrame(resolve));
+      samples.push(Math.round(canvas.getBoundingClientRect().width));
+    }
+
+    return samples;
+  });
+
+  // jumping straight to the target would make every sample identical
+  expect(new Set(widths).size).toBeGreaterThan(3);
+});
+
 test("can download images", async ({ openProjectPage, page }) => {
   const projectPage = await openProjectPage(project.id, TEST_BUILD_FAILED.id);
 
