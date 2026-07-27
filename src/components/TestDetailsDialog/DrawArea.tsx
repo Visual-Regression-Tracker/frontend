@@ -29,6 +29,9 @@ const useStyles = makeStyles((theme: Theme) => ({
 export type ImageStateLoad = "loaded" | "loading" | "failed";
 
 const SCALE_BY = 1.04;
+// share of the remaining distance covered each frame; lower eases out longer
+const ZOOM_EASING = 0.18;
+const ZOOM_SETTLED = 0.001;
 
 type StageOffsetPosition = {
   x: number;
@@ -88,6 +91,15 @@ export const DrawArea: FunctionComponent<IDrawArea> = ({
   const [image, imageStatus] = imageState;
   const stageRef = React.useRef<Konva.Stage>(null);
   const scrollContainerRef = React.useRef<HTMLDivElement>(null);
+  const scaleRef = React.useRef(stageScale);
+  const targetScaleRef = React.useRef(stageScale);
+  const frameRef = React.useRef<number>();
+  const anchorRef = React.useRef<{
+    pointerX: number;
+    pointerY: number;
+    imageX: number;
+    imageY: number;
+  }>();
 
   const isDeleteKey = (event: KeyboardEvent) => {
     return event.key === "Delete" || event.key === "Backspace";
@@ -122,11 +134,45 @@ export const DrawArea: FunctionComponent<IDrawArea> = ({
   }, [stageScollPos]);
 
   React.useEffect(() => {
+    scaleRef.current = stageScale;
+
+    // zoom buttons and fit-to-screen set the scale outright; adopt it as the
+    // target unless an animation is the one driving the change
+    if (!frameRef.current) {
+      targetScaleRef.current = stageScale;
+    }
+  }, [stageScale]);
+
+  React.useEffect(() => {
     const container = scrollContainerRef.current;
 
     if (!container) {
       return;
     }
+
+    const step = () => {
+      const target = targetScaleRef.current;
+      const anchor = anchorRef.current;
+      const remaining = target - scaleRef.current;
+
+      if (!anchor || Math.abs(remaining) < ZOOM_SETTLED) {
+        frameRef.current = undefined;
+        return;
+      }
+
+      // easing out: each frame covers a share of what is left, so the zoom
+      // coasts to a stop instead of cutting off with the last wheel tick
+      const scale = scaleRef.current + remaining * ZOOM_EASING;
+      scaleRef.current = scale;
+
+      setStageScale(scale);
+      setStageScrollPos({
+        x: anchor.imageX * scale - anchor.pointerX + stagePos.x,
+        y: anchor.imageY * scale - anchor.pointerY + stagePos.y,
+      });
+
+      frameRef.current = requestAnimationFrame(step);
+    };
 
     // The canvas shrinks as you zoom out, so a listener on it stops receiving
     // the wheel once it slips out from under the cursor and the browser zooms
@@ -135,27 +181,41 @@ export const DrawArea: FunctionComponent<IDrawArea> = ({
     const zoom = (event: WheelEvent) => {
       event.preventDefault();
 
-      const scale = clampScale(
-        event.deltaY < 0 ? stageScale * SCALE_BY : stageScale / SCALE_BY,
-      );
       const bounds = container.getBoundingClientRect();
       const pointerX = event.clientX - bounds.left;
       const pointerY = event.clientY - bounds.top;
-      // the image point under the cursor has to stay under the cursor
-      const imageX =
-        (container.scrollLeft + pointerX - stagePos.x) / stageScale;
-      const imageY = (container.scrollTop + pointerY - stagePos.y) / stageScale;
 
-      setStageScale(scale);
-      setStageScrollPos({
-        x: imageX * scale - pointerX + stagePos.x,
-        y: imageY * scale - pointerY + stagePos.y,
-      });
+      targetScaleRef.current = clampScale(
+        event.deltaY < 0
+          ? targetScaleRef.current * SCALE_BY
+          : targetScaleRef.current / SCALE_BY,
+      );
+      // the image point under the cursor has to stay under the cursor for the
+      // whole animation, so it is resolved once against the scale on screen
+      anchorRef.current = {
+        pointerX,
+        pointerY,
+        imageX:
+          (container.scrollLeft + pointerX - stagePos.x) / scaleRef.current,
+        imageY:
+          (container.scrollTop + pointerY - stagePos.y) / scaleRef.current,
+      };
+
+      if (!frameRef.current) {
+        frameRef.current = requestAnimationFrame(step);
+      }
     };
 
     container.addEventListener("wheel", zoom, { passive: false });
-    return () => container.removeEventListener("wheel", zoom);
-  }, [image, setStageScale, setStageScrollPos, stagePos, stageScale]);
+    return () => {
+      container.removeEventListener("wheel", zoom);
+
+      if (frameRef.current) {
+        cancelAnimationFrame(frameRef.current);
+        frameRef.current = undefined;
+      }
+    };
+  }, [image, setStageScale, setStageScrollPos, stagePos]);
 
   const handleContentMousedown = (
     event: Konva.KonvaEventObject<MouseEvent>,

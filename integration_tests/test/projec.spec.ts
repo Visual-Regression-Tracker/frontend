@@ -165,6 +165,46 @@ test("holds the zoom buttons to the same limits as the wheel", async ({
   expect(width).toBeGreaterThan(100);
 });
 
+test("eases the zoom out instead of stopping dead", async ({
+  openProjectPage,
+  page,
+}) => {
+  const projectPage = await openProjectPage(project.id, TEST_BUILD_FAILED.id);
+  await projectPage.testRunList.getRow(TEST_UNRESOLVED.id).click();
+
+  const pane = page.getByTestId("drawArea").first();
+  await expect(pane).toBeVisible();
+
+  const widths = await pane.evaluate(async (el) => {
+    const canvas = el.querySelector("canvas") as HTMLCanvasElement;
+    const box = el.getBoundingClientRect();
+
+    for (let i = 0; i < 20; i++) {
+      el.dispatchEvent(
+        new WheelEvent("wheel", {
+          deltaY: -120,
+          clientX: box.left + 20,
+          clientY: box.top + 20,
+          bubbles: true,
+          cancelable: true,
+        }),
+      );
+    }
+
+    const samples: number[] = [];
+
+    for (let frame = 0; frame < 12; frame++) {
+      await new Promise((resolve) => requestAnimationFrame(resolve));
+      samples.push(Math.round(canvas.getBoundingClientRect().width));
+    }
+
+    return samples;
+  });
+
+  // jumping straight to the target would make every sample identical
+  expect(new Set(widths).size).toBeGreaterThan(3);
+});
+
 test("can download images", async ({ openProjectPage, page }) => {
   const projectPage = await openProjectPage(project.id, TEST_BUILD_FAILED.id);
 
