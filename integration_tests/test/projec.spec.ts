@@ -52,6 +52,66 @@ test("renders", async ({ openProjectPage, page }) => {
   await expect(page).toHaveScreenshot("project-page-test-run-details.png");
 });
 
+test("keeps wheel zoom inside the image pane", async ({
+  openProjectPage,
+  page,
+}) => {
+  const projectPage = await openProjectPage(project.id, TEST_BUILD_FAILED.id);
+  await projectPage.testRunList.getRow(TEST_UNRESOLVED.id).click();
+
+  const pane = page.getByTestId("drawArea").first();
+  await expect(pane).toBeVisible();
+
+  // a wheel over the pane but off the artwork must still be handled by the
+  // dialog, otherwise the browser zooms the whole page instead
+  const prevented = await pane.evaluate((el) => {
+    const box = el.getBoundingClientRect();
+    const event = new WheelEvent("wheel", {
+      deltaY: 120,
+      clientX: box.right - 5,
+      clientY: box.bottom - 5,
+      bubbles: true,
+      cancelable: true,
+    });
+    el.dispatchEvent(event);
+    return event.defaultPrevented;
+  });
+
+  expect(prevented).toBe(true);
+});
+
+test("zooms towards the cursor", async ({ openProjectPage, page }) => {
+  const projectPage = await openProjectPage(project.id, TEST_BUILD_FAILED.id);
+  await projectPage.testRunList.getRow(TEST_UNRESOLVED.id).click();
+
+  const pane = page.getByTestId("drawArea").first();
+  await expect(pane).toBeVisible();
+
+  // zooming in near the right edge has to pull that edge into view; anchoring
+  // at the top left would leave the pane scrolled to 0. Only the horizontal
+  // axis is checked because the pane grows in height instead of scrolling.
+  const scroll = await pane.evaluate(async (el) => {
+    const box = el.getBoundingClientRect();
+
+    for (let i = 0; i < 20; i++) {
+      el.dispatchEvent(
+        new WheelEvent("wheel", {
+          deltaY: -120,
+          clientX: box.right - 20,
+          clientY: box.bottom - 20,
+          bubbles: true,
+          cancelable: true,
+        }),
+      );
+      await new Promise((resolve) => requestAnimationFrame(resolve));
+    }
+
+    return { left: el.scrollLeft, top: el.scrollTop };
+  });
+
+  expect(scroll.left).toBeGreaterThan(0);
+});
+
 test("can download images", async ({ openProjectPage, page }) => {
   const projectPage = await openProjectPage(project.id, TEST_BUILD_FAILED.id);
 

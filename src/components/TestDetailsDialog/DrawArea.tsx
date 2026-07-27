@@ -27,6 +27,10 @@ const useStyles = makeStyles((theme: Theme) => ({
 
 export type ImageStateLoad = "loaded" | "loading" | "failed";
 
+const SCALE_BY = 1.04;
+const MIN_SCALE = 0.1;
+const MAX_SCALE = 10;
+
 type StageOffsetPosition = {
   x: number;
   y: number;
@@ -118,6 +122,46 @@ export const DrawArea: FunctionComponent<IDrawArea> = ({
     scrollContainerRef.current?.scrollTo(stageScollPos.x, stageScollPos.y);
   }, [stageScollPos]);
 
+  React.useEffect(() => {
+    const container = scrollContainerRef.current;
+
+    if (!container) {
+      return;
+    }
+
+    // The canvas shrinks as you zoom out, so a listener on it stops receiving
+    // the wheel once it slips out from under the cursor and the browser zooms
+    // the page instead. The container keeps its size, so it owns the gesture.
+    // React 17 registers onWheel passively, hence the manual listener.
+    const zoom = (event: WheelEvent) => {
+      event.preventDefault();
+
+      const scale = Math.min(
+        MAX_SCALE,
+        Math.max(
+          MIN_SCALE,
+          event.deltaY < 0 ? stageScale * SCALE_BY : stageScale / SCALE_BY,
+        ),
+      );
+      const bounds = container.getBoundingClientRect();
+      const pointerX = event.clientX - bounds.left;
+      const pointerY = event.clientY - bounds.top;
+      // the image point under the cursor has to stay under the cursor
+      const imageX =
+        (container.scrollLeft + pointerX - stagePos.x) / stageScale;
+      const imageY = (container.scrollTop + pointerY - stagePos.y) / stageScale;
+
+      setStageScale(scale);
+      setStageScrollPos({
+        x: imageX * scale - pointerX + stagePos.x,
+        y: imageY * scale - pointerY + stagePos.y,
+      });
+    };
+
+    container.addEventListener("wheel", zoom, { passive: false });
+    return () => container.removeEventListener("wheel", zoom);
+  }, [image, setStageScale, setStageScrollPos, stagePos, stageScale]);
+
   const handleContentMousedown = (
     event: Konva.KonvaEventObject<MouseEvent>,
   ) => {
@@ -182,6 +226,7 @@ export const DrawArea: FunctionComponent<IDrawArea> = ({
     return (
       <div
         className={classes.canvasContainer}
+        data-testid="drawArea"
         ref={scrollContainerRef}
         onScroll={(event: React.SyntheticEvent<HTMLElement>) => {
           setStageScrollPos({
@@ -228,16 +273,6 @@ export const DrawArea: FunctionComponent<IDrawArea> = ({
             width={image?.width}
             height={image?.height}
             onMouseDown={onStageClick}
-            onWheel={(event: Konva.KonvaEventObject<WheelEvent>) => {
-              event.evt.preventDefault();
-              const scaleBy = 1.04;
-              const newScale =
-                event.evt.deltaY < 0
-                  ? stageScale * scaleBy
-                  : stageScale / scaleBy;
-
-              setStageScale(newScale);
-            }}
             style={{
               transform: `scale(${stageScale})`,
               transformOrigin: "top left",
