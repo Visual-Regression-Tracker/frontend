@@ -1,12 +1,5 @@
 import React from "react";
 import { Typography, IconButton, LinearProgress } from "@mui/material";
-import {
-  GridRowModel,
-  GridRowId,
-  useGridApiContext,
-  gridRowSelectionStateSelector,
-  gridExpandedSortedRowEntriesSelector,
-} from "@mui/x-data-grid";
 import { BaseModal } from "../BaseModal";
 import { useSnackbar } from "notistack";
 import {
@@ -17,19 +10,14 @@ import {
   ThumbUp,
 } from "@mui/icons-material";
 import { staticService, testRunService } from "../../services";
-import { TestStatus } from "../../types";
+import { TestRun, TestStatus } from "../../types";
 import { Tooltip } from "../Tooltip";
 import { useTestRunState } from "../../contexts";
 
-export const BulkOperation: React.FunctionComponent = () => {
-  const apiRef = useGridApiContext();
-  const { state } = apiRef.current;
-  const rows = gridExpandedSortedRowEntriesSelector(
-    state,
-    apiRef.current.instanceId,
-  );
-
-  const selectedRows = gridRowSelectionStateSelector(state);
+export const BulkOperation: React.FunctionComponent<{
+  selectedIds: string[];
+  rows: TestRun[];
+}> = ({ selectedIds, rows }) => {
   const { testRuns } = useTestRunState();
   const { enqueueSnackbar } = useSnackbar();
   const [approveDialogOpen, setApproveDialogOpen] = React.useState(false);
@@ -41,16 +29,9 @@ export const BulkOperation: React.FunctionComponent = () => {
     React.useState(false);
 
   const [isProcessing, setIsProcessing] = React.useState(false);
-  const selectedIds: GridRowId[] = React.useMemo(
-    () => Object.values(selectedRows),
-    [selectedRows],
-  );
 
   const isMerge: boolean = React.useMemo(
-    () =>
-      !!rows.find((row: GridRowModel) =>
-        selectedIds.includes(row.id.toString()),
-      )?.model.merge,
+    () => !!rows.find((row) => selectedIds.includes(row.id))?.merge,
     [selectedIds, rows],
   );
 
@@ -59,13 +40,11 @@ export const BulkOperation: React.FunctionComponent = () => {
     () =>
       rows
         .filter(
-          (row: GridRowModel) =>
-            selectedIds.includes(row.id.toString()) &&
-            [TestStatus.new, TestStatus.unresolved].includes(
-              row.model.status.toString(),
-            ),
+          (row) =>
+            selectedIds.includes(row.id) &&
+            [TestStatus.new, TestStatus.unresolved].includes(row.status),
         )
-        .map((row: GridRowModel) => row.id.toString()),
+        .map((row) => row.id),
     [selectedIds, rows],
   );
 
@@ -145,9 +124,7 @@ export const BulkOperation: React.FunctionComponent = () => {
 
   const getBulkAction = () => {
     if (deleteDialogOpen) {
-      return testRunService.removeBulk(
-        selectedIds.map((item: GridRowId) => item.toString()),
-      );
+      return testRunService.removeBulk(selectedIds);
     }
 
     if (downloadDialogOpen) {
@@ -170,7 +147,7 @@ export const BulkOperation: React.FunctionComponent = () => {
     }
 
     return testRunService.updateIgnoreAreas({
-      ids: selectedIds.map((item: GridRowId) => item.toString()),
+      ids: selectedIds,
       ignoreAreas: [],
     });
   };
@@ -203,7 +180,7 @@ export const BulkOperation: React.FunctionComponent = () => {
       >
         <span>
           <IconButton
-            disabled={selectedRows.length === 0}
+            disabled={selectedIds.length === 0}
             onClick={toggleApproveDialogOpen}
             size="large"
           >
@@ -214,7 +191,7 @@ export const BulkOperation: React.FunctionComponent = () => {
       <Tooltip title="Reject unresolved in selected rows." aria-label="reject">
         <span>
           <IconButton
-            disabled={selectedRows.length === 0}
+            disabled={selectedIds.length === 0}
             onClick={toggleRejectDialogOpen}
             size="large"
           >
@@ -225,7 +202,7 @@ export const BulkOperation: React.FunctionComponent = () => {
       <Tooltip title="Download images for selected rows." aria-label="download">
         <span>
           <IconButton
-            disabled={selectedRows.length === 0}
+            disabled={selectedIds.length === 0}
             onClick={toggleDownloadDialogOpen}
             size="large"
           >
@@ -236,7 +213,7 @@ export const BulkOperation: React.FunctionComponent = () => {
       <Tooltip title="Delete selected rows." aria-label="delete">
         <span>
           <IconButton
-            disabled={selectedRows.length === 0}
+            disabled={selectedIds.length === 0}
             onClick={toggleDeleteDialogOpen}
             size="large"
           >
@@ -250,7 +227,7 @@ export const BulkOperation: React.FunctionComponent = () => {
       >
         <span>
           <IconButton
-            disabled={selectedRows.length === 0}
+            disabled={selectedIds.length === 0}
             onClick={toggleClearIgnoreDialogOpen}
             size="large"
           >
@@ -272,7 +249,7 @@ export const BulkOperation: React.FunctionComponent = () => {
         content={
           <Typography>
             {`Are you sure you want to ${submitButtonText().toLowerCase()} ${
-              selectedRows.length
+              selectedIds.length
             } items?`}
           </Typography>
         }
@@ -281,7 +258,7 @@ export const BulkOperation: React.FunctionComponent = () => {
           getBulkAction()
             .then(() => {
               setIsProcessing(false);
-              enqueueSnackbar(`${selectedRows.length} test runs processed.`, {
+              enqueueSnackbar(`${selectedIds.length} test runs processed.`, {
                 variant: "success",
               });
             })

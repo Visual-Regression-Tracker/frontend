@@ -142,6 +142,7 @@ const TestRunList: React.FunctionComponent = () => {
   const [nameFilter, setNameFilter] = React.useState("");
   const [statusFilter, setStatusFilter] = React.useState<TestStatus[]>([]);
   const [tagFilter, setTagFilter] = React.useState<string[]>([]);
+  const [selectedIds, setSelectedIds] = React.useState<string[]>([]);
 
   const resetFilters = React.useCallback(() => {
     setNameFilter("");
@@ -334,6 +335,13 @@ const TestRunList: React.FunctionComponent = () => {
             slots={{
               toolbar: DataGridCustomToolbar,
             }}
+            slotProps={{
+              toolbar: { selectedIds, rows: filteredRows },
+            }}
+            rowSelectionModel={selectedIds}
+            onRowSelectionModelChange={(model) =>
+              setSelectedIds(model.map(String))
+            }
             checkboxSelection
             disableColumnSelector
             disableColumnMenu
