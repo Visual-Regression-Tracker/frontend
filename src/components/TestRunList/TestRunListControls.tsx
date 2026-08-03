@@ -55,7 +55,7 @@ export const TestRunListControls: React.FunctionComponent<{
   onShowDiffChange,
 }) => (
   <Box display="flex" alignItems="center" gap={1}>
-    {/* how the runs are laid out */}
+    {/* laid out as a table or a grid */}
     <ToggleButtonGroup
       exclusive
       size="small"
@@ -79,6 +79,11 @@ export const TestRunListControls: React.FunctionComponent<{
         <ViewModule fontSize="small" />
       </ToggleButton>
     </ToggleButtonGroup>
+    <Divider
+      orientation="vertical"
+      flexItem
+      sx={{ marginY: 1, marginX: 0.5 }}
+    />
     <ToggleButtonGroup
       exclusive
       size="small"
