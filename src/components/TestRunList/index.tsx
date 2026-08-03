@@ -1,14 +1,5 @@
 import React from "react";
-import {
-  Box,
-  Chip,
-  LinearProgress,
-  ToggleButton,
-  ToggleButtonGroup,
-  Toolbar,
-  Typography,
-} from "@mui/material";
-import { ViewList, ViewModule } from "@mui/icons-material";
+import { Box, Chip, LinearProgress, Toolbar, Typography } from "@mui/material";
 import TestStatusChip from "../TestStatusChip";
 import {
   useTestRunState,
@@ -31,6 +22,7 @@ import {
 import { DataGridCustomToolbar } from "./DataGridCustomToolbar";
 import { BulkOperation } from "./BulkOperation";
 import { TestRunGrid } from "./TestRunGrid";
+import { TestRunView, TestRunViewToggle } from "./TestRunViewToggle";
 import TestRunFilters from "./TestRunFilters";
 import { TestRun, TestStatus } from "../../types";
 import { testRunService } from "../../services";
@@ -155,7 +147,7 @@ const TestRunList: React.FunctionComponent = () => {
   const [statusFilter, setStatusFilter] = React.useState<TestStatus[]>([]);
   const [tagFilter, setTagFilter] = React.useState<string[]>([]);
   const [selectedIds, setSelectedIds] = React.useState<string[]>([]);
-  const [view, setView] = React.useState<"table" | "grid">(() =>
+  const [view, setView] = React.useState<TestRunView>(() =>
     localStorage.getItem(TEST_RUN_VIEW_KEY) === "grid" ? "grid" : "table",
   );
 
@@ -355,48 +347,18 @@ const TestRunList: React.FunctionComponent = () => {
   if (selectedBuild) {
     return (
       <Box display="flex" flexDirection="column" height="100%">
-        <Box
-          paddingX={2}
-          paddingTop={1}
-          paddingBottom={1}
-          display="flex"
-          alignItems="center"
-          gap={1}
-        >
-          <Box flex={1} minWidth={0}>
-            <TestRunFilters
-              tagOptions={tagOptions}
-              statusOptions={statusOptions}
-              name={nameFilter}
-              statuses={statusFilter}
-              tags={tagFilter}
-              onNameChange={setNameFilter}
-              onStatusesChange={setStatusFilter}
-              onTagsChange={setTagFilter}
-              onReset={resetFilters}
-            />
-          </Box>
-          <ToggleButtonGroup
-            exclusive
-            size="small"
-            value={view}
-            onChange={(event, next) => next && setView(next)}
-          >
-            <ToggleButton
-              value="table"
-              aria-label="Table view"
-              data-testid="tableViewToggle"
-            >
-              <ViewList fontSize="small" />
-            </ToggleButton>
-            <ToggleButton
-              value="grid"
-              aria-label="Grid view"
-              data-testid="gridViewToggle"
-            >
-              <ViewModule fontSize="small" />
-            </ToggleButton>
-          </ToggleButtonGroup>
+        <Box paddingX={2} paddingTop={1} paddingBottom={1}>
+          <TestRunFilters
+            tagOptions={tagOptions}
+            statusOptions={statusOptions}
+            name={nameFilter}
+            statuses={statusFilter}
+            tags={tagFilter}
+            onNameChange={setNameFilter}
+            onStatusesChange={setStatusFilter}
+            onTagsChange={setTagFilter}
+            onReset={resetFilters}
+          />
         </Box>
         <Box flex={1} minHeight={0}>
           {view === "table" ? (
@@ -416,7 +378,12 @@ const TestRunList: React.FunctionComponent = () => {
                 toolbar: DataGridCustomToolbar,
               }}
               slotProps={{
-                toolbar: { selectedIds, rows: filteredRows },
+                toolbar: {
+                  selectedIds,
+                  rows: filteredRows,
+                  view,
+                  onViewChange: setView,
+                },
               }}
               rowSelectionModel={selectedIds}
               onRowSelectionModelChange={(model) =>
@@ -440,6 +407,7 @@ const TestRunList: React.FunctionComponent = () => {
           ) : (
             <Box height="100%" display="flex" flexDirection="column">
               <Toolbar variant="dense">
+                <TestRunViewToggle view={view} onChange={setView} />
                 <Box marginLeft="auto">
                   <BulkOperation selectedIds={selectedIds} rows={gridRows} />
                 </Box>
