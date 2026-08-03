@@ -32,8 +32,11 @@ test.beforeEach(async ({ page }) => {
     TEST_RUN_OK,
   ]);
   await mockTestRun(page, TEST_UNRESOLVED);
+  await mockTestRun(page, TEST_RUN_NEW);
+  await mockTestRun(page, TEST_RUN_OK);
   await mockImage(page, "image.png");
   await mockImage(page, "diff.png");
+  await mockImage(page, "baseline.png");
 });
 
 test("switches to the grid and keeps the choice after a reload", async ({
@@ -102,6 +105,32 @@ test("approves the runs selected in the grid", async ({
     "2 test runs processed.",
   );
   expect(approved).toEqual([[TEST_RUN_NEW.id, TEST_UNRESOLVED.id]]);
+});
+
+test("navigates the dialog in the grid's order", async ({
+  openProjectPage,
+  page,
+}) => {
+  const projectPage = await openProjectPage(project.id, build.id);
+  await projectPage.testRunList.gridViewToggle.click();
+  // reload with the grid already chosen, so the data grid never mounts and
+  // cannot publish an order of its own
+  await page.reload();
+  await expect(projectPage.testRunList.grid).toBeVisible();
+
+  // the grid sorts by status, so unresolved follows new. The runs arrive from
+  // the API in a different order (unresolved, approved, new, ok), which is what
+  // the dialog would walk if the grid did not publish its own order.
+  // anchored: TEST_UNRESOLVED.id is a prefix of TEST_RUN_NEW.id, so an
+  // unanchored pattern would match either run and prove nothing
+  const openedRun = (id: string) => new RegExp(`testId=${id}$`);
+
+  await projectPage.testRunList.getCard(TEST_RUN_NEW.name).click();
+  await expect(page).toHaveURL(openedRun(TEST_RUN_NEW.id));
+
+  await page.keyboard.press("ArrowRight");
+
+  await expect(page).toHaveURL(openedRun(TEST_UNRESOLVED.id));
 });
 
 test("loads card images lazily", async ({ openProjectPage }) => {

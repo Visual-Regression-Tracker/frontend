@@ -341,6 +341,17 @@ const TestRunList: React.FunctionComponent = () => {
     );
   }, [apiRef, apiRef.current?.instanceId]);
 
+  // the data grid publishes the order the details dialog navigates; with the
+  // grid view mounted instead, it has to publish its own
+  React.useEffect(() => {
+    if (view === "grid" && !selectedTestRun) {
+      testRunDispatch({
+        type: "filterSort",
+        payload: gridRows.map((run) => run.id),
+      });
+    }
+  }, [view, gridRows, selectedTestRun, testRunDispatch]);
+
   if (selectedBuild) {
     return (
       <Box display="flex" flexDirection="column" height="100%">
