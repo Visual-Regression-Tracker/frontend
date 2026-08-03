@@ -159,6 +159,64 @@ test("walks the runs inside a group with the arrows", async ({
   await expect(page).toHaveURL(new RegExp(`testId=${VARIATION_EN.id}$`));
 });
 
+// two screens across six locales each: twelve cards flat, two when grouped
+const MANY_RUNS = ["Screen A", "Screen B"].flatMap((name, screenIndex) =>
+  ["en_US", "de_DE", "fr_FR", "cs_CZ", "he_IL", "pl_PL"].map(
+    (locale, localeIndex) => ({
+      ...TEST_UNRESOLVED,
+      id: `${screenIndex}-${locale}`,
+      name,
+      customTags: locale,
+      diffPercent: localeIndex + 1,
+    }),
+  ),
+);
+
+test("pages through the cards", async ({ openProjectPage, page }) => {
+  await mockGetTestRuns(page, build.id, MANY_RUNS);
+  const projectPage = await openProjectPage(project.id, build.id);
+  await projectPage.testRunList.gridViewToggle.click();
+  await projectPage.testRunList.groupToggle.click();
+
+  await expect(projectPage.testRunList.cards).toHaveCount(10);
+
+  await projectPage.testRunList.nextPage.click();
+
+  await expect(projectPage.testRunList.cards).toHaveCount(2);
+});
+
+test("shows more cards per page on request", async ({
+  openProjectPage,
+  page,
+}) => {
+  await mockGetTestRuns(page, build.id, MANY_RUNS);
+  const projectPage = await openProjectPage(project.id, build.id);
+  await projectPage.testRunList.gridViewToggle.click();
+  await projectPage.testRunList.groupToggle.click();
+  await expect(projectPage.testRunList.cards).toHaveCount(10);
+
+  await projectPage.testRunList.setPageSize(30);
+
+  await expect(projectPage.testRunList.cards).toHaveCount(12);
+});
+
+test("does not leave the grid on a page that no longer exists", async ({
+  openProjectPage,
+  page,
+}) => {
+  await mockGetTestRuns(page, build.id, MANY_RUNS);
+  const projectPage = await openProjectPage(project.id, build.id);
+  await projectPage.testRunList.gridViewToggle.click();
+  await projectPage.testRunList.groupToggle.click();
+  await projectPage.testRunList.nextPage.click();
+  await expect(projectPage.testRunList.cards).toHaveCount(2);
+
+  // grouping collapses twelve cards into two, so page two disappears
+  await projectPage.testRunList.groupToggle.click();
+
+  await expect(projectPage.testRunList.cards).toHaveCount(2);
+});
+
 test("renders", async ({ openProjectPage, page }) => {
   const projectPage = await openProjectPage(project.id, build.id);
   await projectPage.testRunList.gridViewToggle.click();

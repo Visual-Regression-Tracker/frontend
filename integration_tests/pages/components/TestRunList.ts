@@ -12,6 +12,15 @@ export class TestRunList extends Table {
   comfortableDensity = this.page.getByTestId("comfortableDensity");
 
   approveBtn = this.page.getByTestId("ThumbUpIcon");
+  // scoped: the build list pagination carries the same aria labels
+  pane = this.page.locator("#test-run-list");
+  nextPage = this.pane.getByLabel("Go to next page");
+  pageSize = this.pane.getByLabel("Cards per page");
+
+  async setPageSize(size: number) {
+    await this.pageSize.click();
+    await this.page.getByRole("option", { name: String(size) }).click();
+  }
 
   getCard(name: string) {
     return this.cards.filter({ hasText: name });

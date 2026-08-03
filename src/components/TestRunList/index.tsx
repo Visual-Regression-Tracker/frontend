@@ -1,5 +1,12 @@
 import React from "react";
-import { Box, Chip, LinearProgress, Toolbar, Typography } from "@mui/material";
+import {
+  Box,
+  Chip,
+  LinearProgress,
+  TablePagination,
+  Toolbar,
+  Typography,
+} from "@mui/material";
 import TestStatusChip from "../TestStatusChip";
 import {
   useTestRunState,
@@ -120,6 +127,8 @@ const TAG_FIELDS: Array<keyof TestRun> = [
 ];
 
 const STATUS_ORDER = Object.values(TestStatus);
+
+const PAGE_SIZE_OPTIONS = [10, 30, 100];
 
 type TagGroups = Array<[keyof TestRun, Set<string>]>;
 
@@ -280,10 +289,24 @@ const TestRunList: React.FunctionComponent = () => {
   );
 
   // the dialog walks the grid's runs in the grid's order, groups expanded, so
-  // the arrows visit a screen's other locales before the next screen
+  // the arrows visit a screen's other locales before the next screen. Not
+  // limited to the current page, matching how the table publishes every
+  // filtered row rather than the visible ones.
   const groupedRunIds = React.useMemo(
     () => groups.flatMap((group) => group.runs.map((run) => run.id)),
     [groups],
+  );
+
+  // clamped rather than corrected in state: turning grouping off and on again
+  // changes the card count under a page number that was valid a moment ago
+  const gridPageCount = Math.max(
+    1,
+    Math.ceil(groups.length / paginationModel.pageSize),
+  );
+  const gridPage = Math.min(paginationModel.page, gridPageCount - 1);
+  const pagedGroups = groups.slice(
+    gridPage * paginationModel.pageSize,
+    (gridPage + 1) * paginationModel.pageSize,
   );
 
   // Options for each filter are derived from rows matching all OTHER filters,
@@ -428,7 +451,7 @@ const TestRunList: React.FunctionComponent = () => {
               columnVisibilityModel={{
                 id: false,
               }}
-              pageSizeOptions={[10, 30, 100]}
+              pageSizeOptions={PAGE_SIZE_OPTIONS}
               paginationModel={paginationModel}
               onPaginationModelChange={setPaginationModel}
               pagination
@@ -497,7 +520,7 @@ const TestRunList: React.FunctionComponent = () => {
                   </Typography>
                 ) : (
                   <TestRunGrid
-                    groups={groups}
+                    groups={pagedGroups}
                     selectedIds={selectedIds}
                     density={density}
                     onToggleGroup={toggleGroup}
@@ -507,6 +530,23 @@ const TestRunList: React.FunctionComponent = () => {
                   />
                 )}
               </Box>
+              <TablePagination
+                component="div"
+                count={groups.length}
+                page={gridPage}
+                rowsPerPage={paginationModel.pageSize}
+                rowsPerPageOptions={PAGE_SIZE_OPTIONS}
+                labelRowsPerPage="Cards per page"
+                onPageChange={(event, next) =>
+                  setPaginationModel((prev) => ({ ...prev, page: next }))
+                }
+                onRowsPerPageChange={(event) =>
+                  setPaginationModel({
+                    page: 0,
+                    pageSize: Number(event.target.value),
+                  })
+                }
+              />
             </Box>
           )}
         </Box>
