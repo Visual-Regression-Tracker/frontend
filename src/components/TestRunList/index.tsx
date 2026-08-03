@@ -5,6 +5,7 @@ import {
   useTestRunState,
   useTestRunDispatch,
   useBuildState,
+  useProjectState,
 } from "../../contexts";
 import { useSnackbar } from "notistack";
 import {
@@ -32,7 +33,16 @@ import { TestRun, TestStatus } from "../../types";
 import { testRunService } from "../../services";
 import { useNavigate } from "react-router";
 import { buildTestRunLocation } from "../../_helpers/route.helpers";
-import { TEST_RUN_DENSITY_KEY, TEST_RUN_VIEW_KEY } from "../../constants";
+import {
+  TEST_RUN_DENSITY_KEY,
+  TEST_RUN_GROUPED_KEY,
+  TEST_RUN_VIEW_KEY,
+} from "../../constants";
+import {
+  groupTestRuns,
+  resolveGroupByAxis,
+  singleRunGroups,
+} from "../../_helpers/testRunGroup.helper";
 
 // https://mui.com/x/react-data-grid/column-definition/
 const columnsDef: GridColDef[] = [
@@ -133,6 +143,7 @@ const TestRunList: React.FunctionComponent = () => {
   const navigate = useNavigate();
   const { selectedTestRun, testRuns, loading } = useTestRunState();
   const { selectedBuild } = useBuildState();
+  const { selectedProjectId, projectList } = useProjectState();
   const testRunDispatch = useTestRunDispatch();
 
   const [paginationModel, setPaginationModel] = React.useState({
@@ -160,11 +171,17 @@ const TestRunList: React.FunctionComponent = () => {
       ? stored
       : "standard";
   });
+  const [groupVariations, setGroupVariations] = React.useState(
+    () => localStorage.getItem(TEST_RUN_GROUPED_KEY) !== "false",
+  );
 
-  const toggleSelect = React.useCallback(
-    (id: string) =>
+  // a group is selected or cleared as a whole
+  const toggleGroup = React.useCallback(
+    (ids: string[]) =>
       setSelectedIds((prev) =>
-        prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id],
+        ids.every((id) => prev.includes(id))
+          ? prev.filter((id) => !ids.includes(id))
+          : Array.from(new Set([...prev, ...ids])),
       ),
     [],
   );
@@ -176,6 +193,10 @@ const TestRunList: React.FunctionComponent = () => {
   React.useEffect(() => {
     localStorage.setItem(TEST_RUN_DENSITY_KEY, density);
   }, [density]);
+
+  React.useEffect(() => {
+    localStorage.setItem(TEST_RUN_GROUPED_KEY, String(groupVariations));
+  }, [groupVariations]);
 
   // the data grid takes its density prop as an initial value only, so later
   // changes have to go through the api
@@ -242,6 +263,27 @@ const TestRunList: React.FunctionComponent = () => {
           a.name.localeCompare(b.name),
       ),
     [filteredRows],
+  );
+
+  const groups = React.useMemo(
+    () =>
+      groupVariations
+        ? groupTestRuns(
+            gridRows,
+            resolveGroupByAxis(
+              projectList.find((item) => item.id === selectedProjectId)
+                ?.bulkApproveGroupBy,
+            ),
+          )
+        : singleRunGroups(gridRows),
+    [groupVariations, gridRows, projectList, selectedProjectId],
+  );
+
+  // the dialog walks the grid's runs in the grid's order, groups expanded, so
+  // the arrows visit a screen's other locales before the next screen
+  const groupedRunIds = React.useMemo(
+    () => groups.flatMap((group) => group.runs.map((run) => run.id)),
+    [groups],
   );
 
   // Options for each filter are derived from rows matching all OTHER filters,
@@ -357,12 +399,9 @@ const TestRunList: React.FunctionComponent = () => {
   // grid view mounted instead, it has to publish its own
   React.useEffect(() => {
     if (view === "grid" && !selectedTestRun) {
-      testRunDispatch({
-        type: "filterSort",
-        payload: gridRows.map((run) => run.id),
-      });
+      testRunDispatch({ type: "filterSort", payload: groupedRunIds });
     }
-  }, [view, gridRows, selectedTestRun, testRunDispatch]);
+  }, [view, groupedRunIds, selectedTestRun, testRunDispatch]);
 
   if (selectedBuild) {
     return (
@@ -406,6 +445,8 @@ const TestRunList: React.FunctionComponent = () => {
                   onViewChange: setView,
                   density,
                   onDensityChange: setDensity,
+                  grouped: groupVariations,
+                  onGroupedChange: setGroupVariations,
                 },
               }}
               rowSelectionModel={selectedIds}
@@ -435,6 +476,8 @@ const TestRunList: React.FunctionComponent = () => {
                   onViewChange={setView}
                   density={density}
                   onDensityChange={setDensity}
+                  grouped={groupVariations}
+                  onGroupedChange={setGroupVariations}
                 />
                 <Box marginLeft="auto">
                   <BulkOperation selectedIds={selectedIds} rows={gridRows} />
@@ -454,10 +497,10 @@ const TestRunList: React.FunctionComponent = () => {
                   </Typography>
                 ) : (
                   <TestRunGrid
-                    rows={gridRows}
+                    groups={groups}
                     selectedIds={selectedIds}
                     density={density}
-                    onToggleSelect={toggleSelect}
+                    onToggleGroup={toggleGroup}
                     onOpen={(id) =>
                       navigate(buildTestRunLocation(selectedBuild.id, id))
                     }

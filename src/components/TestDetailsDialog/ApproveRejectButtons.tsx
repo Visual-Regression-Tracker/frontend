@@ -9,15 +9,10 @@ import { TestStatus } from "../../types/testStatus";
 import { Tooltip } from "../Tooltip";
 import { makeStyles } from "@mui/styles";
 import { MatchingVariationsMode } from "./MatchingVariationsDialog";
-
-// Test-variation axes, mirroring the backend. A sibling shares the screen name
-// and every axis except the one the project groups by (bulkApproveGroupBy).
-const GROUP_BY_AXES = ["customTags", "os", "device", "browser", "viewport"] as const;
-
-const resolveGroupByAxis = (value?: string): (typeof GROUP_BY_AXES)[number] =>
-  value && (GROUP_BY_AXES as readonly string[]).includes(value)
-    ? (value as (typeof GROUP_BY_AXES)[number])
-    : "customTags";
+import {
+  isSibling,
+  resolveGroupByAxis,
+} from "../../_helpers/testRunGroup.helper";
 
 const useStyles = makeStyles(() => ({
   actionButton: {
@@ -47,13 +42,10 @@ export const ApproveRejectButtons: React.FunctionComponent<{
   // A run that merely shares the name but differs on a fixed axis (e.g. another
   // device) is NOT a sibling, so "variations" would be a single approve/reject.
   const groupBy = resolveGroupByAxis(project?.bulkApproveGroupBy);
-  const fixedAxes = GROUP_BY_AXES.filter((axis) => axis !== groupBy);
   const hasSiblingsToReview = testRuns.some(
     (run) =>
       run.id !== testRun.id &&
-      run.name === testRun.name &&
-      run.branchName === testRun.branchName &&
-      fixedAxes.every((axis) => run[axis] === testRun[axis]) &&
+      isSibling(run, testRun, groupBy) &&
       (run.status === TestStatus.unresolved || run.status === TestStatus.new),
   );
   const variationsEnabled =

@@ -70,10 +70,14 @@ test.describe("Guided Tour", () => {
     test("should display all tour steps", async ({ loginPage }) => {
       const tour = await loginPage.header.startTour();
 
-      await expect(tour.joyrideOverlay).toContainText(LOGIN_PAGE_STEPS[0].content as string);
+      await expect(tour.joyrideOverlay).toContainText(
+        LOGIN_PAGE_STEPS[0].content as string,
+      );
       await tour.clickNext();
 
-      await expect(tour.joyrideOverlay).toContainText(LOGIN_PAGE_STEPS[1].content as string);
+      await expect(tour.joyrideOverlay).toContainText(
+        LOGIN_PAGE_STEPS[1].content as string,
+      );
       await tour.clickLast();
 
       await expect(tour.joyrideOverlay).not.toBeVisible();
@@ -84,7 +88,9 @@ test.describe("Guided Tour", () => {
     test("should display all tour steps", async ({ projectListPage }) => {
       const tour = await projectListPage.header.startTour();
 
-      await expect(tour.joyrideOverlay).toContainText(PROJECT_LIST_PAGE_STEPS[0].title as string);
+      await expect(tour.joyrideOverlay).toContainText(
+        PROJECT_LIST_PAGE_STEPS[0].title as string,
+      );
       await tour.clickLast();
 
       await expect(tour.joyrideOverlay).not.toBeVisible();
@@ -94,23 +100,35 @@ test.describe("Guided Tour", () => {
   test.describe("Project Page", () => {
     test("should display all tour steps", async ({ openProjectPage }) => {
       const projectPage = await openProjectPage(project.id);
-      await projectPage.buildList.getBuildLocator(TEST_BUILD_FAILED.number).click();
+      await projectPage.buildList
+        .getBuildLocator(TEST_BUILD_FAILED.number)
+        .click();
 
       const tour = await projectPage.header.startTour();
 
-      await expect(tour.joyrideOverlay).toContainText(PROJECT_PAGE_STEPS[0].content as string);
+      await expect(tour.joyrideOverlay).toContainText(
+        PROJECT_PAGE_STEPS[0].content as string,
+      );
       await tour.clickNext();
 
-      await expect(tour.joyrideOverlay).toContainText(PROJECT_PAGE_STEPS[1].content as string);
+      await expect(tour.joyrideOverlay).toContainText(
+        PROJECT_PAGE_STEPS[1].content as string,
+      );
       await tour.clickNext();
 
-      await expect(tour.joyrideOverlay).toContainText(PROJECT_PAGE_STEPS[2].content as string);
+      await expect(tour.joyrideOverlay).toContainText(
+        PROJECT_PAGE_STEPS[2].content as string,
+      );
       await tour.clickNext();
 
-      await expect(tour.joyrideOverlay).toContainText(PROJECT_PAGE_STEPS[3].content as string);
+      await expect(tour.joyrideOverlay).toContainText(
+        PROJECT_PAGE_STEPS[3].content as string,
+      );
       await tour.clickNext();
 
-      await expect(tour.joyrideOverlay).toContainText(PROJECT_PAGE_STEPS[4].content as string);
+      await expect(tour.joyrideOverlay).toContainText(
+        PROJECT_PAGE_STEPS[4].content as string,
+      );
       await tour.clickLast();
 
       await expect(tour.joyrideOverlay).not.toBeVisible();
@@ -118,17 +136,25 @@ test.describe("Guided Tour", () => {
   });
 
   test.describe("Test Variation List Page", () => {
-    test("should display all tour steps", async ({ openTestVariationListPage }) => {
+    test("should display all tour steps", async ({
+      openTestVariationListPage,
+    }) => {
       const variationListPage = await openTestVariationListPage(project.id);
       const tour = await variationListPage.header.startTour();
 
-      await expect(tour.joyrideOverlay).toContainText(TEST_VARIATION_LIST_PAGE[0].title);
+      await expect(tour.joyrideOverlay).toContainText(
+        TEST_VARIATION_LIST_PAGE[0].title,
+      );
       await tour.clickNext();
 
-      await expect(tour.joyrideOverlay).toContainText(TEST_VARIATION_LIST_PAGE[1].content);
+      await expect(tour.joyrideOverlay).toContainText(
+        TEST_VARIATION_LIST_PAGE[1].content,
+      );
       await tour.clickNext();
 
-      await expect(tour.joyrideOverlay).toContainText(TEST_VARIATION_LIST_PAGE[2].content);
+      await expect(tour.joyrideOverlay).toContainText(
+        TEST_VARIATION_LIST_PAGE[2].content,
+      );
       await tour.clickLast();
 
       await expect(tour.joyrideOverlay).not.toBeVisible();

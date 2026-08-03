@@ -39,6 +39,126 @@ test.beforeEach(async ({ page }) => {
   await mockImage(page, "baseline.png");
 });
 
+// same screen and branch, same on every axis but the locale, so these two are
+// variations of one another; the third screen stands on its own
+const VARIATION_EN = {
+  ...TEST_UNRESOLVED,
+  id: "variation-en",
+  name: "Screen A",
+  customTags: "en_US",
+  diffPercent: 1,
+};
+const VARIATION_DE = {
+  ...TEST_UNRESOLVED,
+  id: "variation-de",
+  name: "Screen A",
+  customTags: "de_DE",
+  diffPercent: 2,
+};
+const LONE_SCREEN = {
+  ...TEST_UNRESOLVED,
+  id: "lone",
+  name: "Screen B",
+  customTags: "en_US",
+  diffPercent: 3,
+};
+
+const mockVariations = async (page) => {
+  await mockGetTestRuns(page, build.id, [
+    VARIATION_EN,
+    VARIATION_DE,
+    LONE_SCREEN,
+  ]);
+  await mockTestRun(page, VARIATION_EN);
+  await mockTestRun(page, VARIATION_DE);
+  await mockTestRun(page, LONE_SCREEN);
+};
+
+test("collapses the variations of one screen into a single card", async ({
+  openProjectPage,
+  page,
+}) => {
+  await mockVariations(page);
+  const projectPage = await openProjectPage(project.id, build.id);
+  // the table is one row per run, so it offers no grouping switch
+  await expect(projectPage.testRunList.groupToggle).toBeHidden();
+
+  await projectPage.testRunList.gridViewToggle.click();
+
+  await expect(projectPage.testRunList.cards).toHaveCount(2);
+  // the biggest diff represents the group
+  await expect(
+    projectPage.testRunList.getCard("Screen A").getByTestId("groupCount"),
+  ).toHaveText("2");
+  await expect(
+    projectPage.testRunList.getCard("Screen B").getByTestId("groupCount"),
+  ).toBeHidden();
+});
+
+test("flattens the cards when grouping is switched off", async ({
+  openProjectPage,
+  page,
+}) => {
+  await mockVariations(page);
+  const projectPage = await openProjectPage(project.id, build.id);
+  await projectPage.testRunList.gridViewToggle.click();
+  await expect(projectPage.testRunList.cards).toHaveCount(2);
+
+  await projectPage.testRunList.groupToggle.click();
+  await expect(projectPage.testRunList.cards).toHaveCount(3);
+
+  await page.reload();
+
+  await expect(projectPage.testRunList.cards).toHaveCount(3);
+});
+
+test("selects every run in a group from its card", async ({
+  openProjectPage,
+  page,
+}) => {
+  const approved: string[][] = [];
+  await page.route(
+    `${API_URL}/test-runs/approve?merge=false`,
+    (route, request) => {
+      approved.push(request.postDataJSON());
+      return route.fulfill({ body: "{}" });
+    },
+  );
+  await mockVariations(page);
+  const projectPage = await openProjectPage(project.id, build.id);
+  await projectPage.testRunList.gridViewToggle.click();
+
+  await projectPage.testRunList.checkCard("Screen A");
+  await projectPage.testRunList.approveBtn.click();
+  await projectPage.modal.confirmBtn.click();
+
+  await expect(projectPage.notification.message).toHaveText(
+    "2 test runs processed.",
+  );
+  // the request order follows the flat sorted list and both share a name, so it
+  // is a tie: what matters is that the whole group went out in one request
+  expect(approved.map((ids) => [...ids].sort())).toEqual([
+    [VARIATION_DE.id, VARIATION_EN.id].sort(),
+  ]);
+});
+
+test("walks the runs inside a group with the arrows", async ({
+  openProjectPage,
+  page,
+}) => {
+  await mockVariations(page);
+  const projectPage = await openProjectPage(project.id, build.id);
+  await projectPage.testRunList.gridViewToggle.click();
+
+  await projectPage.testRunList.getCard("Screen A").click();
+  await expect(page).toHaveURL(new RegExp(`testId=${VARIATION_DE.id}$`));
+
+  await page.keyboard.press("ArrowRight");
+
+  // the group's other locale comes before the next screen
+  await expect(page).toHaveURL(new RegExp(`testId=${VARIATION_EN.id}$`));
+});
+
 test("renders", async ({ openProjectPage, page }) => {
   const projectPage = await openProjectPage(project.id, build.id);
   await projectPage.testRunList.gridViewToggle.click();

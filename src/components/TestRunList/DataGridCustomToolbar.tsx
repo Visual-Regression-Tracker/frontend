@@ -17,6 +17,8 @@ declare module "@mui/x-data-grid" {
     onViewChange: (view: TestRunView) => void;
     density: TestRunDensity;
     onDensityChange: (density: TestRunDensity) => void;
+    grouped: boolean;
+    onGroupedChange: (grouped: boolean) => void;
   }
 }
 
@@ -27,13 +29,26 @@ export const DataGridCustomToolbar: React.FunctionComponent<{
   onViewChange: (view: TestRunView) => void;
   density: TestRunDensity;
   onDensityChange: (density: TestRunDensity) => void;
-}> = ({ selectedIds, rows, view, onViewChange, density, onDensityChange }) => (
+  grouped: boolean;
+  onGroupedChange: (grouped: boolean) => void;
+}> = ({
+  selectedIds,
+  rows,
+  view,
+  onViewChange,
+  density,
+  onDensityChange,
+  grouped,
+  onGroupedChange,
+}) => (
   <Toolbar variant="dense">
     <TestRunListControls
       view={view}
       onViewChange={onViewChange}
       density={density}
       onDensityChange={onDensityChange}
+      grouped={grouped}
+      onGroupedChange={onGroupedChange}
     />
     <Box marginLeft="auto">
       <BulkOperation selectedIds={selectedIds} rows={rows} />

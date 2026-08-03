@@ -1,6 +1,7 @@
 import React from "react";
 import { Box, ToggleButton, ToggleButtonGroup } from "@mui/material";
 import {
+  Collections,
   DensityLarge,
   DensityMedium,
   DensitySmall,
@@ -27,7 +28,16 @@ export const TestRunListControls: React.FunctionComponent<{
   onViewChange: (view: TestRunView) => void;
   density: TestRunDensity;
   onDensityChange: (density: TestRunDensity) => void;
-}> = ({ view, onViewChange, density, onDensityChange }) => (
+  grouped: boolean;
+  onGroupedChange: (grouped: boolean) => void;
+}> = ({
+  view,
+  onViewChange,
+  density,
+  onDensityChange,
+  grouped,
+  onGroupedChange,
+}) => (
   <Box display="flex" alignItems="center" gap={1}>
     <ToggleButtonGroup
       exclusive
@@ -85,5 +95,19 @@ export const TestRunListControls: React.FunctionComponent<{
         <DensityLarge fontSize="small" />
       </ToggleButton>
     </ToggleButtonGroup>
+    {/* the table stays one row per run, so grouping only applies to the grid */}
+    {view === "grid" && (
+      <ToggleButton
+        size="small"
+        title="Group variations"
+        value="grouped"
+        selected={grouped}
+        onChange={() => onGroupedChange(!grouped)}
+        aria-label="Group variations"
+        data-testid="groupVariationsToggle"
+      >
+        <Collections fontSize="small" />
+      </ToggleButton>
+    )}
   </Box>
 );

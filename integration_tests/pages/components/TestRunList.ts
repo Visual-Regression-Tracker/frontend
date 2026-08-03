@@ -6,6 +6,7 @@ export class TestRunList extends Table {
   tableViewToggle = this.page.getByTestId("tableViewToggle");
   grid = this.page.getByTestId("testRunGrid");
   cards = this.page.getByTestId("testRunCard");
+  groupToggle = this.page.getByTestId("groupVariationsToggle");
   compactDensity = this.page.getByTestId("compactDensity");
   standardDensity = this.page.getByTestId("standardDensity");
   comfortableDensity = this.page.getByTestId("comfortableDensity");
