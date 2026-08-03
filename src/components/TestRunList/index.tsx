@@ -423,6 +423,16 @@ const TestRunList: React.FunctionComponent = () => {
     [groups],
   );
 
+  // the footer speaks of cards, so it counts cards: with grouping on, the runs
+  // behind them are several times as many
+  const selectedCardCount = React.useMemo(
+    () =>
+      groups.filter((group) =>
+        group.runs.some((run) => selectedIds.includes(run.id)),
+      ).length,
+    [groups, selectedIds],
+  );
+
   // clamped rather than corrected in state: turning grouping off and on again
   // changes the card count under a page number that was valid a moment ago
   const gridPageCount = Math.max(
@@ -702,15 +712,15 @@ const TestRunList: React.FunctionComponent = () => {
                 borderTop={1}
                 borderColor="divider"
               >
-                {selectedIds.length > 0 && (
+                {selectedCardCount > 0 && (
                   <Typography
                     variant="body2"
                     marginLeft={2}
                     data-testid="gridSelectionCount"
                   >
-                    {selectedIds.length === 1
-                      ? "1 row selected"
-                      : `${selectedIds.length} rows selected`}
+                    {selectedCardCount === 1
+                      ? "1 card selected"
+                      : `${selectedCardCount} cards selected`}
                   </Typography>
                 )}
                 <Box marginLeft="auto">

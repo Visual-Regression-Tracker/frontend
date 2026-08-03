@@ -303,9 +303,8 @@ test("selects every filtered run from the header, across pages", async ({
 
   await projectPage.testRunList.selectAll.click();
 
-  // the same wording the table's footer uses
   await expect(projectPage.testRunList.selectionCount).toHaveText(
-    "12 rows selected",
+    "12 cards selected",
   );
 
   await projectPage.testRunList.approveBtn.click();
@@ -642,4 +641,21 @@ test("calls the things you tick cards, not rows", async ({
     page.getByLabel("Approve unresolved in selected cards."),
   ).toBeVisible();
   await expect(page.getByLabel("Delete selected cards.")).toBeVisible();
+});
+
+test("counts cards, not the runs behind them, when grouped", async ({
+  openProjectPage,
+  page,
+}) => {
+  await mockGetTestRuns(page, build.id, MANY_RUNS);
+  const projectPage = await openProjectPage(project.id, build.id);
+  await projectPage.testRunList.gridViewToggle.click();
+  // twelve runs collapse into two screens
+  await expect(projectPage.testRunList.cards).toHaveCount(2);
+
+  await projectPage.testRunList.selectAll.click();
+
+  await expect(projectPage.testRunList.selectionCount).toHaveText(
+    "2 cards selected",
+  );
 });
