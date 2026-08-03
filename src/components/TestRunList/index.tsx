@@ -38,11 +38,8 @@ import {
 } from "./TestRunListControls";
 import {
   DEFAULT_SORT,
-  DEFAULT_SORT_DIRECTION,
-  SORT_LABELS,
   TestRunGridHeader,
   TestRunSort,
-  TestRunSortField,
 } from "./TestRunGridHeader";
 import TestRunFilters from "./TestRunFilters";
 import { TestRun, TestStatus } from "../../types";
@@ -53,7 +50,6 @@ import {
   TEST_RUN_DENSITY_KEY,
   TEST_RUN_GROUPED_KEY,
   TEST_RUN_SHOW_DIFF_KEY,
-  TEST_RUN_SORT_KEY,
   TEST_RUN_VIEW_KEY,
 } from "../../constants";
 import {
@@ -151,22 +147,32 @@ const PAGE_SIZE_OPTIONS = [10, 30, 100];
 
 const byName = (a: TestRun, b: TestRun): number => a.name.localeCompare(b.name);
 
-// needs attention first: STATUS_ORDER starts at new/unresolved/failed
-const byStatus = (a: TestRun, b: TestRun): number =>
-  STATUS_ORDER.indexOf(a.status) - STATUS_ORDER.indexOf(b.status);
+const statusRank = (run: TestRun): number => STATUS_ORDER.indexOf(run.status);
 
-// ascending by field; the direction is applied by negating the result
+// the table's own status comparator: ascending runs from ok to new, so that
+// descending means needs-attention-first in both views and the arrows agree
+const byStatus = (a: TestRun, b: TestRun): number =>
+  statusRank(b) - statusRank(a);
+
+const needsAttentionFirst = (a: TestRun, b: TestRun): number =>
+  statusRank(a) - statusRank(b);
+
+// the direction applies to the chosen field only: negating the whole comparator
+// would reverse the tie-break too, so a descending status listed names Z to A
 const comparatorFor =
   (sort: TestRunSort, tagFields: Array<keyof TestRun>) =>
   (a: TestRun, b: TestRun): number => {
     const ascending =
       sort.field === "status"
-        ? byStatus(a, b) || byName(a, b)
+        ? byStatus(a, b)
         : sort.field === "name"
-        ? byName(a, b) || byStatus(a, b)
-        : tagsOf(a, tagFields).localeCompare(tagsOf(b, tagFields)) ||
-          byName(a, b);
-    return sort.direction === "asc" ? ascending : -ascending;
+        ? byName(a, b)
+        : tagsOf(a, tagFields).localeCompare(tagsOf(b, tagFields));
+    const primary = sort.direction === "asc" ? ascending : -ascending;
+    const tieBreak =
+      sort.field === "name" ? needsAttentionFirst(a, b) : byName(a, b);
+
+    return primary || tieBreak;
   };
 
 type TagGroups = Array<[keyof TestRun, Set<string>]>;
@@ -225,22 +231,9 @@ const TestRunList: React.FunctionComponent = () => {
   const [showDiff, setShowDiff] = React.useState(
     () => localStorage.getItem(TEST_RUN_SHOW_DIFF_KEY) !== "false",
   );
-  const [gridSort, setGridSort] = React.useState<TestRunSort>(() => {
-    const [field, direction] = (
-      localStorage.getItem(TEST_RUN_SORT_KEY) ?? ""
-    ).split(":");
-    if (!(field in SORT_LABELS)) {
-      return DEFAULT_SORT;
-    }
-    const sortField = field as TestRunSortField;
-    return {
-      field: sortField,
-      direction:
-        direction === "asc" || direction === "desc"
-          ? direction
-          : DEFAULT_SORT_DIRECTION[sortField],
-    };
-  });
+  // deliberately not persisted: the table's sort resets on every visit too, and
+  // a remembered card order made the two views open on different columns
+  const [gridSort, setGridSort] = React.useState<TestRunSort>(DEFAULT_SORT);
 
   useHotkeys("d", () => setShowDiff((prev) => !prev), {
     enabled: view === "grid" && !selectedTestRun,
@@ -277,13 +270,6 @@ const TestRunList: React.FunctionComponent = () => {
   React.useEffect(() => {
     localStorage.setItem(TEST_RUN_GROUPED_KEY, String(groupVariations));
   }, [groupVariations]);
-
-  React.useEffect(() => {
-    localStorage.setItem(
-      TEST_RUN_SORT_KEY,
-      `${gridSort.field}:${gridSort.direction}`,
-    );
-  }, [gridSort]);
 
   // the data grid takes its density prop as an initial value only, so later
   // changes have to go through the api

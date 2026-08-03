@@ -331,7 +331,7 @@ test("clears the selection when the header box is unticked", async ({
   await expect(projectPage.testRunList.selectionCount).toBeHidden();
 });
 
-test("keeps the chosen sort after a reload", async ({
+test("opens on the status order, like the table", async ({
   openProjectPage,
   page,
 }) => {
@@ -342,10 +342,12 @@ test("keeps the chosen sort after a reload", async ({
 
   await page.reload();
 
+  // the sort is not remembered: the table's resets too, and a remembered card
+  // order left the two views opening on different columns
   expect(await projectPage.testRunList.cardNames()).toEqual([
+    "Zebra",
     "Alpha",
     "Mango",
-    "Zebra",
   ]);
 });
 

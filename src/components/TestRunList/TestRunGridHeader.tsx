@@ -22,12 +22,13 @@ export const DEFAULT_SORT_DIRECTION: Record<
   TestRunSortField,
   TestRunSort["direction"]
 > = {
-  status: "asc",
+  // descending status is needs-attention-first, as in the table
+  status: "desc",
   name: "asc",
   tags: "asc",
 };
 
-export const DEFAULT_SORT: TestRunSort = { field: "status", direction: "asc" };
+export const DEFAULT_SORT: TestRunSort = { field: "status", direction: "desc" };
 
 // picking the field already in use flips it, the way clicking a column header does
 export const nextSort = (
