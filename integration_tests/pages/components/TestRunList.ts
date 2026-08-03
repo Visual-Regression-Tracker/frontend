@@ -17,6 +17,17 @@ export class TestRunList extends Table {
   nextPage = this.pane.getByLabel("Go to next page");
   pageSize = this.pane.getByLabel("Cards per page");
 
+  sortButton = this.page.getByTestId("gridSort");
+
+  cardNames() {
+    return this.cards.getByTestId("cardName").allTextContents();
+  }
+
+  async sortBy(option: string) {
+    await this.sortButton.click();
+    await this.page.getByRole("menuitem", { name: option }).click();
+  }
+
   async setPageSize(size: number) {
     await this.pageSize.click();
     await this.page.getByRole("option", { name: String(size) }).click();

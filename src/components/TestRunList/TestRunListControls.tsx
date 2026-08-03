@@ -1,7 +1,15 @@
 import React from "react";
-import { Box, ToggleButton, ToggleButtonGroup } from "@mui/material";
+import {
+  Box,
+  IconButton,
+  Menu,
+  MenuItem,
+  ToggleButton,
+  ToggleButtonGroup,
+} from "@mui/material";
 import {
   Collections,
+  Sort,
   DensityLarge,
   DensityMedium,
   DensitySmall,
@@ -10,6 +18,16 @@ import {
 } from "@mui/icons-material";
 
 export type TestRunView = "table" | "grid";
+
+// the grid sorts on its own: the table sorts by clicking its column headers, and
+// diff size has no column there to click
+export type TestRunSort = "status" | "name" | "diff";
+
+export const SORT_LABELS: Record<TestRunSort, string> = {
+  status: "Status",
+  name: "Name",
+  diff: "Diff %",
+};
 
 // the data grid's own density values, so it can take this straight as a prop
 export type TestRunDensity = "compact" | "standard" | "comfortable";
@@ -30,6 +48,8 @@ export const TestRunListControls: React.FunctionComponent<{
   onDensityChange: (density: TestRunDensity) => void;
   grouped: boolean;
   onGroupedChange: (grouped: boolean) => void;
+  sort: TestRunSort;
+  onSortChange: (sort: TestRunSort) => void;
 }> = ({
   view,
   onViewChange,
@@ -37,6 +57,8 @@ export const TestRunListControls: React.FunctionComponent<{
   onDensityChange,
   grouped,
   onGroupedChange,
+  sort,
+  onSortChange,
 }) => (
   <Box display="flex" alignItems="center" gap={1}>
     <ToggleButtonGroup
@@ -109,5 +131,47 @@ export const TestRunListControls: React.FunctionComponent<{
         <Collections fontSize="small" />
       </ToggleButton>
     )}
+    {view === "grid" && (
+      <GridSortMenu sort={sort} onSortChange={onSortChange} />
+    )}
   </Box>
 );
+
+const GridSortMenu: React.FunctionComponent<{
+  sort: TestRunSort;
+  onSortChange: (sort: TestRunSort) => void;
+}> = ({ sort, onSortChange }) => {
+  const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
+
+  return (
+    <>
+      <IconButton
+        size="small"
+        title={`Sort by ${SORT_LABELS[sort]}`}
+        aria-label="Sort cards"
+        onClick={(event) => setAnchorEl(event.currentTarget)}
+        data-testid="gridSort"
+      >
+        <Sort fontSize="small" />
+      </IconButton>
+      <Menu
+        anchorEl={anchorEl}
+        open={!!anchorEl}
+        onClose={() => setAnchorEl(null)}
+      >
+        {(Object.keys(SORT_LABELS) as TestRunSort[]).map((option) => (
+          <MenuItem
+            key={option}
+            selected={option === sort}
+            onClick={() => {
+              onSortChange(option);
+              setAnchorEl(null);
+            }}
+          >
+            {SORT_LABELS[option]}
+          </MenuItem>
+        ))}
+      </Menu>
+    </>
+  );
+};

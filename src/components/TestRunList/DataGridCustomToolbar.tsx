@@ -4,6 +4,7 @@ import { BulkOperation } from "./BulkOperation";
 import {
   TestRunDensity,
   TestRunListControls,
+  TestRunSort,
   TestRunView,
 } from "./TestRunListControls";
 import { TestRun } from "../../types";
@@ -19,6 +20,8 @@ declare module "@mui/x-data-grid" {
     onDensityChange: (density: TestRunDensity) => void;
     grouped: boolean;
     onGroupedChange: (grouped: boolean) => void;
+    sort: TestRunSort;
+    onSortChange: (sort: TestRunSort) => void;
   }
 }
 
@@ -31,6 +34,8 @@ export const DataGridCustomToolbar: React.FunctionComponent<{
   onDensityChange: (density: TestRunDensity) => void;
   grouped: boolean;
   onGroupedChange: (grouped: boolean) => void;
+  sort: TestRunSort;
+  onSortChange: (sort: TestRunSort) => void;
 }> = ({
   selectedIds,
   rows,
@@ -40,6 +45,8 @@ export const DataGridCustomToolbar: React.FunctionComponent<{
   onDensityChange,
   grouped,
   onGroupedChange,
+  sort,
+  onSortChange,
 }) => (
   <Toolbar variant="dense">
     <TestRunListControls
@@ -49,6 +56,8 @@ export const DataGridCustomToolbar: React.FunctionComponent<{
       onDensityChange={onDensityChange}
       grouped={grouped}
       onGroupedChange={onGroupedChange}
+      sort={sort}
+      onSortChange={onSortChange}
     />
     <Box marginLeft="auto">
       <BulkOperation selectedIds={selectedIds} rows={rows} />

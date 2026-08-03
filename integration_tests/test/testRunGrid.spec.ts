@@ -217,6 +217,61 @@ test("does not leave the grid on a page that no longer exists", async ({
   await expect(projectPage.testRunList.cards).toHaveCount(2);
 });
 
+// picked so that the three sort orders are all different from one another
+const SORTABLE = [
+  { ...TEST_UNRESOLVED, id: "z", name: "Zebra", status: "new", diffPercent: 1 },
+  { ...TEST_UNRESOLVED, id: "a", name: "Alpha", diffPercent: 5 },
+  { ...TEST_UNRESOLVED, id: "m", name: "Mango", diffPercent: 9 },
+];
+
+test("sorts the cards by status, name or diff", async ({
+  openProjectPage,
+  page,
+}) => {
+  await mockGetTestRuns(page, build.id, SORTABLE);
+  const projectPage = await openProjectPage(project.id, build.id);
+  await projectPage.testRunList.gridViewToggle.click();
+
+  // needs attention first, then by name within a status
+  expect(await projectPage.testRunList.cardNames()).toEqual([
+    "Zebra",
+    "Alpha",
+    "Mango",
+  ]);
+
+  await projectPage.testRunList.sortBy("Name");
+  expect(await projectPage.testRunList.cardNames()).toEqual([
+    "Alpha",
+    "Mango",
+    "Zebra",
+  ]);
+
+  await projectPage.testRunList.sortBy("Diff");
+  expect(await projectPage.testRunList.cardNames()).toEqual([
+    "Mango",
+    "Alpha",
+    "Zebra",
+  ]);
+});
+
+test("keeps the chosen sort after a reload", async ({
+  openProjectPage,
+  page,
+}) => {
+  await mockGetTestRuns(page, build.id, SORTABLE);
+  const projectPage = await openProjectPage(project.id, build.id);
+  await projectPage.testRunList.gridViewToggle.click();
+  await projectPage.testRunList.sortBy("Name");
+
+  await page.reload();
+
+  expect(await projectPage.testRunList.cardNames()).toEqual([
+    "Alpha",
+    "Mango",
+    "Zebra",
+  ]);
+});
+
 test("renders", async ({ openProjectPage, page }) => {
   const projectPage = await openProjectPage(project.id, build.id);
   await projectPage.testRunList.gridViewToggle.click();

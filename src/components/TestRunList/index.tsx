@@ -33,6 +33,7 @@ import { TestRunGrid } from "./TestRunGrid";
 import {
   TestRunDensity,
   TestRunListControls,
+  TestRunSort,
   TestRunView,
 } from "./TestRunListControls";
 import TestRunFilters from "./TestRunFilters";
@@ -43,6 +44,7 @@ import { buildTestRunLocation } from "../../_helpers/route.helpers";
 import {
   TEST_RUN_DENSITY_KEY,
   TEST_RUN_GROUPED_KEY,
+  TEST_RUN_SORT_KEY,
   TEST_RUN_VIEW_KEY,
 } from "../../constants";
 import {
@@ -130,6 +132,21 @@ const STATUS_ORDER = Object.values(TestStatus);
 
 const PAGE_SIZE_OPTIONS = [10, 30, 100];
 
+const byName = (a: TestRun, b: TestRun): number => a.name.localeCompare(b.name);
+
+// needs attention first: STATUS_ORDER starts at new/unresolved/failed
+const byStatus = (a: TestRun, b: TestRun): number =>
+  STATUS_ORDER.indexOf(a.status) - STATUS_ORDER.indexOf(b.status);
+
+const GRID_COMPARATORS: Record<
+  TestRunSort,
+  (a: TestRun, b: TestRun) => number
+> = {
+  status: (a, b) => byStatus(a, b) || byName(a, b),
+  name: (a, b) => byName(a, b) || byStatus(a, b),
+  diff: (a, b) => (b.diffPercent ?? 0) - (a.diffPercent ?? 0) || byName(a, b),
+};
+
 type TagGroups = Array<[keyof TestRun, Set<string>]>;
 
 const matchesNameQuery = (run: TestRun, query: string): boolean =>
@@ -183,6 +200,10 @@ const TestRunList: React.FunctionComponent = () => {
   const [groupVariations, setGroupVariations] = React.useState(
     () => localStorage.getItem(TEST_RUN_GROUPED_KEY) !== "false",
   );
+  const [gridSort, setGridSort] = React.useState<TestRunSort>(() => {
+    const stored = localStorage.getItem(TEST_RUN_SORT_KEY);
+    return stored === "name" || stored === "diff" ? stored : "status";
+  });
 
   // a group is selected or cleared as a whole
   const toggleGroup = React.useCallback(
@@ -206,6 +227,10 @@ const TestRunList: React.FunctionComponent = () => {
   React.useEffect(() => {
     localStorage.setItem(TEST_RUN_GROUPED_KEY, String(groupVariations));
   }, [groupVariations]);
+
+  React.useEffect(() => {
+    localStorage.setItem(TEST_RUN_SORT_KEY, gridSort);
+  }, [gridSort]);
 
   // the data grid takes its density prop as an initial value only, so later
   // changes have to go through the api
@@ -263,15 +288,9 @@ const TestRunList: React.FunctionComponent = () => {
     [testRuns, query, statusFilter, tagGroups],
   );
 
-  // needs attention first: STATUS_ORDER starts at new/unresolved/failed
   const gridRows = React.useMemo(
-    () =>
-      [...filteredRows].sort(
-        (a, b) =>
-          STATUS_ORDER.indexOf(a.status) - STATUS_ORDER.indexOf(b.status) ||
-          a.name.localeCompare(b.name),
-      ),
-    [filteredRows],
+    () => [...filteredRows].sort(GRID_COMPARATORS[gridSort]),
+    [filteredRows, gridSort],
   );
 
   const groups = React.useMemo(
@@ -470,6 +489,8 @@ const TestRunList: React.FunctionComponent = () => {
                   onDensityChange: setDensity,
                   grouped: groupVariations,
                   onGroupedChange: setGroupVariations,
+                  sort: gridSort,
+                  onSortChange: setGridSort,
                 },
               }}
               rowSelectionModel={selectedIds}
@@ -492,8 +513,19 @@ const TestRunList: React.FunctionComponent = () => {
               }}
             />
           ) : (
-            <Box height="100%" display="flex" flexDirection="column">
-              <Toolbar variant="dense">
+            // framed like the data grid, so both views read as one widget
+            <Box
+              height="100%"
+              display="flex"
+              flexDirection="column"
+              border={1}
+              borderColor="divider"
+              borderRadius={1}
+            >
+              <Toolbar
+                variant="dense"
+                sx={{ borderBottom: 1, borderColor: "divider" }}
+              >
                 <TestRunListControls
                   view={view}
                   onViewChange={setView}
@@ -501,6 +533,8 @@ const TestRunList: React.FunctionComponent = () => {
                   onDensityChange={setDensity}
                   grouped={groupVariations}
                   onGroupedChange={setGroupVariations}
+                  sort={gridSort}
+                  onSortChange={setGridSort}
                 />
                 <Box marginLeft="auto">
                   <BulkOperation selectedIds={selectedIds} rows={gridRows} />
@@ -546,6 +580,7 @@ const TestRunList: React.FunctionComponent = () => {
                     pageSize: Number(event.target.value),
                   })
                 }
+                sx={{ borderTop: 1, borderColor: "divider" }}
               />
             </Box>
           )}

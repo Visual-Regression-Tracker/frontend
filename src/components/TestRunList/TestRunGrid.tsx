@@ -89,7 +89,12 @@ export const TestRunGrid: React.FunctionComponent<{
                 inputProps={{ "aria-label": `Select ${representative.name}` }}
               />
               <Box minWidth={0} flex={1}>
-                <Typography variant="body2" noWrap title={representative.name}>
+                <Typography
+                  variant="body2"
+                  noWrap
+                  title={representative.name}
+                  data-testid="cardName"
+                >
                   {representative.name}
                 </Typography>
                 <Box
