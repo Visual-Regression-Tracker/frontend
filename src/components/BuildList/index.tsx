@@ -16,8 +16,9 @@ import {
   MenuItem,
   Box,
   TextField,
+  Fade,
 } from "@mui/material";
-import { MoreVert, DeleteOutline, Close } from "@mui/icons-material";
+import { MoreVert, DeleteOutline } from "@mui/icons-material";
 import { DebounceInput } from "react-debounce-input";
 import {
   useBuildState,
@@ -73,25 +74,48 @@ const BuildList: FunctionComponent = () => {
   const [selectedIds, setSelectedIds] = React.useState<string[]>([]);
   const [bulkDeleteDialogOpen, setBulkDeleteDialogOpen] = React.useState(false);
   const [bulkDeleting, setBulkDeleting] = React.useState(false);
+  const [selectingAll, setSelectingAll] = React.useState(false);
+  const selectAllRequest = React.useRef(0);
 
-  const pageIds = buildList.map((build) => build.id);
-  const allOnPageSelected =
-    pageIds.length > 0 && pageIds.every((id) => selectedIds.includes(id));
-  const someOnPageSelected = selectedIds.length > 0 && !allOnPageSelected;
+  const allSelected = total > 0 && selectedIds.length === total;
+  const someSelected = selectedIds.length > 0 && !allSelected;
 
   const toggleSelect = (id: string) =>
     setSelectedIds((prev) =>
       prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id],
     );
 
-  const toggleSelectAllOnPage = () =>
-    setSelectedIds((prev) =>
-      allOnPageSelected
-        ? prev.filter((id) => !pageIds.includes(id))
-        : Array.from(new Set([...prev, ...pageIds])),
-    );
-
   const clearSelection = () => setSelectedIds([]);
+
+  // the list is paginated, so selecting everything the search matched needs the
+  // ids the current page does not hold
+  const selectAllMatching = () => {
+    if (buildList.length === total) {
+      setSelectedIds(buildList.map((build) => build.id));
+      return;
+    }
+    if (!selectedProjectId) {
+      return;
+    }
+
+    const request = ++selectAllRequest.current;
+    setSelectingAll(true);
+    buildsService
+      .getList(selectedProjectId, total, 0, searchQuery)
+      .then((payload) => {
+        if (request === selectAllRequest.current) {
+          setSelectedIds(payload.data.map((build) => build.id));
+        }
+      })
+      .catch((err: string) => enqueueSnackbar(err, { variant: "error" }))
+      .finally(() => setSelectingAll(false));
+  };
+
+  const toggleSelectAll = () =>
+    selectedIds.length > 0 ? clearSelection() : selectAllMatching();
+
+  const selectAllLabel =
+    selectedIds.length > 0 ? "Clear selection" : `Select all (${total})`;
 
   const handleMenuClick = (
     event: React.MouseEvent<HTMLElement>,
@@ -145,6 +169,8 @@ const BuildList: FunctionComponent = () => {
   }, [handlePaginationChange]);
 
   React.useEffect(() => {
+    // drops an in-flight select all so its ids cannot land on another search
+    selectAllRequest.current += 1;
     setSelectedIds([]);
   }, [selectedProjectId, searchQuery]);
 
@@ -197,57 +223,51 @@ const BuildList: FunctionComponent = () => {
   return (
     <>
       <Box height="91%" display="flex" flexDirection="column">
-        <Box padding={1}>
-          <DebounceInput
-            size="small"
-            variant="outlined"
-            fullWidth
-            label="Search build"
-            placeholder="Search by CI build id"
-            value={searchQuery}
-            element={TextField}
-            debounceTimeout={300}
-            onChange={(event) => setSearchQuery(event.target.value)}
-            inputProps={{ "data-testid": "buildSearch", autoComplete: "off" }}
-          />
-        </Box>
-        {selectedIds.length > 0 && (
-          <Box
-            display="flex"
-            alignItems="center"
-            paddingX={1}
-            paddingY={0.5}
-            borderBottom={1}
-            borderColor="divider"
-          >
-            <Checkbox
+        <Box padding={1} display="flex" alignItems="center">
+          {/* kept mounted so an empty search does not shift the search field */}
+          <Tooltip title={selectAllLabel}>
+            <span>
+              <Checkbox
+                size="small"
+                checked={allSelected}
+                indeterminate={someSelected}
+                disabled={selectingAll || buildList.length === 0}
+                onChange={toggleSelectAll}
+                inputProps={{ "aria-label": selectAllLabel }}
+                data-testid="buildSelectAll"
+              />
+            </span>
+          </Tooltip>
+          <Box flexGrow={1}>
+            <DebounceInput
               size="small"
-              checked={allOnPageSelected}
-              indeterminate={someOnPageSelected}
-              onChange={toggleSelectAllOnPage}
+              variant="outlined"
+              fullWidth
+              label="Search build"
+              placeholder="Search by CI build id"
+              value={searchQuery}
+              element={TextField}
+              debounceTimeout={300}
+              onChange={(event) => setSearchQuery(event.target.value)}
+              inputProps={{ "data-testid": "buildSearch", autoComplete: "off" }}
             />
-            <Typography variant="body2">
-              {selectedIds.length} selected
-            </Typography>
-            <Box marginLeft="auto">
-              <Tooltip title="Delete selected">
+          </Box>
+          {/* fades in place so picking a build does not resize the search field */}
+          <Fade in={selectedIds.length > 0}>
+            <span>
+              <Tooltip title={`Delete ${selectedIds.length} selected`}>
                 <IconButton
                   color="error"
-                  size="small"
                   disabled={bulkDeleting}
                   onClick={() => setBulkDeleteDialogOpen(true)}
+                  data-testid="buildDeleteSelected"
                 >
                   <DeleteOutline />
                 </IconButton>
               </Tooltip>
-              <Tooltip title="Clear selection">
-                <IconButton size="small" onClick={clearSelection}>
-                  <Close />
-                </IconButton>
-              </Tooltip>
-            </Box>
-          </Box>
-        )}
+            </span>
+          </Fade>
+        </Box>
         <Box
           flex={1}
           overflow="auto"

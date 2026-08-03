@@ -61,6 +61,16 @@ export const mockGetBuilds = async (
   );
 };
 
+export const mockDeleteBuilds = async (page: Page) => {
+  return page.route(
+    (url) => /^\/builds\/[^/]+$/.test(url.pathname),
+    (route, request) =>
+      request.method() === "DELETE"
+        ? route.fulfill({ body: JSON.stringify({}) })
+        : route.fallback(),
+  );
+};
+
 export const mockGetBuildDetails = async (page: Page, build: Build) => {
   return page.route(`${API_URL}/builds/${build.id}`, (route) =>
     route.fulfill({

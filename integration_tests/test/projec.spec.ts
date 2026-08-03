@@ -11,6 +11,7 @@ import {
   TEST_UNRESOLVED,
 } from "~client/_test/test.data.helper";
 import {
+  mockDeleteBuilds,
   mockGetBuildDetails,
   mockGetBuilds,
   mockGetProjects,
@@ -63,6 +64,55 @@ test("searches builds by ci build id", async ({ openProjectPage }) => {
   await expect(
     projectPage.buildList.getBuildLocator(TEST_BUILD_PASSED.number),
   ).toBeHidden();
+});
+
+test("selects every build the search matched and deletes them", async ({
+  openProjectPage,
+  page,
+}) => {
+  const builds = Array.from({ length: 25 }, (_, i) => ({
+    ...TEST_BUILD_PASSED,
+    id: `build-${i}`,
+    number: 100 + i,
+    ciBuildId: i < 15 ? "release-1" : "main",
+  }));
+  await mockGetBuilds(page, project.id, builds);
+  await mockDeleteBuilds(page);
+  const projectPage = await openProjectPage(project.id);
+
+  await projectPage.buildList.searchInput.fill("release-1");
+  await expect(projectPage.buildList.getBuildLocator(115)).toBeHidden();
+
+  await projectPage.buildList.selectAll.click();
+
+  // a page holds ten builds, so the other five have to be selected as well
+  await expect(projectPage.buildList.deleteSelectedBtn).toHaveAttribute(
+    "aria-label",
+    "Delete 15 selected",
+  );
+
+  await projectPage.buildList.deleteSelectedBtn.click();
+  await projectPage.modal.confirmBtn.click();
+
+  await expect(projectPage.notification.message).toHaveText(
+    "15 build(s) deleted",
+  );
+});
+
+test("keeps the search field in place when nothing matches", async ({
+  openProjectPage,
+}) => {
+  const projectPage = await openProjectPage(project.id);
+  await expect(
+    projectPage.buildList.getBuildLocator(TEST_BUILD_FAILED.number),
+  ).toBeVisible();
+  const before = await projectPage.buildList.searchInput.boundingBox();
+
+  await projectPage.buildList.searchInput.fill("no such build");
+  await expect(projectPage.buildList.emptyMessage).toBeVisible();
+
+  // the select all checkbox has to hold its place, or the field jumps sideways
+  expect(await projectPage.buildList.searchInput.boundingBox()).toEqual(before);
 });
 
 test("keeps the empty search message inside the sidebar", async ({
