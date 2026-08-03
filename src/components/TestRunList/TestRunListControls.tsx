@@ -6,6 +6,8 @@ import {
   Switch,
   ToggleButton,
   ToggleButtonGroup,
+  Tooltip as MuiTooltip,
+  TooltipProps,
   Typography,
 } from "@mui/material";
 import {
@@ -39,6 +41,36 @@ const groupDivider = (
   <Divider orientation="vertical" flexItem sx={{ marginY: 1, marginX: 0.5 }} />
 );
 
+/**
+ * A toggle button with a tooltip that appears at once. Two traps live here:
+ * the app's Tooltip wrapper forwards only title and children, so the props the
+ * group hands down would vanish, and ToggleButtonGroup reads `value` off its
+ * direct child to decide which button is selected. Hence MUI's tooltip, the
+ * rest spread through it, and the value on both.
+ */
+type IconToggleProps = {
+  value: string;
+  title: string;
+  ariaLabel: string;
+  testId: string;
+  icon: React.ReactNode;
+} & Omit<TooltipProps, "title" | "children">;
+
+const IconToggle: React.FunctionComponent<IconToggleProps> = ({
+  value,
+  title,
+  ariaLabel,
+  testId,
+  icon,
+  ...rest
+}) => (
+  <MuiTooltip title={title} placement="bottom" arrow {...rest}>
+    <ToggleButton value={value} aria-label={ariaLabel} data-testid={testId}>
+      {icon}
+    </ToggleButton>
+  </MuiTooltip>
+);
+
 export const TestRunListControls: React.FunctionComponent<{
   view: TestRunView;
   onViewChange: (view: TestRunView) => void;
@@ -66,22 +98,20 @@ export const TestRunListControls: React.FunctionComponent<{
       value={view}
       onChange={(event, next: TestRunView | null) => next && onViewChange(next)}
     >
-      <ToggleButton
-        title="Table"
+      <IconToggle
         value="table"
-        aria-label="Table view"
-        data-testid="tableViewToggle"
-      >
-        <ViewList fontSize="small" />
-      </ToggleButton>
-      <ToggleButton
-        title="Grid"
+        title="Table"
+        ariaLabel="Table view"
+        testId="tableViewToggle"
+        icon={<ViewList fontSize="small" />}
+      />
+      <IconToggle
         value="grid"
-        aria-label="Grid view"
-        data-testid="gridViewToggle"
-      >
-        <ViewModule fontSize="small" />
-      </ToggleButton>
+        title="Grid"
+        ariaLabel="Grid view"
+        testId="gridViewToggle"
+        icon={<ViewModule fontSize="small" />}
+      />
     </ToggleButtonGroup>
     {groupDivider}
     <ToggleButtonGroup
@@ -92,30 +122,27 @@ export const TestRunListControls: React.FunctionComponent<{
         next && onDensityChange(next)
       }
     >
-      <ToggleButton
-        title="Compact"
+      <IconToggle
         value="compact"
-        aria-label="Compact density"
-        data-testid="compactDensity"
-      >
-        <DensitySmall fontSize="small" />
-      </ToggleButton>
-      <ToggleButton
-        title="Standard"
+        title="Compact"
+        ariaLabel="Compact density"
+        testId="compactDensity"
+        icon={<DensitySmall fontSize="small" />}
+      />
+      <IconToggle
         value="standard"
-        aria-label="Standard density"
-        data-testid="standardDensity"
-      >
-        <DensityMedium fontSize="small" />
-      </ToggleButton>
-      <ToggleButton
-        title="Comfortable"
+        title="Standard"
+        ariaLabel="Standard density"
+        testId="standardDensity"
+        icon={<DensityMedium fontSize="small" />}
+      />
+      <IconToggle
         value="comfortable"
-        aria-label="Comfortable density"
-        data-testid="comfortableDensity"
-      >
-        <DensityLarge fontSize="small" />
-      </ToggleButton>
+        title="Comfortable"
+        ariaLabel="Comfortable density"
+        testId="comfortableDensity"
+        icon={<DensityLarge fontSize="small" />}
+      />
     </ToggleButtonGroup>
     {groupDivider}
     {/* what the runs show; switches rather than icons, so "on" is unmistakable */}

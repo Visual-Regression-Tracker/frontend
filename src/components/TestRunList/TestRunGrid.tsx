@@ -128,16 +128,21 @@ export const TestRunGrid: React.FunctionComponent<{
             </Typography>
             <TestStatusChip status={representative.status} />
             {/* tags as quiet text, not chips: five chips wrap over three lines
-                on a narrow card and drown out the name and the status */}
-            <Typography
-              variant="caption"
-              color="text.secondary"
-              noWrap
-              width="100%"
-              title={tagsOf(representative, tagFieldsFor(runs.length))}
-            >
-              {tagsOf(representative, tagFieldsFor(runs.length)) || " "}
-            </Typography>
+                on a narrow card and drown out the name and the status. A
+                compact card is too narrow to read them at all, so it shows the
+                picture, the name and the status only */}
+            {density !== "compact" && (
+              <Typography
+                variant="caption"
+                color="text.secondary"
+                noWrap
+                width="100%"
+                title={tagsOf(representative, tagFieldsFor(runs.length))}
+                data-testid="cardTags"
+              >
+                {tagsOf(representative, tagFieldsFor(runs.length))}
+              </Typography>
+            )}
           </CardContent>
         </Card>
       );

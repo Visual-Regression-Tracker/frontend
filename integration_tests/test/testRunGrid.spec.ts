@@ -661,3 +661,33 @@ test("counts cards, not the runs behind them, when grouped", async ({
     "2 cards selected",
   );
 });
+
+test("drops the tags from a compact card, where they do not fit", async ({
+  openProjectPage,
+  page,
+}) => {
+  await mockVariations(page);
+  const projectPage = await openProjectPage(project.id, build.id);
+  await projectPage.testRunList.gridViewToggle.click();
+  await expect(projectPage.testRunList.cardTags.first()).toBeVisible();
+
+  await projectPage.testRunList.compactDensity.click();
+
+  await expect(projectPage.testRunList.cardTags).toHaveCount(0);
+
+  await projectPage.testRunList.comfortableDensity.click();
+
+  await expect(projectPage.testRunList.cardTags.first()).toBeVisible();
+});
+
+test("shows the icon tooltips without the browser's delay", async ({
+  openProjectPage,
+  page,
+}) => {
+  const projectPage = await openProjectPage(project.id, build.id);
+
+  await projectPage.testRunList.gridViewToggle.hover();
+
+  // a native title attribute has no tooltip role and no text in the DOM
+  await expect(page.getByRole("tooltip")).toHaveText("Grid");
+});
