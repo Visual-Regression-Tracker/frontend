@@ -39,6 +39,14 @@ test.beforeEach(async ({ page }) => {
   await mockImage(page, "baseline.png");
 });
 
+test("renders", async ({ openProjectPage, page }) => {
+  const projectPage = await openProjectPage(project.id, build.id);
+  await projectPage.testRunList.gridViewToggle.click();
+  await expect(projectPage.testRunList.cards).toHaveCount(4);
+
+  await expect(page).toHaveScreenshot("test-run-grid.png");
+});
+
 test("switches to the grid and keeps the choice after a reload", async ({
   openProjectPage,
   page,

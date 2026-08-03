@@ -51,7 +51,12 @@ export const TestRunGrid: React.FunctionComponent<{
           />
         </CardActionArea>
         <CardContent
-          sx={{ padding: 0.5, "&:last-child": { paddingBottom: 0.5 } }}
+          // body carries a global text-align: center, hence the explicit left
+          sx={{
+            padding: 0.5,
+            textAlign: "left",
+            "&:last-child": { paddingBottom: 0.5 },
+          }}
         >
           <Box display="flex" alignItems="flex-start">
             <Checkbox
