@@ -24,3 +24,21 @@ test("can delete project", async ({ projectListPage, page }) => {
     "Project name deleted",
   );
 });
+
+test("can dismiss a notification without waiting it out", async ({
+  projectListPage,
+  page,
+}) => {
+  await mockDeleteProject(page, project);
+
+  await projectListPage.deleteBtn.click();
+  await projectListPage.modal.confirmBtn.click();
+  await expect(projectListPage.notification.message).toBeVisible();
+
+  await projectListPage.notification.dismissBtn.click();
+
+  // shorter than autoHideDuration, so waiting the toast out cannot pass this
+  await expect(projectListPage.notification.message).toBeHidden({
+    timeout: 1000,
+  });
+});
