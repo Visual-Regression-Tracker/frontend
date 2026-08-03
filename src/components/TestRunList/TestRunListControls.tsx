@@ -112,7 +112,11 @@ export const TestRunListControls: React.FunctionComponent<{
         <DensityLarge fontSize="small" />
       </ToggleButton>
     </ToggleButtonGroup>
-    <Divider orientation="vertical" flexItem sx={{ marginY: 1 }} />
+    <Divider
+      orientation="vertical"
+      flexItem
+      sx={{ marginY: 1, marginX: 0.5 }}
+    />
     {/* what the runs show; switches rather than icons, so "on" is unmistakable */}
     <Tooltip title="Collapse the runs of one screen that differ only by the axis the project groups by">
       <FormControlLabel
@@ -126,6 +130,7 @@ export const TestRunListControls: React.FunctionComponent<{
           />
         }
         label={switchLabel("Group variations")}
+        sx={{ marginLeft: 0, marginRight: 0 }}
       />
     </Tooltip>
     {/* only the cards carry a picture, so the table has nothing to swap */}
@@ -142,6 +147,7 @@ export const TestRunListControls: React.FunctionComponent<{
             />
           }
           label={switchLabel("Show diff")}
+          sx={{ marginLeft: 0, marginRight: 0 }}
         />
       </Tooltip>
     )}

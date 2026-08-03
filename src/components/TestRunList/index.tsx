@@ -704,7 +704,9 @@ const TestRunList: React.FunctionComponent = () => {
                     marginLeft={2}
                     data-testid="gridSelectionCount"
                   >
-                    {selectedIds.length} selected
+                    {selectedIds.length === 1
+                      ? "1 row selected"
+                      : `${selectedIds.length} rows selected`}
                   </Typography>
                 )}
                 <Box marginLeft="auto">
@@ -714,7 +716,7 @@ const TestRunList: React.FunctionComponent = () => {
                     page={gridPage}
                     rowsPerPage={paginationModel.pageSize}
                     rowsPerPageOptions={PAGE_SIZE_OPTIONS}
-                    labelRowsPerPage="Cards per page"
+                    labelRowsPerPage="Cards per page:"
                     onPageChange={(event, next) =>
                       setPaginationModel((prev) => ({ ...prev, page: next }))
                     }

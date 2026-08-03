@@ -303,8 +303,9 @@ test("selects every filtered run from the header, across pages", async ({
 
   await projectPage.testRunList.selectAll.click();
 
+  // the same wording the table's footer uses
   await expect(projectPage.testRunList.selectionCount).toHaveText(
-    "12 selected",
+    "12 rows selected",
   );
 
   await projectPage.testRunList.approveBtn.click();

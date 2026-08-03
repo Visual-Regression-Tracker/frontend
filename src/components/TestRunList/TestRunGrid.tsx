@@ -6,6 +6,7 @@ import {
   CardContent,
   Checkbox,
   Chip,
+  Divider,
   Typography,
 } from "@mui/material";
 import TestStatusChip from "../TestStatusChip";
@@ -119,9 +120,9 @@ export const TestRunGrid: React.FunctionComponent<{
             >
               {representative.name}
             </Typography>
-            <Box marginTop={0.5}>
-              <TestStatusChip status={representative.status} />
-            </Box>
+            <Divider sx={{ marginY: 0.75 }} />
+            <TestStatusChip status={representative.status} />
+            <Divider sx={{ marginY: 0.75 }} />
             {/* tags as quiet text, not chips: five chips wrap over three lines
                 on a narrow card and drown out the name and the status */}
             <Typography
@@ -129,7 +130,6 @@ export const TestRunGrid: React.FunctionComponent<{
               color="text.secondary"
               noWrap
               display="block"
-              marginTop={0.5}
               title={tagsOf(representative, tagFieldsFor(runs.length))}
             >
               {tagsOf(representative, tagFieldsFor(runs.length)) || " "}

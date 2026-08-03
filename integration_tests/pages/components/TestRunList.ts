@@ -16,7 +16,7 @@ export class TestRunList extends Table {
   // scoped: the build list pagination carries the same aria labels
   pane = this.page.locator("#test-run-list");
   nextPage = this.pane.getByLabel("Go to next page");
-  pageSize = this.pane.getByLabel("Cards per page");
+  pageSize = this.pane.getByLabel("Cards per page:");
 
   rows = this.page.locator(".MuiDataGrid-row");
   selectAll = this.page.getByTestId("gridSelectAll");
