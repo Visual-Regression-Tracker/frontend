@@ -6,7 +6,6 @@ import {
   CardContent,
   Checkbox,
   Chip,
-  Divider,
   Typography,
 } from "@mui/material";
 import TestStatusChip from "../TestStatusChip";
@@ -103,33 +102,38 @@ export const TestRunGrid: React.FunctionComponent<{
             )}
           </Box>
           <CardContent
-            // body carries a global text-align: center, hence the explicit left
+            // body carries a global text-align: center, hence the explicit left.
+            // Rules between the three lines read as a table; weight, colour and
+            // size already tell them apart, so they only need even spacing.
             sx={{
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "flex-start",
+              gap: 0.75,
               paddingX: 1,
-              paddingY: 0.75,
+              paddingY: 1,
               textAlign: "left",
-              "&:last-child": { paddingBottom: 0.75 },
+              "&:last-child": { paddingBottom: 1 },
             }}
           >
             <Typography
               variant="body2"
-              fontWeight={500}
+              fontWeight={600}
               noWrap
+              width="100%"
               title={representative.name}
               data-testid="cardName"
             >
               {representative.name}
             </Typography>
-            <Divider sx={{ marginY: 0.75 }} />
             <TestStatusChip status={representative.status} />
-            <Divider sx={{ marginY: 0.75 }} />
             {/* tags as quiet text, not chips: five chips wrap over three lines
                 on a narrow card and drown out the name and the status */}
             <Typography
               variant="caption"
               color="text.secondary"
               noWrap
-              display="block"
+              width="100%"
               title={tagsOf(representative, tagFieldsFor(runs.length))}
             >
               {tagsOf(representative, tagFieldsFor(runs.length)) || " "}
