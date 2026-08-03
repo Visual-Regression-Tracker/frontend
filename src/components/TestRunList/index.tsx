@@ -31,9 +31,13 @@ import { DataGridCustomToolbar } from "./DataGridCustomToolbar";
 import { BulkOperation } from "./BulkOperation";
 import { TestRunGrid } from "./TestRunGrid";
 import {
+  DEFAULT_SORT,
+  DEFAULT_SORT_DIRECTION,
+  SORT_LABELS,
   TestRunDensity,
   TestRunListControls,
   TestRunSort,
+  TestRunSortField,
   TestRunView,
 } from "./TestRunListControls";
 import TestRunFilters from "./TestRunFilters";
@@ -138,14 +142,22 @@ const byName = (a: TestRun, b: TestRun): number => a.name.localeCompare(b.name);
 const byStatus = (a: TestRun, b: TestRun): number =>
   STATUS_ORDER.indexOf(a.status) - STATUS_ORDER.indexOf(b.status);
 
-const GRID_COMPARATORS: Record<
-  TestRunSort,
+// ascending by field; the direction is applied by negating the result
+const ASCENDING_BY_FIELD: Record<
+  TestRunSortField,
   (a: TestRun, b: TestRun) => number
 > = {
   status: (a, b) => byStatus(a, b) || byName(a, b),
   name: (a, b) => byName(a, b) || byStatus(a, b),
-  diff: (a, b) => (b.diffPercent ?? 0) - (a.diffPercent ?? 0) || byName(a, b),
+  diff: (a, b) => (a.diffPercent ?? 0) - (b.diffPercent ?? 0) || byName(a, b),
 };
+
+const comparatorFor =
+  (sort: TestRunSort) =>
+  (a: TestRun, b: TestRun): number => {
+    const ascending = ASCENDING_BY_FIELD[sort.field](a, b);
+    return sort.direction === "asc" ? ascending : -ascending;
+  };
 
 type TagGroups = Array<[keyof TestRun, Set<string>]>;
 
@@ -201,8 +213,20 @@ const TestRunList: React.FunctionComponent = () => {
     () => localStorage.getItem(TEST_RUN_GROUPED_KEY) !== "false",
   );
   const [gridSort, setGridSort] = React.useState<TestRunSort>(() => {
-    const stored = localStorage.getItem(TEST_RUN_SORT_KEY);
-    return stored === "name" || stored === "diff" ? stored : "status";
+    const [field, direction] = (
+      localStorage.getItem(TEST_RUN_SORT_KEY) ?? ""
+    ).split(":");
+    if (!(field in SORT_LABELS)) {
+      return DEFAULT_SORT;
+    }
+    const sortField = field as TestRunSortField;
+    return {
+      field: sortField,
+      direction:
+        direction === "asc" || direction === "desc"
+          ? direction
+          : DEFAULT_SORT_DIRECTION[sortField],
+    };
   });
 
   // a group is selected or cleared as a whole
@@ -229,7 +253,10 @@ const TestRunList: React.FunctionComponent = () => {
   }, [groupVariations]);
 
   React.useEffect(() => {
-    localStorage.setItem(TEST_RUN_SORT_KEY, gridSort);
+    localStorage.setItem(
+      TEST_RUN_SORT_KEY,
+      `${gridSort.field}:${gridSort.direction}`,
+    );
   }, [gridSort]);
 
   // the data grid takes its density prop as an initial value only, so later
@@ -289,7 +316,7 @@ const TestRunList: React.FunctionComponent = () => {
   );
 
   const gridRows = React.useMemo(
-    () => [...filteredRows].sort(GRID_COMPARATORS[gridSort]),
+    () => [...filteredRows].sort(comparatorFor(gridSort)),
     [filteredRows, gridSort],
   );
 

@@ -254,6 +254,30 @@ test("sorts the cards by status, name or diff", async ({
   ]);
 });
 
+test("flips the direction when the same field is picked again", async ({
+  openProjectPage,
+  page,
+}) => {
+  await mockGetTestRuns(page, build.id, SORTABLE);
+  const projectPage = await openProjectPage(project.id, build.id);
+  await projectPage.testRunList.gridViewToggle.click();
+
+  await projectPage.testRunList.sortBy("Name");
+  expect(await projectPage.testRunList.cardNames()).toEqual([
+    "Alpha",
+    "Mango",
+    "Zebra",
+  ]);
+
+  await projectPage.testRunList.sortBy("Name");
+
+  expect(await projectPage.testRunList.cardNames()).toEqual([
+    "Zebra",
+    "Mango",
+    "Alpha",
+  ]);
+});
+
 test("keeps the chosen sort after a reload", async ({
   openProjectPage,
   page,

@@ -2,14 +2,16 @@ import React from "react";
 import {
   Box,
   IconButton,
+  ListItemText,
   Menu,
   MenuItem,
   ToggleButton,
   ToggleButtonGroup,
 } from "@mui/material";
 import {
+  ArrowDownward,
+  ArrowUpward,
   Collections,
-  Sort,
   DensityLarge,
   DensityMedium,
   DensitySmall,
@@ -21,13 +23,39 @@ export type TestRunView = "table" | "grid";
 
 // the grid sorts on its own: the table sorts by clicking its column headers, and
 // diff size has no column there to click
-export type TestRunSort = "status" | "name" | "diff";
+export type TestRunSortField = "status" | "name" | "diff";
 
-export const SORT_LABELS: Record<TestRunSort, string> = {
+export type TestRunSort = {
+  field: TestRunSortField;
+  direction: "asc" | "desc";
+};
+
+export const SORT_LABELS: Record<TestRunSortField, string> = {
   status: "Status",
   name: "Name",
   diff: "Diff %",
 };
+
+// the direction a field is most useful in when it is first picked
+export const DEFAULT_SORT_DIRECTION: Record<
+  TestRunSortField,
+  TestRunSort["direction"]
+> = {
+  status: "asc",
+  name: "asc",
+  diff: "desc",
+};
+
+export const DEFAULT_SORT: TestRunSort = { field: "status", direction: "asc" };
+
+// picking the field already in use flips it, the way clicking a column header does
+export const nextSort = (
+  current: TestRunSort,
+  field: TestRunSortField,
+): TestRunSort =>
+  current.field === field
+    ? { field, direction: current.direction === "asc" ? "desc" : "asc" }
+    : { field, direction: DEFAULT_SORT_DIRECTION[field] };
 
 // the data grid's own density values, so it can take this straight as a prop
 export type TestRunDensity = "compact" | "standard" | "comfortable";
@@ -142,33 +170,39 @@ const GridSortMenu: React.FunctionComponent<{
   onSortChange: (sort: TestRunSort) => void;
 }> = ({ sort, onSortChange }) => {
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
+  const Arrow = sort.direction === "asc" ? ArrowUpward : ArrowDownward;
 
   return (
     <>
       <IconButton
         size="small"
-        title={`Sort by ${SORT_LABELS[sort]}`}
+        title={`Sorted by ${SORT_LABELS[sort.field]}, ${
+          sort.direction === "asc" ? "ascending" : "descending"
+        }`}
         aria-label="Sort cards"
         onClick={(event) => setAnchorEl(event.currentTarget)}
         data-testid="gridSort"
       >
-        <Sort fontSize="small" />
+        <Arrow fontSize="small" />
       </IconButton>
       <Menu
         anchorEl={anchorEl}
         open={!!anchorEl}
         onClose={() => setAnchorEl(null)}
       >
-        {(Object.keys(SORT_LABELS) as TestRunSort[]).map((option) => (
+        {(Object.keys(SORT_LABELS) as TestRunSortField[]).map((field) => (
           <MenuItem
-            key={option}
-            selected={option === sort}
+            key={field}
+            selected={field === sort.field}
             onClick={() => {
-              onSortChange(option);
+              onSortChange(nextSort(sort, field));
               setAnchorEl(null);
             }}
           >
-            {SORT_LABELS[option]}
+            <ListItemText>{SORT_LABELS[field]}</ListItemText>
+            {field === sort.field && (
+              <Arrow fontSize="small" sx={{ marginLeft: 1 }} />
+            )}
           </MenuItem>
         ))}
       </Menu>
