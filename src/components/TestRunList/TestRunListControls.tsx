@@ -35,6 +35,10 @@ const switchLabel = (text: string) => (
   <Typography variant="body2">{text}</Typography>
 );
 
+const groupDivider = (
+  <Divider orientation="vertical" flexItem sx={{ marginY: 1, marginX: 0.5 }} />
+);
+
 export const TestRunListControls: React.FunctionComponent<{
   view: TestRunView;
   onViewChange: (view: TestRunView) => void;
@@ -79,11 +83,7 @@ export const TestRunListControls: React.FunctionComponent<{
         <ViewModule fontSize="small" />
       </ToggleButton>
     </ToggleButtonGroup>
-    <Divider
-      orientation="vertical"
-      flexItem
-      sx={{ marginY: 1, marginX: 0.5 }}
-    />
+    {groupDivider}
     <ToggleButtonGroup
       exclusive
       size="small"
@@ -117,11 +117,7 @@ export const TestRunListControls: React.FunctionComponent<{
         <DensityLarge fontSize="small" />
       </ToggleButton>
     </ToggleButtonGroup>
-    <Divider
-      orientation="vertical"
-      flexItem
-      sx={{ marginY: 1, marginX: 0.5 }}
-    />
+    {groupDivider}
     {/* what the runs show; switches rather than icons, so "on" is unmistakable */}
     <Tooltip title="Collapse the runs of one screen that differ only by the axis the project groups by">
       <FormControlLabel
@@ -139,6 +135,7 @@ export const TestRunListControls: React.FunctionComponent<{
       />
     </Tooltip>
     {/* only the cards carry a picture, so the table has nothing to swap */}
+    {view === "grid" && groupDivider}
     {view === "grid" && (
       <Tooltip title="Toggle diff. Hotkey: D">
         <FormControlLabel
