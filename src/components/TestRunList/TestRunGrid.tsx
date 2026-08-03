@@ -13,6 +13,7 @@ import noImage from "../../static/no-image.png";
 import { CARD_SIZE_BY_DENSITY, TestRunDensity } from "./TestRunListControls";
 import { TestRunGroup } from "../../_helpers/testRunGroup.helper";
 import { imageFor } from "../../_helpers/testRunImage.helper";
+import { tagsOf } from "../../_helpers/testRunTags.helper";
 import { TestRun } from "../../types";
 
 export const TestRunGrid: React.FunctionComponent<{
@@ -118,21 +119,21 @@ export const TestRunGrid: React.FunctionComponent<{
             >
               {representative.name}
             </Typography>
-            <Box
-              display="flex"
-              alignItems="center"
-              flexWrap="wrap"
-              gap={0.5}
-              marginTop={0.5}
-            >
+            <Box marginTop={0.5}>
               <TestStatusChip status={representative.status} />
-              {tagFieldsFor(runs.length)
-                .map((field) => representative[field])
-                .filter((tag): tag is string => !!tag)
-                .map((tag) => (
-                  <Chip key={tag} size="small" label={tag} />
-                ))}
             </Box>
+            {/* tags as quiet text, not chips: five chips wrap over three lines
+                on a narrow card and drown out the name and the status */}
+            <Typography
+              variant="caption"
+              color="text.secondary"
+              noWrap
+              display="block"
+              marginTop={0.5}
+              title={tagsOf(representative, tagFieldsFor(runs.length))}
+            >
+              {tagsOf(representative, tagFieldsFor(runs.length)) || " "}
+            </Typography>
           </CardContent>
         </Card>
       );

@@ -4,7 +4,7 @@ import { ArrowDownward, ArrowUpward } from "@mui/icons-material";
 import { TestRunDensity } from "./TestRunListControls";
 
 // the grid sorts on its own: the table sorts by clicking its column headers
-export type TestRunSortField = "status" | "name";
+export type TestRunSortField = "status" | "name" | "tags";
 
 export type TestRunSort = {
   field: TestRunSortField;
@@ -13,6 +13,7 @@ export type TestRunSort = {
 
 export const SORT_LABELS: Record<TestRunSortField, string> = {
   name: "Name",
+  tags: "Tags",
   status: "Status",
 };
 
@@ -23,6 +24,7 @@ export const DEFAULT_SORT_DIRECTION: Record<
 > = {
   status: "asc",
   name: "asc",
+  tags: "asc",
 };
 
 export const DEFAULT_SORT: TestRunSort = { field: "status", direction: "asc" };
@@ -61,17 +63,22 @@ export const TestRunGridHeader: React.FunctionComponent<{
 }) => {
   const Arrow = sort.direction === "asc" ? ArrowUpward : ArrowDownward;
 
-  const label = (field: TestRunSortField) => (
-    <Button
-      size="small"
-      color="inherit"
-      onClick={() => onSortChange(nextSort(sort, field))}
-      endIcon={field === sort.field ? <Arrow fontSize="small" /> : undefined}
-      data-testid={`gridSort-${field}`}
-      sx={{ textTransform: "none", fontSize: 14, fontWeight: 500 }}
-    >
-      {SORT_LABELS[field]}
-    </Button>
+  // the table's column widths, so the labels land where its headers are.
+  // textAlign is explicit because body carries a global text-align: center,
+  // which would otherwise centre each label inside its column
+  const label = (field: TestRunSortField, flex: number) => (
+    <Box flex={flex} minWidth={0} textAlign="left">
+      <Button
+        size="small"
+        color="inherit"
+        onClick={() => onSortChange(nextSort(sort, field))}
+        endIcon={field === sort.field ? <Arrow fontSize="small" /> : undefined}
+        data-testid={`gridSort-${field}`}
+        sx={{ textTransform: "none", fontSize: 14, fontWeight: 500 }}
+      >
+        {SORT_LABELS[field]}
+      </Button>
+    </Box>
   );
 
   return (
@@ -80,11 +87,10 @@ export const TestRunGridHeader: React.FunctionComponent<{
       alignItems="center"
       height={HEADER_HEIGHT_BY_DENSITY[density]}
       flexShrink={0}
-      paddingRight={1}
       borderBottom={1}
       borderColor="divider"
     >
-      <Box width={48} display="flex" justifyContent="center">
+      <Box width={50} display="flex" justifyContent="center">
         <Checkbox
           size="small"
           checked={totalCount > 0 && selectedCount === totalCount}
@@ -94,8 +100,9 @@ export const TestRunGridHeader: React.FunctionComponent<{
           data-testid="gridSelectAll"
         />
       </Box>
-      {label("name")}
-      <Box marginLeft="auto">{label("status")}</Box>
+      {label("name", 1)}
+      {label("tags", 1)}
+      {label("status", 0.3)}
     </Box>
   );
 };

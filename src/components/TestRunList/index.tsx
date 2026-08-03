@@ -61,6 +61,7 @@ import {
   resolveGroupByAxis,
   singleRunGroups,
 } from "../../_helpers/testRunGroup.helper";
+import { tagsOf } from "../../_helpers/testRunTags.helper";
 
 // https://mui.com/x/react-data-grid/column-definition/
 const buildColumns = (
@@ -155,18 +156,16 @@ const byStatus = (a: TestRun, b: TestRun): number =>
   STATUS_ORDER.indexOf(a.status) - STATUS_ORDER.indexOf(b.status);
 
 // ascending by field; the direction is applied by negating the result
-const ASCENDING_BY_FIELD: Record<
-  TestRunSortField,
-  (a: TestRun, b: TestRun) => number
-> = {
-  status: (a, b) => byStatus(a, b) || byName(a, b),
-  name: (a, b) => byName(a, b) || byStatus(a, b),
-};
-
 const comparatorFor =
-  (sort: TestRunSort) =>
+  (sort: TestRunSort, tagFields: Array<keyof TestRun>) =>
   (a: TestRun, b: TestRun): number => {
-    const ascending = ASCENDING_BY_FIELD[sort.field](a, b);
+    const ascending =
+      sort.field === "status"
+        ? byStatus(a, b) || byName(a, b)
+        : sort.field === "name"
+        ? byName(a, b) || byStatus(a, b)
+        : tagsOf(a, tagFields).localeCompare(tagsOf(b, tagFields)) ||
+          byName(a, b);
     return sort.direction === "asc" ? ascending : -ascending;
   };
 
@@ -343,7 +342,7 @@ const TestRunList: React.FunctionComponent = () => {
   );
 
   const gridRows = React.useMemo(
-    () => [...filteredRows].sort(comparatorFor(gridSort)),
+    () => [...filteredRows].sort(comparatorFor(gridSort, TAG_FIELDS)),
     [filteredRows, gridSort],
   );
 
@@ -642,10 +641,7 @@ const TestRunList: React.FunctionComponent = () => {
               borderColor="divider"
               borderRadius={1}
             >
-              <Toolbar
-                variant="dense"
-                sx={{ borderBottom: 1, borderColor: "divider" }}
-              >
+              <Toolbar variant="dense">
                 <TestRunListControls
                   view={view}
                   onViewChange={setView}

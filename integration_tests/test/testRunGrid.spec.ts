@@ -214,11 +214,11 @@ test("does not leave the grid on a page that no longer exists", async ({
   await expect(projectPage.testRunList.cards).toHaveCount(2);
 });
 
-// picked so the status order differs from the name order
+// picked so that status, name and tag order are all different from one another
 const SORTABLE = [
-  { ...TEST_UNRESOLVED, id: "z", name: "Zebra", status: "new" },
-  { ...TEST_UNRESOLVED, id: "a", name: "Alpha" },
-  { ...TEST_UNRESOLVED, id: "m", name: "Mango" },
+  { ...TEST_UNRESOLVED, id: "z", name: "Zebra", status: "new", device: "AAA" },
+  { ...TEST_UNRESOLVED, id: "a", name: "Alpha", device: "ZZZ" },
+  { ...TEST_UNRESOLVED, id: "m", name: "Mango", device: "MMM" },
 ];
 
 test("sorts the cards by status or name", async ({ openProjectPage, page }) => {
@@ -238,6 +238,23 @@ test("sorts the cards by status or name", async ({ openProjectPage, page }) => {
     "Alpha",
     "Mango",
     "Zebra",
+  ]);
+});
+
+test("sorts the cards by tag as the table's column does", async ({
+  openProjectPage,
+  page,
+}) => {
+  await mockGetTestRuns(page, build.id, SORTABLE);
+  const projectPage = await openProjectPage(project.id, build.id);
+  await projectPage.testRunList.gridViewToggle.click();
+
+  await projectPage.testRunList.sortBy("tags");
+
+  expect(await projectPage.testRunList.cardNames()).toEqual([
+    "Zebra",
+    "Mango",
+    "Alpha",
   ]);
 });
 
@@ -577,11 +594,13 @@ test("swaps the card image between the diff and the screenshot", async ({
 
   await expect(image).toHaveAttribute("src", /diff\.png/);
 
-  await projectPage.testRunList.diffToggle.click();
+  // the hotkey first: clicking the switch leaves focus on its input, and
+  // react-hotkeys-hook ignores keys typed inside form fields by design
+  await page.keyboard.press("d");
 
   await expect(image).toHaveAttribute("src", /image\.png/);
 
-  await page.keyboard.press("d");
+  await projectPage.testRunList.diffToggle.click();
 
   await expect(image).toHaveAttribute("src", /diff\.png/);
 });

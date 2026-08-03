@@ -1,14 +1,21 @@
 import React from "react";
-import { Box, ToggleButton, ToggleButtonGroup } from "@mui/material";
 import {
-  Collections,
-  Difference,
+  Box,
+  Divider,
+  FormControlLabel,
+  Switch,
+  ToggleButton,
+  ToggleButtonGroup,
+  Typography,
+} from "@mui/material";
+import {
   DensityLarge,
   DensityMedium,
   DensitySmall,
   ViewList,
   ViewModule,
 } from "@mui/icons-material";
+import { Tooltip } from "../Tooltip";
 
 export type TestRunView = "table" | "grid";
 
@@ -23,6 +30,10 @@ export const CARD_SIZE_BY_DENSITY: Record<
   standard: { width: 220, imageHeight: 160 },
   comfortable: { width: 320, imageHeight: 240 },
 };
+
+const switchLabel = (text: string) => (
+  <Typography variant="body2">{text}</Typography>
+);
 
 export const TestRunListControls: React.FunctionComponent<{
   view: TestRunView;
@@ -44,6 +55,7 @@ export const TestRunListControls: React.FunctionComponent<{
   onShowDiffChange,
 }) => (
   <Box display="flex" alignItems="center" gap={1}>
+    {/* how the runs are laid out */}
     <ToggleButtonGroup
       exclusive
       size="small"
@@ -100,30 +112,38 @@ export const TestRunListControls: React.FunctionComponent<{
         <DensityLarge fontSize="small" />
       </ToggleButton>
     </ToggleButtonGroup>
-    <ToggleButton
-      size="small"
-      title="Group variations"
-      value="grouped"
-      selected={grouped}
-      onChange={() => onGroupedChange(!grouped)}
-      aria-label="Group variations"
-      data-testid="groupVariationsToggle"
-    >
-      <Collections fontSize="small" />
-    </ToggleButton>
+    <Divider orientation="vertical" flexItem sx={{ marginY: 1 }} />
+    {/* what the runs show; switches rather than icons, so "on" is unmistakable */}
+    <Tooltip title="Collapse the runs of one screen that differ only by the axis the project groups by">
+      <FormControlLabel
+        control={
+          <Switch
+            size="small"
+            checked={grouped}
+            onChange={(event) => onGroupedChange(event.target.checked)}
+            inputProps={{ "aria-label": "Group variations" }}
+            data-testid="groupVariationsToggle"
+          />
+        }
+        label={switchLabel("Group variations")}
+      />
+    </Tooltip>
     {/* only the cards carry a picture, so the table has nothing to swap */}
     {view === "grid" && (
-      <ToggleButton
-        size="small"
-        title="Show diff. Hotkey: D"
-        value="showDiff"
-        selected={showDiff}
-        onChange={() => onShowDiffChange(!showDiff)}
-        aria-label="Show diff"
-        data-testid="showDiffToggle"
-      >
-        <Difference fontSize="small" />
-      </ToggleButton>
+      <Tooltip title="Toggle diff. Hotkey: D">
+        <FormControlLabel
+          control={
+            <Switch
+              size="small"
+              checked={showDiff}
+              onChange={(event) => onShowDiffChange(event.target.checked)}
+              inputProps={{ "aria-label": "Show diff" }}
+              data-testid="showDiffToggle"
+            />
+          }
+          label={switchLabel("Show diff")}
+        />
+      </Tooltip>
     )}
   </Box>
 );

@@ -26,7 +26,7 @@ export class TestRunList extends Table {
     return this.cards.getByTestId("cardName").allTextContents();
   }
 
-  sortBy(field: "status" | "name") {
+  sortBy(field: "status" | "name" | "tags") {
     return this.page.getByTestId(`gridSort-${field}`).click();
   }
 
