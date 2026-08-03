@@ -152,7 +152,6 @@ const ASCENDING_BY_FIELD: Record<
 > = {
   status: (a, b) => byStatus(a, b) || byName(a, b),
   name: (a, b) => byName(a, b) || byStatus(a, b),
-  diff: (a, b) => (a.diffPercent ?? 0) - (b.diffPercent ?? 0) || byName(a, b),
 };
 
 const comparatorFor =
@@ -578,6 +577,7 @@ const TestRunList: React.FunctionComponent = () => {
               <TestRunGridHeader
                 sort={gridSort}
                 onSortChange={setGridSort}
+                density={density}
                 selectedCount={
                   groupedRunIds.filter((id) => selectedIds.includes(id)).length
                 }
@@ -608,24 +608,41 @@ const TestRunList: React.FunctionComponent = () => {
                   />
                 )}
               </Box>
-              <TablePagination
-                component="div"
-                count={groups.length}
-                page={gridPage}
-                rowsPerPage={paginationModel.pageSize}
-                rowsPerPageOptions={PAGE_SIZE_OPTIONS}
-                labelRowsPerPage="Cards per page"
-                onPageChange={(event, next) =>
-                  setPaginationModel((prev) => ({ ...prev, page: next }))
-                }
-                onRowsPerPageChange={(event) =>
-                  setPaginationModel({
-                    page: 0,
-                    pageSize: Number(event.target.value),
-                  })
-                }
-                sx={{ borderTop: 1, borderColor: "divider" }}
-              />
+              <Box
+                display="flex"
+                alignItems="center"
+                borderTop={1}
+                borderColor="divider"
+              >
+                {selectedIds.length > 0 && (
+                  <Typography
+                    variant="body2"
+                    marginLeft={2}
+                    data-testid="gridSelectionCount"
+                  >
+                    {selectedIds.length} selected
+                  </Typography>
+                )}
+                <Box marginLeft="auto">
+                  <TablePagination
+                    component="div"
+                    count={groups.length}
+                    page={gridPage}
+                    rowsPerPage={paginationModel.pageSize}
+                    rowsPerPageOptions={PAGE_SIZE_OPTIONS}
+                    labelRowsPerPage="Cards per page"
+                    onPageChange={(event, next) =>
+                      setPaginationModel((prev) => ({ ...prev, page: next }))
+                    }
+                    onRowsPerPageChange={(event) =>
+                      setPaginationModel({
+                        page: 0,
+                        pageSize: Number(event.target.value),
+                      })
+                    }
+                  />
+                </Box>
+              </Box>
             </Box>
           )}
         </Box>

@@ -1,10 +1,10 @@
 import React from "react";
-import { Box, Button, Checkbox, Typography } from "@mui/material";
+import { Box, Button, Checkbox } from "@mui/material";
 import { ArrowDownward, ArrowUpward } from "@mui/icons-material";
+import { TestRunDensity } from "./TestRunListControls";
 
-// the grid sorts on its own: the table sorts by clicking its column headers, and
-// diff size has no column there to click
-export type TestRunSortField = "status" | "name" | "diff";
+// the grid sorts on its own: the table sorts by clicking its column headers
+export type TestRunSortField = "status" | "name";
 
 export type TestRunSort = {
   field: TestRunSortField;
@@ -14,7 +14,6 @@ export type TestRunSort = {
 export const SORT_LABELS: Record<TestRunSortField, string> = {
   name: "Name",
   status: "Status",
-  diff: "Diff %",
 };
 
 // the direction a field is most useful in when it is first picked
@@ -24,7 +23,6 @@ export const DEFAULT_SORT_DIRECTION: Record<
 > = {
   status: "asc",
   name: "asc",
-  diff: "desc",
 };
 
 export const DEFAULT_SORT: TestRunSort = { field: "status", direction: "asc" };
@@ -38,55 +36,66 @@ export const nextSort = (
     ? { field, direction: current.direction === "asc" ? "desc" : "asc" }
     : { field, direction: DEFAULT_SORT_DIRECTION[field] };
 
+// measured off the data grid's own header, so the two views line up when the
+// density changes and the header does not jump as you switch between them
+const HEADER_HEIGHT_BY_DENSITY: Record<TestRunDensity, number> = {
+  compact: 39,
+  standard: 56,
+  comfortable: 72,
+};
+
 export const TestRunGridHeader: React.FunctionComponent<{
   sort: TestRunSort;
   onSortChange: (sort: TestRunSort) => void;
+  density: TestRunDensity;
   selectedCount: number;
   totalCount: number;
   onToggleAll: () => void;
-}> = ({ sort, onSortChange, selectedCount, totalCount, onToggleAll }) => {
+}> = ({
+  sort,
+  onSortChange,
+  density,
+  selectedCount,
+  totalCount,
+  onToggleAll,
+}) => {
   const Arrow = sort.direction === "asc" ? ArrowUpward : ArrowDownward;
+
+  const label = (field: TestRunSortField) => (
+    <Button
+      size="small"
+      color="inherit"
+      onClick={() => onSortChange(nextSort(sort, field))}
+      endIcon={field === sort.field ? <Arrow fontSize="small" /> : undefined}
+      data-testid={`gridSort-${field}`}
+      sx={{ textTransform: "none", fontSize: 14, fontWeight: 500 }}
+    >
+      {SORT_LABELS[field]}
+    </Button>
+  );
 
   return (
     <Box
       display="flex"
       alignItems="center"
-      paddingX={1}
+      height={HEADER_HEIGHT_BY_DENSITY[density]}
+      flexShrink={0}
+      paddingRight={1}
       borderBottom={1}
       borderColor="divider"
     >
-      <Checkbox
-        size="small"
-        checked={totalCount > 0 && selectedCount === totalCount}
-        indeterminate={selectedCount > 0 && selectedCount < totalCount}
-        onChange={onToggleAll}
-        inputProps={{ "aria-label": "Select all runs" }}
-        data-testid="gridSelectAll"
-      />
-      {(Object.keys(SORT_LABELS) as TestRunSortField[]).map((field) => (
-        <Button
-          key={field}
+      <Box width={48} display="flex" justifyContent="center">
+        <Checkbox
           size="small"
-          color="inherit"
-          onClick={() => onSortChange(nextSort(sort, field))}
-          endIcon={
-            field === sort.field ? <Arrow fontSize="small" /> : undefined
-          }
-          data-testid={`gridSort-${field}`}
-          sx={{ textTransform: "none", fontWeight: 500 }}
-        >
-          {SORT_LABELS[field]}
-        </Button>
-      ))}
-      {selectedCount > 0 && (
-        <Typography
-          variant="body2"
-          marginLeft="auto"
-          data-testid="gridSelectionCount"
-        >
-          {selectedCount} selected
-        </Typography>
-      )}
+          checked={totalCount > 0 && selectedCount === totalCount}
+          indeterminate={selectedCount > 0 && selectedCount < totalCount}
+          onChange={onToggleAll}
+          inputProps={{ "aria-label": "Select all runs" }}
+          data-testid="gridSelectAll"
+        />
+      </Box>
+      {label("name")}
+      <Box marginLeft="auto">{label("status")}</Box>
     </Box>
   );
 };

@@ -34,8 +34,11 @@ export const TestRunGrid: React.FunctionComponent<{
 
       return (
         <Card key={key} variant="outlined" data-testid="testRunCard">
-          <CardActionArea onClick={() => onOpen(representative.id)}>
-            <Box position="relative">
+          {/* the checkbox sits over the image, outside the action area, so the
+              picture keeps the full width of the card and a tick does not open
+              the dialog */}
+          <Box position="relative">
+            <CardActionArea onClick={() => onOpen(representative.id)}>
               <Box
                 component="img"
                 src={staticService.getImage(
@@ -56,61 +59,58 @@ export const TestRunGrid: React.FunctionComponent<{
                   backgroundColor: "grey.100",
                 }}
               />
-              {runs.length > 1 && (
-                <Chip
-                  size="small"
-                  label={runs.length}
-                  data-testid="groupCount"
-                  sx={{
-                    position: "absolute",
-                    top: 4,
-                    right: 4,
-                    backgroundColor: "rgba(0, 0, 0, 0.6)",
-                    color: "common.white",
-                  }}
-                />
-              )}
-            </Box>
-          </CardActionArea>
+            </CardActionArea>
+            <Checkbox
+              size="small"
+              checked={selectedCount === ids.length}
+              indeterminate={selectedCount > 0 && selectedCount < ids.length}
+              onChange={() => onToggleGroup(ids)}
+              inputProps={{ "aria-label": `Select ${representative.name}` }}
+              sx={{
+                position: "absolute",
+                top: 2,
+                left: 2,
+                padding: 0.5,
+                // legible over a screenshot of any colour
+                backgroundColor: "rgba(255, 255, 255, 0.85)",
+                "&:hover": { backgroundColor: "rgba(255, 255, 255, 0.95)" },
+              }}
+            />
+            {runs.length > 1 && (
+              <Chip
+                size="small"
+                label={runs.length}
+                data-testid="groupCount"
+                sx={{
+                  position: "absolute",
+                  top: 4,
+                  right: 4,
+                  backgroundColor: "rgba(0, 0, 0, 0.6)",
+                  color: "common.white",
+                }}
+              />
+            )}
+          </Box>
           <CardContent
             // body carries a global text-align: center, hence the explicit left
             sx={{
-              padding: 0.5,
+              paddingX: 1,
+              paddingY: 0.75,
               textAlign: "left",
-              "&:last-child": { paddingBottom: 0.5 },
+              "&:last-child": { paddingBottom: 0.75 },
             }}
           >
-            <Box display="flex" alignItems="flex-start">
-              <Checkbox
-                size="small"
-                checked={selectedCount === ids.length}
-                indeterminate={selectedCount > 0 && selectedCount < ids.length}
-                onChange={() => onToggleGroup(ids)}
-                inputProps={{ "aria-label": `Select ${representative.name}` }}
-              />
-              <Box minWidth={0} flex={1}>
-                <Typography
-                  variant="body2"
-                  noWrap
-                  title={representative.name}
-                  data-testid="cardName"
-                >
-                  {representative.name}
-                </Typography>
-                <Box
-                  display="flex"
-                  alignItems="center"
-                  gap={0.5}
-                  marginTop={0.5}
-                >
-                  <TestStatusChip status={representative.status} />
-                  {!!representative.diffPercent && (
-                    <Typography variant="caption" color="textSecondary">
-                      {representative.diffPercent.toFixed(2)}%
-                    </Typography>
-                  )}
-                </Box>
-              </Box>
+            <Typography
+              variant="body2"
+              fontWeight={500}
+              noWrap
+              title={representative.name}
+              data-testid="cardName"
+            >
+              {representative.name}
+            </Typography>
+            <Box marginTop={0.5}>
+              <TestStatusChip status={representative.status} />
             </Box>
           </CardContent>
         </Card>
