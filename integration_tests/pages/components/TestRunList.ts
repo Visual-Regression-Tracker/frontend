@@ -17,15 +17,15 @@ export class TestRunList extends Table {
   nextPage = this.pane.getByLabel("Go to next page");
   pageSize = this.pane.getByLabel("Cards per page");
 
-  sortButton = this.page.getByTestId("gridSort");
+  selectAll = this.page.getByTestId("gridSelectAll");
+  selectionCount = this.page.getByTestId("gridSelectionCount");
 
   cardNames() {
     return this.cards.getByTestId("cardName").allTextContents();
   }
 
-  async sortBy(option: string) {
-    await this.sortButton.click();
-    await this.page.getByRole("menuitem", { name: option }).click();
+  sortBy(field: "status" | "name" | "diff") {
+    return this.page.getByTestId(`gridSort-${field}`).click();
   }
 
   async setPageSize(size: number) {

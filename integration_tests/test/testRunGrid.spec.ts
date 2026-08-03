@@ -239,14 +239,14 @@ test("sorts the cards by status, name or diff", async ({
     "Mango",
   ]);
 
-  await projectPage.testRunList.sortBy("Name");
+  await projectPage.testRunList.sortBy("name");
   expect(await projectPage.testRunList.cardNames()).toEqual([
     "Alpha",
     "Mango",
     "Zebra",
   ]);
 
-  await projectPage.testRunList.sortBy("Diff");
+  await projectPage.testRunList.sortBy("diff");
   expect(await projectPage.testRunList.cardNames()).toEqual([
     "Mango",
     "Alpha",
@@ -262,20 +262,69 @@ test("flips the direction when the same field is picked again", async ({
   const projectPage = await openProjectPage(project.id, build.id);
   await projectPage.testRunList.gridViewToggle.click();
 
-  await projectPage.testRunList.sortBy("Name");
+  await projectPage.testRunList.sortBy("name");
   expect(await projectPage.testRunList.cardNames()).toEqual([
     "Alpha",
     "Mango",
     "Zebra",
   ]);
 
-  await projectPage.testRunList.sortBy("Name");
+  await projectPage.testRunList.sortBy("name");
 
   expect(await projectPage.testRunList.cardNames()).toEqual([
     "Zebra",
     "Mango",
     "Alpha",
   ]);
+});
+
+test("selects every filtered run from the header, across pages", async ({
+  openProjectPage,
+  page,
+}) => {
+  const approved: string[][] = [];
+  await page.route(
+    `${API_URL}/test-runs/approve?merge=false`,
+    (route, request) => {
+      approved.push(request.postDataJSON());
+      return route.fulfill({ body: "{}" });
+    },
+  );
+  await mockGetTestRuns(page, build.id, MANY_RUNS);
+  const projectPage = await openProjectPage(project.id, build.id);
+  await projectPage.testRunList.gridViewToggle.click();
+  await projectPage.testRunList.groupToggle.click();
+  // ten of the twelve cards fit on the page
+  await expect(projectPage.testRunList.cards).toHaveCount(10);
+
+  await projectPage.testRunList.selectAll.click();
+
+  await expect(projectPage.testRunList.selectionCount).toHaveText(
+    "12 selected",
+  );
+
+  await projectPage.testRunList.approveBtn.click();
+  await projectPage.modal.confirmBtn.click();
+
+  await expect(projectPage.notification.message).toHaveText(
+    "12 test runs processed.",
+  );
+  expect(approved[0]).toHaveLength(MANY_RUNS.length);
+});
+
+test("clears the selection when the header box is unticked", async ({
+  openProjectPage,
+  page,
+}) => {
+  await mockGetTestRuns(page, build.id, MANY_RUNS);
+  const projectPage = await openProjectPage(project.id, build.id);
+  await projectPage.testRunList.gridViewToggle.click();
+  await projectPage.testRunList.selectAll.click();
+  await expect(projectPage.testRunList.selectionCount).toBeVisible();
+
+  await projectPage.testRunList.selectAll.click();
+
+  await expect(projectPage.testRunList.selectionCount).toBeHidden();
 });
 
 test("keeps the chosen sort after a reload", async ({
@@ -285,7 +334,7 @@ test("keeps the chosen sort after a reload", async ({
   await mockGetTestRuns(page, build.id, SORTABLE);
   const projectPage = await openProjectPage(project.id, build.id);
   await projectPage.testRunList.gridViewToggle.click();
-  await projectPage.testRunList.sortBy("Name");
+  await projectPage.testRunList.sortBy("name");
 
   await page.reload();
 

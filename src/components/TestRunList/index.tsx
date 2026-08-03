@@ -31,15 +31,18 @@ import { DataGridCustomToolbar } from "./DataGridCustomToolbar";
 import { BulkOperation } from "./BulkOperation";
 import { TestRunGrid } from "./TestRunGrid";
 import {
+  TestRunDensity,
+  TestRunListControls,
+  TestRunView,
+} from "./TestRunListControls";
+import {
   DEFAULT_SORT,
   DEFAULT_SORT_DIRECTION,
   SORT_LABELS,
-  TestRunDensity,
-  TestRunListControls,
+  TestRunGridHeader,
   TestRunSort,
   TestRunSortField,
-  TestRunView,
-} from "./TestRunListControls";
+} from "./TestRunGridHeader";
 import TestRunFilters from "./TestRunFilters";
 import { TestRun, TestStatus } from "../../types";
 import { testRunService } from "../../services";
@@ -228,6 +231,15 @@ const TestRunList: React.FunctionComponent = () => {
           : DEFAULT_SORT_DIRECTION[sortField],
     };
   });
+
+  // every filtered run, not just the page: the table's header box does the same
+  const toggleAll = React.useCallback(
+    (ids: string[]) =>
+      setSelectedIds((prev) =>
+        ids.every((id) => prev.includes(id)) ? [] : ids,
+      ),
+    [],
+  );
 
   // a group is selected or cleared as a whole
   const toggleGroup = React.useCallback(
@@ -516,8 +528,6 @@ const TestRunList: React.FunctionComponent = () => {
                   onDensityChange: setDensity,
                   grouped: groupVariations,
                   onGroupedChange: setGroupVariations,
-                  sort: gridSort,
-                  onSortChange: setGridSort,
                 },
               }}
               rowSelectionModel={selectedIds}
@@ -560,13 +570,20 @@ const TestRunList: React.FunctionComponent = () => {
                   onDensityChange={setDensity}
                   grouped={groupVariations}
                   onGroupedChange={setGroupVariations}
-                  sort={gridSort}
-                  onSortChange={setGridSort}
                 />
                 <Box marginLeft="auto">
                   <BulkOperation selectedIds={selectedIds} rows={gridRows} />
                 </Box>
               </Toolbar>
+              <TestRunGridHeader
+                sort={gridSort}
+                onSortChange={setGridSort}
+                selectedCount={
+                  groupedRunIds.filter((id) => selectedIds.includes(id)).length
+                }
+                totalCount={groupedRunIds.length}
+                onToggleAll={() => toggleAll(groupedRunIds)}
+              />
               {loading && <LinearProgress />}
               <Box flex={1} overflow="auto">
                 {gridRows.length === 0 ? (
