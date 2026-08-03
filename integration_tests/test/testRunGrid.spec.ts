@@ -9,6 +9,7 @@ import {
   TEST_UNRESOLVED,
 } from "~client/_test/test.data.helper";
 import {
+  API_URL,
   mockGetBuildDetails,
   mockGetBuilds,
   mockGetProjects,
@@ -72,6 +73,35 @@ test("opens the details dialog from a card", async ({
   await projectPage.testRunList.getCard(TEST_UNRESOLVED.name).click();
 
   await expect(page.getByTestId("drawArea").first()).toBeVisible();
+});
+
+test("approves the runs selected in the grid", async ({
+  openProjectPage,
+  page,
+}) => {
+  const approved: string[][] = [];
+  await page.route(
+    `${API_URL}/test-runs/approve?merge=false`,
+    (route, request) => {
+      approved.push(request.postDataJSON());
+      return route.fulfill({ body: "{}" });
+    },
+  );
+
+  const projectPage = await openProjectPage(project.id, build.id);
+  await projectPage.testRunList.gridViewToggle.click();
+
+  // only new and unresolved runs are eligible, so an approved one would prove
+  // nothing: idsEligibleForApproveOrReject would drop it and send an empty list
+  await projectPage.testRunList.checkCard(TEST_RUN_NEW.name);
+  await projectPage.testRunList.checkCard(TEST_UNRESOLVED.name);
+  await projectPage.testRunList.approveBtn.click();
+  await projectPage.modal.confirmBtn.click();
+
+  await expect(projectPage.notification.message).toHaveText(
+    "2 test runs processed.",
+  );
+  expect(approved).toEqual([[TEST_RUN_NEW.id, TEST_UNRESOLVED.id]]);
 });
 
 test("loads card images lazily", async ({ openProjectPage }) => {

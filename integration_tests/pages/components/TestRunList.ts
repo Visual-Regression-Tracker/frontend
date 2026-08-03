@@ -7,7 +7,13 @@ export class TestRunList extends Table {
   grid = this.page.getByTestId("testRunGrid");
   cards = this.page.getByTestId("testRunCard");
 
+  approveBtn = this.page.getByTestId("ThumbUpIcon");
+
   getCard(name: string) {
     return this.cards.filter({ hasText: name });
+  }
+
+  checkCard(name: string) {
+    return this.getCard(name).getByRole("checkbox").check();
   }
 }
