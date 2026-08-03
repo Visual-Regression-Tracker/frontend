@@ -86,6 +86,49 @@ test("opens the details dialog from a card", async ({
   await expect(page.getByTestId("drawArea").first()).toBeVisible();
 });
 
+test("resizes the grid cards with the density control", async ({
+  openProjectPage,
+}) => {
+  const projectPage = await openProjectPage(project.id, build.id);
+  await projectPage.testRunList.gridViewToggle.click();
+  const card = projectPage.testRunList.cards.first();
+  const standard = (await card.boundingBox()).width;
+
+  await projectPage.testRunList.compactDensity.click();
+  expect((await card.boundingBox()).width).toBeLessThan(standard);
+
+  await projectPage.testRunList.comfortableDensity.click();
+  expect((await card.boundingBox()).width).toBeGreaterThan(standard);
+});
+
+test("keeps the chosen density after a reload", async ({
+  openProjectPage,
+  page,
+}) => {
+  const projectPage = await openProjectPage(project.id, build.id);
+  await projectPage.testRunList.gridViewToggle.click();
+  await projectPage.testRunList.compactDensity.click();
+
+  await page.reload();
+
+  await expect(projectPage.testRunList.compactDensity).toHaveAttribute(
+    "aria-pressed",
+    "true",
+  );
+});
+
+test("applies the same density to the table rows", async ({
+  openProjectPage,
+}) => {
+  const projectPage = await openProjectPage(project.id, build.id);
+  const row = projectPage.testRunList.getRow(TEST_UNRESOLVED.id);
+  const standard = (await row.boundingBox()).height;
+
+  await projectPage.testRunList.compactDensity.click();
+
+  expect((await row.boundingBox()).height).toBeLessThan(standard);
+});
+
 test("approves the runs selected in the grid", async ({
   openProjectPage,
   page,

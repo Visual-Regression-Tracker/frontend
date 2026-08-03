@@ -22,13 +22,17 @@ import {
 import { DataGridCustomToolbar } from "./DataGridCustomToolbar";
 import { BulkOperation } from "./BulkOperation";
 import { TestRunGrid } from "./TestRunGrid";
-import { TestRunView, TestRunViewToggle } from "./TestRunViewToggle";
+import {
+  TestRunDensity,
+  TestRunListControls,
+  TestRunView,
+} from "./TestRunListControls";
 import TestRunFilters from "./TestRunFilters";
 import { TestRun, TestStatus } from "../../types";
 import { testRunService } from "../../services";
 import { useNavigate } from "react-router";
 import { buildTestRunLocation } from "../../_helpers/route.helpers";
-import { TEST_RUN_VIEW_KEY } from "../../constants";
+import { TEST_RUN_DENSITY_KEY, TEST_RUN_VIEW_KEY } from "../../constants";
 
 // https://mui.com/x/react-data-grid/column-definition/
 const columnsDef: GridColDef[] = [
@@ -150,6 +154,12 @@ const TestRunList: React.FunctionComponent = () => {
   const [view, setView] = React.useState<TestRunView>(() =>
     localStorage.getItem(TEST_RUN_VIEW_KEY) === "grid" ? "grid" : "table",
   );
+  const [density, setDensity] = React.useState<TestRunDensity>(() => {
+    const stored = localStorage.getItem(TEST_RUN_DENSITY_KEY);
+    return stored === "compact" || stored === "comfortable"
+      ? stored
+      : "standard";
+  });
 
   const toggleSelect = React.useCallback(
     (id: string) =>
@@ -162,6 +172,16 @@ const TestRunList: React.FunctionComponent = () => {
   React.useEffect(() => {
     localStorage.setItem(TEST_RUN_VIEW_KEY, view);
   }, [view]);
+
+  React.useEffect(() => {
+    localStorage.setItem(TEST_RUN_DENSITY_KEY, density);
+  }, [density]);
+
+  // the data grid takes its density prop as an initial value only, so later
+  // changes have to go through the api
+  React.useEffect(() => {
+    apiRef.current?.setDensity?.(density);
+  }, [apiRef, density, view]);
 
   const resetFilters = React.useCallback(() => {
     setNameFilter("");
@@ -377,12 +397,15 @@ const TestRunList: React.FunctionComponent = () => {
               slots={{
                 toolbar: DataGridCustomToolbar,
               }}
+              density={density}
               slotProps={{
                 toolbar: {
                   selectedIds,
                   rows: filteredRows,
                   view,
                   onViewChange: setView,
+                  density,
+                  onDensityChange: setDensity,
                 },
               }}
               rowSelectionModel={selectedIds}
@@ -407,7 +430,12 @@ const TestRunList: React.FunctionComponent = () => {
           ) : (
             <Box height="100%" display="flex" flexDirection="column">
               <Toolbar variant="dense">
-                <TestRunViewToggle view={view} onChange={setView} />
+                <TestRunListControls
+                  view={view}
+                  onViewChange={setView}
+                  density={density}
+                  onDensityChange={setDensity}
+                />
                 <Box marginLeft="auto">
                   <BulkOperation selectedIds={selectedIds} rows={gridRows} />
                 </Box>
@@ -428,6 +456,7 @@ const TestRunList: React.FunctionComponent = () => {
                   <TestRunGrid
                     rows={gridRows}
                     selectedIds={selectedIds}
+                    density={density}
                     onToggleSelect={toggleSelect}
                     onOpen={(id) =>
                       navigate(buildTestRunLocation(selectedBuild.id, id))

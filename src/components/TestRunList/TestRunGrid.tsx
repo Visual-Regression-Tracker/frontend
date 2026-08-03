@@ -11,19 +11,18 @@ import { TestRun } from "../../types";
 import TestStatusChip from "../TestStatusChip";
 import { staticService } from "../../services";
 import noImage from "../../static/no-image.png";
-
-const CARD_WIDTH = 220;
-const IMAGE_HEIGHT = 160;
+import { CARD_SIZE_BY_DENSITY, TestRunDensity } from "./TestRunListControls";
 
 export const TestRunGrid: React.FunctionComponent<{
   rows: TestRun[];
   selectedIds: string[];
+  density: TestRunDensity;
   onToggleSelect: (id: string) => void;
   onOpen: (id: string) => void;
-}> = ({ rows, selectedIds, onToggleSelect, onOpen }) => (
+}> = ({ rows, selectedIds, density, onToggleSelect, onOpen }) => (
   <Box
     display="grid"
-    gridTemplateColumns={`repeat(auto-fill, minmax(${CARD_WIDTH}px, 1fr))`}
+    gridTemplateColumns={`repeat(auto-fill, minmax(${CARD_SIZE_BY_DENSITY[density].width}px, 1fr))`}
     gap={1}
     padding={2}
     data-testid="testRunGrid"
@@ -43,7 +42,7 @@ export const TestRunGrid: React.FunctionComponent<{
             sx={{
               display: "block",
               width: "100%",
-              height: IMAGE_HEIGHT,
+              height: CARD_SIZE_BY_DENSITY[density].imageHeight,
               objectFit: "contain",
               objectPosition: "top",
               backgroundColor: "grey.100",
