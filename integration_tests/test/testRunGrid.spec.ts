@@ -623,3 +623,23 @@ test("shows the tags on the cards", async ({ openProjectPage, page }) => {
     "device",
   );
 });
+
+test("calls the things you tick cards, not rows", async ({
+  openProjectPage,
+  page,
+}) => {
+  await mockVariations(page);
+  const projectPage = await openProjectPage(project.id, build.id);
+
+  // MUI derives the button's aria-label from the tooltip's title
+  await expect(
+    page.getByLabel("Approve unresolved in selected rows."),
+  ).toBeVisible();
+
+  await projectPage.testRunList.gridViewToggle.click();
+
+  await expect(
+    page.getByLabel("Approve unresolved in selected cards."),
+  ).toBeVisible();
+  await expect(page.getByLabel("Delete selected cards.")).toBeVisible();
+});

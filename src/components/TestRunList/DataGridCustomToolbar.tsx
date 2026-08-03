@@ -59,7 +59,11 @@ export const DataGridCustomToolbar: React.FunctionComponent<{
       onShowDiffChange={onShowDiffChange}
     />
     <Box marginLeft="auto">
-      <BulkOperation selectedIds={selectedIds} rows={rows} />
+      <BulkOperation
+        selectedIds={selectedIds}
+        rows={rows}
+        selectionNoun="rows"
+      />
     </Box>
   </Toolbar>
 );

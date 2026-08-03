@@ -17,7 +17,9 @@ import { useTestRunState } from "../../contexts";
 export const BulkOperation: React.FunctionComponent<{
   selectedIds: string[];
   rows: TestRun[];
-}> = ({ selectedIds, rows }) => {
+  // what the view calls the things you tick: rows in the table, cards in the grid
+  selectionNoun: "rows" | "cards";
+}> = ({ selectedIds, rows, selectionNoun }) => {
   const { testRuns } = useTestRunState();
   const { enqueueSnackbar } = useSnackbar();
   const [approveDialogOpen, setApproveDialogOpen] = React.useState(false);
@@ -175,7 +177,7 @@ export const BulkOperation: React.FunctionComponent<{
   return (
     <React.Fragment>
       <Tooltip
-        title="Approve unresolved in selected rows."
+        title={`Approve unresolved in selected ${selectionNoun}.`}
         aria-label="approve"
       >
         <span>
@@ -188,7 +190,10 @@ export const BulkOperation: React.FunctionComponent<{
           </IconButton>
         </span>
       </Tooltip>
-      <Tooltip title="Reject unresolved in selected rows." aria-label="reject">
+      <Tooltip
+        title={`Reject unresolved in selected ${selectionNoun}.`}
+        aria-label="reject"
+      >
         <span>
           <IconButton
             disabled={selectedIds.length === 0}
@@ -199,7 +204,10 @@ export const BulkOperation: React.FunctionComponent<{
           </IconButton>
         </span>
       </Tooltip>
-      <Tooltip title="Download images for selected rows." aria-label="download">
+      <Tooltip
+        title={`Download images for selected ${selectionNoun}.`}
+        aria-label="download"
+      >
         <span>
           <IconButton
             disabled={selectedIds.length === 0}
@@ -210,7 +218,7 @@ export const BulkOperation: React.FunctionComponent<{
           </IconButton>
         </span>
       </Tooltip>
-      <Tooltip title="Delete selected rows." aria-label="delete">
+      <Tooltip title={`Delete selected ${selectionNoun}.`} aria-label="delete">
         <span>
           <IconButton
             disabled={selectedIds.length === 0}
@@ -222,7 +230,7 @@ export const BulkOperation: React.FunctionComponent<{
         </span>
       </Tooltip>
       <Tooltip
-        title="Clear ignore areas for selected rows."
+        title={`Clear ignore areas for selected ${selectionNoun}.`}
         aria-label="clear ignore area"
       >
         <span>

@@ -653,7 +653,11 @@ const TestRunList: React.FunctionComponent = () => {
                   onShowDiffChange={setShowDiff}
                 />
                 <Box marginLeft="auto">
-                  <BulkOperation selectedIds={selectedIds} rows={gridRows} />
+                  <BulkOperation
+                    selectedIds={selectedIds}
+                    rows={gridRows}
+                    selectionNoun="cards"
+                  />
                 </Box>
               </Toolbar>
               <TestRunGridHeader
