@@ -51,6 +51,7 @@ const TestRunFilters: React.FunctionComponent<IProps> = ({
             minLength={2}
             debounceTimeout={300}
             onChange={(event) => onNameChange(event.target.value)}
+            inputProps={{ "data-testid": "testRunNameFilter" }}
           />
         </Grid>
         <Grid item xs>

@@ -1,5 +1,14 @@
 import React from "react";
-import { Box, Chip, Typography } from "@mui/material";
+import {
+  Box,
+  Chip,
+  LinearProgress,
+  ToggleButton,
+  ToggleButtonGroup,
+  Toolbar,
+  Typography,
+} from "@mui/material";
+import { ViewList, ViewModule } from "@mui/icons-material";
 import TestStatusChip from "../TestStatusChip";
 import {
   useTestRunState,
@@ -20,11 +29,14 @@ import {
   gridFilteredSortedRowIdsSelector,
 } from "@mui/x-data-grid";
 import { DataGridCustomToolbar } from "./DataGridCustomToolbar";
+import { BulkOperation } from "./BulkOperation";
+import { TestRunGrid } from "./TestRunGrid";
 import TestRunFilters from "./TestRunFilters";
 import { TestRun, TestStatus } from "../../types";
 import { testRunService } from "../../services";
 import { useNavigate } from "react-router";
 import { buildTestRunLocation } from "../../_helpers/route.helpers";
+import { TEST_RUN_VIEW_KEY } from "../../constants";
 
 // https://mui.com/x/react-data-grid/column-definition/
 const columnsDef: GridColDef[] = [
@@ -143,6 +155,21 @@ const TestRunList: React.FunctionComponent = () => {
   const [statusFilter, setStatusFilter] = React.useState<TestStatus[]>([]);
   const [tagFilter, setTagFilter] = React.useState<string[]>([]);
   const [selectedIds, setSelectedIds] = React.useState<string[]>([]);
+  const [view, setView] = React.useState<"table" | "grid">(() =>
+    localStorage.getItem(TEST_RUN_VIEW_KEY) === "grid" ? "grid" : "table",
+  );
+
+  const toggleSelect = React.useCallback(
+    (id: string) =>
+      setSelectedIds((prev) =>
+        prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id],
+      ),
+    [],
+  );
+
+  React.useEffect(() => {
+    localStorage.setItem(TEST_RUN_VIEW_KEY, view);
+  }, [view]);
 
   const resetFilters = React.useCallback(() => {
     setNameFilter("");
@@ -192,6 +219,17 @@ const TestRunList: React.FunctionComponent = () => {
           matchesTagGroups(run, tagGroups),
       ),
     [testRuns, query, statusFilter, tagGroups],
+  );
+
+  // needs attention first: STATUS_ORDER starts at new/unresolved/failed
+  const gridRows = React.useMemo(
+    () =>
+      [...filteredRows].sort(
+        (a, b) =>
+          STATUS_ORDER.indexOf(a.status) - STATUS_ORDER.indexOf(b.status) ||
+          a.name.localeCompare(b.name),
+      ),
+    [filteredRows],
   );
 
   // Options for each filter are derived from rows matching all OTHER filters,
@@ -306,57 +344,120 @@ const TestRunList: React.FunctionComponent = () => {
   if (selectedBuild) {
     return (
       <Box display="flex" flexDirection="column" height="100%">
-        <Box paddingX={2} paddingTop={1} paddingBottom={1}>
-          <TestRunFilters
-            tagOptions={tagOptions}
-            statusOptions={statusOptions}
-            name={nameFilter}
-            statuses={statusFilter}
-            tags={tagFilter}
-            onNameChange={setNameFilter}
-            onStatusesChange={setStatusFilter}
-            onTagsChange={setTagFilter}
-            onReset={resetFilters}
-          />
+        <Box
+          paddingX={2}
+          paddingTop={1}
+          paddingBottom={1}
+          display="flex"
+          alignItems="center"
+          gap={1}
+        >
+          <Box flex={1} minWidth={0}>
+            <TestRunFilters
+              tagOptions={tagOptions}
+              statusOptions={statusOptions}
+              name={nameFilter}
+              statuses={statusFilter}
+              tags={tagFilter}
+              onNameChange={setNameFilter}
+              onStatusesChange={setStatusFilter}
+              onTagsChange={setTagFilter}
+              onReset={resetFilters}
+            />
+          </Box>
+          <ToggleButtonGroup
+            exclusive
+            size="small"
+            value={view}
+            onChange={(event, next) => next && setView(next)}
+          >
+            <ToggleButton
+              value="table"
+              aria-label="Table view"
+              data-testid="tableViewToggle"
+            >
+              <ViewList fontSize="small" />
+            </ToggleButton>
+            <ToggleButton
+              value="grid"
+              aria-label="Grid view"
+              data-testid="gridViewToggle"
+            >
+              <ViewModule fontSize="small" />
+            </ToggleButton>
+          </ToggleButtonGroup>
         </Box>
         <Box flex={1} minHeight={0}>
-          <DataGrid
-            apiRef={apiRef}
-            rows={filteredRows}
-            columns={columnsDef}
-            columnVisibilityModel={{
-              id: false,
-            }}
-            pageSizeOptions={[10, 30, 100]}
-            paginationModel={paginationModel}
-            onPaginationModelChange={setPaginationModel}
-            pagination
-            loading={loading}
-            slots={{
-              toolbar: DataGridCustomToolbar,
-            }}
-            slotProps={{
-              toolbar: { selectedIds, rows: filteredRows },
-            }}
-            rowSelectionModel={selectedIds}
-            onRowSelectionModelChange={(model) =>
-              setSelectedIds(model.map(String))
-            }
-            checkboxSelection
-            disableColumnSelector
-            disableColumnMenu
-            disableRowSelectionOnClick
-            sortModel={sortModel}
-            onSortModelChange={(model) => setSortModel(model)}
-            onRowClick={(param: GridRowParams) => {
-              navigate(
-                buildTestRunLocation(
-                  selectedBuild.id,
-                  param.row["id"].toString(),
-                ),
-              );
-            }}
-          />
+          {view === "table" ? (
+            <DataGrid
+              apiRef={apiRef}
+              rows={filteredRows}
+              columns={columnsDef}
+              columnVisibilityModel={{
+                id: false,
+              }}
+              pageSizeOptions={[10, 30, 100]}
+              paginationModel={paginationModel}
+              onPaginationModelChange={setPaginationModel}
+              pagination
+              loading={loading}
+              slots={{
+                toolbar: DataGridCustomToolbar,
+              }}
+              slotProps={{
+                toolbar: { selectedIds, rows: filteredRows },
+              }}
+              rowSelectionModel={selectedIds}
+              onRowSelectionModelChange={(model) =>
+                setSelectedIds(model.map(String))
+              }
+              checkboxSelection
+              disableColumnSelector
+              disableColumnMenu
+              disableRowSelectionOnClick
+              sortModel={sortModel}
+              onSortModelChange={(model) => setSortModel(model)}
+              onRowClick={(param: GridRowParams) => {
+                navigate(
+                  buildTestRunLocation(
+                    selectedBuild.id,
+                    param.row["id"].toString(),
+                  ),
+                );
+              }}
+            />
+          ) : (
+            <Box height="100%" display="flex" flexDirection="column">
+              <Toolbar variant="dense">
+                <Box marginLeft="auto">
+                  <BulkOperation selectedIds={selectedIds} rows={gridRows} />
+                </Box>
+              </Toolbar>
+              {loading && <LinearProgress />}
+              <Box flex={1} overflow="auto">
+                {gridRows.length === 0 ? (
+                  <Typography
+                    variant="subtitle1"
+                    align="center"
+                    color="textSecondary"
+                    sx={{ padding: 2 }}
+                    data-testid="testRunGridEmpty"
+                  >
+                    No test runs match the filters
+                  </Typography>
+                ) : (
+                  <TestRunGrid
+                    rows={gridRows}
+                    selectedIds={selectedIds}
+                    onToggleSelect={toggleSelect}
+                    onOpen={(id) =>
+                      navigate(buildTestRunLocation(selectedBuild.id, id))
+                    }
+                  />
+                )}
+              </Box>
+            </Box>
+          )}
         </Box>
       </Box>
     );
