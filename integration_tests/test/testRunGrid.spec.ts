@@ -80,9 +80,6 @@ test("collapses the variations of one screen into a single card", async ({
 }) => {
   await mockVariations(page);
   const projectPage = await openProjectPage(project.id, build.id);
-  // the table is one row per run, so it offers no grouping switch
-  await expect(projectPage.testRunList.groupToggle).toBeHidden();
-
   await projectPage.testRunList.gridViewToggle.click();
 
   await expect(projectPage.testRunList.cards).toHaveCount(2);
@@ -487,4 +484,122 @@ test("loads card images lazily", async ({ openProjectPage }) => {
   await expect(
     projectPage.testRunList.cards.first().locator("img"),
   ).toHaveAttribute("loading", "lazy");
+});
+
+test("collapses the variations into one table row too", async ({
+  openProjectPage,
+  page,
+}) => {
+  await mockVariations(page);
+  const projectPage = await openProjectPage(project.id, build.id);
+
+  // grouped: the representative stands for both locales and carries the count
+  await expect(projectPage.testRunList.rows).toHaveCount(2);
+  await expect(
+    projectPage.testRunList.getRow(VARIATION_DE.id).getByTestId("groupCount"),
+  ).toHaveText("2");
+  // the locale varies inside the group, so it is not shown as a tag of the row
+  await expect(
+    projectPage.testRunList.getColumn(VARIATION_DE.id, "tags"),
+  ).not.toContainText("de_DE");
+
+  await projectPage.testRunList.groupToggle.click();
+
+  await expect(projectPage.testRunList.rows).toHaveCount(3);
+  await expect(
+    projectPage.testRunList.getColumn(VARIATION_DE.id, "tags"),
+  ).toContainText("de_DE");
+});
+
+test("selects a whole group from a table row", async ({
+  openProjectPage,
+  page,
+}) => {
+  const approved: string[][] = [];
+  await page.route(
+    `${API_URL}/test-runs/approve?merge=false`,
+    (route, request) => {
+      approved.push(request.postDataJSON());
+      return route.fulfill({ body: "{}" });
+    },
+  );
+  await mockVariations(page);
+  const projectPage = await openProjectPage(project.id, build.id);
+
+  await projectPage.testRunList.checkRow(VARIATION_DE.id);
+  await projectPage.testRunList.approveBtn.click();
+  await projectPage.modal.confirmBtn.click();
+
+  await expect(projectPage.notification.message).toHaveText(
+    "2 test runs processed.",
+  );
+  expect(approved.map((ids) => [...ids].sort())).toEqual([
+    [VARIATION_DE.id, VARIATION_EN.id].sort(),
+  ]);
+});
+
+test("reaches a group's other runs from a table row", async ({
+  openProjectPage,
+  page,
+}) => {
+  await mockVariations(page);
+  const projectPage = await openProjectPage(project.id, build.id);
+
+  await projectPage.testRunList.getRow(VARIATION_DE.id).click();
+  await expect(page).toHaveURL(new RegExp(`testId=${VARIATION_DE.id}$`));
+
+  await page.keyboard.press("ArrowRight");
+
+  await expect(page).toHaveURL(new RegExp(`testId=${VARIATION_EN.id}$`));
+});
+
+test("keeps every tag on a row that stands for one run", async ({
+  openProjectPage,
+  page,
+}) => {
+  await mockVariations(page);
+  const projectPage = await openProjectPage(project.id, build.id);
+
+  // Screen B has no variations, so hiding its locale would lose information
+  await expect(
+    projectPage.testRunList.getColumn(LONE_SCREEN.id, "tags"),
+  ).toContainText("en_US");
+});
+
+test("swaps the card image between the diff and the screenshot", async ({
+  openProjectPage,
+  page,
+}) => {
+  await mockVariations(page);
+  const projectPage = await openProjectPage(project.id, build.id);
+  await projectPage.testRunList.gridViewToggle.click();
+  const image = projectPage.testRunList.cards.first().locator("img");
+
+  await expect(image).toHaveAttribute("src", /diff\.png/);
+
+  await projectPage.testRunList.diffToggle.click();
+
+  await expect(image).toHaveAttribute("src", /image\.png/);
+
+  await page.keyboard.press("d");
+
+  await expect(image).toHaveAttribute("src", /diff\.png/);
+});
+
+test("shows the tags on the cards", async ({ openProjectPage, page }) => {
+  await mockVariations(page);
+  const projectPage = await openProjectPage(project.id, build.id);
+  await projectPage.testRunList.gridViewToggle.click();
+
+  // the lone screen keeps its locale, the group hides the axis it varies on
+  await expect(projectPage.testRunList.getCard("Screen B")).toContainText(
+    "en_US",
+  );
+  await expect(projectPage.testRunList.getCard("Screen A")).not.toContainText(
+    "en_US",
+  );
+  // the fixture's device tag; the axes that do not vary stay on the card
+  await expect(projectPage.testRunList.getCard("Screen A")).toContainText(
+    "device",
+  );
 });

@@ -2,6 +2,7 @@ import React from "react";
 import { Box, ToggleButton, ToggleButtonGroup } from "@mui/material";
 import {
   Collections,
+  Difference,
   DensityLarge,
   DensityMedium,
   DensitySmall,
@@ -30,6 +31,8 @@ export const TestRunListControls: React.FunctionComponent<{
   onDensityChange: (density: TestRunDensity) => void;
   grouped: boolean;
   onGroupedChange: (grouped: boolean) => void;
+  showDiff: boolean;
+  onShowDiffChange: (showDiff: boolean) => void;
 }> = ({
   view,
   onViewChange,
@@ -37,6 +40,8 @@ export const TestRunListControls: React.FunctionComponent<{
   onDensityChange,
   grouped,
   onGroupedChange,
+  showDiff,
+  onShowDiffChange,
 }) => (
   <Box display="flex" alignItems="center" gap={1}>
     <ToggleButtonGroup
@@ -95,18 +100,29 @@ export const TestRunListControls: React.FunctionComponent<{
         <DensityLarge fontSize="small" />
       </ToggleButton>
     </ToggleButtonGroup>
-    {/* the table stays one row per run, so grouping only applies to the grid */}
+    <ToggleButton
+      size="small"
+      title="Group variations"
+      value="grouped"
+      selected={grouped}
+      onChange={() => onGroupedChange(!grouped)}
+      aria-label="Group variations"
+      data-testid="groupVariationsToggle"
+    >
+      <Collections fontSize="small" />
+    </ToggleButton>
+    {/* only the cards carry a picture, so the table has nothing to swap */}
     {view === "grid" && (
       <ToggleButton
         size="small"
-        title="Group variations"
-        value="grouped"
-        selected={grouped}
-        onChange={() => onGroupedChange(!grouped)}
-        aria-label="Group variations"
-        data-testid="groupVariationsToggle"
+        title="Show diff. Hotkey: D"
+        value="showDiff"
+        selected={showDiff}
+        onChange={() => onShowDiffChange(!showDiff)}
+        aria-label="Show diff"
+        data-testid="showDiffToggle"
       >
-        <Collections fontSize="small" />
+        <Difference fontSize="small" />
       </ToggleButton>
     )}
   </Box>

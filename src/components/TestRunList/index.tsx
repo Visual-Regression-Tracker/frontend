@@ -15,6 +15,7 @@ import {
   useProjectState,
 } from "../../contexts";
 import { useSnackbar } from "notistack";
+import { useHotkeys } from "react-hotkeys-hook";
 import {
   DataGrid,
   useGridApiRef,
@@ -51,6 +52,7 @@ import { buildTestRunLocation } from "../../_helpers/route.helpers";
 import {
   TEST_RUN_DENSITY_KEY,
   TEST_RUN_GROUPED_KEY,
+  TEST_RUN_SHOW_DIFF_KEY,
   TEST_RUN_SORT_KEY,
   TEST_RUN_VIEW_KEY,
 } from "../../constants";
@@ -61,7 +63,10 @@ import {
 } from "../../_helpers/testRunGroup.helper";
 
 // https://mui.com/x/react-data-grid/column-definition/
-const columnsDef: GridColDef[] = [
+const buildColumns = (
+  runCountFor: (id: string) => number,
+  tagFieldsFor: (runCount: number) => Array<keyof TestRun>,
+): GridColDef[] => [
   {
     field: "id",
     filterable: false,
@@ -71,26 +76,30 @@ const columnsDef: GridColDef[] = [
     headerName: "Name",
     flex: 1,
     filterable: false,
+    renderCell: (params: GridRenderCellParams) => {
+      const count = runCountFor(params.row["id"]);
+
+      return (
+        <Box display="flex" alignItems="center" gap={0.5} minWidth={0}>
+          <Typography variant="body2" noWrap title={params.row["name"]}>
+            {params.row["name"]}
+          </Typography>
+          {count > 1 && (
+            <Chip size="small" label={count} data-testid="groupCount" />
+          )}
+        </Box>
+      );
+    },
   },
   {
     field: "tags",
     headerName: "Tags",
     flex: 1,
     filterable: false,
-    valueGetter: (params: GridValueGetterParams) => {
-      const tags: string[] = [
-        params.row["os"],
-        params.row["device"],
-        params.row["browser"],
-        params.row["viewport"],
-        params.row["customTags"],
-      ];
-
-      return tags.reduce(
-        (prev, curr) => prev.concat(curr ? `${curr};` : ""),
-        "",
-      );
-    },
+    valueGetter: (params: GridValueGetterParams) =>
+      tagFieldsFor(runCountFor(params.row["id"]))
+        .map((field) => params.row[field])
+        .reduce((prev, curr) => prev.concat(curr ? `${curr};` : ""), ""),
     renderCell: (params: GridCellParams) => (
       <React.Fragment>
         {params.formattedValue
@@ -214,6 +223,9 @@ const TestRunList: React.FunctionComponent = () => {
   const [groupVariations, setGroupVariations] = React.useState(
     () => localStorage.getItem(TEST_RUN_GROUPED_KEY) !== "false",
   );
+  const [showDiff, setShowDiff] = React.useState(
+    () => localStorage.getItem(TEST_RUN_SHOW_DIFF_KEY) !== "false",
+  );
   const [gridSort, setGridSort] = React.useState<TestRunSort>(() => {
     const [field, direction] = (
       localStorage.getItem(TEST_RUN_SORT_KEY) ?? ""
@@ -229,6 +241,10 @@ const TestRunList: React.FunctionComponent = () => {
           ? direction
           : DEFAULT_SORT_DIRECTION[sortField],
     };
+  });
+
+  useHotkeys("d", () => setShowDiff((prev) => !prev), {
+    enabled: view === "grid" && !selectedTestRun,
   });
 
   // every filtered run, not just the page: the table's header box does the same
@@ -331,18 +347,72 @@ const TestRunList: React.FunctionComponent = () => {
     [filteredRows, gridSort],
   );
 
+  const groupByAxis = React.useMemo(
+    () =>
+      resolveGroupByAxis(
+        projectList.find((item) => item.id === selectedProjectId)
+          ?.bulkApproveGroupBy,
+      ),
+    [projectList, selectedProjectId],
+  );
+
   const groups = React.useMemo(
     () =>
       groupVariations
-        ? groupTestRuns(
-            gridRows,
-            resolveGroupByAxis(
-              projectList.find((item) => item.id === selectedProjectId)
-                ?.bulkApproveGroupBy,
-            ),
-          )
+        ? groupTestRuns(gridRows, groupByAxis)
         : singleRunGroups(gridRows),
-    [groupVariations, gridRows, projectList, selectedProjectId],
+    [groupVariations, gridRows, groupByAxis],
+  );
+
+  // a grouped table shows the representative and stands for the whole group, so
+  // both the row's tick and its count have to reach the runs behind it
+  const runIdsByRepresentative = React.useMemo(
+    () =>
+      new Map(
+        groups.map((group) => [
+          group.representative.id,
+          group.runs.map((run) => run.id),
+        ]),
+      ),
+    [groups],
+  );
+
+  // the grouped axis varies inside a group, so it is not a tag of the group.
+  // A group of one hides nothing: there is no variation to stand for.
+  const tagFieldsFor = React.useCallback(
+    (runCount: number): Array<keyof TestRun> =>
+      groupVariations && runCount > 1
+        ? TAG_FIELDS.filter((field) => field !== groupByAxis)
+        : TAG_FIELDS,
+    [groupVariations, groupByAxis],
+  );
+
+  const columns = React.useMemo(
+    () =>
+      buildColumns(
+        (id) => runIdsByRepresentative.get(id)?.length ?? 1,
+        tagFieldsFor,
+      ),
+    [runIdsByRepresentative, tagFieldsFor],
+  );
+
+  const tableRows = React.useMemo(
+    () =>
+      groupVariations ? groups.map((group) => group.representative) : gridRows,
+    [groupVariations, groups, gridRows],
+  );
+
+  // a representative reads as ticked once every run behind it is selected
+  const tableSelectionModel = React.useMemo(
+    () =>
+      groupVariations
+        ? groups
+            .filter((group) =>
+              group.runs.every((run) => selectedIds.includes(run.id)),
+            )
+            .map((group) => group.representative.id)
+        : selectedIds,
+    [groupVariations, groups, selectedIds],
   );
 
   // the dialog walks the grid's runs in the grid's order, groups expanded, so
@@ -452,12 +522,18 @@ const TestRunList: React.FunctionComponent = () => {
     getTestRunListCallback();
   }, [getTestRunListCallback]);
 
+  // read inside the subscription below, which is set up once
+  const groupedRef = React.useRef(groupVariations);
+  groupedRef.current = groupVariations;
+
   // workaround https://github.com/mui/mui-x/issues/1106
   React.useEffect(() => {
     let unsubscribe: () => void;
     const handleStateChange = () => {
       unsubscribe?.();
-      if (!selectedTestRun) {
+      // grouped, the grid holds representatives only; the effect below then
+      // publishes the expanded order so no run is unreachable
+      if (!groupedRef.current && !selectedTestRun) {
         testRunDispatch({
           type: "filterSort",
           payload: gridFilteredSortedRowIdsSelector(apiRef),
@@ -478,10 +554,10 @@ const TestRunList: React.FunctionComponent = () => {
   // the data grid publishes the order the details dialog navigates; with the
   // grid view mounted instead, it has to publish its own
   React.useEffect(() => {
-    if (view === "grid" && !selectedTestRun) {
+    if ((view === "grid" || groupVariations) && !selectedTestRun) {
       testRunDispatch({ type: "filterSort", payload: groupedRunIds });
     }
-  }, [view, groupedRunIds, selectedTestRun, testRunDispatch]);
+  }, [view, groupVariations, groupedRunIds, selectedTestRun, testRunDispatch]);
 
   if (selectedBuild) {
     return (
@@ -503,8 +579,8 @@ const TestRunList: React.FunctionComponent = () => {
           {view === "table" ? (
             <DataGrid
               apiRef={apiRef}
-              rows={filteredRows}
-              columns={columnsDef}
+              rows={tableRows}
+              columns={columns}
               columnVisibilityModel={{
                 id: false,
               }}
@@ -527,11 +603,19 @@ const TestRunList: React.FunctionComponent = () => {
                   onDensityChange: setDensity,
                   grouped: groupVariations,
                   onGroupedChange: setGroupVariations,
+                  showDiff,
+                  onShowDiffChange: setShowDiff,
                 },
               }}
-              rowSelectionModel={selectedIds}
+              rowSelectionModel={tableSelectionModel}
               onRowSelectionModelChange={(model) =>
-                setSelectedIds(model.map(String))
+                setSelectedIds(
+                  groupVariations
+                    ? model.flatMap(
+                        (id) => runIdsByRepresentative.get(String(id)) ?? [],
+                      )
+                    : model.map(String),
+                )
               }
               checkboxSelection
               disableColumnSelector
@@ -569,6 +653,8 @@ const TestRunList: React.FunctionComponent = () => {
                   onDensityChange={setDensity}
                   grouped={groupVariations}
                   onGroupedChange={setGroupVariations}
+                  showDiff={showDiff}
+                  onShowDiffChange={setShowDiff}
                 />
                 <Box marginLeft="auto">
                   <BulkOperation selectedIds={selectedIds} rows={gridRows} />
@@ -601,6 +687,8 @@ const TestRunList: React.FunctionComponent = () => {
                     groups={pagedGroups}
                     selectedIds={selectedIds}
                     density={density}
+                    showDiff={showDiff}
+                    tagFieldsFor={tagFieldsFor}
                     onToggleGroup={toggleGroup}
                     onOpen={(id) =>
                       navigate(buildTestRunLocation(selectedBuild.id, id))

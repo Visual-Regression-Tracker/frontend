@@ -9,18 +9,29 @@ import {
   Typography,
 } from "@mui/material";
 import TestStatusChip from "../TestStatusChip";
-import { staticService } from "../../services";
 import noImage from "../../static/no-image.png";
 import { CARD_SIZE_BY_DENSITY, TestRunDensity } from "./TestRunListControls";
 import { TestRunGroup } from "../../_helpers/testRunGroup.helper";
+import { imageFor } from "../../_helpers/testRunImage.helper";
+import { TestRun } from "../../types";
 
 export const TestRunGrid: React.FunctionComponent<{
   groups: TestRunGroup[];
   selectedIds: string[];
   density: TestRunDensity;
+  showDiff: boolean;
+  tagFieldsFor: (runCount: number) => Array<keyof TestRun>;
   onToggleGroup: (ids: string[]) => void;
   onOpen: (id: string) => void;
-}> = ({ groups, selectedIds, density, onToggleGroup, onOpen }) => (
+}> = ({
+  groups,
+  selectedIds,
+  density,
+  showDiff,
+  tagFieldsFor,
+  onToggleGroup,
+  onOpen,
+}) => (
   <Box
     display="grid"
     gridTemplateColumns={`repeat(auto-fill, minmax(${CARD_SIZE_BY_DENSITY[density].width}px, 1fr))`}
@@ -41,9 +52,7 @@ export const TestRunGrid: React.FunctionComponent<{
             <CardActionArea onClick={() => onOpen(representative.id)}>
               <Box
                 component="img"
-                src={staticService.getImage(
-                  representative.diffName || representative.imageName,
-                )}
+                src={imageFor(representative, showDiff)}
                 alt={representative.name}
                 loading="lazy"
                 decoding="async"
@@ -109,8 +118,20 @@ export const TestRunGrid: React.FunctionComponent<{
             >
               {representative.name}
             </Typography>
-            <Box marginTop={0.5}>
+            <Box
+              display="flex"
+              alignItems="center"
+              flexWrap="wrap"
+              gap={0.5}
+              marginTop={0.5}
+            >
               <TestStatusChip status={representative.status} />
+              {tagFieldsFor(runs.length)
+                .map((field) => representative[field])
+                .filter((tag): tag is string => !!tag)
+                .map((tag) => (
+                  <Chip key={tag} size="small" label={tag} />
+                ))}
             </Box>
           </CardContent>
         </Card>

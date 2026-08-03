@@ -171,27 +171,29 @@ export const ProjectForm: React.FunctionComponent = () => {
       </Tooltip>
       {project.bulkApproveVariations && (
         <Tooltip title="Which test-variation axis differs within a group. Screens that match on everything except this axis are reviewed together — e.g. customTags for per-locale screenshots.">
-        <FormControl variant="standard" fullWidth>
-          <InputLabel id="bulkApproveGroupBySelect">Group variations by</InputLabel>
-          <Select
-            variant="standard"
-            id="bulkApproveGroupBySelect"
-            labelId="bulkApproveGroupBySelect"
-            value={project.bulkApproveGroupBy}
-            onChange={(event: SelectChangeEvent<HTMLInputElement>) =>
-              setProjectEditState(projectDispatch, {
-                ...project,
-                bulkApproveGroupBy: event.target.value as string,
-              })
-            }
-          >
-            <MenuItem value="customTags">customTags</MenuItem>
-            <MenuItem value="os">os</MenuItem>
-            <MenuItem value="device">device</MenuItem>
-            <MenuItem value="viewport">viewport</MenuItem>
-            <MenuItem value="browser">browser</MenuItem>
-          </Select>
-        </FormControl>
+          <FormControl variant="standard" fullWidth>
+            <InputLabel id="bulkApproveGroupBySelect">
+              Group variations by
+            </InputLabel>
+            <Select
+              variant="standard"
+              id="bulkApproveGroupBySelect"
+              labelId="bulkApproveGroupBySelect"
+              value={project.bulkApproveGroupBy}
+              onChange={(event: SelectChangeEvent<HTMLInputElement>) =>
+                setProjectEditState(projectDispatch, {
+                  ...project,
+                  bulkApproveGroupBy: event.target.value as string,
+                })
+              }
+            >
+              <MenuItem value="customTags">customTags</MenuItem>
+              <MenuItem value="os">os</MenuItem>
+              <MenuItem value="device">device</MenuItem>
+              <MenuItem value="viewport">viewport</MenuItem>
+              <MenuItem value="browser">browser</MenuItem>
+            </Select>
+          </FormControl>
         </Tooltip>
       )}
       <FormControl variant="standard" fullWidth>

@@ -80,7 +80,7 @@ export interface BaseVlmConfig {
  * Configuration for Ollama provider
  */
 export interface OllamaVlmConfig extends BaseVlmConfig {
-  provider?: 'ollama';
+  provider?: "ollama";
 
   /**
    * Ollama vision model name.
@@ -94,7 +94,7 @@ export interface OllamaVlmConfig extends BaseVlmConfig {
  * Configuration for Gemini provider
  */
 export interface GeminiVlmConfig extends BaseVlmConfig {
-  provider: 'gemini';
+  provider: "gemini";
 
   /**
    * Gemini model name.

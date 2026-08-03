@@ -7,6 +7,7 @@ export class TestRunList extends Table {
   grid = this.page.getByTestId("testRunGrid");
   cards = this.page.getByTestId("testRunCard");
   groupToggle = this.page.getByTestId("groupVariationsToggle");
+  diffToggle = this.page.getByTestId("showDiffToggle");
   compactDensity = this.page.getByTestId("compactDensity");
   standardDensity = this.page.getByTestId("standardDensity");
   comfortableDensity = this.page.getByTestId("comfortableDensity");
@@ -17,6 +18,7 @@ export class TestRunList extends Table {
   nextPage = this.pane.getByLabel("Go to next page");
   pageSize = this.pane.getByLabel("Cards per page");
 
+  rows = this.page.locator(".MuiDataGrid-row");
   selectAll = this.page.getByTestId("gridSelectAll");
   selectionCount = this.page.getByTestId("gridSelectionCount");
 
