@@ -277,6 +277,17 @@ const TestRunList: React.FunctionComponent = () => {
     apiRef.current?.setDensity?.(density);
   }, [apiRef, density, view]);
 
+  // a tag on a card filters by it, and clicking it again lets go
+  const toggleTag = React.useCallback(
+    (tag: string) =>
+      setTagFilter((prev) =>
+        prev.includes(tag)
+          ? prev.filter((item) => item !== tag)
+          : [...prev, tag],
+      ),
+    [],
+  );
+
   const resetFilters = React.useCallback(() => {
     setNameFilter("");
     setStatusFilter([]);
@@ -684,8 +695,10 @@ const TestRunList: React.FunctionComponent = () => {
                     selectedIds={selectedIds}
                     density={density}
                     showDiff={showDiff}
+                    activeTags={tagFilter}
                     tagFieldsFor={tagFieldsFor}
                     onToggleGroup={toggleGroup}
+                    onToggleTag={toggleTag}
                     onOpen={(id) =>
                       navigate(buildTestRunLocation(selectedBuild.id, id))
                     }

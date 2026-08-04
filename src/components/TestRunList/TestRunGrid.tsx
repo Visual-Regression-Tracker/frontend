@@ -13,7 +13,7 @@ import noImage from "../../static/no-image.png";
 import { CARD_SIZE_BY_DENSITY, TestRunDensity } from "./TestRunListControls";
 import { TestRunGroup } from "../../_helpers/testRunGroup.helper";
 import { imageFor } from "../../_helpers/testRunImage.helper";
-import { tagsOf } from "../../_helpers/testRunTags.helper";
+import { tagValuesOf } from "../../_helpers/testRunTags.helper";
 import { TestRun } from "../../types";
 
 /**
@@ -29,21 +29,40 @@ const clampToLines = (lines: number) => ({
   overflowWrap: "anywhere",
 });
 
+const CAPTION_LINE_HEIGHT = 1.66;
+
+/**
+ * The same two-line box for a row that holds elements rather than plain text:
+ * `-webkit-box` blockifies its children, which would stop the tags from
+ * flowing and wrapping as text.
+ */
+const clipToLines = (lines: number) => ({
+  display: "block",
+  lineHeight: CAPTION_LINE_HEIGHT,
+  maxHeight: `${lines * CAPTION_LINE_HEIGHT}em`,
+  overflow: "hidden",
+  overflowWrap: "anywhere",
+});
+
 export const TestRunGrid: React.FunctionComponent<{
   groups: TestRunGroup[];
   selectedIds: string[];
   density: TestRunDensity;
   showDiff: boolean;
+  activeTags: string[];
   tagFieldsFor: (runCount: number) => Array<keyof TestRun>;
   onToggleGroup: (ids: string[]) => void;
+  onToggleTag: (tag: string) => void;
   onOpen: (id: string) => void;
 }> = ({
   groups,
   selectedIds,
   density,
   showDiff,
+  activeTags,
   tagFieldsFor,
   onToggleGroup,
+  onToggleTag,
   onOpen,
 }) => (
   <Box
@@ -56,6 +75,7 @@ export const TestRunGrid: React.FunctionComponent<{
     {groups.map(({ key, runs, representative }) => {
       const ids = runs.map((run) => run.id);
       const selectedCount = ids.filter((id) => selectedIds.includes(id)).length;
+      const tags = tagValuesOf(representative, tagFieldsFor(runs.length));
 
       return (
         <Card key={key} variant="outlined" data-testid="testRunCard">
@@ -141,16 +161,47 @@ export const TestRunGrid: React.FunctionComponent<{
             </Typography>
             <TestStatusChip status={representative.status} />
             {/* tags as quiet text, not chips: five chips wrap over three lines
-                on a narrow card and drown out the name and the status */}
+                on a narrow card and drown out the name and the status. Each is
+                a button that filters the list by it, and buttons rather than
+                spans so the keyboard reaches them; inline, so the row still
+                wraps and clamps as plain text. */}
             <Typography
               variant="caption"
               color="text.secondary"
               width="100%"
-              sx={clampToLines(2)}
-              title={tagsOf(representative, tagFieldsFor(runs.length))}
+              sx={clipToLines(2)}
+              title={tags.join(" · ")}
               data-testid="cardTags"
             >
-              {tagsOf(representative, tagFieldsFor(runs.length))}
+              {tags.map((tag, index) => (
+                <React.Fragment key={`${index}-${tag}`}>
+                  {index > 0 && " · "}
+                  <Box
+                    component="button"
+                    type="button"
+                    onClick={() => onToggleTag(tag)}
+                    data-testid="cardTag"
+                    sx={{
+                      display: "inline",
+                      font: "inherit",
+                      // a button's own letter-spacing is normal, which would
+                      // set the tags a shade tighter than the caption text
+                      letterSpacing: "inherit",
+                      background: "none",
+                      border: 0,
+                      padding: 0,
+                      cursor: "pointer",
+                      color: activeTags.includes(tag)
+                        ? "primary.main"
+                        : "inherit",
+                      fontWeight: activeTags.includes(tag) ? 600 : undefined,
+                      "&:hover": { textDecoration: "underline" },
+                    }}
+                  >
+                    {tag}
+                  </Box>
+                </React.Fragment>
+              ))}
             </Typography>
           </CardContent>
         </Card>

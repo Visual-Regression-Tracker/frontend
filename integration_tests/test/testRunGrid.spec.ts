@@ -705,3 +705,51 @@ test("shows the icon tooltips without the browser's delay", async ({
   // a native title attribute has no tooltip role and no text in the DOM
   await expect(page.getByRole("tooltip")).toHaveText("Grid");
 });
+
+test("filters by a tag clicked on a card", async ({
+  openProjectPage,
+  page,
+}) => {
+  await mockVariations(page);
+  const projectPage = await openProjectPage(project.id, build.id);
+  await projectPage.testRunList.gridViewToggle.click();
+  // ungrouped, so that every card carries its own locale
+  await projectPage.testRunList.groupToggle.click();
+  await expect(projectPage.testRunList.cards).toHaveCount(3);
+
+  await projectPage.testRunList.clickTag("de_DE");
+
+  await expect(projectPage.testRunList.cards).toHaveCount(1);
+  // the filter bar answers for the click, so it can also be undone there
+  await expect(projectPage.testRunFilters.selectedTag("de_DE")).toBeVisible();
+});
+
+test("clears the tag when it is clicked a second time", async ({
+  openProjectPage,
+  page,
+}) => {
+  await mockVariations(page);
+  const projectPage = await openProjectPage(project.id, build.id);
+  await projectPage.testRunList.gridViewToggle.click();
+  await projectPage.testRunList.groupToggle.click();
+  await projectPage.testRunList.clickTag("de_DE");
+  await expect(projectPage.testRunList.cards).toHaveCount(1);
+
+  await projectPage.testRunList.clickTag("de_DE");
+
+  await expect(projectPage.testRunList.cards).toHaveCount(3);
+  await expect(projectPage.testRunFilters.selectedTag("de_DE")).toBeHidden();
+});
+
+test("opens no dialog when a tag is clicked", async ({
+  openProjectPage,
+  page,
+}) => {
+  await mockVariations(page);
+  const projectPage = await openProjectPage(project.id, build.id);
+  await projectPage.testRunList.gridViewToggle.click();
+
+  await projectPage.testRunList.clickTag("OS");
+
+  await expect(page.getByTestId("drawArea")).toBeHidden();
+});

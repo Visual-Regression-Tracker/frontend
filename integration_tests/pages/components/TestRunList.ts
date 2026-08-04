@@ -41,6 +41,14 @@ export class TestRunList extends Table {
     return this.cards.filter({ hasText: name });
   }
 
+  clickTag(tag: string) {
+    return this.page
+      .getByTestId("cardTag")
+      .filter({ hasText: tag })
+      .first()
+      .click();
+  }
+
   checkCard(name: string) {
     return this.getCard(name).getByRole("checkbox").check();
   }

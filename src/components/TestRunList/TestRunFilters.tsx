@@ -60,6 +60,7 @@ const TestRunFilters: React.FunctionComponent<IProps> = ({
             size="small"
             disableCloseOnSelect
             limitTags={3}
+            data-testid="testRunTagFilter"
             options={tagOptions}
             value={tags}
             onChange={(_event, value) => onTagsChange(value)}
