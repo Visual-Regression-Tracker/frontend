@@ -64,6 +64,11 @@ const LONE_SCREEN = {
   diffPercent: 3,
 };
 
+// the data grid colours its own subtree, so the grid's chrome has to be told:
+// left alone it inherits pure black from the body and reads heavier
+const colourOf = (locator) =>
+  locator.evaluate((el: HTMLElement) => getComputedStyle(el).color);
+
 const mockVariations = async (page) => {
   await mockGetTestRuns(page, build.id, [
     VARIATION_EN,
@@ -231,14 +236,14 @@ test("sorts the cards by status or name", async ({ openProjectPage, page }) => {
   await projectPage.testRunList.gridViewToggle.click();
 
   // needs attention first, then by name within a status
-  expect(await projectPage.testRunList.cardNames()).toEqual([
+  await expect(projectPage.testRunList.cardNames).toHaveText([
     "Zebra",
     "Alpha",
     "Mango",
   ]);
 
   await projectPage.testRunList.sortBy("name");
-  expect(await projectPage.testRunList.cardNames()).toEqual([
+  await expect(projectPage.testRunList.cardNames).toHaveText([
     "Alpha",
     "Mango",
     "Zebra",
@@ -255,7 +260,7 @@ test("sorts the cards by tag as the table's column does", async ({
 
   await projectPage.testRunList.sortBy("tags");
 
-  expect(await projectPage.testRunList.cardNames()).toEqual([
+  await expect(projectPage.testRunList.cardNames).toHaveText([
     "Zebra",
     "Mango",
     "Alpha",
@@ -271,7 +276,7 @@ test("flips the direction when the same field is picked again", async ({
   await projectPage.testRunList.gridViewToggle.click();
 
   await projectPage.testRunList.sortBy("name");
-  expect(await projectPage.testRunList.cardNames()).toEqual([
+  await expect(projectPage.testRunList.cardNames).toHaveText([
     "Alpha",
     "Mango",
     "Zebra",
@@ -279,7 +284,7 @@ test("flips the direction when the same field is picked again", async ({
 
   await projectPage.testRunList.sortBy("name");
 
-  expect(await projectPage.testRunList.cardNames()).toEqual([
+  await expect(projectPage.testRunList.cardNames).toHaveText([
     "Zebra",
     "Mango",
     "Alpha",
@@ -348,7 +353,7 @@ test("opens on the status order, like the table", async ({
 
   // the sort is not remembered: the table's resets too, and a remembered card
   // order left the two views opening on different columns
-  expect(await projectPage.testRunList.cardNames()).toEqual([
+  await expect(projectPage.testRunList.cardNames).toHaveText([
     "Zebra",
     "Alpha",
     "Mango",
@@ -697,7 +702,7 @@ test("wraps a long name and its tags rather than cutting them off", async ({
   await expect(projectPage.testRunList.cardTags.first()).toBeVisible();
   const oneLine = 24;
   expect(
-    (await projectPage.testRunList.cardName.first().boundingBox()).height,
+    (await projectPage.testRunList.cardNames.first().boundingBox()).height,
   ).toBeGreaterThan(oneLine);
   expect(
     (await projectPage.testRunList.cardTags.first().boundingBox()).height,
@@ -795,11 +800,6 @@ test("groups runs of one screen whose reviews are half done", async ({
   ).toBeVisible();
 });
 
-// the data grid colours its own subtree, so the grid's chrome has to be told:
-// left alone it inherits pure black from the body and reads heavier
-const colourOf = (locator) =>
-  locator.evaluate((el: HTMLElement) => getComputedStyle(el).color);
-
 test("labels its switches in the table's colour", async ({
   openProjectPage,
   page,
@@ -811,6 +811,7 @@ test("labels its switches in the table's colour", async ({
   const inTable = await colourOf(label);
 
   await projectPage.testRunList.gridViewToggle.click();
+  await expect(projectPage.testRunList.grid).toBeVisible();
 
   expect(await colourOf(label)).toBe(inTable);
 });
@@ -825,6 +826,7 @@ test("labels its header in the table's colour", async ({
   );
 
   await projectPage.testRunList.gridViewToggle.click();
+  await expect(projectPage.testRunList.grid).toBeVisible();
 
   expect(await colourOf(page.getByTestId("gridSort-name"))).toBe(inTable);
 });

@@ -7,7 +7,9 @@ export class TestRunList extends Table {
   grid = this.page.getByTestId("testRunGrid");
   cards = this.page.getByTestId("testRunCard");
   cardTags = this.page.getByTestId("cardTags");
-  cardName = this.page.getByTestId("cardName");
+  // locators, not their text: an assertion on them retries while the list
+  // re-renders, which a one-shot allTextContents() read wrong under load
+  cardNames = this.cards.getByTestId("cardName");
   groupToggle = this.page.getByTestId("groupVariationsToggle");
   diffToggle = this.page.getByTestId("showDiffToggle");
   compactDensity = this.page.getByTestId("compactDensity");
@@ -23,10 +25,6 @@ export class TestRunList extends Table {
   rows = this.page.locator(".MuiDataGrid-row");
   selectAll = this.page.getByTestId("gridSelectAll");
   selectionCount = this.page.getByTestId("gridSelectionCount");
-
-  cardNames() {
-    return this.cards.getByTestId("cardName").allTextContents();
-  }
 
   sortBy(field: "status" | "name" | "tags") {
     return this.page.getByTestId(`gridSort-${field}`).click();
