@@ -630,7 +630,10 @@ const TestRunList: React.FunctionComponent = () => {
               }}
             />
           ) : (
-            // framed like the data grid, so both views read as one widget
+            // framed like the data grid, so both views read as one widget. The
+            // colour too: the data grid sets text.primary on its own subtree,
+            // and without it the toolbar and header inherit the body's pure
+            // black and read heavier than the table's
             <Box
               height="100%"
               display="flex"
@@ -638,6 +641,7 @@ const TestRunList: React.FunctionComponent = () => {
               border={1}
               borderColor="divider"
               borderRadius={1}
+              color="text.primary"
             >
               <Toolbar variant="dense">
                 <TestRunListControls

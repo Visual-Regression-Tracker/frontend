@@ -794,3 +794,37 @@ test("groups runs of one screen whose reviews are half done", async ({
     screenA.locator('[title="1 unresolved · 1 approved"]'),
   ).toBeVisible();
 });
+
+// the data grid colours its own subtree, so the grid's chrome has to be told:
+// left alone it inherits pure black from the body and reads heavier
+const colourOf = (locator) =>
+  locator.evaluate((el: HTMLElement) => getComputedStyle(el).color);
+
+test("labels its switches in the table's colour", async ({
+  openProjectPage,
+  page,
+}) => {
+  const projectPage = await openProjectPage(project.id, build.id);
+  const label = page
+    .locator(".MuiFormControlLabel-root .MuiTypography-root")
+    .first();
+  const inTable = await colourOf(label);
+
+  await projectPage.testRunList.gridViewToggle.click();
+
+  expect(await colourOf(label)).toBe(inTable);
+});
+
+test("labels its header in the table's colour", async ({
+  openProjectPage,
+  page,
+}) => {
+  const projectPage = await openProjectPage(project.id, build.id);
+  const inTable = await colourOf(
+    page.locator(".MuiDataGrid-columnHeaderTitle").first(),
+  );
+
+  await projectPage.testRunList.gridViewToggle.click();
+
+  expect(await colourOf(page.getByTestId("gridSort-name"))).toBe(inTable);
+});
