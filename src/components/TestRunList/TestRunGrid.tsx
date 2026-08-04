@@ -11,7 +11,10 @@ import {
 import TestStatusChip from "../TestStatusChip";
 import noImage from "../../static/no-image.png";
 import { CARD_SIZE_BY_DENSITY, TestRunDensity } from "./TestRunListControls";
-import { TestRunGroup } from "../../_helpers/testRunGroup.helper";
+import {
+  groupStatusSummary,
+  TestRunGroup,
+} from "../../_helpers/testRunGroup.helper";
 import { imageFor } from "../../_helpers/testRunImage.helper";
 import { tagValuesOf } from "../../_helpers/testRunTags.helper";
 import { TestRun } from "../../types";
@@ -159,7 +162,11 @@ export const TestRunGrid: React.FunctionComponent<{
             >
               {representative.name}
             </Typography>
-            <TestStatusChip status={representative.status} />
+            {/* the chip speaks for the representative, so a half-reviewed
+                group has to say so somewhere */}
+            <Box component="span" title={groupStatusSummary(runs) || undefined}>
+              <TestStatusChip status={representative.status} />
+            </Box>
             {/* tags as quiet text, not chips: five chips wrap over three lines
                 on a narrow card and drown out the name and the status. Each is
                 a button that filters the list by it, and buttons rather than

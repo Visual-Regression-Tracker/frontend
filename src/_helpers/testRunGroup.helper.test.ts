@@ -1,6 +1,7 @@
 import { TestRun } from "../types";
 import { TestStatus } from "../types/testStatus";
 import {
+  groupStatusSummary,
   groupTestRuns,
   isSibling,
   resolveGroupByAxis,
@@ -87,7 +88,11 @@ describe("groupTestRuns", () => {
     expect(groups).toHaveLength(3);
   });
 
-  it("keeps statuses apart, so a group needs one decision", () => {
+  // the group is an identity, not a review state: were the status part of it,
+  // approving one locale would drop that run out of its group and reshuffle the
+  // list mid-review, and a freshly added device (all runs new) would never join
+  // the existing ones (all unresolved)
+  it("groups runs whatever their statuses", () => {
     const groups = groupTestRuns(
       [
         run({ id: "todo", customTags: "en_US", status: TestStatus.unresolved }),
@@ -96,7 +101,30 @@ describe("groupTestRuns", () => {
       "customTags",
     );
 
-    expect(groups).toHaveLength(2);
+    expect(groups).toHaveLength(1);
+    expect(groups[0].runs.map((r) => r.id).sort()).toEqual(["done", "todo"]);
+  });
+
+  it("represents a group by the run that needs attention most", () => {
+    const groups = groupTestRuns(
+      [
+        run({
+          id: "settled",
+          customTags: "en_US",
+          diffPercent: 9,
+          status: TestStatus.approved,
+        }),
+        run({
+          id: "todo",
+          customTags: "de_DE",
+          diffPercent: 1,
+          status: TestStatus.unresolved,
+        }),
+      ],
+      "customTags",
+    );
+
+    expect(groups[0].representative.id).toBe("todo");
   });
 
   it("represents a group by its biggest diff", () => {
@@ -163,5 +191,21 @@ describe("isSibling", () => {
     });
 
     expect(isSibling(base, approved, "customTags")).toBe(true);
+  });
+});
+
+describe("groupStatusSummary", () => {
+  it("says nothing when every run of the group agrees", () => {
+    expect(groupStatusSummary([run({ id: "a" }), run({ id: "b" })])).toBe("");
+  });
+
+  it("counts the statuses, the ones needing attention first", () => {
+    expect(
+      groupStatusSummary([
+        run({ id: "a", status: TestStatus.approved }),
+        run({ id: "b", status: TestStatus.unresolved }),
+        run({ id: "c", status: TestStatus.unresolved }),
+      ]),
+    ).toBe("2 unresolved · 1 approved");
   });
 });

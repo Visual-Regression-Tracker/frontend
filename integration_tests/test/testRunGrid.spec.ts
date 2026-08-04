@@ -8,6 +8,7 @@ import {
   TEST_RUN_OK,
   TEST_UNRESOLVED,
 } from "~client/_test/test.data.helper";
+import { TestStatus } from "~client/types/testStatus";
 import {
   API_URL,
   mockGetBuildDetails,
@@ -764,4 +765,24 @@ test("names the axis the runs are grouped by in the tooltip", async ({
   await projectPage.testRunList.groupToggle.hover();
 
   await expect(page.getByRole("tooltip")).toContainText("viewport");
+});
+
+test("groups runs of one screen whose reviews are half done", async ({
+  openProjectPage,
+  page,
+}) => {
+  const settled = { ...VARIATION_EN, status: TestStatus.approved };
+  await mockGetTestRuns(page, build.id, [settled, VARIATION_DE, LONE_SCREEN]);
+  await mockTestRun(page, settled);
+  await mockTestRun(page, VARIATION_DE);
+  const projectPage = await openProjectPage(project.id, build.id);
+  await projectPage.testRunList.gridViewToggle.click();
+
+  const screenA = projectPage.testRunList.getCard("Screen A");
+  await expect(screenA.getByTestId("groupCount")).toHaveText("2");
+  // the unresolved run represents the group, and the card owns up to the mix
+  await expect(screenA.getByText("unresolved")).toBeVisible();
+  await expect(
+    screenA.locator('[title="1 unresolved · 1 approved"]'),
+  ).toBeVisible();
 });

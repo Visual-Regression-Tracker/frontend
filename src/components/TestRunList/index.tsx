@@ -53,6 +53,7 @@ import {
   TEST_RUN_VIEW_KEY,
 } from "../../constants";
 import {
+  groupStatusSummary,
   groupTestRuns,
   resolveGroupByAxis,
   singleRunGroups,
@@ -63,6 +64,7 @@ import { tagsOf } from "../../_helpers/testRunTags.helper";
 const buildColumns = (
   runCountFor: (id: string) => number,
   tagFieldsFor: (runCount: number) => Array<keyof TestRun>,
+  statusSummaryFor: (id: string) => string,
 ): GridColDef[] => [
   {
     field: "id",
@@ -123,8 +125,15 @@ const buildColumns = (
     headerName: "Status",
     flex: 0.3,
     filterable: false,
+    // the chip speaks for the representative, so a half-reviewed group has to
+    // say so somewhere
     renderCell: (params: GridRenderCellParams) => (
-      <TestStatusChip status={params.row["status"]?.toString()} />
+      <Box
+        component="span"
+        title={statusSummaryFor(params.row["id"]) || undefined}
+      >
+        <TestStatusChip status={params.row["status"]?.toString()} />
+      </Box>
     ),
     sortComparator: (v1: TestStatus, v2: TestStatus) => {
       const statusOrder = Object.values(TestStatus);
@@ -362,15 +371,20 @@ const TestRunList: React.FunctionComponent = () => {
 
   // a grouped table shows the representative and stands for the whole group, so
   // both the row's tick and its count have to reach the runs behind it
+  const runsByRepresentative = React.useMemo(
+    () => new Map(groups.map((group) => [group.representative.id, group.runs])),
+    [groups],
+  );
+
   const runIdsByRepresentative = React.useMemo(
     () =>
       new Map(
-        groups.map((group) => [
-          group.representative.id,
-          group.runs.map((run) => run.id),
+        Array.from(runsByRepresentative, ([id, runs]) => [
+          id,
+          runs.map((run) => run.id),
         ]),
       ),
-    [groups],
+    [runsByRepresentative],
   );
 
   // the grouped axis varies inside a group, so it is not a tag of the group.
@@ -388,8 +402,9 @@ const TestRunList: React.FunctionComponent = () => {
       buildColumns(
         (id) => runIdsByRepresentative.get(id)?.length ?? 1,
         tagFieldsFor,
+        (id) => groupStatusSummary(runsByRepresentative.get(id) ?? []),
       ),
-    [runIdsByRepresentative, tagFieldsFor],
+    [runIdsByRepresentative, runsByRepresentative, tagFieldsFor],
   );
 
   const tableRows = React.useMemo(
