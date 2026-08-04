@@ -7,6 +7,7 @@ import {
   TestRunView,
 } from "./TestRunListControls";
 import { TestRun } from "../../types";
+import { GroupByAxis } from "../../_helpers/testRunGroup.helper";
 
 // how the data grid learns the types of the props passed via slotProps.toolbar
 declare module "@mui/x-data-grid" {
@@ -19,7 +20,7 @@ declare module "@mui/x-data-grid" {
     onDensityChange: (density: TestRunDensity) => void;
     grouped: boolean;
     onGroupedChange: (grouped: boolean) => void;
-    groupByAxis: string;
+    groupByAxis: GroupByAxis;
     showDiff: boolean;
     onShowDiffChange: (showDiff: boolean) => void;
   }
@@ -34,7 +35,7 @@ export const DataGridCustomToolbar: React.FunctionComponent<{
   onDensityChange: (density: TestRunDensity) => void;
   grouped: boolean;
   onGroupedChange: (grouped: boolean) => void;
-  groupByAxis: string;
+  groupByAxis: GroupByAxis;
   showDiff: boolean;
   onShowDiffChange: (showDiff: boolean) => void;
 }> = ({

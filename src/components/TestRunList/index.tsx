@@ -53,13 +53,17 @@ import {
   resolveGroupByAxis,
   singleRunGroups,
 } from "../../_helpers/testRunGroup.helper";
+import {
+  byAttention,
+  statusesByAttention,
+  statusRank,
+} from "../../_helpers/testRunStatus.helper";
 import { tagsOf } from "../../_helpers/testRunTags.helper";
 
 // https://mui.com/x/react-data-grid/column-definition/
 const buildColumns = (
-  runCountFor: (id: string) => number,
+  runsFor: (id: string) => TestRun[],
   tagFieldsFor: (runCount: number) => Array<keyof TestRun>,
-  statusSummaryFor: (id: string) => string,
 ): GridColDef[] => [
   {
     field: "id",
@@ -71,7 +75,7 @@ const buildColumns = (
     flex: 1,
     filterable: false,
     renderCell: (params: GridRenderCellParams) => {
-      const count = runCountFor(params.row["id"]);
+      const count = runsFor(params.row["id"]).length;
 
       return (
         <Box display="flex" alignItems="center" gap={0.5} minWidth={0}>
@@ -91,7 +95,7 @@ const buildColumns = (
     flex: 1,
     filterable: false,
     valueGetter: (params: GridValueGetterParams) =>
-      tagFieldsFor(runCountFor(params.row["id"]))
+      tagFieldsFor(runsFor(params.row["id"]).length)
         .map((field) => params.row[field])
         .reduce((prev, curr) => prev.concat(curr ? `${curr};` : ""), ""),
     renderCell: (params: GridCellParams) => (
@@ -125,15 +129,13 @@ const buildColumns = (
     renderCell: (params: GridRenderCellParams) => (
       <Box
         component="span"
-        title={statusSummaryFor(params.row["id"]) || undefined}
+        title={groupStatusSummary(runsFor(params.row["id"])) || undefined}
       >
         <TestStatusChip status={params.row["status"]?.toString()} />
       </Box>
     ),
-    sortComparator: (v1: TestStatus, v2: TestStatus) => {
-      const statusOrder = Object.values(TestStatus);
-      return statusOrder.indexOf(v2) - statusOrder.indexOf(v1);
-    },
+    sortComparator: (v1: TestStatus, v2: TestStatus) =>
+      statusRank(v2) - statusRank(v1),
   },
 ];
 
@@ -145,21 +147,13 @@ const TAG_FIELDS: Array<keyof TestRun> = [
   "customTags",
 ];
 
-const STATUS_ORDER = Object.values(TestStatus);
-
 const PAGE_SIZE_OPTIONS = [10, 30, 100];
 
 const byName = (a: TestRun, b: TestRun): number => a.name.localeCompare(b.name);
 
-const statusRank = (run: TestRun): number => STATUS_ORDER.indexOf(run.status);
-
 // the table's own status comparator: ascending runs from ok to new, so that
 // descending means needs-attention-first in both views and the arrows agree
-const byStatus = (a: TestRun, b: TestRun): number =>
-  statusRank(b) - statusRank(a);
-
-const needsAttentionFirst = (a: TestRun, b: TestRun): number =>
-  statusRank(a) - statusRank(b);
+const bySettled = (a: TestRun, b: TestRun): number => -byAttention(a, b);
 
 // the direction applies to the chosen field only: negating the whole comparator
 // would reverse the tie-break too, so a descending status listed names Z to A
@@ -168,13 +162,12 @@ const comparatorFor =
   (a: TestRun, b: TestRun): number => {
     const ascending =
       sort.field === "status"
-        ? byStatus(a, b)
+        ? bySettled(a, b)
         : sort.field === "name"
         ? byName(a, b)
         : tagsOf(a, tagFields).localeCompare(tagsOf(b, tagFields));
     const primary = sort.direction === "asc" ? ascending : -ascending;
-    const tieBreak =
-      sort.field === "name" ? needsAttentionFirst(a, b) : byName(a, b);
+    const tieBreak = sort.field === "name" ? byAttention(a, b) : byName(a, b);
 
     return primary || tieBreak;
   };
@@ -351,14 +344,8 @@ const TestRunList: React.FunctionComponent = () => {
     [groups],
   );
 
-  const runIdsByRepresentative = React.useMemo(
-    () =>
-      new Map(
-        Array.from(runsByRepresentative, ([id, runs]) => [
-          id,
-          runs.map((run) => run.id),
-        ]),
-      ),
+  const runsFor = React.useCallback(
+    (id: string): TestRun[] => runsByRepresentative.get(id) ?? [],
     [runsByRepresentative],
   );
 
@@ -373,13 +360,8 @@ const TestRunList: React.FunctionComponent = () => {
   );
 
   const columns = React.useMemo(
-    () =>
-      buildColumns(
-        (id) => runIdsByRepresentative.get(id)?.length ?? 1,
-        tagFieldsFor,
-        (id) => groupStatusSummary(runsByRepresentative.get(id) ?? []),
-      ),
-    [runIdsByRepresentative, runsByRepresentative, tagFieldsFor],
+    () => buildColumns(runsFor, tagFieldsFor),
+    [runsFor, tagFieldsFor],
   );
 
   const tableRows = React.useMemo(
@@ -441,9 +423,7 @@ const TestRunList: React.FunctionComponent = () => {
         present.add(run.status);
       }
     });
-    return Array.from(present).sort(
-      (a, b) => STATUS_ORDER.indexOf(a) - STATUS_ORDER.indexOf(b),
-    );
+    return statusesByAttention(Array.from(present));
   }, [testRuns, query, tagGroups, statusFilter]);
 
   const tagOptions = React.useMemo(() => {
@@ -608,8 +588,8 @@ const TestRunList: React.FunctionComponent = () => {
               onRowSelectionModelChange={(model) =>
                 setSelectedIds(
                   groupVariations
-                    ? model.flatMap(
-                        (id) => runIdsByRepresentative.get(String(id)) ?? [],
+                    ? model.flatMap((id) =>
+                        runsFor(String(id)).map((run) => run.id),
                       )
                     : model.map(String),
                 )

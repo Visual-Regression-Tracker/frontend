@@ -34,6 +34,19 @@ const clampToLines = (lines: number) => ({
 
 const CAPTION_LINE_HEIGHT = 1.66;
 
+// a button that reads as the caption text around it: inline so the row still
+// wraps, and with the caption's letter-spacing, which a button resets to normal
+const TAG_BUTTON = {
+  display: "inline",
+  font: "inherit",
+  letterSpacing: "inherit",
+  background: "none",
+  border: 0,
+  padding: 0,
+  cursor: "pointer",
+  "&:hover": { textDecoration: "underline" },
+};
+
 /**
  * The same two-line box for a row that holds elements rather than plain text:
  * `-webkit-box` blockifies its children, which would stop the tags from
@@ -168,10 +181,9 @@ export const TestRunGrid: React.FunctionComponent<{
               <TestStatusChip status={representative.status} />
             </Box>
             {/* tags as quiet text, not chips: five chips wrap over three lines
-                on a narrow card and drown out the name and the status. Each is
-                a button that filters the list by it, and buttons rather than
-                spans so the keyboard reaches them; inline, so the row still
-                wraps and clamps as plain text. */}
+                on a narrow card and drown out the name and the status. Each one
+                filters the list by itself, as a button rather than a span so
+                the keyboard reaches it. */}
             <Typography
               variant="caption"
               color="text.secondary"
@@ -180,35 +192,28 @@ export const TestRunGrid: React.FunctionComponent<{
               title={tags.join(" · ")}
               data-testid="cardTags"
             >
-              {tags.map((tag, index) => (
-                <React.Fragment key={`${index}-${tag}`}>
-                  {index > 0 && " · "}
-                  <Box
-                    component="button"
-                    type="button"
-                    onClick={() => onToggleTag(tag)}
-                    data-testid="cardTag"
-                    sx={{
-                      display: "inline",
-                      font: "inherit",
-                      // a button's own letter-spacing is normal, which would
-                      // set the tags a shade tighter than the caption text
-                      letterSpacing: "inherit",
-                      background: "none",
-                      border: 0,
-                      padding: 0,
-                      cursor: "pointer",
-                      color: activeTags.includes(tag)
-                        ? "primary.main"
-                        : "inherit",
-                      fontWeight: activeTags.includes(tag) ? 600 : undefined,
-                      "&:hover": { textDecoration: "underline" },
-                    }}
-                  >
-                    {tag}
-                  </Box>
-                </React.Fragment>
-              ))}
+              {tags.map((tag, index) => {
+                const filteringBy = activeTags.includes(tag);
+
+                return (
+                  <React.Fragment key={`${index}-${tag}`}>
+                    {index > 0 && " · "}
+                    <Box
+                      component="button"
+                      type="button"
+                      onClick={() => onToggleTag(tag)}
+                      data-testid="cardTag"
+                      sx={{
+                        ...TAG_BUTTON,
+                        color: filteringBy ? "primary.main" : "inherit",
+                        fontWeight: filteringBy ? 600 : undefined,
+                      }}
+                    >
+                      {tag}
+                    </Box>
+                  </React.Fragment>
+                );
+              })}
             </Typography>
           </CardContent>
         </Card>

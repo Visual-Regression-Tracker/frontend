@@ -18,6 +18,7 @@ import {
   ViewModule,
 } from "@mui/icons-material";
 import { Tooltip } from "../Tooltip";
+import { GroupByAxis } from "../../_helpers/testRunGroup.helper";
 
 export type TestRunView = "table" | "grid";
 
@@ -78,7 +79,7 @@ export const TestRunListControls: React.FunctionComponent<{
   onDensityChange: (density: TestRunDensity) => void;
   grouped: boolean;
   onGroupedChange: (grouped: boolean) => void;
-  groupByAxis: string;
+  groupByAxis: GroupByAxis;
   showDiff: boolean;
   onShowDiffChange: (showDiff: boolean) => void;
 }> = ({
@@ -147,8 +148,8 @@ export const TestRunListControls: React.FunctionComponent<{
       />
     </ToggleButtonGroup>
     {groupDivider}
-    {/* what the runs show; switches rather than icons, so "on" is unmistakable */}
-    {/* the axis is named in the tooltip, not chosen here: it is a project
+    {/* what the runs show; switches rather than icons, so "on" is unmistakable.
+        The axis is named in the tooltip and not chosen here: it is a project
         setting shared by everyone, and the details dialog groups by the same
         one, so a selector in the toolbar would let the two drift apart */}
     <Tooltip

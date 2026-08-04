@@ -1,5 +1,5 @@
-import { TestRun } from "../types";
 import { TestStatus } from "../types/testStatus";
+import { run } from "./testRun.fixture";
 import {
   groupStatusSummary,
   groupTestRuns,
@@ -7,36 +7,6 @@ import {
   resolveGroupByAxis,
   singleRunGroups,
 } from "./testRunGroup.helper";
-
-// built here rather than taken from test.data.helper: that module does not
-// type check, and spelling the axes out keeps the grouping inputs obvious
-const BASE: TestRun = {
-  id: "run",
-  buildId: "build",
-  imageName: "image.png",
-  diffName: "diff.png",
-  diffPercent: 1,
-  diffTollerancePercent: 0,
-  status: TestStatus.unresolved,
-  testVariationId: "variation",
-  name: "Screen A",
-  baselineName: "baseline.png",
-  os: "iOS",
-  browser: "safari",
-  viewport: "375x812",
-  device: "iPhone",
-  customTags: "en_US",
-  ignoreAreas: "[]",
-  tempIgnoreAreas: "[]",
-  branchName: "main",
-  baselineBranchName: "main",
-  merge: false,
-};
-
-const run = (overrides: Partial<TestRun>): TestRun => ({
-  ...BASE,
-  ...overrides,
-});
 
 describe("resolveGroupByAxis", () => {
   it("falls back to customTags", () => {

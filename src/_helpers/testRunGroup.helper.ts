@@ -1,4 +1,5 @@
 import { TestRun, TestStatus } from "../types";
+import { byAttention, statusesByAttention } from "./testRunStatus.helper";
 
 // Test-variation axes, mirroring the backend. A sibling shares the screen name
 // and every axis except the one the project groups by (bulkApproveGroupBy).
@@ -52,12 +53,6 @@ const groupKey = (run: TestRun, groupBy: GroupByAxis): string =>
     ...fixedAxes(groupBy).map((axis) => run[axis] ?? ""),
   ]);
 
-const STATUS_ORDER = Object.values(TestStatus);
-
-// the enum runs from new to ok, so a lower index is the more pressing status
-const byAttention = (a: TestRun, b: TestRun): number =>
-  STATUS_ORDER.indexOf(a.status) - STATUS_ORDER.indexOf(b.status);
-
 const byDiffDesc = (a: TestRun, b: TestRun): number =>
   (b.diffPercent ?? 0) - (a.diffPercent ?? 0);
 
@@ -76,7 +71,7 @@ export const groupStatusSummary = (runs: TestRun[]): string => {
     return "";
   }
 
-  return STATUS_ORDER.filter((status) => counts.has(status))
+  return statusesByAttention(Array.from(counts.keys()))
     .map((status) => `${counts.get(status)} ${status}`)
     .join(" · ");
 };
