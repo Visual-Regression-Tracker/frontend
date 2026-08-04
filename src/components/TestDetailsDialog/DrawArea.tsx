@@ -47,6 +47,10 @@ type StageStateArray = [
 interface IDrawArea {
   imageName: string | undefined;
   imageState: [undefined | HTMLImageElement, ImageStateLoad];
+  /** Drawn under the image, to compare the two in place rather than side by side. */
+  underlayImage?: HTMLImageElement;
+  overlayOpacity?: number;
+  blendDifference?: boolean;
   tempIgnoreAreas: IgnoreArea[];
   ignoreAreas: IgnoreArea[];
   setIgnoreAreas: (ignoreAreas: IgnoreArea[]) => void;
@@ -65,6 +69,9 @@ interface IDrawArea {
 export const DrawArea: FunctionComponent<IDrawArea> = ({
   imageName,
   imageState,
+  underlayImage,
+  overlayOpacity,
+  blendDifference,
   ignoreAreas,
   tempIgnoreAreas,
   setIgnoreAreas,
@@ -339,8 +346,8 @@ export const DrawArea: FunctionComponent<IDrawArea> = ({
         >
           <Stage
             ref={stageRef}
-            width={image?.width}
-            height={image?.height}
+            width={Math.max(image?.width ?? 0, underlayImage?.width ?? 0)}
+            height={Math.max(image?.height ?? 0, underlayImage?.height ?? 0)}
             onMouseDown={onStageClick}
             style={{
               transform: `scale(${stageScale})`,
@@ -351,8 +358,23 @@ export const DrawArea: FunctionComponent<IDrawArea> = ({
             onContentMouseMove={handleContentMouseMove}
           >
             <Layer>
+              {underlayImage && <Image image={underlayImage} />}
               <Image
                 image={image}
+                // named so the overlay's own state is reachable from a test
+                name={underlayImage ? "overlaid" : undefined}
+                // a half-faded difference washes out instead of blacking out
+                // what matches, so the blend ignores the fade
+                opacity={
+                  underlayImage
+                    ? blendDifference
+                      ? 1
+                      : overlayOpacity
+                    : undefined
+                }
+                globalCompositeOperation={
+                  blendDifference ? "difference" : undefined
+                }
                 onMouseOver={() => {
                   document.body.style.cursor = isDrawMode
                     ? "crosshair"

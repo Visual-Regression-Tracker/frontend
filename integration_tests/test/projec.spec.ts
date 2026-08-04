@@ -1,4 +1,12 @@
 import { expect } from "@playwright/test";
+
+// only what the tests read off the Konva node under the canvas
+type KonvaStage = {
+  findOne: (selector: string) => {
+    opacity: () => number;
+    globalCompositeOperation: () => string;
+  };
+};
 import { test } from "fixtures";
 import {
   TEST_BUILD_FAILED,
@@ -36,7 +44,11 @@ test.beforeEach(async ({ page }) => {
     TEST_RUN_NEW,
     TEST_RUN_OK,
   ]);
+  // every run's details, so a test can walk to the next screenshot
   await mockTestRun(page, TEST_UNRESOLVED);
+  await mockTestRun(page, TEST_RUN_APPROVED);
+  await mockTestRun(page, TEST_RUN_NEW);
+  await mockTestRun(page, TEST_RUN_OK);
   await mockImage(page, "baseline.png");
   await mockImage(page, "diff.png");
   await mockImage(page, "image.png");
@@ -335,4 +347,205 @@ test("lines the Project label up with the select under it", async ({
   const select = await page.locator("#project-select").boundingBox();
 
   expect(label.x).toBe(select.x);
+});
+
+const openDialogWithoutDiff = async (openProjectPage, page) => {
+  const noDiff = { ...TEST_UNRESOLVED, diffName: null };
+  await mockGetTestRuns(page, TEST_BUILD_FAILED.id, [noDiff]);
+  await mockTestRun(page, noDiff);
+  const projectPage = await openProjectPage(project.id, TEST_BUILD_FAILED.id);
+  await projectPage.testRunList.getRow(noDiff.id).click();
+  await expect(page.getByTestId("drawArea")).toHaveCount(2);
+
+  return projectPage;
+};
+
+const openDialog = async (openProjectPage, page) => {
+  const projectPage = await openProjectPage(project.id, TEST_BUILD_FAILED.id);
+  await projectPage.testRunList.getRow(TEST_UNRESOLVED.id).click();
+  // both panes, or a count asserted a moment later proves nothing
+  await expect(page.getByTestId("drawArea")).toHaveCount(2);
+
+  return projectPage;
+};
+
+// the fade lives on the image pane, so both panes stay and the baseline shows
+// through the image rather than replacing it
+const overlaidOpacity = (page) =>
+  page
+    .getByTestId("drawArea")
+    .first()
+    .evaluate(() => {
+      const { Konva } = window as unknown as {
+        Konva: { stages: KonvaStage[] };
+      };
+
+      return Konva.stages
+        .map((stage) => stage.findOne(".overlaid"))
+        .find(Boolean)
+        .opacity();
+    });
+
+const diffSwitch = (page) =>
+  page.getByRole("checkbox", { name: "Toggle diff" });
+
+test("keeps both panes and fades the image over the baseline", async ({
+  openProjectPage,
+  page,
+}) => {
+  await openDialog(openProjectPage, page);
+  await expect(page.getByTestId("overlayOpacity")).toBeVisible();
+
+  await page.getByTestId("overlayOpacity").getByRole("slider").press("Home");
+
+  await expect(page.getByTestId("drawArea")).toHaveCount(2);
+  expect(await overlaidOpacity(page)).toBe(0);
+});
+
+// the dialog opens on the server's diff whenever there is one, so a fade that
+// only worked in the image view would look broken on arrival
+test("takes the pane off the diff when the fade is touched", async ({
+  openProjectPage,
+  page,
+}) => {
+  await openDialog(openProjectPage, page);
+  await expect(diffSwitch(page)).toBeChecked();
+
+  await page.getByTestId("overlayOpacity").getByRole("slider").press("Home");
+
+  await expect(diffSwitch(page)).not.toBeChecked();
+});
+
+test("takes the pane off the diff when the blend is turned on", async ({
+  openProjectPage,
+  page,
+}) => {
+  await openDialog(openProjectPage, page);
+
+  await page.getByTestId("differenceToggle").click();
+
+  await expect(diffSwitch(page)).not.toBeChecked();
+});
+
+test("blends the two as a difference, diff image or not", async ({
+  openProjectPage,
+  page,
+}) => {
+  await openDialogWithoutDiff(openProjectPage, page);
+
+  await page.getByTestId("differenceToggle").click();
+
+  expect(
+    await page
+      .getByTestId("drawArea")
+      .first()
+      .evaluate(() => {
+        const { Konva } = window as unknown as {
+          Konva: { stages: KonvaStage[] };
+        };
+
+        return Konva.stages
+          .map((stage) => stage.findOne(".overlaid"))
+          .find(Boolean)
+          .globalCompositeOperation();
+      }),
+  ).toBe("difference");
+});
+
+test("blends at full strength, whatever the fade says", async ({
+  openProjectPage,
+  page,
+}) => {
+  await openDialogWithoutDiff(openProjectPage, page);
+  await page.getByTestId("overlayOpacity").getByRole("slider").press("Home");
+
+  await page.getByTestId("differenceToggle").click();
+
+  // faded, a difference blend washes out instead of blacking out what matches,
+  // so the fade has no meaning here
+  expect(await overlaidOpacity(page)).toBe(1);
+  await expect(
+    page.getByTestId("overlayOpacity").getByRole("slider"),
+  ).toBeDisabled();
+});
+
+// the fade belongs to the run being looked at, like the diff switch beside it:
+// carrying a half-faded image onto the next screenshot would hide its own diff
+test("forgets the fade on the next screenshot", async ({
+  openProjectPage,
+  page,
+}) => {
+  await openDialog(openProjectPage, page);
+  await page.getByTestId("overlayOpacity").getByRole("slider").press("Home");
+  expect(await overlaidOpacity(page)).toBe(0);
+
+  // the slider keeps the focus and would take the arrow itself, as the diff
+  // switch does; a reviewer clicks away or uses the arrow button
+  await page.evaluate(() => (document.activeElement as HTMLElement)?.blur());
+  await page.keyboard.press("ArrowRight");
+
+  // back on the diff, and the fade back to opaque, so the next screenshot is
+  // shown as it arrived
+  await expect(diffSwitch(page)).toBeChecked();
+  await expect(
+    page.getByTestId("overlayOpacity").getByRole("slider"),
+  ).toHaveAttribute("aria-valuenow", "1");
+});
+
+test("forgets the blend on the next screenshot", async ({
+  openProjectPage,
+  page,
+}) => {
+  await openDialog(openProjectPage, page);
+  await page.getByTestId("differenceToggle").click();
+  await expect(page.getByTestId("differenceToggle")).toHaveAttribute(
+    "aria-pressed",
+    "true",
+  );
+
+  await page.evaluate(() => (document.activeElement as HTMLElement)?.blur());
+  await page.keyboard.press("ArrowRight");
+
+  await expect(page.getByTestId("differenceToggle")).toHaveAttribute(
+    "aria-pressed",
+    "false",
+  );
+});
+
+test("keeps the fade reachable in a narrow window", async ({
+  openProjectPage,
+  page,
+}) => {
+  await page.setViewportSize({ width: 1000, height: 700 });
+  await openDialog(openProjectPage, page);
+
+  await expect(
+    page.getByTestId("overlayOpacity").getByRole("slider"),
+  ).toBeVisible();
+
+  await page.getByTestId("overlayOpacity").getByRole("slider").press("Home");
+
+  expect(await overlaidOpacity(page)).toBe(0);
+});
+
+test("renders the fade", async ({ openProjectPage, page }) => {
+  await openDialog(openProjectPage, page);
+
+  await page.getByTestId("overlayOpacity").getByRole("slider").press("End");
+  for (let i = 0; i < 10; i++) {
+    await page
+      .getByTestId("overlayOpacity")
+      .getByRole("slider")
+      .press("ArrowLeft");
+  }
+
+  await expect(page).toHaveScreenshot("project-page-test-run-overlay.png");
+});
+
+test("renders the difference blend", async ({ openProjectPage, page }) => {
+  await openDialogWithoutDiff(openProjectPage, page);
+
+  await page.getByTestId("differenceToggle").click();
+
+  await expect(page).toHaveScreenshot("project-page-test-run-difference.png");
 });

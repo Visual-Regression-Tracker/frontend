@@ -15,6 +15,8 @@ import {
   Checkbox,
   ToggleButton,
   SelectChangeEvent,
+  Slider,
+  Tooltip as MuiTooltip,
 } from "@mui/material";
 import { useHotkeys } from "react-hotkeys-hook";
 import { TestRun } from "../../types";
@@ -29,6 +31,7 @@ import {
   Save,
   WarningRounded,
   LayersClear,
+  Compare,
   Collections,
   OpenInNew,
   ZoomIn,
@@ -153,6 +156,8 @@ const TestDetailsModal: React.FunctionComponent<TestDetailsModalProps> = ({
     useState("Ignore Areas");
 
   const [isDiffShown, setIsDiffShown] = useState(false);
+  const [overlayOpacity, setOverlayOpacity] = useState(1);
+  const [blendDifference, setBlendDifference] = useState(false);
   const [selectedRectId, setSelectedRectId] = React.useState<string>();
   const [ignoreAreas, setIgnoreAreas] = React.useState<IgnoreArea[]>([]);
 
@@ -228,9 +233,13 @@ const TestDetailsModal: React.FunctionComponent<TestDetailsModalProps> = ({
     resetPosition();
   };
 
+  // the fade and the blend belong to the run being looked at, like the diff
+  // does: a half-faded image carried onto the next screenshot would hide it
   useEffect(() => {
     setIsDiffShown(!!testRun.diffName);
-  }, [testRun.diffName]);
+    setOverlayOpacity(1);
+    setBlendDifference(false);
+  }, [testRun.id, testRun.diffName]);
 
   useEffect(() => {
     setIgnoreAreas(JSON.parse(testRun.ignoreAreas));
@@ -403,6 +412,13 @@ const TestDetailsModal: React.FunctionComponent<TestDetailsModalProps> = ({
             variant="standard"
             id="area-select"
             labelId="areaSelect"
+            // a standard select underlines itself, which reads as a text field
+            // among the buttons it now sits with
+            sx={{
+              "&:before, &:after, &:hover:not(.Mui-disabled):before": {
+                borderBottom: "none",
+              },
+            }}
             value={valueOfIgnoreOrCompare}
             onChange={(event: SelectChangeEvent<HTMLInputElement>) =>
               onIgnoreOrCompareSelectChange(event.target.value as string)
@@ -555,26 +571,74 @@ const TestDetailsModal: React.FunctionComponent<TestDetailsModalProps> = ({
           ignoreAreas={JSON.parse(testRun.tempIgnoreAreas)}
         />
         {testRun.diffName && (
-          <Grid
-            item
-            style={{
-              padding: 0,
-            }}
-          >
+          <Grid item>
             <Tooltip title={"Toggle diff. Hotkey: D"}>
               <Switch
                 checked={isDiffShown}
                 onChange={() => setIsDiffShown(!isDiffShown)}
                 name="Toggle diff"
+                inputProps={{ "aria-label": "Toggle diff" }}
               />
             </Tooltip>
           </Grid>
         )}
-        <Grid item>{ignoreAreasToolbar()}</Grid>
+        {/* one flexible item holding both: a plain flex row, not a nested Grid,
+            whose spacing would lift the controls off the row's line. The item
+            grows so the row can shrink on a narrow window, and the pair sits at
+            its start rather than being pushed to the pane's edge */}
+        <Grid item xs minWidth={0}>
+          <Box display="flex" alignItems="center" gap={1}>
+            <MuiTooltip title="Fade the checkpoint out to see the baseline through it">
+              <Box display="flex" alignItems="center" gap={1} minWidth={0}>
+                <Typography variant="caption" color="textSecondary" noWrap>
+                  Fade
+                </Typography>
+                <Box
+                  width={180}
+                  maxWidth="100%"
+                  display="flex"
+                  data-testid="overlayOpacity"
+                >
+                  <Slider
+                    size="small"
+                    disabled={blendDifference}
+                    min={0}
+                    max={1}
+                    step={0.05}
+                    value={overlayOpacity}
+                    onChange={(event, value) => {
+                      setOverlayOpacity(value as number);
+                      setIsDiffShown(false);
+                    }}
+                    aria-label="Fade to the baseline"
+                  />
+                </Box>
+              </Box>
+            </MuiTooltip>
+            <MuiTooltip title="Blend the two as a difference: what matches goes black, and a shift shows as an offset ghost">
+              <ToggleButton
+                value="blend"
+                size="small"
+                selected={blendDifference}
+                onChange={() => {
+                  setBlendDifference((blend) => !blend);
+                  setIsDiffShown(false);
+                }}
+                data-testid="differenceToggle"
+                style={{ padding: 4, marginLeft: 8 }}
+              >
+                <Compare fontSize="small" />
+              </ToggleButton>
+            </MuiTooltip>
+          </Box>
+        </Grid>
       </Grid>
       <DrawArea
         imageName={imageName}
         imageState={[image, imageStatus]}
+        underlayImage={isDiffShown ? undefined : baselineImage}
+        overlayOpacity={overlayOpacity}
+        blendDifference={blendDifference && !isDiffShown}
         ignoreAreas={ignoreAreas}
         tempIgnoreAreas={JSON.parse(testRun.tempIgnoreAreas)}
         setIgnoreAreas={handleIgnoreAreaChange}
@@ -646,6 +710,9 @@ const TestDetailsModal: React.FunctionComponent<TestDetailsModalProps> = ({
             </Tooltip>
           </Grid>
         )}
+        <Grid item style={{ marginLeft: "auto" }}>
+          {ignoreAreasToolbar()}
+        </Grid>
         <Grid item>
           <CommentsPopper
             text={testRun.comment}
