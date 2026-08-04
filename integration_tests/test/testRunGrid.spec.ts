@@ -82,6 +82,7 @@ test("collapses the variations of one screen into a single card", async ({
   await mockVariations(page);
   const projectPage = await openProjectPage(project.id, build.id);
   await projectPage.testRunList.gridViewToggle.click();
+  await projectPage.testRunList.groupToggle.click();
 
   await expect(projectPage.testRunList.cards).toHaveCount(2);
   // the biggest diff represents the group
@@ -93,19 +94,22 @@ test("collapses the variations of one screen into a single card", async ({
   ).toBeHidden();
 });
 
-test("flattens the cards when grouping is switched off", async ({
+test("groups on request and forgets it after a reload", async ({
   openProjectPage,
   page,
 }) => {
   await mockVariations(page);
   const projectPage = await openProjectPage(project.id, build.id);
   await projectPage.testRunList.gridViewToggle.click();
-  await expect(projectPage.testRunList.cards).toHaveCount(2);
-
-  await projectPage.testRunList.groupToggle.click();
+  // flat on arrival: grouping is off by default
   await expect(projectPage.testRunList.cards).toHaveCount(3);
 
+  await projectPage.testRunList.groupToggle.click();
+  await expect(projectPage.testRunList.cards).toHaveCount(2);
+
   await page.reload();
+  // the reload lands on the table, so the grid has to be asked for again
+  await projectPage.testRunList.gridViewToggle.click();
 
   await expect(projectPage.testRunList.cards).toHaveCount(3);
 });
@@ -125,6 +129,7 @@ test("selects every run in a group from its card", async ({
   await mockVariations(page);
   const projectPage = await openProjectPage(project.id, build.id);
   await projectPage.testRunList.gridViewToggle.click();
+  await projectPage.testRunList.groupToggle.click();
 
   await projectPage.testRunList.checkCard("Screen A");
   await projectPage.testRunList.approveBtn.click();
@@ -147,6 +152,7 @@ test("walks the runs inside a group with the arrows", async ({
   await mockVariations(page);
   const projectPage = await openProjectPage(project.id, build.id);
   await projectPage.testRunList.gridViewToggle.click();
+  await projectPage.testRunList.groupToggle.click();
 
   await projectPage.testRunList.getCard("Screen A").click();
   await expect(page).toHaveURL(new RegExp(`testId=${VARIATION_DE.id}$`));
@@ -174,7 +180,6 @@ test("pages through the cards", async ({ openProjectPage, page }) => {
   await mockGetTestRuns(page, build.id, MANY_RUNS);
   const projectPage = await openProjectPage(project.id, build.id);
   await projectPage.testRunList.gridViewToggle.click();
-  await projectPage.testRunList.groupToggle.click();
 
   await expect(projectPage.testRunList.cards).toHaveCount(10);
 
@@ -190,7 +195,6 @@ test("shows more cards per page on request", async ({
   await mockGetTestRuns(page, build.id, MANY_RUNS);
   const projectPage = await openProjectPage(project.id, build.id);
   await projectPage.testRunList.gridViewToggle.click();
-  await projectPage.testRunList.groupToggle.click();
   await expect(projectPage.testRunList.cards).toHaveCount(10);
 
   await projectPage.testRunList.setPageSize(30);
@@ -205,7 +209,6 @@ test("does not leave the grid on a page that no longer exists", async ({
   await mockGetTestRuns(page, build.id, MANY_RUNS);
   const projectPage = await openProjectPage(project.id, build.id);
   await projectPage.testRunList.gridViewToggle.click();
-  await projectPage.testRunList.groupToggle.click();
   await projectPage.testRunList.nextPage.click();
   await expect(projectPage.testRunList.cards).toHaveCount(2);
 
@@ -298,7 +301,6 @@ test("selects every filtered run from the header, across pages", async ({
   await mockGetTestRuns(page, build.id, MANY_RUNS);
   const projectPage = await openProjectPage(project.id, build.id);
   await projectPage.testRunList.gridViewToggle.click();
-  await projectPage.testRunList.groupToggle.click();
   // ten of the twelve cards fit on the page
   await expect(projectPage.testRunList.cards).toHaveCount(10);
 
@@ -342,6 +344,7 @@ test("opens on the status order, like the table", async ({
   await projectPage.testRunList.sortBy("name");
 
   await page.reload();
+  await projectPage.testRunList.gridViewToggle.click();
 
   // the sort is not remembered: the table's resets too, and a remembered card
   // order left the two views opening on different columns
@@ -360,7 +363,7 @@ test("renders", async ({ openProjectPage, page }) => {
   await expect(page).toHaveScreenshot("test-run-grid.png");
 });
 
-test("switches to the grid and keeps the choice after a reload", async ({
+test("switches to the grid and comes back to the table after a reload", async ({
   openProjectPage,
   page,
 }) => {
@@ -371,7 +374,8 @@ test("switches to the grid and keeps the choice after a reload", async ({
 
   await page.reload();
 
-  await expect(projectPage.testRunList.grid).toBeVisible();
+  await expect(projectPage.testRunList.grid).toBeHidden();
+  await expect(projectPage.testRunList.rows.first()).toBeVisible();
 });
 
 test("shows a card per test run and narrows with the filters", async ({
@@ -414,7 +418,7 @@ test("resizes the grid cards with the density control", async ({
   expect((await card.boundingBox()).width).toBeGreaterThan(standard);
 });
 
-test("keeps the chosen density after a reload", async ({
+test("comes back to the standard density after a reload", async ({
   openProjectPage,
   page,
 }) => {
@@ -424,7 +428,7 @@ test("keeps the chosen density after a reload", async ({
 
   await page.reload();
 
-  await expect(projectPage.testRunList.compactDensity).toHaveAttribute(
+  await expect(projectPage.testRunList.standardDensity).toHaveAttribute(
     "aria-pressed",
     "true",
   );
@@ -476,10 +480,9 @@ test("navigates the dialog in the grid's order", async ({
   page,
 }) => {
   const projectPage = await openProjectPage(project.id, build.id);
+  // the data grid mounts first, since the view is not remembered, so the grid
+  // has to replace the order it published
   await projectPage.testRunList.gridViewToggle.click();
-  // reload with the grid already chosen, so the data grid never mounts and
-  // cannot publish an order of its own
-  await page.reload();
   await expect(projectPage.testRunList.grid).toBeVisible();
 
   // the grid sorts by status, so unresolved follows new. The runs arrive from
@@ -512,6 +515,7 @@ test("collapses the variations into one table row too", async ({
 }) => {
   await mockVariations(page);
   const projectPage = await openProjectPage(project.id, build.id);
+  await projectPage.testRunList.groupToggle.click();
 
   // grouped: the representative stands for both locales and carries the count
   await expect(projectPage.testRunList.rows).toHaveCount(2);
@@ -545,6 +549,7 @@ test("selects a whole group from a table row", async ({
   );
   await mockVariations(page);
   const projectPage = await openProjectPage(project.id, build.id);
+  await projectPage.testRunList.groupToggle.click();
 
   await projectPage.testRunList.checkRow(VARIATION_DE.id);
   await projectPage.testRunList.approveBtn.click();
@@ -564,6 +569,7 @@ test("reaches a group's other runs from a table row", async ({
 }) => {
   await mockVariations(page);
   const projectPage = await openProjectPage(project.id, build.id);
+  await projectPage.testRunList.groupToggle.click();
 
   await projectPage.testRunList.getRow(VARIATION_DE.id).click();
   await expect(page).toHaveURL(new RegExp(`testId=${VARIATION_DE.id}$`));
@@ -579,6 +585,7 @@ test("keeps every tag on a row that stands for one run", async ({
 }) => {
   await mockVariations(page);
   const projectPage = await openProjectPage(project.id, build.id);
+  await projectPage.testRunList.groupToggle.click();
 
   // Screen B has no variations, so hiding its locale would lose information
   await expect(
@@ -612,6 +619,7 @@ test("shows the tags on the cards", async ({ openProjectPage, page }) => {
   await mockVariations(page);
   const projectPage = await openProjectPage(project.id, build.id);
   await projectPage.testRunList.gridViewToggle.click();
+  await projectPage.testRunList.groupToggle.click();
 
   // the lone screen keeps its locale, the group hides the axis it varies on
   await expect(projectPage.testRunList.getCard("Screen B")).toContainText(
@@ -653,6 +661,7 @@ test("counts cards, not the runs behind them, when grouped", async ({
   await mockGetTestRuns(page, build.id, MANY_RUNS);
   const projectPage = await openProjectPage(project.id, build.id);
   await projectPage.testRunList.gridViewToggle.click();
+  await projectPage.testRunList.groupToggle.click();
   // twelve runs collapse into two screens
   await expect(projectPage.testRunList.cards).toHaveCount(2);
 
@@ -715,7 +724,6 @@ test("filters by a tag clicked on a card", async ({
   const projectPage = await openProjectPage(project.id, build.id);
   await projectPage.testRunList.gridViewToggle.click();
   // ungrouped, so that every card carries its own locale
-  await projectPage.testRunList.groupToggle.click();
   await expect(projectPage.testRunList.cards).toHaveCount(3);
 
   await projectPage.testRunList.clickTag("de_DE");
@@ -732,7 +740,6 @@ test("clears the tag when it is clicked a second time", async ({
   await mockVariations(page);
   const projectPage = await openProjectPage(project.id, build.id);
   await projectPage.testRunList.gridViewToggle.click();
-  await projectPage.testRunList.groupToggle.click();
   await projectPage.testRunList.clickTag("de_DE");
   await expect(projectPage.testRunList.cards).toHaveCount(1);
 
@@ -777,6 +784,7 @@ test("groups runs of one screen whose reviews are half done", async ({
   await mockTestRun(page, VARIATION_DE);
   const projectPage = await openProjectPage(project.id, build.id);
   await projectPage.testRunList.gridViewToggle.click();
+  await projectPage.testRunList.groupToggle.click();
 
   const screenA = projectPage.testRunList.getCard("Screen A");
   await expect(screenA.getByTestId("groupCount")).toHaveText("2");

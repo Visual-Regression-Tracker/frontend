@@ -46,12 +46,7 @@ import { TestRun, TestStatus } from "../../types";
 import { testRunService } from "../../services";
 import { useNavigate } from "react-router";
 import { buildTestRunLocation } from "../../_helpers/route.helpers";
-import {
-  TEST_RUN_DENSITY_KEY,
-  TEST_RUN_GROUPED_KEY,
-  TEST_RUN_SHOW_DIFF_KEY,
-  TEST_RUN_VIEW_KEY,
-} from "../../constants";
+import { TEST_RUN_SHOW_DIFF_KEY } from "../../constants";
 import {
   groupStatusSummary,
   groupTestRuns,
@@ -225,23 +220,15 @@ const TestRunList: React.FunctionComponent = () => {
   const [statusFilter, setStatusFilter] = React.useState<TestStatus[]>([]);
   const [tagFilter, setTagFilter] = React.useState<string[]>([]);
   const [selectedIds, setSelectedIds] = React.useState<string[]>([]);
-  const [view, setView] = React.useState<TestRunView>(() =>
-    localStorage.getItem(TEST_RUN_VIEW_KEY) === "grid" ? "grid" : "table",
-  );
-  const [density, setDensity] = React.useState<TestRunDensity>(() => {
-    const stored = localStorage.getItem(TEST_RUN_DENSITY_KEY);
-    return stored === "compact" || stored === "comfortable"
-      ? stored
-      : "standard";
-  });
-  const [groupVariations, setGroupVariations] = React.useState(
-    () => localStorage.getItem(TEST_RUN_GROUPED_KEY) !== "false",
-  );
+  // deliberately not remembered, like the sort below: a build is opened to be
+  // reviewed as it stands, and the flat table is what the list has always been
+  const [view, setView] = React.useState<TestRunView>("table");
+  const [density, setDensity] = React.useState<TestRunDensity>("standard");
+  const [groupVariations, setGroupVariations] = React.useState(false);
   const [showDiff, setShowDiff] = React.useState(
     () => localStorage.getItem(TEST_RUN_SHOW_DIFF_KEY) !== "false",
   );
-  // deliberately not persisted: the table's sort resets on every visit too, and
-  // a remembered card order made the two views open on different columns
+  // a remembered card order also made the two views open on different columns
   const [gridSort, setGridSort] = React.useState<TestRunSort>(DEFAULT_SORT);
 
   useHotkeys("d", () => setShowDiff((prev) => !prev), {
@@ -267,18 +254,6 @@ const TestRunList: React.FunctionComponent = () => {
       ),
     [],
   );
-
-  React.useEffect(() => {
-    localStorage.setItem(TEST_RUN_VIEW_KEY, view);
-  }, [view]);
-
-  React.useEffect(() => {
-    localStorage.setItem(TEST_RUN_DENSITY_KEY, density);
-  }, [density]);
-
-  React.useEffect(() => {
-    localStorage.setItem(TEST_RUN_GROUPED_KEY, String(groupVariations));
-  }, [groupVariations]);
 
   // the data grid takes its density prop as an initial value only, so later
   // changes have to go through the api
