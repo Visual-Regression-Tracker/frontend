@@ -662,22 +662,36 @@ test("counts cards, not the runs behind them, when grouped", async ({
   );
 });
 
-test("drops the tags from a compact card, where they do not fit", async ({
+test("wraps a long name and its tags rather than cutting them off", async ({
   openProjectPage,
   page,
 }) => {
-  await mockVariations(page);
+  await mockGetTestRuns(page, build.id, [
+    {
+      ...TEST_UNRESOLVED,
+      id: "long",
+      name: "Onboarding / ideal weight / metric units",
+      os: "",
+      browser: "",
+      viewport: "",
+      device: "iPhone",
+      customTags: "Onboarding · ru_RU",
+    },
+  ]);
   const projectPage = await openProjectPage(project.id, build.id);
   await projectPage.testRunList.gridViewToggle.click();
-  await expect(projectPage.testRunList.cardTags.first()).toBeVisible();
-
   await projectPage.testRunList.compactDensity.click();
 
-  await expect(projectPage.testRunList.cardTags).toHaveCount(0);
-
-  await projectPage.testRunList.comfortableDensity.click();
-
+  // the tags stay on the narrowest card, and both run onto a second line
+  // instead of ending in an ellipsis after two words
   await expect(projectPage.testRunList.cardTags.first()).toBeVisible();
+  const oneLine = 24;
+  expect(
+    (await projectPage.testRunList.cardName.first().boundingBox()).height,
+  ).toBeGreaterThan(oneLine);
+  expect(
+    (await projectPage.testRunList.cardTags.first().boundingBox()).height,
+  ).toBeGreaterThan(oneLine);
 });
 
 test("shows the icon tooltips without the browser's delay", async ({

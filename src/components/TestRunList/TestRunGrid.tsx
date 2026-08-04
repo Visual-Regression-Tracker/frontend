@@ -16,6 +16,19 @@ import { imageFor } from "../../_helpers/testRunImage.helper";
 import { tagsOf } from "../../_helpers/testRunTags.helper";
 import { TestRun } from "../../types";
 
+/**
+ * Wraps onto the next line and stops after a few, rather than cutting the text
+ * off at the first: a narrow card holds neither a long screen name nor a row of
+ * tags on one line, and an ellipsis after two words says nothing.
+ */
+const clampToLines = (lines: number) => ({
+  display: "-webkit-box",
+  WebkitBoxOrient: "vertical",
+  WebkitLineClamp: lines,
+  overflow: "hidden",
+  overflowWrap: "anywhere",
+});
+
 export const TestRunGrid: React.FunctionComponent<{
   groups: TestRunGroup[];
   selectedIds: string[];
@@ -119,8 +132,8 @@ export const TestRunGrid: React.FunctionComponent<{
             <Typography
               variant="body2"
               fontWeight={600}
-              noWrap
               width="100%"
+              sx={clampToLines(2)}
               title={representative.name}
               data-testid="cardName"
             >
@@ -128,21 +141,17 @@ export const TestRunGrid: React.FunctionComponent<{
             </Typography>
             <TestStatusChip status={representative.status} />
             {/* tags as quiet text, not chips: five chips wrap over three lines
-                on a narrow card and drown out the name and the status. A
-                compact card is too narrow to read them at all, so it shows the
-                picture, the name and the status only */}
-            {density !== "compact" && (
-              <Typography
-                variant="caption"
-                color="text.secondary"
-                noWrap
-                width="100%"
-                title={tagsOf(representative, tagFieldsFor(runs.length))}
-                data-testid="cardTags"
-              >
-                {tagsOf(representative, tagFieldsFor(runs.length))}
-              </Typography>
-            )}
+                on a narrow card and drown out the name and the status */}
+            <Typography
+              variant="caption"
+              color="text.secondary"
+              width="100%"
+              sx={clampToLines(2)}
+              title={tagsOf(representative, tagFieldsFor(runs.length))}
+              data-testid="cardTags"
+            >
+              {tagsOf(representative, tagFieldsFor(runs.length))}
+            </Typography>
           </CardContent>
         </Card>
       );
