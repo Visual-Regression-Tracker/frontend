@@ -32,8 +32,8 @@ const GuidedTour: FunctionComponent = () => {
     event.preventDefault();
 
     const [firstStep] = helpSteps;
-    if (firstStep && typeof firstStep.target === "string") {
-      const targetId = firstStep.target.startsWith("#")
+    if (firstStep && typeof firstStep.target === 'string') {
+      const targetId = firstStep.target.startsWith('#')
         ? firstStep.target.slice(1)
         : firstStep.target;
 
@@ -46,11 +46,7 @@ const GuidedTour: FunctionComponent = () => {
   };
 
   return (
-    <Button
-      startIcon={<LiveHelp />}
-      onClick={handleClickStart}
-      data-testid={TAKE_TOUR_BUTTON_TEST_ID}
-    >
+    <Button startIcon={<LiveHelp />} onClick={handleClickStart} data-testid={TAKE_TOUR_BUTTON_TEST_ID}>
       <Joyride
         callback={handleJoyrideCallback}
         continuous={true}

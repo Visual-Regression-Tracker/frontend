@@ -167,3 +167,4 @@ export const OllamaConfigForm: React.FunctionComponent = () => {
     </React.Fragment>
   );
 };
+

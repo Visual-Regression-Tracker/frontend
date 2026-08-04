@@ -18,7 +18,7 @@ export class Header {
   async startTour(): Promise<TourModal> {
     await this.helpMenuButton.click();
     await this.takeTourButton.click();
-
+    
     return new TourModal(this.page);
   }
 }

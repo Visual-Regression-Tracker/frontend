@@ -1,7 +1,7 @@
 import { Page } from "@playwright/test";
 
 export class TourModal {
-  joyrideOverlay = this.page.locator(".react-joyride__tooltip");
+  joyrideOverlay = this.page.locator('.react-joyride__tooltip');
   skipButton = this.joyrideOverlay.getByRole("button", { name: /skip/i });
   nextButton = this.joyrideOverlay.getByRole("button", { name: /next/i });
   lastButton = this.joyrideOverlay.getByRole("button", { name: /last/i });
