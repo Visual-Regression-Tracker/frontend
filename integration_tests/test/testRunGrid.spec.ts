@@ -753,3 +753,15 @@ test("opens no dialog when a tag is clicked", async ({
 
   await expect(page.getByTestId("drawArea")).toBeHidden();
 });
+
+test("names the axis the runs are grouped by in the tooltip", async ({
+  openProjectPage,
+  page,
+}) => {
+  await mockGetProjects(page, [{ ...project, bulkApproveGroupBy: "viewport" }]);
+  const projectPage = await openProjectPage(project.id, build.id);
+
+  await projectPage.testRunList.groupToggle.hover();
+
+  await expect(page.getByRole("tooltip")).toContainText("viewport");
+});

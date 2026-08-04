@@ -78,6 +78,7 @@ export const TestRunListControls: React.FunctionComponent<{
   onDensityChange: (density: TestRunDensity) => void;
   grouped: boolean;
   onGroupedChange: (grouped: boolean) => void;
+  groupByAxis: string;
   showDiff: boolean;
   onShowDiffChange: (showDiff: boolean) => void;
 }> = ({
@@ -87,6 +88,7 @@ export const TestRunListControls: React.FunctionComponent<{
   onDensityChange,
   grouped,
   onGroupedChange,
+  groupByAxis,
   showDiff,
   onShowDiffChange,
 }) => (
@@ -146,7 +148,24 @@ export const TestRunListControls: React.FunctionComponent<{
     </ToggleButtonGroup>
     {groupDivider}
     {/* what the runs show; switches rather than icons, so "on" is unmistakable */}
-    <Tooltip title="Collapse the runs of one screen that differ only by the axis the project groups by">
+    {/* the axis is named in the tooltip, not chosen here: it is a project
+        setting shared by everyone, and the details dialog groups by the same
+        one, so a selector in the toolbar would let the two drift apart */}
+    <Tooltip
+      title={
+        // a node rather than a string, because the wrapper forwards only title
+        // and children, so the line breaks cannot come from a style
+        <React.Fragment>
+          Collapses a screen&apos;s variations into one{" "}
+          {view === "grid" ? "card" : "row"} by group.
+          <br />
+          Set it in Projects → Edit the project → &quot;Group variations
+          by&quot;.
+          <br />
+          Current axis: {groupByAxis}.
+        </React.Fragment>
+      }
+    >
       <FormControlLabel
         control={
           <Switch

@@ -19,6 +19,7 @@ declare module "@mui/x-data-grid" {
     onDensityChange: (density: TestRunDensity) => void;
     grouped: boolean;
     onGroupedChange: (grouped: boolean) => void;
+    groupByAxis: string;
     showDiff: boolean;
     onShowDiffChange: (showDiff: boolean) => void;
   }
@@ -33,6 +34,7 @@ export const DataGridCustomToolbar: React.FunctionComponent<{
   onDensityChange: (density: TestRunDensity) => void;
   grouped: boolean;
   onGroupedChange: (grouped: boolean) => void;
+  groupByAxis: string;
   showDiff: boolean;
   onShowDiffChange: (showDiff: boolean) => void;
 }> = ({
@@ -44,6 +46,7 @@ export const DataGridCustomToolbar: React.FunctionComponent<{
   onDensityChange,
   grouped,
   onGroupedChange,
+  groupByAxis,
   showDiff,
   onShowDiffChange,
 }) => (
@@ -55,6 +58,7 @@ export const DataGridCustomToolbar: React.FunctionComponent<{
       onDensityChange={onDensityChange}
       grouped={grouped}
       onGroupedChange={onGroupedChange}
+      groupByAxis={groupByAxis}
       showDiff={showDiff}
       onShowDiffChange={onShowDiffChange}
     />

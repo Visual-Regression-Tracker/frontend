@@ -609,6 +609,7 @@ const TestRunList: React.FunctionComponent = () => {
                   onDensityChange: setDensity,
                   grouped: groupVariations,
                   onGroupedChange: setGroupVariations,
+                  groupByAxis,
                   showDiff,
                   onShowDiffChange: setShowDiff,
                 },
@@ -656,6 +657,7 @@ const TestRunList: React.FunctionComponent = () => {
                   onDensityChange={setDensity}
                   grouped={groupVariations}
                   onGroupedChange={setGroupVariations}
+                  groupByAxis={groupByAxis}
                   showDiff={showDiff}
                   onShowDiffChange={setShowDiff}
                 />
