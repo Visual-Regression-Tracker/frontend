@@ -22,6 +22,11 @@ const useStyles = makeStyles((theme: Theme) =>
     input: {
       margin: theme.spacing(1),
     },
+    // the label is positioned against the form control rather than the input,
+    // so without the input's own inset it sits on the sidebar's edge
+    label: {
+      marginLeft: theme.spacing(1),
+    },
   }),
 );
 
@@ -43,7 +48,7 @@ const ProjectSelect: FunctionComponent<{
     <>
       {projectList.length > 0 && (
         <FormControl variant="standard" className={classes.formControl}>
-          <InputLabel id="projectSelect" shrink>
+          <InputLabel id="projectSelect" className={classes.label} shrink>
             Project
           </InputLabel>
           <Select
