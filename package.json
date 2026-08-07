@@ -29,7 +29,7 @@
     "react-joyride": "^2.5.5",
     "react-konva": "^17.0.2-6",
     "react-material-ui-form-validator": "^3.0.1",
-    "react-router-dom": "^6.16.0",
+    "react-router-dom": "^6.30.4",
     "socket.io-client": "^4.7.2",
     "use-image": "^1.1.1",
     "uuid": "^9.0.1"
