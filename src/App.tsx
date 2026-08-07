@@ -1,6 +1,7 @@
 import React from "react";
-import { SnackbarProvider } from "notistack";
-import { Box } from "@mui/material";
+import { SnackbarProvider, closeSnackbar } from "notistack";
+import { Box, IconButton } from "@mui/material";
+import { Close } from "@mui/icons-material";
 import {
   ThemeProvider,
   StyledEngineProvider,
@@ -30,7 +31,23 @@ function App() {
   return (
     <StyledEngineProvider injectFirst>
       <ThemeProvider theme={theme}>
-        <SnackbarProvider maxSnack={3}>
+        <SnackbarProvider
+          maxSnack={3}
+          // the build list pagination sits bottom left and the test run
+          // pagination bottom right, so toasts go between the two
+          anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+          action={(key) => (
+            <IconButton
+              size="small"
+              color="inherit"
+              aria-label="Dismiss notification"
+              onClick={() => closeSnackbar(key)}
+              data-testid="dismissNotification"
+            >
+              <Close fontSize="small" />
+            </IconButton>
+          )}
+        >
           <UserProvider>
             <ProjectProvider>
               <BuildProvider>
