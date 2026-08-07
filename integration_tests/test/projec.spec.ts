@@ -274,3 +274,15 @@ test("can download images", async ({ openProjectPage, page }) => {
     "2 test runs processed.",
   );
 });
+
+test("lines the Project label up with the select under it", async ({
+  openProjectPage,
+  page,
+}) => {
+  await openProjectPage(project.id);
+
+  const label = await page.locator("#projectSelect").boundingBox();
+  const select = await page.locator("#project-select").boundingBox();
+
+  expect(label.x).toBe(select.x);
+});
