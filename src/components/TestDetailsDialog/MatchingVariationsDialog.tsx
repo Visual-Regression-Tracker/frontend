@@ -1,4 +1,10 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import {
   Dialog,
   DialogTitle,
@@ -25,6 +31,7 @@ import { MatchingVariations } from "../../services/testRun.service";
 import { useTestRunState, useBuildState } from "../../contexts";
 import { buildTestRunLocation } from "../../_helpers/route.helpers";
 import { GO_TO_NEXT_KEY } from "../../constants";
+import { imageFor } from "../../_helpers/testRunImage.helper";
 import { TestRun } from "../../types";
 import { TestStatus } from "../../types/testStatus";
 
@@ -119,14 +126,15 @@ const useStyles = makeStyles(() => ({
 
 export type MatchingVariationsMode = "approve" | "reject";
 
-const imageFor = (run: TestRun, showDiff: boolean): string =>
-  staticService.getImage(showDiff && run.diffName ? run.diffName : run.imageName);
-
-const byDiffDesc = (a: TestRun, b: TestRun): number => (b.diffPercent ?? 0) - (a.diffPercent ?? 0);
+const byDiffDesc = (a: TestRun, b: TestRun): number =>
+  (b.diffPercent ?? 0) - (a.diffPercent ?? 0);
 
 // Runs approved/rejected this session (per build), so "go to next unresolved" can
 // skip them immediately even before socket state catches up. Resets per build.
-const acted: { buildId: string | null; ids: Set<string> } = { buildId: null, ids: new Set() };
+const acted: { buildId: string | null; ids: Set<string> } = {
+  buildId: null,
+  ids: new Set(),
+};
 const rememberActed = (buildId: string, ids: string[]): void => {
   if (acted.buildId !== buildId) {
     acted.buildId = buildId;
@@ -134,7 +142,8 @@ const rememberActed = (buildId: string, ids: string[]): void => {
   }
   ids.forEach((id) => acted.ids.add(id));
 };
-const isActed = (buildId: string, id: string): boolean => acted.buildId === buildId && acted.ids.has(id);
+const isActed = (buildId: string, id: string): boolean =>
+  acted.buildId === buildId && acted.ids.has(id);
 
 export const MatchingVariationsDialog: React.FunctionComponent<{
   mode: MatchingVariationsMode | null;
@@ -153,7 +162,10 @@ export const MatchingVariationsDialog: React.FunctionComponent<{
   const [data, setData] = useState<MatchingVariations | null>(null);
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [showDiff, setShowDiff] = useState(true);
-  const [preview, setPreview] = useState<{ index: number; showDiff: boolean } | null>(null);
+  const [preview, setPreview] = useState<{
+    index: number;
+    showDiff: boolean;
+  } | null>(null);
   const seenVariationIds = useRef<Set<string>>(new Set());
 
   const loadData = useCallback(
@@ -167,11 +179,15 @@ export const MatchingVariationsDialog: React.FunctionComponent<{
         .getMatchingVariations(testRun.id)
         .then((result) => {
           setData(result);
-          const presentIds = new Set([...result.variations, ...result.skipped].map((v) => v.id));
+          const presentIds = new Set(
+            [...result.variations, ...result.skipped].map((v) => v.id),
+          );
           if (background) {
             // Keep the reviewer's current choices; auto-select only newly-arrived matching runs.
             setSelected((prev) => {
-              const next = new Set([...prev].filter((id) => presentIds.has(id)));
+              const next = new Set(
+                [...prev].filter((id) => presentIds.has(id)),
+              );
               result.variations.forEach((v) => {
                 if (!seenVariationIds.current.has(v.id)) next.add(v.id);
               });
@@ -180,7 +196,9 @@ export const MatchingVariationsDialog: React.FunctionComponent<{
           } else {
             setSelected(new Set(result.variations.map((v) => v.id)));
           }
-          seenVariationIds.current = new Set(result.variations.map((v) => v.id));
+          seenVariationIds.current = new Set(
+            result.variations.map((v) => v.id),
+          );
         })
         .catch((err) => {
           if (!background) enqueueSnackbar(err, { variant: "error" });
@@ -224,15 +242,27 @@ export const MatchingVariationsDialog: React.FunctionComponent<{
     return () => clearTimeout(timer);
   }, [groupKey, mode, submitting, loadData]);
 
-  const variations = useMemo(() => (data ? [...data.variations].sort(byDiffDesc) : []), [data]);
-  const skipped = useMemo(() => (data ? [...data.skipped].sort(byDiffDesc) : []), [data]);
-  const allShown = useMemo<TestRun[]>(() => [...variations, ...skipped], [variations, skipped]);
+  const variations = useMemo(
+    () => (data ? [...data.variations].sort(byDiffDesc) : []),
+    [data],
+  );
+  const skipped = useMemo(
+    () => (data ? [...data.skipped].sort(byDiffDesc) : []),
+    [data],
+  );
+  const allShown = useMemo<TestRun[]>(
+    () => [...variations, ...skipped],
+    [variations, skipped],
+  );
 
   const step = useCallback(
     (delta: number) =>
       setPreview((prev) => {
         if (!prev) return prev;
-        const index = Math.min(allShown.length - 1, Math.max(0, prev.index + delta));
+        const index = Math.min(
+          allShown.length - 1,
+          Math.max(0, prev.index + delta),
+        );
         return { index, showDiff: prev.showDiff };
       }),
     [allShown.length],
@@ -240,7 +270,16 @@ export const MatchingVariationsDialog: React.FunctionComponent<{
 
   useEffect(() => {
     if (!mode) return;
-    const swallow = new Set(["ArrowLeft", "ArrowRight", "a", "A", "x", "X", "d", "D"]);
+    const swallow = new Set([
+      "ArrowLeft",
+      "ArrowRight",
+      "a",
+      "A",
+      "x",
+      "X",
+      "d",
+      "D",
+    ]);
     const onKey = (e: KeyboardEvent) => {
       if (!swallow.has(e.key)) return;
       // Keep these keys from reaching the test-run detail page behind the modal —
@@ -248,7 +287,8 @@ export const MatchingVariationsDialog: React.FunctionComponent<{
       e.preventDefault();
       e.stopPropagation();
       if (e.key === "d" || e.key === "D") {
-        if (preview) setPreview({ index: preview.index, showDiff: !preview.showDiff });
+        if (preview)
+          setPreview({ index: preview.index, showDiff: !preview.showDiff });
         else setShowDiff((value) => !value);
         return;
       }
@@ -267,22 +307,30 @@ export const MatchingVariationsDialog: React.FunctionComponent<{
     });
   }, []);
 
-  const matchedSelectedCount = variations.filter((v) => selected.has(v.id)).length;
-  const allMatchedSelected = variations.length > 0 && matchedSelectedCount === variations.length;
+  const matchedSelectedCount = variations.filter((v) =>
+    selected.has(v.id),
+  ).length;
+  const allMatchedSelected =
+    variations.length > 0 && matchedSelectedCount === variations.length;
   const toggleAllMatched = () => {
     setSelected((prev) => {
       const next = new Set(prev);
-      variations.forEach((v) => (allMatchedSelected ? next.delete(v.id) : next.add(v.id)));
+      variations.forEach((v) =>
+        allMatchedSelected ? next.delete(v.id) : next.add(v.id),
+      );
       return next;
     });
   };
 
   const skippedSelectedCount = skipped.filter((v) => selected.has(v.id)).length;
-  const allSkippedSelected = skipped.length > 0 && skippedSelectedCount === skipped.length;
+  const allSkippedSelected =
+    skipped.length > 0 && skippedSelectedCount === skipped.length;
   const toggleAllSkipped = () => {
     setSelected((prev) => {
       const next = new Set(prev);
-      skipped.forEach((v) => (allSkippedSelected ? next.delete(v.id) : next.add(v.id)));
+      skipped.forEach((v) =>
+        allSkippedSelected ? next.delete(v.id) : next.add(v.id),
+      );
       return next;
     });
   };
@@ -305,21 +353,33 @@ export const MatchingVariationsDialog: React.FunctionComponent<{
   const findNextUnresolved = (): TestRun | undefined => {
     let ordered = allTestRuns;
     if (filteredSortedTestRunIds) {
-      const orderOf = new Map(filteredSortedTestRunIds.map((id, index) => [id, index] as const));
+      const orderOf = new Map(
+        filteredSortedTestRunIds.map((id, index) => [id, index] as const),
+      );
       ordered = allTestRuns
         .filter((run) => orderOf.has(run.id))
         .sort((a, b) => (orderOf.get(a.id) ?? 0) - (orderOf.get(b.id) ?? 0));
     }
     const currentIndex = ordered.findIndex((run) => run.id === testRun.id);
-    const rotated = [...ordered.slice(currentIndex + 1), ...ordered.slice(0, currentIndex + 1)];
-    return rotated.find((run) => run.status === TestStatus.unresolved && !isActed(testRun.buildId, run.id));
+    const rotated = [
+      ...ordered.slice(currentIndex + 1),
+      ...ordered.slice(0, currentIndex + 1),
+    ];
+    return rotated.find(
+      (run) =>
+        run.status === TestStatus.unresolved &&
+        !isActed(testRun.buildId, run.id),
+    );
   };
 
   const submit = () => {
     const ids = Array.from(selected);
     setSubmitting(true);
 
-    (mode === "approve" ? testRunService.approveBulk(ids, testRun.merge) : testRunService.rejectBulk(ids))
+    (mode === "approve"
+      ? testRunService.approveBulk(ids, testRun.merge)
+      : testRunService.rejectBulk(ids)
+    )
       .then(() => {
         // Only remember these as acted once the API confirms success, so a failed
         // request doesn't make findNextUnresolved skip still-unresolved runs.
@@ -334,9 +394,14 @@ export const MatchingVariationsDialog: React.FunctionComponent<{
         }
         onClose();
         // Shown after we've landed on the destination screen.
-        enqueueSnackbar(`${mode === "approve" ? "Approved" : "Rejected"} ${ids.length} variations`, {
-          variant: "success",
-        });
+        enqueueSnackbar(
+          `${mode === "approve" ? "Approved" : "Rejected"} ${
+            ids.length
+          } variations`,
+          {
+            variant: "success",
+          },
+        );
       })
       .catch((err) => {
         enqueueSnackbar(err, { variant: "error" });
@@ -351,11 +416,20 @@ export const MatchingVariationsDialog: React.FunctionComponent<{
     const isSelected = selected.has(run.id);
     const openIndex = allShown.findIndex((item) => item.id === run.id);
     return (
-      <div key={run.id} className={`${classes.card} ${isSelected ? classes.cardSelected : ""}`}>
+      <div
+        key={run.id}
+        className={`${classes.card} ${isSelected ? classes.cardSelected : ""}`}
+      >
         <div className={classes.cardHead}>
           <FormControlLabel
             className={classes.cardLabel}
-            control={<Checkbox checked={isSelected} onChange={() => toggle(run.id)} size="small" />}
+            control={
+              <Checkbox
+                checked={isSelected}
+                onChange={() => toggle(run.id)}
+                size="small"
+              />
+            }
             label={
               <Typography variant="caption" noWrap>
                 {labelOf(run)}
@@ -372,7 +446,12 @@ export const MatchingVariationsDialog: React.FunctionComponent<{
           onClick={() => setPreview({ index: openIndex, showDiff })}
           aria-label={`View ${labelOf(run)} full size`}
         >
-          <img className={classes.thumb} src={imageFor(run, showDiff)} alt={run.customTags} loading="lazy" />
+          <img
+            className={classes.thumb}
+            src={imageFor(run, showDiff)}
+            alt={run.customTags}
+            loading="lazy"
+          />
         </button>
         {reason && (
           <Typography variant="caption" display="block" align="center">
@@ -394,7 +473,8 @@ export const MatchingVariationsDialog: React.FunctionComponent<{
             <div className={classes.loading}>
               <CircularProgress />
               <Typography style={{ marginLeft: 12 }}>
-                {mode === "approve" ? "Approving" : "Rejecting"} {selected.size} variations…
+                {mode === "approve" ? "Approving" : "Rejecting"} {selected.size}{" "}
+                variations…
               </Typography>
             </div>
           )}
@@ -410,7 +490,9 @@ export const MatchingVariationsDialog: React.FunctionComponent<{
                   control={
                     <Checkbox
                       checked={allMatchedSelected}
-                      indeterminate={!allMatchedSelected && matchedSelectedCount > 0}
+                      indeterminate={
+                        !allMatchedSelected && matchedSelectedCount > 0
+                      }
                       onChange={toggleAllMatched}
                     />
                   }
@@ -418,15 +500,26 @@ export const MatchingVariationsDialog: React.FunctionComponent<{
                 />
                 <Tooltip title="Toggle diff. Hotkey: D">
                   <FormControlLabel
-                    control={<Switch checked={showDiff} onChange={(e) => setShowDiff(e.target.checked)} />}
+                    control={
+                      <Switch
+                        checked={showDiff}
+                        onChange={(e) => setShowDiff(e.target.checked)}
+                      />
+                    }
                     label="Show diff"
                   />
                 </Tooltip>
               </div>
-              <Typography variant="caption" color="textSecondary" className={classes.hint}>
+              <Typography
+                variant="caption"
+                color="textSecondary"
+                className={classes.hint}
+              >
                 Click a thumbnail to view it full-size.
               </Typography>
-              <div className={classes.grid}>{variations.map((run) => renderCard(run))}</div>
+              <div className={classes.grid}>
+                {variations.map((run) => renderCard(run))}
+              </div>
 
               {skipped.length > 0 && (
                 <>
@@ -435,17 +528,26 @@ export const MatchingVariationsDialog: React.FunctionComponent<{
                     control={
                       <Checkbox
                         checked={allSkippedSelected}
-                        indeterminate={!allSkippedSelected && skippedSelectedCount > 0}
+                        indeterminate={
+                          !allSkippedSelected && skippedSelectedCount > 0
+                        }
                         onChange={toggleAllSkipped}
                       />
                     }
                     label={`${skipped.length} didn't match — review separately`}
                   />
-                  <Typography variant="caption" color="textSecondary" className={classes.sectionSubtitle}>
-                    These don't match the change you're reviewing, so they're unchecked. Open each to inspect and
-                    include only if it's the same intended change.
+                  <Typography
+                    variant="caption"
+                    color="textSecondary"
+                    className={classes.sectionSubtitle}
+                  >
+                    These don't match the change you're reviewing, so they're
+                    unchecked. Open each to inspect and include only if it's the
+                    same intended change.
                   </Typography>
-                  <div className={classes.grid}>{skipped.map((run) => renderCard(run, run.reason))}</div>
+                  <div className={classes.grid}>
+                    {skipped.map((run) => renderCard(run, run.reason))}
+                  </div>
                 </>
               )}
             </>
@@ -466,16 +568,31 @@ export const MatchingVariationsDialog: React.FunctionComponent<{
         )}
       </Dialog>
 
-      <Dialog open={!!previewRun} onClose={() => setPreview(null)} maxWidth="xl" fullWidth>
+      <Dialog
+        open={!!previewRun}
+        onClose={() => setPreview(null)}
+        maxWidth="xl"
+        fullWidth
+      >
         {preview && previewRun && (
           <>
             <DialogTitle>
-              <Box display="flex" alignItems="center" justifyContent="space-between">
+              <Box
+                display="flex"
+                alignItems="center"
+                justifyContent="space-between"
+              >
                 <Box display="flex" alignItems="center">
-                  <IconButton onClick={() => step(-1)} disabled={preview.index === 0}>
+                  <IconButton
+                    onClick={() => step(-1)}
+                    disabled={preview.index === 0}
+                  >
                     <ChevronLeftIcon />
                   </IconButton>
-                  <IconButton onClick={() => step(1)} disabled={preview.index === allShown.length - 1}>
+                  <IconButton
+                    onClick={() => step(1)}
+                    disabled={preview.index === allShown.length - 1}
+                  >
                     <ChevronRightIcon />
                   </IconButton>
                   <span>
@@ -488,7 +605,12 @@ export const MatchingVariationsDialog: React.FunctionComponent<{
                       control={
                         <Switch
                           checked={preview.showDiff}
-                          onChange={(e) => setPreview({ index: preview.index, showDiff: e.target.checked })}
+                          onChange={(e) =>
+                            setPreview({
+                              index: preview.index,
+                              showDiff: e.target.checked,
+                            })
+                          }
                         />
                       }
                       label="Show diff"
@@ -501,11 +623,21 @@ export const MatchingVariationsDialog: React.FunctionComponent<{
               </Box>
             </DialogTitle>
             <div className={classes.meta}>
-              <Typography variant="caption">OS: {previewRun.os || "—"}</Typography>
-              <Typography variant="caption">Device: {previewRun.device || "—"}</Typography>
-              <Typography variant="caption">Custom Tags: {previewRun.customTags || "—"}</Typography>
-              <Typography variant="caption">Diff: {(previewRun.diffPercent ?? 0).toFixed(2)}%</Typography>
-              <Typography variant="caption">Diff tolerance: {previewRun.diffTollerancePercent ?? 0}%</Typography>
+              <Typography variant="caption">
+                OS: {previewRun.os || "—"}
+              </Typography>
+              <Typography variant="caption">
+                Device: {previewRun.device || "—"}
+              </Typography>
+              <Typography variant="caption">
+                Custom Tags: {previewRun.customTags || "—"}
+              </Typography>
+              <Typography variant="caption">
+                Diff: {(previewRun.diffPercent ?? 0).toFixed(2)}%
+              </Typography>
+              <Typography variant="caption">
+                Diff tolerance: {previewRun.diffTollerancePercent ?? 0}%
+              </Typography>
             </div>
             <DialogContent dividers>
               <div className={classes.lightboxRow}>

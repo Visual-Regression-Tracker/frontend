@@ -1,12 +1,21 @@
 import React from "react";
-import { Box, Chip, Typography } from "@mui/material";
+import {
+  Box,
+  Chip,
+  LinearProgress,
+  TablePagination,
+  Toolbar,
+  Typography,
+} from "@mui/material";
 import TestStatusChip from "../TestStatusChip";
 import {
   useTestRunState,
   useTestRunDispatch,
   useBuildState,
+  useProjectState,
 } from "../../contexts";
 import { useSnackbar } from "notistack";
+import { useHotkeys } from "react-hotkeys-hook";
 import {
   DataGrid,
   useGridApiRef,
@@ -20,14 +29,42 @@ import {
   gridFilteredSortedRowIdsSelector,
 } from "@mui/x-data-grid";
 import { DataGridCustomToolbar } from "./DataGridCustomToolbar";
+import { BulkOperation } from "./BulkOperation";
+import { TestRunGrid } from "./TestRunGrid";
+import {
+  TestRunDensity,
+  TestRunListControls,
+  TestRunView,
+} from "./TestRunListControls";
+import {
+  DEFAULT_SORT,
+  TestRunGridHeader,
+  TestRunSort,
+} from "./TestRunGridHeader";
 import TestRunFilters from "./TestRunFilters";
 import { TestRun, TestStatus } from "../../types";
 import { testRunService } from "../../services";
 import { useNavigate } from "react-router";
 import { buildTestRunLocation } from "../../_helpers/route.helpers";
+import { TEST_RUN_SHOW_DIFF_KEY } from "../../constants";
+import {
+  groupStatusSummary,
+  groupTestRuns,
+  resolveGroupByAxis,
+  singleRunGroups,
+} from "../../_helpers/testRunGroup.helper";
+import {
+  byAttention,
+  statusesByAttention,
+  statusRank,
+} from "../../_helpers/testRunStatus.helper";
+import { tagsOf } from "../../_helpers/testRunTags.helper";
 
 // https://mui.com/x/react-data-grid/column-definition/
-const columnsDef: GridColDef[] = [
+const buildColumns = (
+  runsFor: (id: string) => TestRun[],
+  tagFieldsFor: (runCount: number) => Array<keyof TestRun>,
+): GridColDef[] => [
   {
     field: "id",
     filterable: false,
@@ -37,26 +74,30 @@ const columnsDef: GridColDef[] = [
     headerName: "Name",
     flex: 1,
     filterable: false,
+    renderCell: (params: GridRenderCellParams) => {
+      const count = runsFor(params.row["id"]).length;
+
+      return (
+        <Box display="flex" alignItems="center" gap={0.5} minWidth={0}>
+          <Typography variant="body2" noWrap title={params.row["name"]}>
+            {params.row["name"]}
+          </Typography>
+          {count > 1 && (
+            <Chip size="small" label={count} data-testid="groupCount" />
+          )}
+        </Box>
+      );
+    },
   },
   {
     field: "tags",
     headerName: "Tags",
     flex: 1,
     filterable: false,
-    valueGetter: (params: GridValueGetterParams) => {
-      const tags: string[] = [
-        params.row["os"],
-        params.row["device"],
-        params.row["browser"],
-        params.row["viewport"],
-        params.row["customTags"],
-      ];
-
-      return tags.reduce(
-        (prev, curr) => prev.concat(curr ? `${curr};` : ""),
-        "",
-      );
-    },
+    valueGetter: (params: GridValueGetterParams) =>
+      tagFieldsFor(runsFor(params.row["id"]).length)
+        .map((field) => params.row[field])
+        .reduce((prev, curr) => prev.concat(curr ? `${curr};` : ""), ""),
     renderCell: (params: GridCellParams) => (
       <React.Fragment>
         {params.formattedValue
@@ -83,13 +124,18 @@ const columnsDef: GridColDef[] = [
     headerName: "Status",
     flex: 0.3,
     filterable: false,
+    // the chip speaks for the representative, so a half-reviewed group has to
+    // say so somewhere
     renderCell: (params: GridRenderCellParams) => (
-      <TestStatusChip status={params.row["status"]?.toString()} />
+      <Box
+        component="span"
+        title={groupStatusSummary(runsFor(params.row["id"])) || undefined}
+      >
+        <TestStatusChip status={params.row["status"]?.toString()} />
+      </Box>
     ),
-    sortComparator: (v1: TestStatus, v2: TestStatus) => {
-      const statusOrder = Object.values(TestStatus);
-      return statusOrder.indexOf(v2) - statusOrder.indexOf(v1);
-    },
+    sortComparator: (v1: TestStatus, v2: TestStatus) =>
+      statusRank(v2) - statusRank(v1),
   },
 ];
 
@@ -101,7 +147,30 @@ const TAG_FIELDS: Array<keyof TestRun> = [
   "customTags",
 ];
 
-const STATUS_ORDER = Object.values(TestStatus);
+const PAGE_SIZE_OPTIONS = [10, 30, 100];
+
+const byName = (a: TestRun, b: TestRun): number => a.name.localeCompare(b.name);
+
+// the table's own status comparator: ascending runs from ok to new, so that
+// descending means needs-attention-first in both views and the arrows agree
+const bySettled = (a: TestRun, b: TestRun): number => -byAttention(a, b);
+
+// the direction applies to the chosen field only: negating the whole comparator
+// would reverse the tie-break too, so a descending status listed names Z to A
+const comparatorFor =
+  (sort: TestRunSort, tagFields: Array<keyof TestRun>) =>
+  (a: TestRun, b: TestRun): number => {
+    const ascending =
+      sort.field === "status"
+        ? bySettled(a, b)
+        : sort.field === "name"
+        ? byName(a, b)
+        : tagsOf(a, tagFields).localeCompare(tagsOf(b, tagFields));
+    const primary = sort.direction === "asc" ? ascending : -ascending;
+    const tieBreak = sort.field === "name" ? byAttention(a, b) : byName(a, b);
+
+    return primary || tieBreak;
+  };
 
 type TagGroups = Array<[keyof TestRun, Set<string>]>;
 
@@ -125,6 +194,7 @@ const TestRunList: React.FunctionComponent = () => {
   const navigate = useNavigate();
   const { selectedTestRun, testRuns, loading } = useTestRunState();
   const { selectedBuild } = useBuildState();
+  const { selectedProjectId, projectList } = useProjectState();
   const testRunDispatch = useTestRunDispatch();
 
   const [paginationModel, setPaginationModel] = React.useState({
@@ -142,6 +212,58 @@ const TestRunList: React.FunctionComponent = () => {
   const [nameFilter, setNameFilter] = React.useState("");
   const [statusFilter, setStatusFilter] = React.useState<TestStatus[]>([]);
   const [tagFilter, setTagFilter] = React.useState<string[]>([]);
+  const [selectedIds, setSelectedIds] = React.useState<string[]>([]);
+  // deliberately not remembered, like the sort below: a build is opened to be
+  // reviewed as it stands, and the flat table is what the list has always been
+  const [view, setView] = React.useState<TestRunView>("table");
+  const [density, setDensity] = React.useState<TestRunDensity>("standard");
+  const [groupVariations, setGroupVariations] = React.useState(false);
+  const [showDiff, setShowDiff] = React.useState(
+    () => localStorage.getItem(TEST_RUN_SHOW_DIFF_KEY) !== "false",
+  );
+  // a remembered card order also made the two views open on different columns
+  const [gridSort, setGridSort] = React.useState<TestRunSort>(DEFAULT_SORT);
+
+  useHotkeys("d", () => setShowDiff((prev) => !prev), {
+    enabled: view === "grid" && !selectedTestRun,
+  });
+
+  // every filtered run, not just the page: the table's header box does the same
+  const toggleAll = React.useCallback(
+    (ids: string[]) =>
+      setSelectedIds((prev) =>
+        ids.every((id) => prev.includes(id)) ? [] : ids,
+      ),
+    [],
+  );
+
+  // a group is selected or cleared as a whole
+  const toggleGroup = React.useCallback(
+    (ids: string[]) =>
+      setSelectedIds((prev) =>
+        ids.every((id) => prev.includes(id))
+          ? prev.filter((id) => !ids.includes(id))
+          : Array.from(new Set([...prev, ...ids])),
+      ),
+    [],
+  );
+
+  // the data grid takes its density prop as an initial value only, so later
+  // changes have to go through the api
+  React.useEffect(() => {
+    apiRef.current?.setDensity?.(density);
+  }, [apiRef, density, view]);
+
+  // a tag on a card filters by it, and clicking it again lets go
+  const toggleTag = React.useCallback(
+    (tag: string) =>
+      setTagFilter((prev) =>
+        prev.includes(tag)
+          ? prev.filter((item) => item !== tag)
+          : [...prev, tag],
+      ),
+    [],
+  );
 
   const resetFilters = React.useCallback(() => {
     setNameFilter("");
@@ -193,6 +315,105 @@ const TestRunList: React.FunctionComponent = () => {
     [testRuns, query, statusFilter, tagGroups],
   );
 
+  const gridRows = React.useMemo(
+    () => [...filteredRows].sort(comparatorFor(gridSort, TAG_FIELDS)),
+    [filteredRows, gridSort],
+  );
+
+  const groupByAxis = React.useMemo(
+    () =>
+      resolveGroupByAxis(
+        projectList.find((item) => item.id === selectedProjectId)
+          ?.bulkApproveGroupBy,
+      ),
+    [projectList, selectedProjectId],
+  );
+
+  const groups = React.useMemo(
+    () =>
+      groupVariations
+        ? groupTestRuns(gridRows, groupByAxis)
+        : singleRunGroups(gridRows),
+    [groupVariations, gridRows, groupByAxis],
+  );
+
+  // a grouped table shows the representative and stands for the whole group, so
+  // both the row's tick and its count have to reach the runs behind it
+  const runsByRepresentative = React.useMemo(
+    () => new Map(groups.map((group) => [group.representative.id, group.runs])),
+    [groups],
+  );
+
+  const runsFor = React.useCallback(
+    (id: string): TestRun[] => runsByRepresentative.get(id) ?? [],
+    [runsByRepresentative],
+  );
+
+  // the grouped axis varies inside a group, so it is not a tag of the group.
+  // A group of one hides nothing: there is no variation to stand for.
+  const tagFieldsFor = React.useCallback(
+    (runCount: number): Array<keyof TestRun> =>
+      groupVariations && runCount > 1
+        ? TAG_FIELDS.filter((field) => field !== groupByAxis)
+        : TAG_FIELDS,
+    [groupVariations, groupByAxis],
+  );
+
+  const columns = React.useMemo(
+    () => buildColumns(runsFor, tagFieldsFor),
+    [runsFor, tagFieldsFor],
+  );
+
+  const tableRows = React.useMemo(
+    () =>
+      groupVariations ? groups.map((group) => group.representative) : gridRows,
+    [groupVariations, groups, gridRows],
+  );
+
+  // a representative reads as ticked once every run behind it is selected
+  const tableSelectionModel = React.useMemo(
+    () =>
+      groupVariations
+        ? groups
+            .filter((group) =>
+              group.runs.every((run) => selectedIds.includes(run.id)),
+            )
+            .map((group) => group.representative.id)
+        : selectedIds,
+    [groupVariations, groups, selectedIds],
+  );
+
+  // the dialog walks the grid's runs in the grid's order, groups expanded, so
+  // the arrows visit a screen's other locales before the next screen. Not
+  // limited to the current page, matching how the table publishes every
+  // filtered row rather than the visible ones.
+  const groupedRunIds = React.useMemo(
+    () => groups.flatMap((group) => group.runs.map((run) => run.id)),
+    [groups],
+  );
+
+  // the footer speaks of cards, so it counts cards: with grouping on, the runs
+  // behind them are several times as many
+  const selectedCardCount = React.useMemo(
+    () =>
+      groups.filter((group) =>
+        group.runs.some((run) => selectedIds.includes(run.id)),
+      ).length,
+    [groups, selectedIds],
+  );
+
+  // clamped rather than corrected in state: turning grouping off and on again
+  // changes the card count under a page number that was valid a moment ago
+  const gridPageCount = Math.max(
+    1,
+    Math.ceil(groups.length / paginationModel.pageSize),
+  );
+  const gridPage = Math.min(paginationModel.page, gridPageCount - 1);
+  const pagedGroups = groups.slice(
+    gridPage * paginationModel.pageSize,
+    (gridPage + 1) * paginationModel.pageSize,
+  );
+
   // Options for each filter are derived from rows matching all OTHER filters,
   // so only values that would actually return results are offered.
   const statusOptions = React.useMemo(() => {
@@ -202,9 +423,7 @@ const TestRunList: React.FunctionComponent = () => {
         present.add(run.status);
       }
     });
-    return Array.from(present).sort(
-      (a, b) => STATUS_ORDER.indexOf(a) - STATUS_ORDER.indexOf(b),
-    );
+    return statusesByAttention(Array.from(present));
   }, [testRuns, query, tagGroups, statusFilter]);
 
   const tagOptions = React.useMemo(() => {
@@ -279,12 +498,18 @@ const TestRunList: React.FunctionComponent = () => {
     getTestRunListCallback();
   }, [getTestRunListCallback]);
 
+  // read inside the subscription below, which is set up once
+  const groupedRef = React.useRef(groupVariations);
+  groupedRef.current = groupVariations;
+
   // workaround https://github.com/mui/mui-x/issues/1106
   React.useEffect(() => {
     let unsubscribe: () => void;
     const handleStateChange = () => {
       unsubscribe?.();
-      if (!selectedTestRun) {
+      // grouped, the grid holds representatives only; the effect below then
+      // publishes the expanded order so no run is unreachable
+      if (!groupedRef.current && !selectedTestRun) {
         testRunDispatch({
           type: "filterSort",
           payload: gridFilteredSortedRowIdsSelector(apiRef),
@@ -301,6 +526,14 @@ const TestRunList: React.FunctionComponent = () => {
         )),
     );
   }, [apiRef, apiRef.current?.instanceId]);
+
+  // the data grid publishes the order the details dialog navigates; with the
+  // grid view mounted instead, it has to publish its own
+  React.useEffect(() => {
+    if ((view === "grid" || groupVariations) && !selectedTestRun) {
+      testRunDispatch({ type: "filterSort", payload: groupedRunIds });
+    }
+  }, [view, groupVariations, groupedRunIds, selectedTestRun, testRunDispatch]);
 
   if (selectedBuild) {
     return (
@@ -319,36 +552,174 @@ const TestRunList: React.FunctionComponent = () => {
           />
         </Box>
         <Box flex={1} minHeight={0}>
-          <DataGrid
-            apiRef={apiRef}
-            rows={filteredRows}
-            columns={columnsDef}
-            columnVisibilityModel={{
-              id: false,
-            }}
-            pageSizeOptions={[10, 30, 100]}
-            paginationModel={paginationModel}
-            onPaginationModelChange={setPaginationModel}
-            pagination
-            loading={loading}
-            slots={{
-              toolbar: DataGridCustomToolbar,
-            }}
-            checkboxSelection
-            disableColumnSelector
-            disableColumnMenu
-            disableRowSelectionOnClick
-            sortModel={sortModel}
-            onSortModelChange={(model) => setSortModel(model)}
-            onRowClick={(param: GridRowParams) => {
-              navigate(
-                buildTestRunLocation(
-                  selectedBuild.id,
-                  param.row["id"].toString(),
-                ),
-              );
-            }}
-          />
+          {view === "table" ? (
+            <DataGrid
+              apiRef={apiRef}
+              rows={tableRows}
+              columns={columns}
+              columnVisibilityModel={{
+                id: false,
+              }}
+              pageSizeOptions={PAGE_SIZE_OPTIONS}
+              paginationModel={paginationModel}
+              onPaginationModelChange={setPaginationModel}
+              pagination
+              loading={loading}
+              slots={{
+                toolbar: DataGridCustomToolbar,
+              }}
+              density={density}
+              slotProps={{
+                toolbar: {
+                  selectedIds,
+                  rows: filteredRows,
+                  view,
+                  onViewChange: setView,
+                  density,
+                  onDensityChange: setDensity,
+                  grouped: groupVariations,
+                  onGroupedChange: setGroupVariations,
+                  groupByAxis,
+                  showDiff,
+                  onShowDiffChange: setShowDiff,
+                },
+              }}
+              rowSelectionModel={tableSelectionModel}
+              onRowSelectionModelChange={(model) =>
+                setSelectedIds(
+                  groupVariations
+                    ? model.flatMap((id) =>
+                        runsFor(String(id)).map((run) => run.id),
+                      )
+                    : model.map(String),
+                )
+              }
+              checkboxSelection
+              disableColumnSelector
+              disableColumnMenu
+              disableRowSelectionOnClick
+              sortModel={sortModel}
+              onSortModelChange={(model) => setSortModel(model)}
+              onRowClick={(param: GridRowParams) => {
+                navigate(
+                  buildTestRunLocation(
+                    selectedBuild.id,
+                    param.row["id"].toString(),
+                  ),
+                );
+              }}
+            />
+          ) : (
+            // framed like the data grid, so both views read as one widget. The
+            // colour too: the data grid sets text.primary on its own subtree,
+            // and without it the toolbar and header inherit the body's pure
+            // black and read heavier than the table's
+            <Box
+              height="100%"
+              display="flex"
+              flexDirection="column"
+              border={1}
+              borderColor="divider"
+              borderRadius={1}
+              color="text.primary"
+            >
+              <Toolbar variant="dense">
+                <TestRunListControls
+                  view={view}
+                  onViewChange={setView}
+                  density={density}
+                  onDensityChange={setDensity}
+                  grouped={groupVariations}
+                  onGroupedChange={setGroupVariations}
+                  groupByAxis={groupByAxis}
+                  showDiff={showDiff}
+                  onShowDiffChange={setShowDiff}
+                />
+                <Box marginLeft="auto">
+                  <BulkOperation
+                    selectedIds={selectedIds}
+                    rows={gridRows}
+                    selectionNoun="cards"
+                  />
+                </Box>
+              </Toolbar>
+              <TestRunGridHeader
+                sort={gridSort}
+                onSortChange={setGridSort}
+                density={density}
+                selectedCount={
+                  groupedRunIds.filter((id) => selectedIds.includes(id)).length
+                }
+                totalCount={groupedRunIds.length}
+                onToggleAll={() => toggleAll(groupedRunIds)}
+              />
+              {loading && <LinearProgress />}
+              <Box flex={1} overflow="auto">
+                {gridRows.length === 0 ? (
+                  <Typography
+                    variant="subtitle1"
+                    align="center"
+                    color="textSecondary"
+                    sx={{ padding: 2 }}
+                    data-testid="testRunGridEmpty"
+                  >
+                    No test runs match the filters
+                  </Typography>
+                ) : (
+                  <TestRunGrid
+                    groups={pagedGroups}
+                    selectedIds={selectedIds}
+                    density={density}
+                    showDiff={showDiff}
+                    activeTags={tagFilter}
+                    tagFieldsFor={tagFieldsFor}
+                    onToggleGroup={toggleGroup}
+                    onToggleTag={toggleTag}
+                    onOpen={(id) =>
+                      navigate(buildTestRunLocation(selectedBuild.id, id))
+                    }
+                  />
+                )}
+              </Box>
+              <Box
+                display="flex"
+                alignItems="center"
+                borderTop={1}
+                borderColor="divider"
+              >
+                {selectedCardCount > 0 && (
+                  <Typography
+                    variant="body2"
+                    marginLeft={2}
+                    data-testid="gridSelectionCount"
+                  >
+                    {selectedCardCount === 1
+                      ? "1 card selected"
+                      : `${selectedCardCount} cards selected`}
+                  </Typography>
+                )}
+                <Box marginLeft="auto">
+                  <TablePagination
+                    component="div"
+                    count={groups.length}
+                    page={gridPage}
+                    rowsPerPage={paginationModel.pageSize}
+                    rowsPerPageOptions={PAGE_SIZE_OPTIONS}
+                    labelRowsPerPage="Cards per page:"
+                    onPageChange={(event, next) =>
+                      setPaginationModel((prev) => ({ ...prev, page: next }))
+                    }
+                    onRowsPerPageChange={(event) =>
+                      setPaginationModel({
+                        page: 0,
+                        pageSize: Number(event.target.value),
+                      })
+                    }
+                  />
+                </Box>
+              </Box>
+            </Box>
+          )}
         </Box>
       </Box>
     );

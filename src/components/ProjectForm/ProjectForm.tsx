@@ -169,10 +169,14 @@ export const ProjectForm: React.FunctionComponent = () => {
           }
         />
       </Tooltip>
-      {project.bulkApproveVariations && (
-        <Tooltip title="Which test-variation axis differs within a group. Screens that match on everything except this axis are reviewed together — e.g. customTags for per-locale screenshots.">
+      {/* not tied to the switch above: the axis also decides what the test run
+          list groups into one card, which it does whether or not variations can
+          be bulk approved */}
+      <Tooltip title="Which test-variation axis differs within a group. Screens that match on everything except this axis are grouped in the test run list and reviewed together — e.g. customTags for per-locale screenshots.">
         <FormControl variant="standard" fullWidth>
-          <InputLabel id="bulkApproveGroupBySelect">Group variations by</InputLabel>
+          <InputLabel id="bulkApproveGroupBySelect">
+            Group variations by
+          </InputLabel>
           <Select
             variant="standard"
             id="bulkApproveGroupBySelect"
@@ -192,8 +196,7 @@ export const ProjectForm: React.FunctionComponent = () => {
             <MenuItem value="browser">browser</MenuItem>
           </Select>
         </FormControl>
-        </Tooltip>
-      )}
+      </Tooltip>
       <FormControl variant="standard" fullWidth>
         <InputLabel id="imageComparisonSelect">
           Image comparison library
