@@ -5,6 +5,8 @@ export class BuildList {
   searchInput = this.page.getByTestId("buildSearch");
   emptyMessage = this.page.getByTestId("buildListEmpty");
   scrollContainer = this.page.getByTestId("buildListScroll");
+  selectAll = this.page.getByTestId("buildSelectAll");
+  deleteSelectedBtn = this.page.getByTestId("buildDeleteSelected");
 
   constructor(public page: Page) {
     this.page = page;
