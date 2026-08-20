@@ -95,10 +95,16 @@ function SocketProvider({ children }: SocketProviderProps) {
           return;
         }
 
-        addTestRun(
-          testRunDispatch,
-          testRuns.filter((tr) => tr.buildId === selectedBuild.id),
+        // events for other builds arrive too — an empty dispatch would still
+        // replace the (possibly huge) testRuns array and re-render the grid
+        const created = testRuns.filter(
+          (tr) => tr.buildId === selectedBuild.id,
         );
+        if (created.length === 0) {
+          return;
+        }
+
+        addTestRun(testRunDispatch, created);
       });
 
       state.socket.on("testRun_updated", function (testRuns: TestRun[]) {
@@ -106,10 +112,14 @@ function SocketProvider({ children }: SocketProviderProps) {
           return;
         }
 
-        updateTestRun(
-          testRunDispatch,
-          testRuns.filter((tr) => tr.buildId === selectedBuild.id),
+        const updated = testRuns.filter(
+          (tr) => tr.buildId === selectedBuild.id,
         );
+        if (updated.length === 0) {
+          return;
+        }
+
+        updateTestRun(testRunDispatch, updated);
       });
 
       state.socket.on("testRun_deleted", function (testRuns: TestRun[]) {
@@ -117,12 +127,14 @@ function SocketProvider({ children }: SocketProviderProps) {
           return;
         }
 
-        deleteTestRun(
-          testRunDispatch,
-          testRuns
-            .filter((tr) => tr.buildId === selectedBuild.id)
-            .map((testRun) => testRun.id),
-        );
+        const deleted = testRuns
+          .filter((tr) => tr.buildId === selectedBuild.id)
+          .map((testRun) => testRun.id);
+        if (deleted.length === 0) {
+          return;
+        }
+
+        deleteTestRun(testRunDispatch, deleted);
       });
     }
   }, [
