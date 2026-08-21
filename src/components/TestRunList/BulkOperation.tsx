@@ -32,9 +32,15 @@ export const BulkOperation: React.FunctionComponent<{
 
   const [isProcessing, setIsProcessing] = React.useState(false);
 
+  // thousands of rows against thousands of selected ids, on every render
+  const selectedIdSet = React.useMemo(
+    () => new Set(selectedIds),
+    [selectedIds],
+  );
+
   const isMerge: boolean = React.useMemo(
-    () => !!rows.find((row) => selectedIds.includes(row.id))?.merge,
-    [selectedIds, rows],
+    () => !!rows.find((row) => selectedIdSet.has(row.id))?.merge,
+    [selectedIdSet, rows],
   );
 
   // The ids of those rows that have status "new" or "resolved"
@@ -43,11 +49,11 @@ export const BulkOperation: React.FunctionComponent<{
       rows
         .filter(
           (row) =>
-            selectedIds.includes(row.id) &&
+            selectedIdSet.has(row.id) &&
             [TestStatus.new, TestStatus.unresolved].includes(row.status),
         )
         .map((row) => row.id),
-    [selectedIds, rows],
+    [selectedIdSet, rows],
   );
 
   const toggleApproveDialogOpen = () => {
@@ -131,7 +137,7 @@ export const BulkOperation: React.FunctionComponent<{
 
     if (downloadDialogOpen) {
       const images = testRuns
-        .filter((testRun) => selectedIds.includes(testRun.id))
+        .filter((testRun) => selectedIdSet.has(testRun.id))
         .map((item) => ({
           filename: item.name,
           name: item.imageName,

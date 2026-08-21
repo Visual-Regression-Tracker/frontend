@@ -228,23 +228,34 @@ const TestRunList: React.FunctionComponent = () => {
     enabled: view === "grid" && !selectedTestRun,
   });
 
+  // A build holds thousands of runs and selecting them all is one click, so
+  // every membership test below reads a set rather than scanning the array.
+  const selectedIdSet = React.useMemo(
+    () => new Set(selectedIds),
+    [selectedIds],
+  );
+
   // every filtered run, not just the page: the table's header box does the same
   const toggleAll = React.useCallback(
     (ids: string[]) =>
-      setSelectedIds((prev) =>
-        ids.every((id) => prev.includes(id)) ? [] : ids,
-      ),
+      setSelectedIds((prev) => {
+        const previous = new Set(prev);
+        return ids.every((id) => previous.has(id)) ? [] : ids;
+      }),
     [],
   );
 
   // a group is selected or cleared as a whole
   const toggleGroup = React.useCallback(
     (ids: string[]) =>
-      setSelectedIds((prev) =>
-        ids.every((id) => prev.includes(id))
-          ? prev.filter((id) => !ids.includes(id))
-          : Array.from(new Set([...prev, ...ids])),
-      ),
+      setSelectedIds((prev) => {
+        const previous = new Set(prev);
+        if (ids.every((id) => previous.has(id))) {
+          const dropped = new Set(ids);
+          return prev.filter((id) => !dropped.has(id));
+        }
+        return Array.from(new Set([...prev, ...ids]));
+      }),
     [],
   );
 
@@ -376,11 +387,11 @@ const TestRunList: React.FunctionComponent = () => {
       groupVariations
         ? groups
             .filter((group) =>
-              group.runs.every((run) => selectedIds.includes(run.id)),
+              group.runs.every((run) => selectedIdSet.has(run.id)),
             )
             .map((group) => group.representative.id)
         : selectedIds,
-    [groupVariations, groups, selectedIds],
+    [groupVariations, groups, selectedIds, selectedIdSet],
   );
 
   // the dialog walks the grid's runs in the grid's order, groups expanded, so
@@ -397,9 +408,9 @@ const TestRunList: React.FunctionComponent = () => {
   const selectedCardCount = React.useMemo(
     () =>
       groups.filter((group) =>
-        group.runs.some((run) => selectedIds.includes(run.id)),
+        group.runs.some((run) => selectedIdSet.has(run.id)),
       ).length,
-    [groups, selectedIds],
+    [groups, selectedIdSet],
   );
 
   // clamped rather than corrected in state: turning grouping off and on again
@@ -430,7 +441,14 @@ const TestRunList: React.FunctionComponent = () => {
     const present = new Set<string>(tagFilter);
     testRuns.forEach((run) => {
       if (matchesNameQuery(run, query) && matchesStatuses(run, statusFilter)) {
-        runTagValues(run).forEach((value) => present.add(value));
+        // read the fields straight off the run: an array per run is thousands
+        // of throwaway allocations on every keystroke
+        TAG_FIELDS.forEach((field) => {
+          const value = run[field];
+          if (typeof value === "string" && value) {
+            present.add(value);
+          }
+        });
       }
     });
     const fieldIndex = (value: string): number => {
@@ -648,7 +666,7 @@ const TestRunList: React.FunctionComponent = () => {
                 onSortChange={setGridSort}
                 density={density}
                 selectedCount={
-                  groupedRunIds.filter((id) => selectedIds.includes(id)).length
+                  groupedRunIds.filter((id) => selectedIdSet.has(id)).length
                 }
                 totalCount={groupedRunIds.length}
                 onToggleAll={() => toggleAll(groupedRunIds)}
@@ -668,7 +686,7 @@ const TestRunList: React.FunctionComponent = () => {
                 ) : (
                   <TestRunGrid
                     groups={pagedGroups}
-                    selectedIds={selectedIds}
+                    selectedIdSet={selectedIdSet}
                     density={density}
                     showDiff={showDiff}
                     activeTags={tagFilter}

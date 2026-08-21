@@ -62,7 +62,9 @@ const clipToLines = (lines: number) => ({
 
 export const TestRunGrid: React.FunctionComponent<{
   groups: TestRunGroup[];
-  selectedIds: string[];
+  // a set rather than the array: a card looks its runs up on every render, and
+  // a build of thousands can have every one of them selected
+  selectedIdSet: Set<string>;
   density: TestRunDensity;
   showDiff: boolean;
   activeTags: string[];
@@ -72,7 +74,7 @@ export const TestRunGrid: React.FunctionComponent<{
   onOpen: (id: string) => void;
 }> = ({
   groups,
-  selectedIds,
+  selectedIdSet,
   density,
   showDiff,
   activeTags,
@@ -90,7 +92,7 @@ export const TestRunGrid: React.FunctionComponent<{
   >
     {groups.map(({ key, runs, representative }) => {
       const ids = runs.map((run) => run.id);
-      const selectedCount = ids.filter((id) => selectedIds.includes(id)).length;
+      const selectedCount = ids.filter((id) => selectedIdSet.has(id)).length;
       const tags = tagValuesOf(representative, tagFieldsFor(runs.length));
 
       return (
