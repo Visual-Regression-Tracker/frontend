@@ -88,6 +88,19 @@ const initialState: State = {
   loading: false,
 };
 
+const sameOrder = (
+  previous: GridRowId[] | undefined,
+  next: GridRowId[] | undefined,
+): boolean => {
+  if (previous === next) {
+    return true;
+  }
+  if (!previous || !next || previous.length !== next.length) {
+    return false;
+  }
+  return previous.every((id, index) => id === next[index]);
+};
+
 function testRunReducer(state: State, action: IAction): State {
   switch (action.type) {
     case "select":
@@ -98,6 +111,12 @@ function testRunReducer(state: State, action: IAction): State {
       };
 
     case "filterSort":
+      // The list republishes its order on every grid state change, and with
+      // thousands of runs a fresh array re-renders everything reading this
+      // context for nothing. Keep the previous one when the order is the same.
+      if (sameOrder(state.filteredSortedTestRunIds, action.payload)) {
+        return state;
+      }
       return {
         ...state,
         filteredSortedTestRunIds: action.payload,
