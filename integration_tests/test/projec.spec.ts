@@ -360,6 +360,23 @@ const openDialogWithoutDiff = async (openProjectPage, page) => {
   return projectPage;
 };
 
+// walking to the next screenshot has to land on another run under review:
+// a settled one carries no fade to have been forgotten
+const openDialogWithNextUnderReview = async (openProjectPage, page) => {
+  const next = {
+    ...TEST_UNRESOLVED,
+    id: "next_unresolved_test_run_id",
+    name: `${TEST_UNRESOLVED.name} 2`,
+  };
+  await mockGetTestRuns(page, TEST_BUILD_FAILED.id, [TEST_UNRESOLVED, next]);
+  await mockTestRun(page, next);
+  const projectPage = await openProjectPage(project.id, TEST_BUILD_FAILED.id);
+  await projectPage.testRunList.getRow(TEST_UNRESOLVED.id).click();
+  await expect(page.getByTestId("drawArea")).toHaveCount(2);
+
+  return projectPage;
+};
+
 const openDialog = async (openProjectPage, page) => {
   const projectPage = await openProjectPage(project.id, TEST_BUILD_FAILED.id);
   await projectPage.testRunList.getRow(TEST_UNRESOLVED.id).click();
@@ -475,7 +492,7 @@ test("forgets the fade on the next screenshot", async ({
   openProjectPage,
   page,
 }) => {
-  await openDialog(openProjectPage, page);
+  await openDialogWithNextUnderReview(openProjectPage, page);
   await page.getByTestId("overlayOpacity").getByRole("slider").press("Home");
   expect(await overlaidOpacity(page)).toBe(0);
 
@@ -496,7 +513,7 @@ test("forgets the blend on the next screenshot", async ({
   openProjectPage,
   page,
 }) => {
-  await openDialog(openProjectPage, page);
+  await openDialogWithNextUnderReview(openProjectPage, page);
   await page.getByTestId("differenceToggle").click();
   await expect(page.getByTestId("differenceToggle")).toHaveAttribute(
     "aria-pressed",
@@ -510,6 +527,39 @@ test("forgets the blend on the next screenshot", async ({
     "aria-pressed",
     "false",
   );
+});
+
+// nothing to see through on either: an ok run matched the baseline it has, and
+// a new one has no baseline behind it at all
+for (const settled of [TEST_RUN_OK, TEST_RUN_NEW]) {
+  test(`hides the fade and the blend on a ${settled.status} screenshot`, async ({
+    openProjectPage,
+    page,
+  }) => {
+    const projectPage = await openProjectPage(project.id, TEST_BUILD_FAILED.id);
+
+    await projectPage.testRunList.getRow(settled.id).click();
+    await expect(page.getByTestId("drawArea").first()).toBeVisible();
+
+    await expect(page.getByTestId("overlayOpacity")).toHaveCount(0);
+    await expect(page.getByTestId("differenceToggle")).toHaveCount(0);
+  });
+}
+
+// an approved run keeps the diff it was approved with, so it keeps the fade
+// alongside the diff toggle: what was approved is still worth looking at
+test("keeps the fade on an approved screenshot carrying a diff", async ({
+  openProjectPage,
+  page,
+}) => {
+  const projectPage = await openProjectPage(project.id, TEST_BUILD_FAILED.id);
+
+  await projectPage.testRunList.getRow(TEST_RUN_APPROVED.id).click();
+  await expect(page.getByTestId("drawArea").first()).toBeVisible();
+
+  await expect(page.getByTestId("overlayOpacity")).toBeVisible();
+  await expect(page.getByTestId("differenceToggle")).toBeVisible();
+  await expect(diffSwitch(page)).toBeVisible();
 });
 
 test("keeps the fade reachable in a narrow window", async ({
