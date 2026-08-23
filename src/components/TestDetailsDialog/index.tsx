@@ -27,17 +27,20 @@ export const TestDetailsDialog: React.FunctionComponent = () => {
   const [notSavedChangesModal, setNotSavedChangesModal] = React.useState(false);
   const [navigationTargetId, setNavigationTargetId] = React.useState<string>();
 
+  // the published order is read by id, not scanned: a linear search per run —
+  // and two more per comparison while sorting — costs seconds on a build of
+  // thousands, and this runs on every list change, dialog open or not
   const testRuns = React.useMemo(() => {
-    if (filteredSortedTestRunIds) {
-      return allTestRuns
-        .filter((tr) => filteredSortedTestRunIds.includes(tr.id))
-        .sort(
-          (a, b) =>
-            filteredSortedTestRunIds.indexOf(a.id) -
-            filteredSortedTestRunIds.indexOf(b.id),
-        );
+    if (!filteredSortedTestRunIds) {
+      return allTestRuns;
     }
-    return allTestRuns;
+    const positionById = new Map(
+      filteredSortedTestRunIds.map((id, position) => [id, position]),
+    );
+
+    return allTestRuns
+      .filter((testRun) => positionById.has(testRun.id))
+      .sort((a, b) => positionById.get(a.id)! - positionById.get(b.id)!);
   }, [allTestRuns, filteredSortedTestRunIds]);
 
   const selectedTestRunIndex = React.useMemo(
@@ -75,9 +78,7 @@ export const TestDetailsDialog: React.FunctionComponent = () => {
     <Dialog open={true} fullScreen className={classes.modal}>
       <TestDetailsModal
         testRun={selectedTestRun}
-        currentRunIndex={testRuns.findIndex(
-          (item) => item.id === selectedTestRun.id,
-        )}
+        currentRunIndex={selectedTestRunIndex}
         totalTestRunCount={testRuns.length}
         touched={touched}
         handleClose={() => navigateById()}
