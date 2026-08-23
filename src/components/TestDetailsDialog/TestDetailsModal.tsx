@@ -58,6 +58,7 @@ import { BaseModal } from "../BaseModal";
 import { Tooltip } from "../Tooltip";
 import ImageDetails, { ImageDetailsProps } from "./ImageDetails";
 import { calculateScale, clampScale } from "../../_helpers/scale.helper";
+import { canCompareToBaseline } from "../../_helpers/testRunStatus.helper";
 import TestStatusChip from "../TestStatusChip";
 
 const useStyles = makeStyles(() => ({
@@ -586,51 +587,56 @@ const TestDetailsModal: React.FunctionComponent<TestDetailsModalProps> = ({
             whose spacing would lift the controls off the row's line. The item
             grows so the row can shrink on a narrow window, and the pair sits at
             its start rather than being pushed to the pane's edge */}
+        {/* the fade and the blend read a checkpoint against its baseline, so
+            they go away once there is nothing left to see through — the same
+            reason the diff toggle above only shows while a diff exists */}
         <Grid item xs minWidth={0}>
-          <Box display="flex" alignItems="center" gap={1}>
-            <MuiTooltip title="Fade the checkpoint out to see the baseline through it">
-              <Box display="flex" alignItems="center" gap={1} minWidth={0}>
-                <Typography variant="caption" color="textSecondary" noWrap>
-                  Fade
-                </Typography>
-                <Box
-                  width={180}
-                  maxWidth="100%"
-                  display="flex"
-                  data-testid="overlayOpacity"
-                >
-                  <Slider
-                    size="small"
-                    disabled={blendDifference}
-                    min={0}
-                    max={1}
-                    step={0.05}
-                    value={overlayOpacity}
-                    onChange={(event, value) => {
-                      setOverlayOpacity(value as number);
-                      setIsDiffShown(false);
-                    }}
-                    aria-label="Fade to the baseline"
-                  />
+          {canCompareToBaseline(testRun) && (
+            <Box display="flex" alignItems="center" gap={1}>
+              <MuiTooltip title="Fade the checkpoint out to see the baseline through it">
+                <Box display="flex" alignItems="center" gap={1} minWidth={0}>
+                  <Typography variant="caption" color="textSecondary" noWrap>
+                    Fade
+                  </Typography>
+                  <Box
+                    width={180}
+                    maxWidth="100%"
+                    display="flex"
+                    data-testid="overlayOpacity"
+                  >
+                    <Slider
+                      size="small"
+                      disabled={blendDifference}
+                      min={0}
+                      max={1}
+                      step={0.05}
+                      value={overlayOpacity}
+                      onChange={(event, value) => {
+                        setOverlayOpacity(value as number);
+                        setIsDiffShown(false);
+                      }}
+                      aria-label="Fade to the baseline"
+                    />
+                  </Box>
                 </Box>
-              </Box>
-            </MuiTooltip>
-            <MuiTooltip title="Blend the two as a difference: what matches goes black, and a shift shows as an offset ghost">
-              <ToggleButton
-                value="blend"
-                size="small"
-                selected={blendDifference}
-                onChange={() => {
-                  setBlendDifference((blend) => !blend);
-                  setIsDiffShown(false);
-                }}
-                data-testid="differenceToggle"
-                style={{ padding: 4, marginLeft: 8 }}
-              >
-                <Compare fontSize="small" />
-              </ToggleButton>
-            </MuiTooltip>
-          </Box>
+              </MuiTooltip>
+              <MuiTooltip title="Blend the two as a difference: what matches goes black, and a shift shows as an offset ghost">
+                <ToggleButton
+                  value="blend"
+                  size="small"
+                  selected={blendDifference}
+                  onChange={() => {
+                    setBlendDifference((blend) => !blend);
+                    setIsDiffShown(false);
+                  }}
+                  data-testid="differenceToggle"
+                  style={{ padding: 4, marginLeft: 8 }}
+                >
+                  <Compare fontSize="small" />
+                </ToggleButton>
+              </MuiTooltip>
+            </Box>
+          )}
         </Grid>
       </Grid>
       <DrawArea
