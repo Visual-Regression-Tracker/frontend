@@ -134,7 +134,7 @@ export const BulkOperation: React.FunctionComponent<{
         .filter((testRun) => selectedIds.includes(testRun.id))
         .map((item) => ({
           filename: item.name,
-          url: staticService.getImage(item.imageName),
+          name: item.imageName,
         }));
 
       return staticService.downloadAsZip(images);

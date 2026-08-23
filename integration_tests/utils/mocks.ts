@@ -1,4 +1,4 @@
-import { Page } from "@playwright/test";
+import { Page, Route } from "@playwright/test";
 import type {
   Build,
   Project,
@@ -100,11 +100,15 @@ export const mockTestRun = async (page: Page, testRun: TestRun) => {
 };
 
 export const mockImage = async (page: Page, image: string) => {
-  return page.route(`${API_URL}/images/${image}`, (route) =>
+  const fulfillWithImage = (route: Route) =>
     route.fulfill({
       path: `integration_tests/images/${image}`,
-    }),
-  );
+    });
+
+  // the API serves an image two ways: a redirect to storage for display, and
+  // the bytes themselves for the download zip
+  await page.route(`${API_URL}/images/${image}`, fulfillWithImage);
+  return page.route(`${API_URL}/images/${image}/download`, fulfillWithImage);
 };
 
 export const mockGetUsers = async (page: Page, users: User[]) => {
