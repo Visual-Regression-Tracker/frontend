@@ -1,11 +1,15 @@
-import { API_URL } from "../_config/env.config";
+import { API_URL, STATIC_URL } from "../_config/env.config";
 import noImage from "../static/no-image.png";
 import JSZip from "jszip";
 import FileSaver from "file-saver";
 
 function getImage(name: string): string {
-  if (name) return `${API_URL}/images/${name}`;
-  return noImage;
+  if (!name) return noImage;
+  // Prefer the static host: the API serves images from the same single-threaded
+  // process that computes image diffs, so under ingestion load image requests
+  // queue behind CPU-bound work.
+  if (STATIC_URL) return `${STATIC_URL}/${name}`;
+  return `${API_URL}/images/${name}`;
 }
 
 async function downloadAsZip(

@@ -117,40 +117,46 @@ function testRunReducer(state: State, action: IAction): State {
         loading: false,
       };
 
-    case "delete":
+    case "delete": {
+      const deletedIds = new Set(action.payload);
       return {
         ...state,
-        testRuns: state.testRuns.filter((p) => !action.payload.includes(p.id)),
+        testRuns: state.testRuns.filter((p) => !deletedIds.has(p.id)),
       };
+    }
 
-    case "add":
+    case "add": {
+      const existingIds = new Set(state.testRuns.map((tr) => tr.id));
+      // remove duplicates
+      const added = action.payload.filter((i) => !existingIds.has(i.id));
+      if (added.length === 0) {
+        return state;
+      }
       return {
         ...state,
-        testRuns: [
-          ...state.testRuns,
-          ...action.payload.filter(
-            // remove duplicates
-            (i) => !state.testRuns.find((tr) => tr.id === i.id),
-          ),
-        ],
+        testRuns: [...state.testRuns, ...added],
       };
+    }
 
-    case "update":
+    case "update": {
+      const updatedById = new Map(action.payload.map((i) => [i.id, i]));
+      const selectedUpdate = state.selectedTestRun
+        ? updatedById.get(state.selectedTestRun.id)
+        : undefined;
+      // keep the testRuns reference stable when nothing matched: replacing the
+      // array invalidates every memo over a possibly huge run list
+      if (
+        !selectedUpdate &&
+        !state.testRuns.some((t) => updatedById.has(t.id))
+      ) {
+        return state;
+      }
       return {
         ...state,
-        testRuns: state.testRuns.map((t) => {
-          const item = action.payload.find((i) => i.id === t.id);
-
-          if (item) {
-            return item;
-          }
-
-          return t;
-        }),
-        selectedTestRun:
-          action.payload.find((i) => i.id === state.selectedTestRun?.id) ??
-          state.selectedTestRun,
+        testRuns: state.testRuns.map((t) => updatedById.get(t.id) ?? t),
+        selectedTestRun: selectedUpdate ?? state.selectedTestRun,
       };
+    }
 
     case "touched":
       return {
