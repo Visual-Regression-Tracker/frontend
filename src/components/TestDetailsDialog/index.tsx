@@ -7,6 +7,10 @@ import { BaseModal } from "../BaseModal";
 import TestDetailsModal from "./TestDetailsModal";
 import { TestRun } from "../../types";
 import { makeStyles } from "@mui/styles";
+import {
+  neighbourImageNames,
+  prefetchImages,
+} from "../../_helpers/imagePrefetch.helper";
 
 const useStyles = makeStyles(() => ({
   modal: {
@@ -47,6 +51,17 @@ export const TestDetailsDialog: React.FunctionComponent = () => {
     () => testRuns.findIndex((t) => t.id === selectedTestRun?.id),
     [testRuns, selectedTestRun?.id],
   );
+
+  // Screenshots are megapixels each, so stepping to the next run used to leave
+  // the pane blank under a "Loading..." while the browser fetched and decoded
+  // them. Fetch the neighbours' pictures while the reviewer looks at this one.
+  const prefetched = React.useRef<Set<string>>(new Set());
+  React.useEffect(() => {
+    prefetchImages(
+      neighbourImageNames(testRuns, selectedTestRunIndex),
+      prefetched.current,
+    );
+  }, [testRuns, selectedTestRunIndex]);
 
   const navigateById = React.useCallback(
     (id?: string) => {
