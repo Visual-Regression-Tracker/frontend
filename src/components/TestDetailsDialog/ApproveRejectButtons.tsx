@@ -1,5 +1,5 @@
 import { Chip, Button } from "@mui/material";
-import { useSnackbar } from "notistack";
+import { useDialogSnackbar } from "./useDialogSnackbar";
 import { useHotkeys } from "react-hotkeys-hook";
 import React from "react";
 import { testRunService } from "../../services";
@@ -32,7 +32,7 @@ export const ApproveRejectButtons: React.FunctionComponent<{
   afterReject?: () => void;
   onOpenVariations: (mode: MatchingVariationsMode) => void;
 }> = ({ testRun, afterApprove, afterReject, onOpenVariations }) => {
-  const { enqueueSnackbar } = useSnackbar();
+  const { enqueueSnackbar } = useDialogSnackbar();
   const classes = useStyles();
   const { selectedProjectId, projectList } = useProjectState();
   const { testRuns } = useTestRunState();

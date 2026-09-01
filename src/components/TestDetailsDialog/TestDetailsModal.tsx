@@ -47,7 +47,7 @@ import { routes, GO_TO_NEXT_KEY } from "../../constants";
 import { useTestRunDispatch, useProjectState } from "../../contexts";
 import { DrawArea, ImageStateLoad } from "./DrawArea";
 import { CommentsPopper } from "../CommentsPopper";
-import { useSnackbar } from "notistack";
+import { useDialogSnackbar } from "./useDialogSnackbar";
 import { ApproveRejectButtons } from "./ApproveRejectButtons";
 import {
   MatchingVariationsDialog,
@@ -137,7 +137,7 @@ const TestDetailsModal: React.FunctionComponent<TestDetailsModalProps> = ({
   handleClose,
 }) => {
   const classes = useStyles();
-  const { enqueueSnackbar } = useSnackbar();
+  const { enqueueSnackbar } = useDialogSnackbar();
   const testRunDispatch = useTestRunDispatch();
   const { selectedProjectId, projectList } = useProjectState();
   const project = projectList.find((item) => item.id === selectedProjectId);
