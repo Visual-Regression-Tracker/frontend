@@ -57,3 +57,44 @@ test("raises its toast clear of the approve buttons", async ({
   const toast = await projectPage.notification.message.boundingBox();
   expect(toast.y + toast.height).toBeLessThanOrEqual(buttons.y);
 });
+
+// A screen now takes a couple of seconds to review and a toast lives five, so
+// approving one after another piles them up over the checkpoint's header.
+test("replaces its confirmation rather than stacking them up", async ({
+  openProjectPage,
+  page,
+}) => {
+  await openProjectPage(project.id, build.id, TEST_UNRESOLVED.id);
+  const approve = page.locator("button").filter({ hasText: /^Approve$/ });
+
+  await approve.click();
+  await approve.click();
+  await approve.click();
+
+  await expect(page.getByText("Approved")).toHaveCount(1);
+});
+
+// Errors are not interchangeable the way the confirmations are: a failure must
+// not be swallowed by whatever the reviewer does next.
+test("lets an error outlive the confirmation that follows it", async ({
+  openProjectPage,
+  page,
+}) => {
+  await page.route(`${API_URL}/test-runs/reject`, (route) =>
+    route.fulfill({ status: 500, body: JSON.stringify({ message: "nope" }) }),
+  );
+  await openProjectPage(project.id, build.id, TEST_UNRESOLVED.id);
+
+  await page
+    .locator("button")
+    .filter({ hasText: /^Reject$/ })
+    .click();
+  await expect(page.getByText("nope")).toBeVisible();
+  await page
+    .locator("button")
+    .filter({ hasText: /^Approve$/ })
+    .click();
+
+  await expect(page.getByText("nope")).toBeVisible();
+  await expect(page.getByText("Approved")).toBeVisible();
+});
