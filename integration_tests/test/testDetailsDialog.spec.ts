@@ -74,6 +74,24 @@ test("replaces its confirmation rather than stacking them up", async ({
   await expect(page.getByText("Approved")).toHaveCount(1);
 });
 
+// notistack's default is five seconds, which outlives the screen the
+// confirmation belongs to and leaves one sitting over the header for good.
+test("lets the confirmation go before the next screen is reviewed", async ({
+  openProjectPage,
+  page,
+}) => {
+  await openProjectPage(project.id, build.id, TEST_UNRESOLVED.id);
+
+  await page
+    .locator("button")
+    .filter({ hasText: /^Approve$/ })
+    .click();
+
+  await expect(page.getByText("Approved")).toBeVisible();
+  // comfortably past a two-second toast, comfortably short of a five-second one
+  await expect(page.getByText("Approved")).toBeHidden({ timeout: 3500 });
+});
+
 // Errors are not interchangeable the way the confirmations are: a failure must
 // not be swallowed by whatever the reviewer does next.
 test("lets an error outlive the confirmation that follows it", async ({

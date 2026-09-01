@@ -38,6 +38,10 @@ export const useDialogSnackbar = () => {
 
       const key = enqueueSnackbar(message, {
         anchorOrigin: { vertical: "top", horizontal: "center" },
+        // notistack's five seconds outlives the screen a confirmation belongs
+        // to, so one sat over the header permanently. Errors keep the default:
+        // they are worth reading, and there is no next screen waiting on them.
+        ...(isConfirmation ? { autoHideDuration: 2000 } : {}),
         ...options,
       });
 
