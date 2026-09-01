@@ -399,7 +399,9 @@ export const MatchingVariationsDialog: React.FunctionComponent<{
             ids.length
           } variations`,
           {
-            variant: "success",
+            // green for an approval only: a rejection is a deliberate outcome,
+            // not a success, and must not read as its opposite
+            variant: mode === "approve" ? "success" : "info",
           },
         );
       })

@@ -140,3 +140,27 @@ test("leaves draw mode behind when moving to another run", async ({
   await expect(page).toHaveURL(new RegExp(`testId=${TEST_RUN_NEW.id}$`));
   await expect(drawMode).toHaveAttribute("aria-pressed", "false");
 });
+
+// A rejection is not a success. Dressing it in the same green tick as an
+// approval makes the two indistinguishable at a glance, which matters most
+// when they sit next to each other and are pressed in a hurry.
+test("does not dress a rejection up as a success", async ({
+  openProjectPage,
+  page,
+}) => {
+  await page.route(`${API_URL}/test-runs/reject`, (route) =>
+    route.fulfill({ status: 200, body: "[]" }),
+  );
+  await openProjectPage(project.id, build.id, TEST_UNRESOLVED.id);
+
+  await page
+    .locator("button")
+    .filter({ hasText: /^Reject$/ })
+    .click();
+
+  const toast = page.locator(".notistack-MuiContent", {
+    hasText: "Rejected",
+  });
+  await expect(toast).toBeVisible();
+  await expect(toast).not.toHaveClass(/notistack-MuiContent-success/);
+});

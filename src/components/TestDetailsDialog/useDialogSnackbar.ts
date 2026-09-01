@@ -30,7 +30,10 @@ export const useDialogSnackbar = () => {
 
   const enqueue = useCallback(
     (message: SnackbarMessage, options?: OptionsObject) => {
-      const isConfirmation = options?.variant === "success";
+      // anything that is not an error: an approval and a rejection are both
+      // just "the last action went through", and neither needs to outlive the
+      // other on screen
+      const isConfirmation = options?.variant !== "error";
       if (isConfirmation && lastConfirmation.current !== null) {
         // a no-op once that toast has timed out on its own
         closeSnackbar(lastConfirmation.current);
