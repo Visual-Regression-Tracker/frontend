@@ -3,6 +3,7 @@ import { test } from "fixtures";
 import {
   TEST_BUILD_FAILED,
   TEST_PROJECT,
+  TEST_RUN_NEW,
   TEST_UNRESOLVED,
 } from "~client/_test/test.data.helper";
 import {
@@ -22,8 +23,9 @@ test.beforeEach(async ({ page }) => {
   await mockGetProjects(page, [project]);
   await mockGetBuilds(page, project.id, [build]);
   await mockGetBuildDetails(page, build);
-  await mockGetTestRuns(page, build.id, [TEST_UNRESOLVED]);
+  await mockGetTestRuns(page, build.id, [TEST_UNRESOLVED, TEST_RUN_NEW]);
   await mockTestRun(page, TEST_UNRESOLVED);
+  await mockTestRun(page, TEST_RUN_NEW);
   await mockImage(page, "image.png");
   await mockImage(page, "diff.png");
   await mockImage(page, "baseline.png");
@@ -115,4 +117,26 @@ test("lets an error outlive the confirmation that follows it", async ({
 
   await expect(page.getByText("nope")).toBeVisible();
   await expect(page.getByText("Approved")).toBeVisible();
+});
+
+// The dialog stays mounted as the reviewer steps between runs, so state that
+// belongs to one screen has to be cleared with it. Draw mode was not: it rode
+// along, and the next click on a screenshot quietly drew an ignore area there,
+// marking a run touched that the reviewer never meant to edit — which then
+// blocked the very navigation that would have cleared the flag.
+test("leaves draw mode behind when moving to another run", async ({
+  openProjectPage,
+  page,
+}) => {
+  await openProjectPage(project.id, build.id, TEST_UNRESOLVED.id);
+  // the toggle is an icon with no label, so it is located by the value MUI
+  // puts on the button element
+  const drawMode = page.locator('button[value="drawMode"]');
+
+  await drawMode.click();
+  await expect(drawMode).toHaveAttribute("aria-pressed", "true");
+  await page.keyboard.press("ArrowRight");
+
+  await expect(page).toHaveURL(new RegExp(`testId=${TEST_RUN_NEW.id}$`));
+  await expect(drawMode).toHaveAttribute("aria-pressed", "false");
 });
