@@ -47,7 +47,7 @@ import { routes, GO_TO_NEXT_KEY } from "../../constants";
 import { useTestRunDispatch, useProjectState } from "../../contexts";
 import { DrawArea, ImageStateLoad } from "./DrawArea";
 import { CommentsPopper } from "../CommentsPopper";
-import { useSnackbar } from "notistack";
+import { useDialogSnackbar } from "./useDialogSnackbar";
 import { ApproveRejectButtons } from "./ApproveRejectButtons";
 import {
   MatchingVariationsDialog,
@@ -137,7 +137,7 @@ const TestDetailsModal: React.FunctionComponent<TestDetailsModalProps> = ({
   handleClose,
 }) => {
   const classes = useStyles();
-  const { enqueueSnackbar } = useSnackbar();
+  const { enqueueSnackbar } = useDialogSnackbar();
   const testRunDispatch = useTestRunDispatch();
   const { selectedProjectId, projectList } = useProjectState();
   const project = projectList.find((item) => item.id === selectedProjectId);
@@ -234,12 +234,19 @@ const TestDetailsModal: React.FunctionComponent<TestDetailsModalProps> = ({
     resetPosition();
   };
 
-  // the fade and the blend belong to the run being looked at, like the diff
-  // does: a half-faded image carried onto the next screenshot would hide it
+  // the fade, the blend and the drawing tools belong to the run being looked
+  // at, like the diff does: a half-faded image carried onto the next
+  // screenshot would hide it, and draw mode carried over turned the reviewer's
+  // next click into an ignore area on a screen they never meant to edit —
+  // which marked that run touched and then blocked the very navigation that
+  // would have cleared the flag. This dialog is not remounted between runs, so
+  // whatever belongs to one screen has to be cleared here.
   useEffect(() => {
     setIsDiffShown(!!testRun.diffName);
     setOverlayOpacity(1);
     setBlendDifference(false);
+    setIsDrawMode(false);
+    setSelectedRectId(undefined);
   }, [testRun.id, testRun.diffName]);
 
   useEffect(() => {

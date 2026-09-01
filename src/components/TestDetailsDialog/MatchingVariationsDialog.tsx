@@ -23,7 +23,7 @@ import CloseIcon from "@mui/icons-material/Close";
 import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
 import ChevronRightIcon from "@mui/icons-material/ChevronRight";
 import { makeStyles } from "@mui/styles";
-import { useSnackbar } from "notistack";
+import { useDialogSnackbar } from "./useDialogSnackbar";
 import { useNavigate } from "react-router";
 import { Tooltip } from "../Tooltip";
 import { testRunService, staticService } from "../../services";
@@ -152,7 +152,7 @@ export const MatchingVariationsDialog: React.FunctionComponent<{
   onClose: () => void;
 }> = ({ mode, testRun, groupBy = "customTags", onClose }) => {
   const classes = useStyles();
-  const { enqueueSnackbar } = useSnackbar();
+  const { enqueueSnackbar } = useDialogSnackbar();
   const navigate = useNavigate();
   const { testRuns: allTestRuns, filteredSortedTestRunIds } = useTestRunState();
   const { selectedBuild } = useBuildState();
@@ -399,7 +399,9 @@ export const MatchingVariationsDialog: React.FunctionComponent<{
             ids.length
           } variations`,
           {
-            variant: "success",
+            // green for an approval only: a rejection is a deliberate outcome,
+            // not a success, and must not read as its opposite
+            variant: mode === "approve" ? "success" : "info",
           },
         );
       })
