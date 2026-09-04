@@ -5,6 +5,10 @@ export interface TestRun {
   buildId: string;
   imageName: string;
   diffName: string;
+  // Small copies the API makes at ingest for the card grids to draw. Absent on
+  // runs ingested before they existed, and on runs with no saved diff.
+  imageThumbnailName?: string;
+  diffThumbnailName?: string;
   diffPercent: number;
   diffTollerancePercent: number;
   status: TestStatus;

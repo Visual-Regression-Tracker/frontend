@@ -15,7 +15,7 @@ import {
   groupStatusSummary,
   TestRunGroup,
 } from "../../_helpers/testRunGroup.helper";
-import { imageFor } from "../../_helpers/testRunImage.helper";
+import { thumbnailFor } from "../../_helpers/testRunImage.helper";
 import { tagValuesOf } from "../../_helpers/testRunTags.helper";
 import { TestRun } from "../../types";
 
@@ -104,7 +104,7 @@ export const TestRunGrid: React.FunctionComponent<{
             <CardActionArea onClick={() => onOpen(representative.id)}>
               <Box
                 component="img"
-                src={imageFor(representative, showDiff)}
+                src={thumbnailFor(representative, showDiff)}
                 alt={representative.name}
                 loading="lazy"
                 decoding="async"
