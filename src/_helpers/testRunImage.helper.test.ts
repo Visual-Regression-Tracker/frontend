@@ -36,7 +36,7 @@ describe("thumbnailFor", () => {
 
   it("falls back when the run has no diff at all", () => {
     const testRun = run({
-      diffName: null as never,
+      diffName: null,
       diffThumbnailName: "stale.thumb.png",
       imageName: "image.png",
       imageThumbnailName: "image.thumb.png",
