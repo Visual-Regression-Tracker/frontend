@@ -26,7 +26,9 @@ const useStyles = makeStyles(() => ({
 
 export interface ImageDetailsProps {
   type: "Baseline" | "Image" | "Diff";
-  imageName: string;
+  // nullable like the run's own names: this already renders "Loading..." for a
+  // missing one, so the guard was there before the type admitted it
+  imageName: string | null;
   image: HTMLImageElement | undefined;
   branchName: string;
   ignoreAreas?: IgnoreArea[];

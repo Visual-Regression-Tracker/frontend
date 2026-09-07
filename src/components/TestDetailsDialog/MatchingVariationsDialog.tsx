@@ -31,7 +31,7 @@ import { MatchingVariations } from "../../services/testRun.service";
 import { useTestRunState, useBuildState } from "../../contexts";
 import { buildTestRunLocation } from "../../_helpers/route.helpers";
 import { GO_TO_NEXT_KEY } from "../../constants";
-import { imageFor } from "../../_helpers/testRunImage.helper";
+import { imageFor, thumbnailFor } from "../../_helpers/testRunImage.helper";
 import { TestRun } from "../../types";
 import { TestStatus } from "../../types/testStatus";
 
@@ -450,7 +450,7 @@ export const MatchingVariationsDialog: React.FunctionComponent<{
         >
           <img
             className={classes.thumb}
-            src={imageFor(run, showDiff)}
+            src={thumbnailFor(run, showDiff)}
             alt={run.customTags}
             loading="lazy"
           />
