@@ -245,6 +245,8 @@ const TestRunList: React.FunctionComponent = () => {
     [],
   );
 
+  const clearSelection = React.useCallback(() => setSelectedIds([]), []);
+
   // a group is selected or cleared as a whole
   const toggleGroup = React.useCallback(
     (ids: string[]) =>
@@ -600,6 +602,7 @@ const TestRunList: React.FunctionComponent = () => {
                   groupByAxis,
                   showDiff,
                   onShowDiffChange: setShowDiff,
+                  onProcessed: clearSelection,
                 },
               }}
               rowSelectionModel={tableSelectionModel}
@@ -658,6 +661,7 @@ const TestRunList: React.FunctionComponent = () => {
                     selectedIds={selectedIds}
                     rows={gridRows}
                     selectionNoun="cards"
+                    onProcessed={clearSelection}
                   />
                 </Box>
               </Toolbar>

@@ -150,6 +150,43 @@ test("selects every run in a group from its card", async ({
   ]);
 });
 
+test("forgets what was selected once a bulk action has run", async ({
+  openProjectPage,
+  page,
+}) => {
+  const approved: string[][] = [];
+  await page.route(
+    `${API_URL}/test-runs/approve?merge=false`,
+    (route, request) => {
+      approved.push(request.postDataJSON());
+      return route.fulfill({ body: "{}" });
+    },
+  );
+  await mockVariations(page);
+  const projectPage = await openProjectPage(project.id, build.id);
+  await projectPage.testRunList.gridViewToggle.click();
+  await projectPage.testRunList.groupToggle.click();
+
+  await projectPage.testRunList.checkCard("Screen A");
+  await projectPage.testRunList.approveBtn.click();
+  await projectPage.modal.confirmBtn.click();
+  await expect.poll(() => approved.length).toBe(1);
+
+  // the runs just approved are done with: carried into the next selection they
+  // would be counted and sent again, and a group is several runs at a time
+  await expect(projectPage.testRunList.selectionCount).toBeHidden();
+
+  await projectPage.testRunList.checkCard("Screen B");
+  await projectPage.testRunList.approveBtn.click();
+  await expect(
+    page.getByText("Are you sure you want to approve 1 items?"),
+  ).toBeVisible();
+  await projectPage.modal.confirmBtn.click();
+
+  await expect.poll(() => approved.length).toBe(2);
+  expect(approved[1]).toEqual([LONE_SCREEN.id]);
+});
+
 test("walks the runs inside a group with the arrows", async ({
   openProjectPage,
   page,
