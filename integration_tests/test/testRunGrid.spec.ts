@@ -69,6 +69,19 @@ const LONE_SCREEN = {
 const colourOf = (locator) =>
   locator.evaluate((el: HTMLElement) => getComputedStyle(el).color);
 
+// the ids each approve request carried, in the order they went out
+const captureApprovals = async (page): Promise<string[][]> => {
+  const approved: string[][] = [];
+  await page.route(
+    `${API_URL}/test-runs/approve?merge=false`,
+    (route, request) => {
+      approved.push(request.postDataJSON());
+      return route.fulfill({ body: "{}" });
+    },
+  );
+  return approved;
+};
+
 const mockVariations = async (page) => {
   await mockGetTestRuns(page, build.id, [
     VARIATION_EN,
@@ -123,14 +136,7 @@ test("selects every run in a group from its card", async ({
   openProjectPage,
   page,
 }) => {
-  const approved: string[][] = [];
-  await page.route(
-    `${API_URL}/test-runs/approve?merge=false`,
-    (route, request) => {
-      approved.push(request.postDataJSON());
-      return route.fulfill({ body: "{}" });
-    },
-  );
+  const approved = await captureApprovals(page);
   await mockVariations(page);
   const projectPage = await openProjectPage(project.id, build.id);
   await projectPage.testRunList.gridViewToggle.click();
@@ -154,14 +160,7 @@ test("forgets what was selected once a bulk action has run", async ({
   openProjectPage,
   page,
 }) => {
-  const approved: string[][] = [];
-  await page.route(
-    `${API_URL}/test-runs/approve?merge=false`,
-    (route, request) => {
-      approved.push(request.postDataJSON());
-      return route.fulfill({ body: "{}" });
-    },
-  );
+  const approved = await captureApprovals(page);
   await mockVariations(page);
   const projectPage = await openProjectPage(project.id, build.id);
   await projectPage.testRunList.gridViewToggle.click();
@@ -332,14 +331,7 @@ test("selects every filtered run from the header, across pages", async ({
   openProjectPage,
   page,
 }) => {
-  const approved: string[][] = [];
-  await page.route(
-    `${API_URL}/test-runs/approve?merge=false`,
-    (route, request) => {
-      approved.push(request.postDataJSON());
-      return route.fulfill({ body: "{}" });
-    },
-  );
+  const approved = await captureApprovals(page);
   await mockGetTestRuns(page, build.id, MANY_RUNS);
   const projectPage = await openProjectPage(project.id, build.id);
   await projectPage.testRunList.gridViewToggle.click();
@@ -492,14 +484,7 @@ test("approves the runs selected in the grid", async ({
   openProjectPage,
   page,
 }) => {
-  const approved: string[][] = [];
-  await page.route(
-    `${API_URL}/test-runs/approve?merge=false`,
-    (route, request) => {
-      approved.push(request.postDataJSON());
-      return route.fulfill({ body: "{}" });
-    },
-  );
+  const approved = await captureApprovals(page);
 
   const projectPage = await openProjectPage(project.id, build.id);
   await projectPage.testRunList.gridViewToggle.click();
@@ -581,14 +566,7 @@ test("selects a whole group from a table row", async ({
   openProjectPage,
   page,
 }) => {
-  const approved: string[][] = [];
-  await page.route(
-    `${API_URL}/test-runs/approve?merge=false`,
-    (route, request) => {
-      approved.push(request.postDataJSON());
-      return route.fulfill({ body: "{}" });
-    },
-  );
+  const approved = await captureApprovals(page);
   await mockVariations(page);
   const projectPage = await openProjectPage(project.id, build.id);
   await projectPage.testRunList.groupToggle.click();
