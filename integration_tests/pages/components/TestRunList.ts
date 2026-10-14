@@ -17,6 +17,7 @@ export class TestRunList extends Table {
   comfortableDensity = this.page.getByTestId("comfortableDensity");
 
   approveBtn = this.page.getByTestId("ThumbUpIcon");
+  refreshBtn = this.page.getByTestId("RefreshIcon");
   // scoped: the build list pagination carries the same aria labels
   pane = this.page.locator("#test-run-list");
   nextPage = this.pane.getByLabel("Go to next page");

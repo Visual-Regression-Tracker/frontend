@@ -146,7 +146,36 @@ function update(
   );
 }
 
+/**
+ * What a refresh did. The reviewer is told rather than left wondering why a
+ * screen did or did not move.
+ */
+export interface RefreshSummary {
+  compared: number;
+  unchanged: number;
+  skipped: number;
+  resolved: number;
+}
+
+// Compare these runs against the baseline their variation carries now, instead
+// of the one frozen into them when the screenshot arrived.
+function refresh(ids: string[]): Promise<RefreshSummary> {
+  const requestOptions = {
+    method: "POST",
+    headers: {
+      ...DEFAULT_HEADERS,
+      ...authHeader(),
+    },
+    body: JSON.stringify(ids),
+  };
+
+  return fetch(`${API_URL}${ENDPOINT_URL}/refresh`, requestOptions).then(
+    handleResponse,
+  );
+}
+
 export const testRunService = {
+  refresh,
   getList,
   getDetails,
   removeBulk,

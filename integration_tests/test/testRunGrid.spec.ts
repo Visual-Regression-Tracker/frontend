@@ -16,6 +16,7 @@ import {
   mockGetProjects,
   mockGetTestRuns,
   mockImage,
+  mockRefreshTestRuns,
   mockTestRun,
 } from "utils/mocks";
 
@@ -478,6 +479,51 @@ test("approves the runs selected in the grid", async ({
     "2 test runs processed.",
   );
   expect(approved).toEqual([[TEST_RUN_NEW.id, TEST_UNRESOLVED.id]]);
+});
+
+test("re-compares the whole build when nothing is ticked", async ({
+  openProjectPage,
+  page,
+}) => {
+  const requested = await mockRefreshTestRuns(page, {
+    compared: 2,
+    unchanged: 2,
+    skipped: 0,
+    resolved: 1,
+  });
+  const projectPage = await openProjectPage(project.id, build.id);
+
+  await projectPage.testRunList.refreshBtn.click();
+
+  await expect(projectPage.notification.message).toHaveText(
+    "Re-compared 2 screenshots, 1 no longer differs.",
+  );
+  // the whole build, not the page or the filter: the reviewer asked about the
+  // build, and the ones already on their baseline cost nothing to ask about
+  expect([...requested[0]].sort()).toEqual(
+    [
+      TEST_UNRESOLVED.id,
+      TEST_RUN_APPROVED.id,
+      TEST_RUN_NEW.id,
+      TEST_RUN_OK.id,
+    ].sort(),
+  );
+});
+
+test("re-compares only what is ticked", async ({ openProjectPage, page }) => {
+  const requested = await mockRefreshTestRuns(page, {
+    compared: 1,
+    unchanged: 0,
+    skipped: 0,
+    resolved: 1,
+  });
+  const projectPage = await openProjectPage(project.id, build.id);
+  await projectPage.testRunList.gridViewToggle.click();
+  await projectPage.testRunList.checkCard(TEST_UNRESOLVED.name);
+
+  await projectPage.testRunList.refreshBtn.click();
+
+  expect(requested[0]).toEqual([TEST_UNRESOLVED.id]);
 });
 
 test("navigates the dialog in the grid's order", async ({

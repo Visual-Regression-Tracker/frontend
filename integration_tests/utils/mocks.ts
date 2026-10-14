@@ -91,6 +91,27 @@ export const mockGetTestRuns = async (
   );
 };
 
+/**
+ * The refresh endpoint, answering with the given summary. Returns the bodies it
+ * was called with, so a test can say which runs the button asked about.
+ */
+export const mockRefreshTestRuns = async (
+  page: Page,
+  summary: {
+    compared: number;
+    unchanged: number;
+    skipped: number;
+    resolved: number;
+  },
+): Promise<string[][]> => {
+  const requested: string[][] = [];
+  await page.route(`${API_URL}/test-runs/refresh`, (route, request) => {
+    requested.push(request.postDataJSON());
+    return route.fulfill({ body: JSON.stringify(summary) });
+  });
+  return requested;
+};
+
 export const mockTestRun = async (page: Page, testRun: TestRun) => {
   return page.route(`${API_URL}/test-runs/${testRun.id}`, (route) =>
     route.fulfill({

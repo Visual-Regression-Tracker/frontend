@@ -6,6 +6,7 @@ import {
   CloudDownload,
   Delete,
   LayersClear,
+  Refresh,
   ThumbDown,
   ThumbUp,
 } from "@mui/icons-material";
@@ -13,6 +14,7 @@ import { staticService, testRunService } from "../../services";
 import { TestRun, TestStatus } from "../../types";
 import { Tooltip } from "../Tooltip";
 import { useTestRunState } from "../../contexts";
+import { describeRefresh } from "../../_helpers/refreshSummary.helper";
 
 export const BulkOperation: React.FunctionComponent<{
   selectedIds: string[];
@@ -55,6 +57,25 @@ export const BulkOperation: React.FunctionComponent<{
         .map((row) => row.id),
     [selectedIdSet, rows],
   );
+
+  // Nothing ticked means the whole build: that is what the reviewer is looking
+  // at, and a run already on its current baseline is left alone by the API, so
+  // asking about all of them costs no more than asking about the stale ones.
+  const refreshTargets =
+    selectedIds.length > 0 ? selectedIds : testRuns.map((run) => run.id);
+
+  const refresh = () => {
+    setIsProcessing(true);
+    testRunService
+      .refresh(refreshTargets)
+      .then((summary) => {
+        enqueueSnackbar(describeRefresh(summary), { variant: "success" });
+      })
+      .catch((err) => {
+        enqueueSnackbar(err, { variant: "error" });
+      })
+      .finally(() => setIsProcessing(false));
+  };
 
   const toggleApproveDialogOpen = () => {
     setApproveDialogOpen(!approveDialogOpen);
@@ -246,6 +267,24 @@ export const BulkOperation: React.FunctionComponent<{
             size="large"
           >
             <LayersClear />
+          </IconButton>
+        </span>
+      </Tooltip>
+      <Tooltip
+        title={
+          selectedIds.length > 0
+            ? `Re-compare selected ${selectionNoun} against the baseline they have now.`
+            : "Re-compare every screenshot in this build against the baseline it has now. Approved and rejected ones are left alone."
+        }
+        aria-label="refresh"
+      >
+        <span>
+          <IconButton
+            disabled={isProcessing || refreshTargets.length === 0}
+            onClick={refresh}
+            size="large"
+          >
+            <Refresh />
           </IconButton>
         </span>
       </Tooltip>
