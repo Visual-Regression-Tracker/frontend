@@ -154,7 +154,9 @@ export interface RefreshSummary {
   compared: number;
   unchanged: number;
   skipped: number;
+  // of those compared: were differing and no longer do / were passing and now differ
   resolved: number;
+  reopened: number;
 }
 
 // Compare these runs against the baseline their variation carries now, instead

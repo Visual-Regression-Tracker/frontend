@@ -490,6 +490,7 @@ test("re-compares the whole build when nothing is ticked", async ({
     unchanged: 2,
     skipped: 0,
     resolved: 1,
+    reopened: 0,
   });
   const projectPage = await openProjectPage(project.id, build.id);
 
@@ -516,6 +517,7 @@ test("re-compares only what is ticked", async ({ openProjectPage, page }) => {
     unchanged: 0,
     skipped: 0,
     resolved: 1,
+    reopened: 0,
   });
   const projectPage = await openProjectPage(project.id, build.id);
   await projectPage.testRunList.gridViewToggle.click();

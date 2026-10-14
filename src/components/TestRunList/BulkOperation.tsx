@@ -69,7 +69,11 @@ export const BulkOperation: React.FunctionComponent<{
     testRunService
       .refresh(refreshTargets)
       .then((summary) => {
-        enqueueSnackbar(describeRefresh(summary), { variant: "success" });
+        enqueueSnackbar(describeRefresh(summary), {
+          // a screen the refresh pushed the other way is not good news, and
+          // green would be the wrong colour to say it in
+          variant: summary.reopened > 0 ? "warning" : "success",
+        });
       })
       .catch((err) => {
         enqueueSnackbar(err, { variant: "error" });

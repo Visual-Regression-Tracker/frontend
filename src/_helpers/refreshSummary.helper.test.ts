@@ -5,6 +5,7 @@ const summary = (partial: Partial<Parameters<typeof describeRefresh>[0]>) => ({
   unchanged: 0,
   skipped: 0,
   resolved: 0,
+  reopened: 0,
   ...partial,
 });
 
@@ -18,6 +19,19 @@ describe("describeRefresh", () => {
   it("speaks of one screenshot in the singular", () => {
     expect(describeRefresh(summary({ compared: 1, resolved: 1 }))).toBe(
       "Re-compared 1 screenshot, 1 no longer differs.",
+    );
+  });
+
+  it("says so when the refresh pushed a screen the other way", () => {
+    expect(
+      describeRefresh(summary({ compared: 12, resolved: 9, reopened: 1 })),
+    ).toBe("Re-compared 12 screenshots, 9 no longer differ, 1 now differs.");
+  });
+
+  // the button must not read as if it could only ever help
+  it("reports a screen that broke even when nothing was put right", () => {
+    expect(describeRefresh(summary({ compared: 3, reopened: 2 }))).toBe(
+      "Re-compared 3 screenshots, 2 now differ.",
     );
   });
 

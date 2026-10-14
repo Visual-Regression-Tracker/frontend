@@ -102,6 +102,7 @@ export const mockRefreshTestRuns = async (
     unchanged: number;
     skipped: number;
     resolved: number;
+    reopened: number;
   },
 ): Promise<string[][]> => {
   const requested: string[][] = [];
