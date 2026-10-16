@@ -106,6 +106,33 @@ function logout() {
   localStorage.removeItem("user");
 }
 
+function getOidcLoginUrl(): string {
+  return `${API_URL}${ENDPOINT_URL}/oidc/login`;
+}
+
+function getMe(token: string): Promise<User> {
+  const requestOptions = {
+    method: "GET",
+    headers: {
+      Authorization: "Bearer " + token,
+    },
+  };
+
+  return fetch(`${API_URL}${ENDPOINT_URL}/me`, requestOptions).then(
+    handleResponse,
+  );
+}
+
+function completeOidcLogin(token: string): Promise<User> {
+  return getMe(token).then((user) => {
+    // The /me endpoint returns the user without the token, so merge it in here
+    // to keep the same shape the local login stores.
+    const userWithToken = { ...user, token } as unknown as User;
+    setUserInLocalStorage(userWithToken);
+    return userWithToken;
+  });
+}
+
 async function getAll(): Promise<User[]> {
   const requestOptions = {
     method: "GET",
@@ -159,4 +186,7 @@ export const usersService = {
   getAll,
   assignRole,
   remove,
+  getOidcLoginUrl,
+  getMe,
+  completeOidcLogin,
 };
