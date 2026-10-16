@@ -26,7 +26,12 @@ const LoginForm = () => {
   const dispatch = useUserDispatch();
 
   useEffect(() => {
-    if (OIDC_ENABLED && OIDC_AUTO_REDIRECT) {
+    // Do not auto-redirect while a callback result (token/error) is being
+    // processed by LoginPage, otherwise we would bounce back to the IdP.
+    const isOidcCallback =
+      window.location.hash.includes("token=") ||
+      window.location.hash.includes("error=");
+    if (OIDC_ENABLED && OIDC_AUTO_REDIRECT && !isOidcCallback) {
       window.location.href = usersService.getOidcLoginUrl();
     }
   }, []);
