@@ -1,4 +1,4 @@
-import React, { useState, FormEvent } from "react";
+import React, { useState, useEffect, FormEvent } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import {
   Button,
@@ -13,6 +13,8 @@ import { LOCATOR_LOGIN_FORM, routes } from "../constants";
 import { useSnackbar } from "notistack";
 import { TextValidator, ValidatorForm } from "react-material-ui-form-validator";
 import PasswordField from "../components/PasswordField";
+import { usersService } from "../services";
+import { OIDC_ENABLED, OIDC_AUTO_REDIRECT } from "../_config/env.config";
 
 const LoginForm = () => {
   const location = useLocation();
@@ -22,6 +24,12 @@ const LoginForm = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const dispatch = useUserDispatch();
+
+  useEffect(() => {
+    if (OIDC_ENABLED && OIDC_AUTO_REDIRECT) {
+      window.location.href = usersService.getOidcLoginUrl();
+    }
+  }, []);
 
   const handleSubmit = (event: FormEvent) => {
     event.preventDefault();
@@ -36,6 +44,25 @@ const LoginForm = () => {
         }),
       );
   };
+
+  if (OIDC_ENABLED) {
+    return (
+      <Card variant="outlined">
+        <CardContent id={LOCATOR_LOGIN_FORM}>
+          <Button
+            color="primary"
+            variant="outlined"
+            data-testid="oidcLoginBtn"
+            onClick={() => {
+              window.location.href = usersService.getOidcLoginUrl();
+            }}
+          >
+            Login with SSO
+          </Button>
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
     <ValidatorForm onSubmit={handleSubmit} instantValidate>
