@@ -5,19 +5,25 @@ import { routes } from "../constants";
 
 interface PropType {
   component: React.FC;
+  roles?: string[];
 }
 
 const PrivateRoute: React.FunctionComponent<PropType> = ({
   component: Component,
+  roles,
 }) => {
-  const { loggedIn } = useUserState();
+  const { loggedIn, user } = useUserState();
   const location = useLocation();
 
-  if (loggedIn) {
-    return <Component />;
+  if (!loggedIn) {
+    return <Navigate to={routes.LOGIN} state={{ from: location.pathname }} />;
   }
 
-  return <Navigate to={routes.LOGIN} state={{ from: location.pathname }} />;
+  if (roles && (!user || !roles.includes(user.role))) {
+    return <Navigate to={routes.PROJECT_LIST_PAGE} />;
+  }
+
+  return <Component />;
 };
 
 export default PrivateRoute;
