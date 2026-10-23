@@ -14,7 +14,7 @@ export class TestVariationListPage extends BasePage {
   mergeForm = this.page.locator("form").filter({
     has: this.page.locator(`#${LOCATOR_TEST_VARIATION_SELECT_BRANCH}`),
   });
-  fromBranch = this.mergeForm.getByRole("button").first();
+  fromBranch = this.mergeForm.getByRole("combobox").first();
   toBranch = this.mergeForm.getByLabel("To branch");
   mergeBtn = this.page.locator(`#${LOCATOR_TEST_VARIATION_SELECT_BRANCH}`);
 

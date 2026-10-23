@@ -13,7 +13,7 @@ export class ProjectListPage extends BasePage {
   buildCount = this.dialog.locator("#buildCount");
   maxBranchLifetime = this.dialog.locator("#maxBranchLifetime");
   autoApprove = this.dialog.getByLabel("Auto approve feature");
-  imageComparison = this.dialog.getByRole("button", {
+  imageComparison = this.dialog.getByRole("combobox", {
     name: "Image comparison library",
   });
 
