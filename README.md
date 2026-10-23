@@ -9,6 +9,19 @@
 
 The testing related `.spec.tsx` files are used with Playwright for browser tests, and the `.test.tsx` files with Jest for unit tests.
 
+## Local OIDC (SSO)
+
+The UI asks the backend (`GET /users/oidc/enabled`) whether OIDC is enabled and then replaces the local login form with the SSO login. No UI configuration is needed for that.
+
+- `REACT_APP_OIDC_AUTO_REDIRECT=true` redirects straight to the identity provider instead of showing the "Login with SSO" button. The overlay enables it:
+
+```sh
+docker compose -f docker-compose.yml -f docker-compose.oidc.yml up
+```
+
+See the backend README for the local mock identity provider.
+
+
 ## Running Tests
 
 ### Unit Tests (Jest)

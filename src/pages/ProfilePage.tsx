@@ -28,6 +28,7 @@ import ProjectSelect from "../components/ProjectSelect";
 import { TextValidator, ValidatorForm } from "react-material-ui-form-validator";
 import { Role } from "../types";
 import PasswordField from "../components/PasswordField";
+import { useOidcEnabled } from "../_helpers/useOidcEnabled";
 
 const ProfilePage = () => {
   const { enqueueSnackbar } = useSnackbar();
@@ -40,6 +41,7 @@ const ProfilePage = () => {
   const [lastName, setLastName] = useState(user?.lastName);
   const [password, setPassword] = useState("");
   const [tabIndex, setTabIndex] = React.useState(0);
+  const oidcEnabled = useOidcEnabled();
 
   const handleUserUpdateSubmit = (event: FormEvent) => {
     event.preventDefault();
@@ -148,6 +150,8 @@ const ProfilePage = () => {
                           variant="outlined"
                           required
                           fullWidth
+                          // The identity provider owns the email of SSO users.
+                          disabled={oidcEnabled !== false}
                           inputProps={{
                             onChange: (
                               event: React.ChangeEvent<HTMLInputElement>,
@@ -192,41 +196,43 @@ const ProfilePage = () => {
                 </Card>
               </ValidatorForm>
             </Grid>
-            <Grid item xs={12}>
-              <ValidatorForm
-                onSubmit={handlePasswordUpdateSubmit}
-                instantValidate
-              >
-                <Card variant="outlined">
-                  <CardHeader title="Change password" />
-                  <CardContent>
-                    <Grid container spacing={2}>
-                      <Grid item xs={12}>
-                        <PasswordField
-                          password={password}
-                          setPassword={setPassword}
-                          label={"New password"}
-                        />
+            {oidcEnabled === false && (
+              <Grid item xs={12}>
+                <ValidatorForm
+                  onSubmit={handlePasswordUpdateSubmit}
+                  instantValidate
+                >
+                  <Card variant="outlined">
+                    <CardHeader title="Change password" />
+                    <CardContent>
+                      <Grid container spacing={2}>
+                        <Grid item xs={12}>
+                          <PasswordField
+                            password={password}
+                            setPassword={setPassword}
+                            label={"New password"}
+                          />
+                        </Grid>
                       </Grid>
-                    </Grid>
-                  </CardContent>
-                  <CardActions>
-                    <Grid container justifyContent="center">
-                      <Grid item>
-                        <Button
-                          type="submit"
-                          color="primary"
-                          variant="outlined"
-                          data-testid="submit"
-                        >
-                          Update
-                        </Button>
+                    </CardContent>
+                    <CardActions>
+                      <Grid container justifyContent="center">
+                        <Grid item>
+                          <Button
+                            type="submit"
+                            color="primary"
+                            variant="outlined"
+                            data-testid="submit"
+                          >
+                            Update
+                          </Button>
+                        </Grid>
                       </Grid>
-                    </Grid>
-                  </CardActions>
-                </Card>
-              </ValidatorForm>
-            </Grid>
+                    </CardActions>
+                  </Card>
+                </ValidatorForm>
+              </Grid>
+            )}
           </Grid>
         </Grid>
         <Grid item xs={6}>

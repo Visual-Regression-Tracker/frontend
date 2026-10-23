@@ -47,9 +47,7 @@ const groupDivider = (
  * the app's Tooltip wrapper forwards only title and children, so the props the
  * group hands down would vanish, and ToggleButtonGroup reads `value` off its
  * direct child to decide which button is selected. Hence MUI's tooltip, the
- * rest spread through it, and the value on both. The tooltip is a bare label,
- * so it lets the pointer through: hovering it would otherwise keep it open
- * over the grid's sort buttons and swallow the click meant for them.
+ * rest spread through it, and the value on both.
  */
 type IconToggleProps = {
   value: string;
@@ -67,6 +65,8 @@ const IconToggle: React.FunctionComponent<IconToggleProps> = ({
   icon,
   ...rest
 }) => (
+  // not interactive: the tooltip opens over the grid header below, and an
+  // interactive one would swallow clicks on the sort buttons under it
   <MuiTooltip
     title={title}
     placement="bottom"
