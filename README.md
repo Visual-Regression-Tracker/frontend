@@ -1,7 +1,5 @@
 # Frontend app for [Visual Regression Tracker](https://github.com/Visual-Regression-Tracker/Visual-Regression-Tracker)
 
-[![Code Smells](https://sonarcloud.io/api/project_badges/measure?project=Visual-Regression-Tracker_frontend&metric=code_smells)](https://sonarcloud.io/summary/new_code?id=Visual-Regression-Tracker_frontend)
-
 ## Local setup
 
 - clone repo

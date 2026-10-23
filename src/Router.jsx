@@ -26,7 +26,7 @@ function Router() {
       />
       <Route
         path={routes.USER_LIST_PAGE}
-        element={<PrivateRoute component={UserListPage} />}
+        element={<PrivateRoute component={UserListPage} roles={["admin"]} />}
       />
       <Route
         path={`${routes.HOME}:projectId`}
