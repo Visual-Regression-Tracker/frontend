@@ -26,14 +26,11 @@ type Fixtures = {
 };
 
 export const test = base.extend<Fixtures>({
-  loginPage: [
-    async ({ page }, use) => {
-      await page.goto("/");
+  loginPage: async ({ page }, use) => {
+    await page.goto("/");
 
-      await use(new LoginPage(page));
-    },
-    { auto: true },
-  ],
+    await use(new LoginPage(page));
+  },
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   projectListPage: async ({ page, authUser }, use) => {
     await page.goto("/projects");
@@ -85,20 +82,26 @@ export const test = base.extend<Fixtures>({
       return new TestVariationDetailsPage(page);
     });
   },
+  // Seeded before the app's own scripts, so a test can open its page straight
+  // away instead of loading "/" first just to reach localStorage. Only once per
+  // tab: a 401 logs out and reloads, and seeding again would loop it.
   authUser: async ({ page }, use) => {
-    await page.evaluate(() =>
-      window.localStorage.setItem(
-        "user",
-        JSON.stringify({
-          id: "00b428bf-9b4d-487f-9883-0dc5ec9403d3",
-          email: "visual-regression-tracker@example.com",
-          firstName: "fname",
-          lastName: "lname",
-          apiKey: "ASJDHGAKJSDGASD",
-          role: "admin",
-          token: "eyJsgOE8Bw2bFwhZAugRRGm8U",
-        }),
-      ),
+    await page.addInitScript(
+      (user) => {
+        if (!window.sessionStorage.getItem("authUserSeeded")) {
+          window.localStorage.setItem("user", user);
+          window.sessionStorage.setItem("authUserSeeded", "1");
+        }
+      },
+      JSON.stringify({
+        id: "00b428bf-9b4d-487f-9883-0dc5ec9403d3",
+        email: "visual-regression-tracker@example.com",
+        firstName: "fname",
+        lastName: "lname",
+        apiKey: "ASJDHGAKJSDGASD",
+        role: "admin",
+        token: "eyJsgOE8Bw2bFwhZAugRRGm8U",
+      }),
     );
 
     await use();
