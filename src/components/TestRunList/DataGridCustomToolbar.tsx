@@ -23,6 +23,7 @@ declare module "@mui/x-data-grid" {
     groupByAxis: GroupByAxis;
     showDiff: boolean;
     onShowDiffChange: (showDiff: boolean) => void;
+    onProcessed: () => void;
   }
 }
 
@@ -38,6 +39,7 @@ export const DataGridCustomToolbar: React.FunctionComponent<{
   groupByAxis: GroupByAxis;
   showDiff: boolean;
   onShowDiffChange: (showDiff: boolean) => void;
+  onProcessed: () => void;
 }> = ({
   selectedIds,
   rows,
@@ -50,6 +52,7 @@ export const DataGridCustomToolbar: React.FunctionComponent<{
   groupByAxis,
   showDiff,
   onShowDiffChange,
+  onProcessed,
 }) => (
   <Toolbar variant="dense">
     <TestRunListControls
@@ -68,6 +71,7 @@ export const DataGridCustomToolbar: React.FunctionComponent<{
         selectedIds={selectedIds}
         rows={rows}
         selectionNoun="rows"
+        onProcessed={onProcessed}
       />
     </Box>
   </Toolbar>

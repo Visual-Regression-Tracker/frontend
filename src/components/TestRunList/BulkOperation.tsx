@@ -19,7 +19,9 @@ export const BulkOperation: React.FunctionComponent<{
   rows: TestRun[];
   // what the view calls the things you tick: rows in the table, cards in the grid
   selectionNoun: "rows" | "cards";
-}> = ({ selectedIds, rows, selectionNoun }) => {
+  // the selection has been acted on and no longer stands
+  onProcessed: () => void;
+}> = ({ selectedIds, rows, selectionNoun, onProcessed }) => {
   const { testRuns } = useTestRunState();
   const { enqueueSnackbar } = useSnackbar();
   const [approveDialogOpen, setApproveDialogOpen] = React.useState(false);
@@ -268,11 +270,20 @@ export const BulkOperation: React.FunctionComponent<{
           </Typography>
         }
         onSubmit={() => {
+          // a download leaves the runs as they were, so the selection is still
+          // about something and is kept; everything else has just consumed it
+          const consumesSelection = !downloadDialogOpen;
+          const count = selectedIds.length;
           setIsProcessing(true);
           getBulkAction()
             .then(() => {
               setIsProcessing(false);
-              enqueueSnackbar(`${selectedIds.length} test runs processed.`, {
+              // Dropped only once the API has confirmed: a failed request leaves
+              // the ticks in place so the action can be retried as it stands.
+              if (consumesSelection) {
+                onProcessed();
+              }
+              enqueueSnackbar(`${count} test runs processed.`, {
                 variant: "success",
               });
             })
