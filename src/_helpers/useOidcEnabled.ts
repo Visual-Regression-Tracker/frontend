@@ -7,11 +7,15 @@ export function useOidcEnabled(): boolean | undefined {
 
   useEffect(() => {
     let active = true;
-    usersService.isOidcEnabled().then((enabled) => {
+    const update = (enabled: boolean) => {
       if (active) {
         setOidcEnabled(enabled);
       }
-    });
+    };
+    usersService
+      .isOidcEnabled()
+      .then(update)
+      .catch(() => update(false));
     return () => {
       active = false;
     };
