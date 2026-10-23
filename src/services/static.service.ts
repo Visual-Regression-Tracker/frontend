@@ -3,7 +3,10 @@ import noImage from "../static/no-image.png";
 import JSZip from "jszip";
 import FileSaver from "file-saver";
 
-function getImage(name: string): string {
+// Takes a nullable name because most of them are: a run has no diff until it
+// has been compared, and no thumbnail unless one was made. The placeholder
+// answer for that was always here; only the signature disagreed.
+function getImage(name: string | null | undefined): string {
   if (!name) return noImage;
   // Prefer the static host: the API serves images from the same single-threaded
   // process that computes image diffs, so under ingestion load image requests

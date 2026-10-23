@@ -45,7 +45,8 @@ type StageStateArray = [
 ];
 
 interface IDrawArea {
-  imageName: string | undefined;
+  // nullable too: this already falls back to the placeholder when it is missing
+  imageName: string | null | undefined;
   imageState: [undefined | HTMLImageElement, ImageStateLoad];
   /** Drawn under the image, to compare the two in place rather than side by side. */
   underlayImage?: HTMLImageElement;

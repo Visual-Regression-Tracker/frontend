@@ -560,7 +560,7 @@ const TestDetailsModal: React.FunctionComponent<TestDetailsModalProps> = ({
   const diffPanel = (
     type: ImageDetailsProps["type"],
     branchName: string,
-    imageName: string,
+    imageName: string | null,
     imageStatus: ImageStateLoad,
     image: HTMLImageElement | undefined,
   ) => (
