@@ -60,7 +60,7 @@ export const ApproveRejectButtons: React.FunctionComponent<{
         enqueueSnackbar("Approved", {
           variant: "success",
         });
-        afterApprove && afterApprove();
+        afterApprove?.();
       })
       .catch((err) =>
         enqueueSnackbar(err, {
@@ -79,7 +79,7 @@ export const ApproveRejectButtons: React.FunctionComponent<{
         enqueueSnackbar("Rejected", {
           variant: "info",
         });
-        afterReject && afterReject();
+        afterReject?.();
       })
       .catch((err) =>
         enqueueSnackbar(err, {
