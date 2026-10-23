@@ -7,6 +7,7 @@ export class BuildList {
   scrollContainer = this.page.getByTestId("buildListScroll");
   selectAll = this.page.getByTestId("buildSelectAll");
   deleteSelectedBtn = this.page.getByTestId("buildDeleteSelected");
+  currentPage = this.buildList.locator('[aria-current="true"]');
 
   constructor(public page: Page) {
     this.page = page;

@@ -13,15 +13,22 @@ function getList(
   take: number,
   skip: number,
   ciBuildId?: string,
+  // answer with the page this build is on rather than the one at skip; the
+  // payload says where that page starts. Ignored for a build the list has no
+  // page for, deleted or left out by the search
+  aroundBuildId?: string,
 ): Promise<PaginatedData<Build>> {
   const requestOptions = {
     method: "GET",
     headers: authHeader(),
   };
   const search = ciBuildId ? `&ciBuildId=${encodeURIComponent(ciBuildId)}` : "";
+  const around = aroundBuildId
+    ? `&aroundBuildId=${encodeURIComponent(aroundBuildId)}`
+    : "";
 
   return fetch(
-    `${API_URL}${ENDPOINT_URL}?projectId=${projectId}&take=${take}&skip=${skip}${search}`,
+    `${API_URL}${ENDPOINT_URL}?projectId=${projectId}&take=${take}&skip=${skip}${search}${around}`,
     requestOptions,
   ).then(handleResponse);
 }

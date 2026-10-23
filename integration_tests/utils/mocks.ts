@@ -40,7 +40,6 @@ export const mockGetBuilds = async (
     (route, request) => {
       const params = new URL(request.url()).searchParams;
       const take = Number(params.get("take"));
-      const skip = Number(params.get("skip"));
       const ciBuildId = params.get("ciBuildId");
       const matching = ciBuildId
         ? builds.filter(
@@ -48,6 +47,17 @@ export const mockGetBuilds = async (
               build.ciBuildId?.toLowerCase().includes(ciBuildId.toLowerCase()),
           )
         : builds;
+
+      // asked for the page holding a build, the API answers with that page and
+      // says where it starts; a build it does not hold leaves the skip alone
+      const around = params.get("aroundBuildId");
+      const index = around
+        ? matching.findIndex((build) => build.id === around)
+        : -1;
+      const skip =
+        index < 0
+          ? Number(params.get("skip"))
+          : Math.floor(index / take) * take;
 
       return route.fulfill({
         body: JSON.stringify({
