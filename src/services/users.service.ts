@@ -110,6 +110,23 @@ function getOidcLoginUrl(): string {
   return `${API_URL}${ENDPOINT_URL}/oidc/login`;
 }
 
+// Set on an explicit logout so the login page does not auto-redirect to the
+// IdP, which would sign the user straight back in with its own session.
+const OIDC_LOGGED_OUT_KEY = "oidcLoggedOut";
+
+function markOidcLoggedOut() {
+  sessionStorage.setItem(OIDC_LOGGED_OUT_KEY, "true");
+}
+
+function isOidcLoggedOut(): boolean {
+  return sessionStorage.getItem(OIDC_LOGGED_OUT_KEY) === "true";
+}
+
+function startOidcLogin() {
+  sessionStorage.removeItem(OIDC_LOGGED_OUT_KEY);
+  window.location.href = getOidcLoginUrl();
+}
+
 function getMe(token: string): Promise<User> {
   const requestOptions = {
     method: "GET",
@@ -187,6 +204,9 @@ export const usersService = {
   assignRole,
   remove,
   getOidcLoginUrl,
+  markOidcLoggedOut,
+  isOidcLoggedOut,
+  startOidcLogin,
   getMe,
   completeOidcLogin,
 };

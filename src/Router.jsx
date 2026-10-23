@@ -10,12 +10,19 @@ import ProfilePage from "./pages/ProfilePage";
 import TestVariationListPage from "./pages/TestVariationListPage";
 import UserListPage from "./pages/UserListPage";
 import TestVariationDetailsPage from "./pages/TestVariationDetailsPage";
+import { OIDC_ENABLED } from "./_config/env.config";
 
 function Router() {
   return (
     <Routes>
       <Route path={routes.LOGIN} element={<LoginPage />} />
-      <Route path={routes.REGISTER} element={<RegisterPage />} />
+      <Route
+        path={routes.REGISTER}
+        element={
+          // Accounts are created on the first SSO login when OIDC is enabled.
+          OIDC_ENABLED ? <Navigate to={routes.LOGIN} /> : <RegisterPage />
+        }
+      />
       <Route
         path={routes.PROFILE_PAGE}
         element={<PrivateRoute component={ProfilePage} />}

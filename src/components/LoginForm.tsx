@@ -31,8 +31,13 @@ const LoginForm = () => {
     const isOidcCallback =
       window.location.hash.includes("token=") ||
       window.location.hash.includes("error=");
-    if (OIDC_ENABLED && OIDC_AUTO_REDIRECT && !isOidcCallback) {
-      window.location.href = usersService.getOidcLoginUrl();
+    if (
+      OIDC_ENABLED &&
+      OIDC_AUTO_REDIRECT &&
+      !isOidcCallback &&
+      !usersService.isOidcLoggedOut()
+    ) {
+      usersService.startOidcLogin();
     }
   }, []);
 
@@ -58,9 +63,7 @@ const LoginForm = () => {
             color="primary"
             variant="outlined"
             data-testid="oidcLoginBtn"
-            onClick={() => {
-              window.location.href = usersService.getOidcLoginUrl();
-            }}
+            onClick={() => usersService.startOidcLogin()}
           >
             Login with SSO
           </Button>

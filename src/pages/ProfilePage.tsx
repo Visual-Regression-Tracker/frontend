@@ -28,6 +28,7 @@ import ProjectSelect from "../components/ProjectSelect";
 import { TextValidator, ValidatorForm } from "react-material-ui-form-validator";
 import { Role } from "../types";
 import PasswordField from "../components/PasswordField";
+import { OIDC_ENABLED } from "../_config/env.config";
 
 const ProfilePage = () => {
   const { enqueueSnackbar } = useSnackbar();
@@ -148,6 +149,8 @@ const ProfilePage = () => {
                           variant="outlined"
                           required
                           fullWidth
+                          // The identity provider owns the email of SSO users.
+                          disabled={OIDC_ENABLED}
                           inputProps={{
                             onChange: (
                               event: React.ChangeEvent<HTMLInputElement>,
@@ -192,41 +195,43 @@ const ProfilePage = () => {
                 </Card>
               </ValidatorForm>
             </Grid>
-            <Grid item xs={12}>
-              <ValidatorForm
-                onSubmit={handlePasswordUpdateSubmit}
-                instantValidate
-              >
-                <Card variant="outlined">
-                  <CardHeader title="Change password" />
-                  <CardContent>
-                    <Grid container spacing={2}>
-                      <Grid item xs={12}>
-                        <PasswordField
-                          password={password}
-                          setPassword={setPassword}
-                          label={"New password"}
-                        />
+            {!OIDC_ENABLED && (
+              <Grid item xs={12}>
+                <ValidatorForm
+                  onSubmit={handlePasswordUpdateSubmit}
+                  instantValidate
+                >
+                  <Card variant="outlined">
+                    <CardHeader title="Change password" />
+                    <CardContent>
+                      <Grid container spacing={2}>
+                        <Grid item xs={12}>
+                          <PasswordField
+                            password={password}
+                            setPassword={setPassword}
+                            label={"New password"}
+                          />
+                        </Grid>
                       </Grid>
-                    </Grid>
-                  </CardContent>
-                  <CardActions>
-                    <Grid container justifyContent="center">
-                      <Grid item>
-                        <Button
-                          type="submit"
-                          color="primary"
-                          variant="outlined"
-                          data-testid="submit"
-                        >
-                          Update
-                        </Button>
+                    </CardContent>
+                    <CardActions>
+                      <Grid container justifyContent="center">
+                        <Grid item>
+                          <Button
+                            type="submit"
+                            color="primary"
+                            variant="outlined"
+                            data-testid="submit"
+                          >
+                            Update
+                          </Button>
+                        </Grid>
                       </Grid>
-                    </Grid>
-                  </CardActions>
-                </Card>
-              </ValidatorForm>
-            </Grid>
+                    </CardActions>
+                  </Card>
+                </ValidatorForm>
+              </Grid>
+            )}
           </Grid>
         </Grid>
         <Grid item xs={6}>
