@@ -1,16 +1,21 @@
 import { defineConfig } from "@playwright/test";
 
-const baseURL = "http://localhost:5173";
+const baseURL = "http://localhost:4173";
 const isCI = !!process.env.CI;
 
 export default defineConfig({
   testDir: "integration_tests/test",
   fullyParallel: true,
+  // GitHub's ubuntu runners have 4 cores; the default would use only half
+  workers: isCI ? 4 : undefined,
   reporter: "html",
   webServer: {
-    command: "npm run start",
+    // The production bundle, not the dev server: Vite transforms modules on
+    // request in one process, which stalls the workers and caps the speed-up
+    command: "npm run test:pw:serve",
     url: baseURL,
-    reuseExistingServer: true,
+    reuseExistingServer: !isCI,
+    timeout: 120_000,
   },
   use: {
     headless: true,

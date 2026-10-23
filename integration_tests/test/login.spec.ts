@@ -1,8 +1,8 @@
 import { test } from "fixtures";
 import { expect } from "@playwright/test";
 
-test("renders", async ({ page }) => {
-  await expect(page).toHaveScreenshot("login-page.png");
+test("renders", async ({ loginPage }) => {
+  await expect(loginPage.page).toHaveScreenshot("login-page.png");
 });
 
 test("can login", async ({ loginPage }) => {

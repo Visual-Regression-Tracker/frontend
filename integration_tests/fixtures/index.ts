@@ -44,14 +44,11 @@ export const AUTH_USER = {
 
 export const test = base.extend<Fixtures & Options>({
   userRole: ["admin", { option: true }],
-  loginPage: [
-    async ({ page }, use) => {
-      await page.goto("/");
+  loginPage: async ({ page }, use) => {
+    await page.goto("/");
 
-      await use(new LoginPage(page));
-    },
-    { auto: true },
-  ],
+    await use(new LoginPage(page));
+  },
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   projectListPage: async ({ page, authUser }, use) => {
     await page.goto("/projects");
@@ -103,10 +100,18 @@ export const test = base.extend<Fixtures & Options>({
       return new TestVariationDetailsPage(page);
     });
   },
+  // Seeded before the app's own scripts, so a test can open its page straight
+  // away instead of loading "/" first just to reach localStorage. Only once per
+  // tab: a 401 logs out and reloads, and seeding again would loop it.
   authUser: async ({ page, userRole }, use) => {
-    await page.evaluate(
-      (user) => window.localStorage.setItem("user", JSON.stringify(user)),
-      { ...AUTH_USER, role: userRole },
+    await page.addInitScript(
+      (user) => {
+        if (!window.sessionStorage.getItem("authUserSeeded")) {
+          window.localStorage.setItem("user", user);
+          window.sessionStorage.setItem("authUserSeeded", "1");
+        }
+      },
+      JSON.stringify({ ...AUTH_USER, role: userRole }),
     );
 
     await use();

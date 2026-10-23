@@ -12,6 +12,13 @@ DOCKER_DIR="${LOCAL_DIR}"
 echo "Pulling image ${IMAGE_NAME}..."
 docker pull "${IMAGE_NAME}"
 
+# Pass CI through so playwright.config.ts picks its CI settings (workers,
+# retries, forbidOnly) inside the container too
+ENV_ARGS=()
+if [[ -n "${CI}" ]]; then
+    ENV_ARGS+=(-e CI)
+fi
+
 # Build command - install Linux-compatible dependencies, then run tests
 # This ensures platform-specific binaries (like esbuild) are installed for Linux
 PLAYWRIGHT_ARGS="$*"
