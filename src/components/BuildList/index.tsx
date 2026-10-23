@@ -217,7 +217,8 @@ const BuildList: FunctionComponent = () => {
     setBulkDeleteDialogOpen(false);
     const ids = [...selectedIds];
 
-    Promise.all(
+    // every delete settles into a result, so this cannot reject
+    void Promise.all(
       ids.map((id) =>
         deleteBuild(buildDispatch, id)
           .then(() => ({ id, ok: true }))
