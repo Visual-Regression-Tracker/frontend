@@ -214,12 +214,13 @@ function ProjectProvider({ children }: ProjectProviderProps) {
   const { enqueueSnackbar } = useSnackbar();
 
   React.useEffect(() => {
-    loggedIn &&
+    if (loggedIn) {
       getProjectList(dispatch).catch((err) =>
         enqueueSnackbar(err, {
           variant: "error",
         }),
       );
+    }
   }, [enqueueSnackbar, loggedIn]);
 
   return (
