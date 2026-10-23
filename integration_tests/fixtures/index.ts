@@ -4,6 +4,12 @@ import { RegisterPage } from "pages/RegisterPage";
 import { TestVariationDetailsPage } from "pages/TestVariationDetailsPage";
 import { TestVariationListPage } from "pages/TestVariationListPage";
 import { UserListPage } from "pages/UserListPage";
+import type { User } from "~client/types";
+
+type Options = {
+  // the role the signed-in user has; override with test.use({ userRole })
+  userRole: User["role"];
+};
 
 type Fixtures = {
   loginPage: LoginPage;
@@ -25,7 +31,19 @@ type Fixtures = {
   authUser: void;
 };
 
-export const test = base.extend<Fixtures>({
+// the user the authUser fixture signs in, before its role is applied
+export const AUTH_USER = {
+  id: "00b428bf-9b4d-487f-9883-0dc5ec9403d3",
+  email: "visual-regression-tracker@example.com",
+  firstName: "fname",
+  lastName: "lname",
+  apiKey: "ASJDHGAKJSDGASD",
+  role: "admin",
+  token: "eyJsgOE8Bw2bFwhZAugRRGm8U",
+};
+
+export const test = base.extend<Fixtures & Options>({
+  userRole: ["admin", { option: true }],
   loginPage: async ({ page }, use) => {
     await page.goto("/");
 
@@ -85,7 +103,7 @@ export const test = base.extend<Fixtures>({
   // Seeded before the app's own scripts, so a test can open its page straight
   // away instead of loading "/" first just to reach localStorage. Only once per
   // tab: a 401 logs out and reloads, and seeding again would loop it.
-  authUser: async ({ page }, use) => {
+  authUser: async ({ page, userRole }, use) => {
     await page.addInitScript(
       (user) => {
         if (!window.sessionStorage.getItem("authUserSeeded")) {
@@ -93,15 +111,7 @@ export const test = base.extend<Fixtures>({
           window.sessionStorage.setItem("authUserSeeded", "1");
         }
       },
-      JSON.stringify({
-        id: "00b428bf-9b4d-487f-9883-0dc5ec9403d3",
-        email: "visual-regression-tracker@example.com",
-        firstName: "fname",
-        lastName: "lname",
-        apiKey: "ASJDHGAKJSDGASD",
-        role: "admin",
-        token: "eyJsgOE8Bw2bFwhZAugRRGm8U",
-      }),
+      JSON.stringify({ ...AUTH_USER, role: userRole }),
     );
 
     await use();

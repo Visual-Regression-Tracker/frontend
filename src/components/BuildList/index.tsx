@@ -63,7 +63,8 @@ const BuildList: FunctionComponent = () => {
   const classes = useStyles();
   const navigate = useNavigate();
   const location = useLocation();
-  const { buildList, selectedBuild, loading, total, take } = useBuildState();
+  const { buildList, selectedBuild, loading, error, total, take } =
+    useBuildState();
   const buildDispatch = useBuildDispatch();
   const { enqueueSnackbar } = useSnackbar();
   const { selectedProjectId } = useProjectState();
@@ -176,11 +177,12 @@ const BuildList: FunctionComponent = () => {
             }
             buildDispatch({ type: "get", payload });
           })
-          .catch((err: string) =>
+          .catch((err: string) => {
+            buildDispatch({ type: "failure", payload: err });
             enqueueSnackbar(err, {
               variant: "error",
-            }),
-          );
+            });
+          });
       }
     },
     [buildDispatch, enqueueSnackbar, selectedProjectId, take, searchQuery],
@@ -217,7 +219,8 @@ const BuildList: FunctionComponent = () => {
     setBulkDeleteDialogOpen(false);
     const ids = [...selectedIds];
 
-    Promise.all(
+    // every delete settles into a result, so this cannot reject
+    void Promise.all(
       ids.map((id) =>
         deleteBuild(buildDispatch, id)
           .then(() => ({ id, ok: true }))
@@ -307,6 +310,16 @@ const BuildList: FunctionComponent = () => {
           <List>
             {loading && buildList.length === 0 ? (
               <SkeletonList />
+            ) : error && buildList.length === 0 ? (
+              <Typography
+                variant="subtitle1"
+                align="center"
+                color="error"
+                sx={{ padding: 2, overflowWrap: "anywhere" }}
+                data-testid="buildListError"
+              >
+                Builds could not be loaded
+              </Typography>
             ) : buildList.length === 0 ? (
               <Typography
                 variant="subtitle1"
