@@ -378,7 +378,7 @@ test("eases the zoom out instead of stopping dead", async ({
   expect(new Set(widths).size).toBeGreaterThan(3);
 });
 
-test("can download images", async ({ openProjectPage, page }) => {
+test("can download images", async ({ openProjectPage }) => {
   const projectPage = await openProjectPage(project.id, TEST_BUILD_FAILED.id);
 
   await projectPage.testRunList.checkRow(TEST_UNRESOLVED.id);
