@@ -16,7 +16,41 @@ export const mockGetProjects = async (page: Page, projects: Project[]) => {
         body: JSON.stringify(projects),
       });
     }
+    return route.fallback();
   });
+};
+
+// the API answers create and update with the project it saved
+export const mockSaveProject = async (page: Page) => {
+  return page.route(`${API_URL}/projects`, (route, request) => {
+    if (request.method() === "POST" || request.method() === "PUT") {
+      const project = request.postDataJSON();
+      return route.fulfill({
+        body: JSON.stringify({
+          ...project,
+          id: project.id || "createdProjectId",
+          createdAt: "2020-09-14T06:57:25.845Z",
+          updatedAt: "2020-09-14T06:57:25.845Z",
+        }),
+      });
+    }
+    return route.fallback();
+  });
+};
+
+// any endpoint failing the way the API does: a status and a message
+export const mockApiError = async (
+  page: Page,
+  url: string | ((url: URL) => boolean),
+  status: number,
+  message = "Internal server error",
+) => {
+  return page.route(url, (route) =>
+    route.fulfill({
+      status,
+      body: JSON.stringify({ statusCode: status, message }),
+    }),
+  );
 };
 
 export const mockDeleteProject = async (page: Page, project: Project) => {
@@ -121,6 +155,22 @@ export const mockImage = async (page: Page, image: string) => {
   return page.route(`${API_URL}/images/${image}/download`, fulfillWithImage);
 };
 
+export const mockUpdateUser = async (page: Page, user: object) => {
+  return page.route(`${API_URL}/users`, (route, request) =>
+    request.method() === "PUT"
+      ? route.fulfill({
+          body: JSON.stringify({ ...user, ...request.postDataJSON() }),
+        })
+      : route.fallback(),
+  );
+};
+
+export const mockChangePassword = async (page: Page) => {
+  return page.route(`${API_URL}/users/password`, (route) =>
+    route.fulfill({ body: JSON.stringify(true) }),
+  );
+};
+
 export const mockGetUsers = async (page: Page, users: User[]) => {
   return page.route(`${API_URL}/users/all`, (route) =>
     route.fulfill({
@@ -153,5 +203,29 @@ export const mockGetTestVariationDetails = async (
       route.fulfill({
         body: JSON.stringify(testVariation),
       }),
+  );
+};
+
+export const mockDeleteTestVariation = async (
+  page: Page,
+  testVariation: TestVariation,
+) => {
+  // compared decoded: test variation ids may hold spaces
+  return page.route(
+    (url) =>
+      decodeURIComponent(url.pathname) ===
+      `/test-variations/${testVariation.id}`,
+    (route, request) =>
+      request.method() === "DELETE"
+        ? route.fulfill({ body: JSON.stringify(testVariation) })
+        : route.fallback(),
+  );
+};
+
+// merging starts a build on the target branch and answers with it
+export const mockMergeTestVariations = async (page: Page, build: Build) => {
+  return page.route(
+    (url) => url.pathname === "/test-variations/merge",
+    (route) => route.fulfill({ body: JSON.stringify(build) }),
   );
 };

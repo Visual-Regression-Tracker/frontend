@@ -4,6 +4,7 @@ export class BuildList {
   buildList = this.page.locator("#build-list");
   searchInput = this.page.getByTestId("buildSearch");
   emptyMessage = this.page.getByTestId("buildListEmpty");
+  errorMessage = this.page.getByTestId("buildListError");
   scrollContainer = this.page.getByTestId("buildListScroll");
   selectAll = this.page.getByTestId("buildSelectAll");
   deleteSelectedBtn = this.page.getByTestId("buildDeleteSelected");

@@ -4,6 +4,12 @@ import { RegisterPage } from "pages/RegisterPage";
 import { TestVariationDetailsPage } from "pages/TestVariationDetailsPage";
 import { TestVariationListPage } from "pages/TestVariationListPage";
 import { UserListPage } from "pages/UserListPage";
+import type { User } from "~client/types";
+
+type Options = {
+  // the role the signed-in user has; override with test.use({ userRole })
+  userRole: User["role"];
+};
 
 type Fixtures = {
   loginPage: LoginPage;
@@ -25,7 +31,19 @@ type Fixtures = {
   authUser: void;
 };
 
-export const test = base.extend<Fixtures>({
+// the user the authUser fixture signs in, before its role is applied
+export const AUTH_USER = {
+  id: "00b428bf-9b4d-487f-9883-0dc5ec9403d3",
+  email: "visual-regression-tracker@example.com",
+  firstName: "fname",
+  lastName: "lname",
+  apiKey: "ASJDHGAKJSDGASD",
+  role: "admin",
+  token: "eyJsgOE8Bw2bFwhZAugRRGm8U",
+};
+
+export const test = base.extend<Fixtures & Options>({
+  userRole: ["admin", { option: true }],
   loginPage: [
     async ({ page }, use) => {
       await page.goto("/");
@@ -85,20 +103,10 @@ export const test = base.extend<Fixtures>({
       return new TestVariationDetailsPage(page);
     });
   },
-  authUser: async ({ page }, use) => {
-    await page.evaluate(() =>
-      window.localStorage.setItem(
-        "user",
-        JSON.stringify({
-          id: "00b428bf-9b4d-487f-9883-0dc5ec9403d3",
-          email: "visual-regression-tracker@example.com",
-          firstName: "fname",
-          lastName: "lname",
-          apiKey: "ASJDHGAKJSDGASD",
-          role: "admin",
-          token: "eyJsgOE8Bw2bFwhZAugRRGm8U",
-        }),
-      ),
+  authUser: async ({ page, userRole }, use) => {
+    await page.evaluate(
+      (user) => window.localStorage.setItem("user", JSON.stringify(user)),
+      { ...AUTH_USER, role: userRole },
     );
 
     await use();
