@@ -170,6 +170,61 @@ test("scrolls back to the top of the list on page change", async ({
   expect(await projectPage.buildList.scrollTop()).toBe(0);
 });
 
+// 35 builds, ten to a page: the last one is on the fourth
+const manyBuilds = Array.from({ length: 35 }, (_, i) => ({
+  ...TEST_BUILD_PASSED,
+  id: `build-${i}`,
+  number: 100 + i,
+}));
+
+const openLinkedTo = async (openProjectPage, page, build) => {
+  await mockGetBuilds(page, project.id, manyBuilds);
+  await mockGetBuildDetails(page, build);
+  await mockGetTestRuns(page, build.id, []);
+  return openProjectPage(project.id, build.id);
+};
+
+test("opens the list on the page the linked build is on", async ({
+  openProjectPage,
+  page,
+}) => {
+  const linked = manyBuilds[32];
+
+  const projectPage = await openLinkedTo(openProjectPage, page, linked);
+
+  await expect(
+    projectPage.buildList.getBuildLocator(linked.number),
+  ).toBeVisible();
+  await expect(projectPage.buildList.currentPage).toHaveText("4");
+});
+
+test("stays on the first page for a link to a build it cannot place", async ({
+  openProjectPage,
+  page,
+}) => {
+  // deleted since the link was sent, or another project's
+  const stranger = { ...TEST_BUILD_PASSED, id: "gone", number: 999 };
+
+  const projectPage = await openLinkedTo(openProjectPage, page, stranger);
+
+  await expect(projectPage.buildList.getBuildLocator(100)).toBeVisible();
+  await expect(projectPage.buildList.currentPage).toHaveText("1");
+});
+
+test("leaves the page the reviewer picked alone", async ({
+  openProjectPage,
+  page,
+}) => {
+  const linked = manyBuilds[32];
+  const projectPage = await openLinkedTo(openProjectPage, page, linked);
+  await expect(projectPage.buildList.currentPage).toHaveText("4");
+
+  await projectPage.buildList.goToPage(1);
+
+  await expect(projectPage.buildList.currentPage).toHaveText("1");
+  await expect(projectPage.buildList.getBuildLocator(100)).toBeVisible();
+});
+
 test("keeps wheel zoom inside the image pane", async ({
   openProjectPage,
   page,
