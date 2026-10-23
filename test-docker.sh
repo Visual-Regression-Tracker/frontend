@@ -15,7 +15,7 @@ docker pull "${IMAGE_NAME}"
 # Pass CI through so playwright.config.ts picks its CI settings (workers,
 # retries, forbidOnly) inside the container too
 ENV_ARGS=()
-if [ -n "${CI}" ]; then
+if [[ -n "${CI}" ]]; then
     ENV_ARGS+=(-e CI)
 fi
 
