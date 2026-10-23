@@ -1,7 +1,6 @@
 services:
   ui:
     environment:
-      REACT_APP_OIDC_ENABLED: 'true'
       # 'true' redirects straight to the identity provider, 'false' shows the
       # "Login with SSO" button on the login page.
       REACT_APP_OIDC_AUTO_REDIRECT: 'true'

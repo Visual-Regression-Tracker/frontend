@@ -106,6 +106,21 @@ function logout() {
   localStorage.removeItem("user");
 }
 
+let oidcEnabledPromise: Promise<boolean> | undefined;
+
+// The backend is the single source of truth for whether SSO is enabled.
+// Cached for the page lifetime; any failure (e.g. an older backend without
+// the endpoint) means the local login form is shown.
+function isOidcEnabled(): Promise<boolean> {
+  if (!oidcEnabledPromise) {
+    oidcEnabledPromise = fetch(`${API_URL}${ENDPOINT_URL}/oidc/enabled`)
+      .then((response) => (response.ok ? response.json() : false))
+      .then((enabled) => enabled === true)
+      .catch(() => false);
+  }
+  return oidcEnabledPromise;
+}
+
 function getOidcLoginUrl(): string {
   return `${API_URL}${ENDPOINT_URL}/oidc/login`;
 }
@@ -203,6 +218,7 @@ export const usersService = {
   getAll,
   assignRole,
   remove,
+  isOidcEnabled,
   getOidcLoginUrl,
   markOidcLoggedOut,
   isOidcLoggedOut,

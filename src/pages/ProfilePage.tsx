@@ -28,7 +28,7 @@ import ProjectSelect from "../components/ProjectSelect";
 import { TextValidator, ValidatorForm } from "react-material-ui-form-validator";
 import { Role } from "../types";
 import PasswordField from "../components/PasswordField";
-import { OIDC_ENABLED } from "../_config/env.config";
+import { useOidcEnabled } from "../_helpers/useOidcEnabled";
 
 const ProfilePage = () => {
   const { enqueueSnackbar } = useSnackbar();
@@ -41,6 +41,7 @@ const ProfilePage = () => {
   const [lastName, setLastName] = useState(user?.lastName);
   const [password, setPassword] = useState("");
   const [tabIndex, setTabIndex] = React.useState(0);
+  const oidcEnabled = useOidcEnabled();
 
   const handleUserUpdateSubmit = (event: FormEvent) => {
     event.preventDefault();
@@ -150,7 +151,7 @@ const ProfilePage = () => {
                           required
                           fullWidth
                           // The identity provider owns the email of SSO users.
-                          disabled={OIDC_ENABLED}
+                          disabled={oidcEnabled !== false}
                           inputProps={{
                             onChange: (
                               event: React.ChangeEvent<HTMLInputElement>,
@@ -195,7 +196,7 @@ const ProfilePage = () => {
                 </Card>
               </ValidatorForm>
             </Grid>
-            {!OIDC_ENABLED && (
+            {oidcEnabled === false && (
               <Grid item xs={12}>
                 <ValidatorForm
                   onSubmit={handlePasswordUpdateSubmit}
