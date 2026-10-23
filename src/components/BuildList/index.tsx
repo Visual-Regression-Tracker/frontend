@@ -34,8 +34,11 @@ import { TextValidator } from "react-material-ui-form-validator";
 import { Build } from "../../types";
 import { BaseModal } from "../BaseModal";
 import { buildsService } from "../../services";
-import { useNavigate } from "react-router";
-import { buildTestRunLocation } from "../../_helpers/route.helpers";
+import { useLocation, useNavigate } from "react-router";
+import {
+  buildTestRunLocation,
+  getQueryParams,
+} from "../../_helpers/route.helpers";
 import { Tooltip } from "../Tooltip";
 
 const useStyles = makeStyles(() =>
@@ -59,6 +62,7 @@ const useStyles = makeStyles(() =>
 const BuildList: FunctionComponent = () => {
   const classes = useStyles();
   const navigate = useNavigate();
+  const location = useLocation();
   const { buildList, selectedBuild, loading, total, take } = useBuildState();
   const buildDispatch = useBuildDispatch();
   const { enqueueSnackbar } = useSnackbar();
@@ -69,6 +73,9 @@ const BuildList: FunctionComponent = () => {
   const [menuBuild, setMenuBuild] = React.useState<Build | null>();
   const [newCiBuildId, setNewCiBuildId] = React.useState("");
   const [paginationPage, setPaginationPage] = React.useState(1);
+  // the build the page was opened on, if any: read once, since picking a build
+  // from the list afterwards must not move the list under the reviewer
+  const linkedBuildId = React.useRef(getQueryParams(location.search).buildId);
   const [searchQuery, setSearchQuery] = React.useState("");
   const listRef = React.useRef<HTMLDivElement>(null);
   const [selectedIds, setSelectedIds] = React.useState<string[]>([]);
@@ -143,15 +150,30 @@ const BuildList: FunctionComponent = () => {
     [navigate],
   );
 
-  const handlePaginationChange = React.useCallback(
-    (page: number) => {
+  const loadPage = React.useCallback(
+    (page: number, aroundBuildId?: string) => {
       setPaginationPage(page);
       listRef.current?.scrollTo({ top: 0 });
       if (selectedProjectId) {
+        // the link has been followed; from here the reviewer's own paging and
+        // searching decide the page
+        linkedBuildId.current = undefined;
         buildDispatch({ type: "request" });
         buildsService
-          .getList(selectedProjectId, take, take * (page - 1), searchQuery)
+          .getList(
+            selectedProjectId,
+            take,
+            take * (page - 1),
+            searchQuery,
+            aroundBuildId,
+          )
           .then((payload) => {
+            // asked for a build's page, the answer says where that page starts
+            // and so which page number to show. A build the list cannot place
+            // leaves the skip as asked, and this lands back on the same page.
+            if (aroundBuildId && payload.take > 0) {
+              setPaginationPage(Math.floor(payload.skip / payload.take) + 1);
+            }
             buildDispatch({ type: "get", payload });
           })
           .catch((err: string) =>
@@ -164,9 +186,17 @@ const BuildList: FunctionComponent = () => {
     [buildDispatch, enqueueSnackbar, selectedProjectId, take, searchQuery],
   );
 
+  const handlePaginationChange = React.useCallback(
+    (page: number) => loadPage(page),
+    [loadPage],
+  );
+
+  // A link carries a build, not the page it sits on, so the list has to ask for
+  // the page that holds it — otherwise a build on the fourth page opens behind
+  // a list showing the first.
   React.useEffect(() => {
-    handlePaginationChange(1);
-  }, [handlePaginationChange]);
+    loadPage(1, linkedBuildId.current);
+  }, [loadPage]);
 
   React.useEffect(() => {
     // drops an in-flight select all so its ids cannot land on another search
