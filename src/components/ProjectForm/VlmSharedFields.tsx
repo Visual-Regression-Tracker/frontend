@@ -3,15 +3,6 @@ import { FormControlLabel, Switch } from "@mui/material";
 import { TextValidator } from "react-material-ui-form-validator";
 import { Tooltip } from "../Tooltip";
 
-interface VlmSharedFieldsProps {
-  prompt: string;
-  temperature: number;
-  useThinking: boolean;
-  onPromptChange: (value: string) => void;
-  onTemperatureChange: (value: number) => void;
-  onUseThinkingChange: (value: boolean) => void;
-}
-
 export const VlmPromptField: React.FunctionComponent<{
   value: string;
   onChange: (value: string) => void;

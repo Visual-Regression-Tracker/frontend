@@ -543,9 +543,9 @@ export const MatchingVariationsDialog: React.FunctionComponent<{
                     color="textSecondary"
                     className={classes.sectionSubtitle}
                   >
-                    These don't match the change you're reviewing, so they're
-                    unchecked. Open each to inspect and include only if it's the
-                    same intended change.
+                    These don&apos;t match the change you&apos;re reviewing, so
+                    they&apos;re unchecked. Open each to inspect and include
+                    only if it&apos;s the same intended change.
                   </Typography>
                   <div className={classes.grid}>
                     {skipped.map((run) => renderCard(run, run.reason))}
