@@ -2,10 +2,11 @@ import React from "react";
 import { Navigate, useLocation } from "react-router-dom";
 import { useUserState } from "../contexts";
 import { routes } from "../constants";
+import { User } from "../types";
 
 interface PropType {
   component: React.FC;
-  roles?: string[];
+  roles?: User["role"][];
 }
 
 const PrivateRoute: React.FunctionComponent<PropType> = ({
