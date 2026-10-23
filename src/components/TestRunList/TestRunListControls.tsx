@@ -65,7 +65,15 @@ const IconToggle: React.FunctionComponent<IconToggleProps> = ({
   icon,
   ...rest
 }) => (
-  <MuiTooltip title={title} placement="bottom" arrow {...rest}>
+  // not interactive: the tooltip opens over the grid header below, and an
+  // interactive one would swallow clicks on the sort buttons under it
+  <MuiTooltip
+    title={title}
+    placement="bottom"
+    arrow
+    disableInteractive
+    {...rest}
+  >
     <ToggleButton value={value} aria-label={ariaLabel} data-testid={testId}>
       {icon}
     </ToggleButton>

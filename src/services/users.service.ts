@@ -106,6 +106,63 @@ function logout() {
   localStorage.removeItem("user");
 }
 
+let oidcEnabledPromise: Promise<boolean> | undefined;
+
+// The backend is the single source of truth for whether SSO is enabled.
+// Cached for the page lifetime; any failure (e.g. an older backend without
+// the endpoint) means the local login form is shown.
+function isOidcEnabled(): Promise<boolean> {
+  oidcEnabledPromise ??= fetch(`${API_URL}${ENDPOINT_URL}/oidc/enabled`)
+    .then((response) => (response.ok ? response.json() : false))
+    .then((enabled) => enabled === true)
+    .catch(() => false);
+  return oidcEnabledPromise;
+}
+
+function getOidcLoginUrl(): string {
+  return `${API_URL}${ENDPOINT_URL}/oidc/login`;
+}
+
+// Set on an explicit logout so the login page does not auto-redirect to the
+// IdP, which would sign the user straight back in with its own session.
+const OIDC_LOGGED_OUT_KEY = "oidcLoggedOut";
+
+function markOidcLoggedOut() {
+  sessionStorage.setItem(OIDC_LOGGED_OUT_KEY, "true");
+}
+
+function isOidcLoggedOut(): boolean {
+  return sessionStorage.getItem(OIDC_LOGGED_OUT_KEY) === "true";
+}
+
+function startOidcLogin() {
+  sessionStorage.removeItem(OIDC_LOGGED_OUT_KEY);
+  window.location.href = getOidcLoginUrl();
+}
+
+function getMe(token: string): Promise<User> {
+  const requestOptions = {
+    method: "GET",
+    headers: {
+      Authorization: "Bearer " + token,
+    },
+  };
+
+  return fetch(`${API_URL}${ENDPOINT_URL}/me`, requestOptions).then(
+    handleResponse,
+  );
+}
+
+function completeOidcLogin(token: string): Promise<User> {
+  return getMe(token).then((user) => {
+    // The /me endpoint returns the user without the token, so merge it in here
+    // to keep the same shape the local login stores.
+    const userWithToken = { ...user, token } as unknown as User;
+    setUserInLocalStorage(userWithToken);
+    return userWithToken;
+  });
+}
+
 async function getAll(): Promise<User[]> {
   const requestOptions = {
     method: "GET",
@@ -159,4 +216,11 @@ export const usersService = {
   getAll,
   assignRole,
   remove,
+  isOidcEnabled,
+  getOidcLoginUrl,
+  markOidcLoggedOut,
+  isOidcLoggedOut,
+  startOidcLogin,
+  getMe,
+  completeOidcLogin,
 };

@@ -125,6 +125,7 @@ function update(dispatch: Dispatch, { firstName, lastName, email }) {
 
 function logout(dispatch: Dispatch) {
   usersService.logout();
+  usersService.markOidcLoggedOut();
   dispatch({
     type: "logout",
   });
