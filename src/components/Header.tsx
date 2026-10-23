@@ -16,6 +16,7 @@ import GuidedTour from "./GuidedTour";
 import {
   HEADER_HELP_MENU_ID,
   HEADER_AVATAR_MENU_ID,
+  HEADER_AVATAR_BUTTON_TEST_ID,
   HEADER_HELP_MENU_BUTTON_TEST_ID,
   HEADER_LOGOUT_BUTTON_TEST_ID,
 } from "./Header.locators";
@@ -200,6 +201,7 @@ const Header: FunctionComponent = () => {
                     }
                     size="large"
                     color="secondary"
+                    data-testid={HEADER_AVATAR_BUTTON_TEST_ID}
                   >
                     <Avatar>{`${user?.firstName[0]}${user?.lastName[0]}`}</Avatar>
                   </IconButton>
