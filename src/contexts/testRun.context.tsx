@@ -14,6 +14,10 @@ interface IGetAction {
   payload: TestRun[];
 }
 
+interface IFailureAction {
+  type: "failure";
+}
+
 interface ISelectAction {
   type: "select";
   payload?: TestRun;
@@ -56,6 +60,7 @@ interface ITouchedAction {
 
 type IAction =
   | IRequestAction
+  | IFailureAction
   | IGetAction
   | IDeleteAction
   | IAddAction
@@ -133,6 +138,13 @@ function testRunReducer(state: State, action: IAction): State {
       return {
         ...state,
         testRuns: action.payload,
+        loading: false,
+      };
+
+    // a failed fetch has to end the loading too, or the progress bar stays
+    case "failure":
+      return {
+        ...state,
         loading: false,
       };
 

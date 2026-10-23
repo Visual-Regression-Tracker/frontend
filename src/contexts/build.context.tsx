@@ -12,6 +12,11 @@ interface IResetAction {
   type: "reset";
 }
 
+interface IFailureAction {
+  type: "failure";
+  payload: string;
+}
+
 interface IGetAction {
   type: "get";
   payload: PaginatedData<Build>;
@@ -40,6 +45,7 @@ interface IUpdateAction {
 type IAction =
   | IRequestAction
   | IResetAction
+  | IFailureAction
   | IGetAction
   | IDeleteAction
   | IAddAction
@@ -53,6 +59,8 @@ type State = {
   take: number;
   skip: number;
   loading: boolean;
+  // why the last fetch failed, until the next one starts
+  error?: string;
 };
 type BuildProviderProps = {
   children: React.ReactNode;
@@ -84,6 +92,7 @@ function buildReducer(state: State, action: IAction): State {
       return {
         ...state,
         loading: true,
+        error: undefined,
       };
 
     case "reset":
@@ -92,6 +101,15 @@ function buildReducer(state: State, action: IAction): State {
         buildList: [],
         total: 0,
         loading: true,
+        error: undefined,
+      };
+
+    // a failed fetch has to end the loading too, or the skeletons stay forever
+    case "failure":
+      return {
+        ...state,
+        loading: false,
+        error: action.payload,
       };
 
     case "get":

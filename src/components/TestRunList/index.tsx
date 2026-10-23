@@ -501,11 +501,12 @@ const TestRunList: React.FunctionComponent = () => {
             payload,
           }),
         )
-        .catch((err: string) =>
+        .catch((err: string) => {
+          testRunDispatch({ type: "failure" });
           enqueueSnackbar(err, {
             variant: "error",
-          }),
-        );
+          });
+        });
     } else {
       testRunDispatch({
         type: "get",

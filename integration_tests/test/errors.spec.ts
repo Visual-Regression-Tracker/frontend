@@ -1,8 +1,17 @@
 import { expect } from "@playwright/test";
 import { test } from "fixtures";
 import { LoginPage, ProjectListPage } from "pages";
-import { TEST_PROJECT } from "~client/_test/test.data.helper";
-import { API_URL, mockApiError, mockGetProjects } from "utils/mocks";
+import {
+  TEST_BUILD_FAILED,
+  TEST_PROJECT,
+} from "~client/_test/test.data.helper";
+import {
+  API_URL,
+  mockApiError,
+  mockGetBuildDetails,
+  mockGetBuilds,
+  mockGetProjects,
+} from "utils/mocks";
 
 const project = TEST_PROJECT;
 
@@ -86,5 +95,32 @@ test.describe("a failing API", () => {
     await expect(page).toHaveURL(new RegExp(`/${project.id}$`));
     await expect(projectPage.selectProject).toBeVisible();
     await expect(projectPage.buildList.searchInput).toBeVisible();
+    // in place of the loading skeletons, not "No builds"
+    await expect(projectPage.buildList.errorMessage).toBeVisible();
+    await expect(projectPage.buildList.emptyMessage).toBeHidden();
+  });
+
+  test("stops loading when the test runs fail", async ({
+    page,
+    openProjectPage,
+  }) => {
+    await mockGetProjects(page, [project]);
+    await mockGetBuilds(page, project.id, [TEST_BUILD_FAILED]);
+    await mockGetBuildDetails(page, TEST_BUILD_FAILED);
+    await mockApiError(
+      page,
+      `${API_URL}/test-runs?buildId=${TEST_BUILD_FAILED.id}`,
+      500,
+      "Could not load test runs",
+    );
+
+    const projectPage = await openProjectPage(project.id, TEST_BUILD_FAILED.id);
+
+    await expect(projectPage.notification.message).toHaveText(
+      "Could not load test runs",
+    );
+    await expect(
+      projectPage.testRunList.pane.getByRole("progressbar"),
+    ).toHaveCount(0);
   });
 });
