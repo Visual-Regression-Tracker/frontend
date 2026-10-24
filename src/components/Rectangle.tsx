@@ -29,9 +29,9 @@ const Rectangle: React.FunctionComponent<IProps> = ({
   };
 
   React.useEffect(() => {
-    if (isSelected) {
+    if (isSelected && shapeRef.current) {
       // we need to attach transformer manually
-      trRef.current!.setNode(shapeRef.current);
+      trRef.current!.nodes([shapeRef.current]);
       trRef.current!.getLayer()!.batchDraw();
     }
   }, [isSelected]);

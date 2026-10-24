@@ -349,14 +349,19 @@ export const DrawArea: FunctionComponent<IDrawArea> = ({
             ref={stageRef}
             width={Math.max(image?.width ?? 0, underlayImage?.width ?? 0)}
             height={Math.max(image?.height ?? 0, underlayImage?.height ?? 0)}
-            onMouseDown={onStageClick}
+            // Konva 8 dropped the content* events; the stage's own pointer
+            // events fire after the shape under the pointer has had its turn,
+            // as they did
+            onMouseDown={(event) => {
+              onStageClick(event);
+              handleContentMousedown(event);
+            }}
+            onMouseUp={handleContentMouseup}
+            onMouseMove={handleContentMouseMove}
             style={{
               transform: `scale(${stageScale})`,
               transformOrigin: "top left",
             }}
-            onContentMousedown={handleContentMousedown}
-            onContentMouseup={handleContentMouseup}
-            onContentMouseMove={handleContentMouseMove}
           >
             <Layer>
               {underlayImage && <Image image={underlayImage} />}
