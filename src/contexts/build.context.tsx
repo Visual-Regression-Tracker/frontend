@@ -79,7 +79,7 @@ const initialState: State = {
   loading: false,
 };
 
-function buildReducer(state: State, action: IAction): State {
+export function buildReducer(state: State, action: IAction): State {
   switch (action.type) {
     case "select":
       return {

@@ -33,7 +33,7 @@ const UserDispatchContext = React.createContext<Dispatch | undefined>(
   undefined,
 );
 
-function UserReducer(state: State, action: IAction): State {
+export function UserReducer(state: State, action: IAction): State {
   switch (action.type) {
     case "success":
       return {

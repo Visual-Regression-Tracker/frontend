@@ -106,7 +106,7 @@ const sameOrder = (
   return previous.every((id, index) => id === next[index]);
 };
 
-function testRunReducer(state: State, action: IAction): State {
+export function testRunReducer(state: State, action: IAction): State {
   switch (action.type) {
     case "select":
       return {

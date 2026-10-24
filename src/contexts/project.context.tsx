@@ -63,7 +63,7 @@ const ProjectDispatchContext = React.createContext<Dispatch | undefined>(
   undefined,
 );
 
-function projectReducer(state: State, action: IAction): State {
+export function projectReducer(state: State, action: IAction): State {
   switch (action.type) {
     case "get":
       return {
