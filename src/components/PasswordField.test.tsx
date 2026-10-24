@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { screen } from "@testing-library/react";
+import { screen, waitFor } from "@testing-library/react";
 import { ValidatorForm } from "react-material-ui-form-validator";
 import { renderWithProviders } from "../_test/render";
 import PasswordField from "./PasswordField";
@@ -70,8 +70,11 @@ describe("PasswordField", () => {
 
     await user.type(screen.getByTestId("password"), "b");
 
-    expect(
-      screen.queryByText("Enter at least two characters."),
-    ).not.toBeInTheDocument();
+    // the validator checks asynchronously, so the message goes a tick later
+    await waitFor(() =>
+      expect(
+        screen.queryByText("Enter at least two characters."),
+      ).not.toBeInTheDocument(),
+    );
   });
 });

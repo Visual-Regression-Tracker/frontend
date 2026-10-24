@@ -178,7 +178,7 @@ export const DrawArea: FunctionComponent<IDrawArea> = ({
     // The canvas shrinks as you zoom out, so a listener on it stops receiving
     // the wheel once it slips out from under the cursor and the browser zooms
     // the page instead. The container keeps its size, so it owns the gesture.
-    // React 17 registers onWheel passively, hence the manual listener.
+    // React registers onWheel passively, hence the manual listener.
     const zoom = (event: WheelEvent) => {
       event.preventDefault();
 

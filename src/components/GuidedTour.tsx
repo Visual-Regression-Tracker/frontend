@@ -9,6 +9,7 @@ import { brand } from "../theme/tokens";
 const GuidedTour: FunctionComponent = () => {
   const [run, setRun] = React.useState(false);
   const { helpSteps } = useHelpState();
+  const stepCount = helpSteps.length;
 
   const handleJoyrideEvent = ({ status }: EventData) => {
     if (status === STATUS.FINISHED || status === STATUS.SKIPPED) {
@@ -19,8 +20,14 @@ const GuidedTour: FunctionComponent = () => {
   const handleClickStart = (event: React.MouseEvent<HTMLElement>) => {
     event.preventDefault();
 
+    // joyride 3 starts only when run turns true with steps in hand; a run set
+    // on a page without steps would keep the button from doing anything later
     const [firstStep] = helpSteps;
-    if (firstStep && typeof firstStep.target === "string") {
+    if (!firstStep) {
+      return;
+    }
+
+    if (typeof firstStep.target === "string") {
       const targetId = firstStep.target.startsWith("#")
         ? firstStep.target.slice(1)
         : firstStep.target;
@@ -34,30 +41,28 @@ const GuidedTour: FunctionComponent = () => {
   };
 
   return (
-    <>
-      <Button
-        startIcon={<LiveHelp />}
-        onClick={handleClickStart}
-        data-testid={TAKE_TOUR_BUTTON_TEST_ID}
-      >
-        Take a tour
-      </Button>
-      {/* beside the button, not in it: clicks in the tooltip bubble through
-          the React tree and would restart a tour that just ended */}
+    <Button
+      startIcon={<LiveHelp />}
+      onClick={handleClickStart}
+      data-testid={TAKE_TOUR_BUTTON_TEST_ID}
+    >
       <Joyride
         onEvent={handleJoyrideEvent}
-        continuous={true}
+        continuous
         run={run}
-        scrollToFirstStep={true}
+        scrollToFirstStep
         steps={helpSteps}
         // joyride 3 leaves the progress off the last step's button
         locale={{
           nextWithProgress: "Next ({current}/{total})",
-          last: `Last (${helpSteps.length}/${helpSteps.length})`,
+          last: `Last (${stepCount}/${stepCount})`,
         }}
         options={{
           buttons: ["back", "primary", "skip"],
           skipBeacon: true,
+          // the highlighted element stays inert, as it was with joyride 2: a
+          // click on it would navigate or open a dialog under the tour
+          blockTargetInteraction: true,
           showProgress: true,
           dismissKeyAction: false,
           zIndex: 10000,
@@ -109,7 +114,8 @@ const GuidedTour: FunctionComponent = () => {
           },
         }}
       />
-    </>
+      Take a tour
+    </Button>
   );
 };
 
