@@ -12,6 +12,7 @@ import type { Project } from "~client/types";
 import {
   API_URL,
   mockDeleteProject,
+  mockDinov2Status,
   mockGetBuilds,
   mockGetFavoriteProjects,
   mockGetProjects,
@@ -479,4 +480,65 @@ test("opens a project with the filter on as it was saved", async ({
 
   await expect(projectListPage.noiseFilter).toBeChecked();
   await expect(projectListPage.noiseThreshold).toHaveValue("42");
+});
+
+test.describe("DINOv2 check", () => {
+  test("is saved with its threshold where the server has the service", async ({
+    projectListPage,
+    page,
+  }) => {
+    await mockDinov2Status(page, { configured: true, available: true });
+    await mockSaveProject(page);
+
+    await projectListPage.editBtn.click();
+    await projectListPage.noiseFilter.check();
+    await projectListPage.dinov2Check.check();
+    // the backend's default, until changed
+    await expect(projectListPage.dinov2Threshold).toHaveValue("0.15");
+    await projectListPage.dinov2Threshold.fill("0.2");
+
+    const [request] = await Promise.all([
+      waitForSave(page, "PUT"),
+      projectListPage.modal.confirmBtn.click(),
+    ]);
+
+    expect(savedConfig(request)).toEqual({
+      ...JSON.parse(PIXELMATCH_DEFAULT_CONFIG),
+      blurAmplitudeFilter: true,
+      dinov2Check: true,
+      dinov2Threshold: 0.2,
+    });
+  });
+
+  // with no service, the backend would send every run the filter passes to
+  // review
+  test("cannot be turned on where the server has no service", async ({
+    projectListPage,
+    page,
+  }) => {
+    await mockDinov2Status(page, { configured: false, available: false });
+
+    await projectListPage.editBtn.click();
+    await projectListPage.noiseFilter.check();
+
+    await expect(projectListPage.dinov2Check).toBeDisabled();
+    await expect(projectListPage.dinov2Status).toHaveText(
+      "Not available: this server has no DINOv2 service (DINOV2_URL).",
+    );
+  });
+
+  test("warns when the service is set up but not answering", async ({
+    projectListPage,
+    page,
+  }) => {
+    await mockDinov2Status(page, { configured: true, available: false });
+
+    await projectListPage.editBtn.click();
+    await projectListPage.noiseFilter.check();
+
+    await expect(projectListPage.dinov2Check).toBeEnabled();
+    await expect(projectListPage.dinov2Status).toContainText(
+      "The DINOv2 service is not answering right now",
+    );
+  });
 });

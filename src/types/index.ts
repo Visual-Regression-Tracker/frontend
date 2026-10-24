@@ -7,3 +7,4 @@ export * from "./testStatus";
 export * from "./paginatedData";
 export * from "./imageComparison";
 export * from "./ollama";
+export * from "./dinov2";
