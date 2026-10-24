@@ -137,6 +137,9 @@ const renderSocket = async ({
         `${openBuild.id}:${openBuild.status}`,
       ),
     );
+    // the build is on screen, but the effect that re-subscribes the handlers
+    // with it may still be pending; until it runs they see no open build
+    await act(async () => {});
   }
   await vi.waitFor(() => expect(handlers.has("build_created")).toBe(true));
   // the open build shows before the provider's effect subscribes the handlers

@@ -1,5 +1,5 @@
 import React from "react";
-import { screen, within } from "@testing-library/react";
+import { screen, waitFor, within } from "@testing-library/react";
 import { useLocation } from "react-router-dom";
 import { renderWithProviders } from "../_test/render";
 import { usersService, projectsService } from "../services";
@@ -206,6 +206,63 @@ describe("Header", () => {
       await user.click(screen.getByTestId(TAKE_TOUR_BUTTON_TEST_ID));
 
       expect(await screen.findByText("First step of the tour")).toBeVisible();
+    });
+
+    // a page without a tour (profile, users) must not leave the button stuck
+    // for the page visited next
+    it("starts the tour once steps arrive after a click on a page without any", async () => {
+      const StepsLater = () => {
+        const [shown, setShown] = React.useState(false);
+        return shown ? (
+          <>
+            <HelpSteps target="#tour-target" />
+            <div id="tour-target">Tour target</div>
+          </>
+        ) : (
+          <button onClick={() => setShown(true)}>Show steps</button>
+        );
+      };
+      const { user } = renderWithProviders(
+        <>
+          <Header />
+          <StepsLater />
+        </>,
+        { user: TEST_USER },
+      );
+
+      await user.click(screen.getByTestId(HEADER_HELP_MENU_BUTTON_TEST_ID));
+      await user.click(screen.getByTestId(TAKE_TOUR_BUTTON_TEST_ID));
+      await user.click(screen.getByRole("button", { name: "Show steps" }));
+      await user.click(screen.getByTestId(HEADER_HELP_MENU_BUTTON_TEST_ID));
+      await user.click(screen.getByTestId(TAKE_TOUR_BUTTON_TEST_ID));
+
+      expect(await screen.findByText("First step of the tour")).toBeVisible();
+    });
+
+    it("stays closed after the last step", async () => {
+      const { user } = renderWithProviders(
+        <>
+          <Header />
+          <HelpSteps target="#tour-target" />
+          <div id="tour-target">Tour target</div>
+        </>,
+        { user: TEST_USER },
+      );
+
+      await user.click(screen.getByTestId(HEADER_HELP_MENU_BUTTON_TEST_ID));
+      await user.click(screen.getByTestId(TAKE_TOUR_BUTTON_TEST_ID));
+      await user.click(await screen.findByRole("button", { name: /^Last/ }));
+
+      await waitFor(() =>
+        expect(
+          screen.queryByText("First step of the tour"),
+        ).not.toBeInTheDocument(),
+      );
+      // a restarted tour would come back within a frame or two
+      await new Promise((resolve) => setTimeout(resolve, 100));
+      expect(
+        screen.queryByText("First step of the tour"),
+      ).not.toBeInTheDocument();
     });
 
     it("does not start the tour when the first step's target is not on the page", async () => {
