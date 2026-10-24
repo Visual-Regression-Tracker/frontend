@@ -1,8 +1,9 @@
-import { alpha, createTheme } from "@mui/material/styles";
+import { alpha, createTheme, type Theme } from "@mui/material/styles";
 // adds the Data Grid to the theme's component overrides (types only)
 import "@mui/x-data-grid/themeAugmentation";
 import {
   brand,
+  darkAccent,
   fontFamily,
   radius,
   slate,
@@ -10,6 +11,16 @@ import {
   surface,
   violet,
 } from "./tokens";
+
+const STATUS_COLORS = ["success", "warning", "error", "info"] as const;
+
+// what floats over the page (menus, dialogs, popovers) sits one step lighter
+// than the panels in dark mode, the way a shadow sets it apart in light mode
+const elevatedInDark = ({ theme }: { theme: Theme }) =>
+  theme.applyStyles("dark", {
+    backgroundColor: surface.dark.elevated,
+    border: `1px solid ${surface.dark.divider}`,
+  });
 
 // Light and dark live in one theme as colour schemes; MUI switches them with
 // CSS variables, so a mode change does not re-render the tree.
@@ -37,13 +48,8 @@ export const theme = createTheme({
     },
     dark: {
       palette: {
-        primary: {
-          main: brand[400],
-          light: brand[300],
-          dark: brand[600],
-          contrastText: brand[900],
-        },
-        secondary: { main: violet[400], light: violet[300] },
+        primary: { ...darkAccent },
+        secondary: { main: violet[300], light: violet[300] },
         success: { main: status.dark.success },
         warning: { main: status.dark.warning },
         error: { main: status.dark.error },
@@ -57,6 +63,8 @@ export const theme = createTheme({
           primary: surface.dark.textPrimary,
           secondary: surface.dark.textSecondary,
         },
+        // a selected row is a hint, not a block of colour
+        action: { selectedOpacity: 0.1, hoverOpacity: 0.06 },
       },
     },
   },
@@ -100,6 +108,25 @@ export const theme = createTheme({
         root: { borderRadius: 6, fontWeight: 500 },
         sizeSmall: { height: 22, fontSize: "0.75rem" },
       },
+      // a filled status chip is a tint with coloured text in dark mode; a
+      // solid saturated badge shouts on a dark surface
+      variants: STATUS_COLORS.map((color) => ({
+        props: { variant: "filled" as const, color },
+        style: ({ theme }: { theme: Theme }) =>
+          theme.applyStyles("dark", {
+            backgroundColor: `rgba(${theme.vars?.palette[color].mainChannel} / 0.16)`,
+            color: theme.vars?.palette[color].main,
+          }),
+      })),
+    },
+    MuiMenu: {
+      styleOverrides: { paper: elevatedInDark },
+    },
+    MuiPopover: {
+      styleOverrides: { paper: elevatedInDark },
+    },
+    MuiAutocomplete: {
+      styleOverrides: { paper: elevatedInDark },
     },
     MuiAppBar: {
       defaultProps: { elevation: 0, color: "inherit" },
@@ -116,15 +143,25 @@ export const theme = createTheme({
       },
     },
     MuiDialog: {
-      styleOverrides: { paper: { borderRadius: radius + 4 } },
+      styleOverrides: {
+        paper: ({ theme }) => ({
+          borderRadius: radius + 4,
+          ...elevatedInDark({ theme }),
+        }),
+      },
     },
     MuiTooltip: {
       styleOverrides: {
-        tooltip: {
+        tooltip: ({ theme }) => ({
           backgroundColor: slate[800],
           fontSize: "0.75rem",
           borderRadius: 6,
-        },
+          ...theme.applyStyles("dark", {
+            backgroundColor: "#2c313b",
+            border: `1px solid ${surface.dark.divider}`,
+          }),
+        }),
+        arrow: ({ theme }) => theme.applyStyles("dark", { color: "#2c313b" }),
       },
     },
     MuiOutlinedInput: {

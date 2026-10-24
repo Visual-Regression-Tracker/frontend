@@ -15,6 +15,14 @@ export const brand = {
   900: "#164e63",
 } as const;
 
+// the logo's cyan, toned down for dark surfaces where the full hue glares
+export const darkAccent = {
+  main: "#5ec3d6",
+  light: "#8ad4e2",
+  dark: "#3aa6bb",
+  contrastText: "#082028",
+} as const;
+
 export const violet = {
   300: "#c4b5fd",
   400: "#a78bfa",
@@ -44,11 +52,12 @@ export const status = {
     error: "#b91c1c",
     info: "#1d4ed8",
   },
+  // softer than the light ones: saturated hues glare on a dark surface
   dark: {
-    success: "#4ade80",
-    warning: "#fbbf24",
-    error: "#f87171",
-    info: "#60a5fa",
+    success: "#5cc58c",
+    warning: "#e0b44a",
+    error: "#f0787d",
+    info: "#72b4f2",
   },
 } as const;
 
@@ -60,12 +69,15 @@ export const surface = {
     textPrimary: slate[900],
     textSecondary: slate[600],
   },
+  // neutral graphite rather than navy, in three steps: the page, the panels
+  // on it, and what floats over them (menus, dialogs, popovers)
   dark: {
-    default: slate[950],
-    paper: "#111827",
-    divider: "rgba(148, 163, 184, 0.18)",
-    textPrimary: slate[200],
-    textSecondary: slate[400],
+    default: "#111318",
+    paper: "#181b21",
+    elevated: "#20242c",
+    divider: "rgba(255, 255, 255, 0.09)",
+    textPrimary: "#e6e8ec",
+    textSecondary: "#a1a8b4",
   },
 } as const;
 

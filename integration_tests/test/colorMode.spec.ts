@@ -28,7 +28,7 @@ const background = (page: Page) =>
   page.evaluate(() => getComputedStyle(document.body).backgroundColor);
 
 const LIGHT = "rgb(244, 246, 249)";
-const DARK = "rgb(11, 17, 32)";
+const DARK = "rgb(17, 19, 24)";
 
 test.beforeEach(async ({ page }) => {
   await mockGetProjects(page, [project]);
@@ -96,7 +96,6 @@ test.describe("on a dark system", () => {
     await expect.poll(() => background(page)).toBe(LIGHT);
   });
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   test("renders the project list", async ({ projectListPage, page }) => {
     await expect(projectListPage.projects).toHaveCount(1);
     await expect(page).toHaveScreenshot("projects-list-page-dark.png");
