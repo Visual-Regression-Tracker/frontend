@@ -5,6 +5,7 @@ import {
   projectReducer,
   selectProject,
   setProjectEditState,
+  toggleFavoriteProject,
   updateProject,
 } from "./project.context";
 import { projectsService } from "../services";
@@ -20,6 +21,8 @@ const initial: State = {
   selectedProjectId: null,
   projectList: [],
   projectEditState: DEFAULT_PROJECT_EDIT_STATE,
+  favoriteProjectIds: [],
+  recentProjectIds: [],
 };
 
 describe("projectReducer", () => {
@@ -85,6 +88,52 @@ describe("projectReducer", () => {
     );
 
     expect(state.selectedProjectId).toBe("p1");
+  });
+
+  it("delete drops the project from the favourites", () => {
+    const state = projectReducer(
+      { ...initial, projectList: [project("p1")], favoriteProjectIds: ["p1"] },
+      { type: "delete", payload: "p1" },
+    );
+
+    expect(state.favoriteProjectIds).toEqual([]);
+  });
+
+  it("favorites replaces the favourite project ids", () => {
+    const state = projectReducer(
+      { ...initial, favoriteProjectIds: ["p1"] },
+      { type: "favorites", payload: ["p2", "p3"] },
+    );
+
+    expect(state.favoriteProjectIds).toEqual(["p2", "p3"]);
+  });
+
+  it("favorite adds a project once and takes it out again", () => {
+    const added = projectReducer(initial, {
+      type: "favorite",
+      payload: { id: "p1", favorite: true },
+    });
+    const twice = projectReducer(added, {
+      type: "favorite",
+      payload: { id: "p1", favorite: true },
+    });
+    const removed = projectReducer(twice, {
+      type: "favorite",
+      payload: { id: "p1", favorite: false },
+    });
+
+    expect(added.favoriteProjectIds).toEqual(["p1"]);
+    expect(twice.favoriteProjectIds).toEqual(["p1"]);
+    expect(removed.favoriteProjectIds).toEqual([]);
+  });
+
+  it("recent replaces the recently opened project ids", () => {
+    const state = projectReducer(initial, {
+      type: "recent",
+      payload: ["p2", "p1"],
+    });
+
+    expect(state.recentProjectIds).toEqual(["p2", "p1"]);
   });
 
   it("setProjectEditState stores the project being edited", () => {
@@ -232,6 +281,50 @@ describe("project action creators", () => {
       expect(dispatch).toHaveBeenCalledWith({
         type: "setProjectEditState",
         payload: DEFAULT_PROJECT_EDIT_STATE,
+      });
+    });
+  });
+
+  describe("toggleFavoriteProject", () => {
+    it("shows the star at once, then saves it", async () => {
+      const dispatch = vi.fn();
+      const add = vi.spyOn(projectsService, "addFavorite").mockResolvedValue();
+
+      await toggleFavoriteProject(dispatch, "p1", true);
+
+      expect(dispatch).toHaveBeenCalledWith({
+        type: "favorite",
+        payload: { id: "p1", favorite: true },
+      });
+      expect(add).toHaveBeenCalledWith("p1");
+    });
+
+    it("takes the star off through the service", async () => {
+      const dispatch = vi.fn();
+      const remove = vi
+        .spyOn(projectsService, "removeFavorite")
+        .mockResolvedValue();
+
+      await toggleFavoriteProject(dispatch, "p1", false);
+
+      expect(remove).toHaveBeenCalledWith("p1");
+      expect(dispatch).toHaveBeenCalledWith({
+        type: "favorite",
+        payload: { id: "p1", favorite: false },
+      });
+    });
+
+    it("puts the star back and answers the error when saving fails", async () => {
+      const dispatch = vi.fn();
+      vi.spyOn(projectsService, "addFavorite").mockRejectedValue("Offline");
+
+      await expect(toggleFavoriteProject(dispatch, "p1", true)).rejects.toBe(
+        "Offline",
+      );
+
+      expect(dispatch).toHaveBeenLastCalledWith({
+        type: "favorite",
+        payload: { id: "p1", favorite: false },
       });
     });
   });

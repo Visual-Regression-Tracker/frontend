@@ -5,6 +5,7 @@ import { TestVariationDetailsPage } from "pages/TestVariationDetailsPage";
 import { TestVariationListPage } from "pages/TestVariationListPage";
 import { UserListPage } from "pages/UserListPage";
 import type { User } from "~client/types";
+import { mockGetFavoriteProjects } from "utils/mocks";
 
 type Options = {
   // the role the signed-in user has; override with test.use({ userRole })
@@ -113,6 +114,8 @@ export const test = base.extend<Fixtures & Options>({
       },
       JSON.stringify({ ...AUTH_USER, role: userRole }),
     );
+    // every signed-in page asks for them; a test sets its own after this
+    await mockGetFavoriteProjects(page, []);
 
     await use();
   },

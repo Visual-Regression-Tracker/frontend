@@ -20,6 +20,23 @@ export const mockGetProjects = async (page: Page, projects: Project[]) => {
   });
 };
 
+// the signed-in user's favourite project ids; the authUser fixture answers none
+export const mockGetFavoriteProjects = async (page: Page, ids: string[]) => {
+  return page.route(`${API_URL}/projects/favorites`, (route, request) => {
+    if (request.method() === "GET") {
+      return route.fulfill({ body: JSON.stringify(ids) });
+    }
+    return route.fallback();
+  });
+};
+
+// starring (PUT) and unstarring (DELETE) answer 204 with no body, as the API does
+export const mockToggleFavoriteProject = async (page: Page) => {
+  return page.route(`${API_URL}/projects/*/favorite`, (route) =>
+    route.fulfill({ status: 204 }),
+  );
+};
+
 // the API answers create and update with the project it saved
 export const mockSaveProject = async (page: Page) => {
   return page.route(`${API_URL}/projects`, (route, request) => {

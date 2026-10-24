@@ -1,22 +1,26 @@
 import React, { FunctionComponent } from "react";
-import {
-  FormControl,
-  InputLabel,
-  MenuItem,
-  Select,
-  type SelectChangeEvent,
-} from "@mui/material";
+import { Autocomplete, Box, ListSubheader, TextField } from "@mui/material";
 import {
   useProjectState,
   useProjectDispatch,
   selectProject,
 } from "../contexts";
+import {
+  groupProjects,
+  matchesProjectQuery,
+} from "../_helpers/projectList.helper";
+import { Project } from "../types";
 
 const ProjectSelect: FunctionComponent<{
   projectId?: string;
   onProjectSelect: (id: string) => void;
 }> = ({ projectId, onProjectSelect }) => {
-  const { projectList, selectedProjectId } = useProjectState();
+  const {
+    projectList,
+    selectedProjectId,
+    favoriteProjectIds,
+    recentProjectIds,
+  } = useProjectState();
   const projectDispatch = useProjectDispatch();
 
   React.useEffect(() => {
@@ -25,39 +29,78 @@ const ProjectSelect: FunctionComponent<{
     }
   }, [projectId, selectedProjectId, projectDispatch]);
 
+  // the same order as the project list: favourites, recently opened, the rest
+  const { options, groupOf } = React.useMemo(() => {
+    const groups = groupProjects(
+      projectList,
+      favoriteProjectIds,
+      recentProjectIds,
+    );
+    const groupOf = new Map<string, string>([
+      ...groups.favorites.map((p) => [p.id, "Favourites"] as const),
+      ...groups.recent.map((p) => [p.id, "Recently opened"] as const),
+      ...groups.others.map((p) => [p.id, "Other projects"] as const),
+    ]);
+    const options = [...groups.favorites, ...groups.recent, ...groups.others];
+    // with nothing starred or opened the list is one run without a heading
+    if (groups.favorites.length + groups.recent.length === 0) {
+      groupOf.clear();
+    }
+
+    return { options, groupOf };
+  }, [projectList, favoriteProjectIds, recentProjectIds]);
+
+  const selected = projectList.find(
+    (project) => project.id === selectedProjectId,
+  );
+
+  if (projectList.length === 0) {
+    return null;
+  }
+
   return (
-    <>
-      {projectList.length > 0 && (
-        <FormControl variant="standard" sx={{ width: "100%" }}>
-          {/* the label is positioned against the form control rather than the
-              input, so without the input's own inset it sits on the sidebar's
-              edge */}
-          <InputLabel id="projectSelect" sx={{ marginLeft: 1 }} shrink>
-            Project
-          </InputLabel>
-          <Select
-            variant="standard"
-            id="project-select"
-            labelId="projectSelect"
-            sx={{ margin: 1 }}
-            displayEmpty
-            value={selectedProjectId ?? ""}
-            onChange={(event: SelectChangeEvent<string>) =>
-              onProjectSelect(event.target.value as string)
-            }
-          >
-            <MenuItem value="" disabled>
-              <em>Select project</em>
-            </MenuItem>
-            {projectList.map((project) => (
-              <MenuItem key={project.id} value={project.id}>
-                {project.name}
-              </MenuItem>
-            ))}
-          </Select>
-        </FormControl>
+    <Autocomplete<Project, false, true>
+      id="project-select"
+      options={options}
+      // the selection is changed, never cleared; until the first one there is
+      // nothing to show, which the field takes as null
+      disableClearable
+      value={selected ?? (null as unknown as Project)}
+      onChange={(_, project) => onProjectSelect(project.id)}
+      getOptionLabel={(project) => project.name}
+      isOptionEqualToValue={(option, value) => option.id === value.id}
+      // always grouping: switching groupBy on while the list is open (the
+      // first project picked becomes a recent one) breaks the list
+      groupBy={(project) => groupOf.get(project.id) ?? ""}
+      renderGroup={(params) =>
+        params.group ? (
+          <li key={params.key}>
+            <ListSubheader component="div">{params.group}</ListSubheader>
+            <Box component="ul" sx={{ p: 0 }}>
+              {params.children}
+            </Box>
+          </li>
+        ) : (
+          <React.Fragment key={params.key}>{params.children}</React.Fragment>
+        )
+      }
+      filterOptions={(projects, { inputValue }) =>
+        projects.filter((project) => matchesProjectQuery(project, inputValue))
+      }
+      noOptionsText="No projects match"
+      // a long name reads in the list, not cut off at the field's width
+      slotProps={{ popper: { sx: { minWidth: 280 } } }}
+      sx={{ m: 1 }}
+      renderInput={(params) => (
+        <TextField
+          {...params}
+          variant="standard"
+          label="Project"
+          placeholder="Select project"
+          slotProps={{ inputLabel: { shrink: true } }}
+        />
       )}
-    </>
+    />
   );
 };
 

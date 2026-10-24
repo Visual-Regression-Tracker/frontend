@@ -12,6 +12,8 @@ export class ProjectPage extends BasePage {
   buildList: BuildList;
   details: TestDetailsDialog;
   selectProject = this.page.locator(`#${LOCATOR_PROJECT_PAGE_SELECT_PROJECT}`);
+  // the switcher's field: typing narrows the projects, Enter opens one
+  projectField = this.page.getByRole("combobox", { name: "Project" });
   detailsDialog = this.page.getByRole("dialog");
 
   constructor(page: Page) {

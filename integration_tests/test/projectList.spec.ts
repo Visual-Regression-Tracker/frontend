@@ -3,11 +3,16 @@ import { test } from "fixtures";
 import { TEST_PROJECT } from "~client/_test/test.data.helper";
 import { ODIFF_DEFAULT_CONFIG } from "~client/constants/project";
 import { ImageComparison } from "~client/types/imageComparison";
+import { ProjectListPage } from "pages";
+import type { Project } from "~client/types";
 import {
   API_URL,
   mockDeleteProject,
+  mockGetBuilds,
+  mockGetFavoriteProjects,
   mockGetProjects,
   mockSaveProject,
+  mockToggleFavoriteProject,
 } from "utils/mocks";
 
 const project = TEST_PROJECT;
@@ -151,4 +156,152 @@ test("edits a project", async ({ projectListPage, page }) => {
   );
   await expect(projectListPage.project("Renamed project")).toBeVisible();
   await expect(projectListPage.project(project.name)).toHaveCount(0);
+});
+
+const named = (
+  id: string,
+  name: string,
+  mainBranchName = "master",
+): Project => ({
+  ...project,
+  id,
+  name,
+  mainBranchName,
+});
+const ALPHA = named("alpha-id", "Alpha");
+const BETA = named("beta-id", "Beta", "develop");
+const GAMMA = named("gamma-id", "Gamma");
+
+// opened straight, with the API's projects and favourites set up first
+const openWith = async (
+  page: import("@playwright/test").Page,
+  projects: Project[],
+  favorites: string[] = [],
+  path = "/projects",
+) => {
+  await mockGetProjects(page, projects);
+  await mockGetFavoriteProjects(page, favorites);
+  await page.goto(path);
+  const projectListPage = new ProjectListPage(page);
+  await expect(projectListPage.projects.first()).toBeVisible();
+  return projectListPage;
+};
+
+test.describe("favourites and search", () => {
+  test("stars a project, tells the API and lists it first", async ({
+    page,
+    authUser,
+  }) => {
+    void authUser;
+    const projectListPage = await openWith(page, [ALPHA, BETA]);
+    await mockToggleFavoriteProject(page);
+
+    const [request] = await Promise.all([
+      page.waitForRequest(`${API_URL}/projects/${BETA.id}/favorite`),
+      projectListPage.starBtn("Beta").click(),
+    ]);
+
+    expect(request.method()).toBe("PUT");
+    await expect(
+      projectListPage
+        .section("Favourites")
+        .getByRole("heading", { name: "Beta" }),
+    ).toBeVisible();
+    await expect(projectListPage.starBtn("Beta")).toHaveAttribute(
+      "aria-pressed",
+      "true",
+    );
+  });
+
+  test("takes a project out of the favourites", async ({ page, authUser }) => {
+    void authUser;
+    const projectListPage = await openWith(page, [ALPHA, BETA], [BETA.id]);
+    await mockToggleFavoriteProject(page);
+
+    const [request] = await Promise.all([
+      page.waitForRequest(`${API_URL}/projects/${BETA.id}/favorite`),
+      projectListPage.starBtn("Beta").click(),
+    ]);
+
+    expect(request.method()).toBe("DELETE");
+    await expect(projectListPage.section("Favourites")).toHaveCount(0);
+  });
+
+  test("lists the favourites the API keeps above the other projects", async ({
+    page,
+    authUser,
+  }) => {
+    void authUser;
+    const projectListPage = await openWith(
+      page,
+      [ALPHA, BETA, GAMMA],
+      [GAMMA.id],
+    );
+
+    await expect(
+      projectListPage.section("Favourites").getByRole("heading", { level: 3 }),
+    ).toHaveText(["Gamma"]);
+    await expect(
+      projectListPage
+        .section("Other projects")
+        .getByRole("heading", { level: 3 }),
+    ).toHaveText(["Alpha", "Beta"]);
+  });
+
+  test("narrows the projects to the search and keeps it in the link", async ({
+    page,
+    authUser,
+  }) => {
+    void authUser;
+    const projectListPage = await openWith(page, [ALPHA, BETA, GAMMA]);
+
+    await projectListPage.search.fill("develop");
+
+    await expect(projectListPage.projects).toHaveCount(1);
+    await expect(projectListPage.project("Beta")).toBeVisible();
+    await expect(page).toHaveURL(/[?&]q=develop/);
+  });
+
+  test("opens with the search a link carries", async ({ page, authUser }) => {
+    void authUser;
+    const projectListPage = await openWith(
+      page,
+      [ALPHA, BETA],
+      [],
+      "/projects?q=alp",
+    );
+
+    await expect(projectListPage.search).toHaveValue("alp");
+    await expect(projectListPage.projects).toHaveCount(1);
+  });
+
+  test("puts the cursor in the search on /", async ({ page, authUser }) => {
+    void authUser;
+    const projectListPage = await openWith(page, [ALPHA, BETA]);
+
+    await page.keyboard.press("/");
+
+    await expect(projectListPage.search).toBeFocused();
+    await expect(projectListPage.search).toHaveValue("");
+  });
+
+  test("opens a project's builds without reloading the app", async ({
+    page,
+    authUser,
+  }) => {
+    void authUser;
+    const projectListPage = await openWith(page, [ALPHA]);
+    await mockGetBuilds(page, ALPHA.id, []);
+    // a full page load would start over without this
+    await page.evaluate(() => {
+      (window as unknown as { kept?: boolean }).kept = true;
+    });
+
+    await projectListPage.buildsLink("Alpha").click();
+
+    await expect(page).toHaveURL(new RegExp(`/${ALPHA.id}$`));
+    expect(
+      await page.evaluate(() => (window as unknown as { kept?: boolean }).kept),
+    ).toBe(true);
+  });
 });

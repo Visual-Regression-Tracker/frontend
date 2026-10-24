@@ -6,6 +6,15 @@ vi.mock("../_config/env.config", () => ({ API_URL: "http://api.test" }));
 
 const AUTH = { Authorization: "Bearer token-1" };
 
+// the favourite endpoints answer 204 with no body at all
+const stubNoContent = () => {
+  const fetchMock = vi
+    .fn()
+    .mockResolvedValue(new Response(null, { status: 204 }));
+  vi.stubGlobal("fetch", fetchMock);
+  return fetchMock;
+};
+
 describe("projectsService", () => {
   beforeEach(() => {
     localStorage.setItem("user", JSON.stringify({ token: "token-1" }));
@@ -68,5 +77,39 @@ describe("projectsService", () => {
     stubFetch({ message: "Forbidden" }, { status: 403 });
 
     await expect(projectsService.getAll()).rejects.toBe("Forbidden");
+  });
+
+  it("getFavorites fetches the ids of the user's favourite projects", async () => {
+    const fetchMock = stubFetch(["p1", "p2"]);
+
+    const result = await projectsService.getFavorites();
+
+    expect(result).toEqual(["p1", "p2"]);
+    expect(fetchMock).toHaveBeenCalledWith(`${API}/projects/favorites`, {
+      method: "GET",
+      headers: AUTH,
+    });
+  });
+
+  it("addFavorite puts the project among the favourites", async () => {
+    const fetchMock = stubNoContent();
+
+    await projectsService.addFavorite("p1");
+
+    expect(fetchMock).toHaveBeenCalledWith(`${API}/projects/p1/favorite`, {
+      method: "PUT",
+      headers: AUTH,
+    });
+  });
+
+  it("removeFavorite takes the project out of the favourites", async () => {
+    const fetchMock = stubNoContent();
+
+    await projectsService.removeFavorite("p1");
+
+    expect(fetchMock).toHaveBeenCalledWith(`${API}/projects/p1/favorite`, {
+      method: "DELETE",
+      headers: AUTH,
+    });
   });
 });

@@ -392,13 +392,30 @@ test("can download images", async ({ openProjectPage }) => {
   );
 });
 
+test("switches to another project by typing its name", async ({
+  openProjectPage,
+  page,
+}) => {
+  const other = { ...project, id: "other-project-id", name: "Other project" };
+  await mockGetProjects(page, [project, other]);
+  await mockGetBuilds(page, other.id, []);
+  const projectPage = await openProjectPage(project.id);
+  await expect(projectPage.projectField).toHaveValue(project.name);
+
+  await projectPage.projectField.fill("other");
+  await page.getByRole("option", { name: "Other project" }).click();
+
+  await expect(page).toHaveURL(new RegExp(`/${other.id}$`));
+  await expect(projectPage.projectField).toHaveValue("Other project");
+});
+
 test("lines the Project label up with the select under it", async ({
   openProjectPage,
   page,
 }) => {
   await openProjectPage(project.id);
 
-  const label = await page.locator("#projectSelect").boundingBox();
+  const label = await page.locator("#project-select-label").boundingBox();
   const select = await page.locator("#project-select").boundingBox();
 
   expect(label.x).toBe(select.x);
@@ -458,8 +475,7 @@ const overlaidOpacity = (page) =>
         .opacity();
     });
 
-const diffSwitch = (page) =>
-  page.getByRole("switch", { name: "Toggle diff" });
+const diffSwitch = (page) => page.getByRole("switch", { name: "Toggle diff" });
 
 test("keeps both panes and fades the image over the baseline", async ({
   openProjectPage,
