@@ -37,8 +37,16 @@ export default tseslint.config(
   jsxA11y.flatConfigs.recommended,
   // the rules SonarCloud runs on every PR, so they fail here first
   sonarjs.configs.recommended,
-  // a TODO is debt to see, not a reason to fail the build
-  { rules: { "sonarjs/todo-tag": "warn" } },
+  // Warnings, not errors: an open-task comment is debt to see, not a reason
+  // to fail the build, and an async function with nothing to await (Sonar's
+  // S7503, which the plugin leaves to require-await) is common in older tests
+  // and mocks. SonarCloud flags both in new code only.
+  {
+    rules: {
+      "sonarjs/todo-tag": "warn",
+      "require-await": "warn",
+    },
+  },
   {
     plugins: { "react-hooks": reactHooks },
     rules: reactHooks.configs.recommended.rules,

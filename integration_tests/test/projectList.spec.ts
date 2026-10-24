@@ -19,6 +19,7 @@ import {
   mockSaveProject,
   mockToggleFavoriteProject,
 } from "utils/mocks";
+import { waitForPage } from "utils/waitForPage";
 
 const project = TEST_PROJECT;
 
@@ -28,6 +29,7 @@ test.beforeEach(async ({ page }) => {
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 test("renders", async ({ projectListPage, page }) => {
+  await waitForPage(page);
   await expect(page).toHaveScreenshot("projects-list-page.png");
 });
 

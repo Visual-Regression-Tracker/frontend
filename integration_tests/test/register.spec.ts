@@ -1,9 +1,11 @@
 import { test } from "fixtures";
 import { expect } from "@playwright/test";
 import { API_URL, mockApiError } from "utils/mocks";
+import { waitForPage } from "utils/waitForPage";
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 test("renders", async ({ registerPage, page }) => {
+  await waitForPage(page);
   await expect(page).toHaveScreenshot("register-page.png");
 });
 

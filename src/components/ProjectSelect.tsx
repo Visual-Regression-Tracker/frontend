@@ -90,7 +90,9 @@ const ProjectSelect: FunctionComponent<{
       noOptionsText="No projects match"
       // a long name reads in the list, not cut off at the field's width
       slotProps={{ popper: { sx: { minWidth: 280 } } }}
-      sx={{ m: 1 }}
+      // no top margin: the label sits at the top, where the select this
+      // replaced had it, and the field keeps its inset below and at the sides
+      sx={{ mx: 1, mb: 1 }}
       renderInput={(params) => (
         <TextField
           {...params}
