@@ -142,9 +142,6 @@ const renderSocket = async ({
     await act(async () => {});
   }
   await vi.waitFor(() => expect(handlers.has("build_created")).toBe(true));
-  // the open build shows before the provider's effect subscribes the handlers
-  // that know it, and on a slow run an event emitted now met the old ones
-  await act(async () => {});
   return result;
 };
 
