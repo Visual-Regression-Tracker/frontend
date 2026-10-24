@@ -601,6 +601,18 @@ describe("ProjectForm", () => {
       expect(noiseThreshold()).toHaveValue(42);
     });
 
+    it("does not submit a fraction above 128", async () => {
+      const onSubmit = vi.fn();
+      const { user } = await renderForm(PROJECT, onSubmit);
+
+      await user.click(noiseFilter());
+      await replaceNumber(user, noiseThreshold() as HTMLElement, "128.5");
+      await user.click(screen.getByTestId("submitButton"));
+
+      expect(await screen.findByText("Enter at most 128")).toBeInTheDocument();
+      expect(onSubmit).not.toHaveBeenCalled();
+    });
+
     it("does not submit a threshold above 128", async () => {
       const onSubmit = vi.fn();
       const { user } = await renderForm(PROJECT, onSubmit);

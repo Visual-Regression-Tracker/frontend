@@ -37,7 +37,8 @@ export const BlurAmplitudeFields: React.FunctionComponent = () => {
       {config.blurAmplitudeFilter === true && (
         <TextValidator
           name="blurAmplitudeThreshold"
-          validators={["required", "minNumber:0", "maxNumber:128"]}
+          // minNumber and maxNumber compare whole numbers: 128.5 would pass
+          validators={["required", "minFloat:0", "maxFloat:128"]}
           errorMessages={[
             "Enter a threshold",
             "Enter at least 0",
