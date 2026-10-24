@@ -1,5 +1,6 @@
 import { alpha, createTheme } from "@mui/material/styles";
-import type {} from "@mui/x-data-grid/themeAugmentation";
+// adds the Data Grid to the theme's component overrides (types only)
+import "@mui/x-data-grid/themeAugmentation";
 import {
   brand,
   fontFamily,

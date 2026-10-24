@@ -222,7 +222,7 @@ export const mockDeleteTestVariation = async (
 };
 
 // the models the Ollama server behind the API has pulled
-export const mockOllamaModels = async (page: Page, names: string[]) => {
+export const mockOllamaModels = (page: Page, names: string[]) => {
   return page.route(`${API_URL}/ollama/models`, (route) =>
     route.fulfill({
       body: JSON.stringify({ models: names.map((name) => ({ name })) }),
@@ -232,32 +232,32 @@ export const mockOllamaModels = async (page: Page, names: string[]) => {
 
 // saving or applying ignore areas, and the comment, answer with nothing the
 // dialog reads
-export const mockUpdateIgnoreAreas = async (page: Page) => {
+export const mockUpdateIgnoreAreas = (page: Page) => {
   return page.route(`${API_URL}/test-runs/ignoreAreas/update`, (route) =>
     route.fulfill({ body: "{}" }),
   );
 };
 
-export const mockAddIgnoreAreas = async (page: Page) => {
+export const mockAddIgnoreAreas = (page: Page) => {
   return page.route(`${API_URL}/test-runs/ignoreAreas/add`, (route) =>
     route.fulfill({ body: "{}" }),
   );
 };
 
-export const mockUpdateTestRun = async (page: Page, testRun: TestRun) => {
+export const mockUpdateTestRun = (page: Page, testRun: TestRun) => {
   return page.route(`${API_URL}/test-runs/update/${testRun.id}`, (route) =>
     route.fulfill({ body: JSON.stringify(testRun) }),
   );
 };
 
-export const mockApproveTestRuns = async (page: Page) => {
+export const mockApproveTestRuns = (page: Page) => {
   return page.route(
     (url) => url.pathname === "/test-runs/approve",
     (route) => route.fulfill({ body: "[]" }),
   );
 };
 
-export const mockRejectTestRuns = async (page: Page) => {
+export const mockRejectTestRuns = (page: Page) => {
   return page.route(`${API_URL}/test-runs/reject`, (route) =>
     route.fulfill({ body: "[]" }),
   );
@@ -265,7 +265,7 @@ export const mockRejectTestRuns = async (page: Page) => {
 
 // the runs that share a screen with the one under review, and the ones the API
 // held back from the bulk action
-export const mockMatchingVariations = async (
+export const mockMatchingVariations = (
   page: Page,
   testRunId: string,
   variations: TestRun[],

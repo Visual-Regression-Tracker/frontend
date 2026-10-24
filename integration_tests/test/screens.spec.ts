@@ -1,5 +1,5 @@
 import { expect, Page } from "@playwright/test";
-import { test } from "fixtures";
+import { test as base } from "fixtures";
 import { LoginPage, ProjectListPage } from "pages";
 import {
   EDITOR_USER,
@@ -69,7 +69,7 @@ const hasSettled = (page: Page) =>
     );
   });
 
-const screens = test.extend<{
+const test = base.extend<{
   shot: (view: string, options?: { fullPage?: boolean }) => Promise<void>;
 }>({
   shot: async ({ page, colorScheme }, use) => {
@@ -85,7 +85,7 @@ const screens = test.extend<{
   },
 });
 
-type Body = Parameters<typeof screens>[2];
+type Body = Parameters<typeof test>[2];
 
 // the runs of one screen in two locales, and a screen of its own
 const VARIATION_EN: TestRun = {
@@ -506,10 +506,10 @@ const VIEWS: [name: string, body: Body][] = [
 ];
 
 for (const scheme of SCHEMES) {
-  screens.describe(scheme, () => {
-    screens.use({ colorScheme: scheme });
+  test.describe(scheme, () => {
+    test.use({ colorScheme: scheme });
 
-    screens.beforeEach(async ({ page }) => {
+    test.beforeEach(async ({ page }) => {
       await page.route(`${API_URL}/users/oidc/enabled`, (route) =>
         route.fulfill({ body: "false" }),
       );
@@ -544,7 +544,7 @@ for (const scheme of SCHEMES) {
     });
 
     for (const [name, body] of VIEWS) {
-      screens(`renders ${name}`, body);
+      test(`renders ${name}`, body);
     }
   });
 }

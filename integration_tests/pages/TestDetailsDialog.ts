@@ -170,14 +170,14 @@ export class TestDetailsDialog {
 
   /** Each pane's canvas width as shown, which follows the zoom. */
   async canvasWidths(): Promise<number[]> {
-    const widths: number[] = [];
+    const panes = await this.drawAreas.all();
 
-    for (const pane of await this.drawAreas.all()) {
-      const box = await pane.locator("canvas").first().boundingBox();
-      widths.push(box?.width ?? 0);
-    }
-
-    return widths;
+    return Promise.all(
+      panes.map(
+        async (pane) =>
+          (await pane.locator("canvas").first().boundingBox())?.width ?? 0,
+      ),
+    );
   }
 
   private async checkpointCanvasBox() {

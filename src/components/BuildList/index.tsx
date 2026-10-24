@@ -16,8 +16,8 @@ import {
   Box,
   Fade,
 } from "@mui/material";
-import { MoreVert, DeleteOutline, Inbox, SearchOff } from "@mui/icons-material";
-import { EmptyState } from "../EmptyState";
+import { MoreVert, DeleteOutline } from "@mui/icons-material";
+import { BuildListPlaceholder } from "./BuildListPlaceholder";
 import { DebouncedTextField } from "../DebouncedTextField";
 import {
   useBuildState,
@@ -26,7 +26,6 @@ import {
   useProjectState,
 } from "../../contexts";
 import { BuildStatusChip } from "../BuildStatusChip";
-import { SkeletonList } from "../SkeletonList";
 import { formatDateTime } from "../../_helpers/format.helper";
 import { useSnackbar } from "notistack";
 import { TextValidator } from "react-material-ui-form-validator";
@@ -287,26 +286,11 @@ const BuildList: FunctionComponent = () => {
           data-testid="buildListScroll"
         >
           <List>
-            {loading && buildList.length === 0 ? (
-              <SkeletonList />
-            ) : error && buildList.length === 0 ? (
-              <Typography
-                variant="subtitle1"
-                align="center"
-                color="error"
-                sx={{ padding: 2, overflowWrap: "anywhere" }}
-                data-testid="buildListError"
-              >
-                Builds could not be loaded
-              </Typography>
-            ) : buildList.length === 0 ? (
-              <EmptyState
-                dense
-                icon={searchQuery ? <SearchOff /> : <Inbox />}
-                title={
-                  searchQuery ? `No builds match "${searchQuery}"` : "No builds"
-                }
-                data-testid="buildListEmpty"
+            {buildList.length === 0 ? (
+              <BuildListPlaceholder
+                loading={loading}
+                error={error}
+                searchQuery={searchQuery}
               />
             ) : (
               buildList.map((build) => (
