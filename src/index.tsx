@@ -6,11 +6,8 @@ import App from "./App";
 // Global styles to override some defaults
 import "./index.css";
 
-// Fonts that are used in MUI
-import "@fontsource/roboto/300.css";
-import "@fontsource/roboto/400.css";
-import "@fontsource/roboto/500.css";
-import "@fontsource/roboto/700.css";
+// bundled, so screenshots do not depend on a font CDN
+import "@fontsource-variable/inter";
 
 createRoot(document.getElementById("root") as HTMLElement).render(
   <React.StrictMode>

@@ -703,12 +703,13 @@ test("wraps a long name and its tags rather than cutting them off", async ({
     {
       ...TEST_UNRESOLVED,
       id: "long",
-      name: "Onboarding / ideal weight / metric units",
+      // long enough to need a second line on the narrowest card in any font
+      name: "Onboarding / ideal weight / metric units / imperial fallback",
       os: "",
       browser: "",
       viewport: "",
       device: "iPhone",
-      customTags: "Onboarding · ru_RU",
+      customTags: "Onboarding · ru_RU · dark theme · large text",
     },
   ]);
   const projectPage = await openProjectPage(project.id, build.id);

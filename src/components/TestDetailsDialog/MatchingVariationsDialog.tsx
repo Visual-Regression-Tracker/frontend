@@ -54,13 +54,13 @@ const Grid = styled("div")({
 
 const Card = styled("div", {
   shouldForwardProp: (prop) => prop !== "selected",
-})<{ selected?: boolean }>(({ selected }) => ({
-  border: "1px solid #e0e0e0",
+})<{ selected?: boolean }>(({ theme, selected }) => ({
+  border: `1px solid ${theme.vars?.palette.divider}`,
   borderRadius: 6,
   padding: 6,
   ...(selected && {
-    borderColor: "#3f51b5",
-    boxShadow: "0 0 0 1px #3f51b5",
+    borderColor: theme.vars?.palette.primary.main,
+    boxShadow: `0 0 0 1px ${theme.vars?.palette.primary.main}`,
   }),
 }));
 

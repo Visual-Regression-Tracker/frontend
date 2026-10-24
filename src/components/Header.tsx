@@ -2,17 +2,24 @@ import React, { FunctionComponent } from "react";
 import {
   AppBar,
   Toolbar,
-  GridLegacy as Grid,
   IconButton,
   Avatar,
   Menu,
   MenuItem,
+  ListItemIcon,
+  ListItemText,
+  Divider,
+  Box,
+  Typography,
+  Stack,
 } from "@mui/material";
 import { Link } from "react-router-dom";
 import { useUserDispatch, useUserState, logout } from "../contexts";
 import { routes } from "../constants";
 import logo from "../static/logo.png";
 import GuidedTour from "./GuidedTour";
+import { Tooltip } from "./Tooltip";
+import { ColorModeToggle } from "../theme";
 import {
   HEADER_HELP_MENU_ID,
   HEADER_AVATAR_MENU_ID,
@@ -26,8 +33,13 @@ import {
   GitHub,
   HelpOutline,
   People,
-  SettingsPower,
+  Logout,
 } from "@mui/icons-material";
+
+const menuAnchor = {
+  anchorOrigin: { vertical: "bottom", horizontal: "right" },
+  transformOrigin: { vertical: "top", horizontal: "right" },
+} as const;
 
 const Header: FunctionComponent = () => {
   const [avatarMenuRef, setAvatarMenuRef] = React.useState<null | HTMLElement>(
@@ -40,11 +52,6 @@ const Header: FunctionComponent = () => {
 
   const { loggedIn, user } = useUserState();
   const authDispatch = useUserDispatch();
-
-  const styleMenuItem = {
-    display: "flex",
-    alignItems: "center",
-  };
 
   const handleMenuClose = () => {
     setAvatarMenuRef(null);
@@ -65,92 +72,85 @@ const Header: FunctionComponent = () => {
 
   const renderHelpMenu = (
     <Menu
+      {...menuAnchor}
       anchorEl={helpMenuRef}
-      anchorOrigin={{
-        vertical: "top",
-        horizontal: "right",
-      }}
       data-testid={HEADER_HELP_MENU_ID}
       keepMounted
-      transformOrigin={{
-        vertical: "top",
-        horizontal: "right",
-      }}
       open={!!helpMenuRef}
       onClose={handleMenuClose}
     >
       <MenuItem onClick={handleMenuClose}>
         <GuidedTour />
       </MenuItem>
-      <MenuItem onClick={closeMenuAndOpenLink} style={styleMenuItem}>
-        <IconButton size="small">
-          <GitHub />
-        </IconButton>
-        Open an issue in GitHub
+      <MenuItem onClick={closeMenuAndOpenLink}>
+        <ListItemIcon>
+          <GitHub fontSize="small" />
+        </ListItemIcon>
+        <ListItemText>Open an issue in GitHub</ListItemText>
       </MenuItem>
-      <hr />
-      <MenuItem
-        style={{
-          justifyContent: "center",
-        }}
-        disabled
-      >
-        VRT Version : {getVRTVersion()}
+      <Divider />
+      <MenuItem sx={{ justifyContent: "center" }} disabled>
+        <Typography variant="caption">
+          VRT Version : {getVRTVersion()}
+        </Typography>
       </MenuItem>
     </Menu>
   );
 
   const renderAvatarMenu = (
     <Menu
+      {...menuAnchor}
       anchorEl={avatarMenuRef}
-      anchorOrigin={{
-        vertical: "top",
-        horizontal: "right",
-      }}
       id={HEADER_AVATAR_MENU_ID}
       keepMounted
-      transformOrigin={{
-        vertical: "top",
-        horizontal: "right",
-      }}
       open={!!avatarMenuRef}
       onClose={handleMenuClose}
+      slotProps={{ paper: { sx: { minWidth: 200 } } }}
     >
+      {user && (
+        <Box px={2} py={1}>
+          <Typography variant="subtitle2" noWrap>
+            {user.firstName} {user.lastName}
+          </Typography>
+          <Typography variant="caption" color="text.secondary" noWrap>
+            {user.email}
+          </Typography>
+        </Box>
+      )}
+      {user && <Divider />}
       {user?.role === "admin" && (
         <MenuItem
           component={Link}
           to={routes.USER_LIST_PAGE}
           onClick={handleMenuClose}
-          style={styleMenuItem}
         >
-          <IconButton size="small">
-            <People />
-          </IconButton>
-          Users
+          <ListItemIcon>
+            <People fontSize="small" />
+          </ListItemIcon>
+          <ListItemText>Users</ListItemText>
         </MenuItem>
       )}
       <MenuItem
         component={Link}
         to={routes.PROJECT_LIST_PAGE}
         onClick={handleMenuClose}
-        style={styleMenuItem}
       >
-        <IconButton size="small">
-          <AllInbox />
-        </IconButton>
-        Projects
+        <ListItemIcon>
+          <AllInbox fontSize="small" />
+        </ListItemIcon>
+        <ListItemText>Projects</ListItemText>
       </MenuItem>
       <MenuItem
         component={Link}
         to={routes.PROFILE_PAGE}
         onClick={handleMenuClose}
-        style={styleMenuItem}
       >
-        <IconButton size="small">
-          <Face />
-        </IconButton>
-        Profile
+        <ListItemIcon>
+          <Face fontSize="small" />
+        </ListItemIcon>
+        <ListItemText>Profile</ListItemText>
       </MenuItem>
+      <Divider />
       <MenuItem
         onClick={() => {
           handleMenuClose();
@@ -158,57 +158,72 @@ const Header: FunctionComponent = () => {
         }}
         data-testid={HEADER_LOGOUT_BUTTON_TEST_ID}
       >
-        <IconButton size="small">
-          <SettingsPower />
-        </IconButton>
-        Logout
+        <ListItemIcon>
+          <Logout fontSize="small" />
+        </ListItemIcon>
+        <ListItemText>Logout</ListItemText>
       </MenuItem>
     </Menu>
   );
 
   return (
     <React.Fragment>
-      <AppBar position="static" color="default">
-        <Toolbar>
-          <Grid container justifyContent="space-between" alignItems="center">
-            <Grid item>
-              <Link to="/">
-                <img src={logo} width="60" height="60" alt="logo" />
-              </Link>
-            </Grid>
-            <Grid item>
-              <Grid
-                container
-                justifyContent="space-between"
-                alignItems="center"
+      <AppBar position="static">
+        <Toolbar sx={{ gap: 1, minHeight: { xs: 64 } }}>
+          <Box
+            component={Link}
+            to="/"
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              gap: 1.5,
+              color: "text.primary",
+              textDecoration: "none",
+            }}
+          >
+            <img src={logo} width="44" height="44" alt="logo" />
+            <Typography
+              variant="subtitle1"
+              component="span"
+              sx={{ display: { xs: "none", sm: "inline" }, fontWeight: 700 }}
+            >
+              Visual Regression Tracker
+            </Typography>
+          </Box>
+          <Box flex={1} />
+          <Stack direction="row" alignItems="center" spacing={0.5}>
+            <ColorModeToggle />
+            <Tooltip title="Help">
+              <IconButton
+                onClick={(event: React.MouseEvent<HTMLElement>) =>
+                  setHelpMenuRef(event.currentTarget)
+                }
+                data-testid={HEADER_HELP_MENU_BUTTON_TEST_ID}
               >
-                <IconButton
-                  onClick={(event: React.MouseEvent<HTMLElement>) =>
-                    setHelpMenuRef(event.currentTarget)
-                  }
-                  size="large"
-                  color="secondary"
-                  data-testid={HEADER_HELP_MENU_BUTTON_TEST_ID}
-                >
-                  <Avatar>
-                    <HelpOutline />
-                  </Avatar>
-                </IconButton>
-                {loggedIn && (
-                  <IconButton
-                    onClick={(event: React.MouseEvent<HTMLElement>) =>
-                      setAvatarMenuRef(event.currentTarget)
-                    }
-                    size="large"
-                    color="secondary"
-                    data-testid={HEADER_AVATAR_BUTTON_TEST_ID}
-                  >
-                    <Avatar>{`${user?.firstName[0]}${user?.lastName[0]}`}</Avatar>
-                  </IconButton>
-                )}
-              </Grid>
-            </Grid>
-          </Grid>
+                <HelpOutline />
+              </IconButton>
+            </Tooltip>
+            {loggedIn && (
+              <IconButton
+                onClick={(event: React.MouseEvent<HTMLElement>) =>
+                  setAvatarMenuRef(event.currentTarget)
+                }
+                data-testid={HEADER_AVATAR_BUTTON_TEST_ID}
+                sx={{ p: 0.5 }}
+              >
+                <Avatar
+                  sx={{
+                    width: 34,
+                    height: 34,
+                    fontSize: "0.875rem",
+                    fontWeight: 600,
+                    bgcolor: "primary.main",
+                    color: "primary.contrastText",
+                  }}
+                >{`${user?.firstName[0]}${user?.lastName[0]}`}</Avatar>
+              </IconButton>
+            )}
+          </Stack>
         </Toolbar>
       </AppBar>
       {renderAvatarMenu}

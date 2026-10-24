@@ -288,7 +288,7 @@ export const DrawArea: FunctionComponent<IDrawArea> = ({
   const imageLoaded = () => {
     return (
       <Box
-        sx={{ overflow: "auto", backgroundColor: "white" }}
+        sx={{ overflow: "auto", backgroundColor: "background.paper" }}
         data-testid="drawArea"
         ref={scrollContainerRef}
         onScroll={(event: React.SyntheticEvent<HTMLElement>) => {

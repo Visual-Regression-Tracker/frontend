@@ -4,6 +4,7 @@ import { Button } from "@mui/material";
 import { useHelpState } from "../contexts";
 import { LiveHelp } from "@mui/icons-material";
 import { TAKE_TOUR_BUTTON_TEST_ID } from "./GuidedTour.locators";
+import { brand } from "../theme/tokens";
 
 const GuidedTour: FunctionComponent = () => {
   const [run, setRun] = React.useState(false);
@@ -32,8 +33,8 @@ const GuidedTour: FunctionComponent = () => {
     event.preventDefault();
 
     const [firstStep] = helpSteps;
-    if (firstStep && typeof firstStep.target === 'string') {
-      const targetId = firstStep.target.startsWith('#')
+    if (firstStep && typeof firstStep.target === "string") {
+      const targetId = firstStep.target.startsWith("#")
         ? firstStep.target.slice(1)
         : firstStep.target;
 
@@ -46,7 +47,11 @@ const GuidedTour: FunctionComponent = () => {
   };
 
   return (
-    <Button startIcon={<LiveHelp />} onClick={handleClickStart} data-testid={TAKE_TOUR_BUTTON_TEST_ID}>
+    <Button
+      startIcon={<LiveHelp />}
+      onClick={handleClickStart}
+      data-testid={TAKE_TOUR_BUTTON_TEST_ID}
+    >
       <Joyride
         callback={handleJoyrideCallback}
         continuous={true}
@@ -57,15 +62,21 @@ const GuidedTour: FunctionComponent = () => {
         steps={getHelpSteps()}
         disableCloseOnEsc={true}
         styles={{
+          // the theme's CSS variables, so the tour follows the colour mode
           options: {
             zIndex: 10000,
+            // joyride derives the beacon's tint from this, so it needs a hex
+            primaryColor: brand[700],
+            backgroundColor: "var(--mui-palette-background-paper)",
+            textColor: "var(--mui-palette-text-primary)",
+            arrowColor: "var(--mui-palette-background-paper)",
           },
           buttonNext: {
-            color: "#3f51b5",
+            color: "var(--mui-palette-primary-main)",
             backgroundColor: "",
           },
           buttonBack: {
-            color: "#3f51b5",
+            color: "var(--mui-palette-primary-main)",
           },
         }}
       />

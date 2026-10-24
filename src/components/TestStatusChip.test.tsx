@@ -26,12 +26,12 @@ describe("TestStatusChip", () => {
   });
 
   it.each([
-    [TestStatus.new, "primary"],
-    [TestStatus.unresolved, "secondary"],
-    [TestStatus.failed, "secondary"],
-    [TestStatus.approved, undefined],
-    [TestStatus.autoApproved, undefined],
-    [TestStatus.ok, undefined],
+    [TestStatus.new, "info"],
+    [TestStatus.unresolved, "warning"],
+    [TestStatus.failed, "error"],
+    [TestStatus.approved, "success"],
+    [TestStatus.autoApproved, "success"],
+    [TestStatus.ok, "success"],
   ])("shows %s as an outlined small chip coloured %s", (status, color) => {
     render(<TestStatusChip status={status} />);
 
@@ -44,11 +44,11 @@ describe("TestStatusChip", () => {
     });
   });
 
-  it("shows an unknown status as it is, without a colour", () => {
+  it("shows an unknown status as it is, in the neutral colour", () => {
     render(<TestStatusChip status="something else" />);
 
     expect(screen.getByText("something else")).toBeInTheDocument();
-    expect(lastChipProps().color).toBeUndefined();
+    expect(lastChipProps().color).toBe("default");
   });
 
   it("renders an empty chip when there is no status", () => {
@@ -56,7 +56,7 @@ describe("TestStatusChip", () => {
 
     expect(lastChipProps()).toMatchObject({
       label: undefined,
-      color: undefined,
+      color: "default",
     });
   });
 });

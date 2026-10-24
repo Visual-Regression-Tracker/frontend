@@ -38,8 +38,11 @@ export class ProjectListPage extends BasePage {
     return this.dialog.getByLabel(label, { exact: true });
   }
 
+  // a card is titled with its project's name
   project(name: string) {
-    return this.projects.filter({ hasText: `Name: ${name}` });
+    return this.projects.filter({
+      has: this.page.getByRole("heading", { name, exact: true }),
+    });
   }
 
   async selectImageComparison(value: string) {

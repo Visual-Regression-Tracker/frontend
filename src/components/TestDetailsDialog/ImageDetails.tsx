@@ -10,7 +10,6 @@ const BranchName = styled("span")({
   lineHeight: "20px",
   fontWeight: "bolder",
   fontSize: "0.7rem",
-  fontFamily: '"Roboto", "Helvetica", "Arial", sans-serif',
   maxWidth: 195,
   textOverflow: "ellipsis",
   whiteSpace: "nowrap",
@@ -50,7 +49,7 @@ const ImageDetails: React.FunctionComponent<ImageDetailsProps> = ({
   return (
     <Grid
       item
-      sx={{ display: "flex", alignItems: "center", color: "darkslategrey" }}
+      sx={{ display: "flex", alignItems: "center", color: "text.secondary" }}
     >
       <Typography variant="overline" style={{ marginRight: 3 }}>
         {type === "Baseline" ? "Baseline" : "Checkpoint"}

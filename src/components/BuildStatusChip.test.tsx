@@ -29,9 +29,9 @@ describe("BuildStatusChip", () => {
   });
 
   test.each([
-    [BuildStatus.passed, "primary", "outlined"],
-    [BuildStatus.unresolved, "secondary", undefined],
-    [BuildStatus.failed, "secondary", "outlined"],
+    [BuildStatus.passed, "success", "outlined"],
+    [BuildStatus.unresolved, "warning", "filled"],
+    [BuildStatus.failed, "error", "outlined"],
   ])("%s is a small chip coloured %s, variant %s", (status, color, variant) => {
     const item = render(<BuildStatusChip status={status} />);
 
@@ -44,11 +44,11 @@ describe("BuildStatusChip", () => {
     });
   });
 
-  test("an unknown status has neither colour nor variant", () => {
+  test("an unknown status is an outlined chip in the neutral colour", () => {
     render(<BuildStatusChip status={"other" as BuildStatus} />);
 
     const props = chipProps[chipProps.length - 1];
-    expect(props.color).toBeUndefined();
-    expect(props.variant).toBeUndefined();
+    expect(props.color).toBe("default");
+    expect(props.variant).toBe("outlined");
   });
 });

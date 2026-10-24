@@ -10,28 +10,29 @@ import {
 import { User } from "../types";
 import ProjectsListPage from "./ProjectListPage";
 
-jest.mock("../contexts", () => ({
-  useUserState: jest.fn(),
-  useProjectState: jest.fn(),
-  useProjectDispatch: jest.fn(),
-  useHelpDispatch: jest.fn(),
-  setHelpSteps: jest.fn(),
-  setProjectEditState: jest.fn(),
-  createProject: jest.fn(),
-  updateProject: jest.fn(),
-  deleteProject: jest.fn(),
+vi.mock("../contexts", () => ({
+  useUserState: vi.fn(),
+  useProjectState: vi.fn(),
+  useProjectDispatch: vi.fn(),
+  useHelpDispatch: vi.fn(),
+  setHelpSteps: vi.fn(),
+  setProjectEditState: vi.fn(),
+  createProject: vi.fn(),
+  updateProject: vi.fn(),
+  deleteProject: vi.fn(),
 }));
 
 const renderAs = (user?: User) => {
-  (useUserState as jest.Mock).mockReturnValue({
+  vi.mocked(useUserState).mockReturnValue({
     loggedIn: true,
     user,
     userList: [],
   });
-  (useProjectState as jest.Mock).mockReturnValue({
+  // only what the page reads
+  vi.mocked(useProjectState).mockReturnValue({
     projectList: [TEST_PROJECT],
     projectEditState: TEST_PROJECT,
-  });
+  } as unknown as ReturnType<typeof useProjectState>);
 
   return render(<ProjectsListPage />);
 };
@@ -43,8 +44,12 @@ describe("ProjectListPage", () => {
   ])("lets %s create, edit and delete projects", (_, user) => {
     const page = renderAs(user);
 
-    expect(page.getByText(`Name: ${TEST_PROJECT.name}`)).toBeInTheDocument();
-    expect(page.getByRole("button", { name: "add" })).toBeInTheDocument();
+    expect(
+      page.getByRole("heading", { name: TEST_PROJECT.name }),
+    ).toBeInTheDocument();
+    expect(
+      page.getByRole("button", { name: /add project/i }),
+    ).toBeInTheDocument();
     expect(page.getByTestId("EditIcon")).toBeInTheDocument();
     expect(page.getByTestId("delete")).toBeInTheDocument();
   });
@@ -55,9 +60,13 @@ describe("ProjectListPage", () => {
   ])("shows the projects read-only to %s", (_, user) => {
     const page = renderAs(user);
 
-    expect(page.getByText(`Name: ${TEST_PROJECT.name}`)).toBeInTheDocument();
+    expect(
+      page.getByRole("heading", { name: TEST_PROJECT.name }),
+    ).toBeInTheDocument();
     expect(page.getByRole("link", { name: "Builds" })).toBeInTheDocument();
-    expect(page.queryByRole("button", { name: "add" })).not.toBeInTheDocument();
+    expect(
+      page.queryByRole("button", { name: /add project/i }),
+    ).not.toBeInTheDocument();
     expect(page.queryByTestId("EditIcon")).not.toBeInTheDocument();
     expect(page.queryByTestId("delete")).not.toBeInTheDocument();
   });

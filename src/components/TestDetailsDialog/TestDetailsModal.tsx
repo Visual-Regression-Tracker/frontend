@@ -63,11 +63,11 @@ import TestStatusChip from "../TestStatusChip";
 const headerSx = {
   position: "relative",
   textAlign: "left",
-  background: "#efefef",
+  bgcolor: "background.default",
   paddingLeft: "8px",
   paddingBottom: "8px",
 } as const;
-const footerSx = { background: "#efefef" } as const;
+const footerSx = { bgcolor: "background.default" } as const;
 const scaleActionsSx = { display: "flex", alignItems: "center" } as const;
 const testRunActionsSx = {
   display: "flex",

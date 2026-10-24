@@ -30,7 +30,14 @@ const ProjectPage = () => {
         <Grid
           item
           xs={3}
-          sx={{ height: "100%", display: "flex", flexDirection: "column" }}
+          sx={{
+            height: "100%",
+            display: "flex",
+            flexDirection: "column",
+            bgcolor: "background.paper",
+            borderRight: 1,
+            borderColor: "divider",
+          }}
         >
           <Box id={LOCATOR_PROJECT_PAGE_SELECT_PROJECT}>
             <ProjectSelect

@@ -53,7 +53,7 @@ export const TestRunDetails: React.FunctionComponent<IProps> = ({
               sx={{
                 padding: 1.5,
                 marginTop: 1,
-                backgroundColor: "rgba(0, 0, 0, 0.02)",
+                backgroundColor: "action.hover",
                 borderLeft: "3px solid",
                 borderColor: "primary.main",
               }}

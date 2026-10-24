@@ -2,10 +2,10 @@ import React, { useState, useEffect, FormEvent } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import {
   Button,
-  GridLegacy as Grid,
   Card,
   CardContent,
-  CardActions,
+  Link as MuiLink,
+  Stack,
   Typography,
 } from "@mui/material";
 import { useUserDispatch, login } from "../contexts";
@@ -67,11 +67,13 @@ const LoginForm = () => {
 
   if (oidcEnabled) {
     return (
-      <Card variant="outlined">
-        <CardContent id={LOCATOR_LOGIN_FORM}>
+      <Card>
+        <CardContent id={LOCATOR_LOGIN_FORM} sx={{ p: 3 }}>
           <Button
             color="primary"
-            variant="outlined"
+            variant="contained"
+            size="large"
+            fullWidth
             data-testid="oidcLoginBtn"
             onClick={() => usersService.startOidcLogin()}
           >
@@ -84,59 +86,51 @@ const LoginForm = () => {
 
   return (
     <ValidatorForm onSubmit={handleSubmit} instantValidate>
-      <Card variant="outlined">
-        <CardContent id={LOCATOR_LOGIN_FORM}>
-          <Grid container direction="column" spacing={2}>
-            <Grid item>
-              <TextValidator
-                validators={["isEmail"]}
-                errorMessages={["Enter a valid email."]}
-                id="email"
-                name="email"
-                value={email}
-                label={"Email address"}
-                type="text"
-                variant="outlined"
-                required
-                fullWidth
-                inputProps={{
-                  onChange: (event: React.ChangeEvent<HTMLInputElement>) =>
-                    setEmail(event.target.value),
-                  "data-testid": "email",
-                }}
-              />
-            </Grid>
-
-            <Grid item>
-              <PasswordField password={password} setPassword={setPassword} />
-            </Grid>
-          </Grid>
+      <Card>
+        <CardContent id={LOCATOR_LOGIN_FORM} sx={{ p: 3 }}>
+          <Stack spacing={2}>
+            <TextValidator
+              validators={["isEmail"]}
+              errorMessages={["Enter a valid email."]}
+              id="email"
+              name="email"
+              value={email}
+              label={"Email address"}
+              type="text"
+              variant="outlined"
+              required
+              fullWidth
+              inputProps={{
+                onChange: (event: React.ChangeEvent<HTMLInputElement>) =>
+                  setEmail(event.target.value),
+                "data-testid": "email",
+              }}
+            />
+            <PasswordField password={password} setPassword={setPassword} />
+            <Button
+              type="submit"
+              color="primary"
+              variant="contained"
+              size="large"
+              fullWidth
+              data-testid="loginBtn"
+            >
+              Login
+            </Button>
+          </Stack>
         </CardContent>
-        <CardActions>
-          <Grid
-            container
-            direction="column"
-            justifyContent="center"
-            spacing={3}
-          >
-            <Grid item>
-              <Button
-                type="submit"
-                color="primary"
-                variant="outlined"
-                data-testid="loginBtn"
-              >
-                Login
-              </Button>
-            </Grid>
-            <Grid item>
-              <Typography component={Link} to={routes.REGISTER}>
-                Create an account
-              </Typography>
-            </Grid>
-          </Grid>
-        </CardActions>
       </Card>
+      <Typography
+        variant="body2"
+        color="text.secondary"
+        textAlign="center"
+        mt={2}
+      >
+        New here?{" "}
+        <MuiLink component={Link} to={routes.REGISTER} fontWeight={600}>
+          Create an account
+        </MuiLink>
+      </Typography>
     </ValidatorForm>
   );
 };
