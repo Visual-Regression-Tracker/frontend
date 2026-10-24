@@ -5,7 +5,7 @@
   "license": "Apache-2.0",
   "type": "module",
   "engines": {
-    "node": ">=20"
+    "node": ">=22"
   },
   "dependencies": {
     "@babel/runtime": "^7.22.15",
@@ -40,13 +40,14 @@
     "format": "prettier --write integration_tests src *.js *.ts *.md",
     "build": "vite build",
     "lint": "eslint --ignore-path .gitignore . --ext .ts,.tsx,.jsx,.js",
-    "typescheck": "tsc --noEmit",
+    "typecheck": "tsc --noEmit && tsc --noEmit -p integration_tests",
     "test:pw:serve": "sh ./env.sh && cp env-config.js ./public/ && vite build && vite preview --port 4173 --strictPort",
     "test:pw:install": "NODE_TLS_REJECT_UNAUTHORIZED=0 npx playwright install --with-deps chromium",
     "test:pw:local": "npm run test:pw:install && playwright test",
     "test:pw:debug": "npm run test:pw:install && PWDEBUG=1 playwright test",
     "test:pw:docker": "chmod +x ./test-docker.sh && ./test-docker.sh",
-    "test:pw:docker:update": "chmod +x ./test-docker.sh && ./test-docker.sh --update-snapshots"
+    "test:pw:docker:update": "chmod +x ./test-docker.sh && ./test-docker.sh --update-snapshots",
+    "prepare": "husky || true"
   },
   "browserslist": [
     ">0.3%",
@@ -54,11 +55,6 @@
     "not dead",
     "not op_mini all"
   ],
-  "husky": {
-    "hooks": {
-      "pre-commit": "lint-staged"
-    }
-  },
   "lint-staged": {
     "src/**/*.{js,jsx,ts,tsx,json,css,scss,md}": [
       "prettier --write"
@@ -88,7 +84,7 @@
     "eslint-plugin-jsx-a11y": "^6.10.2",
     "eslint-plugin-react": "^7.37.5",
     "eslint-plugin-react-hooks": "^4.6.0",
-    "husky": "^8.0.3",
+    "husky": "^9.1.7",
     "jest": "^30.5.2",
     "jest-environment-jsdom": "^30.5.2",
     "lint-staged": "^17.6.0",

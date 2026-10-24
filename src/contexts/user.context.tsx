@@ -108,7 +108,14 @@ function login(dispatch: Dispatch, email: string, password: string) {
   });
 }
 
-function update(dispatch: Dispatch, { firstName, lastName, email }) {
+function update(
+  dispatch: Dispatch,
+  {
+    firstName,
+    lastName,
+    email,
+  }: { firstName: string; lastName: string; email: string },
+) {
   return usersService
     .update({
       firstName,

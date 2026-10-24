@@ -267,7 +267,13 @@ test("does not leave the grid on a page that no longer exists", async ({
 
 // picked so that status, name and tag order are all different from one another
 const SORTABLE = [
-  { ...TEST_UNRESOLVED, id: "z", name: "Zebra", status: "new", device: "AAA" },
+  {
+    ...TEST_UNRESOLVED,
+    id: "z",
+    name: "Zebra",
+    status: TestStatus.new,
+    device: "AAA",
+  },
   { ...TEST_UNRESOLVED, id: "a", name: "Alpha", device: "ZZZ" },
   { ...TEST_UNRESOLVED, id: "m", name: "Mango", device: "MMM" },
 ];

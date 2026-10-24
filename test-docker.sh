@@ -19,12 +19,17 @@ if [[ -n "${CI}" ]]; then
     ENV_ARGS+=(-e CI)
 fi
 
+# Linux node_modules live in their own volume: installing them into the
+# mounted checkout would replace the host's platform binaries (esbuild,
+# rolldown), and the volume keeps them between runs
+NODE_MODULES_VOLUME="vrt-frontend-node-modules-$(echo -n "${LOCAL_DIR}" | shasum | cut -c1-8)"
+
 # Build command - install Linux-compatible dependencies, then run tests
 # This ensures platform-specific binaries (like esbuild) are installed for Linux
 PLAYWRIGHT_ARGS="$*"
-COMMAND=("bash" "-c" "npm install && npx playwright test ${PLAYWRIGHT_ARGS}")
+COMMAND=("bash" "-c" "npm ci --no-audit --no-fund && npx playwright test ${PLAYWRIGHT_ARGS}")
 
-echo "Creating container with command: npm install && npx playwright test ${PLAYWRIGHT_ARGS}..."
+echo "Creating container with command: npm ci && npx playwright test ${PLAYWRIGHT_ARGS}..."
 
 # Run the container
 # Note: Since web server and tests run in the same container, localhost connections work
@@ -32,6 +37,7 @@ EXIT_CODE=0
 docker run --rm \
     --ipc=host \
     -v "${LOCAL_DIR}:${DOCKER_DIR}" \
+    -v "${NODE_MODULES_VOLUME}:${DOCKER_DIR}/node_modules" \
     -w "${DOCKER_DIR}" \
     "${ENV_ARGS[@]}" \
     "${IMAGE_NAME}" \

@@ -428,7 +428,7 @@ const TestDetailsModal: React.FunctionComponent<TestDetailsModalProps> = ({
               },
             }}
             value={valueOfIgnoreOrCompare}
-            onChange={(event: SelectChangeEvent<HTMLInputElement>) =>
+            onChange={(event: SelectChangeEvent<string>) =>
               onIgnoreOrCompareSelectChange(event.target.value as string)
             }
           >

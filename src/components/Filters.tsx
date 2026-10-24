@@ -45,9 +45,9 @@ const Filters: React.FunctionComponent<IProps> = ({
   const [viewport, setViewport] = viewportState;
   const [customTags, setCustomTags] = customTagsState;
 
-  const [testStatus, setTestStatus] = testStatusState || [null, emptyFn];
+  const [testStatus, setTestStatus] = testStatusState || ["", emptyFn];
 
-  const [branchName, setBranchName] = branchNameState || [null, emptyFn];
+  const [branchName, setBranchName] = branchNameState || ["", emptyFn];
 
   const osList = items
     .map((t) => t.os)
@@ -107,7 +107,7 @@ const Filters: React.FunctionComponent<IProps> = ({
               id="filter_os"
               value={os}
               displayEmpty
-              onChange={(event: SelectChangeEvent<HTMLInputElement>) =>
+              onChange={(event: SelectChangeEvent<string>) =>
                 setOs(event.target.value as string)
               }
             >
@@ -134,7 +134,7 @@ const Filters: React.FunctionComponent<IProps> = ({
               id="filter_device"
               value={device}
               displayEmpty
-              onChange={(event: SelectChangeEvent<HTMLInputElement>) =>
+              onChange={(event: SelectChangeEvent<string>) =>
                 setDevice(event.target.value as string)
               }
             >
@@ -161,7 +161,7 @@ const Filters: React.FunctionComponent<IProps> = ({
               id="filter_browser"
               value={browser}
               displayEmpty
-              onChange={(event: SelectChangeEvent<HTMLInputElement>) =>
+              onChange={(event: SelectChangeEvent<string>) =>
                 setBrowser(event.target.value as string)
               }
             >
@@ -188,7 +188,7 @@ const Filters: React.FunctionComponent<IProps> = ({
               id="filter_viewport"
               value={viewport}
               displayEmpty
-              onChange={(event: SelectChangeEvent<HTMLInputElement>) =>
+              onChange={(event: SelectChangeEvent<string>) =>
                 setViewport(event.target.value as string)
               }
             >
@@ -215,7 +215,7 @@ const Filters: React.FunctionComponent<IProps> = ({
               id="filter_customTags"
               value={customTags}
               displayEmpty
-              onChange={(event: SelectChangeEvent<HTMLInputElement>) =>
+              onChange={(event: SelectChangeEvent<string>) =>
                 setCustomTags(event.target.value as string)
               }
             >
@@ -242,7 +242,7 @@ const Filters: React.FunctionComponent<IProps> = ({
               id="filter_testStatus"
               value={testStatus}
               displayEmpty
-              onChange={(event: SelectChangeEvent<HTMLInputElement>) =>
+              onChange={(event: SelectChangeEvent<string>) =>
                 setTestStatus(event.target.value as string)
               }
             >
@@ -269,7 +269,7 @@ const Filters: React.FunctionComponent<IProps> = ({
               id="filter_branchName"
               value={branchName}
               displayEmpty
-              onChange={(event: SelectChangeEvent<HTMLInputElement>) =>
+              onChange={(event: SelectChangeEvent<string>) =>
                 setBranchName(event.target.value as string)
               }
             >

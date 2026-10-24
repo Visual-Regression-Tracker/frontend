@@ -2,7 +2,6 @@ import React from "react";
 import { IconButton } from "@mui/material";
 import { Delete } from "@mui/icons-material";
 import {
-  GridRowId,
   useGridApiContext,
   gridRowSelectionStateSelector,
 } from "@mui/x-data-grid";
@@ -20,8 +19,9 @@ export const ActionButtons: React.FunctionComponent = () => {
   const userDispatch = useUserDispatch();
   const { userList, user } = useUserState();
 
-  const ids: GridRowId[] = React.useMemo(
-    () => Object.values(selection),
+  // user ids are strings, so the grid's rows are keyed by strings
+  const ids = React.useMemo(
+    () => Object.values(selection) as string[],
     [selection],
   );
 

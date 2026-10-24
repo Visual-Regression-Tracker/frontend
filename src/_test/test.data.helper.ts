@@ -16,6 +16,8 @@ export const TEST_PROJECT: Project = {
   imageComparisonConfig: PIXELMATCH_DEFAULT_CONFIG,
   maxBuildAllowed: 100,
   maxBranchLifetime: 30,
+  bulkApproveVariations: false,
+  bulkApproveGroupBy: "customTags",
 };
 
 export const TEST_USER: User = {
@@ -151,6 +153,7 @@ export const TEST_BUILD_FAILED: Build = {
   branchName: "Branch name",
   status: BuildStatus.failed,
   createdAt: "2020-09-14T06:57:25.845Z",
+  updatedAt: "2020-09-14T06:57:25.845Z",
   createdBy: "2020-09-14T06:57:25.845Z",
   testRuns: [],
   unresolvedCount: 0,
@@ -169,6 +172,7 @@ export const TEST_BUILD_PASSED: Build = {
   branchName: "Branch name",
   status: BuildStatus.passed,
   createdAt: "2020-09-14T06:57:25.845Z",
+  updatedAt: "2020-09-14T06:57:25.845Z",
   createdBy: "2020-09-14T06:57:25.845Z",
   testRuns: [],
   unresolvedCount: 0,
@@ -187,6 +191,7 @@ export const TEST_BUILD_UNRESOLVED: Build = {
   branchName: "Branch name",
   status: BuildStatus.unresolved,
   createdAt: "2020-09-14T06:57:25.845Z",
+  updatedAt: "2020-09-14T06:57:25.845Z",
   createdBy: "2020-09-14T06:57:25.845Z",
   testRuns: [],
   unresolvedCount: 2,

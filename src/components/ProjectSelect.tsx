@@ -58,7 +58,7 @@ const ProjectSelect: FunctionComponent<{
             className={classes.input}
             displayEmpty
             value={selectedProjectId ?? ""}
-            onChange={(event: SelectChangeEvent<HTMLInputElement>) =>
+            onChange={(event: SelectChangeEvent<string>) =>
               onProjectSelect(event.target.value as string)
             }
           >

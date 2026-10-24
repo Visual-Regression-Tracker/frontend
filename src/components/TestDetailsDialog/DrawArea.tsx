@@ -114,12 +114,12 @@ export const DrawArea: FunctionComponent<IDrawArea> = ({
     imageY: number;
   }>();
 
-  const isDeleteKey = (event: KeyboardEvent) => {
+  const isDeleteKey = (event: KeyboardEvent | React.KeyboardEvent) => {
     return event.key === "Delete" || event.key === "Backspace";
   };
 
   const handleStageKeyDown = useCallback(
-    (event: KeyboardEvent) => {
+    (event: KeyboardEvent | React.KeyboardEvent) => {
       if (!deleteIgnoreArea || isModifierKeyPressed(event)) {
         return;
       }
@@ -138,7 +138,9 @@ export const DrawArea: FunctionComponent<IDrawArea> = ({
     }
   }, [handleStageKeyDown]);
 
-  const isModifierKeyPressed = (event: KeyboardEvent) => {
+  const isModifierKeyPressed = (
+    event: KeyboardEvent | React.KeyboardEvent,
+  ) => {
     return event.altKey || event.ctrlKey || event.shiftKey;
   };
 
