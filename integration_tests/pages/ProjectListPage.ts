@@ -19,6 +19,10 @@ export class ProjectListPage extends BasePage {
     name: "Image comparison library",
   });
 
+  // the rendering-noise filter: part of each library's config section
+  noiseFilter = this.dialog.getByLabel("Ignore rendering noise");
+  noiseThreshold = this.dialog.locator("#blurAmplitudeThreshold");
+
   // the engine's own fields, below the library select
   vlmProvider = this.dialog.getByRole("combobox", { name: "VLM Provider" });
   ollamaModel = this.dialog.getByRole("combobox", { name: "Model" });

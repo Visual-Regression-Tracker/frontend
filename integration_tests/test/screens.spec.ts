@@ -288,6 +288,22 @@ const VIEWS: [name: string, body: Body][] = [
   ],
 
   [
+    "edit project dialog with the rendering-noise filter on",
+    async ({ projectListPage, shot }) => {
+      await projectListPage.editBtn.click();
+      await projectListPage.noiseFilter.check();
+      // the switch keeps its tooltip open while it has the focus: take it off,
+      // then bring the threshold the switch revealed into the dialog's view
+      await projectListPage.dialog.getByRole("heading").first().click();
+      await projectListPage.noiseThreshold.scrollIntoViewIfNeeded();
+
+      await expect(projectListPage.noiseThreshold).toHaveValue("80");
+      await expect(projectListPage.page.getByRole("tooltip")).toHaveCount(0);
+      await shot("edit-project-noise-filter");
+    },
+  ],
+
+  [
     "delete project confirmation",
     async ({ projectListPage, shot }) => {
       await projectListPage.deleteBtn.click();

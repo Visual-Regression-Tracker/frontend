@@ -3,6 +3,8 @@ import { ImageComparison } from "../types/imageComparison";
 
 export const PIXELMATCH_DEFAULT_CONFIG =
   '{"threshold":0.1,"ignoreAntialiasing":true,"allowDiffDimensions":false}';
+// the backend's default when a config turns the filter on without a threshold
+export const DEFAULT_BLUR_AMPLITUDE_THRESHOLD = 80;
 export const LOOKSSAME_DEFAULT_CONFIG =
   '{"strict":false,"tolerance":2.3,"ignoreAntialiasing":true,"antialiasingTolerance":0,"ignoreCaret":true,"allowDiffDimensions":false}';
 export const ODIFF_DEFAULT_CONFIG =

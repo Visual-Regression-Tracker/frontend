@@ -551,6 +551,103 @@ describe("ProjectForm", () => {
     );
   });
 
+  // switched on in each library's config; the backend applies it to all four
+  describe("rendering-noise filter", () => {
+    const noiseFilter = () => screen.getByLabelText("Ignore rendering noise");
+    const noiseThreshold = () =>
+      screen.queryByLabelText(/Rendering noise threshold/);
+
+    it("is off by default and offers no threshold", async () => {
+      await renderForm();
+
+      expect(noiseFilter()).not.toBeChecked();
+      expect(noiseThreshold()).not.toBeInTheDocument();
+    });
+
+    it.each(ALL_ENGINES)("is offered for %s", async (engine) => {
+      const { user } = await renderForm();
+
+      await switchEngine(user, engine);
+
+      expect(noiseFilter()).toBeInTheDocument();
+    });
+
+    it("writes the switch and the threshold into the config json", async () => {
+      const { user } = await renderForm();
+
+      await user.click(noiseFilter());
+      // the backend's default, until changed
+      expect(noiseThreshold()).toHaveValue(80);
+      await replaceNumber(user, noiseThreshold() as HTMLElement, "60.5");
+
+      expect(editConfig()).toEqual({
+        ...JSON.parse(PIXELMATCH_DEFAULT_CONFIG),
+        blurAmplitudeFilter: true,
+        blurAmplitudeThreshold: 60.5,
+      });
+    });
+
+    it("shows the filter of a project saved with it on", async () => {
+      await renderForm({
+        ...PROJECT,
+        imageComparisonConfig: JSON.stringify({
+          ...JSON.parse(PIXELMATCH_DEFAULT_CONFIG),
+          blurAmplitudeFilter: true,
+          blurAmplitudeThreshold: 42,
+        }),
+      });
+
+      expect(noiseFilter()).toBeChecked();
+      expect(noiseThreshold()).toHaveValue(42);
+    });
+
+    it("does not submit a threshold above 128", async () => {
+      const onSubmit = vi.fn();
+      const { user } = await renderForm(PROJECT, onSubmit);
+
+      await user.click(noiseFilter());
+      await replaceNumber(user, noiseThreshold() as HTMLElement, "129");
+      await user.click(screen.getByTestId("submitButton"));
+
+      expect(await screen.findByText("Enter at most 128")).toBeInTheDocument();
+      expect(onSubmit).not.toHaveBeenCalled();
+    });
+
+    // the filter is not one of a library's own options: swapping in another
+    // library's defaults must not switch it off
+    it("keeps the filter when the library changes", async () => {
+      const { user } = await renderForm();
+
+      await user.click(noiseFilter());
+      await replaceNumber(user, noiseThreshold() as HTMLElement, "50");
+      await switchEngine(user, ImageComparison.odiff);
+
+      expect(editConfig()).toEqual({
+        ...JSON.parse(ODIFF_DEFAULT_CONFIG),
+        blurAmplitudeFilter: true,
+        blurAmplitudeThreshold: 50,
+      });
+    });
+
+    it("keeps the filter when the VLM provider changes", async () => {
+      const { user } = await renderForm({
+        ...PROJECT,
+        imageComparison: ImageComparison.vlm,
+        imageComparisonConfig: JSON.stringify({
+          ...JSON.parse(VLM_DEFAULT_CONFIG),
+          blurAmplitudeFilter: true,
+        }),
+      });
+
+      await choose(user, /VLM Provider/, "Google Gemini");
+
+      expect(editConfig()).toMatchObject({
+        provider: "gemini",
+        blurAmplitudeFilter: true,
+      });
+    });
+  });
+
   describe("vlm config", () => {
     const vlm: ProjectDto = {
       ...PROJECT,

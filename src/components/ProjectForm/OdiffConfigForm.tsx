@@ -3,6 +3,7 @@ import React from "react";
 import { TextValidator } from "react-material-ui-form-validator";
 import { OdiffConfig } from "../../types/imageComparison";
 import { useConfigHook } from "./useConfigHook";
+import { BlurAmplitudeFields } from "./BlurAmplitudeFields";
 
 export const OdiffConfigForm: React.FunctionComponent = () => {
   const [config, updateConfig] = useConfigHook<OdiffConfig>();
@@ -69,6 +70,7 @@ export const OdiffConfigForm: React.FunctionComponent = () => {
           updateConfig("threshold", parseFloat(value));
         }}
       />
+      <BlurAmplitudeFields />
     </React.Fragment>
   );
 };
