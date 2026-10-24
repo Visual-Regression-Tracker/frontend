@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import {
   Typography,
   Button,
-  Grid,
+  GridLegacy as Grid,
   Switch,
   IconButton,
   Box,
@@ -426,7 +426,7 @@ const TestDetailsModal: React.FunctionComponent<TestDetailsModalProps> = ({
               padding: 4,
             }}
           >
-            <Add />
+            <Add data-testid="AddIcon" />
           </ToggleButton>
         </Grid>
         <Grid item>
@@ -435,7 +435,7 @@ const TestDetailsModal: React.FunctionComponent<TestDetailsModalProps> = ({
             disabled={!selectedRectId || ignoreAreas.length === 0}
             onClick={() => selectedRectId && deleteIgnoreArea(selectedRectId)}
           >
-            <Delete />
+            <Delete data-testid="DeleteIcon" />
           </IconButton>
         </Grid>
         <Tooltip title="Clears all ignore areas." aria-label="reject">
@@ -447,7 +447,7 @@ const TestDetailsModal: React.FunctionComponent<TestDetailsModalProps> = ({
                 handleIgnoreAreaChange([]);
               }}
             >
-              <LayersClear />
+              <LayersClear data-testid="LayersClearIcon" />
             </IconButton>
           </Grid>
         </Tooltip>
@@ -458,7 +458,7 @@ const TestDetailsModal: React.FunctionComponent<TestDetailsModalProps> = ({
               disabled={!selectedRectId || ignoreAreas.length === 0}
               onClick={() => toggleApplyIgnoreDialogOpen()}
             >
-              <Collections />
+              <Collections data-testid="CollectionsIcon" />
             </IconButton>
           </Grid>
         </Tooltip>
@@ -468,7 +468,7 @@ const TestDetailsModal: React.FunctionComponent<TestDetailsModalProps> = ({
             disabled={!touched}
             onClick={() => saveIgnoreAreasOrCompareArea()}
           >
-            <Save />
+            <Save data-testid="SaveIcon" />
           </IconButton>
         </Grid>
       </Grid>
@@ -550,7 +550,7 @@ const TestDetailsModal: React.FunctionComponent<TestDetailsModalProps> = ({
                 checked={isDiffShown}
                 onChange={() => setIsDiffShown(!isDiffShown)}
                 name="Toggle diff"
-                inputProps={{ "aria-label": "Toggle diff" }}
+                slotProps={{ input: { "aria-label": "Toggle diff" } }}
               />
             </Tooltip>
           </Grid>
@@ -650,7 +650,7 @@ const TestDetailsModal: React.FunctionComponent<TestDetailsModalProps> = ({
         </Grid>
         <Grid item sx={closeIconSx}>
           <IconButton color="inherit" onClick={handleClose} size="large">
-            <Close />
+            <Close data-testid="CloseIcon" />
           </IconButton>
         </Grid>
       </Grid>
@@ -669,7 +669,10 @@ const TestDetailsModal: React.FunctionComponent<TestDetailsModalProps> = ({
               }
             >
               <IconButton size="large">
-                <WarningRounded color="secondary" />
+                <WarningRounded
+                  data-testid="WarningRoundedIcon"
+                  color="secondary"
+                />
               </IconButton>
             </Tooltip>
           </Grid>
@@ -745,7 +748,7 @@ const TestDetailsModal: React.FunctionComponent<TestDetailsModalProps> = ({
               }
               size="large"
             >
-              <ZoomIn />
+              <ZoomIn data-testid="ZoomInIcon" />
             </IconButton>
           </Tooltip>
           <Tooltip title={"Zoom Out"}>
@@ -755,17 +758,17 @@ const TestDetailsModal: React.FunctionComponent<TestDetailsModalProps> = ({
               }
               size="large"
             >
-              <ZoomOut />
+              <ZoomOut data-testid="ZoomOutIcon" />
             </IconButton>
           </Tooltip>
           <Tooltip title={"Original size"}>
             <IconButton onClick={setOriginalSize} size="large">
-              <Fullscreen />
+              <Fullscreen data-testid="FullscreenIcon" />
             </IconButton>
           </Tooltip>
           <Tooltip title={"Fit into screen"}>
             <IconButton onClick={fitImagesToStage} size="large">
-              <FullscreenExit />
+              <FullscreenExit data-testid="FullscreenExitIcon" />
             </IconButton>
           </Tooltip>
         </Grid>

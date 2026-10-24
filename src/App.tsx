@@ -32,7 +32,7 @@ function App() {
               onClick={() => closeSnackbar(key)}
               data-testid="dismissNotification"
             >
-              <Close fontSize="small" />
+              <Close data-testid="CloseIcon" fontSize="small" />
             </IconButton>
           )}
         >

@@ -61,7 +61,7 @@ export const ActionButtons: React.FunctionComponent = () => {
             }}
             size="large"
           >
-            <Delete />
+            <Delete data-testid="DeleteIcon" />
           </IconButton>
         </span>
       </Tooltip>

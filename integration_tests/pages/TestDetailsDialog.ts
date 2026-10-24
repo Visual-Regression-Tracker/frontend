@@ -53,7 +53,7 @@ export class TestDetailsDialog {
   rejectVariations = this.page
     .getByRole("button")
     .filter({ hasText: /^Reject variations$/ });
-  toggleDiff = this.page.getByRole("checkbox", { name: "Toggle diff" });
+  toggleDiff = this.page.getByRole("switch", { name: "Toggle diff" });
 
   commentsBtn = this.page.getByRole("button", { name: "Comments" });
   comment = this.page.getByTestId("comment");

@@ -1,7 +1,7 @@
 import React from "react";
 import {
   Autocomplete,
-  Grid,
+  GridLegacy as Grid,
   Select,
   MenuItem,
   Button,

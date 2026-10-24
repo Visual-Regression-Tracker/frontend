@@ -1,5 +1,5 @@
 import React from "react";
-import { Chip, Grid, Typography, Paper } from "@mui/material";
+import { Chip, GridLegacy as Grid, Typography, Paper } from "@mui/material";
 import { TestRun } from "../../types";
 import { Tooltip } from "../Tooltip";
 

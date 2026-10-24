@@ -1,5 +1,11 @@
 import React, { useState, FormEvent } from "react";
-import { Button, Grid, Card, CardContent, CardActions } from "@mui/material";
+import {
+  Button,
+  GridLegacy as Grid,
+  Card,
+  CardContent,
+  CardActions,
+} from "@mui/material";
 import { useUserDispatch, login } from "../contexts";
 import { usersService } from "../services";
 import { useSnackbar } from "notistack";

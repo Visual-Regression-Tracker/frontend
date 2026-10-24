@@ -1,6 +1,6 @@
 import React from "react";
 import {
-  Grid,
+  GridLegacy as Grid,
   Select,
   MenuItem,
   FormControl,

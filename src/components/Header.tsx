@@ -2,7 +2,7 @@ import React, { FunctionComponent } from "react";
 import {
   AppBar,
   Toolbar,
-  Grid,
+  GridLegacy as Grid,
   IconButton,
   Avatar,
   Menu,

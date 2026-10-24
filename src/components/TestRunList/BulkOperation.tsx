@@ -194,7 +194,7 @@ export const BulkOperation: React.FunctionComponent<{
             onClick={toggleApproveDialogOpen}
             size="large"
           >
-            <ThumbUp />
+            <ThumbUp data-testid="ThumbUpIcon" />
           </IconButton>
         </span>
       </Tooltip>
@@ -222,7 +222,7 @@ export const BulkOperation: React.FunctionComponent<{
             onClick={toggleDownloadDialogOpen}
             size="large"
           >
-            <CloudDownload />
+            <CloudDownload data-testid="CloudDownloadIcon" />
           </IconButton>
         </span>
       </Tooltip>
@@ -233,7 +233,7 @@ export const BulkOperation: React.FunctionComponent<{
             onClick={toggleDeleteDialogOpen}
             size="large"
           >
-            <Delete />
+            <Delete data-testid="DeleteIcon" />
           </IconButton>
         </span>
       </Tooltip>
@@ -247,7 +247,7 @@ export const BulkOperation: React.FunctionComponent<{
             onClick={toggleClearIgnoreDialogOpen}
             size="large"
           >
-            <LayersClear />
+            <LayersClear data-testid="LayersClearIcon" />
           </IconButton>
         </span>
       </Tooltip>

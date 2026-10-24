@@ -5,7 +5,7 @@ import { testVariationService, staticService } from "../services";
 import {
   Container,
   Box,
-  Grid,
+  GridLegacy as Grid,
   Card,
   CardMedia,
   CardActions,

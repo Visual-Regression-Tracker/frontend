@@ -1,5 +1,5 @@
 import React from "react";
-import { Typography, Grid, IconButton } from "@mui/material";
+import { Typography, GridLegacy as Grid, IconButton } from "@mui/material";
 import { WarningRounded, AltRoute } from "@mui/icons-material";
 import { IgnoreArea } from "../../types/ignoreArea";
 import { Tooltip } from "../Tooltip";
@@ -67,7 +67,10 @@ const ImageDetails: React.FunctionComponent<ImageDetailsProps> = ({
           }
         >
           <IconButton size="large">
-            <WarningRounded color="secondary" />
+            <WarningRounded
+              data-testid="WarningRoundedIcon"
+              color="secondary"
+            />
           </IconButton>
         </Tooltip>
       )}

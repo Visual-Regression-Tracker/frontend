@@ -1,6 +1,6 @@
 import React, { useEffect } from "react";
 import {
-  Grid,
+  GridLegacy as Grid,
   Typography,
   Card,
   IconButton,
@@ -83,7 +83,7 @@ const ProjectsListPage = () => {
                   setProjectEditState(projectDispatch);
                 }}
               >
-                <Add />
+                <Add data-testid="AddIcon" />
               </Fab>
             </Box>
 
@@ -186,7 +186,7 @@ const ProjectsListPage = () => {
                       }}
                       size="large"
                     >
-                      <Edit />
+                      <Edit data-testid="EditIcon" />
                     </IconButton>
                     <IconButton
                       onClick={() => {
@@ -196,7 +196,7 @@ const ProjectsListPage = () => {
                       size="large"
                       data-testid="delete"
                     >
-                      <Delete />
+                      <Delete data-testid="DeleteIcon" />
                     </IconButton>
                   </>
                 )}

@@ -1,5 +1,5 @@
 import React, { useEffect } from "react";
-import { Grid, Box } from "@mui/material";
+import { GridLegacy as Grid, Box } from "@mui/material";
 import { useParams, useNavigate } from "react-router-dom";
 import BuildList from "../components/BuildList";
 import ProjectSelect from "../components/ProjectSelect";

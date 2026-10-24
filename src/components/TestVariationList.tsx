@@ -2,7 +2,7 @@ import React from "react";
 import { TestVariation } from "../types";
 import {
   Card,
-  Grid,
+  GridLegacy as Grid,
   CardMedia,
   CardContent,
   CardActions,
@@ -61,7 +61,7 @@ const TestVariationList: React.FunctionComponent<IProps> = ({
                   History
                 </Button>
                 <IconButton onClick={() => setSelectedItem(t)} size="large">
-                  <Delete />
+                  <Delete data-testid="DeleteIcon" />
                 </IconButton>
               </CardActions>
             </Card>

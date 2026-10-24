@@ -459,7 +459,7 @@ const overlaidOpacity = (page) =>
     });
 
 const diffSwitch = (page) =>
-  page.getByRole("checkbox", { name: "Toggle diff" });
+  page.getByRole("switch", { name: "Toggle diff" });
 
 test("keeps both panes and fades the image over the baseline", async ({
   openProjectPage,

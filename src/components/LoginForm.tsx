@@ -2,7 +2,7 @@ import React, { useState, useEffect, FormEvent } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import {
   Button,
-  Grid,
+  GridLegacy as Grid,
   Card,
   CardContent,
   CardActions,

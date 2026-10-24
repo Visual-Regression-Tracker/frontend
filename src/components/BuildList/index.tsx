@@ -8,7 +8,7 @@ import {
   Checkbox,
   Chip,
   Typography,
-  Grid,
+  GridLegacy as Grid,
   Pagination,
   LinearProgress,
   Menu,
