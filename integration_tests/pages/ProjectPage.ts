@@ -10,8 +10,6 @@ export class ProjectPage extends BasePage {
   testRunFilters: TestRunFilters;
   buildList: BuildList;
   selectProject = this.page.locator(`#${LOCATOR_PROJECT_PAGE_SELECT_PROJECT}`);
-  // the URL changes before the dialog has rendered the run (navigations are
-  // transitions), so a hotkey pressed in between would be lost
   detailsDialog = this.page.getByRole("dialog");
 
   constructor(page: Page) {
