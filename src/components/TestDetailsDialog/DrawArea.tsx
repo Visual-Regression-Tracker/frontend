@@ -87,14 +87,14 @@ export const DrawArea: FunctionComponent<IDrawArea> = ({
   const scrollContainerRef = React.useRef<HTMLDivElement>(null);
   const scaleRef = React.useRef(stageScale);
   const targetScaleRef = React.useRef(stageScale);
-  const frameRef = React.useRef<number>();
-  const lastFrameRef = React.useRef<number>();
+  const frameRef = React.useRef<number | undefined>(undefined);
+  const lastFrameRef = React.useRef<number | undefined>(undefined);
   const anchorRef = React.useRef<{
     pointerX: number;
     pointerY: number;
     imageX: number;
     imageY: number;
-  }>();
+  }>(undefined);
 
   const isDeleteKey = (event: KeyboardEvent | React.KeyboardEvent) => {
     return event.key === "Delete" || event.key === "Backspace";
@@ -178,7 +178,7 @@ export const DrawArea: FunctionComponent<IDrawArea> = ({
     // The canvas shrinks as you zoom out, so a listener on it stops receiving
     // the wheel once it slips out from under the cursor and the browser zooms
     // the page instead. The container keeps its size, so it owns the gesture.
-    // React 17 registers onWheel passively, hence the manual listener.
+    // React registers onWheel passively, hence the manual listener.
     const zoom = (event: WheelEvent) => {
       event.preventDefault();
 
