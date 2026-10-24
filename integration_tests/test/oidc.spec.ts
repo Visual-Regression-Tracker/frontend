@@ -41,6 +41,19 @@ test.describe("with SSO on", () => {
     await mockOidcEnabled(page, true);
   });
 
+  test("renders the SSO login", async ({ page }) => {
+    await page.goto("/login");
+    await expect(new LoginPage(page).ssoBtn).toBeVisible();
+
+    await expect(page).toHaveScreenshot("login-page-sso.png");
+  });
+
+  test("renders the profile of an SSO user", async ({ profilePage, page }) => {
+    await expect(profilePage.email).toBeDisabled();
+
+    await expect(page).toHaveScreenshot("profile-page-sso.png");
+  });
+
   test("offers SSO instead of the password form", async ({ page }) => {
     await page.goto("/login");
     const loginPage = new LoginPage(page);

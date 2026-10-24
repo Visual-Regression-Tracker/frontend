@@ -65,6 +65,14 @@ test("deletes the selected users", async ({ userListPage, page }) => {
   await expect(userListPage.table.getRow(TEST_USER.id)).toBeVisible();
 });
 
+test("renders the selected users", async ({ userListPage, page }) => {
+  await userListPage.table.checkRow(EDITOR_USER.id);
+  await userListPage.table.checkRow(GUEST_USER.id);
+  await expect(userListPage.deleteSelectedBtn).toBeEnabled();
+
+  await expect(page).toHaveScreenshot("user-list-selection.png");
+});
+
 test("offers no delete until a user is selected", async ({ userListPage }) => {
   await expect(userListPage.table.getRow(TEST_USER.id)).toBeVisible();
 

@@ -22,7 +22,7 @@ export class BuildList {
     // "#1" is also the start of "#10"
     return this.buildList
       .locator(".MuiListItemButton-root")
-      .filter({ hasText: new RegExp(`#${number}(?!\\d)`) });
+      .filter({ hasText: new RegExp(String.raw`#${number}(?!\d)`) });
   }
 
   // the menu button only shows while the pointer is over its build

@@ -231,7 +231,7 @@ export const mockMergeTestVariations = async (page: Page, build: Build) => {
 
 // the runtime settings env.sh writes to env-config.js, with some overridden;
 // the app reads them once, when it loads
-export const mockEnvConfig = async (
+export const mockEnvConfig = (
   page: Page,
   overrides: Record<string, string>,
 ) => {
@@ -247,14 +247,14 @@ export const mockEnvConfig = async (
   });
 };
 
-export const mockOidcEnabled = async (page: Page, enabled: boolean) => {
+export const mockOidcEnabled = (page: Page, enabled: boolean) => {
   return page.route(`${API_URL}/users/oidc/enabled`, (route) =>
     route.fulfill({ body: JSON.stringify(enabled) }),
   );
 };
 
 // stands in for the API's redirect to the identity provider
-export const mockOidcProvider = async (page: Page) => {
+export const mockOidcProvider = (page: Page) => {
   return page.route(`${API_URL}/users/oidc/login`, (route) =>
     route.fulfill({
       contentType: "text/html",
@@ -264,19 +264,19 @@ export const mockOidcProvider = async (page: Page) => {
 };
 
 // the user behind a token, as /users/me answers: without the token itself
-export const mockGetMe = async (page: Page, user: object) => {
+export const mockGetMe = (page: Page, user: object) => {
   return page.route(`${API_URL}/users/me`, (route) =>
     route.fulfill({ body: JSON.stringify(user) }),
   );
 };
 
-export const mockLogin = async (page: Page, user: object) => {
+export const mockLogin = (page: Page, user: object) => {
   return page.route(`${API_URL}/users/login`, (route) =>
     route.fulfill({ body: JSON.stringify(user) }),
   );
 };
 
-export const mockDeleteUsers = async (page: Page) => {
+export const mockDeleteUsers = (page: Page) => {
   return page.route(`${API_URL}/users`, (route, request) =>
     request.method() === "DELETE"
       ? route.fulfill({ body: JSON.stringify(true) })
@@ -285,7 +285,7 @@ export const mockDeleteUsers = async (page: Page) => {
 };
 
 // the API answers a build patch with the build as patched
-export const mockUpdateBuild = async (page: Page, build: Build) => {
+export const mockUpdateBuild = (page: Page, build: Build) => {
   return page.route(`${API_URL}/builds/${build.id}`, (route, request) =>
     request.method() === "PATCH"
       ? route.fulfill({

@@ -100,6 +100,27 @@ test.describe("a failing API", () => {
     await expect(projectPage.buildList.emptyMessage).toBeHidden();
   });
 
+  test("renders the build list that did not load", async ({
+    page,
+    openProjectPage,
+  }) => {
+    await mockGetProjects(page, [project]);
+    await mockApiError(
+      page,
+      (url) => url.origin === API_URL && url.pathname === "/builds",
+      500,
+      "Could not load builds",
+    );
+
+    const projectPage = await openProjectPage(project.id);
+    await expect(projectPage.buildList.errorMessage).toBeVisible();
+    // the toast would hide on its own partway through the comparison
+    await projectPage.notification.dismissBtn.click();
+    await expect(projectPage.notification.message).toBeHidden();
+
+    await expect(page).toHaveScreenshot("project-page-builds-error.png");
+  });
+
   test("stops loading when the test runs fail", async ({
     page,
     openProjectPage,

@@ -33,6 +33,25 @@ test.beforeEach(async ({ page }) => {
   await mockGetTestRuns(page, finishedBuild.id, []);
 });
 
+test("renders the build menu", async ({ openProjectPage, page }) => {
+  const { buildList } = await openProjectPage(project.id);
+
+  await buildList.openMenu(runningBuild.number);
+  await expect(buildList.menuItem("Stop")).toBeVisible();
+
+  await expect(page).toHaveScreenshot("build-menu.png");
+});
+
+test("renders the CI build id dialog", async ({ openProjectPage, page }) => {
+  const { buildList, modal } = await openProjectPage(project.id);
+
+  await buildList.openMenu(finishedBuild.number);
+  await buildList.menuItem("Edit CI Build").click();
+  await expect(modal.dialog).toBeVisible();
+
+  await expect(page).toHaveScreenshot("build-edit-dialog.png");
+});
+
 test("stops a running build", async ({ openProjectPage, page }) => {
   await mockUpdateBuild(page, runningBuild);
   const { buildList } = await openProjectPage(project.id);
