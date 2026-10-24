@@ -4,6 +4,7 @@ import {
   HEADER_AVATAR_MENU_ID,
   HEADER_HELP_MENU_ID,
   HEADER_HELP_MENU_BUTTON_TEST_ID,
+  HEADER_LOGOUT_BUTTON_TEST_ID,
 } from "~client/components/Header.locators";
 import { TAKE_TOUR_BUTTON_TEST_ID } from "~client/components/GuidedTour.locators";
 import { TourModal } from "./TourModal";
@@ -14,6 +15,7 @@ export class Header {
   takeTourButton = this.helpMenu.getByTestId(TAKE_TOUR_BUTTON_TEST_ID);
   avatarButton = this.page.getByTestId(HEADER_AVATAR_BUTTON_TEST_ID);
   avatarMenu = this.page.locator(`#${HEADER_AVATAR_MENU_ID}`);
+  logoutBtn = this.avatarMenu.getByTestId(HEADER_LOGOUT_BUTTON_TEST_ID);
 
   constructor(public page: Page) {
     this.page = page;
@@ -28,6 +30,11 @@ export class Header {
 
   async openAvatarMenu() {
     await this.avatarButton.click();
+  }
+
+  async logout() {
+    await this.openAvatarMenu();
+    await this.logoutBtn.click();
   }
 
   avatarMenuItem(name: string) {

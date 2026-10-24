@@ -5,6 +5,9 @@ import { Table } from "./components/Table";
 
 export class UserListPage extends BasePage {
   table: Table;
+  deleteSelectedBtn = this.page.locator(
+    "button:has([data-testid='DeleteIcon'])",
+  );
 
   constructor(page: Page) {
     super(page);

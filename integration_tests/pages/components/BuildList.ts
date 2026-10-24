@@ -14,6 +14,28 @@ export class BuildList {
     this.page = page;
   }
 
+  // the menu of one build: stop, edit its CI build id, delete
+  menu = this.page.getByRole("menu");
+  ciBuildIdInput = this.page.getByTestId("newCiBuildId");
+
+  getBuildItem(number: number) {
+    // "#1" is also the start of "#10"
+    return this.buildList
+      .locator(".MuiListItemButton-root")
+      .filter({ hasText: new RegExp(String.raw`#${number}(?!\d)`) });
+  }
+
+  // the menu button only shows while the pointer is over its build
+  async openMenu(number: number) {
+    const item = this.getBuildItem(number);
+    await item.hover();
+    await item.getByTestId("MoreVertIcon").click();
+  }
+
+  menuItem(name: "Stop" | "Edit CI Build" | "Delete") {
+    return this.menu.getByRole("menuitem", { name, exact: true });
+  }
+
   getBuildLocator(number: number) {
     return this.buildList.getByText(`#${number}`);
   }
