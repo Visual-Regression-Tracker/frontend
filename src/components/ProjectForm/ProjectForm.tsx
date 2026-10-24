@@ -20,7 +20,7 @@ import { LooksSameConfigForm } from "./LooksSameConfigForm";
 import { OdiffConfigForm } from "./OdiffConfigForm";
 import { PixelmatchConfigForm } from "./PixelmatchConfigForm";
 import { VlmConfigForm } from "./VlmConfigForm";
-import { getDefaultConfig } from "./utils";
+import { getDefaultConfig, withBlurAmplitudeOf } from "./utils";
 
 export const ProjectForm: React.FunctionComponent = () => {
   const { projectEditState: project } = useProjectState();
@@ -214,7 +214,10 @@ export const ProjectForm: React.FunctionComponent = () => {
               imageComparison,
               imageComparisonConfig:
                 project.imageComparison !== imageComparison
-                  ? getDefaultConfig(imageComparison)
+                  ? withBlurAmplitudeOf(
+                      getDefaultConfig(imageComparison),
+                      project.imageComparisonConfig,
+                    )
                   : project.imageComparisonConfig,
             });
           }}
