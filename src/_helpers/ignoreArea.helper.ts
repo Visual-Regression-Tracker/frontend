@@ -1,6 +1,32 @@
 import { IgnoreArea } from "../types/ignoreArea";
 import { v4 as uniqueId } from "uuid";
 
+type Box = Pick<IgnoreArea, "x" | "y" | "width" | "height">;
+
+const clamp = (value: number, min: number, max: number) =>
+  Math.min(max, Math.max(min, value));
+
+/// Trims an area to the image it is drawn on: an edge past a border is moved
+/// back onto it, while the edges inside stay where they are
+export const clampToImage = <T extends Box>(
+  area: T,
+  imageWidth: number,
+  imageHeight: number,
+): T => {
+  const left = clamp(area.x, 0, imageWidth);
+  const top = clamp(area.y, 0, imageHeight);
+  const right = clamp(area.x + area.width, 0, imageWidth);
+  const bottom = clamp(area.y + area.height, 0, imageHeight);
+
+  return {
+    ...area,
+    x: left,
+    y: top,
+    width: right - left,
+    height: bottom - top,
+  };
+};
+
 export const invertIgnoreArea = (
   imageWidth: number,
   imageHeight: number,
