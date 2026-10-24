@@ -33,11 +33,17 @@ export const withBlurAmplitudeOf = (
   config: string,
   previousConfig: string,
 ): string => {
-  const { blurAmplitudeFilter, blurAmplitudeThreshold }: BlurAmplitudeConfig =
-    JSON.parse(previousConfig);
+  const {
+    blurAmplitudeFilter,
+    blurAmplitudeThreshold,
+    dinov2Check,
+    dinov2Threshold,
+  }: BlurAmplitudeConfig = JSON.parse(previousConfig);
   return JSON.stringify({
     ...JSON.parse(config),
     blurAmplitudeFilter,
     blurAmplitudeThreshold,
+    dinov2Check,
+    dinov2Threshold,
   });
 };

@@ -30,6 +30,7 @@ import {
   mockGetUsers,
   mockImage,
   mockMatchingVariations,
+  mockDinov2Status,
   mockOllamaModels,
   mockTestRun,
   mockUpdateTestRun,
@@ -247,6 +248,41 @@ const VIEWS: [name: string, body: Body][] = [
       await expect(projectListPage.noiseThreshold).toHaveValue("80");
       await expect(projectListPage.page.getByRole("tooltip")).toHaveCount(0);
       await shot("edit-project-noise-filter");
+    },
+  ],
+
+  [
+    "edit project dialog with the DINOv2 check on",
+    async ({ projectListPage, shot }) => {
+      await projectListPage.editBtn.click();
+      await projectListPage.noiseFilter.check();
+      await projectListPage.dinov2CheckLabel.scrollIntoViewIfNeeded();
+      await projectListPage.dinov2Check.check();
+      // take the focus, and its tooltip, off the switch
+      await projectListPage.dialog.getByRole("heading").first().click();
+      await projectListPage.dinov2Threshold.scrollIntoViewIfNeeded();
+
+      await expect(projectListPage.dinov2Threshold).toHaveValue("0.15");
+      await expect(projectListPage.page.getByRole("tooltip")).toHaveCount(0);
+      await shot("edit-project-dinov2-check");
+    },
+  ],
+
+  [
+    "edit project dialog on a server without DINOv2",
+    async ({ projectListPage, shot }) => {
+      await mockDinov2Status(projectListPage.page, {
+        configured: false,
+        available: false,
+      });
+      await projectListPage.editBtn.click();
+      await projectListPage.noiseFilter.check();
+      await projectListPage.dialog.getByRole("heading").first().click();
+      await projectListPage.dinov2Status.scrollIntoViewIfNeeded();
+
+      await expect(projectListPage.dinov2Check).toBeDisabled();
+      await expect(projectListPage.page.getByRole("tooltip")).toHaveCount(0);
+      await shot("edit-project-no-dinov2");
     },
   ],
 
@@ -556,6 +592,7 @@ for (const scheme of SCHEMES) {
       ]);
       await mockGetUsers(page, [TEST_USER, EDITOR_USER, GUEST_USER]);
       await mockOllamaModels(page, ["gemma3:12b", "llava:13b"]);
+      await mockDinov2Status(page, { configured: true, available: true });
       await mockImages(page);
     });
 

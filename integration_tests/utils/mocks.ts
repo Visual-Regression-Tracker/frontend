@@ -230,6 +230,16 @@ export const mockOllamaModels = (page: Page, names: string[]) => {
   );
 };
 
+// whether the backend has a DINOv2 service set up, and whether it answers
+export const mockDinov2Status = (
+  page: Page,
+  status: { configured: boolean; available: boolean },
+) => {
+  return page.route(`${API_URL}/dinov2/status`, (route) =>
+    route.fulfill({ body: JSON.stringify(status) }),
+  );
+};
+
 // saving or applying ignore areas, and the comment, answer with nothing the
 // dialog reads
 export const mockUpdateIgnoreAreas = (page: Page) => {
