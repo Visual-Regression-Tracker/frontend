@@ -26,6 +26,7 @@ import {
   GridSortDirection,
   GridSortModel,
   gridFilteredSortedRowIdsSelector,
+  GridRowSelectionModel,
 } from "@mui/x-data-grid";
 import { DataGridCustomToolbar } from "./DataGridCustomToolbar";
 import { BulkOperation } from "./BulkOperation";
@@ -399,6 +400,12 @@ const TestRunList: React.FunctionComponent = () => {
     [groupVariations, groups, selectedIds, selectedIdSet],
   );
 
+  // a stable object, so the grid does not re-sync on every render
+  const rowSelectionModel = React.useMemo<GridRowSelectionModel>(
+    () => ({ type: "include", ids: new Set(tableSelectionModel) }),
+    [tableSelectionModel],
+  );
+
   // the dialog walks the grid's runs in the grid's order, groups expanded, so
   // the arrows visit a screen's other locales before the next screen. Not
   // limited to the current page, matching how the table publishes every
@@ -610,10 +617,7 @@ const TestRunList: React.FunctionComponent = () => {
                   onProcessed: clearSelection,
                 },
               }}
-              rowSelectionModel={{
-                type: "include",
-                ids: new Set(tableSelectionModel),
-              }}
+              rowSelectionModel={rowSelectionModel}
               onRowSelectionModelChange={(model) => {
                 // the header box selects everything as an exclude list
                 const ticked =

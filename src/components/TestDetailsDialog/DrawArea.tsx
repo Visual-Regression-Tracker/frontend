@@ -288,7 +288,9 @@ export const DrawArea: FunctionComponent<IDrawArea> = ({
   const imageLoaded = () => {
     return (
       <Box
-        sx={{ overflow: "auto", backgroundColor: "background.paper" }}
+        // white in both colour modes: transparent parts of a screenshot must
+        // look the same to every reviewer
+        sx={{ overflow: "auto", backgroundColor: "#fff" }}
         data-testid="drawArea"
         ref={scrollContainerRef}
         onScroll={(event: React.SyntheticEvent<HTMLElement>) => {
