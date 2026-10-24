@@ -451,6 +451,9 @@ export const DrawArea: FunctionComponent<IDrawArea> = ({
                     y: rect.y,
                     width: rect.width,
                     height: rect.height,
+                    // only shown: drawn over the areas being edited, they
+                    // must let the pointer through to them
+                    listening: false,
                   }}
                 />
               ))}

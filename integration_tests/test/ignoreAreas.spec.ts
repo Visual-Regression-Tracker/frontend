@@ -25,12 +25,12 @@ const openRunWith = async (
   page: Page,
   openProjectPage: (id: string, buildId: string, testId: string) => unknown,
   ignoreAreas: IgnoreArea[],
+  tempIgnoreAreas: Omit<IgnoreArea, "id">[] = [],
 ) => {
-  // no temporary areas: they are drawn on top and would catch the pointer
   const run = {
     ...TEST_UNRESOLVED,
     ignoreAreas: JSON.stringify(ignoreAreas),
-    tempIgnoreAreas: "[]",
+    tempIgnoreAreas: JSON.stringify(tempIgnoreAreas),
   };
   await mockGetProjects(page, [project]);
   await mockGetBuilds(page, project.id, [build]);
@@ -153,4 +153,32 @@ test("keeps an area drawn at the edge of the image inside it", async ({
   expect(drawn.y + drawn.height).toBeLessThanOrEqual(IMAGE.height);
   expect(drawn.width).toBeGreaterThan(0);
   expect(drawn.height).toBeGreaterThan(0);
+});
+
+// The areas the run was compared with are only shown, but they are drawn over
+// the ones being edited and used to take the pointer: an ignore area under
+// one could be neither selected nor moved, and its handles could not be held.
+test("lets an area under the compared run's areas be selected and moved", async ({
+  openProjectPage,
+  page,
+}) => {
+  const area = { id: "1", x: 200, y: 200, width: 100, height: 80 };
+  const toPage = await openRunWith(
+    page,
+    openProjectPage,
+    [area],
+    [{ x: 100, y: 100, width: 600, height: 400 }],
+  );
+
+  const center = toPage(area.x + area.width / 2, area.y + area.height / 2);
+  await page.mouse.click(center.x, center.y);
+  const moved = toPage(
+    area.x + area.width / 2 + 100,
+    area.y + area.height / 2 + 50,
+  );
+  await drag(page, center, moved);
+
+  const [saved] = await saveIgnoreAreas(page);
+  expect(saved.x).toBeCloseTo(area.x + 100, -1);
+  expect(saved.y).toBeCloseTo(area.y + 50, -1);
 });
