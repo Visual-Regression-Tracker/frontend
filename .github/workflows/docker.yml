@@ -24,6 +24,10 @@ on:
         description: Existing tag to publish, e.g. v5.6.0
         required: true
 
+# GITHUB_TOKEN is only used to check out the code; image pushes use the Docker Hub secrets
+permissions:
+  contents: read
+
 jobs:
   docker:
     runs-on: ubuntu-latest
@@ -46,7 +50,10 @@ jobs:
 
       - uses: actions/checkout@v4
         with:
-          ref: ${{ inputs.tag || github.ref }}
+          # a manual run checks out the tag itself, never a branch with the same name
+          ref: ${{ inputs.tag && format('refs/tags/{0}', inputs.tag) || github.ref }}
+          # keep the token out of .git/config, which is part of the build context
+          persist-credentials: false
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@c7c53464625b32c7a7e944ae62b3e17d2b600130 # v3.7.0
