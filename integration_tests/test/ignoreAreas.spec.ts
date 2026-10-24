@@ -415,3 +415,20 @@ test("asks before leaving with an area that was not saved", async ({
   await expect(details.drawAreas).toHaveCount(0);
   await expect(page).not.toHaveURL(/testId=/);
 });
+
+test("asks before leaving on Escape with an area that was not saved", async ({
+  openProjectPage,
+  page,
+}) => {
+  const details = await openAtOriginalSize(openProjectPage, page, withoutAreas);
+  await details.drawMode.click();
+  await details.drag({ x: 40, y: 40 }, { x: 200, y: 120 });
+  await expect(details.saveAreas).toBeEnabled();
+
+  await page.keyboard.press("Escape");
+
+  await expect(details.discardPrompt).toBeVisible();
+  await page.getByRole("button", { name: "Discard" }).click();
+  await expect(details.drawAreas).toHaveCount(0);
+  await expect(page).not.toHaveURL(/testId=/);
+});

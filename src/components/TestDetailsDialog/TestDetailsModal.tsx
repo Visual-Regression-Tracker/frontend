@@ -378,7 +378,6 @@ const TestDetailsModal: React.FunctionComponent<TestDetailsModalProps> = ({
     },
     [testRun.diffName],
   );
-  useHotkeys("ESC", handleClose, [handleClose]);
 
   const openHistoryTab = () => {
     window.open(
