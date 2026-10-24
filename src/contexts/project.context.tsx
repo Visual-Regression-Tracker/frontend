@@ -4,6 +4,10 @@ import { projectsService } from "../services";
 import { useSnackbar } from "notistack";
 import { useUserState } from "./user.context";
 import { DEFAULT_PROJECT_EDIT_STATE } from "../constants";
+import {
+  readRecentProjectIds,
+  rememberRecentProject,
+} from "../_helpers/projectList.helper";
 
 interface IRequestAction {
   type: "request";
@@ -35,6 +39,21 @@ interface ISelectAction {
   payload: string;
 }
 
+interface IFavoritesAction {
+  type: "favorites";
+  payload: string[];
+}
+
+interface IFavoriteAction {
+  type: "favorite";
+  payload: { id: string; favorite: boolean };
+}
+
+interface IRecentAction {
+  type: "recent";
+  payload: string[];
+}
+
 interface ISetProjectEditState {
   type: "setProjectEditState";
   payload: ProjectDto;
@@ -47,12 +66,19 @@ type IAction =
   | ISelectAction
   | ICreateAction
   | IDeleteAction
-  | IUpdateAction;
+  | IUpdateAction
+  | IFavoritesAction
+  | IFavoriteAction
+  | IRecentAction;
 type Dispatch = (action: IAction) => void;
 type State = {
   selectedProjectId: string | null;
   projectEditState: ProjectDto;
   projectList: Project[];
+  // the signed-in user's own, kept by the API
+  favoriteProjectIds: string[];
+  // opened last first, kept in this browser
+  recentProjectIds: string[];
 };
 type ProjectProviderProps = {
   children: React.ReactNode;
@@ -99,6 +125,33 @@ export function projectReducer(state: State, action: IAction): State {
       return {
         ...state,
         projectList: state.projectList.filter((p) => p.id !== action.payload),
+        favoriteProjectIds: state.favoriteProjectIds.filter(
+          (id) => id !== action.payload,
+        ),
+      };
+
+    case "favorites":
+      return {
+        ...state,
+        favoriteProjectIds: action.payload,
+      };
+
+    case "favorite": {
+      const others = state.favoriteProjectIds.filter(
+        (id) => id !== action.payload.id,
+      );
+      return {
+        ...state,
+        favoriteProjectIds: action.payload.favorite
+          ? [...others, action.payload.id]
+          : others,
+      };
+    }
+
+    case "recent":
+      return {
+        ...state,
+        recentProjectIds: action.payload,
       };
 
     case "setProjectEditState":
@@ -195,6 +248,24 @@ function deleteProject(dispatch: Dispatch, id: string) {
   });
 }
 
+// the star shows at once and goes back if the API refuses it
+function toggleFavoriteProject(
+  dispatch: Dispatch,
+  id: string,
+  favorite: boolean,
+): Promise<void> {
+  dispatch({ type: "favorite", payload: { id, favorite } });
+
+  const save = favorite
+    ? projectsService.addFavorite(id)
+    : projectsService.removeFavorite(id);
+
+  return save.catch((err) => {
+    dispatch({ type: "favorite", payload: { id, favorite: !favorite } });
+    throw err;
+  });
+}
+
 function setProjectEditState(dispatch: Dispatch, project?: ProjectDto) {
   dispatch({
     type: "setProjectEditState",
@@ -207,9 +278,12 @@ function ProjectProvider({ children }: ProjectProviderProps) {
     selectedProjectId: null,
     projectList: [],
     projectEditState: DEFAULT_PROJECT_EDIT_STATE,
+    favoriteProjectIds: [],
+    recentProjectIds: [],
   };
 
-  const { loggedIn } = useUserState();
+  const { loggedIn, user } = useUserState();
+  const userId = loggedIn ? user?.id : undefined;
   const [state, dispatch] = React.useReducer(projectReducer, initialState);
   const { enqueueSnackbar } = useSnackbar();
 
@@ -222,6 +296,43 @@ function ProjectProvider({ children }: ProjectProviderProps) {
       );
     }
   }, [enqueueSnackbar, loggedIn]);
+
+  // An API older than this frontend has no favourites and answers 404: the
+  // lists work without them rather than greeting every login with an error.
+  React.useEffect(() => {
+    if (!userId) {
+      dispatch({ type: "favorites", payload: [] });
+      dispatch({ type: "recent", payload: [] });
+      return;
+    }
+    let ignore = false;
+    dispatch({ type: "recent", payload: readRecentProjectIds(userId) });
+    projectsService
+      .getFavorites()
+      .then((ids) => {
+        if (!ignore) {
+          dispatch({ type: "favorites", payload: ids });
+        }
+      })
+      .catch(() => {
+        if (!ignore) {
+          dispatch({ type: "favorites", payload: [] });
+        }
+      });
+    return () => {
+      ignore = true;
+    };
+  }, [userId]);
+
+  // a project counts as opened once it is selected, whichever page did it
+  React.useEffect(() => {
+    if (userId && state.selectedProjectId) {
+      dispatch({
+        type: "recent",
+        payload: rememberRecentProject(userId, state.selectedProjectId),
+      });
+    }
+  }, [userId, state.selectedProjectId]);
 
   return (
     <ProjectStateContext.Provider value={state}>
@@ -242,4 +353,5 @@ export {
   deleteProject,
   selectProject,
   setProjectEditState,
+  toggleFavoriteProject,
 };

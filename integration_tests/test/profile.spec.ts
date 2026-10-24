@@ -7,6 +7,7 @@ import {
   mockGetProjects,
   mockUpdateUser,
 } from "utils/mocks";
+import { waitForPage } from "utils/waitForPage";
 
 const project = TEST_PROJECT;
 
@@ -16,6 +17,7 @@ test.beforeEach(async ({ page }) => {
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 test("renders", async ({ profilePage, page }) => {
+  await waitForPage(page);
   await expect(page).toHaveScreenshot("profile-page.png");
 });
 

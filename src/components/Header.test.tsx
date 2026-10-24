@@ -179,7 +179,7 @@ describe("Header", () => {
       );
     });
 
-    it("opens a new GitHub issue in another tab", async () => {
+    it("opens a new GitHub issue in another tab that cannot reach back", async () => {
       const open = vi.spyOn(window, "open").mockReturnValue(null);
       const { user } = renderHeader({ user: TEST_USER });
 
@@ -189,6 +189,7 @@ describe("Header", () => {
       expect(open).toHaveBeenCalledWith(
         "https://github.com/Visual-Regression-Tracker/Visual-Regression-Tracker/issues/new",
         "_blank",
+        "noopener,noreferrer",
       );
     });
 

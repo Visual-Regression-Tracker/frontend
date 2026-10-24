@@ -363,11 +363,7 @@ export const DrawArea: FunctionComponent<IDrawArea> = ({
                 // a half-faded difference washes out instead of blacking out
                 // what matches, so the blend ignores the fade
                 opacity={
-                  underlayImage
-                    ? blendDifference
-                      ? 1
-                      : overlayOpacity
-                    : undefined
+                  underlayImage && (blendDifference ? 1 : overlayOpacity)
                 }
                 globalCompositeOperation={
                   blendDifference ? "difference" : undefined

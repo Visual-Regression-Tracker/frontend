@@ -1,5 +1,5 @@
 import { expect, Page } from "@playwright/test";
-import { test as base } from "fixtures";
+import { AUTH_USER, test as base } from "fixtures";
 import { LoginPage, ProjectListPage } from "pages";
 import {
   EDITOR_USER,
@@ -23,6 +23,7 @@ import {
   mockApiError,
   mockGetBuildDetails,
   mockGetBuilds,
+  mockGetFavoriteProjects,
   mockGetProjects,
   mockGetTestRuns,
   mockGetTestVariationDetails,
@@ -45,6 +46,26 @@ import {
 const project = TEST_PROJECT;
 const build = TEST_BUILD_FAILED;
 const SCHEMES = ["light", "dark"] as const;
+
+// a list long enough for favourites, recently opened and the rest
+const LISTED_PROJECTS = [
+  project,
+  {
+    ...project,
+    id: "checkout-id",
+    name: "Checkout flow",
+    mainBranchName: "main",
+  },
+  {
+    ...project,
+    id: "mobile-id",
+    name: "Mobile web",
+    mainBranchName: "develop",
+  },
+  { ...project, id: "storybook-id", name: "Storybook", mainBranchName: "main" },
+];
+const FAVORITE_ID = "storybook-id";
+const RECENT_ID = "checkout-id";
 
 // only what the wait for the canvases reads off Konva
 type KonvaWindow = {
@@ -206,6 +227,38 @@ const VIEWS: [name: string, body: Body][] = [
   ],
 
   [
+    "project list with favourites and recently opened",
+    async ({ page, authUser, shot }) => {
+      void authUser;
+      await mockGetProjects(page, LISTED_PROJECTS);
+      await mockGetFavoriteProjects(page, [FAVORITE_ID]);
+      await page.addInitScript(
+        ([key, id]) => localStorage.setItem(key, JSON.stringify([id])),
+        [`recentProjects:${AUTH_USER.id}`, RECENT_ID],
+      );
+      await page.goto("/projects");
+      const projectListPage = new ProjectListPage(page);
+
+      await expect(projectListPage.projects).toHaveCount(4);
+      await expect(projectListPage.section("Favourites")).toBeVisible();
+      await expect(projectListPage.section("Recently opened")).toBeVisible();
+      await shot("project-list-favourites", { fullPage: true });
+    },
+  ],
+
+  [
+    "project list search without a match",
+    async ({ page, authUser, shot }) => {
+      void authUser;
+      await mockGetProjects(page, LISTED_PROJECTS);
+      await page.goto("/projects?q=billing");
+
+      await expect(page.getByText("No projects match “billing”")).toBeVisible();
+      await shot("project-list-no-match");
+    },
+  ],
+
+  [
     "create project dialog",
     async ({ projectListPage, shot }) => {
       await projectListPage.addBtn.click();
@@ -296,6 +349,21 @@ const VIEWS: [name: string, body: Body][] = [
       );
       await expect(projectListPage.page.getByRole("tooltip")).toHaveCount(0);
       await shot("delete-project");
+    },
+  ],
+
+  [
+    "project switcher open",
+    async ({ openProjectPage, page, shot }) => {
+      await mockGetProjects(page, LISTED_PROJECTS);
+      await mockGetFavoriteProjects(page, [FAVORITE_ID]);
+      const projectPage = await openProjectPage(project.id, build.id);
+      await expect(projectPage.testRunList.rows).toHaveCount(4);
+
+      await projectPage.projectField.click();
+
+      await expect(page.getByRole("option")).toHaveCount(4);
+      await shot("project-switcher");
     },
   ],
 

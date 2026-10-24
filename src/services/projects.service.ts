@@ -54,8 +54,48 @@ async function update(project: Partial<Project>): Promise<Project> {
   return handleResponse(response);
 }
 
+// the signed-in user's own favourites, as project ids
+async function getFavorites(): Promise<string[]> {
+  const requestOptions = {
+    method: "GET",
+    headers: authHeader(),
+  };
+
+  const response = await fetch(`${API_URL}/projects/favorites`, requestOptions);
+  return handleResponse(response);
+}
+
+async function addFavorite(id: string): Promise<void> {
+  const requestOptions = {
+    method: "PUT",
+    headers: authHeader(),
+  };
+
+  const response = await fetch(
+    `${API_URL}/projects/${id}/favorite`,
+    requestOptions,
+  );
+  return handleResponse(response);
+}
+
+async function removeFavorite(id: string): Promise<void> {
+  const requestOptions = {
+    method: "DELETE",
+    headers: authHeader(),
+  };
+
+  const response = await fetch(
+    `${API_URL}/projects/${id}/favorite`,
+    requestOptions,
+  );
+  return handleResponse(response);
+}
+
 export const projectsService = {
   getAll,
+  getFavorites,
+  addFavorite,
+  removeFavorite,
   remove,
   create,
   update,

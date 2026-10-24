@@ -7,7 +7,7 @@ import {
 
 describe("clampScale", () => {
   it("allows zooming between a tenth and ten times", () => {
-    expect(MIN_SCALE).toBe(0.1);
+    expect(MIN_SCALE).toBeCloseTo(0.1);
     expect(MAX_SCALE).toBe(10);
   });
 

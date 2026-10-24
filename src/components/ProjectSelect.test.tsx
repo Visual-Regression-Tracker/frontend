@@ -1,5 +1,5 @@
 import React from "react";
-import { screen } from "@testing-library/react";
+import { screen, within } from "@testing-library/react";
 import { renderWithProviders } from "../_test/render";
 import { projectsService } from "../services";
 import { useProjectState } from "../contexts";
@@ -8,6 +8,7 @@ import ProjectSelect from "./ProjectSelect";
 
 const FIRST = { ...TEST_PROJECT, id: "first-id", name: "First project" };
 const SECOND = { ...TEST_PROJECT, id: "second-id", name: "Second project" };
+const THIRD = { ...TEST_PROJECT, id: "third-id", name: "Third project" };
 
 const SelectedProjectId = () => (
   <div data-testid="selectedProjectId">
@@ -18,22 +19,46 @@ const SelectedProjectId = () => (
 const renderProjectSelect = ({
   projectId,
   onProjectSelect = vi.fn(),
+  projects = [FIRST, SECOND],
+  favorites = [] as string[],
+  recent = [] as string[],
 }: {
   projectId?: string;
   onProjectSelect?: (id: string) => void;
-} = {}) =>
-  renderWithProviders(
+  projects?: (typeof FIRST)[];
+  favorites?: string[];
+  recent?: string[];
+} = {}) => {
+  vi.spyOn(projectsService, "getAll").mockResolvedValue(projects);
+  vi.spyOn(projectsService, "getFavorites").mockResolvedValue(favorites);
+  if (recent.length) {
+    localStorage.setItem(
+      `recentProjects:${TEST_USER.id}`,
+      JSON.stringify(recent),
+    );
+  }
+  return renderWithProviders(
     <>
       <ProjectSelect projectId={projectId} onProjectSelect={onProjectSelect} />
       <SelectedProjectId />
     </>,
     { user: TEST_USER },
   );
+};
+
+const optionNames = () =>
+  within(screen.getByRole("listbox"))
+    .getAllByRole("option")
+    .map((option) => option.textContent);
 
 describe("ProjectSelect", () => {
+  afterEach(() => localStorage.clear());
+
   it("shows nothing while there are no projects", async () => {
     const getAll = vi.spyOn(projectsService, "getAll").mockResolvedValue([]);
-    renderProjectSelect();
+    renderWithProviders(<ProjectSelect onProjectSelect={vi.fn()} />, {
+      user: TEST_USER,
+    });
 
     await vi.waitFor(() => expect(getAll).toHaveBeenCalled());
 
@@ -42,33 +67,53 @@ describe("ProjectSelect", () => {
   });
 
   it("asks to select a project when none is chosen", async () => {
-    vi.spyOn(projectsService, "getAll").mockResolvedValue([FIRST, SECOND]);
     renderProjectSelect();
 
-    expect(await screen.findByRole("combobox")).toHaveTextContent(
-      "Select project",
-    );
-    expect(screen.getByText("Project")).toBeVisible();
+    const field = await screen.findByRole("combobox", { name: "Project" });
+    expect(field).toHaveValue("");
+    expect(field).toHaveAttribute("placeholder", "Select project");
   });
 
-  it("lists every project to choose from", async () => {
-    vi.spyOn(projectsService, "getAll").mockResolvedValue([FIRST, SECOND]);
-    const { user } = renderProjectSelect();
+  it("lists every project by name to choose from", async () => {
+    const { user } = renderProjectSelect({ projects: [SECOND, FIRST] });
 
     await user.click(await screen.findByRole("combobox"));
 
-    expect(screen.getByRole("option", { name: "First project" })).toBeVisible();
-    expect(
-      screen.getByRole("option", { name: "Second project" }),
-    ).toBeVisible();
-    // the placeholder is shown but cannot be picked
-    expect(
-      screen.getByRole("option", { name: "Select project" }),
-    ).toHaveAttribute("aria-disabled", "true");
+    expect(optionNames()).toEqual(["First project", "Second project"]);
+  });
+
+  it("lists favourites first, then the recently opened, then the rest", async () => {
+    const { user } = renderProjectSelect({
+      projects: [FIRST, SECOND, THIRD],
+      favorites: [THIRD.id],
+      recent: [SECOND.id],
+    });
+    // the favourites arrive after the projects
+    await vi.waitFor(() =>
+      expect(projectsService.getFavorites).toHaveBeenCalled(),
+    );
+
+    await user.click(await screen.findByRole("combobox"));
+
+    expect(await screen.findByText("Favourites")).toBeVisible();
+    expect(screen.getByText("Recently opened")).toBeVisible();
+    expect(screen.getByText("Other projects")).toBeVisible();
+    expect(optionNames()).toEqual([
+      "Third project",
+      "Second project",
+      "First project",
+    ]);
+  });
+
+  it("narrows the list to what is typed", async () => {
+    const { user } = renderProjectSelect();
+
+    await user.type(await screen.findByRole("combobox"), "sec");
+
+    expect(optionNames()).toEqual(["Second project"]);
   });
 
   it("reports the id of the project picked", async () => {
-    vi.spyOn(projectsService, "getAll").mockResolvedValue([FIRST, SECOND]);
     const onProjectSelect = vi.fn();
     const { user } = renderProjectSelect({ onProjectSelect });
 
@@ -79,20 +124,28 @@ describe("ProjectSelect", () => {
     expect(onProjectSelect).toHaveBeenCalledWith("second-id");
   });
 
+  it("picks from the keyboard", async () => {
+    const onProjectSelect = vi.fn();
+    const { user } = renderProjectSelect({ onProjectSelect });
+
+    await user.type(
+      await screen.findByRole("combobox"),
+      "sec{ArrowDown}{Enter}",
+    );
+
+    expect(onProjectSelect).toHaveBeenCalledWith("second-id");
+  });
+
   it("selects the project given by id and shows its name", async () => {
-    vi.spyOn(projectsService, "getAll").mockResolvedValue([FIRST, SECOND]);
     renderProjectSelect({ projectId: "second-id" });
 
-    expect(await screen.findByRole("combobox")).toHaveTextContent(
-      "Second project",
-    );
+    expect(await screen.findByRole("combobox")).toHaveValue("Second project");
     expect(screen.getByTestId("selectedProjectId")).toHaveTextContent(
       "second-id",
     );
   });
 
   it("leaves the selection alone when no project id is given", async () => {
-    vi.spyOn(projectsService, "getAll").mockResolvedValue([FIRST, SECOND]);
     renderProjectSelect();
 
     await screen.findByRole("combobox");

@@ -1,15 +1,6 @@
 import React, { useEffect } from "react";
-import {
-  Typography,
-  Card,
-  IconButton,
-  CardContent,
-  CardActions,
-  Button,
-  Box,
-  Stack,
-  Container,
-} from "@mui/material";
+import { useSearchParams } from "react-router-dom";
+import { Typography, Button, Box, Stack, Container } from "@mui/material";
 import {
   useProjectState,
   useProjectDispatch,
@@ -17,29 +8,25 @@ import {
   createProject,
   updateProject,
   setProjectEditState,
+  toggleFavoriteProject,
   useHelpDispatch,
   setHelpSteps,
   useUserState,
 } from "../contexts";
-import {
-  Delete,
-  Add,
-  Edit,
-  AccountTree,
-  FolderOpenOutlined,
-} from "@mui/icons-material";
-import { Tooltip } from "../components/Tooltip";
+import { Add, FolderOpenOutlined, Search } from "@mui/icons-material";
 import { EmptyState } from "../components/EmptyState";
+import { ProjectCard } from "../components/ProjectCard";
+import { ProjectGrid, ProjectSection } from "../components/ProjectGrid";
+import { ProjectSearchField } from "../components/ProjectSearchField";
+import { PROJECT_LIST_PAGE_STEPS } from "../constants";
 import {
-  routes,
-  LOCATOR_PROJECT_LIST_PAGE_PROJECT_LIST,
-  PROJECT_LIST_PAGE_STEPS,
-} from "../constants";
-import { formatDateTime } from "../_helpers/format.helper";
+  groupProjects,
+  matchesProjectQuery,
+} from "../_helpers/projectList.helper";
 import { ProjectForm } from "../components/ProjectForm";
 import { useSnackbar } from "notistack";
 import { BaseModal } from "../components/BaseModal";
-import { User } from "../types";
+import { Project, User } from "../types";
 
 // the roles the API lets create, update and delete projects
 const PROJECT_EDITOR_ROLES = new Set<User["role"]>(["admin", "editor"]);
@@ -51,6 +38,11 @@ const ProjectsListPage = () => {
   const helpDispatch = useHelpDispatch();
   const { user } = useUserState();
   const canEditProjects = !!user && PROJECT_EDITOR_ROLES.has(user.role);
+  const { projectList, favoriteProjectIds, recentProjectIds } = projectState;
+
+  // in the URL, so a search can be shared and survives going back
+  const [searchParams, setSearchParams] = useSearchParams();
+  const query = searchParams.get("q") ?? "";
 
   const [createDialogOpen, setCreateDialogOpen] = React.useState(false);
   const [updateDialogOpen, setUpdateDialogOpen] = React.useState(false);
@@ -59,6 +51,26 @@ const ProjectsListPage = () => {
   useEffect(() => {
     setHelpSteps(helpDispatch, PROJECT_LIST_PAGE_STEPS);
   });
+
+  const groups = React.useMemo(
+    () => groupProjects(projectList, favoriteProjectIds, recentProjectIds),
+    [projectList, favoriteProjectIds, recentProjectIds],
+  );
+  const favoriteIdSet = React.useMemo(
+    () => new Set(favoriteProjectIds),
+    [favoriteProjectIds],
+  );
+  // searching flattens the sections, keeping their order
+  const matches = React.useMemo(
+    () =>
+      [...groups.favorites, ...groups.recent, ...groups.others].filter(
+        (project) => matchesProjectQuery(project, query),
+      ),
+    [groups, query],
+  );
+
+  const setQuery = (value: string) =>
+    setSearchParams(value ? { q: value } : {}, { replace: true });
 
   const toggleCreateDialogOpen = () => {
     setCreateDialogOpen(!createDialogOpen);
@@ -70,6 +82,77 @@ const ProjectsListPage = () => {
 
   const toggleDeleteDialogOpen = () => {
     setDeleteDialogOpen(!deleteDialogOpen);
+  };
+
+  const renderCard = (project: Project) => {
+    const favorite = favoriteIdSet.has(project.id);
+
+    return (
+      <ProjectCard
+        key={project.id}
+        project={project}
+        favorite={favorite}
+        onToggleFavorite={() =>
+          toggleFavoriteProject(projectDispatch, project.id, !favorite).catch(
+            (err) => enqueueSnackbar(err, { variant: "error" }),
+          )
+        }
+        onEdit={
+          canEditProjects
+            ? () => {
+                toggleUpdateDialogOpen();
+                setProjectEditState(projectDispatch, project);
+              }
+            : undefined
+        }
+        onDelete={
+          canEditProjects
+            ? () => {
+                toggleDeleteDialogOpen();
+                setProjectEditState(projectDispatch, project);
+              }
+            : undefined
+        }
+      />
+    );
+  };
+
+  const hasSections = groups.favorites.length + groups.recent.length > 0;
+
+  const renderProjects = () => {
+    if (query.trim()) {
+      return matches.length ? (
+        <ProjectGrid>{matches.map(renderCard)}</ProjectGrid>
+      ) : (
+        <EmptyState
+          icon={<Search />}
+          title={`No projects match “${query.trim()}”`}
+          description="Search looks at the name, the id and the main branch."
+        />
+      );
+    }
+    if (!hasSections) {
+      return <ProjectGrid>{groups.others.map(renderCard)}</ProjectGrid>;
+    }
+    return (
+      <Stack spacing={4}>
+        {groups.favorites.length > 0 && (
+          <ProjectSection title="Favourites">
+            {groups.favorites.map(renderCard)}
+          </ProjectSection>
+        )}
+        {groups.recent.length > 0 && (
+          <ProjectSection title="Recently opened">
+            {groups.recent.map(renderCard)}
+          </ProjectSection>
+        )}
+        {groups.others.length > 0 && (
+          <ProjectSection title="Other projects">
+            {groups.others.map(renderCard)}
+          </ProjectSection>
+        )}
+      </Stack>
+    );
   };
 
   return (
@@ -86,26 +169,37 @@ const ProjectsListPage = () => {
             Projects
           </Typography>
           <Typography variant="body2" color="text.secondary">
-            {projectState.projectList.length === 1
+            {projectList.length === 1
               ? "1 project"
-              : `${projectState.projectList.length} projects`}
+              : `${projectList.length} projects`}
           </Typography>
         </Box>
-        {canEditProjects && (
-          <Button
-            variant="contained"
-            startIcon={<Add data-testid="AddIcon" />}
-            onClick={() => {
-              toggleCreateDialogOpen();
-              setProjectEditState(projectDispatch);
-            }}
-          >
-            Add project
-          </Button>
-        )}
+        <Stack
+          direction="row"
+          spacing={2}
+          alignItems="center"
+          width={{ xs: "100%", sm: "auto" }}
+        >
+          {projectList.length > 0 && (
+            <ProjectSearchField value={query} onChange={setQuery} />
+          )}
+          {canEditProjects && (
+            <Button
+              variant="contained"
+              startIcon={<Add data-testid="AddIcon" />}
+              sx={{ flexShrink: 0 }}
+              onClick={() => {
+                toggleCreateDialogOpen();
+                setProjectEditState(projectDispatch);
+              }}
+            >
+              Add project
+            </Button>
+          )}
+        </Stack>
       </Stack>
 
-      {projectState.projectList.length === 0 && (
+      {projectList.length === 0 ? (
         <EmptyState
           icon={<FolderOpenOutlined />}
           title="No projects yet"
@@ -115,108 +209,9 @@ const ProjectsListPage = () => {
               : "Projects shared with you will show up here."
           }
         />
+      ) : (
+        renderProjects()
       )}
-      <Box
-        sx={{
-          display: "grid",
-          gap: 2,
-          gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))",
-        }}
-      >
-        {projectState.projectList.map((project) => (
-          <Card
-            id={LOCATOR_PROJECT_LIST_PAGE_PROJECT_LIST}
-            key={project.id}
-            sx={{
-              display: "flex",
-              flexDirection: "column",
-              "&:hover": { borderColor: "primary.main", boxShadow: 2 },
-            }}
-          >
-            <CardContent sx={{ flex: 1 }}>
-              <Typography variant="h6" component="h2" noWrap>
-                {project.name}
-              </Typography>
-              <Stack
-                direction="row"
-                alignItems="center"
-                spacing={0.75}
-                color="text.secondary"
-                mt={0.5}
-              >
-                <AccountTree sx={{ fontSize: 16 }} />
-                <Typography variant="body2" noWrap>
-                  {project.mainBranchName}
-                </Typography>
-              </Stack>
-              <Box
-                component="dl"
-                sx={{
-                  display: "grid",
-                  gridTemplateColumns: "auto 1fr",
-                  columnGap: 2,
-                  rowGap: 0.5,
-                  m: 0,
-                  mt: 2,
-                  "& dt": { color: "text.secondary" },
-                  "& dd": { m: 0, minWidth: 0, overflowWrap: "anywhere" },
-                }}
-              >
-                <Typography component="dt" variant="caption">
-                  Id
-                </Typography>
-                <Typography component="dd" variant="caption">
-                  {project.id}
-                </Typography>
-                <Typography component="dt" variant="caption">
-                  Created
-                </Typography>
-                <Typography component="dd" variant="caption">
-                  {formatDateTime(project.createdAt)}
-                </Typography>
-              </Box>
-            </CardContent>
-            <CardActions sx={{ px: 2, pb: 2 }}>
-              <Button variant="contained" size="small" href={project.id}>
-                Builds
-              </Button>
-              <Button
-                variant="outlined"
-                size="small"
-                href={`${routes.VARIATION_LIST_PAGE}/${project.id}`}
-              >
-                Variations
-              </Button>
-              <Box flex={1} />
-              {canEditProjects && (
-                <>
-                  <Tooltip title="Edit project">
-                    <IconButton
-                      onClick={() => {
-                        toggleUpdateDialogOpen();
-                        setProjectEditState(projectDispatch, project);
-                      }}
-                    >
-                      <Edit data-testid="EditIcon" fontSize="small" />
-                    </IconButton>
-                  </Tooltip>
-                  <Tooltip title="Delete project">
-                    <IconButton
-                      onClick={() => {
-                        toggleDeleteDialogOpen();
-                        setProjectEditState(projectDispatch, project);
-                      }}
-                      data-testid="delete"
-                    >
-                      <Delete data-testid="DeleteIcon" fontSize="small" />
-                    </IconButton>
-                  </Tooltip>
-                </>
-              )}
-            </CardActions>
-          </Card>
-        ))}
-      </Box>
 
       {canEditProjects && (
         <>

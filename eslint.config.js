@@ -3,6 +3,7 @@ import tseslint from "typescript-eslint";
 import react from "eslint-plugin-react";
 import reactHooks from "eslint-plugin-react-hooks";
 import jsxA11y from "eslint-plugin-jsx-a11y";
+import sonarjs from "eslint-plugin-sonarjs";
 import prettier from "eslint-config-prettier";
 import globals from "globals";
 
@@ -34,6 +35,18 @@ export default tseslint.config(
   react.configs.flat.recommended,
   react.configs.flat["jsx-runtime"],
   jsxA11y.flatConfigs.recommended,
+  // the rules SonarCloud runs on every PR, so they fail here first
+  sonarjs.configs.recommended,
+  // Warnings, not errors: an open-task comment is debt to see, not a reason
+  // to fail the build, and an async function with nothing to await (Sonar's
+  // S7503, which the plugin leaves to require-await) is common in older tests
+  // and mocks. SonarCloud flags both in new code only.
+  {
+    rules: {
+      "sonarjs/todo-tag": "warn",
+      "require-await": "warn",
+    },
+  },
   {
     plugins: { "react-hooks": reactHooks },
     rules: reactHooks.configs.recommended.rules,
@@ -108,9 +121,16 @@ export default tseslint.config(
     },
   },
   {
-    // Playwright fixtures call a parameter named use(), which is not a hook
+    // Playwright fixtures call a parameter named use(), which is not a hook.
+    // Specs assert through shared helpers and page objects, which the
+    // assertion check does not follow, and `void fixture` asks for a fixture
+    // that is wanted only for its setup.
     files: ["integration_tests/**"],
-    rules: { "react-hooks/rules-of-hooks": "off" },
+    rules: {
+      "react-hooks/rules-of-hooks": "off",
+      "sonarjs/assertions-in-tests": "off",
+      "sonarjs/void-use": "off",
+    },
   },
   prettier,
 );

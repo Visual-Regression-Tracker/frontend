@@ -155,15 +155,25 @@ const bySettled = (a: TestRun, b: TestRun): number => -byAttention(a, b);
 
 // the direction applies to the chosen field only: negating the whole comparator
 // would reverse the tie-break too, so a descending status listed names Z to A
+const ascendingBy = (
+  sort: TestRunSort,
+  tagFields: Array<keyof TestRun>,
+  a: TestRun,
+  b: TestRun,
+): number => {
+  if (sort.field === "status") {
+    return bySettled(a, b);
+  }
+  if (sort.field === "name") {
+    return byName(a, b);
+  }
+  return tagsOf(a, tagFields).localeCompare(tagsOf(b, tagFields));
+};
+
 const comparatorFor =
   (sort: TestRunSort, tagFields: Array<keyof TestRun>) =>
   (a: TestRun, b: TestRun): number => {
-    const ascending =
-      sort.field === "status"
-        ? bySettled(a, b)
-        : sort.field === "name"
-          ? byName(a, b)
-          : tagsOf(a, tagFields).localeCompare(tagsOf(b, tagFields));
+    const ascending = ascendingBy(sort, tagFields, a, b);
     const primary = sort.direction === "asc" ? ascending : -ascending;
     const tieBreak = sort.field === "name" ? byAttention(a, b) : byName(a, b);
 

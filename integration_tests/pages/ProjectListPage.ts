@@ -2,9 +2,11 @@ import { BasePage } from "./BasePage";
 
 export class ProjectListPage extends BasePage {
   projects = this.page.locator("#projectlist-1");
-  addBtn = this.page.getByRole("button", { name: "add" });
+  // exact: the cards' "Add to favourites" would match a part of the name
+  addBtn = this.page.getByRole("button", { name: "Add project", exact: true });
   deleteBtn = this.page.getByTestId("delete");
   editBtn = this.page.getByTestId("EditIcon");
+  search = this.page.getByRole("searchbox", { name: "Search projects" });
 
   // ProjectForm, inside the create or update dialog
   dialog = this.modal.dialog;
@@ -54,6 +56,19 @@ export class ProjectListPage extends BasePage {
     return this.projects.filter({
       has: this.page.getByRole("heading", { name, exact: true }),
     });
+  }
+
+  // "Favourites", "Recently opened", "Other projects"
+  section(name: string) {
+    return this.page.getByRole("region", { name });
+  }
+
+  starBtn(name: string) {
+    return this.project(name).getByRole("button", { name: /favourites/ });
+  }
+
+  buildsLink(name: string) {
+    return this.project(name).getByRole("link", { name: "Builds" });
   }
 
   async selectImageComparison(value: string) {
