@@ -1,7 +1,11 @@
-import { expect } from "@playwright/test";
+import { expect, Page, Request } from "@playwright/test";
 import { test } from "fixtures";
 import { TEST_PROJECT } from "~client/_test/test.data.helper";
-import { ODIFF_DEFAULT_CONFIG } from "~client/constants/project";
+import {
+  LOOKSSAME_DEFAULT_CONFIG,
+  ODIFF_DEFAULT_CONFIG,
+  PIXELMATCH_DEFAULT_CONFIG,
+} from "~client/constants/project";
 import { ImageComparison } from "~client/types/imageComparison";
 import {
   API_URL,
@@ -151,4 +155,175 @@ test("edits a project", async ({ projectListPage, page }) => {
   );
   await expect(projectListPage.project("Renamed project")).toBeVisible();
   await expect(projectListPage.project(project.name)).toHaveCount(0);
+});
+
+// The rendering-noise filter is switched on in the library's config, where a
+// library that supports it offers it; the backend applies it to every library.
+const savedConfig = (request: Request) =>
+  JSON.parse(request.postDataJSON().imageComparisonConfig);
+
+const waitForSave = (page: Page, method: "POST" | "PUT") =>
+  page.waitForRequest(
+    (request) =>
+      request.url() === `${API_URL}/projects` && request.method() === method,
+  );
+
+test("creates a project with the rendering-noise filter on", async ({
+  projectListPage,
+  page,
+}) => {
+  await mockSaveProject(page);
+
+  await projectListPage.addBtn.click();
+  await projectListPage.name.fill("New project");
+  await projectListPage.mainBranch.fill("main");
+  await projectListPage.selectImageComparison(ImageComparison.lookSame);
+  await projectListPage.noiseFilter.check();
+  await projectListPage.noiseThreshold.fill("60");
+
+  const [request] = await Promise.all([
+    waitForSave(page, "POST"),
+    projectListPage.modal.confirmBtn.click(),
+  ]);
+
+  expect(savedConfig(request)).toEqual({
+    ...JSON.parse(LOOKSSAME_DEFAULT_CONFIG),
+    blurAmplitudeFilter: true,
+    blurAmplitudeThreshold: 60,
+  });
+});
+
+// the threshold means nothing with the filter off, so it is only offered on
+test("offers the threshold only while the filter is on", async ({
+  projectListPage,
+}) => {
+  await projectListPage.addBtn.click();
+  await expect(projectListPage.noiseThreshold).toHaveCount(0);
+
+  await projectListPage.noiseFilter.check();
+  // the backend's default, until changed
+  await expect(projectListPage.noiseThreshold).toHaveValue("80");
+
+  await projectListPage.noiseFilter.uncheck();
+  await expect(projectListPage.noiseThreshold).toHaveCount(0);
+});
+
+for (const [threshold, message] of [
+  ["256", "Enter at most 255"],
+  ["-1", "Enter at least 0"],
+  ["", "Enter a threshold"],
+]) {
+  test(`does not save a rendering-noise threshold of "${threshold}"`, async ({
+    projectListPage,
+    page,
+  }) => {
+    const creates: string[] = [];
+    page.on("request", (request) => {
+      if (
+        request.url() === `${API_URL}/projects` &&
+        request.method() === "POST"
+      ) {
+        creates.push(request.url());
+      }
+    });
+
+    await projectListPage.addBtn.click();
+    await projectListPage.name.fill("New project");
+    await projectListPage.mainBranch.fill("main");
+    await projectListPage.noiseFilter.check();
+    await projectListPage.noiseThreshold.fill(threshold);
+    await projectListPage.modal.confirmBtn.click();
+
+    await expect(projectListPage.dialog.getByText(message)).toBeVisible();
+    await expect(projectListPage.dialog).toBeVisible();
+    expect(creates).toEqual([]);
+  });
+}
+
+// switching swaps in the new library's defaults; the filter is not one of the
+// library's own options and would otherwise be silently switched off
+test("keeps the rendering-noise filter when the library changes", async ({
+  projectListPage,
+  page,
+}) => {
+  await mockSaveProject(page);
+
+  await projectListPage.addBtn.click();
+  await projectListPage.name.fill("New project");
+  await projectListPage.mainBranch.fill("main");
+  await projectListPage.noiseFilter.check();
+  await projectListPage.noiseThreshold.fill("50");
+  await projectListPage.selectImageComparison(ImageComparison.odiff);
+
+  await expect(projectListPage.noiseFilter).toBeChecked();
+  await expect(projectListPage.noiseThreshold).toHaveValue("50");
+  const [request] = await Promise.all([
+    waitForSave(page, "POST"),
+    projectListPage.modal.confirmBtn.click(),
+  ]);
+  expect(savedConfig(request)).toEqual({
+    ...JSON.parse(ODIFF_DEFAULT_CONFIG),
+    blurAmplitudeFilter: true,
+    blurAmplitudeThreshold: 50,
+  });
+});
+
+// switching provider rebuilds the VLM config from scratch
+test("keeps the rendering-noise filter when the VLM provider changes", async ({
+  projectListPage,
+}) => {
+  await projectListPage.addBtn.click();
+  await projectListPage.selectImageComparison(ImageComparison.vlm);
+  await projectListPage.noiseFilter.check();
+  await projectListPage.noiseThreshold.fill("65");
+
+  await projectListPage.selectVlmProvider("Google Gemini");
+
+  await expect(projectListPage.noiseFilter).toBeChecked();
+  await expect(projectListPage.noiseThreshold).toHaveValue("65");
+});
+
+test("turns the rendering-noise filter on for an existing project", async ({
+  projectListPage,
+  page,
+}) => {
+  await mockSaveProject(page);
+
+  await projectListPage.editBtn.click();
+  await expect(projectListPage.noiseFilter).not.toBeChecked();
+  await projectListPage.noiseFilter.check();
+  await projectListPage.noiseThreshold.fill("70.5");
+
+  const [request] = await Promise.all([
+    waitForSave(page, "PUT"),
+    projectListPage.modal.confirmBtn.click(),
+  ]);
+
+  expect(savedConfig(request)).toEqual({
+    ...JSON.parse(PIXELMATCH_DEFAULT_CONFIG),
+    blurAmplitudeFilter: true,
+    blurAmplitudeThreshold: 70.5,
+  });
+});
+
+test("opens a project with the filter on as it was saved", async ({
+  projectListPage,
+  page,
+}) => {
+  await mockGetProjects(page, [
+    {
+      ...project,
+      imageComparisonConfig: JSON.stringify({
+        ...JSON.parse(PIXELMATCH_DEFAULT_CONFIG),
+        blurAmplitudeFilter: true,
+        blurAmplitudeThreshold: 42,
+      }),
+    },
+  ]);
+  await page.reload();
+
+  await projectListPage.editBtn.click();
+
+  await expect(projectListPage.noiseFilter).toBeChecked();
+  await expect(projectListPage.noiseThreshold).toHaveValue("42");
 });

@@ -4,7 +4,10 @@ import {
   PIXELMATCH_DEFAULT_CONFIG,
   VLM_DEFAULT_CONFIG,
 } from "../../constants";
-import { ImageComparison } from "../../types/imageComparison";
+import {
+  BlurAmplitudeConfig,
+  ImageComparison,
+} from "../../types/imageComparison";
 
 export const getDefaultConfig = (imageComparison: ImageComparison): string => {
   switch (imageComparison) {
@@ -19,4 +22,22 @@ export const getDefaultConfig = (imageComparison: ImageComparison): string => {
     default:
       return PIXELMATCH_DEFAULT_CONFIG;
   }
+};
+
+/**
+ * Carries the rendering-noise filter's keys from one config into another. The
+ * filter is not one of a library's own options, so swapping in a library's (or
+ * a VLM provider's) defaults must not silently switch it off.
+ */
+export const withBlurAmplitudeOf = (
+  config: string,
+  previousConfig: string,
+): string => {
+  const { blurAmplitudeFilter, blurAmplitudeThreshold }: BlurAmplitudeConfig =
+    JSON.parse(previousConfig);
+  return JSON.stringify({
+    ...JSON.parse(config),
+    blurAmplitudeFilter,
+    blurAmplitudeThreshold,
+  });
 };

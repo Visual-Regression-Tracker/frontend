@@ -15,6 +15,8 @@ import {
 } from "../../contexts";
 import { GeminiConfigForm } from "./GeminiConfigForm";
 import { OllamaConfigForm } from "./OllamaConfigForm";
+import { BlurAmplitudeFields } from "./BlurAmplitudeFields";
+import { withBlurAmplitudeOf } from "./utils";
 
 export const VlmConfigForm: React.FunctionComponent = () => {
   const [config] = useConfigHook<VlmConfig>();
@@ -58,7 +60,10 @@ export const VlmConfigForm: React.FunctionComponent = () => {
 
     setProjectEditState(projectDispatch, {
       ...project,
-      imageComparisonConfig: JSON.stringify(newConfig),
+      imageComparisonConfig: withBlurAmplitudeOf(
+        JSON.stringify(newConfig),
+        project.imageComparisonConfig,
+      ),
     });
   };
 
@@ -82,6 +87,7 @@ export const VlmConfigForm: React.FunctionComponent = () => {
       ) : (
         <OllamaConfigForm />
       )}
+      <BlurAmplitudeFields />
     </React.Fragment>
   );
 };

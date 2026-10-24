@@ -3,6 +3,7 @@ import React from "react";
 import { TextValidator } from "react-material-ui-form-validator";
 import { LooksSameConfig } from "../../types/imageComparison";
 import { useConfigHook } from "./useConfigHook";
+import { BlurAmplitudeFields } from "./BlurAmplitudeFields";
 
 export const LooksSameConfigForm: React.FunctionComponent = () => {
   const [config, updateConfig] = useConfigHook<LooksSameConfig>();
@@ -101,6 +102,7 @@ export const LooksSameConfigForm: React.FunctionComponent = () => {
           />
         }
       />
+      <BlurAmplitudeFields />
     </React.Fragment>
   );
 };

@@ -1,8 +1,5 @@
 export type ImageComparisonConfig =
-  | PixelmatchConfig
-  | LooksSameConfig
-  | OdiffConfig
-  | VlmConfig;
+  PixelmatchConfig | LooksSameConfig | OdiffConfig | VlmConfig;
 
 export enum ImageComparison {
   pixelmatch = "pixelmatch",
@@ -11,13 +8,25 @@ export enum ImageComparison {
   vlm = "vlm",
 }
 
-export interface PixelmatchConfig {
+/**
+ * Switches on the backend's rendering-noise filter: a failing comparison whose
+ * change, blurred by about a pixel, is no stronger than anti-aliasing passes.
+ * Kept in the config of each library that supports it; the backend reads and
+ * strips these keys before the library sees its options.
+ */
+export interface BlurAmplitudeConfig {
+  blurAmplitudeFilter?: boolean;
+  // 0-255; absent means the backend default
+  blurAmplitudeThreshold?: number | null;
+}
+
+export interface PixelmatchConfig extends BlurAmplitudeConfig {
   allowDiffDimensions?: boolean;
   ignoreAntialiasing: boolean;
   threshold: number;
 }
 
-export interface LooksSameConfig {
+export interface LooksSameConfig extends BlurAmplitudeConfig {
   /**
    * strict comparsion
    */
@@ -41,7 +50,7 @@ export interface LooksSameConfig {
   allowDiffDimensions?: boolean;
 }
 
-export interface OdiffConfig {
+export interface OdiffConfig extends BlurAmplitudeConfig {
   /** Output full diff image. */
   outputDiffMask: boolean;
   /** Do not compare images and produce output if images layout is different. */
@@ -55,7 +64,7 @@ export interface OdiffConfig {
 /**
  * Base configuration shared by all VLM providers
  */
-export interface BaseVlmConfig {
+export interface BaseVlmConfig extends BlurAmplitudeConfig {
   /**
    * Custom prompt for image comparison.
    */
@@ -80,7 +89,7 @@ export interface BaseVlmConfig {
  * Configuration for Ollama provider
  */
 export interface OllamaVlmConfig extends BaseVlmConfig {
-  provider?: 'ollama';
+  provider?: "ollama";
 
   /**
    * Ollama vision model name.
@@ -94,7 +103,7 @@ export interface OllamaVlmConfig extends BaseVlmConfig {
  * Configuration for Gemini provider
  */
 export interface GeminiVlmConfig extends BaseVlmConfig {
-  provider: 'gemini';
+  provider: "gemini";
 
   /**
    * Gemini model name.

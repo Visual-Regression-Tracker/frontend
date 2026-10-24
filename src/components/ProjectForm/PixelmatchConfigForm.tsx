@@ -4,6 +4,7 @@ import { TextValidator } from "react-material-ui-form-validator";
 import { PixelmatchConfig } from "../../types/imageComparison";
 import { Tooltip } from "../Tooltip";
 import { useConfigHook } from "./useConfigHook";
+import { BlurAmplitudeFields } from "./BlurAmplitudeFields";
 
 export const PixelmatchConfigForm: React.FunctionComponent = () => {
   const [config, updateConfig] = useConfigHook<PixelmatchConfig>();
@@ -64,6 +65,7 @@ export const PixelmatchConfigForm: React.FunctionComponent = () => {
           updateConfig("threshold", parseFloat(value));
         }}
       />
+      <BlurAmplitudeFields />
     </React.Fragment>
   );
 };
