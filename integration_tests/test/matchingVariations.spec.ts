@@ -322,22 +322,18 @@ test("shows the diffs, and the screenshots when the diff is switched off", async
   }
 });
 
-// NOTE: looks like a bug. Opening a thumbnail full size crashes the page in the
-// production build: React fails with "Element type is invalid ... got: object"
-// (error #130) and the whole app unmounts, leaving a blank page. The icons of
-// the full-size view are default imports from the icon package's per-icon
-// files, which the bundle seems to hand over as a module object rather than as
-// the component. Pinned as it is today; once fixed, this test should open the
-// full-size view and read the run's baseline, checkpoint and details instead.
-test("blanks the page when a variation is opened full size", async ({
-  openProjectPage,
-  page,
-}) => {
+// the full-size view used to blank the page in the production build: its
+// icons were default imports the bundle handed over as module objects
+test("opens a variation full size", async ({ openProjectPage, page }) => {
   const { details } = await openVariations(openProjectPage);
 
   await details.variations
     .getByRole("button", { name: "View de full size" })
     .click();
 
-  await expect(page.locator("#root")).toBeEmpty();
+  await expect(page.getByAltText("baseline")).toBeVisible();
+  await expect(page.getByAltText("checkpoint")).toBeVisible();
+  await expect(
+    page.getByText("Diff tolerance:", { exact: false }),
+  ).toBeVisible();
 });

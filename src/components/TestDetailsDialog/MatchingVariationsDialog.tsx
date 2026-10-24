@@ -19,9 +19,13 @@ import {
   Box,
   IconButton,
 } from "@mui/material";
-import CloseIcon from "@mui/icons-material/Close";
-import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
-import ChevronRightIcon from "@mui/icons-material/ChevronRight";
+// named imports: the production bundle hands the per-icon files' default
+// export over as a module object, which crashed the full-size view
+import {
+  Close as CloseIcon,
+  ChevronLeft as ChevronLeftIcon,
+  ChevronRight as ChevronRightIcon,
+} from "@mui/icons-material";
 import { styled } from "@mui/material/styles";
 import { useDialogSnackbar } from "./useDialogSnackbar";
 import { useNavigate } from "react-router";
