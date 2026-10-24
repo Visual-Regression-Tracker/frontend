@@ -22,7 +22,6 @@ import {
   GridCellParams,
   GridColDef,
   GridRowParams,
-  GridValueGetterParams,
   GridRenderCellParams,
   GridSortDirection,
   GridSortModel,
@@ -72,6 +71,8 @@ const buildColumns = (
   {
     field: "name",
     headerName: "Name",
+    // since Data Grid 7 a custom cell is not centred unless it says so
+    display: "flex",
     flex: 1,
     filterable: false,
     renderCell: (params: GridRenderCellParams) => {
@@ -92,11 +93,12 @@ const buildColumns = (
   {
     field: "tags",
     headerName: "Tags",
+    display: "flex",
     flex: 1,
     filterable: false,
-    valueGetter: (params: GridValueGetterParams) =>
-      tagFieldsFor(runsFor(params.row["id"]).length)
-        .map((field) => params.row[field])
+    valueGetter: (_value, row) =>
+      tagFieldsFor(runsFor(row["id"]).length)
+        .map((field) => row[field])
         .reduce((prev, curr) => prev.concat(curr ? `${curr};` : ""), ""),
     renderCell: (params: GridCellParams) => (
       <React.Fragment>
@@ -122,6 +124,7 @@ const buildColumns = (
   {
     field: "status",
     headerName: "Status",
+    display: "flex",
     flex: 0.3,
     filterable: false,
     // the chip speaks for the representative, so a half-reviewed group has to
@@ -164,8 +167,8 @@ const comparatorFor =
       sort.field === "status"
         ? bySettled(a, b)
         : sort.field === "name"
-        ? byName(a, b)
-        : tagsOf(a, tagFields).localeCompare(tagsOf(b, tagFields));
+          ? byName(a, b)
+          : tagsOf(a, tagFields).localeCompare(tagsOf(b, tagFields));
     const primary = sort.direction === "asc" ? ascending : -ascending;
     const tieBreak = sort.field === "name" ? byAttention(a, b) : byName(a, b);
 
@@ -525,7 +528,7 @@ const TestRunList: React.FunctionComponent = () => {
 
   // workaround https://github.com/mui/mui-x/issues/1106
   React.useEffect(() => {
-    let unsubscribe: () => void;
+    let unsubscribe: (() => void) | undefined;
     const handleStateChange = () => {
       unsubscribe?.();
       // grouped, the grid holds representatives only; the effect below then
@@ -589,6 +592,7 @@ const TestRunList: React.FunctionComponent = () => {
               slots={{
                 toolbar: DataGridCustomToolbar,
               }}
+              showToolbar
               density={density}
               slotProps={{
                 toolbar: {
@@ -606,16 +610,24 @@ const TestRunList: React.FunctionComponent = () => {
                   onProcessed: clearSelection,
                 },
               }}
-              rowSelectionModel={tableSelectionModel}
-              onRowSelectionModelChange={(model) =>
+              rowSelectionModel={{
+                type: "include",
+                ids: new Set(tableSelectionModel),
+              }}
+              onRowSelectionModelChange={(model) => {
+                // the header box selects everything as an exclude list
+                const ticked =
+                  model.type === "include"
+                    ? [...model.ids].map(String)
+                    : tableRows
+                        .map((row) => row.id)
+                        .filter((id) => !model.ids.has(id));
                 setSelectedIds(
                   groupVariations
-                    ? model.flatMap((id) =>
-                        runsFor(String(id)).map((run) => run.id),
-                      )
-                    : model.map(String),
-                )
-              }
+                    ? ticked.flatMap((id) => runsFor(id).map((run) => run.id))
+                    : ticked,
+                );
+              }}
               checkboxSelection
               disableColumnSelector
               disableColumnMenu

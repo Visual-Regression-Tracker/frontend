@@ -3,7 +3,8 @@ import { IconButton } from "@mui/material";
 import { Delete } from "@mui/icons-material";
 import {
   useGridApiContext,
-  gridRowSelectionStateSelector,
+  useGridSelector,
+  gridRowSelectionIdsSelector,
 } from "@mui/x-data-grid";
 import { usersService } from "../../services";
 import { useSnackbar } from "notistack";
@@ -12,8 +13,7 @@ import { Tooltip } from "../Tooltip";
 
 export const ActionButtons: React.FunctionComponent = () => {
   const apiRef = useGridApiContext();
-  const { state } = apiRef.current;
-  const selection = gridRowSelectionStateSelector(state);
+  const selection = useGridSelector(apiRef, gridRowSelectionIdsSelector);
 
   const { enqueueSnackbar } = useSnackbar();
   const userDispatch = useUserDispatch();
@@ -21,7 +21,7 @@ export const ActionButtons: React.FunctionComponent = () => {
 
   // user ids are strings, so the grid's rows are keyed by strings
   const ids = React.useMemo(
-    () => Object.values(selection) as string[],
+    () => [...selection.keys()] as string[],
     [selection],
   );
 

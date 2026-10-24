@@ -10,6 +10,15 @@ export default mergeConfig(
       setupFiles: ["src/setupTests.ts"],
       include: ["src/**/*.test.{ts,tsx}"],
       clearMocks: true,
+      // typing into MUI fields is slow under a loaded CI runner
+      testTimeout: 15_000,
+      server: {
+        deps: {
+          // its ESM build imports "@mui/material/styles" as a directory,
+          // which Node refuses; letting Vite transform it resolves the import
+          inline: [/@mui\/x-data-grid/],
+        },
+      },
       restoreMocks: true,
       coverage: {
         provider: "v8",
