@@ -6,8 +6,8 @@ import { routes } from "../constants";
 import { User } from "../types";
 import PrivateRoute from "./PrivateRoute";
 
-jest.mock("../contexts", () => ({
-  useUserState: jest.fn(),
+vi.mock("../contexts", () => ({
+  useUserState: vi.fn(),
 }));
 
 const userWithRole = (role: User["role"]): User => ({
@@ -25,7 +25,7 @@ const EDITOR_USER = userWithRole("editor");
 const GUEST_USER = userWithRole("guest");
 
 const mockUserState = (loggedIn: boolean, user?: User) =>
-  (useUserState as jest.Mock).mockReturnValue({
+  vi.mocked(useUserState).mockReturnValue({
     loggedIn,
     user,
     userList: [],

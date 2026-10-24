@@ -1,7 +1,7 @@
 ### STAGE 1: Build ###
 # This image is around 50 megabytes
 # The built ui is static files, so build it once on the native platform for every target platform
-FROM --platform=$BUILDPLATFORM node:20-alpine AS builder
+FROM --platform=$BUILDPLATFORM node:22-alpine AS builder
 
 # Create app directory
 WORKDIR /app
