@@ -61,6 +61,14 @@ outside `src/services`. The one known cycle, `_helpers/service.helpers` ↔
 - Data: components call context actions or services; services return typed
   promises and go through `handleResponse`.
 - Strings shown to users are English, sentence case.
+- Layout: `Stack`, `Box` and the MUI 7 `Grid` in new code. Older screens
+  import `GridLegacy as Grid` to keep their exact layout; move a screen to
+  the new components when you rework it, not as a drive-by.
+- MUI 7 ignores some deprecated props when the new ones are set (a Switch's
+  `inputProps` loses to `slotProps.input`), so use `slotProps` in new code.
+- Icons only carry `data-testid="<Name>Icon"` in development builds. E2E
+  runs on the production bundle, so an icon a page object finds sets it
+  explicitly.
 - Keep files focused; split a component when it passes ~300 lines rather than
   growing it.
 
