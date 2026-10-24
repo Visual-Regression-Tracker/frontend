@@ -9,4 +9,6 @@ export class LoginPage extends BasePage {
     "[aria-label='toggle password visibility']",
   );
   loginForm = this.page.locator(`#${LOCATOR_LOGIN_FORM}`);
+  ssoBtn = this.page.getByTestId("oidcLoginBtn");
+  registerLink = this.page.getByText("Create an account");
 }

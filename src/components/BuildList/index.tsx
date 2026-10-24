@@ -490,14 +490,16 @@ const BuildList: FunctionComponent = () => {
               .update(menuBuild.id, {
                 ciBuildId: newCiBuildId,
               })
-              .then(() => {
-                toggleEditDialogOpen();
-              })
               .catch((err) =>
                 enqueueSnackbar(err, {
                   variant: "error",
                 }),
               );
+            // closed now, not on success: the dialog belongs to this menu's
+            // build, and left open after a failure it would come back for the
+            // next build whose menu is opened, holding this build's input
+            setEditDialogOpen(false);
+            setNewCiBuildId("");
             handleMenuClose();
           }}
         />
@@ -516,7 +518,6 @@ const BuildList: FunctionComponent = () => {
           onSubmit={() => {
             deleteBuild(buildDispatch, menuBuild.id)
               .then(() => {
-                toggleDeleteDialogOpen();
                 enqueueSnackbar(
                   `Build #${menuBuild.number || menuBuild.id} deleted`,
                   {
@@ -538,6 +539,8 @@ const BuildList: FunctionComponent = () => {
                   variant: "error",
                 }),
               );
+            // closed now, for the same reason as the edit dialog above
+            setDeleteDialogOpen(false);
             handleMenuClose();
           }}
         />

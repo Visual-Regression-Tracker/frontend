@@ -76,9 +76,8 @@ export const mockGetBuilds = async (
       const take = Number(params.get("take"));
       const ciBuildId = params.get("ciBuildId");
       const matching = ciBuildId
-        ? builds.filter(
-            (build) =>
-              build.ciBuildId?.toLowerCase().includes(ciBuildId.toLowerCase()),
+        ? builds.filter((build) =>
+            build.ciBuildId?.toLowerCase().includes(ciBuildId.toLowerCase()),
           )
         : builds;
 
@@ -227,5 +226,71 @@ export const mockMergeTestVariations = async (page: Page, build: Build) => {
   return page.route(
     (url) => url.pathname === "/test-variations/merge",
     (route) => route.fulfill({ body: JSON.stringify(build) }),
+  );
+};
+
+// the runtime settings env.sh writes to env-config.js, with some overridden;
+// the app reads them once, when it loads
+export const mockEnvConfig = async (
+  page: Page,
+  overrides: Record<string, string>,
+) => {
+  return page.route("**/env-config.js", async (route) => {
+    const response = await route.fetch();
+    const assignments = Object.entries(overrides)
+      .map(([key, value]) => `window._env_.${key} = ${JSON.stringify(value)};`)
+      .join("\n");
+    return route.fulfill({
+      response,
+      body: `${await response.text()}\n${assignments}`,
+    });
+  });
+};
+
+export const mockOidcEnabled = async (page: Page, enabled: boolean) => {
+  return page.route(`${API_URL}/users/oidc/enabled`, (route) =>
+    route.fulfill({ body: JSON.stringify(enabled) }),
+  );
+};
+
+// stands in for the API's redirect to the identity provider
+export const mockOidcProvider = async (page: Page) => {
+  return page.route(`${API_URL}/users/oidc/login`, (route) =>
+    route.fulfill({
+      contentType: "text/html",
+      body: "<h1>Identity provider</h1>",
+    }),
+  );
+};
+
+// the user behind a token, as /users/me answers: without the token itself
+export const mockGetMe = async (page: Page, user: object) => {
+  return page.route(`${API_URL}/users/me`, (route) =>
+    route.fulfill({ body: JSON.stringify(user) }),
+  );
+};
+
+export const mockLogin = async (page: Page, user: object) => {
+  return page.route(`${API_URL}/users/login`, (route) =>
+    route.fulfill({ body: JSON.stringify(user) }),
+  );
+};
+
+export const mockDeleteUsers = async (page: Page) => {
+  return page.route(`${API_URL}/users`, (route, request) =>
+    request.method() === "DELETE"
+      ? route.fulfill({ body: JSON.stringify(true) })
+      : route.fallback(),
+  );
+};
+
+// the API answers a build patch with the build as patched
+export const mockUpdateBuild = async (page: Page, build: Build) => {
+  return page.route(`${API_URL}/builds/${build.id}`, (route, request) =>
+    request.method() === "PATCH"
+      ? route.fulfill({
+          body: JSON.stringify({ ...build, ...request.postDataJSON() }),
+        })
+      : route.fallback(),
   );
 };
