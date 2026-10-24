@@ -182,35 +182,7 @@ test("does not approve, reject or toggle the diff while typing a comment", async
   expect(sent).toEqual([]);
 });
 
-// NOTE: Escape is meant to close the dialog (useHotkeys("ESC", ...)), but a
-// real key press never gets there: the MUI Dialog around it handles Escape
-// itself, stops it, and the hotkey library, listening on the document, never
-// sees it. Pinned as it is today; fixing it flips this test.
-test("does not close the dialog with a real Escape key press", async ({
-  openProjectPage,
-  page,
-}) => {
-  const { details } = await openProjectPage(
-    project.id,
-    build.id,
-    TEST_UNRESOLVED.id,
-  );
-  await expect(details.drawAreas).toHaveCount(2);
-
-  await page.keyboard.press("Escape");
-  // the keys are handled in order, so the arrow having moved on shows the
-  // Escape before it has been dealt with
-  await page.keyboard.press("ArrowRight");
-  await expect(page).toHaveURL(new RegExp(`testId=${TEST_RUN_NEW.id}$`));
-
-  await expect(details.step).toBeVisible();
-});
-
-// the hotkey itself is wired: the same key, as the document receives it
-test("closes the dialog when Escape reaches the document", async ({
-  openProjectPage,
-  page,
-}) => {
+test("closes the dialog with Escape", async ({ openProjectPage, page }) => {
   const { details } = await openProjectPage(
     project.id,
     build.id,
@@ -219,16 +191,38 @@ test("closes the dialog when Escape reaches the document", async ({
   await expect(details.drawAreas).toHaveCount(2);
   await expect(page).toHaveURL(new RegExp(`testId=${TEST_UNRESOLVED.id}$`));
 
-  await page.evaluate(() =>
-    document.dispatchEvent(
-      new KeyboardEvent("keydown", { key: "Escape", bubbles: true }),
-    ),
-  );
+  await page.keyboard.press("Escape");
 
   await expect(details.drawAreas).toHaveCount(0);
   await expect(page).not.toHaveURL(/testId=/);
   // back on the build it was opened from
   await expect(page).toHaveURL(new RegExp(`buildId=${build.id}`));
+});
+
+// like the other keys, Escape belongs to the field being typed in
+test("keeps the dialog open on Escape in the comment field", async ({
+  openProjectPage,
+  page,
+}) => {
+  const { details } = await openProjectPage(
+    project.id,
+    build.id,
+    TEST_UNRESOLVED.id,
+  );
+  await expect(details.drawAreas).toHaveCount(2);
+  await details.commentsBtn.click();
+
+  await details.comment.press("Escape");
+  // two frames on: a handled Escape would have closed the dialog by now
+  await page.evaluate(
+    () =>
+      new Promise((resolve) =>
+        requestAnimationFrame(() => requestAnimationFrame(resolve)),
+      ),
+  );
+
+  await expect(details.step).toBeVisible();
+  await expect(page).toHaveURL(new RegExp(`testId=${TEST_UNRESOLVED.id}$`));
 });
 
 test("steps between runs with the arrow keys", async ({
@@ -292,10 +286,8 @@ test("keeps D and the switch in step", async ({ openProjectPage, page }) => {
   await expect.poll(() => details.shownImage()).toBe("diff.png");
 });
 
-// NOTE: the hotkey library ignores keys typed into form fields, and the
-// switch is one: after it has been clicked it holds focus, and D does nothing
-// until focus moves elsewhere
-test("ignores D while the diff switch holds focus", async ({
+// the switch keeps focus after a click, and the keys still reach the hotkeys
+test("keeps D and the arrow keys working after a click on the diff switch", async ({
   openProjectPage,
   page,
 }) => {
@@ -307,18 +299,17 @@ test("ignores D while the diff switch holds focus", async ({
   await expect(details.drawAreas).toHaveCount(2);
   await details.toggleDiff.uncheck();
   await expect.poll(() => details.shownImage()).toBe("image.png");
+  await expect(details.toggleDiff).toBeFocused();
 
   await page.keyboard.press("d");
-  // two frames on: a handled D would have re-rendered by now
-  await page.evaluate(
-    () =>
-      new Promise((resolve) =>
-        requestAnimationFrame(() => requestAnimationFrame(resolve)),
-      ),
-  );
 
-  await expect(details.toggleDiff).not.toBeChecked();
-  expect(await details.shownImage()).toBe("image.png");
+  await expect(details.toggleDiff).toBeChecked();
+  await expect.poll(() => details.shownImage()).toBe("diff.png");
+
+  await page.keyboard.press("ArrowRight");
+
+  await expect(details.step).toHaveText(/^Step 2\/3:/);
+  await expect(page).toHaveURL(new RegExp(`testId=${TEST_RUN_NEW.id}$`));
 });
 
 test("does nothing on D when the run has no diff", async ({

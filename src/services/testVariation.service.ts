@@ -37,8 +37,11 @@ function merge(
     headers: authHeader(),
   };
 
+  // branch names often hold "/" and may hold "&" or "#"
+  const branches = `fromBranch=${encodeURIComponent(fromBranch)}&toBranch=${encodeURIComponent(toBranch)}`;
+
   return fetch(
-    `${API_URL}${ENDPOINT_URL}/merge?projectId=${projectId}&fromBranch=${fromBranch}&toBranch=${toBranch}`,
+    `${API_URL}${ENDPOINT_URL}/merge?projectId=${projectId}&${branches}`,
     requestOptions,
   ).then(handleResponse);
 }

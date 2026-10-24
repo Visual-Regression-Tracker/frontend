@@ -24,6 +24,15 @@ export const CommentsPopper: React.FunctionComponent<IProps> = ({
 
   React.useEffect(() => setComment(text || ""), [text]);
 
+  // Escape closes the box, not the dialog around it, which would drop the
+  // draft from view; the draft itself stays for the next open
+  const closeOnEscape = (event: React.KeyboardEvent) => {
+    if (event.key === "Escape" && popupState.isOpen) {
+      event.stopPropagation();
+      popupState.close();
+    }
+  };
+
   return (
     <>
       <Badge
@@ -36,7 +45,11 @@ export const CommentsPopper: React.FunctionComponent<IProps> = ({
         }}
         invisible={!comment || comment === ""}
       >
-        <Button {...bindToggle(popupState)} color="primary">
+        <Button
+          {...bindToggle(popupState)}
+          color="primary"
+          onKeyDown={closeOnEscape}
+        >
           Comments
         </Button>
       </Badge>
@@ -48,7 +61,7 @@ export const CommentsPopper: React.FunctionComponent<IProps> = ({
       >
         {({ TransitionProps }) => (
           <Fade {...TransitionProps} timeout={350}>
-            <Paper sx={{ padding: 2 }}>
+            <Paper sx={{ padding: 2 }} onKeyDown={closeOnEscape}>
               <React.Fragment>
                 <TextField
                   id="comment"
@@ -68,7 +81,12 @@ export const CommentsPopper: React.FunctionComponent<IProps> = ({
                 />
                 <Button
                   onClick={() => {
-                    onSave(comment).then(() => popupState.close());
+                    // a failed save is the caller's to report; the box stays
+                    // open with the draft so it can be saved again
+                    onSave(comment).then(
+                      () => popupState.close(),
+                      () => undefined,
+                    );
                   }}
                 >
                   Save

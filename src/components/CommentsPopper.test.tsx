@@ -120,6 +120,73 @@ describe("CommentsPopper", () => {
     );
   });
 
+  it("stays open with the draft when the save fails", async () => {
+    const onSave = vi.fn().mockRejectedValue("Server error");
+    const { user } = renderPopper({ onSave });
+
+    await user.click(openButton());
+    await write(user, await screen.findByPlaceholderText(PLACEHOLDER), "text");
+    await user.click(screen.getByRole("button", { name: "Save" }));
+
+    await waitFor(() => expect(onSave).toHaveBeenCalledTimes(1));
+    // let the rejection settle: an unhandled one fails the run
+    await new Promise((resolve) => setTimeout(resolve));
+    expect(screen.getByPlaceholderText(PLACEHOLDER)).toHaveValue("text");
+    expect(screen.getByRole("button", { name: "Save" })).toBeVisible();
+  });
+
+  it.each([
+    ["the editor", () => screen.getByPlaceholderText(PLACEHOLDER)],
+    ["Save", () => screen.getByRole("button", { name: "Save" })],
+    ["Comments", openButton],
+  ])(
+    "closes on Escape in %s, keeps the draft and keeps the key to itself",
+    async (_, target) => {
+      const onParentKeyDown = vi.fn();
+      const onSave = vi.fn().mockResolvedValue(undefined);
+      const { user } = renderWithProviders(
+        <div role="presentation" onKeyDown={onParentKeyDown}>
+          <CommentsPopper text="" onSave={onSave} />
+        </div>,
+      );
+      await user.click(openButton());
+      await write(
+        user,
+        await screen.findByPlaceholderText(PLACEHOLDER),
+        "draft",
+      );
+
+      target().focus();
+      await user.keyboard("{Escape}");
+
+      await waitFor(() =>
+        expect(
+          screen.queryByPlaceholderText(PLACEHOLDER),
+        ).not.toBeInTheDocument(),
+      );
+      expect(onParentKeyDown).not.toHaveBeenCalled();
+      expect(onSave).not.toHaveBeenCalled();
+      await user.click(openButton());
+      expect(await screen.findByPlaceholderText(PLACEHOLDER)).toHaveValue(
+        "draft",
+      );
+    },
+  );
+
+  it("leaves Escape to the page while it is closed", async () => {
+    const onParentKeyDown = vi.fn();
+    const { user } = renderWithProviders(
+      <div role="presentation" onKeyDown={onParentKeyDown}>
+        <CommentsPopper text="" onSave={vi.fn()} />
+      </div>,
+    );
+
+    openButton().focus();
+    await user.keyboard("{Escape}");
+
+    expect(onParentKeyDown).toHaveBeenCalledTimes(1);
+  });
+
   it("closes without saving when Comments is clicked again", async () => {
     const { user, onSave } = renderPopper();
 

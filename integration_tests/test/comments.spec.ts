@@ -109,6 +109,24 @@ test("saves an empty comment to take the comment away", async ({
   expect(request.postDataJSON()).toEqual({ comment: "" });
 });
 
+test("closes only the box on Escape and keeps what was typed", async ({
+  openProjectPage,
+  page,
+}) => {
+  const { details } = await openDialog(openProjectPage);
+  await details.commentsBtn.click();
+  await details.comment.fill("A draft");
+
+  await details.commentSaveBtn.focus();
+  await page.keyboard.press("Escape");
+
+  await expect(details.comment).toBeHidden();
+  await expect(details.step).toBeVisible();
+  await expect(page).toHaveURL(new RegExp(`testId=${testRun.id}$`));
+  await details.commentsBtn.click();
+  await expect(details.comment).toHaveValue("A draft");
+});
+
 test("sends nothing when the box is closed without saving", async ({
   openProjectPage,
   page,
@@ -146,5 +164,15 @@ test("keeps the box open and says so when saving fails", async ({
   await details.commentSaveBtn.click();
 
   await expect(notification.message).toHaveText("Could not save");
+  // two frames on, a box on its way out has started to fade: its opacity
+  // drops to 0 at once and stays there until it is gone
+  await page.evaluate(
+    () =>
+      new Promise((resolve) =>
+        requestAnimationFrame(() => requestAnimationFrame(resolve)),
+      ),
+  );
+  await expect(details.commentBox).toHaveAttribute("style", /opacity: 1/);
+  await expect(details.commentSaveBtn).toBeVisible();
   await expect(details.comment).toHaveValue("Will not stick");
 });

@@ -70,35 +70,41 @@ test("keeps a variation when the delete is cancelled", async ({
   await expect(listPage.getCard(TEST_VARIATION_TWO.name)).toBeVisible();
 });
 
-test("merges one branch into another", async ({
-  openTestVariationListPage,
-  page,
-}) => {
-  const build = { ...TEST_BUILD_PASSED, id: "mergeBuildId" };
-  await mockMergeTestVariations(page, build);
-  // where the merge leads: the project page on the build it started
-  await mockGetBuilds(page, TEST_PROJECT.id, [build]);
-  await mockGetBuildDetails(page, build);
-  await mockGetTestRuns(page, build.id, []);
-  const listPage = await openTestVariationListPage(TEST_PROJECT.id);
+// a branch name with "/" or "&" must reach the API as it was typed
+for (const { title, toBranch } of [
+  { title: "merges one branch into another", toBranch: "master" },
+  {
+    title: "merges into a branch whose name holds / and &",
+    toBranch: "release/1.0&hotfix",
+  },
+]) {
+  test(title, async ({ openTestVariationListPage, page }) => {
+    const build = { ...TEST_BUILD_PASSED, id: "mergeBuildId" };
+    await mockMergeTestVariations(page, build);
+    // where the merge leads: the project page on the build it started
+    await mockGetBuilds(page, TEST_PROJECT.id, [build]);
+    await mockGetBuildDetails(page, build);
+    await mockGetTestRuns(page, build.id, []);
+    const listPage = await openTestVariationListPage(TEST_PROJECT.id);
 
-  const [request] = await Promise.all([
-    page.waitForRequest("**/test-variations/merge?**"),
-    listPage.merge(TEST_VARIATION_ONE.branchName, "master"),
-  ]);
+    const [request] = await Promise.all([
+      page.waitForRequest("**/test-variations/merge?**"),
+      listPage.merge(TEST_VARIATION_ONE.branchName, toBranch),
+    ]);
 
-  expect(Object.fromEntries(new URL(request.url()).searchParams)).toEqual({
-    projectId: TEST_PROJECT.id,
-    fromBranch: TEST_VARIATION_ONE.branchName,
-    toBranch: "master",
+    expect(Object.fromEntries(new URL(request.url()).searchParams)).toEqual({
+      projectId: TEST_PROJECT.id,
+      fromBranch: TEST_VARIATION_ONE.branchName,
+      toBranch,
+    });
+    await expect(
+      listPage.notification.message.filter({
+        hasText: `Merge started in build: ${build.id}`,
+      }),
+    ).toBeVisible();
+    await expect(page).toHaveURL(`/${TEST_PROJECT.id}?buildId=${build.id}`);
   });
-  await expect(
-    listPage.notification.message.filter({
-      hasText: `Merge started in build: ${build.id}`,
-    }),
-  ).toBeVisible();
-  await expect(page).toHaveURL(`/${TEST_PROJECT.id}?buildId=${build.id}`);
-});
+}
 
 test("does not merge without a branch to merge from", async ({
   openTestVariationListPage,

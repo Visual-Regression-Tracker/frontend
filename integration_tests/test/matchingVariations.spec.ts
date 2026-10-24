@@ -283,6 +283,38 @@ test("sends nothing when the review is cancelled", async ({
   expect(sent).toEqual([]);
 });
 
+// the review sits over the run, whose hotkeys must not act through it
+test("leaves the run behind alone on its hotkeys while the review is open", async ({
+  openProjectPage,
+  page,
+}) => {
+  const sent: string[] = [];
+  page.on("request", (request) => {
+    if (request.method() === "POST" && request.url().includes("/test-runs/")) {
+      sent.push(request.url());
+    }
+  });
+  const { details } = await openVariations(openProjectPage);
+  await details.variationsToggleAll.focus();
+
+  for (const key of ["a", "x", "d", "ArrowRight", "ArrowLeft"]) {
+    await page.keyboard.press(key);
+  }
+  // two frames on: a handled key would have re-rendered by now
+  await page.evaluate(
+    () =>
+      new Promise((resolve) =>
+        requestAnimationFrame(() => requestAnimationFrame(resolve)),
+      ),
+  );
+
+  expect(sent).toEqual([]);
+  await expect(page).toHaveURL(new RegExp(`testId=${current.id}$`));
+  await details.variationsCancel.click();
+  await expect(details.variations).toBeHidden();
+  await expect(details.toggleDiff).toBeChecked();
+});
+
 test("keeps the review open and says so when approving fails", async ({
   openProjectPage,
   page,

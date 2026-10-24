@@ -3,6 +3,7 @@ import React from "react";
 import { useNavigate } from "react-router";
 import { useBuildState, useTestRunState } from "../../contexts";
 import { buildTestRunLocation } from "../../_helpers/route.helpers";
+import { isTypingTarget } from "../../_helpers/hotkeys.helper";
 import { BaseModal } from "../BaseModal";
 import TestDetailsModal from "./TestDetailsModal";
 import { TestRun } from "../../types";
@@ -82,7 +83,21 @@ export const TestDetailsDialog: React.FunctionComponent = () => {
   }
 
   return (
-    <Dialog open={true} fullScreen sx={{ margin: "20px 10px 10px 10px" }}>
+    <Dialog
+      open={true}
+      fullScreen
+      sx={{ margin: "20px 10px 10px 10px" }}
+      // Escape is the Dialog's to handle: it stops the key, so a hotkey
+      // listening on the document never sees it
+      onClose={(event, reason) => {
+        if (
+          reason === "escapeKeyDown" &&
+          !isTypingTarget((event as React.KeyboardEvent).target)
+        ) {
+          navigateById();
+        }
+      }}
+    >
       <TestDetailsModal
         testRun={selectedTestRun}
         currentRunIndex={selectedTestRunIndex}
