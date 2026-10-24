@@ -102,6 +102,31 @@ describe("staticService", () => {
       );
     });
 
+    it("keeps every image when several share a file name", async () => {
+      const a = blob("a");
+      const b = blob("b");
+      const c = blob("c");
+      const bodies: Record<string, Blob> = { a, b, c };
+      vi.stubGlobal(
+        "fetch",
+        vi.fn().mockImplementation(async (url: string) => {
+          const name = url.replace("http://api.test/images/", "")[0];
+          return answer(200, bodies[name]);
+        }),
+      );
+
+      await staticService.downloadAsZip([
+        { name: "a.png", filename: "Home" },
+        { name: "b.png", filename: "Home" },
+        { name: "c.png", filename: "Home" },
+      ]);
+
+      expect(zip.file).toHaveBeenCalledTimes(3);
+      expect(zip.file).toHaveBeenCalledWith("Home.png", a);
+      expect(zip.file).toHaveBeenCalledWith("Home (2).png", b);
+      expect(zip.file).toHaveBeenCalledWith("Home (3).png", c);
+    });
+
     it("falls back to the image URL when the download route answers 404", async () => {
       const redirected = blob("redirected");
       const fetchMock = vi

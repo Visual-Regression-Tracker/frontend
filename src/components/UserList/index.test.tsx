@@ -146,6 +146,28 @@ describe("UserList", () => {
 
       expect(await screen.findByText("Not allowed")).toBeVisible();
     });
+
+    it("keeps the old role in the list when assigning the role fails", async () => {
+      vi.spyOn(usersService, "assignRole").mockRejectedValue("Not allowed");
+      const { user } = await renderUserList();
+
+      await user.dblClick(within(rowOf(GUEST)).getByText("Guest"));
+      await user.click(await screen.findByRole("option", { name: "Admin" }));
+      await user.keyboard("{Enter}");
+
+      await screen.findByText("Not allowed");
+      await waitFor(() =>
+        expect(within(rowOf(GUEST)).getByText("Guest")).toBeVisible(),
+      );
+      expect(within(rowOf(GUEST)).queryByText("Admin")).not.toBeInTheDocument();
+    });
+  });
+
+  it("shows the error when loading the users fails", async () => {
+    vi.spyOn(usersService, "getAll").mockRejectedValue("Cannot load users");
+    renderWithProviders(<UserList />, { user: ADMIN });
+
+    expect(await screen.findByText("Cannot load users")).toBeVisible();
   });
 
   describe("deleting users", () => {

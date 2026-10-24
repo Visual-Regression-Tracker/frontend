@@ -5,7 +5,11 @@ import type { MockInstance } from "vitest";
 import { renderWithProviders } from "../../_test/render";
 import { selectProject, useProjectDispatch } from "../../contexts";
 import { buildsService } from "../../services";
-import { TEST_BUILD_PASSED } from "../../_test/test.data.helper";
+import {
+  TEST_BUILD_FAILED,
+  TEST_BUILD_PASSED,
+} from "../../_test/test.data.helper";
+import { Build } from "../../types";
 import BuildList from "./index";
 
 // BuildList imports from "react-router", the render helper's router comes from
@@ -183,6 +187,84 @@ describe("BuildList", () => {
       await user.type(searchInput(), "nope{Enter}");
 
       expect(await screen.findByText('No builds match "nope"')).toBeVisible();
+    });
+  });
+
+  describe("answers arriving out of order", () => {
+    type Page = Awaited<ReturnType<typeof buildsService.getList>>;
+
+    const deferred = () => {
+      let resolve!: (page: Page) => void;
+      let reject!: (reason: string) => void;
+      const promise = new Promise<Page>((res, rej) => {
+        resolve = res;
+        reject = rej;
+      });
+      return { promise, resolve, reject };
+    };
+
+    const page = (build: Build): Page => ({
+      data: [build],
+      total: 1,
+      skip: 0,
+      take: 10,
+    });
+
+    const InProject = ({ projectId }: { projectId: string }) => {
+      const dispatch = useProjectDispatch();
+      useEffect(() => {
+        selectProject(dispatch, projectId);
+      }, [dispatch, projectId]);
+      return <BuildList />;
+    };
+
+    it("shows the project switched to, not a late answer for the previous one", async () => {
+      const first = deferred();
+      const second = deferred();
+      getList
+        .mockReturnValueOnce(first.promise)
+        .mockReturnValueOnce(second.promise);
+      const { rerender } = renderWithProviders(
+        <InProject projectId="project-a" />,
+      );
+      await waitFor(() => expect(getList).toHaveBeenCalledTimes(1));
+
+      rerender(<InProject projectId="project-b" />);
+      await waitFor(() => expect(getList).toHaveBeenCalledTimes(2));
+      expect(getList).toHaveBeenLastCalledWith(
+        "project-b",
+        10,
+        0,
+        "",
+        undefined,
+      );
+
+      await act(async () => second.resolve(page(TEST_BUILD_PASSED)));
+      await act(async () => first.resolve(page(TEST_BUILD_FAILED)));
+
+      expect(screen.getByText("#2")).toBeVisible();
+      expect(screen.queryByText("#1")).not.toBeInTheDocument();
+    });
+
+    it("ignores a late failure of the previous project's request", async () => {
+      const first = deferred();
+      const second = deferred();
+      getList
+        .mockReturnValueOnce(first.promise)
+        .mockReturnValueOnce(second.promise);
+      const { rerender } = renderWithProviders(
+        <InProject projectId="project-a" />,
+      );
+      await waitFor(() => expect(getList).toHaveBeenCalledTimes(1));
+
+      rerender(<InProject projectId="project-b" />);
+      await waitFor(() => expect(getList).toHaveBeenCalledTimes(2));
+
+      await act(async () => second.resolve(page(TEST_BUILD_PASSED)));
+      await act(async () => first.reject("Project A is gone"));
+
+      expect(screen.getByText("#2")).toBeVisible();
+      expect(screen.queryByText("Project A is gone")).not.toBeInTheDocument();
     });
   });
 });

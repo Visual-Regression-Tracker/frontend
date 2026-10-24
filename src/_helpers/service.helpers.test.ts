@@ -56,6 +56,14 @@ describe("handleResponse", () => {
     await expect(handleResponse(response)).resolves.toBe("");
   });
 
+  it("rejects with a message when a successful response is not JSON", async () => {
+    const response = new Response("<html>index</html>", { status: 200 });
+
+    await expect(handleResponse(response)).rejects.toBe(
+      "Unexpected response from the server",
+    );
+  });
+
   it("rejects with the message the API sent", async () => {
     const response = new Response(JSON.stringify({ message: "Nope" }), {
       status: 400,
@@ -78,6 +86,29 @@ describe("handleResponse", () => {
     stubLocation("/projects");
     const response = new Response(JSON.stringify({ message: "Unauthorized" }), {
       status: 401,
+    });
+
+    await expect(handleResponse(response)).rejects.toBe("Unauthorized");
+
+    expect(usersService.logout).toHaveBeenCalledTimes(1);
+    expect(reload).toHaveBeenCalledTimes(1);
+  });
+
+  // e.g. the HTML error page the proxy serves while the API restarts
+  it("rejects with the status text when an error response is not JSON", async () => {
+    const response = new Response("<html><body>502 Bad Gateway</body></html>", {
+      status: 502,
+      statusText: "Bad Gateway",
+    });
+
+    await expect(handleResponse(response)).rejects.toBe("Bad Gateway");
+  });
+
+  it("logs out and reloads the page on a 401 that is not JSON", async () => {
+    stubLocation("/projects");
+    const response = new Response("<html>401 Authorization Required</html>", {
+      status: 401,
+      statusText: "Unauthorized",
     });
 
     await expect(handleResponse(response)).rejects.toBe("Unauthorized");

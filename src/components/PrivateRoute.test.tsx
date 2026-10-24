@@ -1,6 +1,6 @@
 import React from "react";
 import { render } from "@testing-library/react";
-import { MemoryRouter, Route, Routes } from "react-router-dom";
+import { MemoryRouter, Route, Routes, useLocation } from "react-router-dom";
 import { useUserState } from "../contexts";
 import { routes } from "../constants";
 import { User } from "../types";
@@ -55,6 +55,33 @@ describe("PrivateRoute", () => {
     mockUserState(false);
     const item = renderAt();
     expect(item.getByText("login page")).toBeInTheDocument();
+  });
+
+  // CI posts links to a build or test run, which live in the query string
+  test("remembers the full link for after login, query string and hash included", () => {
+    mockUserState(false);
+    const LoginPage: React.FC = () => {
+      const { state } = useLocation();
+      return <div>back to {(state as { from: string }).from}</div>;
+    };
+    const item = render(
+      <MemoryRouter
+        initialEntries={[`${routes.USER_LIST_PAGE}?buildId=b1&testId=t1#top`]}
+      >
+        <Routes>
+          <Route path={routes.LOGIN} element={<LoginPage />} />
+          <Route
+            path={routes.USER_LIST_PAGE}
+            element={<PrivateRoute component={SecretPage} />}
+          />
+        </Routes>
+      </MemoryRouter>,
+    );
+    expect(
+      item.getByText(
+        `back to ${routes.USER_LIST_PAGE}?buildId=b1&testId=t1#top`,
+      ),
+    ).toBeInTheDocument();
   });
 
   test("redirects to login when not logged in even if roles are set", () => {

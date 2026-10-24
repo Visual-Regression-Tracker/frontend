@@ -63,6 +63,9 @@ const BuildList: FunctionComponent = () => {
   const [bulkDeleting, setBulkDeleting] = React.useState(false);
   const [selectingAll, setSelectingAll] = React.useState(false);
   const selectAllRequest = React.useRef(0);
+  // only the latest page request may fill the list: an answer for the project
+  // or search the reviewer has left can arrive after the one they are on
+  const pageRequest = React.useRef(0);
 
   const allSelected = total > 0 && selectedIds.length === total;
   const someSelected = selectedIds.length > 0 && !allSelected;
@@ -134,6 +137,7 @@ const BuildList: FunctionComponent = () => {
     (page: number, aroundBuildId?: string) => {
       setPaginationPage(page);
       listRef.current?.scrollTo({ top: 0 });
+      const request = ++pageRequest.current;
       if (selectedProjectId) {
         // the link has been followed; from here the reviewer's own paging and
         // searching decide the page
@@ -148,6 +152,9 @@ const BuildList: FunctionComponent = () => {
             aroundBuildId,
           )
           .then((payload) => {
+            if (request !== pageRequest.current) {
+              return;
+            }
             // asked for a build's page, the answer says where that page starts
             // and so which page number to show. A build the list cannot place
             // leaves the skip as asked, and this lands back on the same page.
@@ -157,6 +164,9 @@ const BuildList: FunctionComponent = () => {
             buildDispatch({ type: "get", payload });
           })
           .catch((err: string) => {
+            if (request !== pageRequest.current) {
+              return;
+            }
             buildDispatch({ type: "failure", payload: err });
             enqueueSnackbar(err, {
               variant: "error",

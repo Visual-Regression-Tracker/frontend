@@ -84,6 +84,23 @@ const renderButtons = async ({
     afterReject,
     onOpenVariations,
     showTestRun: (run: TestRun) => result.rerender(ui(run)),
+    // the same run, with new callbacks: what the dialog does on every render
+    giveCallbacks: (callbacks: {
+      afterApprove?: () => void;
+      afterReject?: () => void;
+    }) =>
+      result.rerender(
+        <>
+          <SeedTestRuns testRuns={testRuns} />
+          <SelectProject id={project.id} />
+          <ApproveRejectButtons
+            testRun={testRun}
+            afterApprove={callbacks.afterApprove ?? afterApprove}
+            afterReject={callbacks.afterReject ?? afterReject}
+            onOpenVariations={onOpenVariations}
+          />
+        </>,
+      ),
   };
 };
 
@@ -171,6 +188,18 @@ describe("ApproveRejectButtons", () => {
         expect(approveBulk).toHaveBeenCalledWith(["next-id"], true),
       );
     });
+
+    it("carries on with the latest after-approve when the hotkey is pressed", async () => {
+      vi.spyOn(testRunService, "approveBulk").mockResolvedValue();
+      const latest = vi.fn();
+      const { user, afterApprove, giveCallbacks } = await renderButtons();
+
+      giveCallbacks({ afterApprove: latest });
+      await user.keyboard("a");
+
+      await waitFor(() => expect(latest).toHaveBeenCalledTimes(1));
+      expect(afterApprove).not.toHaveBeenCalled();
+    });
   });
 
   describe("reject", () => {
@@ -215,6 +244,18 @@ describe("ApproveRejectButtons", () => {
       );
       expect(rejectBulk).toHaveBeenCalledTimes(1);
       await waitFor(() => expect(afterReject).toHaveBeenCalledTimes(1));
+    });
+
+    it("carries on with the latest after-reject when the hotkey is pressed", async () => {
+      vi.spyOn(testRunService, "rejectBulk").mockResolvedValue();
+      const latest = vi.fn();
+      const { user, afterReject, giveCallbacks } = await renderButtons();
+
+      giveCallbacks({ afterReject: latest });
+      await user.keyboard("x");
+
+      await waitFor(() => expect(latest).toHaveBeenCalledTimes(1));
+      expect(afterReject).not.toHaveBeenCalled();
     });
   });
 

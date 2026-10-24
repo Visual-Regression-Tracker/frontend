@@ -1,5 +1,14 @@
 import { TestRun } from "../types";
 
+/** The fields that set apart one capture of a screen from another. */
+export const TAG_FIELDS: Array<keyof TestRun> = [
+  "os",
+  "device",
+  "browser",
+  "viewport",
+  "customTags",
+];
+
 /**
  * The run's tag values, one entry each, in field order. The cards render them
  * separately so a single tag can be clicked.

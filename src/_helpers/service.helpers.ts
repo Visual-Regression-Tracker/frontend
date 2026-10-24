@@ -21,7 +21,15 @@ export function authHeader() {
 
 export function handleResponse(response: Response) {
   return response.text().then((text: string) => {
-    const data = text && JSON.parse(text);
+    // the body is not always JSON: the proxy answers with an HTML page while
+    // the API restarts, so a failed parse must not skip the status handling
+    let data;
+    let isJson = true;
+    try {
+      data = text && JSON.parse(text);
+    } catch {
+      isJson = false;
+    }
 
     if (!response.ok) {
       if (response.status === 401) {
@@ -36,6 +44,10 @@ export function handleResponse(response: Response) {
       const error = data?.message || response.statusText;
 
       return Promise.reject(error);
+    }
+
+    if (!isJson) {
+      return Promise.reject("Unexpected response from the server");
     }
 
     return data;

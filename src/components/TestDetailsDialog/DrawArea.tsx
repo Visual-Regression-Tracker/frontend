@@ -113,12 +113,10 @@ export const DrawArea: FunctionComponent<IDrawArea> = ({
     [deleteIgnoreArea, selectedRectId],
   );
 
-  React.useEffect(() => {
-    if (stageRef.current) {
-      const container = stageRef.current.container();
-      container.addEventListener("keydown", handleStageKeyDown);
-    }
-  }, [handleStageKeyDown]);
+  // Keys pressed on the stage reach handleStageKeyDown through the onKeyDown
+  // of the element around it. A native listener on the stage container used to
+  // be added too, anew on every render of the dialog and never removed: they
+  // piled up, deleted twice, and old ones deleted from stale area lists.
 
   const isModifierKeyPressed = (event: KeyboardEvent | React.KeyboardEvent) => {
     return event.altKey || event.ctrlKey || event.shiftKey;

@@ -57,31 +57,41 @@ const UserList = () => {
   const { userList } = useUserState();
 
   React.useEffect(() => {
-    usersService.getAll().then((users) =>
-      userDispatch({
-        type: "getAll",
-        payload: users,
-      }),
-    );
-  }, [userDispatch]);
+    usersService
+      .getAll()
+      .then((users) =>
+        userDispatch({
+          type: "getAll",
+          payload: users,
+        }),
+      )
+      .catch((err) =>
+        enqueueSnackbar(err, {
+          variant: "error",
+        }),
+      );
+  }, [userDispatch, enqueueSnackbar]);
 
+  // the grid shows the row this resolves to, so a rejected role reverts
   const processRowUpdate = React.useCallback(
     (newState: User, oldState: User) => {
-      if (newState.role !== oldState.role) {
-        usersService
-          .assignRole(oldState.id, newState.role as Role)
-          .then(() => {
-            enqueueSnackbar("Updated", {
-              variant: "success",
-            });
-          })
-          .catch((err) =>
-            enqueueSnackbar(err, {
-              variant: "error",
-            }),
-          );
+      if (newState.role === oldState.role) {
+        return newState;
       }
-      return newState;
+      return usersService
+        .assignRole(oldState.id, newState.role as Role)
+        .then(() => {
+          enqueueSnackbar("Updated", {
+            variant: "success",
+          });
+          return newState;
+        })
+        .catch((err) => {
+          enqueueSnackbar(err, {
+            variant: "error",
+          });
+          return oldState;
+        });
     },
     [enqueueSnackbar],
   );

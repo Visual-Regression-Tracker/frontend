@@ -225,9 +225,12 @@ const TestDetailsModal: React.FunctionComponent<TestDetailsModalProps> = ({
     setSelectedRectId(undefined);
   }, [testRun.id, testRun.diffName]);
 
+  // by id and saved areas, not the run object: any update to the run (a
+  // comment, someone else's change) hands over a new object, and that wiped
+  // the areas drawn here and not saved yet while they still counted as unsaved
   useEffect(() => {
     setIgnoreAreas(JSON.parse(testRun.ignoreAreas));
-  }, [testRun]);
+  }, [testRun.id, testRun.ignoreAreas]);
 
   useEffect(() => {
     fitImagesToStage();
@@ -281,6 +284,12 @@ const TestDetailsModal: React.FunctionComponent<TestDetailsModalProps> = ({
         enqueueSnackbar(successMessage, {
           variant: "success",
         });
+        // only once they are stored: a failed save left the areas marked
+        // saved, and leaving the run then dropped them without asking
+        testRunDispatch({
+          type: "touched",
+          payload: false,
+        });
       })
       .catch((err) =>
         enqueueSnackbar(err, {
@@ -305,11 +314,6 @@ const TestDetailsModal: React.FunctionComponent<TestDetailsModalProps> = ({
         "Selected area has been inverted to ignore areas and saved.",
       );
     }
-
-    testRunDispatch({
-      type: "touched",
-      payload: false,
-    });
   };
 
   const onIgnoreOrCompareSelectChange = (value: string) => {
@@ -346,7 +350,9 @@ const TestDetailsModal: React.FunctionComponent<TestDetailsModalProps> = ({
             ignoreAreas: [newIgnoreArea],
           };
 
-          testRunService.addIgnoreAreas(data).then(() => {
+          // returned, so a failure reaches the catch below: the progress bar
+          // stayed up for good and nobody heard about the error
+          return testRunService.addIgnoreAreas(data).then(() => {
             setProcessing(false);
             setSelectedRectId(undefined);
             enqueueSnackbar(

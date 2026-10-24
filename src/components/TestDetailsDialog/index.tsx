@@ -68,14 +68,20 @@ export const TestDetailsDialog: React.FunctionComponent = () => {
     [touched, navigate, selectedBuild?.id],
   );
 
+  // by position, not .at(): that wraps a negative index round to the end, so
+  // the left arrow on the first run opened the last. A run that is not in the
+  // list (filtered out) has no neighbours to step to at all.
   const navigateByIndex = React.useCallback(
     (index: number) => {
-      const testRun: TestRun | undefined = testRuns.at(index);
+      if (selectedTestRunIndex === -1) {
+        return;
+      }
+      const testRun: TestRun | undefined = testRuns[index];
       if (testRun) {
         navigateById(testRun.id);
       }
     },
-    [testRuns, navigateById],
+    [testRuns, selectedTestRunIndex, navigateById],
   );
 
   if (!selectedTestRun) {

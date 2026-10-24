@@ -25,7 +25,9 @@ const RegisterForm = () => {
         enqueueSnackbar("Successfully created account.", {
           variant: "success",
         });
-        login(dispatch, email, password).then(() => navigate(routes.HOME));
+        return login(dispatch, email, password).then(() =>
+          navigate(routes.HOME),
+        );
       })
       .catch((err) =>
         enqueueSnackbar(err, {
