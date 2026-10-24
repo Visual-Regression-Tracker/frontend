@@ -55,7 +55,9 @@ async function downloadAsZip(
   const taken = new Set<string>();
   const entryNames = items.map((item) => {
     let entryName = `${item.filename}.png`;
-    for (let copy = 2; taken.has(entryName); copy++) {
+    let copy = 1;
+    while (taken.has(entryName)) {
+      copy += 1;
       entryName = `${item.filename} (${copy}).png`;
     }
     taken.add(entryName);

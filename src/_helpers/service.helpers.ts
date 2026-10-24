@@ -31,7 +31,7 @@ export function handleResponse(response: Response) {
       isJson = false;
     }
 
-    if (!response.ok) {
+    if (!response.ok || !isJson) {
       if (response.status === 401) {
         // auto logout if 401 response returned from api
         usersService.logout();
@@ -41,13 +41,13 @@ export function handleResponse(response: Response) {
         }
       }
 
-      const error = data?.message || response.statusText;
+      // a successful status with a body that is not JSON is no answer either
+      const error =
+        data?.message ||
+        (response.ok ? "Unexpected response from the server" : "") ||
+        response.statusText;
 
       return Promise.reject(error);
-    }
-
-    if (!isJson) {
-      return Promise.reject("Unexpected response from the server");
     }
 
     return data;
