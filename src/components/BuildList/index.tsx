@@ -16,7 +16,8 @@ import {
   Box,
   Fade,
 } from "@mui/material";
-import { MoreVert, DeleteOutline } from "@mui/icons-material";
+import { MoreVert, DeleteOutline, Inbox, SearchOff } from "@mui/icons-material";
+import { EmptyState } from "../EmptyState";
 import { DebouncedTextField } from "../DebouncedTextField";
 import {
   useBuildState,
@@ -299,15 +300,14 @@ const BuildList: FunctionComponent = () => {
                 Builds could not be loaded
               </Typography>
             ) : buildList.length === 0 ? (
-              <Typography
-                variant="subtitle1"
-                align="center"
-                color="textSecondary"
-                sx={{ padding: 2, overflowWrap: "anywhere" }}
+              <EmptyState
+                dense
+                icon={searchQuery ? <SearchOff /> : <Inbox />}
+                title={
+                  searchQuery ? `No builds match "${searchQuery}"` : "No builds"
+                }
                 data-testid="buildListEmpty"
-              >
-                {searchQuery ? `No builds match "${searchQuery}"` : "No builds"}
-              </Typography>
+              />
             ) : (
               buildList.map((build) => (
                 <React.Fragment key={build.id}>

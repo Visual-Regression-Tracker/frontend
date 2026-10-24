@@ -5,11 +5,15 @@ import { TestVariation } from "../types";
 import { testVariationService } from "../services";
 import {
   Box,
-  GridLegacy as Grid,
+  Container,
   Pagination,
+  Paper,
+  Stack,
   TextField,
   MenuItem,
+  Typography,
 } from "@mui/material";
+import { PageHeader } from "../components/PageHeader";
 import ProjectSelect from "../components/ProjectSelect";
 import Filters from "../components/Filters";
 import { TestVariationMergeForm } from "../components/TestVariationMergeForm";
@@ -115,105 +119,106 @@ const TestVariationListPage: React.FunctionComponent = () => {
   );
 
   return (
-    <React.Fragment>
-      <Box m={2}>
-        <Grid container direction="column" spacing={2}>
-          <Grid item id={LOCATOR_TEST_VARIATION_LIST_PAGE_SELECT_PROJECT}>
+    <Container maxWidth="xl" sx={{ py: 4 }}>
+      <PageHeader
+        title="Variations"
+        subtitle={
+          filteredItems.length === testVariations.length
+            ? `${testVariations.length} baselines`
+            : `${filteredItems.length} of ${testVariations.length} baselines`
+        }
+        actions={
+          <Box
+            id={LOCATOR_TEST_VARIATION_LIST_PAGE_SELECT_PROJECT}
+            sx={{ width: { xs: "100%", sm: 280 } }}
+          >
             <ProjectSelect
               projectId={projectId}
               onProjectSelect={(id) =>
                 navigate(`${routes.VARIATION_LIST_PAGE}/${id}`)
               }
             />
-          </Grid>
-          <Grid item>
-            <TestVariationMergeForm
-              projectId={projectId}
-              items={Array.from(
-                new Set(testVariations.map((t) => t.branchName)),
-              )}
+          </Box>
+        }
+      />
+      <Stack spacing={2} mb={3}>
+        <Paper variant="outlined" sx={{ p: 2 }}>
+          <Typography variant="subtitle2" mb={1}>
+            Merge branches
+          </Typography>
+          <TestVariationMergeForm
+            projectId={projectId}
+            items={Array.from(new Set(testVariations.map((t) => t.branchName)))}
+          />
+        </Paper>
+        <Paper variant="outlined" sx={{ p: 2 }}>
+          <Filters
+            items={testVariations}
+            queryState={[query, setQuery]}
+            osState={[os, setOs]}
+            deviceState={[device, setDevice]}
+            browserState={[browser, setBrowser]}
+            viewportState={[viewport, setViewport]}
+            customTagsState={[customTags, setCustomTags]}
+            branchNameState={[branchName, setBranchName]}
+          />
+        </Paper>
+      </Stack>
+      <TestVariationList items={paginatedItems} onDeleteClick={handleDelete} />
+      {filteredItems.length > Math.min(...PAGE_SIZE_OPTIONS) && (
+        <Stack
+          direction="row"
+          justifyContent="center"
+          alignItems="center"
+          spacing={2}
+          sx={{ pt: 3 }}
+        >
+          {pageCount > 1 && (
+            <Pagination
+              count={pageCount}
+              page={currentPage}
+              onChange={(_event, value) => setPage(value)}
             />
-          </Grid>
-          <Grid item>
-            <Filters
-              items={testVariations}
-              queryState={[query, setQuery]}
-              osState={[os, setOs]}
-              deviceState={[device, setDevice]}
-              browserState={[browser, setBrowser]}
-              viewportState={[viewport, setViewport]}
-              customTagsState={[customTags, setCustomTags]}
-              branchNameState={[branchName, setBranchName]}
-            />
-          </Grid>
-          <Grid item>
-            <TestVariationList
-              items={paginatedItems}
-              onDeleteClick={handleDelete}
-            />
-          </Grid>
-          {filteredItems.length > Math.min(...PAGE_SIZE_OPTIONS) && (
-            <Grid item>
-              <Grid
-                container
-                justifyContent="center"
-                alignItems="center"
-                spacing={2}
-                sx={{ pb: 4 }}
-              >
-                {pageCount > 1 && (
-                  <Grid item>
-                    <Pagination
-                      count={pageCount}
-                      page={currentPage}
-                      onChange={(_event, value) => setPage(value)}
-                    />
-                  </Grid>
-                )}
-                <Grid item>
-                  <TextField
-                    select
-                    size="small"
-                    label="Per page"
-                    sx={{ minWidth: 120 }}
-                    SelectProps={{
-                      sx: {
-                        "& .MuiSelect-select": {
-                          textAlign: "center",
-                          pl: "32px",
-                        },
-                      },
-                    }}
-                    InputProps={{ notched: false }}
-                    InputLabelProps={{
-                      shrink: true,
-                      sx: {
-                        left: "50%",
-                        transformOrigin: "top center",
-                        transform: "translate(-50%, -9px) scale(0.75)",
-                        px: 0.5,
-                        bgcolor: "background.paper",
-                      },
-                    }}
-                    value={pageSize}
-                    onChange={(event) => {
-                      setPageSize(Number(event.target.value));
-                      setPage(1);
-                    }}
-                  >
-                    {PAGE_SIZE_OPTIONS.map((option) => (
-                      <MenuItem key={option} value={option}>
-                        {option}
-                      </MenuItem>
-                    ))}
-                  </TextField>
-                </Grid>
-              </Grid>
-            </Grid>
           )}
-        </Grid>
-      </Box>
-    </React.Fragment>
+          <TextField
+            select
+            size="small"
+            label="Per page"
+            sx={{ minWidth: 120 }}
+            SelectProps={{
+              sx: {
+                "& .MuiSelect-select": {
+                  textAlign: "center",
+                  pl: "32px",
+                },
+              },
+            }}
+            InputProps={{ notched: false }}
+            InputLabelProps={{
+              shrink: true,
+              sx: {
+                left: "50%",
+                transformOrigin: "top center",
+                transform: "translate(-50%, -9px) scale(0.75)",
+                px: 0.5,
+                bgcolor: "background.paper",
+              },
+            }}
+            value={pageSize}
+            onChange={(event) => {
+              setPageSize(Number(event.target.value));
+              setPage(1);
+            }}
+          >
+            {PAGE_SIZE_OPTIONS.map((option) => (
+              <MenuItem key={option} value={option}>
+                {option}
+              </MenuItem>
+            ))}
+          </TextField>
+        </Stack>
+      )}
+    </Container>
   );
 };
 

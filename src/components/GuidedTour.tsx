@@ -71,13 +71,43 @@ const GuidedTour: FunctionComponent = () => {
             textColor: "var(--mui-palette-text-primary)",
             arrowColor: "var(--mui-palette-background-paper)",
           },
+          tooltip: {
+            borderRadius: 14,
+            padding: 20,
+            boxShadow: "0 12px 32px rgba(15, 23, 42, 0.24)",
+          },
+          tooltipTitle: {
+            fontSize: 16,
+            fontWeight: 700,
+            textAlign: "left",
+            margin: 0,
+          },
+          tooltipContent: {
+            padding: "8px 0 4px",
+            fontSize: 14,
+            lineHeight: 1.5,
+            textAlign: "left",
+            color: "var(--mui-palette-text-secondary)",
+          },
           buttonNext: {
-            color: "var(--mui-palette-primary-main)",
-            backgroundColor: "",
+            backgroundColor: "var(--mui-palette-primary-main)",
+            color: "var(--mui-palette-primary-contrastText)",
+            borderRadius: 8,
+            fontSize: 14,
+            fontWeight: 600,
+            padding: "8px 14px",
           },
           buttonBack: {
-            color: "var(--mui-palette-primary-main)",
+            color: "var(--mui-palette-text-secondary)",
+            fontSize: 14,
+            fontWeight: 600,
           },
+          buttonSkip: {
+            color: "var(--mui-palette-text-secondary)",
+            fontSize: 14,
+          },
+          overlay: { backgroundColor: "rgba(15, 23, 42, 0.55)" },
+          spotlight: { borderRadius: 14 },
         }}
       />
       Take a tour

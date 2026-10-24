@@ -1,45 +1,42 @@
 import React from "react";
-import { GridLegacy as Grid, Typography, Chip } from "@mui/material";
+import { Box, Chip, Stack, Typography } from "@mui/material";
+import { AccountTree } from "@mui/icons-material";
 import { TestVariation } from "../types";
 
 interface IProps {
   testVariation: TestVariation;
 }
 
+// a variation's name over the axes that tell it apart and its branch
 export const TestVariationDetails: React.FunctionComponent<IProps> = ({
   testVariation,
-}) => (
-  <Grid container direction="column" spacing={1}>
-    <Typography>{testVariation.name}</Typography>
-    <Grid container spacing={2}>
-      {testVariation.os && (
-        <Grid item>
-          <Typography>OS: {testVariation.os}</Typography>
-        </Grid>
-      )}
-      {testVariation.device && (
-        <Grid item>
-          <Typography>Device: {testVariation.device}</Typography>
-        </Grid>
-      )}
-      {testVariation.customTags && (
-        <Grid item>
-          <Typography>Custom Tags: {testVariation.customTags}</Typography>
-        </Grid>
-      )}
-      {testVariation.browser && (
-        <Grid item>
-          <Typography>Browser: {testVariation.browser}</Typography>
-        </Grid>
-      )}
-      {testVariation.viewport && (
-        <Grid item>
-          <Typography>Viewport: {testVariation.viewport}</Typography>
-        </Grid>
-      )}
-      <Grid item>
-        <Chip size="small" label={testVariation.branchName} />
-      </Grid>
-    </Grid>
-  </Grid>
-);
+}) => {
+  const tags: [string, string | undefined][] = [
+    ["OS", testVariation.os],
+    ["Device", testVariation.device],
+    ["Browser", testVariation.browser],
+    ["Viewport", testVariation.viewport],
+    ["Custom Tags", testVariation.customTags],
+  ];
+
+  return (
+    <Box>
+      <Typography variant="h4" component="h1" sx={{ overflowWrap: "anywhere" }}>
+        {testVariation.name}
+      </Typography>
+      <Stack direction="row" flexWrap="wrap" alignItems="center" gap={1} mt={1}>
+        <Chip
+          size="small"
+          variant="outlined"
+          icon={<AccountTree />}
+          label={testVariation.branchName}
+        />
+        {tags
+          .filter(([, value]) => value)
+          .map(([label, value]) => (
+            <Chip key={label} size="small" label={`${label}: ${value}`} />
+          ))}
+      </Stack>
+    </Box>
+  );
+};

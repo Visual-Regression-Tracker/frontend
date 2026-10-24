@@ -13,7 +13,9 @@ import {
   Tab,
   Select,
   MenuItem,
+  Container,
 } from "@mui/material";
+import { PageHeader } from "../components/PageHeader";
 import {
   useUserDispatch,
   useUserState,
@@ -88,14 +90,21 @@ const ProfilePage = () => {
   const errorForTwoChar = "Enter at least two characters.";
 
   return (
-    <Box m={2}>
-      <Grid container spacing={1}>
+    <Container maxWidth="lg" sx={{ py: 4 }}>
+      <PageHeader
+        title="Profile"
+        subtitle="Your details, password and the key your test runs use"
+      />
+      <Grid container spacing={2}>
         <Grid item xs={6}>
-          <Grid container spacing={1}>
+          <Grid container spacing={2}>
             <Grid item xs={12}>
               <ValidatorForm onSubmit={handleUserUpdateSubmit} instantValidate>
                 <Card variant="outlined">
-                  <CardHeader title={"User details"} />
+                  <CardHeader
+                    title="User details"
+                    slotProps={{ title: { variant: "h6" } }}
+                  />
                   <CardContent>
                     <Grid container spacing={2}>
                       <Grid item xs={6}>
@@ -185,7 +194,7 @@ const ProfilePage = () => {
                         <Button
                           type="submit"
                           color="primary"
-                          variant="outlined"
+                          variant="contained"
                           data-testid="submit"
                         >
                           Update
@@ -203,7 +212,10 @@ const ProfilePage = () => {
                   instantValidate
                 >
                   <Card variant="outlined">
-                    <CardHeader title="Change password" />
+                    <CardHeader
+                      title="Change password"
+                      slotProps={{ title: { variant: "h6" } }}
+                    />
                     <CardContent>
                       <Grid container spacing={2}>
                         <Grid item xs={12}>
@@ -221,7 +233,7 @@ const ProfilePage = () => {
                           <Button
                             type="submit"
                             color="primary"
-                            variant="outlined"
+                            variant="contained"
                             data-testid="submit"
                           >
                             Update
@@ -236,18 +248,38 @@ const ProfilePage = () => {
           </Grid>
         </Grid>
         <Grid item xs={6}>
-          <Grid container spacing={1}>
+          <Grid container spacing={2}>
             <Grid item xs={12}>
               <Card variant="outlined">
-                <CardHeader title={"Api key"} />
+                <CardHeader
+                  title="Api key"
+                  slotProps={{ title: { variant: "h6" } }}
+                />
                 <CardContent>
-                  <Typography>{user?.apiKey}</Typography>
+                  <Typography
+                    component="code"
+                    sx={{
+                      display: "block",
+                      px: 1.5,
+                      py: 1,
+                      borderRadius: 1,
+                      bgcolor: "action.hover",
+                      fontFamily:
+                        "ui-monospace, SFMono-Regular, Menlo, monospace",
+                      overflowWrap: "anywhere",
+                    }}
+                  >
+                    {user?.apiKey}
+                  </Typography>
                 </CardContent>
               </Card>
             </Grid>
             <Grid item xs={12}>
               <Card variant="outlined">
-                <CardHeader title={"Configuration examples"} />
+                <CardHeader
+                  title="Configuration examples"
+                  slotProps={{ title: { variant: "h6" } }}
+                />
                 <CardContent>
                   <ProjectSelect
                     onProjectSelect={(id) => selectProject(projectDispatch, id)}
@@ -321,7 +353,7 @@ const ProfilePage = () => {
           </Grid>
         </Grid>
       </Grid>
-    </Box>
+    </Container>
   );
 };
 

@@ -21,8 +21,15 @@ import {
   setHelpSteps,
   useUserState,
 } from "../contexts";
-import { Delete, Add, Edit, AccountTree } from "@mui/icons-material";
+import {
+  Delete,
+  Add,
+  Edit,
+  AccountTree,
+  FolderOpenOutlined,
+} from "@mui/icons-material";
 import { Tooltip } from "../components/Tooltip";
+import { EmptyState } from "../components/EmptyState";
 import {
   routes,
   LOCATOR_PROJECT_LIST_PAGE_PROJECT_LIST,
@@ -98,6 +105,17 @@ const ProjectsListPage = () => {
         )}
       </Stack>
 
+      {projectState.projectList.length === 0 && (
+        <EmptyState
+          icon={<FolderOpenOutlined />}
+          title="No projects yet"
+          description={
+            canEditProjects
+              ? "Create the first one with Add project, then point your test runs at it."
+              : "Projects shared with you will show up here."
+          }
+        />
+      )}
       <Box
         sx={{
           display: "grid",

@@ -29,6 +29,8 @@ import {
   GridRowSelectionModel,
 } from "@mui/x-data-grid";
 import { DataGridCustomToolbar } from "./DataGridCustomToolbar";
+import { EmptyState } from "../EmptyState";
+import { ViewListOutlined } from "@mui/icons-material";
 import { BulkOperation } from "./BulkOperation";
 import { TestRunGrid } from "./TestRunGrid";
 import {
@@ -764,7 +766,13 @@ const TestRunList: React.FunctionComponent = () => {
     );
   }
 
-  return <Typography variant="h5">Select build from list</Typography>;
+  return (
+    <EmptyState
+      icon={<ViewListOutlined />}
+      title="Select a build"
+      description="Pick a build in the list on the left to review its test runs."
+    />
+  );
 };
 
 export default TestRunList;
