@@ -32,10 +32,10 @@ export default mergeConfig(
         reporter: ["text-summary", "html", "json-summary"],
         // a ratchet: raise these when tests are added, never lower them
         thresholds: {
-          statements: 50,
-          branches: 42,
-          functions: 47,
-          lines: 51,
+          statements: 51,
+          branches: 43,
+          functions: 48,
+          lines: 52,
         },
       },
     },
