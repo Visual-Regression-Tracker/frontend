@@ -10,6 +10,7 @@ export class ProjectPage extends BasePage {
   testRunFilters: TestRunFilters;
   buildList: BuildList;
   selectProject = this.page.locator(`#${LOCATOR_PROJECT_PAGE_SELECT_PROJECT}`);
+  detailsDialog = this.page.getByRole("dialog");
 
   constructor(page: Page) {
     super(page);

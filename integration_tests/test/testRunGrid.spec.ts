@@ -202,6 +202,7 @@ test("walks the runs inside a group with the arrows", async ({
 
   await projectPage.testRunList.getCard("Screen A").click();
   await expect(page).toHaveURL(new RegExp(`testId=${VARIATION_DE.id}$`));
+  await expect(projectPage.detailsDialog).toBeVisible();
 
   await page.keyboard.press("ArrowRight");
 
@@ -526,6 +527,7 @@ test("navigates the dialog in the grid's order", async ({
 
   await projectPage.testRunList.getCard(TEST_RUN_NEW.name).click();
   await expect(page).toHaveURL(openedRun(TEST_RUN_NEW.id));
+  await expect(projectPage.detailsDialog).toBeVisible();
 
   await page.keyboard.press("ArrowRight");
 
@@ -592,6 +594,7 @@ test("reaches a group's other runs from a table row", async ({
 
   await projectPage.testRunList.getRow(VARIATION_DE.id).click();
   await expect(page).toHaveURL(new RegExp(`testId=${VARIATION_DE.id}$`));
+  await expect(projectPage.detailsDialog).toBeVisible();
 
   await page.keyboard.press("ArrowRight");
 
