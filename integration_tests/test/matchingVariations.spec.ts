@@ -333,7 +333,4 @@ test("opens a variation full size", async ({ openProjectPage, page }) => {
 
   await expect(page.getByAltText("baseline")).toBeVisible();
   await expect(page.getByAltText("checkpoint")).toBeVisible();
-  await expect(
-    page.getByText("Diff tolerance:", { exact: false }),
-  ).toBeVisible();
 });

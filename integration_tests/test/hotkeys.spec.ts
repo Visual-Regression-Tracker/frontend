@@ -139,15 +139,18 @@ test("ignores A and X on a run that is already approved", async ({
   await expect(details.step).toBeVisible();
   await expect(details.approve).toHaveCount(0);
 
-  await page.keyboard.press("a");
-  await page.keyboard.press("x");
-  // the keys are handled in order: once the dialog has moved on for this one,
-  // the two before it have had their say
-  await page.keyboard.press("ArrowLeft");
-
-  await expect(page).not.toHaveURL(
-    new RegExp(`testId=${TEST_RUN_APPROVED.id}`),
-  );
+  // the keys are handled in order: once the dialog has moved on for the
+  // arrow, the two before it have had their say. The hotkeys bind a moment
+  // after the dialog shows, so the round is repeated until the arrow lands
+  await expect(async () => {
+    await page.keyboard.press("a");
+    await page.keyboard.press("x");
+    await page.keyboard.press("ArrowLeft");
+    await expect(page).not.toHaveURL(
+      new RegExp(`testId=${TEST_RUN_APPROVED.id}`),
+      { timeout: 1000 },
+    );
+  }).toPass();
   expect(sent).toEqual([]);
 });
 
