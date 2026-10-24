@@ -44,15 +44,12 @@ const initialState: State = {
 };
 
 export function socketReducer(state: State, action: IAction): State {
-  switch (action.type) {
-    case "connect":
-      return {
-        socket: action.payload,
-      };
-
-    default:
-      return state;
+  if (action.type === "connect") {
+    return {
+      socket: action.payload,
+    };
   }
+  return state;
 }
 
 function SocketProvider({ children }: SocketProviderProps) {

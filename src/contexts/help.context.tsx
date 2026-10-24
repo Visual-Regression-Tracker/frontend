@@ -22,16 +22,13 @@ const initialState: State = {
 };
 
 export function reducer(state: State, action: ISetStepAction): State {
-  switch (action.type) {
-    case "setSteps":
-      return {
-        ...state,
-        helpSteps: action.payload,
-      };
-
-    default:
-      return state;
+  if (action.type === "setSteps") {
+    return {
+      ...state,
+      helpSteps: action.payload,
+    };
   }
+  return state;
 }
 
 function HelpProvider({ children }: HelpProviderProps) {

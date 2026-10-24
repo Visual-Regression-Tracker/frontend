@@ -64,6 +64,8 @@ const Header: FunctionComponent = () => {
     window.open(
       "https://github.com/Visual-Regression-Tracker/Visual-Regression-Tracker/issues/new",
       "_blank",
+      // the opened page gets no handle on this tab (window.opener)
+      "noopener,noreferrer",
     );
   };
 
