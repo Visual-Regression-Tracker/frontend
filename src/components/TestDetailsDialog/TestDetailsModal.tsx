@@ -352,16 +352,17 @@ const TestDetailsModal: React.FunctionComponent<TestDetailsModalProps> = ({
 
           // returned, so a failure reaches the catch below: the progress bar
           // stayed up for good and nobody heard about the error
-          return testRunService.addIgnoreAreas(data).then(() => {
-            setProcessing(false);
-            setSelectedRectId(undefined);
-            enqueueSnackbar(
-              "Ignore areas are updated in all images in this build.",
-              {
-                variant: "success",
-              },
-            );
-          });
+          return testRunService.addIgnoreAreas(data);
+        })
+        .then(() => {
+          setProcessing(false);
+          setSelectedRectId(undefined);
+          enqueueSnackbar(
+            "Ignore areas are updated in all images in this build.",
+            {
+              variant: "success",
+            },
+          );
         })
         .catch((error) => {
           enqueueSnackbar(`There was an error : ${error}`, {
