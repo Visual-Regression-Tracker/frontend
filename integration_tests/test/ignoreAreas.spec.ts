@@ -3,182 +3,415 @@ import { test } from "fixtures";
 import {
   TEST_BUILD_FAILED,
   TEST_PROJECT,
+  TEST_RUN_NEW,
   TEST_UNRESOLVED,
 } from "~client/_test/test.data.helper";
-import type { IgnoreArea } from "~client/types/ignoreArea";
+import type { TestRun } from "~client/types";
 import {
   API_URL,
+  mockAddIgnoreAreas,
   mockGetBuildDetails,
   mockGetBuilds,
   mockGetProjects,
   mockGetTestRuns,
   mockImage,
   mockTestRun,
+  mockUpdateIgnoreAreas,
 } from "utils/mocks";
 
 const project = TEST_PROJECT;
 const build = TEST_BUILD_FAILED;
-// the size of the screenshots the runs are mocked with
-const IMAGE = { width: 1280, height: 720 };
 
-const openRunWith = async (
-  page: Page,
-  openProjectPage: (id: string, buildId: string, testId: string) => unknown,
-  ignoreAreas: IgnoreArea[],
-  tempIgnoreAreas: Omit<IgnoreArea, "id">[] = [],
-) => {
-  const run = {
-    ...TEST_UNRESOLVED,
-    ignoreAreas: JSON.stringify(ignoreAreas),
-    tempIgnoreAreas: JSON.stringify(tempIgnoreAreas),
-  };
+const EXISTING_AREA = {
+  id: "1606901916571",
+  x: 232,
+  y: 123,
+  width: 166,
+  height: 138,
+};
+const TEMP_AREA = { x: 100, y: 300, width: 600, height: 700 };
+
+// the run as the API sends it: one area the reviewer drew earlier, and one the
+// upload applied
+const withArea: TestRun = {
+  ...TEST_UNRESOLVED,
+  ignoreAreas: JSON.stringify([EXISTING_AREA]),
+  tempIgnoreAreas: "[]",
+};
+const withoutAreas: TestRun = {
+  ...TEST_UNRESOLVED,
+  ignoreAreas: "[]",
+  tempIgnoreAreas: "[]",
+};
+
+const updatedAreas = (request: { url: () => string; method: () => string }) =>
+  request.url() === `${API_URL}/test-runs/ignoreAreas/update` &&
+  request.method() === "POST";
+
+test.beforeEach(async ({ page }) => {
   await mockGetProjects(page, [project]);
   await mockGetBuilds(page, project.id, [build]);
   await mockGetBuildDetails(page, build);
-  await mockGetTestRuns(page, build.id, [run]);
-  await mockTestRun(page, run);
   await mockImage(page, "image.png");
   await mockImage(page, "diff.png");
   await mockImage(page, "baseline.png");
+  await mockUpdateIgnoreAreas(page);
+  await mockAddIgnoreAreas(page);
+});
 
-  await openProjectPage(project.id, build.id, run.id);
-
-  // the checkpoint is the pane the areas are edited on. The image is shown
-  // scaled down to fit, so image pixels are turned into page pixels here.
-  const canvas = page.getByTestId("drawArea").last().locator("canvas").last();
-  await expect(canvas).toBeVisible();
-  const box = await canvas.boundingBox();
-  const scale = box.width / IMAGE.width;
-  return (x: number, y: number) => ({
-    x: box.x + x * scale,
-    y: box.y + y * scale,
-  });
-};
-
-const drag = async (
+// opens the run at the image's own size, where a point on the screen is the
+// same point of the image, which is what the areas are measured in
+const openAtOriginalSize = async (
+  openProjectPage: (
+    id: string,
+    buildId?: string,
+    testId?: string,
+  ) => Promise<import("pages").ProjectPage>,
   page: Page,
-  from: { x: number; y: number },
-  to: { x: number; y: number },
+  testRun: TestRun,
 ) => {
-  // Firefox loses the pointer outside the window and never sees it released,
-  // so the move stops at the window's edge — past the image all the same
-  const viewport = page.viewportSize();
-  await page.mouse.move(from.x, from.y);
-  await page.mouse.down();
-  await page.mouse.move(
-    Math.min(Math.max(to.x, 0), viewport.width - 1),
-    Math.min(Math.max(to.y, 0), viewport.height - 1),
-    { steps: 10 },
-  );
-  await page.mouse.up();
+  await mockGetTestRuns(page, build.id, [testRun, TEST_RUN_NEW]);
+  await mockTestRun(page, testRun);
+  await mockTestRun(page, TEST_RUN_NEW);
+  const { details } = await openProjectPage(project.id, build.id, testRun.id);
+  await expect(details.drawAreas).toHaveCount(2);
+  await details.originalSize.click();
+  await expect.poll(() => details.canvasWidths()).toEqual([1280, 1280]);
+
+  return details;
 };
 
-const saveIgnoreAreas = async (page: Page) => {
-  const request = page.waitForRequest(
-    `${API_URL}/test-runs/ignoreAreas/update`,
-  );
-  await page.route(`${API_URL}/test-runs/ignoreAreas/update`, (route) =>
-    route.fulfill({ status: 200, body: "{}" }),
-  );
-  await page.locator('[data-testid="SaveIcon"]').click();
-  return (await request).postDataJSON().ignoreAreas as IgnoreArea[];
-};
-
-// An ignore area only means something on the screenshot it covers. A handle
-// pulled past the image used to take the area with it, leaving it hanging off
-// the picture — and one pulled past the top or left edge saved a negative
-// position, which masks pixels on the wrong rows when the images are compared.
-test("stops an area resized past the bottom-right of the image at its border", async ({
+test("draws the areas the run already has", async ({
   openProjectPage,
   page,
 }) => {
-  const area = { id: "1", x: 1100, y: 600, width: 100, height: 80 };
-  const toPage = await openRunWith(page, openProjectPage, [area]);
+  const details = await openAtOriginalSize(openProjectPage, page, withArea);
 
-  await page.mouse.click(
-    toPage(area.x + area.width / 2, area.y + area.height / 2).x,
-    toPage(area.x + area.width / 2, area.y + area.height / 2).y,
-  );
-  const corner = toPage(area.x + area.width, area.y + area.height);
-  await drag(page, corner, { x: corner.x + 200, y: corner.y + 200 });
+  await expect
+    .poll(() => details.ignoreRects())
+    .toEqual([
+      {
+        x: EXISTING_AREA.x,
+        y: EXISTING_AREA.y,
+        width: EXISTING_AREA.width,
+        height: EXISTING_AREA.height,
+      },
+    ]);
+  // nothing to save until something changes
+  await expect(details.saveAreas).toBeDisabled();
+});
 
-  expect(await saveIgnoreAreas(page)).toEqual([
-    {
-      ...area,
-      width: IMAGE.width - area.x,
-      height: IMAGE.height - area.y,
-    },
+test("draws the areas applied at upload where they cannot be edited", async ({
+  openProjectPage,
+  page,
+}) => {
+  const details = await openAtOriginalSize(openProjectPage, page, {
+    ...TEST_UNRESOLVED,
+    ignoreAreas: "[]",
+  });
+
+  await expect.poll(() => details.lockedRects()).toEqual([TEMP_AREA]);
+  expect(await details.ignoreRects()).toEqual([]);
+  await expect(page.getByTestId("WarningRoundedIcon").first()).toBeVisible();
+});
+
+test("draws a rectangle and saves it as an ignore area", async ({
+  openProjectPage,
+  page,
+}) => {
+  const details = await openAtOriginalSize(openProjectPage, page, withoutAreas);
+
+  await details.drawMode.click();
+  await expect(details.drawMode).toHaveAttribute("aria-pressed", "true");
+  await details.drag({ x: 40, y: 40 }, { x: 200, y: 120 });
+
+  await expect
+    .poll(() => details.ignoreRects())
+    .toEqual([{ x: 40, y: 40, width: 160, height: 80 }]);
+  await expect(details.saveAreas).toBeEnabled();
+
+  const [request] = await Promise.all([
+    page.waitForRequest(updatedAreas),
+    details.saveAreas.click(),
+  ]);
+
+  expect(request.postDataJSON()).toEqual({
+    ids: [withoutAreas.id],
+    ignoreAreas: [
+      {
+        id: expect.stringMatching(/^\d+$/),
+        x: 40,
+        y: 40,
+        width: 160,
+        height: 80,
+      },
+    ],
+  });
+  await expect(page.getByText("Ignore areas are updated.")).toBeVisible();
+  // saved, so there is nothing left to save
+  await expect(details.saveAreas).toBeDisabled();
+});
+
+test("adds a drawn rectangle to the areas the run has", async ({
+  openProjectPage,
+  page,
+}) => {
+  const details = await openAtOriginalSize(openProjectPage, page, withArea);
+
+  await details.drawMode.click();
+  await details.drag({ x: 500, y: 40 }, { x: 600, y: 100 });
+
+  const [request] = await Promise.all([
+    page.waitForRequest(updatedAreas),
+    details.saveAreas.click(),
+  ]);
+
+  expect(request.postDataJSON().ignoreAreas).toEqual([
+    EXISTING_AREA,
+    { id: expect.any(String), x: 500, y: 40, width: 100, height: 60 },
   ]);
 });
 
-test("stops an area resized past the top-left of the image at its border", async ({
+test("leaves draw mode after one rectangle", async ({
   openProjectPage,
   page,
 }) => {
-  const area = { id: "1", x: 40, y: 30, width: 100, height: 80 };
-  const toPage = await openRunWith(page, openProjectPage, [area]);
+  const details = await openAtOriginalSize(openProjectPage, page, withoutAreas);
 
-  await page.mouse.click(
-    toPage(area.x + area.width / 2, area.y + area.height / 2).x,
-    toPage(area.x + area.width / 2, area.y + area.height / 2).y,
-  );
-  const corner = toPage(area.x, area.y);
-  await drag(page, corner, { x: corner.x - 200, y: corner.y - 200 });
+  await details.drawMode.click();
+  await details.drag({ x: 40, y: 40 }, { x: 200, y: 120 });
 
-  expect(await saveIgnoreAreas(page)).toEqual([
-    {
-      ...area,
-      x: 0,
-      y: 0,
-      width: area.x + area.width,
-      height: area.y + area.height,
-    },
+  // NOTE: the toggle drops by itself, so the next rectangle needs it pressed
+  // again; a second drag would pan the image instead of drawing
+  await expect(details.drawMode).toHaveAttribute("aria-pressed", "false");
+});
+
+test("draws no rectangle without draw mode", async ({
+  openProjectPage,
+  page,
+}) => {
+  const details = await openAtOriginalSize(openProjectPage, page, withoutAreas);
+
+  await details.drag({ x: 40, y: 40 }, { x: 200, y: 120 });
+
+  expect(await details.ignoreRects()).toEqual([]);
+  await expect(details.saveAreas).toBeDisabled();
+});
+
+test("makes a click in draw mode the smallest area", async ({
+  openProjectPage,
+  page,
+}) => {
+  const details = await openAtOriginalSize(openProjectPage, page, withoutAreas);
+
+  await details.drawMode.click();
+  await details.clickAt({ x: 60, y: 60 });
+
+  await expect
+    .poll(() => details.ignoreRects())
+    .toEqual([{ x: 60, y: 60, width: 5, height: 5 }]);
+});
+
+test("selects an area by clicking it and lets go on a click elsewhere", async ({
+  openProjectPage,
+  page,
+}) => {
+  const details = await openAtOriginalSize(openProjectPage, page, withArea);
+  await expect(details.deleteArea).toBeDisabled();
+  await expect(details.applyAreas).toBeDisabled();
+
+  await details.clickAt({ x: 315, y: 192 });
+
+  await expect.poll(() => details.hasSelection()).toBe(true);
+  await expect(details.deleteArea).toBeEnabled();
+  await expect(details.applyAreas).toBeEnabled();
+
+  await details.clickAt({ x: 40, y: 300 });
+
+  await expect.poll(() => details.hasSelection()).toBe(false);
+  await expect(details.deleteArea).toBeDisabled();
+});
+
+test("deletes the selected area with the toolbar and saves", async ({
+  openProjectPage,
+  page,
+}) => {
+  const details = await openAtOriginalSize(openProjectPage, page, withArea);
+  await details.clickAt({ x: 315, y: 192 });
+
+  await details.deleteArea.click();
+
+  await expect.poll(() => details.ignoreRects()).toEqual([]);
+  await expect(details.deleteArea).toBeDisabled();
+  const [request] = await Promise.all([
+    page.waitForRequest(updatedAreas),
+    details.saveAreas.click(),
   ]);
+  expect(request.postDataJSON()).toEqual({
+    ids: [withArea.id],
+    ignoreAreas: [],
+  });
 });
 
-test("keeps an area drawn at the edge of the image inside it", async ({
+test("deletes the selected area with the Delete key", async ({
   openProjectPage,
   page,
 }) => {
-  const toPage = await openRunWith(page, openProjectPage, []);
+  const details = await openAtOriginalSize(openProjectPage, page, withArea);
+  await details.clickAt({ x: 315, y: 192 });
+  await expect.poll(() => details.hasSelection()).toBe(true);
 
-  await page.locator('button[value="drawMode"]').click();
-  // just inside the bottom-right corner, where the smallest area there is
-  // already reaches past the border
-  const corner = toPage(IMAGE.width - 1, IMAGE.height - 1);
-  await page.mouse.click(corner.x - 1, corner.y - 1);
+  await page.keyboard.press("Delete");
 
-  const [drawn] = await saveIgnoreAreas(page);
-  expect(drawn.x + drawn.width).toBeLessThanOrEqual(IMAGE.width);
-  expect(drawn.y + drawn.height).toBeLessThanOrEqual(IMAGE.height);
-  expect(drawn.width).toBeGreaterThan(0);
-  expect(drawn.height).toBeGreaterThan(0);
+  await expect.poll(() => details.ignoreRects()).toEqual([]);
+  await expect(details.saveAreas).toBeEnabled();
 });
 
-// The areas the run was compared with are only shown, but they are drawn over
-// the ones being edited and used to take the pointer: an ignore area under
-// one could be neither selected nor moved, and its handles could not be held.
-test("lets an area under the compared run's areas be selected and moved", async ({
+test("clears every area at once and saves", async ({
   openProjectPage,
   page,
 }) => {
-  const area = { id: "1", x: 200, y: 200, width: 100, height: 80 };
-  const toPage = await openRunWith(
-    page,
-    openProjectPage,
-    [area],
-    [{ x: 100, y: 100, width: 600, height: 400 }],
-  );
+  const details = await openAtOriginalSize(openProjectPage, page, withArea);
+  await details.drawMode.click();
+  await details.drag({ x: 500, y: 40 }, { x: 600, y: 100 });
+  await expect.poll(async () => (await details.ignoreRects()).length).toBe(2);
 
-  const center = toPage(area.x + area.width / 2, area.y + area.height / 2);
-  await page.mouse.click(center.x, center.y);
-  const moved = toPage(
-    area.x + area.width / 2 + 100,
-    area.y + area.height / 2 + 50,
-  );
-  await drag(page, center, moved);
+  await details.clearAreas.click();
 
-  const [saved] = await saveIgnoreAreas(page);
-  expect(saved.x).toBeCloseTo(area.x + 100, -1);
-  expect(saved.y).toBeCloseTo(area.y + 50, -1);
+  await expect.poll(() => details.ignoreRects()).toEqual([]);
+  await expect(details.clearAreas).toBeDisabled();
+  const [request] = await Promise.all([
+    page.waitForRequest(updatedAreas),
+    details.saveAreas.click(),
+  ]);
+  expect(request.postDataJSON()).toEqual({
+    ids: [withArea.id],
+    ignoreAreas: [],
+  });
+});
+
+test("applies the selected area to every run in the build", async ({
+  openProjectPage,
+  page,
+}) => {
+  // the list the dialog asks for to find every run of the build
+  await page.route(
+    (url) =>
+      url.pathname === "/test-runs" &&
+      url.searchParams.get("buildId") === withArea.buildId,
+    (route) =>
+      route.fulfill({
+        body: JSON.stringify([withArea, { ...TEST_RUN_NEW, id: "other_run" }]),
+      }),
+  );
+  const details = await openAtOriginalSize(openProjectPage, page, withArea);
+  await details.clickAt({ x: 315, y: 192 });
+
+  await details.applyAreas.click();
+  await expect(
+    page.getByText(
+      "All images in the current build will be re-compared with new ignore area taken into account. Are you sure?",
+    ),
+  ).toBeVisible();
+  const [request] = await Promise.all([
+    page.waitForRequest(
+      (request) =>
+        request.url() === `${API_URL}/test-runs/ignoreAreas/add` &&
+        request.method() === "POST",
+    ),
+    page.getByRole("button", { name: "Yes" }).click(),
+  ]);
+
+  expect(request.postDataJSON()).toEqual({
+    ids: [withArea.id, "other_run"],
+    ignoreAreas: [EXISTING_AREA],
+  });
+  await expect(
+    page.getByText("Ignore areas are updated in all images in this build."),
+  ).toBeVisible();
+  // the area is let go of once it is applied
+  await expect(details.applyAreas).toBeDisabled();
+});
+
+test("does not apply the area when the question is declined", async ({
+  openProjectPage,
+  page,
+}) => {
+  const applied: string[] = [];
+  page.on("request", (request) => {
+    if (request.url().includes("/ignoreAreas/")) {
+      applied.push(request.url());
+    }
+  });
+  const details = await openAtOriginalSize(openProjectPage, page, withArea);
+  await details.clickAt({ x: 315, y: 192 });
+  await details.applyAreas.click();
+
+  await page.getByRole("button", { name: "Cancel" }).click();
+
+  await expect(page.getByRole("button", { name: "Yes" })).toBeHidden();
+  expect(applied).toEqual([]);
+});
+
+test("saves the area drawn in compare mode as the areas around it", async ({
+  openProjectPage,
+  page,
+}) => {
+  const details = await openAtOriginalSize(openProjectPage, page, withoutAreas);
+  await details.areaKind.click();
+  await page.getByRole("option", { name: "Compare Area" }).click();
+  await details.drawMode.click();
+  await details.drag({ x: 40, y: 40 }, { x: 200, y: 120 });
+  await expect.poll(async () => (await details.ignoreRects()).length).toBe(1);
+
+  const [request] = await Promise.all([
+    page.waitForRequest(updatedAreas),
+    details.saveAreas.click(),
+  ]);
+
+  // the 1280 x 720 image minus the 160 x 80 area at (40, 40), cut in eight
+  const areas = request
+    .postDataJSON()
+    .ignoreAreas.map(({ x, y, width, height }) => ({ x, y, width, height }));
+  expect(areas).toEqual([
+    { x: 0, y: 0, width: 40, height: 40 },
+    { x: 40, y: 0, width: 160, height: 40 },
+    { x: 200, y: 0, width: 1080, height: 40 },
+    { x: 0, y: 40, width: 40, height: 80 },
+    { x: 200, y: 40, width: 1080, height: 80 },
+    { x: 0, y: 120, width: 40, height: 600 },
+    { x: 40, y: 120, width: 160, height: 600 },
+    { x: 200, y: 120, width: 1080, height: 600 },
+  ]);
+  await expect(
+    page.getByText(
+      "Selected area has been inverted to ignore areas and saved.",
+    ),
+  ).toBeVisible();
+});
+
+test("asks before leaving with an area that was not saved", async ({
+  openProjectPage,
+  page,
+}) => {
+  const details = await openAtOriginalSize(openProjectPage, page, withoutAreas);
+  await details.drawMode.click();
+  await details.drag({ x: 40, y: 40 }, { x: 200, y: 120 });
+  await expect(details.saveAreas).toBeEnabled();
+
+  await details.closeBtn.click();
+
+  await expect(details.discardPrompt).toBeVisible();
+  await page.getByRole("button", { name: "Cancel" }).click();
+  await expect(details.discardPrompt).toBeHidden();
+  // still there, and still unsaved
+  await expect(details.drawAreas).toHaveCount(2);
+  await expect(details.saveAreas).toBeEnabled();
+  expect(await details.ignoreRects()).toHaveLength(1);
+
+  await details.closeBtn.click();
+  await page.getByRole("button", { name: "Discard" }).click();
+
+  await expect(details.drawAreas).toHaveCount(0);
+  await expect(page).not.toHaveURL(/testId=/);
 });

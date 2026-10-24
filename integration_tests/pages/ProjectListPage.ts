@@ -17,12 +17,47 @@ export class ProjectListPage extends BasePage {
     name: "Image comparison library",
   });
 
+  // the engine's own fields, below the library select
+  vlmProvider = this.dialog.getByRole("combobox", { name: "VLM Provider" });
+  ollamaModel = this.dialog.getByRole("combobox", { name: "Model" });
+  ollamaModelText = this.dialog.getByRole("textbox", {
+    name: "Model",
+    exact: true,
+  });
+  geminiModel = this.dialog.getByRole("textbox", { name: "Gemini Model" });
+  // a password field has no role to find it by
+  geminiApiKey = this.dialog.locator("#apiKey");
+  prompt = this.dialog.getByRole("textbox", { name: "Prompt" });
+  temperature = this.dialog.getByLabel("Temperature");
+  threshold = this.dialog.getByLabel("Pixel diff threshold");
+  tolerance = this.dialog.getByLabel("Tolerance", { exact: true });
+
+  // the switches an engine shows, by the label they carry
+  switchLabelled(label: string) {
+    // by label, not role name: a tooltip's title becomes the label's name
+    return this.dialog.getByLabel(label, { exact: true });
+  }
+
   project(name: string) {
     return this.projects.filter({ hasText: `Name: ${name}` });
   }
 
   async selectImageComparison(value: string) {
     await this.imageComparison.click();
+    await this.page.getByRole("option", { name: value, exact: true }).click();
+  }
+
+  async selectOllamaModel(value: string) {
+    await this.ollamaModel.click();
+    // from the keyboard: the field's tooltip opens over the list on focus and
+    // takes the pointer
+    await this.page
+      .getByRole("option", { name: value, exact: true })
+      .press("Enter");
+  }
+
+  async selectVlmProvider(value: string) {
+    await this.vlmProvider.click();
     await this.page.getByRole("option", { name: value, exact: true }).click();
   }
 }
