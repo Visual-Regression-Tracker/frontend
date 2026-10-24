@@ -34,7 +34,7 @@ import { BaseModal } from "../components/BaseModal";
 import { User } from "../types";
 
 // the roles the API lets create, update and delete projects
-const PROJECT_EDITOR_ROLES: User["role"][] = ["admin", "editor"];
+const PROJECT_EDITOR_ROLES = new Set<User["role"]>(["admin", "editor"]);
 
 const ProjectsListPage = () => {
   const { enqueueSnackbar } = useSnackbar();
@@ -42,7 +42,7 @@ const ProjectsListPage = () => {
   const projectDispatch = useProjectDispatch();
   const helpDispatch = useHelpDispatch();
   const { user } = useUserState();
-  const canEditProjects = !!user && PROJECT_EDITOR_ROLES.includes(user.role);
+  const canEditProjects = !!user && PROJECT_EDITOR_ROLES.has(user.role);
 
   const [createDialogOpen, setCreateDialogOpen] = React.useState(false);
   const [updateDialogOpen, setUpdateDialogOpen] = React.useState(false);
