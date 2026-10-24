@@ -66,3 +66,28 @@ for (const role of ["editor", "guest"] as const) {
     });
   });
 }
+
+// the API lets admins and editors create, update and delete projects
+for (const role of ["admin", "editor"] as const) {
+  test.describe(`as ${role}`, () => {
+    test.use({ userRole: role });
+
+    test("can add, edit and delete projects", async ({ projectListPage }) => {
+      await expect(projectListPage.project(TEST_PROJECT.name)).toBeVisible();
+      await expect(projectListPage.addBtn).toBeVisible();
+      await expect(projectListPage.editBtn).toBeVisible();
+      await expect(projectListPage.deleteBtn).toBeVisible();
+    });
+  });
+}
+
+test.describe("as guest", () => {
+  test.use({ userRole: "guest" });
+
+  test("sees the projects read-only", async ({ projectListPage }) => {
+    await expect(projectListPage.project(TEST_PROJECT.name)).toBeVisible();
+    await expect(projectListPage.addBtn).toHaveCount(0);
+    await expect(projectListPage.editBtn).toHaveCount(0);
+    await expect(projectListPage.deleteBtn).toHaveCount(0);
+  });
+});
