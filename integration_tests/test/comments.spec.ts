@@ -164,8 +164,15 @@ test("keeps the box open and says so when saving fails", async ({
   await details.commentSaveBtn.click();
 
   await expect(notification.message).toHaveText("Could not save");
-  // the box closes in the same update that shows the error, so a box on its
-  // way out has already started to fade
+  // two frames on, a box on its way out has started to fade: its opacity
+  // drops to 0 at once and stays there until it is gone
+  await page.evaluate(
+    () =>
+      new Promise((resolve) =>
+        requestAnimationFrame(() => requestAnimationFrame(resolve)),
+      ),
+  );
   await expect(details.commentBox).toHaveAttribute("style", /opacity: 1/);
+  await expect(details.commentSaveBtn).toBeVisible();
   await expect(details.comment).toHaveValue("Will not stick");
 });
