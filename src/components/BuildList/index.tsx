@@ -14,11 +14,10 @@ import {
   Menu,
   MenuItem,
   Box,
-  TextField,
   Fade,
 } from "@mui/material";
 import { MoreVert, DeleteOutline } from "@mui/icons-material";
-import { DebounceInput } from "react-debounce-input";
+import { DebouncedTextField } from "../DebouncedTextField";
 import {
   useBuildState,
   useBuildDispatch,
@@ -252,16 +251,15 @@ const BuildList: FunctionComponent = () => {
             </span>
           </Tooltip>
           <Box flexGrow={1}>
-            <DebounceInput
+            <DebouncedTextField
               size="small"
               variant="outlined"
               fullWidth
               label="Search build"
               placeholder="Search by CI build id"
               value={searchQuery}
-              element={TextField}
               debounceTimeout={300}
-              onChange={(event) => setSearchQuery(event.target.value)}
+              onChange={setSearchQuery}
               inputProps={{ "data-testid": "buildSearch", autoComplete: "off" }}
             />
           </Box>

@@ -1,7 +1,6 @@
 import React from "react";
 import {
   Grid,
-  TextField,
   Select,
   MenuItem,
   FormControl,
@@ -10,7 +9,7 @@ import {
   SelectChangeEvent,
 } from "@mui/material";
 import { TestRun, TestVariation } from "../types";
-import { DebounceInput } from "react-debounce-input";
+import { DebouncedTextField } from "./DebouncedTextField";
 import { LOCATOR_RESET_FILTER } from "../constants/help";
 
 const emptyFn = () => undefined;
@@ -85,15 +84,14 @@ const Filters: React.FunctionComponent<IProps> = ({
   return (
     <Grid container spacing={2} alignItems="flex-end">
       <Grid item xs>
-        <DebounceInput
+        <DebouncedTextField
           variant="standard"
           fullWidth
           label="Name"
           value={query}
-          element={TextField}
           minLength={2}
           debounceTimeout={300}
-          onChange={(event) => setQuery(event?.target.value)}
+          onChange={setQuery}
         />
       </Grid>
       {osList.length > 0 && (
