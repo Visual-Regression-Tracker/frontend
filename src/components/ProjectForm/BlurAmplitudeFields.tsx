@@ -43,8 +43,8 @@ export const BlurAmplitudeFields: React.FunctionComponent = () => {
             "Enter at least 0",
             "Enter at most 128",
           ]}
-          InputProps={{
-            inputProps: {
+          slotProps={{
+            htmlInput: {
               min: 0,
               // the backend's ceiling: near 255 almost any change would pass
               max: 128,
