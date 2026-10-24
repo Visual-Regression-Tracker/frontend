@@ -334,7 +334,7 @@ const ProfilePage = () => {
                           value={`
   VRT_APIURL="${window._env_.REACT_APP_API_URL}"
   VRT_APIKEY="${user?.apiKey}"
-  VRT_PROJECT="${selectedProjectId ?? "Default project"} "
+  VRT_PROJECT="${selectedProjectId ?? "Default project"}"
   VRT_BRANCHNAME="master"
   VRT_CIBUILDID="commit_sha"
   VRT_ENABLESOFTASSERT=false

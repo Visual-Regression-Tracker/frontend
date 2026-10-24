@@ -85,8 +85,11 @@ export const ApproveRejectButtons: React.FunctionComponent<{
       );
   };
 
-  useHotkeys("a", approve, hotkeyOptions, [testRun]);
-  useHotkeys("x", reject, hotkeyOptions, [testRun]);
+  // the hook keeps the callback from when its deps last changed, and the
+  // after-callbacks read the dialog's current state (go to next, unsaved
+  // areas), so they are deps as much as the run is
+  useHotkeys("a", approve, hotkeyOptions, [testRun, afterApprove]);
+  useHotkeys("x", reject, hotkeyOptions, [testRun, afterReject]);
 
   return (
     <>

@@ -60,7 +60,7 @@ import {
   statusesByAttention,
   statusRank,
 } from "../../_helpers/testRunStatus.helper";
-import { tagsOf } from "../../_helpers/testRunTags.helper";
+import { TAG_FIELDS, tagsOf } from "../../_helpers/testRunTags.helper";
 
 // https://mui.com/x/react-data-grid/column-definition/
 const buildColumns = (
@@ -143,14 +143,6 @@ const buildColumns = (
     sortComparator: (v1: TestStatus, v2: TestStatus) =>
       statusRank(v2) - statusRank(v1),
   },
-];
-
-const TAG_FIELDS: Array<keyof TestRun> = [
-  "os",
-  "device",
-  "browser",
-  "viewport",
-  "customTags",
 ];
 
 const PAGE_SIZE_OPTIONS = [10, 30, 100];
@@ -252,6 +244,12 @@ const TestRunList: React.FunctionComponent = () => {
   );
 
   const clearSelection = React.useCallback(() => setSelectedIds([]), []);
+
+  // the list stays mounted from one build to the next, and ticks made in one
+  // build must not be acted on in another
+  React.useEffect(() => {
+    clearSelection();
+  }, [clearSelection, selectedBuild?.id]);
 
   // a group is selected or cleared as a whole
   const toggleGroup = React.useCallback(

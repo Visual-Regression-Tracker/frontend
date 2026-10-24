@@ -79,6 +79,20 @@ describe("RegisterForm", () => {
     expect(mockNavigate).not.toHaveBeenCalled();
   });
 
+  it("shows the error and stays when logging in after registering fails", async () => {
+    vi.spyOn(usersService, "register").mockResolvedValue(TEST_USER);
+    vi.spyOn(usersService, "login").mockRejectedValue("Login failed");
+    const { user } = renderWithProviders(<RegisterForm />, {
+      route: "/register",
+    });
+
+    await fillForm(user);
+    await user.click(screen.getByTestId("submit"));
+
+    expect(await screen.findByText("Login failed")).toBeVisible();
+    expect(mockNavigate).not.toHaveBeenCalled();
+  });
+
   it("does not register with an invalid email", async () => {
     const register = vi.spyOn(usersService, "register");
     const { user } = renderWithProviders(<RegisterForm />, {

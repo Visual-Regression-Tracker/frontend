@@ -17,7 +17,9 @@ const PrivateRoute: React.FunctionComponent<PropType> = ({
   const location = useLocation();
 
   if (!loggedIn) {
-    return <Navigate to={routes.LOGIN} state={{ from: location.pathname }} />;
+    // keep the query: links to a build or test run carry its ids there
+    const from = location.pathname + location.search + location.hash;
+    return <Navigate to={routes.LOGIN} state={{ from }} />;
   }
 
   if (roles && (!user || !roles.includes(user.role))) {

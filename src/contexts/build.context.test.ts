@@ -260,6 +260,25 @@ describe("build action creators", () => {
         payload: build("b1"),
       });
     });
+
+    it("clears the selection when the build cannot be loaded", async () => {
+      const dispatch = vi.fn();
+      vi.spyOn(buildsService, "getDetails").mockRejectedValue("Not found");
+
+      await selectBuild(dispatch, "b1");
+
+      expect(dispatch).toHaveBeenCalledTimes(1);
+      expect(dispatch).toHaveBeenCalledWith({ type: "select" });
+    });
+
+    it("drops the answer once it is no longer current", async () => {
+      const dispatch = vi.fn();
+      vi.spyOn(buildsService, "getDetails").mockResolvedValue(build("b1"));
+
+      await selectBuild(dispatch, "b1", () => false);
+
+      expect(dispatch).not.toHaveBeenCalled();
+    });
   });
 
   it("addBuild dispatches add with the build", () => {

@@ -161,17 +161,18 @@ export function buildReducer(state: State, action: IAction): State {
 
 function BuildProvider({ children }: BuildProviderProps) {
   const [state, dispatch] = React.useReducer(buildReducer, initialState);
-  const [buildId, setBuildId] = React.useState<string>();
   const location = useLocation();
+  const { buildId } = getQueryParams(location.search);
 
   React.useEffect(() => {
-    const { buildId: id } = getQueryParams(location.search);
-
-    if (buildId !== id) {
-      selectBuild(dispatch, id);
-      setBuildId(id);
-    }
-  }, [location.search, buildId]);
+    // switching builds moves the URL faster than the answers come back, and
+    // only the build the URL names now may be shown
+    let ignore = false;
+    selectBuild(dispatch, buildId, () => !ignore);
+    return () => {
+      ignore = true;
+    };
+  }, [buildId]);
 
   return (
     <BuildStateContext.Provider value={state}>
@@ -212,18 +213,37 @@ function deleteBuild(dispatch: Dispatch, id: string) {
   });
 }
 
-function selectBuild(dispatch: Dispatch, id?: string) {
+// isCurrent lets a caller drop an answer that has been overtaken
+function selectBuild(
+  dispatch: Dispatch,
+  id?: string,
+  isCurrent: () => boolean = () => true,
+) {
   if (!id) {
     dispatch({
       type: "select",
     });
   } else {
-    return buildsService.getDetails(id).then((build) => {
-      dispatch({
-        type: "select",
-        payload: build,
-      });
-    });
+    return (
+      buildsService
+        .getDetails(id)
+        .then((build) => {
+          if (isCurrent()) {
+            dispatch({
+              type: "select",
+              payload: build,
+            });
+          }
+        })
+        // a deleted build's link: close rather than keep the previous build open
+        .catch(() => {
+          if (isCurrent()) {
+            dispatch({
+              type: "select",
+            });
+          }
+        })
+    );
   }
 }
 

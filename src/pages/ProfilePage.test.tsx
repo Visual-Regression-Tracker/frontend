@@ -306,6 +306,7 @@ describe("ProfilePage", () => {
       ).value;
       expect(env).toContain('VRT_APIURL="http://api.test"');
       expect(env).toContain(`VRT_APIKEY="${TEST_USER.apiKey}"`);
+      expect(env).toContain('VRT_PROJECT="Default project"\n');
       expect(screen.queryByDisplayValue(/"apiKey"/)).not.toBeInTheDocument();
     });
 

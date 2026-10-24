@@ -22,6 +22,9 @@ const APPROVED_RUN = run("approved-run", TestStatus.approved);
 const NOT_SELECTED_RUN = run("not-selected-run", TestStatus.unresolved);
 const ROWS = [NEW_RUN, UNRESOLVED_RUN, APPROVED_RUN, NOT_SELECTED_RUN];
 const SELECTED = [NEW_RUN.id, UNRESOLVED_RUN.id, APPROVED_RUN.id];
+// selected, then hidden by a filter or left behind in another build
+const HIDDEN_RUN = run("hidden-run", TestStatus.new);
+const SELECTED_WITH_HIDDEN = [NEW_RUN.id, HIDDEN_RUN.id];
 
 // the tooltip's label sits on a span around the (possibly disabled) button
 const actionButton = (label: string): HTMLButtonElement => {
@@ -41,16 +44,19 @@ const CLEAR_IGNORE = "Clear ignore areas for selected rows.";
 const renderBulkOperation = ({
   selectedIds = SELECTED,
   rows = ROWS,
+  testRuns = rows,
   onProcessed = vi.fn(),
 }: {
   selectedIds?: string[];
   rows?: TestRun[];
+  // the build's runs, of which rows are the ones the filters let through
+  testRuns?: TestRun[];
   onProcessed?: () => void;
 } = {}) => ({
   onProcessed,
   ...renderWithProviders(
     <>
-      <SeedTestRuns testRuns={rows} />
+      <SeedTestRuns testRuns={testRuns} />
       <BulkOperation
         selectedIds={selectedIds}
         rows={rows}
@@ -219,6 +225,27 @@ describe("BulkOperation", () => {
       expect(onProcessed).toHaveBeenCalledTimes(1);
     });
 
+    it("deletes and counts only the selected runs that are shown", async () => {
+      const removeBulk = vi
+        .spyOn(testRunService, "removeBulk")
+        .mockResolvedValue();
+      const { user } = renderBulkOperation({
+        selectedIds: SELECTED_WITH_HIDDEN,
+        testRuns: [...ROWS, HIDDEN_RUN],
+      });
+
+      await user.click(actionButton(DELETE));
+      expect(
+        await screen.findByText("Are you sure you want to delete 1 items?"),
+      ).toBeVisible();
+      await confirm(user);
+
+      await waitFor(() =>
+        expect(removeBulk).toHaveBeenCalledWith([NEW_RUN.id]),
+      );
+      expect(await screen.findByText("1 test runs processed.")).toBeVisible();
+    });
+
     it("does not delete when cancelled", async () => {
       const removeBulk = vi.spyOn(testRunService, "removeBulk");
       const { user } = renderBulkOperation();
@@ -248,14 +275,75 @@ describe("BulkOperation", () => {
 
       await waitFor(() =>
         expect(downloadAsZip).toHaveBeenCalledWith([
-          { filename: NEW_RUN.name, name: NEW_RUN.imageName },
-          { filename: UNRESOLVED_RUN.name, name: UNRESOLVED_RUN.imageName },
-          { filename: APPROVED_RUN.name, name: APPROVED_RUN.imageName },
+          {
+            filename: `${NEW_RUN.name} - OS - device - browser - viewport - customTags`,
+            name: NEW_RUN.imageName,
+          },
+          {
+            filename: `${UNRESOLVED_RUN.name} - OS - device - browser - viewport - customTags`,
+            name: UNRESOLVED_RUN.imageName,
+          },
+          {
+            filename: `${APPROVED_RUN.name} - OS - device - browser - viewport - customTags`,
+            name: APPROVED_RUN.imageName,
+          },
         ]),
       );
       expect(await screen.findByText("3 test runs processed.")).toBeVisible();
       // a download changes nothing, so the ticks stay
       expect(onProcessed).not.toHaveBeenCalled();
+    });
+
+    it("names each image by its test and the tags that set it apart", async () => {
+      const downloadAsZip = vi
+        .spyOn(staticService, "downloadAsZip")
+        .mockResolvedValue();
+      const chrome: TestRun = {
+        ...run("chrome", TestStatus.new),
+        name: "Home",
+        os: "",
+        device: "",
+        browser: "chrome",
+        viewport: "1280x720",
+        customTags: "",
+      };
+      const firefox: TestRun = { ...chrome, id: "firefox", browser: "firefox" };
+      const { user } = renderBulkOperation({
+        selectedIds: [chrome.id, firefox.id],
+        rows: [chrome, firefox],
+      });
+
+      await user.click(actionButton(DOWNLOAD));
+      await confirm(user);
+
+      await waitFor(() =>
+        expect(downloadAsZip).toHaveBeenCalledWith([
+          { filename: "Home - chrome - 1280x720", name: chrome.imageName },
+          { filename: "Home - firefox - 1280x720", name: firefox.imageName },
+        ]),
+      );
+    });
+
+    it("zips only the selected runs that are shown", async () => {
+      const downloadAsZip = vi
+        .spyOn(staticService, "downloadAsZip")
+        .mockResolvedValue();
+      const { user } = renderBulkOperation({
+        selectedIds: SELECTED_WITH_HIDDEN,
+        testRuns: [...ROWS, HIDDEN_RUN],
+      });
+
+      await user.click(actionButton(DOWNLOAD));
+      expect(
+        await screen.findByText("Are you sure you want to download 1 items?"),
+      ).toBeVisible();
+      await confirm(user);
+
+      await waitFor(() =>
+        expect(downloadAsZip).toHaveBeenCalledWith([
+          expect.objectContaining({ name: NEW_RUN.imageName }),
+        ]),
+      );
     });
   });
 
@@ -283,6 +371,29 @@ describe("BulkOperation", () => {
         }),
       );
       expect(onProcessed).toHaveBeenCalledTimes(1);
+    });
+
+    it("clears only the selected runs that are shown", async () => {
+      const updateIgnoreAreas = vi
+        .spyOn(testRunService, "updateIgnoreAreas")
+        .mockResolvedValue();
+      const { user } = renderBulkOperation({
+        selectedIds: SELECTED_WITH_HIDDEN,
+        testRuns: [...ROWS, HIDDEN_RUN],
+      });
+
+      await user.click(actionButton(CLEAR_IGNORE));
+      expect(
+        await screen.findByText("Are you sure you want to clear 1 items?"),
+      ).toBeVisible();
+      await confirm(user);
+
+      await waitFor(() =>
+        expect(updateIgnoreAreas).toHaveBeenCalledWith({
+          ids: [NEW_RUN.id],
+          ignoreAreas: [],
+        }),
+      );
     });
   });
 });

@@ -12,7 +12,7 @@ import {
 import { staticService, testRunService } from "../../services";
 import { TestRun, TestStatus } from "../../types";
 import { Tooltip } from "../Tooltip";
-import { useTestRunState } from "../../contexts";
+import { TAG_FIELDS, tagValuesOf } from "../../_helpers/testRunTags.helper";
 
 export const BulkOperation: React.FunctionComponent<{
   selectedIds: string[];
@@ -22,7 +22,6 @@ export const BulkOperation: React.FunctionComponent<{
   // the selection has been acted on and no longer stands
   onProcessed: () => void;
 }> = ({ selectedIds, rows, selectionNoun, onProcessed }) => {
-  const { testRuns } = useTestRunState();
   const { enqueueSnackbar } = useSnackbar();
   const [approveDialogOpen, setApproveDialogOpen] = React.useState(false);
   const [rejectDialogOpen, setRejectDialogOpen] = React.useState(false);
@@ -38,6 +37,18 @@ export const BulkOperation: React.FunctionComponent<{
   const selectedIdSet = React.useMemo(
     () => new Set(selectedIds),
     [selectedIds],
+  );
+
+  // The selected rows that are shown. The selection can hold runs a filter has
+  // hidden since, and the actions must not reach what the reviewer cannot see.
+  // Rows are every filtered run, each run of a group included, not one page.
+  const shownSelectedRows: TestRun[] = React.useMemo(
+    () => rows.filter((row) => selectedIdSet.has(row.id)),
+    [selectedIdSet, rows],
+  );
+  const shownSelectedIds: string[] = React.useMemo(
+    () => shownSelectedRows.map((row) => row.id),
+    [shownSelectedRows],
   );
 
   const isMerge: boolean = React.useMemo(
@@ -134,16 +145,16 @@ export const BulkOperation: React.FunctionComponent<{
 
   const getBulkAction = () => {
     if (deleteDialogOpen) {
-      return testRunService.removeBulk(selectedIds);
+      return testRunService.removeBulk(shownSelectedIds);
     }
 
     if (downloadDialogOpen) {
-      const images = testRuns
-        .filter((testRun) => selectedIdSet.has(testRun.id))
-        .map((item) => ({
-          filename: item.name,
-          name: item.imageName,
-        }));
+      // the same screen is taken in several browsers, viewports and devices,
+      // so the test name alone would give their images one file name
+      const images = shownSelectedRows.map((item) => ({
+        filename: [item.name, ...tagValuesOf(item, TAG_FIELDS)].join(" - "),
+        name: item.imageName,
+      }));
 
       return staticService.downloadAsZip(images);
     }
@@ -157,7 +168,7 @@ export const BulkOperation: React.FunctionComponent<{
     }
 
     return testRunService.updateIgnoreAreas({
-      ids: selectedIds,
+      ids: shownSelectedIds,
       ignoreAreas: [],
     });
   };
@@ -265,7 +276,7 @@ export const BulkOperation: React.FunctionComponent<{
         content={
           <Typography>
             {`Are you sure you want to ${submitButtonText().toLowerCase()} ${
-              selectedIds.length
+              shownSelectedIds.length
             } items?`}
           </Typography>
         }
@@ -273,7 +284,7 @@ export const BulkOperation: React.FunctionComponent<{
           // a download leaves the runs as they were, so the selection is still
           // about something and is kept; everything else has just consumed it
           const consumesSelection = !downloadDialogOpen;
-          const count = selectedIds.length;
+          const count = shownSelectedIds.length;
           setIsProcessing(true);
           getBulkAction()
             .then(() => {

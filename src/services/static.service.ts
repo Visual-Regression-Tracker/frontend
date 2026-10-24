@@ -49,9 +49,21 @@ async function downloadAsZip(
   }[],
 ): Promise<void> {
   const zip = new JSZip();
-  const downloadFilePromises = items.map(async (item) => {
+  // a zip entry of the same name replaces the earlier one, so a repeated name
+  // is numbered rather than losing an image. Named up front, in the given order,
+  // so which one gets the number does not depend on which download ends first.
+  const taken = new Set<string>();
+  const entryNames = items.map((item) => {
+    let entryName = `${item.filename}.png`;
+    for (let copy = 2; taken.has(entryName); copy++) {
+      entryName = `${item.filename} (${copy}).png`;
+    }
+    taken.add(entryName);
+    return entryName;
+  });
+  const downloadFilePromises = items.map(async (item, index) => {
     const blob = await fetchImage(item.name, item.filename);
-    zip.file(item.filename.concat(".png"), blob);
+    zip.file(entryNames[index], blob);
   });
 
   await Promise.all(downloadFilePromises);

@@ -206,19 +206,38 @@ function TestRunProvider({ children }: TestRunProviderProps) {
 
   React.useEffect(() => {
     const { testId } = getQueryParams(location.search);
+    // paging with the arrows moves the URL faster than the answers come back,
+    // and only the run the URL names now may be shown
+    let ignore = false;
 
     if (!testId) {
       dispatch({
         type: "select",
       });
     } else {
-      testRunService.getDetails(testId).then((payload) => {
-        dispatch({
-          type: "select",
-          payload,
+      testRunService
+        .getDetails(testId)
+        .then((payload) => {
+          if (!ignore) {
+            dispatch({
+              type: "select",
+              payload,
+            });
+          }
+        })
+        // a deleted run's link: close rather than keep the previous run open
+        .catch(() => {
+          if (!ignore) {
+            dispatch({
+              type: "select",
+            });
+          }
         });
-      });
     }
+
+    return () => {
+      ignore = true;
+    };
   }, [location.search]);
 
   return (
