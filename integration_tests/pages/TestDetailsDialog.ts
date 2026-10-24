@@ -93,7 +93,7 @@ export class TestDetailsDialog {
   /** The button that applies the choice, as "Approve 2 selected". */
   variationsConfirm(verb: "Approve" | "Reject"): Locator {
     return this.variations.getByRole("button", {
-      name: new RegExp(`^${verb} \\d+ selected$`),
+      name: new RegExp(String.raw`^${verb} \d+ selected$`),
     });
   }
 
@@ -162,7 +162,7 @@ export class TestDetailsDialog {
       const stage = Konva.stages.find((s) => pane.contains(s.container()));
       const images = stage!.find("Image");
 
-      return images[images.length - 1].image().src;
+      return images.at(-1)!.image().src;
     });
 
     return src.split("/").pop() ?? "";

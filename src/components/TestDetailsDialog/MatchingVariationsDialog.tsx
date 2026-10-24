@@ -38,6 +38,7 @@ import { GO_TO_NEXT_KEY } from "../../constants";
 import { imageFor, thumbnailFor } from "../../_helpers/testRunImage.helper";
 import { TestRun } from "../../types";
 import { TestStatus } from "../../types/testStatus";
+import { imageSurface } from "../../theme/tokens";
 
 const Toolbar = styled("div")({
   display: "flex",
@@ -75,7 +76,7 @@ const Thumb = styled("img")({
   width: "100%",
   height: 220,
   objectFit: "contain",
-  background: "#fafafa",
+  background: imageSurface.thumbnail,
 });
 
 const ThumbButton = styled("button")({
@@ -117,7 +118,7 @@ const LightboxImg = styled("img")({
   maxHeight: "74vh",
   objectFit: "contain",
   verticalAlign: "top",
-  background: "#fafafa",
+  background: imageSurface.thumbnail,
 });
 
 export type MatchingVariationsMode = "approve" | "reject";

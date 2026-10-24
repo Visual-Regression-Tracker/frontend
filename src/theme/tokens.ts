@@ -69,6 +69,13 @@ export const surface = {
   },
 } as const;
 
+// screenshots are shown on these in both colour modes, so transparent pixels
+// look the same to every reviewer
+export const imageSurface = {
+  canvas: "#ffffff",
+  thumbnail: "#fafafa",
+} as const;
+
 export const radius = 10;
 
 export const fontFamily =

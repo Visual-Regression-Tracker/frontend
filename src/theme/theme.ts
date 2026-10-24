@@ -1,4 +1,4 @@
-import { createTheme } from "@mui/material/styles";
+import { alpha, createTheme } from "@mui/material/styles";
 import type {} from "@mui/x-data-grid/themeAugmentation";
 import {
   brand,
@@ -104,9 +104,13 @@ export const theme = createTheme({
       defaultProps: { elevation: 0, color: "inherit" },
       styleOverrides: {
         root: ({ theme }) => ({
-          backgroundColor: `rgba(${theme.vars.palette.background.paperChannel} / 0.86)`,
+          // CSS variables when the theme has them (the app), plain values
+          // under a theme without (a test or story wrapping its own)
+          backgroundColor: theme.vars
+            ? `rgba(${theme.vars.palette.background.paperChannel} / 0.86)`
+            : alpha(theme.palette.background.paper, 0.86),
           backdropFilter: "blur(8px)",
-          borderBottom: `1px solid ${theme.vars.palette.divider}`,
+          borderBottom: `1px solid ${(theme.vars ?? theme).palette.divider}`,
         }),
       },
     },
@@ -129,7 +133,8 @@ export const theme = createTheme({
       styleOverrides: {
         root: ({ theme }) => ({
           border: 0,
-          "--DataGrid-containerBackground": theme.vars.palette.background.paper,
+          "--DataGrid-containerBackground": (theme.vars ?? theme).palette
+            .background.paper,
         }),
         columnHeaderTitle: { fontWeight: 600 },
       },

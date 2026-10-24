@@ -12,6 +12,7 @@ import {
   Box,
   Typography,
   Stack,
+  ListSubheader,
 } from "@mui/material";
 import { Link } from "react-router-dom";
 import { useUserDispatch, useUserState, logout } from "../contexts";
@@ -19,7 +20,7 @@ import { routes } from "../constants";
 import logo from "../static/logo.png";
 import GuidedTour from "./GuidedTour";
 import { Tooltip } from "./Tooltip";
-import { ColorModeToggle } from "../theme";
+import { ColorModeToggle } from "./ColorModeToggle";
 import {
   HEADER_HELP_MENU_ID,
   HEADER_AVATAR_MENU_ID,
@@ -107,15 +108,24 @@ const Header: FunctionComponent = () => {
       onClose={handleMenuClose}
       slotProps={{ paper: { sx: { minWidth: 200 } } }}
     >
+      {/* a subheader, which the menu skips when it moves focus to an item */}
       {user && (
-        <Box px={2} py={1}>
-          <Typography variant="subtitle2" noWrap>
+        <ListSubheader
+          disableSticky
+          sx={{ lineHeight: 1.4, py: 1, bgcolor: "transparent" }}
+        >
+          <Typography variant="subtitle2" color="text.primary" noWrap>
             {user.firstName} {user.lastName}
           </Typography>
-          <Typography variant="caption" color="text.secondary" noWrap>
+          <Typography
+            variant="caption"
+            color="text.secondary"
+            noWrap
+            component="div"
+          >
             {user.email}
           </Typography>
-        </Box>
+        </ListSubheader>
       )}
       {user && <Divider />}
       {user?.role === "admin" && (

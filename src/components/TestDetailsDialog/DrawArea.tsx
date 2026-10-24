@@ -8,6 +8,7 @@ import { NoImagePlaceholder } from "./NoImageAvailable";
 import Konva from "konva";
 import { clampScale } from "../../_helpers/scale.helper";
 import { clampToImage } from "../../_helpers/ignoreArea.helper";
+import { imageSurface } from "../../theme/tokens";
 
 export type ImageStateLoad = "loaded" | "loading" | "failed";
 
@@ -288,9 +289,7 @@ export const DrawArea: FunctionComponent<IDrawArea> = ({
   const imageLoaded = () => {
     return (
       <Box
-        // white in both colour modes: transparent parts of a screenshot must
-        // look the same to every reviewer
-        sx={{ overflow: "auto", backgroundColor: "#fff" }}
+        sx={{ overflow: "auto", backgroundColor: imageSurface.canvas }}
         data-testid="drawArea"
         ref={scrollContainerRef}
         onScroll={(event: React.SyntheticEvent<HTMLElement>) => {
