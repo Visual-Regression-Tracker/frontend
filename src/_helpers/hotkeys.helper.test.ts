@@ -1,4 +1,4 @@
-import { isTypingTarget } from "./hotkeys.helper";
+import { hotkeyOptions, isTypingTarget } from "./hotkeys.helper";
 
 const input = (type: string) => {
   const element = document.createElement("input");
@@ -38,5 +38,27 @@ describe("isTypingTarget", () => {
   it("is false without an element", () => {
     expect(isTypingTarget(null)).toBe(false);
     expect(isTypingTarget(document)).toBe(false);
+  });
+});
+
+describe("hotkeyOptions", () => {
+  const keyOn = (target: EventTarget) => {
+    const event = new KeyboardEvent("keydown", { key: "d" });
+    Object.defineProperty(event, "target", { value: target });
+    return event;
+  };
+
+  it("lets the hotkeys through on form fields", () => {
+    expect(hotkeyOptions.enableOnFormTags).toBe(true);
+  });
+
+  it("ignores a key typed into a text field", () => {
+    expect(hotkeyOptions.ignoreEventWhen?.(keyOn(input("text")))).toBe(true);
+  });
+
+  it("takes a key pressed on a focused switch", () => {
+    expect(hotkeyOptions.ignoreEventWhen?.(keyOn(input("checkbox")))).toBe(
+      false,
+    );
   });
 });

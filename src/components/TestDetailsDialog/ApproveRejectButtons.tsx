@@ -1,6 +1,7 @@
 import { Chip, Button } from "@mui/material";
 import { useDialogSnackbar } from "./useDialogSnackbar";
 import { useHotkeys } from "react-hotkeys-hook";
+import { hotkeyOptions } from "../../_helpers/hotkeys.helper";
 import React from "react";
 import { testRunService } from "../../services";
 import { useProjectState, useTestRunState } from "../../contexts";
@@ -84,8 +85,8 @@ export const ApproveRejectButtons: React.FunctionComponent<{
       );
   };
 
-  useHotkeys("a", approve, [testRun]);
-  useHotkeys("x", reject, [testRun]);
+  useHotkeys("a", approve, hotkeyOptions, [testRun]);
+  useHotkeys("x", reject, hotkeyOptions, [testRun]);
 
   return (
     <>

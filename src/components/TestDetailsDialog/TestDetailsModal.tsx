@@ -18,6 +18,7 @@ import {
   Tooltip as MuiTooltip,
 } from "@mui/material";
 import { useHotkeys } from "react-hotkeys-hook";
+import { hotkeyOptions } from "../../_helpers/hotkeys.helper";
 import { TestRun } from "../../types";
 import { testRunService, staticService } from "../../services";
 import { TestStatus } from "../../types/testStatus";
@@ -233,8 +234,11 @@ const TestDetailsModal: React.FunctionComponent<TestDetailsModalProps> = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [baselineImage, currentImage]);
 
-  useHotkeys("right", handleNext, [currentRunIndex, handleNext]);
-  useHotkeys("left", handlePrevious, [currentRunIndex, handlePrevious]);
+  useHotkeys("right", handleNext, hotkeyOptions, [currentRunIndex, handleNext]);
+  useHotkeys("left", handlePrevious, hotkeyOptions, [
+    currentRunIndex,
+    handlePrevious,
+  ]);
 
   const isImageSizeDiffer = React.useMemo(
     () =>
@@ -376,6 +380,7 @@ const TestDetailsModal: React.FunctionComponent<TestDetailsModalProps> = ({
         setIsDiffShown((isDiffShown) => !isDiffShown);
       }
     },
+    hotkeyOptions,
     [testRun.diffName],
   );
 

@@ -286,10 +286,8 @@ test("keeps D and the switch in step", async ({ openProjectPage, page }) => {
   await expect.poll(() => details.shownImage()).toBe("diff.png");
 });
 
-// NOTE: the hotkey library ignores keys typed into form fields, and the
-// switch is one: after it has been clicked it holds focus, and D does nothing
-// until focus moves elsewhere
-test("ignores D while the diff switch holds focus", async ({
+// the switch keeps focus after a click, and the keys still reach the hotkeys
+test("keeps D and the arrow keys working after a click on the diff switch", async ({
   openProjectPage,
   page,
 }) => {
@@ -301,18 +299,17 @@ test("ignores D while the diff switch holds focus", async ({
   await expect(details.drawAreas).toHaveCount(2);
   await details.toggleDiff.uncheck();
   await expect.poll(() => details.shownImage()).toBe("image.png");
+  await expect(details.toggleDiff).toBeFocused();
 
   await page.keyboard.press("d");
-  // two frames on: a handled D would have re-rendered by now
-  await page.evaluate(
-    () =>
-      new Promise((resolve) =>
-        requestAnimationFrame(() => requestAnimationFrame(resolve)),
-      ),
-  );
 
-  await expect(details.toggleDiff).not.toBeChecked();
-  expect(await details.shownImage()).toBe("image.png");
+  await expect(details.toggleDiff).toBeChecked();
+  await expect.poll(() => details.shownImage()).toBe("diff.png");
+
+  await page.keyboard.press("ArrowRight");
+
+  await expect(details.step).toHaveText(/^Step 2\/3:/);
+  await expect(page).toHaveURL(new RegExp(`testId=${TEST_RUN_NEW.id}$`));
 });
 
 test("does nothing on D when the run has no diff", async ({
