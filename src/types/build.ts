@@ -10,7 +10,8 @@ export interface Build {
   branchName: string;
   status: BuildStatus;
   createdAt: string;
-  updatedAt: string;
+  // the time of the last run; older API versions leave it out
+  updatedAt?: string;
   createdBy: string;
   testRuns: TestRun[];
 
