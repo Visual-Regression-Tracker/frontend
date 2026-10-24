@@ -87,14 +87,14 @@ export const DrawArea: FunctionComponent<IDrawArea> = ({
   const scrollContainerRef = React.useRef<HTMLDivElement>(null);
   const scaleRef = React.useRef(stageScale);
   const targetScaleRef = React.useRef(stageScale);
-  const frameRef = React.useRef<number>();
-  const lastFrameRef = React.useRef<number>();
+  const frameRef = React.useRef<number | undefined>(undefined);
+  const lastFrameRef = React.useRef<number | undefined>(undefined);
   const anchorRef = React.useRef<{
     pointerX: number;
     pointerY: number;
     imageX: number;
     imageY: number;
-  }>();
+  }>(undefined);
 
   const isDeleteKey = (event: KeyboardEvent | React.KeyboardEvent) => {
     return event.key === "Delete" || event.key === "Backspace";

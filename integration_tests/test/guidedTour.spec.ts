@@ -82,6 +82,8 @@ test.describe("Guided Tour", () => {
 
   test.describe("Project List Page", () => {
     test("should display all tour steps", async ({ projectListPage }) => {
+      // the tour starts only once its first target is on the page
+      await expect(projectListPage.projects).toHaveCount(1);
       const tour = await projectListPage.header.startTour();
 
       await expect(tour.joyrideOverlay).toContainText(PROJECT_LIST_PAGE_STEPS[0].title as string);

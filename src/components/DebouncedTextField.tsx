@@ -22,7 +22,7 @@ export const DebouncedTextField: React.FunctionComponent<Props> = ({
   ...props
 }) => {
   const [text, setText] = React.useState(value ?? "");
-  const timer = React.useRef<ReturnType<typeof setTimeout>>();
+  const timer = React.useRef<ReturnType<typeof setTimeout>>(undefined);
   const pending = React.useRef<string | undefined>(undefined);
   const onChangeRef = React.useRef(onChange);
   onChangeRef.current = onChange;

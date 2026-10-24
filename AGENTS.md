@@ -2,7 +2,7 @@
 
 Rules for anyone changing this repo, people and coding agents alike. The
 frontend of [Visual Regression Tracker](https://github.com/Visual-Regression-Tracker/Visual-Regression-Tracker):
-React 18, TypeScript (strict), Vite, MUI 7 with MUI X Data Grid, Konva for
+React 19, TypeScript (strict), Vite, MUI 7 with MUI X Data Grid, Konva for
 the image canvas, socket.io for live updates.
 
 ## Commands
@@ -100,5 +100,8 @@ outside `src/services`. The one known cycle, `_helpers/service.helpers` ↔
   Never commit baselines made on your machine. When a change moves pixels on
   purpose, regenerate in Docker and look at every changed PNG before
   committing.
-- `react-joyride` is capped at React 18 and `react-konva` 19 needs React 19,
-  so React stays on 18 until both are migrated together.
+- `react-konva` follows React's major (react-konva 19 needs React 19.3 or
+  later), so the two are upgraded together.
+- The guided tour is `react-joyride` 3. Its look is set once, through the
+  `options` and `styles` props in `GuidedTour.tsx`, and page objects find it
+  by `.react-joyride__tooltip`.
