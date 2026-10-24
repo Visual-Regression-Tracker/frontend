@@ -22,7 +22,7 @@ fi
 # Linux node_modules live in their own volume: installing them into the
 # mounted checkout would replace the host's platform binaries (esbuild,
 # rolldown), and the volume keeps them between runs
-NODE_MODULES_VOLUME="vrt-frontend-node-modules-$(echo -n "${LOCAL_DIR}" | shasum | cut -c1-8)"
+NODE_MODULES_VOLUME="vrt-frontend-node-modules-$(echo -n "${LOCAL_DIR}" | shasum -a 256 | cut -c1-8)"
 
 # npm's download cache: a host folder when NPM_CACHE_DIR is set (CI caches
 # it between runs), otherwise a named volume that lives between local runs
