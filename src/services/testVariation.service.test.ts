@@ -50,14 +50,13 @@ describe("testVariationService", () => {
     );
   });
 
-  // NOTE: branch names are not URL-encoded, so a name with "/" or "&" is sent raw
-  it("merge puts branch names into the query without encoding them", async () => {
+  it("merge encodes branch names that hold / or &", async () => {
     const fetchMock = stubFetch({});
 
-    await testVariationService.merge("p1", "feat/a&b", "main");
+    await testVariationService.merge("p1", "feat/a&b", "release/1.0");
 
     expect(fetchMock.mock.calls[0][0]).toBe(
-      `${API}/test-variations/merge?projectId=p1&fromBranch=feat/a&b&toBranch=main`,
+      `${API}/test-variations/merge?projectId=p1&fromBranch=feat%2Fa%26b&toBranch=release%2F1.0`,
     );
   });
 

@@ -100,6 +100,29 @@ test("merges one branch into another", async ({
   await expect(page).toHaveURL(`/${TEST_PROJECT.id}?buildId=${build.id}`);
 });
 
+test("sends a branch name with / and & as it was typed", async ({
+  openTestVariationListPage,
+  page,
+}) => {
+  const build = { ...TEST_BUILD_PASSED, id: "mergeBuildId" };
+  await mockMergeTestVariations(page, build);
+  await mockGetBuilds(page, TEST_PROJECT.id, [build]);
+  await mockGetBuildDetails(page, build);
+  await mockGetTestRuns(page, build.id, []);
+  const listPage = await openTestVariationListPage(TEST_PROJECT.id);
+
+  const [request] = await Promise.all([
+    page.waitForRequest("**/test-variations/merge?**"),
+    listPage.merge(TEST_VARIATION_ONE.branchName, "release/1.0&hotfix"),
+  ]);
+
+  expect(Object.fromEntries(new URL(request.url()).searchParams)).toEqual({
+    projectId: TEST_PROJECT.id,
+    fromBranch: TEST_VARIATION_ONE.branchName,
+    toBranch: "release/1.0&hotfix",
+  });
+});
+
 test("does not merge without a branch to merge from", async ({
   openTestVariationListPage,
   page,
