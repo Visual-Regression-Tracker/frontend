@@ -385,7 +385,7 @@ const BuildList: FunctionComponent = () => {
                         onClick={(event) => handleMenuClick(event, build)}
                         size="large"
                       >
-                        <MoreVert />
+                        <MoreVert data-testid="MoreVertIcon" />
                       </IconButton>
                     </ListItemSecondaryAction>
                   </ListItemButton>
