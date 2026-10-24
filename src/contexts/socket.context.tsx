@@ -43,7 +43,7 @@ const initialState: State = {
   socket: undefined,
 };
 
-function socketReducer(state: State, action: IAction): State {
+export function socketReducer(state: State, action: IAction): State {
   switch (action.type) {
     case "connect":
       return {

@@ -16,6 +16,8 @@ export const TEST_PROJECT: Project = {
   imageComparisonConfig: PIXELMATCH_DEFAULT_CONFIG,
   maxBuildAllowed: 100,
   maxBranchLifetime: 30,
+  bulkApproveVariations: false,
+  bulkApproveGroupBy: "customTags",
 };
 
 export const TEST_USER: User = {

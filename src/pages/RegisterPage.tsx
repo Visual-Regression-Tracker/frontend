@@ -1,22 +1,14 @@
 import React from "react";
-import { Grid } from "@mui/material";
+import { AuthLayout } from "../components/AuthLayout";
 import RegisterForm from "../components/RegisterForm";
 
 const RegisterPage = () => (
-  <Grid
-    container
-    spacing={0}
-    direction="column"
-    alignItems="center"
-    justifyContent="center"
-    style={{
-      minHeight: "60vh",
-    }}
+  <AuthLayout
+    title="Create your account"
+    subtitle="Start tracking visual changes in a couple of minutes."
   >
-    <Grid item>
-      <RegisterForm />
-    </Grid>
-  </Grid>
+    <RegisterForm />
+  </AuthLayout>
 );
 
 export default RegisterPage;

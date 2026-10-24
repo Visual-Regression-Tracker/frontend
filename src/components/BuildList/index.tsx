@@ -1,5 +1,4 @@
 import React, { FunctionComponent } from "react";
-import { makeStyles, createStyles } from "@mui/styles";
 import {
   List,
   ListItemButton,
@@ -9,17 +8,17 @@ import {
   Checkbox,
   Chip,
   Typography,
-  Grid,
+  GridLegacy as Grid,
   Pagination,
   LinearProgress,
   Menu,
   MenuItem,
   Box,
-  TextField,
   Fade,
 } from "@mui/material";
 import { MoreVert, DeleteOutline } from "@mui/icons-material";
-import { DebounceInput } from "react-debounce-input";
+import { BuildListPlaceholder } from "./BuildListPlaceholder";
+import { DebouncedTextField } from "../DebouncedTextField";
 import {
   useBuildState,
   useBuildDispatch,
@@ -27,7 +26,6 @@ import {
   useProjectState,
 } from "../../contexts";
 import { BuildStatusChip } from "../BuildStatusChip";
-import { SkeletonList } from "../SkeletonList";
 import { formatDateTime } from "../../_helpers/format.helper";
 import { useSnackbar } from "notistack";
 import { TextValidator } from "react-material-ui-form-validator";
@@ -41,26 +39,7 @@ import {
 } from "../../_helpers/route.helpers";
 import { Tooltip } from "../Tooltip";
 
-const useStyles = makeStyles(() =>
-  createStyles({
-    listContainer: {
-      height: "100%",
-      overflow: "auto",
-    },
-    listItemSecondaryAction: {
-      visibility: "hidden",
-    },
-    listItem: {
-      paddingRight: 48,
-      "&:hover $listItemSecondaryAction": {
-        visibility: "inherit",
-      },
-    },
-  }),
-);
-
 const BuildList: FunctionComponent = () => {
-  const classes = useStyles();
   const navigate = useNavigate();
   const location = useLocation();
   const { buildList, selectedBuild, loading, error, total, take } =
@@ -272,16 +251,15 @@ const BuildList: FunctionComponent = () => {
             </span>
           </Tooltip>
           <Box flexGrow={1}>
-            <DebounceInput
+            <DebouncedTextField
               size="small"
               variant="outlined"
               fullWidth
               label="Search build"
               placeholder="Search by CI build id"
               value={searchQuery}
-              element={TextField}
               debounceTimeout={300}
-              onChange={(event) => setSearchQuery(event.target.value)}
+              onChange={setSearchQuery}
               inputProps={{ "data-testid": "buildSearch", autoComplete: "off" }}
             />
           </Box>
@@ -308,36 +286,23 @@ const BuildList: FunctionComponent = () => {
           data-testid="buildListScroll"
         >
           <List>
-            {loading && buildList.length === 0 ? (
-              <SkeletonList />
-            ) : error && buildList.length === 0 ? (
-              <Typography
-                variant="subtitle1"
-                align="center"
-                color="error"
-                sx={{ padding: 2, overflowWrap: "anywhere" }}
-                data-testid="buildListError"
-              >
-                Builds could not be loaded
-              </Typography>
-            ) : buildList.length === 0 ? (
-              <Typography
-                variant="subtitle1"
-                align="center"
-                color="textSecondary"
-                sx={{ padding: 2, overflowWrap: "anywhere" }}
-                data-testid="buildListEmpty"
-              >
-                {searchQuery ? `No builds match "${searchQuery}"` : "No builds"}
-              </Typography>
+            {buildList.length === 0 ? (
+              <BuildListPlaceholder
+                loading={loading}
+                error={error}
+                searchQuery={searchQuery}
+              />
             ) : (
               buildList.map((build) => (
                 <React.Fragment key={build.id}>
                   <ListItemButton
                     selected={selectedBuild?.id === build.id}
                     onClick={() => selectBuildCalback(build.id)}
-                    classes={{
-                      root: classes.listItem,
+                    sx={{
+                      paddingRight: "48px",
+                      "&:hover .build-secondary-action": {
+                        visibility: "inherit",
+                      },
                     }}
                   >
                     <Checkbox
@@ -397,13 +362,14 @@ const BuildList: FunctionComponent = () => {
                     />
 
                     <ListItemSecondaryAction
-                      className={classes.listItemSecondaryAction}
+                      className="build-secondary-action"
+                      sx={{ visibility: "hidden" }}
                     >
                       <IconButton
                         onClick={(event) => handleMenuClick(event, build)}
                         size="large"
                       >
-                        <MoreVert />
+                        <MoreVert data-testid="MoreVertIcon" />
                       </IconButton>
                     </ListItemSecondaryAction>
                   </ListItemButton>

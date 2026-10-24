@@ -181,7 +181,7 @@ export const TestRunListControls: React.FunctionComponent<{
             size="small"
             checked={grouped}
             onChange={(event) => onGroupedChange(event.target.checked)}
-            inputProps={{ "aria-label": "Group variations" }}
+            slotProps={{ input: { "aria-label": "Group variations" } }}
             data-testid="groupVariationsToggle"
           />
         }
@@ -199,7 +199,7 @@ export const TestRunListControls: React.FunctionComponent<{
               size="small"
               checked={showDiff}
               onChange={(event) => onShowDiffChange(event.target.checked)}
-              inputProps={{ "aria-label": "Show diff" }}
+              slotProps={{ input: { "aria-label": "Show diff" } }}
               data-testid="showDiffToggle"
             />
           }

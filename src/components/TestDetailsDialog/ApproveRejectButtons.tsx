@@ -7,24 +7,21 @@ import { useProjectState, useTestRunState } from "../../contexts";
 import { TestRun } from "../../types";
 import { TestStatus } from "../../types/testStatus";
 import { Tooltip } from "../Tooltip";
-import { makeStyles } from "@mui/styles";
 import { MatchingVariationsMode } from "./MatchingVariationsDialog";
 import {
   isSibling,
   resolveGroupByAxis,
 } from "../../_helpers/testRunGroup.helper";
 
-const useStyles = makeStyles(() => ({
-  actionButton: {
-    width: 120,
-    marginLeft: 4,
-    marginRight: 4,
-  },
-  wideActionButton: {
-    marginLeft: 4,
-    marginRight: 4,
-  },
-}));
+const actionButtonSx = {
+  width: 120,
+  marginLeft: "4px",
+  marginRight: "4px",
+};
+const wideActionButtonSx = {
+  marginLeft: "4px",
+  marginRight: "4px",
+};
 
 export const ApproveRejectButtons: React.FunctionComponent<{
   testRun: TestRun;
@@ -33,7 +30,6 @@ export const ApproveRejectButtons: React.FunctionComponent<{
   onOpenVariations: (mode: MatchingVariationsMode) => void;
 }> = ({ testRun, afterApprove, afterReject, onOpenVariations }) => {
   const { enqueueSnackbar } = useDialogSnackbar();
-  const classes = useStyles();
   const { selectedProjectId, projectList } = useProjectState();
   const { testRuns } = useTestRunState();
   const project = projectList.find((item) => item.id === selectedProjectId);
@@ -103,11 +99,7 @@ export const ApproveRejectButtons: React.FunctionComponent<{
         </Tooltip>
       )}
       <Tooltip title={"Hotkey: A"}>
-        <Button
-          onClick={approve}
-          variant="contained"
-          className={classes.actionButton}
-        >
+        <Button onClick={approve} variant="contained" sx={actionButtonSx}>
           Approve
         </Button>
       </Tooltip>
@@ -116,7 +108,7 @@ export const ApproveRejectButtons: React.FunctionComponent<{
           <Button
             onClick={() => onOpenVariations("approve")}
             variant="outlined"
-            className={classes.wideActionButton}
+            sx={wideActionButtonSx}
           >
             Approve variations
           </Button>
@@ -128,18 +120,14 @@ export const ApproveRejectButtons: React.FunctionComponent<{
             color="secondary"
             onClick={() => onOpenVariations("reject")}
             variant="outlined"
-            className={classes.wideActionButton}
+            sx={wideActionButtonSx}
           >
             Reject variations
           </Button>
         </Tooltip>
       )}
       <Tooltip title={"Hotkey: X"}>
-        <Button
-          color="secondary"
-          onClick={reject}
-          className={classes.actionButton}
-        >
+        <Button color="secondary" onClick={reject} sx={actionButtonSx}>
           Reject
         </Button>
       </Tooltip>

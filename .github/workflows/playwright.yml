@@ -5,21 +5,35 @@ on:
   pull_request:
     branches: [master]
 
+# a new push to a pull request makes the run for the previous one moot;
+# runs on master always finish
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
 jobs:
   test:
     timeout-minutes: 10
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
-      - uses: actions/setup-node@v3
+      - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version-file: .nvmrc
+
+      # npm's download cache, which the container's npm ci reuses
+      - uses: actions/cache@v4
+        with:
+          path: ${{ runner.temp }}/npm-docker
+          key: npm-docker-${{ hashFiles('package-lock.json') }}
+          restore-keys: npm-docker-
 
       - name: Run Playwright tests
         run: npm run test:pw:docker
         env:
           CI: true
+          NPM_CACHE_DIR: ${{ runner.temp }}/npm-docker
 
       - uses: actions/upload-artifact@v4
         if: always()

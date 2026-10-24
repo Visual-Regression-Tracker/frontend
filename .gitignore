@@ -29,3 +29,7 @@ yarn-error.log*
 /test-results/
 /playwright-report/
 /playwright/.cache/
+
+# Claude Code
+.claude/settings.local.json
+.claude/worktrees/

@@ -1,13 +1,8 @@
 import React from "react";
 import { SnackbarProvider, closeSnackbar } from "notistack";
-import { Box, IconButton } from "@mui/material";
+import { Box, CssBaseline, IconButton } from "@mui/material";
 import { Close } from "@mui/icons-material";
-import {
-  ThemeProvider,
-  StyledEngineProvider,
-  createTheme,
-} from "@mui/material/styles";
-import { indigo, purple } from "@mui/material/colors";
+import { ThemeProvider, StyledEngineProvider } from "@mui/material/styles";
 import Header from "./components/Header";
 import {
   UserProvider,
@@ -18,19 +13,18 @@ import {
   HelpProvider,
 } from "./contexts";
 import Router from "./Router";
-
-// https://mui.com/material-ui/customization/color/#2014-material-design-color-palettes
-const theme = createTheme({
-  palette: {
-    primary: indigo,
-    secondary: purple,
-  },
-});
+import { theme } from "./theme";
 
 function App() {
   return (
     <StyledEngineProvider injectFirst>
-      <ThemeProvider theme={theme}>
+      <ThemeProvider
+        theme={theme}
+        defaultMode="system"
+        modeStorageKey="vrt-color-mode"
+        disableTransitionOnChange
+      >
+        <CssBaseline enableColorScheme />
         <SnackbarProvider
           maxSnack={3}
           // the build list pagination sits bottom left and the test run
@@ -44,7 +38,7 @@ function App() {
               onClick={() => closeSnackbar(key)}
               data-testid="dismissNotification"
             >
-              <Close fontSize="small" />
+              <Close data-testid="CloseIcon" fontSize="small" />
             </IconButton>
           )}
         >
@@ -54,11 +48,21 @@ function App() {
                 <TestRunProvider>
                   <SocketProvider>
                     <HelpProvider>
-                      <Box sx={{ height: "10%" }}>
+                      {/* the header takes what it needs, the page the rest */}
+                      <Box
+                        sx={{
+                          height: "100%",
+                          display: "flex",
+                          flexDirection: "column",
+                        }}
+                      >
                         <Header />
-                      </Box>
-                      <Box sx={{ height: "90%" }}>
-                        <Router />
+                        <Box
+                          component="main"
+                          sx={{ flex: 1, minHeight: 0, overflow: "auto" }}
+                        >
+                          <Router />
+                        </Box>
                       </Box>
                     </HelpProvider>
                   </SocketProvider>

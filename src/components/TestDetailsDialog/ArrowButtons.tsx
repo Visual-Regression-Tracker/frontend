@@ -4,30 +4,26 @@ import React from "react";
 import { useHotkeys } from "react-hotkeys-hook";
 import { TestRun } from "../../types";
 import { Tooltip } from "../Tooltip";
-import { makeStyles } from "@mui/styles";
 
-const useStyles = makeStyles(() => ({
-  button: {
-    width: 64,
-    height: 64,
-    padding: 0,
-    position: "fixed",
-    top: "50%",
-    zIndex: 4000,
-  },
-  icon: {
-    width: 64,
-    height: 64,
-  },
-}));
+const buttonSx = {
+  width: 64,
+  height: 64,
+  padding: 0,
+  position: "fixed",
+  top: "50%",
+  zIndex: 4000,
+} as const;
+
+const iconSx = {
+  width: 64,
+  height: 64,
+} as const;
 
 export const ArrowButtons: React.FunctionComponent<{
   testRuns: TestRun[];
   selectedTestRunIndex: number;
   handleNavigation: (testRunId: string) => void;
 }> = ({ testRuns, selectedTestRunIndex, handleNavigation }) => {
-  const classes = useStyles();
-
   const navigateNext = () => {
     if (testRuns.length > selectedTestRunIndex + 1) {
       const next = testRuns[selectedTestRunIndex + 1];
@@ -51,14 +47,14 @@ export const ArrowButtons: React.FunctionComponent<{
         <Tooltip title={"Hotkey: ArrowRight"}>
           <IconButton
             color="secondary"
-            className={classes.button}
+            sx={buttonSx}
             style={{
               right: 0,
             }}
             onClick={navigateNext}
             size="large"
           >
-            <NavigateNext className={classes.icon} />
+            <NavigateNext sx={iconSx} />
           </IconButton>
         </Tooltip>
       )}
@@ -66,14 +62,14 @@ export const ArrowButtons: React.FunctionComponent<{
         <Tooltip title={"Hotkey: ArrowLeft"}>
           <IconButton
             color="secondary"
-            className={classes.button}
+            sx={buttonSx}
             style={{
               left: 0,
             }}
             onClick={navigateBefore}
             size="large"
           >
-            <NavigateBefore className={classes.icon} />
+            <NavigateBefore sx={iconSx} />
           </IconButton>
         </Tooltip>
       )}

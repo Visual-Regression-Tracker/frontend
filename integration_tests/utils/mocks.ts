@@ -221,6 +221,62 @@ export const mockDeleteTestVariation = async (
   );
 };
 
+// the models the Ollama server behind the API has pulled
+export const mockOllamaModels = (page: Page, names: string[]) => {
+  return page.route(`${API_URL}/ollama/models`, (route) =>
+    route.fulfill({
+      body: JSON.stringify({ models: names.map((name) => ({ name })) }),
+    }),
+  );
+};
+
+// saving or applying ignore areas, and the comment, answer with nothing the
+// dialog reads
+export const mockUpdateIgnoreAreas = (page: Page) => {
+  return page.route(`${API_URL}/test-runs/ignoreAreas/update`, (route) =>
+    route.fulfill({ body: "{}" }),
+  );
+};
+
+export const mockAddIgnoreAreas = (page: Page) => {
+  return page.route(`${API_URL}/test-runs/ignoreAreas/add`, (route) =>
+    route.fulfill({ body: "{}" }),
+  );
+};
+
+export const mockUpdateTestRun = (page: Page, testRun: TestRun) => {
+  return page.route(`${API_URL}/test-runs/update/${testRun.id}`, (route) =>
+    route.fulfill({ body: JSON.stringify(testRun) }),
+  );
+};
+
+export const mockApproveTestRuns = (page: Page) => {
+  return page.route(
+    (url) => url.pathname === "/test-runs/approve",
+    (route) => route.fulfill({ body: "[]" }),
+  );
+};
+
+export const mockRejectTestRuns = (page: Page) => {
+  return page.route(`${API_URL}/test-runs/reject`, (route) =>
+    route.fulfill({ body: "[]" }),
+  );
+};
+
+// the runs that share a screen with the one under review, and the ones the API
+// held back from the bulk action
+export const mockMatchingVariations = (
+  page: Page,
+  testRunId: string,
+  variations: TestRun[],
+  skipped: (TestRun & { reason: string })[] = [],
+) => {
+  return page.route(
+    `${API_URL}/test-runs/matchingSiblings/${testRunId}`,
+    (route) => route.fulfill({ body: JSON.stringify({ variations, skipped }) }),
+  );
+};
+
 // merging starts a build on the target branch and answers with it
 export const mockMergeTestVariations = async (page: Page, build: Build) => {
   return page.route(

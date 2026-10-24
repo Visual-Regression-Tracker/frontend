@@ -182,7 +182,7 @@ export const ProjectForm: React.FunctionComponent = () => {
             id="bulkApproveGroupBySelect"
             labelId="bulkApproveGroupBySelect"
             value={project.bulkApproveGroupBy}
-            onChange={(event: SelectChangeEvent<HTMLInputElement>) =>
+            onChange={(event: SelectChangeEvent<string>) =>
               setProjectEditState(projectDispatch, {
                 ...project,
                 bulkApproveGroupBy: event.target.value as string,
@@ -206,7 +206,7 @@ export const ProjectForm: React.FunctionComponent = () => {
           id="imageComparisonSelect"
           labelId="imageComparisonSelect"
           value={project.imageComparison}
-          onChange={(event: SelectChangeEvent<HTMLInputElement>) => {
+          onChange={(event: SelectChangeEvent<string>) => {
             const imageComparison = event.target.value as ImageComparison;
 
             setProjectEditState(projectDispatch, {

@@ -6,20 +6,36 @@ on:
   pull_request:
     branches: [master]
 
+# a new push to a pull request makes the run for the previous one moot;
+# runs on master always finish
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Setup Node.js environment
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version-file: .nvmrc
+          cache: npm
 
       - name: Install npm dependencies
         run: npm ci
 
+      - name: Lint
+        run: npm run lint
+
+      - name: Typecheck
+        run: npm run typecheck
+
       - name: Unit tests
-        run: npm test -- --coverage
+        run: npm run test:coverage
+
+      - name: Build
+        run: npm run build

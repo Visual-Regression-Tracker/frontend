@@ -1,13 +1,13 @@
 import React from "react";
 import {
-  Grid,
+  GridLegacy as Grid,
   TextField,
   Button,
   Autocomplete,
   Chip,
   Paper,
 } from "@mui/material";
-import { DebounceInput } from "react-debounce-input";
+import { DebouncedTextField } from "../DebouncedTextField";
 import { TestStatus } from "../../types";
 
 interface IProps {
@@ -40,17 +40,16 @@ const TestRunFilters: React.FunctionComponent<IProps> = ({
     <Paper variant="outlined" sx={{ p: 2, borderRadius: 2 }}>
       <Grid container spacing={2} alignItems="center" wrap="nowrap">
         <Grid item xs={3}>
-          <DebounceInput
+          <DebouncedTextField
             size="small"
             variant="outlined"
             fullWidth
             label="Name"
             placeholder="Search by name"
             value={name}
-            element={TextField}
             minLength={2}
             debounceTimeout={300}
-            onChange={(event) => onNameChange(event.target.value)}
+            onChange={onNameChange}
             inputProps={{ "data-testid": "testRunNameFilter" }}
           />
         </Grid>

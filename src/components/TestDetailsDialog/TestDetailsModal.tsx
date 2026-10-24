@@ -1,9 +1,8 @@
 import React, { useEffect, useState } from "react";
-import { makeStyles } from "@mui/styles";
 import {
   Typography,
   Button,
-  Grid,
+  GridLegacy as Grid,
   Switch,
   IconButton,
   Box,
@@ -61,56 +60,33 @@ import { calculateScale, clampScale } from "../../_helpers/scale.helper";
 import { canCompareToBaseline } from "../../_helpers/testRunStatus.helper";
 import TestStatusChip from "../TestStatusChip";
 
-const useStyles = makeStyles(() => ({
-  header: {
-    position: "relative",
-    textAlign: "left",
-    background: "#efefef",
-    paddingLeft: 8,
-    paddingBottom: 8,
-  },
-  footer: {
-    background: "#efefef",
-  },
-  scaleActions: {
-    display: "flex",
-    alignItems: "center",
-  },
-  testRunActions: {
-    display: "flex",
-    alignItems: "center",
-    alignContent: "center",
-  },
-  centerActions: {
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    flexWrap: "wrap",
-    gap: 4,
-  },
-  testRunName: {
-    fontWeight: 300,
-  },
-  closeIcon: {
-    position: "absolute",
-    right: "8px",
-  },
-  testRunDetails: {
-    paddingLeft: 8,
-  },
-  drawAreaContainer: {
-    width: "100%",
-    height: "100%",
-  },
-  drawAreaItem: {
-    padding: "0 4px",
-    height: "100%",
-  },
-  imageToolbar: {
-    paddingLeft: 5,
-    height: 52,
-  },
-}));
+const headerSx = {
+  position: "relative",
+  textAlign: "left",
+  bgcolor: "background.default",
+  paddingLeft: "8px",
+  paddingBottom: "8px",
+} as const;
+const footerSx = { bgcolor: "background.default" } as const;
+const scaleActionsSx = { display: "flex", alignItems: "center" } as const;
+const testRunActionsSx = {
+  display: "flex",
+  alignItems: "center",
+  alignContent: "center",
+} as const;
+const centerActionsSx = {
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  flexWrap: "wrap",
+  gap: "4px",
+} as const;
+const testRunNameSx = { fontWeight: 300 } as const;
+const closeIconSx = { position: "absolute", right: "8px" } as const;
+const testRunDetailsSx = { paddingLeft: "8px" } as const;
+const drawAreaContainerSx = { width: "100%", height: "100%" } as const;
+const drawAreaItemSx = { padding: "0 4px", height: "100%" } as const;
+const imageToolbarSx = { paddingLeft: "5px", height: "52px" } as const;
 
 const defaultStagePos = {
   x: 0,
@@ -136,7 +112,6 @@ const TestDetailsModal: React.FunctionComponent<TestDetailsModalProps> = ({
   handleNext,
   handleClose,
 }) => {
-  const classes = useStyles();
   const { enqueueSnackbar } = useDialogSnackbar();
   const testRunDispatch = useTestRunDispatch();
   const { selectedProjectId, projectList } = useProjectState();
@@ -428,7 +403,7 @@ const TestDetailsModal: React.FunctionComponent<TestDetailsModalProps> = ({
               },
             }}
             value={valueOfIgnoreOrCompare}
-            onChange={(event: SelectChangeEvent<HTMLInputElement>) =>
+            onChange={(event: SelectChangeEvent<string>) =>
               onIgnoreOrCompareSelectChange(event.target.value as string)
             }
           >
@@ -451,7 +426,7 @@ const TestDetailsModal: React.FunctionComponent<TestDetailsModalProps> = ({
               padding: 4,
             }}
           >
-            <Add />
+            <Add data-testid="AddIcon" />
           </ToggleButton>
         </Grid>
         <Grid item>
@@ -460,7 +435,7 @@ const TestDetailsModal: React.FunctionComponent<TestDetailsModalProps> = ({
             disabled={!selectedRectId || ignoreAreas.length === 0}
             onClick={() => selectedRectId && deleteIgnoreArea(selectedRectId)}
           >
-            <Delete />
+            <Delete data-testid="DeleteIcon" />
           </IconButton>
         </Grid>
         <Tooltip title="Clears all ignore areas." aria-label="reject">
@@ -472,7 +447,7 @@ const TestDetailsModal: React.FunctionComponent<TestDetailsModalProps> = ({
                 handleIgnoreAreaChange([]);
               }}
             >
-              <LayersClear />
+              <LayersClear data-testid="LayersClearIcon" />
             </IconButton>
           </Grid>
         </Tooltip>
@@ -483,7 +458,7 @@ const TestDetailsModal: React.FunctionComponent<TestDetailsModalProps> = ({
               disabled={!selectedRectId || ignoreAreas.length === 0}
               onClick={() => toggleApplyIgnoreDialogOpen()}
             >
-              <Collections />
+              <Collections data-testid="CollectionsIcon" />
             </IconButton>
           </Grid>
         </Tooltip>
@@ -493,7 +468,7 @@ const TestDetailsModal: React.FunctionComponent<TestDetailsModalProps> = ({
             disabled={!touched}
             onClick={() => saveIgnoreAreasOrCompareArea()}
           >
-            <Save />
+            <Save data-testid="SaveIcon" />
           </IconButton>
         </Grid>
       </Grid>
@@ -505,15 +480,10 @@ const TestDetailsModal: React.FunctionComponent<TestDetailsModalProps> = ({
       item
       xs={6}
       ref={leftItemRef}
-      className={classes.drawAreaItem}
+      sx={drawAreaItemSx}
       alignItems="stretch"
     >
-      <Grid
-        container
-        alignItems="center"
-        spacing={1}
-        className={classes.imageToolbar}
-      >
+      <Grid container alignItems="center" spacing={1} sx={imageToolbarSx}>
         <ImageDetails
           type="Baseline"
           branchName={testRun.baselineBranchName}
@@ -564,13 +534,8 @@ const TestDetailsModal: React.FunctionComponent<TestDetailsModalProps> = ({
     imageStatus: ImageStateLoad,
     image: HTMLImageElement | undefined,
   ) => (
-    <Grid item xs={6} className={classes.drawAreaItem} ref={rightItemRef}>
-      <Grid
-        container
-        alignItems="center"
-        spacing={1}
-        className={classes.imageToolbar}
-      >
+    <Grid item xs={6} sx={drawAreaItemSx} ref={rightItemRef}>
+      <Grid container alignItems="center" spacing={1} sx={imageToolbarSx}>
         <ImageDetails
           type={type}
           branchName={branchName}
@@ -585,7 +550,7 @@ const TestDetailsModal: React.FunctionComponent<TestDetailsModalProps> = ({
                 checked={isDiffShown}
                 onChange={() => setIsDiffShown(!isDiffShown)}
                 name="Toggle diff"
-                inputProps={{ "aria-label": "Toggle diff" }}
+                slotProps={{ input: { "aria-label": "Toggle diff" } }}
               />
             </Tooltip>
           </Grid>
@@ -671,30 +636,21 @@ const TestDetailsModal: React.FunctionComponent<TestDetailsModalProps> = ({
 
   const header = () => (
     <Box mt={1} ml={1}>
-      <Grid
-        container
-        alignItems="center"
-        className={classes.header}
-        spacing={2}
-      >
+      <Grid container alignItems="center" sx={headerSx} spacing={2}>
         <Grid item>
           <Typography variant="h6" display="inline">{`Step ${
             currentRunIndex + 1
           }/${totalTestRunCount}: `}</Typography>
-          <Typography
-            variant="h6"
-            display="inline"
-            className={classes.testRunName}
-          >
+          <Typography variant="h6" display="inline" sx={testRunNameSx}>
             {testRun.name}
           </Typography>
         </Grid>
         <Grid item>
           <TestStatusChip status={testRun.status} />
         </Grid>
-        <Grid item className={classes.closeIcon}>
+        <Grid item sx={closeIconSx}>
           <IconButton color="inherit" onClick={handleClose} size="large">
-            <Close />
+            <Close data-testid="CloseIcon" />
           </IconButton>
         </Grid>
       </Grid>
@@ -703,12 +659,7 @@ const TestDetailsModal: React.FunctionComponent<TestDetailsModalProps> = ({
 
   const testRunDetails = () => (
     <Box ml={1} mr={1} mt={0} mb={0}>
-      <Grid
-        container
-        alignItems="center"
-        className={classes.testRunDetails}
-        spacing={1}
-      >
+      <Grid container alignItems="center" sx={testRunDetailsSx} spacing={1}>
         <TestRunDetails testRun={testRun} />
         {isImageSizeDiffer && (
           <Grid item>
@@ -718,7 +669,10 @@ const TestDetailsModal: React.FunctionComponent<TestDetailsModalProps> = ({
               }
             >
               <IconButton size="large">
-                <WarningRounded color="secondary" />
+                <WarningRounded
+                  data-testid="WarningRoundedIcon"
+                  color="secondary"
+                />
               </IconButton>
             </Tooltip>
           </Grid>
@@ -758,11 +712,7 @@ const TestDetailsModal: React.FunctionComponent<TestDetailsModalProps> = ({
       <Divider />
       {processing && <LinearProgress />}
       {testRunDetails()}
-      <Box
-        overflow="hidden"
-        position="relative"
-        className={classes.drawAreaContainer}
-      >
+      <Box overflow="hidden" position="relative" sx={drawAreaContainerSx}>
         <Grid
           container
           justifyContent="center"
@@ -789,8 +739,8 @@ const TestDetailsModal: React.FunctionComponent<TestDetailsModalProps> = ({
               )}
         </Grid>
       </Box>
-      <Grid container className={classes.footer}>
-        <Grid item xs={3} className={classes.scaleActions}>
+      <Grid container sx={footerSx}>
+        <Grid item xs={3} sx={scaleActionsSx}>
           <Tooltip title={"Zoom In"}>
             <IconButton
               onClick={() =>
@@ -798,7 +748,7 @@ const TestDetailsModal: React.FunctionComponent<TestDetailsModalProps> = ({
               }
               size="large"
             >
-              <ZoomIn />
+              <ZoomIn data-testid="ZoomInIcon" />
             </IconButton>
           </Tooltip>
           <Tooltip title={"Zoom Out"}>
@@ -808,21 +758,21 @@ const TestDetailsModal: React.FunctionComponent<TestDetailsModalProps> = ({
               }
               size="large"
             >
-              <ZoomOut />
+              <ZoomOut data-testid="ZoomOutIcon" />
             </IconButton>
           </Tooltip>
           <Tooltip title={"Original size"}>
             <IconButton onClick={setOriginalSize} size="large">
-              <Fullscreen />
+              <Fullscreen data-testid="FullscreenIcon" />
             </IconButton>
           </Tooltip>
           <Tooltip title={"Fit into screen"}>
             <IconButton onClick={fitImagesToStage} size="large">
-              <FullscreenExit />
+              <FullscreenExit data-testid="FullscreenExitIcon" />
             </IconButton>
           </Tooltip>
         </Grid>
-        <Grid item xs={6} className={classes.centerActions}>
+        <Grid item xs={6} sx={centerActionsSx}>
           <Tooltip title={"Hotkey: ArrowLeft"}>
             <IconButton
               color="secondary"
@@ -860,12 +810,7 @@ const TestDetailsModal: React.FunctionComponent<TestDetailsModalProps> = ({
             </IconButton>
           </Tooltip>
         </Grid>
-        <Grid
-          item
-          xs={3}
-          className={classes.testRunActions}
-          justifyContent="flex-end"
-        >
+        <Grid item xs={3} sx={testRunActionsSx} justifyContent="flex-end">
           <FormControlLabel
             control={
               <Checkbox

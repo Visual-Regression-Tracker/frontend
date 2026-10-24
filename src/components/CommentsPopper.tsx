@@ -1,28 +1,10 @@
 import React from "react";
-import { makeStyles } from "@mui/styles";
-import {
-  Button,
-  Popper,
-  Fade,
-  Paper,
-  TextField,
-  Badge,
-  type Theme,
-} from "@mui/material";
+import { Button, Popper, Fade, Paper, TextField, Badge } from "@mui/material";
 import {
   usePopupState,
   bindToggle,
   bindPopper,
 } from "material-ui-popup-state/hooks";
-
-const useStyles = makeStyles((theme: Theme) => ({
-  popperContainer: {
-    zIndex: 1400,
-  },
-  contentContainer: {
-    padding: theme.spacing(2),
-  },
-}));
 
 interface IProps {
   text: string | undefined;
@@ -33,7 +15,6 @@ export const CommentsPopper: React.FunctionComponent<IProps> = ({
   text,
   onSave,
 }) => {
-  const classes = useStyles();
   const popupState = usePopupState({
     variant: "popper",
     popupId: "commentPopper",
@@ -63,11 +44,11 @@ export const CommentsPopper: React.FunctionComponent<IProps> = ({
         {...bindPopper(popupState)}
         transition
         disablePortal
-        className={classes.popperContainer}
+        sx={{ zIndex: 1400 }}
       >
         {({ TransitionProps }) => (
           <Fade {...TransitionProps} timeout={350}>
-            <Paper className={classes.contentContainer}>
+            <Paper sx={{ padding: 2 }}>
               <React.Fragment>
                 <TextField
                   id="comment"

@@ -3,29 +3,12 @@ import React, { FunctionComponent, useCallback } from "react";
 import { Stage, Layer, Image } from "react-konva";
 import Rectangle, { MIN_RECT_SIDE_PIXEL } from "../Rectangle";
 import { IgnoreArea } from "../../types/ignoreArea";
-import { Grid, CircularProgress, type Theme } from "@mui/material";
+import { Box, GridLegacy as Grid, CircularProgress } from "@mui/material";
 import { NoImagePlaceholder } from "./NoImageAvailable";
 import Konva from "konva";
-import { makeStyles } from "@mui/styles";
 import { clampScale } from "../../_helpers/scale.helper";
 import { clampToImage } from "../../_helpers/ignoreArea.helper";
-
-const useStyles = makeStyles((theme: Theme) => ({
-  canvasContainer: {
-    overflow: "auto",
-    backgroundColor: "white",
-  },
-  imageDetailsContainer: {
-    position: "absolute",
-    backgroundColor: "white",
-    zIndex: 1,
-    padding: theme.spacing(1),
-    height: "48px",
-  },
-  progressContainer: {
-    minHeight: "300px",
-  },
-}));
+import { imageSurface } from "../../theme/tokens";
 
 export type ImageStateLoad = "loaded" | "loading" | "failed";
 
@@ -88,7 +71,6 @@ export const DrawArea: FunctionComponent<IDrawArea> = ({
   stageScrollPosState,
   drawModeState,
 }) => {
-  const classes = useStyles();
   const [stageInitPos, setStageInitPos] = stageInitPosState;
   const [stageOffset, setStageOffset] = stageOffsetState;
   const [stagePos, setStagePos] = stagePosState;
@@ -114,12 +96,12 @@ export const DrawArea: FunctionComponent<IDrawArea> = ({
     imageY: number;
   }>();
 
-  const isDeleteKey = (event: KeyboardEvent) => {
+  const isDeleteKey = (event: KeyboardEvent | React.KeyboardEvent) => {
     return event.key === "Delete" || event.key === "Backspace";
   };
 
   const handleStageKeyDown = useCallback(
-    (event: KeyboardEvent) => {
+    (event: KeyboardEvent | React.KeyboardEvent) => {
       if (!deleteIgnoreArea || isModifierKeyPressed(event)) {
         return;
       }
@@ -138,7 +120,7 @@ export const DrawArea: FunctionComponent<IDrawArea> = ({
     }
   }, [handleStageKeyDown]);
 
-  const isModifierKeyPressed = (event: KeyboardEvent) => {
+  const isModifierKeyPressed = (event: KeyboardEvent | React.KeyboardEvent) => {
     return event.altKey || event.ctrlKey || event.shiftKey;
   };
 
@@ -306,8 +288,8 @@ export const DrawArea: FunctionComponent<IDrawArea> = ({
 
   const imageLoaded = () => {
     return (
-      <div
-        className={classes.canvasContainer}
+      <Box
+        sx={{ overflow: "auto", backgroundColor: imageSurface.canvas }}
         data-testid="drawArea"
         ref={scrollContainerRef}
         onScroll={(event: React.SyntheticEvent<HTMLElement>) => {
@@ -460,7 +442,7 @@ export const DrawArea: FunctionComponent<IDrawArea> = ({
             </Layer>
           </Stage>
         </div>
-      </div>
+      </Box>
     );
   };
 
@@ -471,7 +453,7 @@ export const DrawArea: FunctionComponent<IDrawArea> = ({
         direction="column"
         alignItems="center"
         justifyContent="center"
-        className={classes.progressContainer}
+        sx={{ minHeight: "300px" }}
       >
         <Grid item>
           <CircularProgress />

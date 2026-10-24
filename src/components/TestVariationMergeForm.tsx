@@ -1,7 +1,7 @@
 import React from "react";
 import {
   Autocomplete,
-  Grid,
+  GridLegacy as Grid,
   Select,
   MenuItem,
   Button,
@@ -18,7 +18,7 @@ import { useSnackbar } from "notistack";
 import { selectBuild, useBuildDispatch } from "../contexts";
 import { LOCATOR_TEST_VARIATION_SELECT_BRANCH } from "../constants/help";
 
-const isString = (a): a is string => typeof a === "string";
+const isString = (a: unknown): a is string => typeof a === "string";
 
 interface IProps {
   projectId: string;
@@ -66,7 +66,7 @@ export const TestVariationMergeForm: React.FunctionComponent<IProps> = ({
             fullWidth
             displayEmpty
             value={fromBranch}
-            onChange={(event: SelectChangeEvent<HTMLInputElement>) =>
+            onChange={(event: SelectChangeEvent<string>) =>
               setFromBranch(event.target.value as string)
             }
           >

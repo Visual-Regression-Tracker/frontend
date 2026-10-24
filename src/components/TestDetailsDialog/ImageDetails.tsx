@@ -1,28 +1,20 @@
 import React from "react";
-import { Typography, Grid, IconButton } from "@mui/material";
+import { Typography, GridLegacy as Grid, IconButton } from "@mui/material";
 import { WarningRounded, AltRoute } from "@mui/icons-material";
 import { IgnoreArea } from "../../types/ignoreArea";
 import { Tooltip } from "../Tooltip";
-import { makeStyles } from "@mui/styles";
+import { styled } from "@mui/material/styles";
 
-const useStyles = makeStyles(() => ({
-  container: {
-    display: "flex",
-    alignItems: "center",
-    color: "darkslategrey",
-  },
-  branchName: {
-    cursor: "pointer",
-    lineHeight: "20px",
-    fontWeight: "bolder",
-    fontSize: "0.7rem",
-    fontFamily: '"Roboto", "Helvetica", "Arial", sans-serif',
-    maxWidth: 195,
-    textOverflow: "ellipsis",
-    whiteSpace: "nowrap",
-    overflow: "hidden",
-  },
-}));
+const BranchName = styled("span")({
+  cursor: "pointer",
+  lineHeight: "20px",
+  fontWeight: "bolder",
+  fontSize: "0.7rem",
+  maxWidth: 195,
+  textOverflow: "ellipsis",
+  whiteSpace: "nowrap",
+  overflow: "hidden",
+});
 
 export interface ImageDetailsProps {
   type: "Baseline" | "Image" | "Diff";
@@ -41,7 +33,6 @@ const ImageDetails: React.FunctionComponent<ImageDetailsProps> = ({
   branchName,
   ignoreAreas,
 }) => {
-  const classes = useStyles();
   const imageSize = () => {
     return (
       imageName && (
@@ -56,14 +47,17 @@ const ImageDetails: React.FunctionComponent<ImageDetailsProps> = ({
     );
   };
   return (
-    <Grid item className={classes.container}>
+    <Grid
+      item
+      sx={{ display: "flex", alignItems: "center", color: "text.secondary" }}
+    >
       <Typography variant="overline" style={{ marginRight: 3 }}>
         {type === "Baseline" ? "Baseline" : "Checkpoint"}
       </Typography>
       {imageSize()}
       <AltRoute fontSize="small" />
       <Tooltip title={`Branch: ${branchName}`}>
-        <span className={classes.branchName}>{branchName}</span>
+        <BranchName>{branchName}</BranchName>
       </Tooltip>
       {ignoreAreas && ignoreAreas.length > 0 && (
         <Tooltip
@@ -72,7 +66,10 @@ const ImageDetails: React.FunctionComponent<ImageDetailsProps> = ({
           }
         >
           <IconButton size="large">
-            <WarningRounded color="secondary" />
+            <WarningRounded
+              data-testid="WarningRoundedIcon"
+              color="secondary"
+            />
           </IconButton>
         </Tooltip>
       )}

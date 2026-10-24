@@ -1,27 +1,16 @@
 import React from "react";
 import { Chip } from "@mui/material";
 import { BuildStatus } from "../types/buildStatus";
+import { statusColor } from "../theme";
 
+// an unresolved build waits for a reviewer, so it is the one chip filled in
 export const BuildStatusChip: React.FunctionComponent<{
   status: BuildStatus;
-}> = ({ status }) => {
-  let color: "inherit" | "primary" | "secondary" | "default" | undefined;
-  let variant: "filled" | "outlined" | undefined;
-  switch (status) {
-    case BuildStatus.passed:
-      color = "primary";
-      variant = "outlined";
-      break;
-    case BuildStatus.unresolved:
-      color = "secondary";
-      break;
-    case BuildStatus.failed:
-      color = "secondary";
-      variant = "outlined";
-      break;
-    default:
-      color = undefined;
-      variant = undefined;
-  }
-  return <Chip variant={variant} color={color} label={status} size="small" />;
-};
+}> = ({ status }) => (
+  <Chip
+    variant={status === BuildStatus.unresolved ? "filled" : "outlined"}
+    color={statusColor(status)}
+    label={status}
+    size="small"
+  />
+);

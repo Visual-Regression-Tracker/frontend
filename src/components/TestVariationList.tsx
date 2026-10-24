@@ -1,43 +1,41 @@
 import React from "react";
+import { Link } from "react-router-dom";
 import { TestVariation } from "../types";
+import { staticService } from "../services";
+import { routes } from "../constants";
+import { BaseModal } from "./BaseModal";
+import { EmptyState } from "./EmptyState";
+import { Tooltip } from "./Tooltip";
+import { imageSurface } from "../theme/tokens";
+import { AccountTree, CollectionsOutlined, Delete } from "@mui/icons-material";
 import {
+  Box,
   Card,
-  Grid,
   CardMedia,
   CardContent,
   CardActions,
   Button,
+  Chip,
   IconButton,
+  Stack,
   Typography,
 } from "@mui/material";
-import { staticService } from "../services";
-import { Link } from "react-router-dom";
-import { routes } from "../constants";
-import { TestVariationDetails } from "./TestVariationDetails";
-import { Delete } from "@mui/icons-material";
-import { BaseModal } from "./BaseModal";
-import { makeStyles } from "@mui/styles";
-
-const useStyles = makeStyles({
-  card: {
-    maxWidth: 345,
-  },
-  media: {
-    height: 140,
-    objectFit: "contain",
-  },
-});
 
 interface IProps {
   items: TestVariation[];
   onDeleteClick: (id: string) => void;
 }
 
+// the axes a variation is told apart by, in the order the API lists them
+const tagsOf = (t: TestVariation) =>
+  [t.os, t.device, t.browser, t.viewport, t.customTags].filter(
+    (tag): tag is string => !!tag,
+  );
+
 const TestVariationList: React.FunctionComponent<IProps> = ({
   items,
   onDeleteClick,
 }) => {
-  const classes = useStyles();
   const [selectedItem, setSelectedItem] = React.useState<TestVariation | null>(
     null,
   );
@@ -48,38 +46,88 @@ const TestVariationList: React.FunctionComponent<IProps> = ({
 
   return (
     <>
-      <Grid container>
-        {items.length === 0 && (
-          <Typography variant="h5">No variations</Typography>
-        )}
+      {items.length === 0 && (
+        <EmptyState
+          icon={<CollectionsOutlined />}
+          title="No variations"
+          description="A variation appears once a build sends its first screenshot of a screen."
+        />
+      )}
+      <Box
+        sx={{
+          display: "grid",
+          gap: 2,
+          gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))",
+        }}
+      >
         {items.map((t) => (
-          <Grid item key={t.id} xs={4}>
-            <Card className={classes.card}>
-              <CardMedia
-                component="img"
-                className={classes.media}
-                image={staticService.getImage(t.baselineName)}
-                title={t.name}
-              />
-              <CardContent>
-                <TestVariationDetails testVariation={t} />
-              </CardContent>
-              <CardActions>
-                <Button
-                  color="primary"
-                  component={Link}
-                  to={`${routes.VARIATION_DETAILS_PAGE}/${t.id}`}
-                >
-                  History
-                </Button>
-                <IconButton onClick={() => setSelectedItem(t)} size="large">
-                  <Delete />
+          <Card
+            key={t.id}
+            sx={{
+              display: "flex",
+              flexDirection: "column",
+              "&:hover": { borderColor: "primary.main", boxShadow: 2 },
+            }}
+          >
+            <CardMedia
+              component="img"
+              sx={{
+                height: 160,
+                objectFit: "contain",
+                bgcolor: imageSurface.thumbnail,
+                borderBottom: 1,
+                borderColor: "divider",
+              }}
+              image={staticService.getImage(t.baselineName)}
+              title={t.name}
+            />
+            <CardContent sx={{ flex: 1 }}>
+              <Typography
+                variant="subtitle2"
+                component="h2"
+                sx={{ overflowWrap: "anywhere" }}
+              >
+                {t.name}
+              </Typography>
+              {tagsOf(t).length > 0 && (
+                <Stack direction="row" flexWrap="wrap" gap={0.5} mt={1}>
+                  {tagsOf(t).map((tag) => (
+                    <Chip key={tag} size="small" label={tag} />
+                  ))}
+                </Stack>
+              )}
+              <Stack
+                direction="row"
+                alignItems="center"
+                spacing={0.75}
+                color="text.secondary"
+                mt={1.5}
+              >
+                <AccountTree sx={{ fontSize: 16 }} />
+                <Typography variant="caption" noWrap>
+                  {t.branchName}
+                </Typography>
+              </Stack>
+            </CardContent>
+            <CardActions sx={{ px: 2, pb: 2 }}>
+              <Button
+                variant="outlined"
+                size="small"
+                component={Link}
+                to={`${routes.VARIATION_DETAILS_PAGE}/${t.id}`}
+              >
+                History
+              </Button>
+              <Box flex={1} />
+              <Tooltip title="Delete variation">
+                <IconButton onClick={() => setSelectedItem(t)}>
+                  <Delete data-testid="DeleteIcon" fontSize="small" />
                 </IconButton>
-              </CardActions>
-            </Card>
-          </Grid>
+              </Tooltip>
+            </CardActions>
+          </Card>
         ))}
-      </Grid>
+      </Box>
 
       {selectedItem && (
         <BaseModal

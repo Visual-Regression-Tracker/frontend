@@ -99,6 +99,7 @@ const UserList = () => {
       checkboxSelection
       disableColumnMenu
       disableRowSelectionOnClick
+      showToolbar
       slots={{
         toolbar: DataGridCustomToolbar,
       }}

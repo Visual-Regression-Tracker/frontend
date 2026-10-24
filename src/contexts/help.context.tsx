@@ -21,7 +21,7 @@ const initialState: State = {
   helpSteps: [],
 };
 
-function reducer(state: State, action: ISetStepAction): State {
+export function reducer(state: State, action: ISetStepAction): State {
   switch (action.type) {
     case "setSteps":
       return {
