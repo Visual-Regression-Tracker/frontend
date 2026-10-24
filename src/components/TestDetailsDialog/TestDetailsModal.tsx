@@ -697,11 +697,13 @@ const TestDetailsModal: React.FunctionComponent<TestDetailsModalProps> = ({
                     variant: "success",
                   }),
                 )
-                .catch((err) =>
+                .catch((err) => {
                   enqueueSnackbar(err, {
                     variant: "error",
-                  }),
-                )
+                  });
+                  // still a failure, so the comment box stays open
+                  throw err;
+                })
             }
           />
         </Grid>

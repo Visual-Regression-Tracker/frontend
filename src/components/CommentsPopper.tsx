@@ -68,7 +68,12 @@ export const CommentsPopper: React.FunctionComponent<IProps> = ({
                 />
                 <Button
                   onClick={() => {
-                    onSave(comment).then(() => popupState.close());
+                    // a failed save is the caller's to report; the box stays
+                    // open with the draft so it can be saved again
+                    onSave(comment).then(
+                      () => popupState.close(),
+                      () => undefined,
+                    );
                   }}
                 >
                   Save

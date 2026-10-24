@@ -120,6 +120,21 @@ describe("CommentsPopper", () => {
     );
   });
 
+  it("stays open with the draft when the save fails", async () => {
+    const onSave = vi.fn().mockRejectedValue("Server error");
+    const { user } = renderPopper({ onSave });
+
+    await user.click(openButton());
+    await write(user, await screen.findByPlaceholderText(PLACEHOLDER), "text");
+    await user.click(screen.getByRole("button", { name: "Save" }));
+
+    await waitFor(() => expect(onSave).toHaveBeenCalledTimes(1));
+    // let the rejection settle: an unhandled one fails the run
+    await new Promise((resolve) => setTimeout(resolve));
+    expect(screen.getByPlaceholderText(PLACEHOLDER)).toHaveValue("text");
+    expect(screen.getByRole("button", { name: "Save" })).toBeVisible();
+  });
+
   it("closes without saving when Comments is clicked again", async () => {
     const { user, onSave } = renderPopper();
 
