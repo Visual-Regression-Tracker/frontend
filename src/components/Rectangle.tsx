@@ -1,6 +1,7 @@
 import Konva from "konva";
 import React from "react";
 import { KonvaNodeEvents, Rect, Transformer } from "react-konva";
+import { clampToImage } from "../_helpers/ignoreArea.helper";
 
 export const MIN_RECT_SIDE_PIXEL = 5;
 
@@ -110,15 +111,21 @@ const Rectangle: React.FunctionComponent<IProps> = ({
           ref={trRef}
           rotateEnabled={false}
           boundBoxFunc={(oldBox, newBox) => {
+            // a handle pulled past the image stops at its border
+            const layerSize = shapeRef.current?.getLayer()?.getSize();
+            const box = layerSize
+              ? clampToImage(newBox, layerSize.width, layerSize.height)
+              : newBox;
+
             // limit resize
             if (
-              newBox.width < MIN_RECT_SIDE_PIXEL ||
-              newBox.height < MIN_RECT_SIDE_PIXEL
+              box.width < MIN_RECT_SIDE_PIXEL ||
+              box.height < MIN_RECT_SIDE_PIXEL
             ) {
               return oldBox;
             }
 
-            return newBox;
+            return box;
           }}
         />
       )}

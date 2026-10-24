@@ -8,6 +8,7 @@ import { NoImagePlaceholder } from "./NoImageAvailable";
 import Konva from "konva";
 import { makeStyles } from "@mui/styles";
 import { clampScale } from "../../_helpers/scale.helper";
+import { clampToImage } from "../../_helpers/ignoreArea.helper";
 
 const useStyles = makeStyles((theme: Theme) => ({
   canvasContainer: {
@@ -98,6 +99,8 @@ export const DrawArea: FunctionComponent<IDrawArea> = ({
   const [isDrawMode, setIsDrawMode] = drawModeState;
   const [isDrawing, setIsDrawing] = React.useState(isDrawMode);
   const [image, imageStatus] = imageState;
+  const stageWidth = Math.max(image?.width ?? 0, underlayImage?.width ?? 0);
+  const stageHeight = Math.max(image?.height ?? 0, underlayImage?.height ?? 0);
   const stageRef = React.useRef<Konva.Stage>(null);
   const scrollContainerRef = React.useRef<HTMLDivElement>(null);
   const scaleRef = React.useRef(stageScale);
@@ -245,10 +248,12 @@ export const DrawArea: FunctionComponent<IDrawArea> = ({
       return;
     }
 
+    // the smallest area started at a border would already cross it, so it
+    // starts far enough inside
     const newArea: IgnoreArea = {
       id: Date.now().toString(),
-      x: event.evt.offsetX,
-      y: event.evt.offsetY,
+      x: Math.min(event.evt.offsetX, stageWidth - MIN_RECT_SIDE_PIXEL),
+      y: Math.min(event.evt.offsetY, stageHeight - MIN_RECT_SIDE_PIXEL),
       width: MIN_RECT_SIDE_PIXEL,
       height: MIN_RECT_SIDE_PIXEL,
     };
@@ -275,15 +280,21 @@ export const DrawArea: FunctionComponent<IDrawArea> = ({
       const newShapesList = ignoreAreas.map((i) => {
         if (i.id === selectedRectId) {
           // new width and height
-          i.width = Math.max(
-            Math.round(event.evt.offsetX - i.x),
-            MIN_RECT_SIDE_PIXEL,
+          return clampToImage(
+            {
+              ...i,
+              width: Math.max(
+                Math.round(event.evt.offsetX - i.x),
+                MIN_RECT_SIDE_PIXEL,
+              ),
+              height: Math.max(
+                Math.round(event.evt.offsetY - i.y),
+                MIN_RECT_SIDE_PIXEL,
+              ),
+            },
+            stageWidth,
+            stageHeight,
           );
-          i.height = Math.max(
-            Math.round(event.evt.offsetY - i.y),
-            MIN_RECT_SIDE_PIXEL,
-          );
-          return i;
         }
 
         return i;
@@ -347,8 +358,8 @@ export const DrawArea: FunctionComponent<IDrawArea> = ({
         >
           <Stage
             ref={stageRef}
-            width={Math.max(image?.width ?? 0, underlayImage?.width ?? 0)}
-            height={Math.max(image?.height ?? 0, underlayImage?.height ?? 0)}
+            width={stageWidth}
+            height={stageHeight}
             // Konva 8 dropped the content* events; the stage's own pointer
             // events fire after the shape under the pointer has had its turn,
             // as they did
@@ -410,13 +421,22 @@ export const DrawArea: FunctionComponent<IDrawArea> = ({
                   onChange={(newAttrs: Konva.RectConfig) => {
                     const rects = ignoreAreas.slice();
 
-                    rects[i].x = Math.round(newAttrs.x || 0);
-                    rects[i].y = Math.round(newAttrs.y || 0);
-                    rects[i].width = Math.round(
-                      newAttrs.width || MIN_RECT_SIDE_PIXEL,
-                    );
-                    rects[i].height = Math.round(
-                      newAttrs.height || MIN_RECT_SIDE_PIXEL,
+                    // what is stored is kept to the image whatever the
+                    // gesture that produced it
+                    rects[i] = clampToImage(
+                      {
+                        ...rects[i],
+                        x: Math.round(newAttrs.x || 0),
+                        y: Math.round(newAttrs.y || 0),
+                        width: Math.round(
+                          newAttrs.width || MIN_RECT_SIDE_PIXEL,
+                        ),
+                        height: Math.round(
+                          newAttrs.height || MIN_RECT_SIDE_PIXEL,
+                        ),
+                      },
+                      stageWidth,
+                      stageHeight,
                     );
 
                     setIgnoreAreas(rects);
