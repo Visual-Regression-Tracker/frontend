@@ -209,7 +209,7 @@ test("offers the threshold only while the filter is on", async ({
 });
 
 for (const [threshold, message] of [
-  ["256", "Enter at most 255"],
+  ["129", "Enter at most 128"],
   ["-1", "Enter at least 0"],
   ["", "Enter a threshold"],
 ]) {

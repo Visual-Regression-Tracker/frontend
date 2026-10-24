@@ -37,16 +37,17 @@ export const BlurAmplitudeFields: React.FunctionComponent = () => {
       {config.blurAmplitudeFilter === true && (
         <TextValidator
           name="blurAmplitudeThreshold"
-          validators={["required", "minNumber:0", "maxNumber:255"]}
+          validators={["required", "minNumber:0", "maxNumber:128"]}
           errorMessages={[
             "Enter a threshold",
             "Enter at least 0",
-            "Enter at most 255",
+            "Enter at most 128",
           ]}
           InputProps={{
             inputProps: {
               min: 0,
-              max: 255,
+              // the backend's ceiling: near 255 almost any change would pass
+              max: 128,
               // the backend takes fractions; a whole step would make the
               // browser refuse them
               step: "any",
@@ -55,7 +56,7 @@ export const BlurAmplitudeFields: React.FunctionComponent = () => {
           margin="dense"
           id="blurAmplitudeThreshold"
           label="Rendering noise threshold"
-          helperText="Strongest blurred difference (0-255) still treated as noise. Lower is stricter."
+          helperText="Strongest blurred difference (0-128) still treated as noise. Lower is stricter."
           type="number"
           fullWidth
           value={threshold}

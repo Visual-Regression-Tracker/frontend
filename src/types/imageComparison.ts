@@ -16,7 +16,7 @@ export enum ImageComparison {
  */
 export interface BlurAmplitudeConfig {
   blurAmplitudeFilter?: boolean;
-  // 0-255; absent means the backend default
+  // 0-128; absent means the backend default
   blurAmplitudeThreshold?: number | null;
 }
 
