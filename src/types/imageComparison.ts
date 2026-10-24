@@ -18,6 +18,10 @@ export interface BlurAmplitudeConfig {
   blurAmplitudeFilter?: boolean;
   // 0-128; absent means the backend default
   blurAmplitudeThreshold?: number | null;
+  // a second look by the DINOv2 service before the filter passes a run
+  dinov2Check?: boolean;
+  // (0, 2]; absent means the backend default
+  dinov2Threshold?: number | null;
 }
 
 export interface PixelmatchConfig extends BlurAmplitudeConfig {

@@ -1,7 +1,7 @@
 import React, { useEffect } from "react";
 import { screen, waitFor, within } from "@testing-library/react";
 import { renderWithProviders } from "../../_test/render";
-import { ollamaService } from "../../services";
+import { dinov2Service, ollamaService } from "../../services";
 import {
   LOOKSSAME_DEFAULT_CONFIG,
   ODIFF_DEFAULT_CONFIG,
@@ -120,6 +120,10 @@ const ALL_ENGINES = [
 describe("ProjectForm", () => {
   beforeEach(() => {
     vi.spyOn(ollamaService, "listModels").mockResolvedValue([]);
+    vi.spyOn(dinov2Service, "getStatus").mockResolvedValue({
+      configured: true,
+      available: true,
+    });
   });
 
   describe("project settings", () => {
@@ -656,6 +660,135 @@ describe("ProjectForm", () => {
       expect(editConfig()).toMatchObject({
         provider: "gemini",
         blurAmplitudeFilter: true,
+      });
+    });
+  });
+
+  describe("DINOv2 check", () => {
+    const dinov2Check = () => screen.getByLabelText("Check with DINOv2");
+    const dinov2Threshold = () => screen.queryByLabelText(/DINOv2 threshold/);
+    const withFilter = (config: object = {}): ProjectDto => ({
+      ...PROJECT,
+      imageComparisonConfig: JSON.stringify({
+        ...JSON.parse(PIXELMATCH_DEFAULT_CONFIG),
+        blurAmplitudeFilter: true,
+        ...config,
+      }),
+    });
+    const serverHas = (configured: boolean, available = configured) =>
+      vi
+        .spyOn(dinov2Service, "getStatus")
+        .mockResolvedValue({ configured, available });
+
+    it("is offered only while the noise filter is on", async () => {
+      const { user } = await renderForm();
+
+      expect(screen.queryByLabelText("Check with DINOv2")).toBeNull();
+      await user.click(screen.getByLabelText("Ignore rendering noise"));
+
+      expect(dinov2Check()).not.toBeChecked();
+      expect(dinov2Threshold()).toBeNull();
+    });
+
+    it("writes the switch and the threshold into the config json", async () => {
+      const { user } = await renderForm(withFilter());
+
+      await waitFor(() => expect(dinov2Check()).toBeEnabled());
+      await user.click(dinov2Check());
+      // the backend's default, until changed
+      expect(dinov2Threshold()).toHaveValue(0.15);
+      await replaceNumber(user, dinov2Threshold() as HTMLElement, "0.2");
+
+      expect(editConfig()).toEqual({
+        ...JSON.parse(PIXELMATCH_DEFAULT_CONFIG),
+        blurAmplitudeFilter: true,
+        dinov2Check: true,
+        dinov2Threshold: 0.2,
+      });
+    });
+
+    it("shows the check of a project saved with it on", async () => {
+      await renderForm(withFilter({ dinov2Check: true, dinov2Threshold: 0.3 }));
+
+      expect(dinov2Check()).toBeChecked();
+      expect(dinov2Threshold()).toHaveValue(0.3);
+    });
+
+    it("cannot be turned on where the server has no DINOv2 service", async () => {
+      serverHas(false);
+      await renderForm(withFilter());
+
+      expect(
+        await screen.findByText(
+          "Not available: this server has no DINOv2 service (DINOV2_URL).",
+        ),
+      ).toBeVisible();
+      expect(dinov2Check()).toBeDisabled();
+    });
+
+    // an older backend has no status endpoint, and no check either
+    it("cannot be turned on when the server does not say", async () => {
+      vi.spyOn(dinov2Service, "getStatus").mockRejectedValue("Not Found");
+      await renderForm(withFilter());
+
+      await waitFor(() => expect(dinov2Check()).toBeDisabled());
+    });
+
+    // with no service the backend sends every run the filter would pass to
+    // review: say so, and let it be turned off
+    it("lets a project saved with it on turn it off where there is no service", async () => {
+      serverHas(false);
+      const { user } = await renderForm(withFilter({ dinov2Check: true }));
+
+      expect(
+        await screen.findByText(
+          /every run the filter would pass goes to review/,
+        ),
+      ).toBeVisible();
+      await user.click(dinov2Check());
+
+      expect(editConfig().dinov2Check).toBe(false);
+      expect(dinov2Check()).toBeDisabled();
+    });
+
+    it("warns when the service is set up but not answering", async () => {
+      serverHas(true, false);
+      await renderForm(withFilter());
+
+      expect(
+        await screen.findByText(
+          /The DINOv2 service is not answering right now/,
+        ),
+      ).toBeVisible();
+      expect(dinov2Check()).toBeEnabled();
+    });
+
+    it("does not submit a threshold above 2", async () => {
+      const onSubmit = vi.fn();
+      const { user } = await renderForm(
+        withFilter({ dinov2Check: true }),
+        onSubmit,
+      );
+
+      await replaceNumber(user, dinov2Threshold() as HTMLElement, "2.5");
+      await user.click(screen.getByTestId("submitButton"));
+
+      expect(await screen.findByText("Enter at most 2")).toBeInTheDocument();
+      expect(onSubmit).not.toHaveBeenCalled();
+    });
+
+    it("keeps the check when the library changes", async () => {
+      const { user } = await renderForm(
+        withFilter({ dinov2Check: true, dinov2Threshold: 0.25 }),
+      );
+
+      await switchEngine(user, ImageComparison.lookSame);
+
+      expect(editConfig()).toEqual({
+        ...JSON.parse(LOOKSSAME_DEFAULT_CONFIG),
+        blurAmplitudeFilter: true,
+        dinov2Check: true,
+        dinov2Threshold: 0.25,
       });
     });
   });

@@ -20,6 +20,13 @@ export class ProjectListPage extends BasePage {
   // the rendering-noise filter: part of each library's config section
   noiseFilter = this.dialog.getByLabel("Ignore rendering noise");
   noiseThreshold = this.dialog.locator("#blurAmplitudeThreshold");
+  // DINOv2's second look, offered under the filter while it is on
+  dinov2Check = this.dialog.getByLabel("Check with DINOv2");
+  // scrolled to before the switch is used: scrolling to its input, which
+  // overhangs the switch, shifts the switch inside its clipped box
+  dinov2CheckLabel = this.dialog.getByText("Check with DINOv2");
+  dinov2Threshold = this.dialog.locator("#dinov2Threshold");
+  dinov2Status = this.dialog.locator("#dinov2Status");
 
   // the engine's own fields, below the library select
   vlmProvider = this.dialog.getByRole("combobox", { name: "VLM Provider" });
