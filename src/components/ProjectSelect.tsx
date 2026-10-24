@@ -1,11 +1,9 @@
 import React, { FunctionComponent } from "react";
-import { makeStyles, createStyles } from "@mui/styles";
 import {
   FormControl,
   InputLabel,
   MenuItem,
   Select,
-  type Theme,
   type SelectChangeEvent,
 } from "@mui/material";
 import {
@@ -14,27 +12,10 @@ import {
   selectProject,
 } from "../contexts";
 
-const useStyles = makeStyles((theme: Theme) =>
-  createStyles({
-    formControl: {
-      width: "100%",
-    },
-    input: {
-      margin: theme.spacing(1),
-    },
-    // the label is positioned against the form control rather than the input,
-    // so without the input's own inset it sits on the sidebar's edge
-    label: {
-      marginLeft: theme.spacing(1),
-    },
-  }),
-);
-
 const ProjectSelect: FunctionComponent<{
   projectId?: string;
   onProjectSelect: (id: string) => void;
 }> = ({ projectId, onProjectSelect }) => {
-  const classes = useStyles();
   const { projectList, selectedProjectId } = useProjectState();
   const projectDispatch = useProjectDispatch();
 
@@ -47,15 +28,18 @@ const ProjectSelect: FunctionComponent<{
   return (
     <>
       {projectList.length > 0 && (
-        <FormControl variant="standard" className={classes.formControl}>
-          <InputLabel id="projectSelect" className={classes.label} shrink>
+        <FormControl variant="standard" sx={{ width: "100%" }}>
+          {/* the label is positioned against the form control rather than the
+              input, so without the input's own inset it sits on the sidebar's
+              edge */}
+          <InputLabel id="projectSelect" sx={{ marginLeft: 1 }} shrink>
             Project
           </InputLabel>
           <Select
             variant="standard"
             id="project-select"
             labelId="projectSelect"
-            className={classes.input}
+            sx={{ margin: 1 }}
             displayEmpty
             value={selectedProjectId ?? ""}
             onChange={(event: SelectChangeEvent<string>) =>

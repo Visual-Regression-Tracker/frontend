@@ -22,7 +22,7 @@ import {
 import CloseIcon from "@mui/icons-material/Close";
 import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
 import ChevronRightIcon from "@mui/icons-material/ChevronRight";
-import { makeStyles } from "@mui/styles";
+import { styled } from "@mui/material/styles";
 import { useDialogSnackbar } from "./useDialogSnackbar";
 import { useNavigate } from "react-router";
 import { Tooltip } from "../Tooltip";
@@ -35,94 +35,86 @@ import { imageFor, thumbnailFor } from "../../_helpers/testRunImage.helper";
 import { TestRun } from "../../types";
 import { TestStatus } from "../../types/testStatus";
 
-const useStyles = makeStyles(() => ({
-  toolbar: {
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "space-between",
-    marginBottom: 12,
-  },
-  sectionTitle: {
-    display: "flex",
-    margin: "16px 0 4px",
-  },
-  sectionSubtitle: {
-    display: "block",
-    textAlign: "left",
-    marginBottom: 16,
-  },
-  grid: {
-    display: "grid",
-    gridTemplateColumns: "repeat(auto-fill, minmax(150px, 1fr))",
-    gap: 12,
-  },
-  card: {
-    border: "1px solid #e0e0e0",
-    borderRadius: 6,
-    padding: 6,
-  },
-  cardSelected: {
+const Toolbar = styled("div")({
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "space-between",
+  marginBottom: 12,
+});
+
+const Grid = styled("div")({
+  display: "grid",
+  gridTemplateColumns: "repeat(auto-fill, minmax(150px, 1fr))",
+  gap: 12,
+});
+
+const Card = styled("div", {
+  shouldForwardProp: (prop) => prop !== "selected",
+})<{ selected?: boolean }>(({ selected }) => ({
+  border: "1px solid #e0e0e0",
+  borderRadius: 6,
+  padding: 6,
+  ...(selected && {
     borderColor: "#3f51b5",
     boxShadow: "0 0 0 1px #3f51b5",
-  },
-  cardHead: {
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "space-between",
-  },
-  cardLabel: {
-    minWidth: 0,
-    marginLeft: 0,
-    marginRight: 4,
-  },
-  hint: {
-    display: "block",
-    margin: "8px 0",
-  },
-  thumb: {
-    display: "block",
-    width: "100%",
-    height: 220,
-    objectFit: "contain",
-    background: "#fafafa",
-  },
-  thumbButton: {
-    display: "block",
-    width: "100%",
-    padding: 0,
-    border: "none",
-    background: "none",
-    cursor: "zoom-in",
-  },
-  loading: {
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    padding: 48,
-  },
-  meta: {
-    display: "flex",
-    flexWrap: "wrap",
-    gap: 16,
-    padding: "4px 8px 8px",
-  },
-  lightboxRow: {
-    display: "flex",
-    gap: 12,
-  },
-  lightboxHalf: {
-    flex: 1,
-    minWidth: 0,
-    textAlign: "center",
-  },
-  lightboxImg: {
-    maxWidth: "100%",
-    maxHeight: "74vh",
-    objectFit: "contain",
-    verticalAlign: "top",
-    background: "#fafafa",
-  },
+  }),
 }));
+
+const CardHead = styled("div")({
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "space-between",
+});
+
+const Thumb = styled("img")({
+  display: "block",
+  width: "100%",
+  height: 220,
+  objectFit: "contain",
+  background: "#fafafa",
+});
+
+const ThumbButton = styled("button")({
+  display: "block",
+  width: "100%",
+  padding: 0,
+  border: "none",
+  background: "none",
+  cursor: "zoom-in",
+});
+
+const Loading = styled("div")({
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  padding: 48,
+});
+
+const Meta = styled("div")({
+  display: "flex",
+  flexWrap: "wrap",
+  gap: 16,
+  padding: "4px 8px 8px",
+});
+
+const LightboxRow = styled("div")({
+  display: "flex",
+  gap: 12,
+});
+
+const LightboxHalf = styled("div")({
+  flex: 1,
+  minWidth: 0,
+  textAlign: "center",
+});
+
+const LightboxImg = styled("img")({
+  maxWidth: "100%",
+  maxHeight: "74vh",
+  objectFit: "contain",
+  verticalAlign: "top",
+  background: "#fafafa",
+});
 
 export type MatchingVariationsMode = "approve" | "reject";
 
@@ -151,7 +143,6 @@ export const MatchingVariationsDialog: React.FunctionComponent<{
   groupBy?: string;
   onClose: () => void;
 }> = ({ mode, testRun, groupBy = "customTags", onClose }) => {
-  const classes = useStyles();
   const { enqueueSnackbar } = useDialogSnackbar();
   const navigate = useNavigate();
   const { testRuns: allTestRuns, filteredSortedTestRunIds } = useTestRunState();
@@ -422,13 +413,10 @@ export const MatchingVariationsDialog: React.FunctionComponent<{
     const isSelected = selected.has(run.id);
     const openIndex = allShown.findIndex((item) => item.id === run.id);
     return (
-      <div
-        key={run.id}
-        className={`${classes.card} ${isSelected ? classes.cardSelected : ""}`}
-      >
-        <div className={classes.cardHead}>
+      <Card key={run.id} selected={isSelected}>
+        <CardHead>
           <FormControlLabel
-            className={classes.cardLabel}
+            sx={{ minWidth: 0, marginLeft: 0, marginRight: "4px" }}
             control={
               <Checkbox
                 checked={isSelected}
@@ -445,26 +433,24 @@ export const MatchingVariationsDialog: React.FunctionComponent<{
           <Typography variant="caption" color="textSecondary">
             {(run.diffPercent ?? 0).toFixed(1)}%
           </Typography>
-        </div>
-        <button
+        </CardHead>
+        <ThumbButton
           type="button"
-          className={classes.thumbButton}
           onClick={() => setPreview({ index: openIndex, showDiff })}
           aria-label={`View ${labelOf(run)} full size`}
         >
-          <img
-            className={classes.thumb}
+          <Thumb
             src={thumbnailFor(run, showDiff)}
             alt={run.customTags}
             loading="lazy"
           />
-        </button>
+        </ThumbButton>
         {reason && (
           <Typography variant="caption" display="block" align="center">
             {reason}
           </Typography>
         )}
-      </div>
+      </Card>
     );
   };
 
@@ -476,22 +462,22 @@ export const MatchingVariationsDialog: React.FunctionComponent<{
         <DialogTitle>{verb} variations — review before applying</DialogTitle>
         <DialogContent dividers>
           {submitting && (
-            <div className={classes.loading}>
+            <Loading>
               <CircularProgress />
               <Typography style={{ marginLeft: 12 }}>
                 {mode === "approve" ? "Approving" : "Rejecting"} {selected.size}{" "}
                 variations…
               </Typography>
-            </div>
+            </Loading>
           )}
           {!submitting && loading && (
-            <div className={classes.loading}>
+            <Loading>
               <CircularProgress />
-            </div>
+            </Loading>
           )}
           {!submitting && !loading && data && (
             <>
-              <div className={classes.toolbar}>
+              <Toolbar>
                 <FormControlLabel
                   control={
                     <Checkbox
@@ -515,22 +501,20 @@ export const MatchingVariationsDialog: React.FunctionComponent<{
                     label="Show diff"
                   />
                 </Tooltip>
-              </div>
+              </Toolbar>
               <Typography
                 variant="caption"
                 color="textSecondary"
-                className={classes.hint}
+                sx={{ display: "block", margin: "8px 0" }}
               >
                 Click a thumbnail to view it full-size.
               </Typography>
-              <div className={classes.grid}>
-                {variations.map((run) => renderCard(run))}
-              </div>
+              <Grid>{variations.map((run) => renderCard(run))}</Grid>
 
               {skipped.length > 0 && (
                 <>
                   <FormControlLabel
-                    className={classes.sectionTitle}
+                    sx={{ display: "flex", margin: "16px 0 4px" }}
                     control={
                       <Checkbox
                         checked={allSkippedSelected}
@@ -545,15 +529,19 @@ export const MatchingVariationsDialog: React.FunctionComponent<{
                   <Typography
                     variant="caption"
                     color="textSecondary"
-                    className={classes.sectionSubtitle}
+                    sx={{
+                      display: "block",
+                      textAlign: "left",
+                      marginBottom: "16px",
+                    }}
                   >
                     These don&apos;t match the change you&apos;re reviewing, so
                     they&apos;re unchecked. Open each to inspect and include
                     only if it&apos;s the same intended change.
                   </Typography>
-                  <div className={classes.grid}>
+                  <Grid>
                     {skipped.map((run) => renderCard(run, run.reason))}
-                  </div>
+                  </Grid>
                 </>
               )}
             </>
@@ -628,7 +616,7 @@ export const MatchingVariationsDialog: React.FunctionComponent<{
                 </Box>
               </Box>
             </DialogTitle>
-            <div className={classes.meta}>
+            <Meta>
               <Typography variant="caption">
                 OS: {previewRun.os || "—"}
               </Typography>
@@ -644,24 +632,22 @@ export const MatchingVariationsDialog: React.FunctionComponent<{
               <Typography variant="caption">
                 Diff tolerance: {previewRun.diffTollerancePercent ?? 0}%
               </Typography>
-            </div>
+            </Meta>
             <DialogContent dividers>
-              <div className={classes.lightboxRow}>
-                <div className={classes.lightboxHalf}>
-                  <img
-                    className={classes.lightboxImg}
+              <LightboxRow>
+                <LightboxHalf>
+                  <LightboxImg
                     src={staticService.getImage(previewRun.baselineName)}
                     alt="baseline"
                   />
-                </div>
-                <div className={classes.lightboxHalf}>
-                  <img
-                    className={classes.lightboxImg}
+                </LightboxHalf>
+                <LightboxHalf>
+                  <LightboxImg
                     src={imageFor(previewRun, preview.showDiff)}
                     alt="checkpoint"
                   />
-                </div>
-              </div>
+                </LightboxHalf>
+              </LightboxRow>
             </DialogContent>
           </>
         )}

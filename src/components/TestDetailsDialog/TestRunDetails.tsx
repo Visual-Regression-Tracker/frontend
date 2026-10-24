@@ -1,29 +1,7 @@
 import React from "react";
-import { Chip, Grid, Typography, Paper, type Theme } from "@mui/material";
-import { makeStyles } from "@mui/styles";
+import { Chip, Grid, Typography, Paper } from "@mui/material";
 import { TestRun } from "../../types";
 import { Tooltip } from "../Tooltip";
-
-const useStyles = makeStyles((theme: Theme) => ({
-  vlmContainer: {
-    padding: theme.spacing(1.5),
-    marginTop: theme.spacing(1),
-    backgroundColor: "rgba(0, 0, 0, 0.02)",
-    borderLeft: "3px solid",
-    borderColor: theme.palette.primary.main,
-  },
-  vlmLabel: {
-    fontWeight: 600,
-    display: "block",
-    marginBottom: theme.spacing(0.5),
-    color: theme.palette.text.secondary,
-  },
-  vlmDescription: {
-    whiteSpace: "pre-wrap",
-    wordBreak: "break-word",
-    lineHeight: 1.6,
-  },
-}));
 
 interface IProps {
   testRun: TestRun;
@@ -32,8 +10,6 @@ interface IProps {
 export const TestRunDetails: React.FunctionComponent<IProps> = ({
   testRun,
 }) => {
-  const classes = useStyles();
-
   const attributes = [
     { name: "OS", value: testRun.os },
     { name: "Device", value: testRun.device },
@@ -72,11 +48,35 @@ export const TestRunDetails: React.FunctionComponent<IProps> = ({
       {testRun.vlmDescription && (
         <Grid item xs={12}>
           <Tooltip title="AI-generated description of the differences found by the Vision Language Model (VLM).">
-            <Paper elevation={0} className={classes.vlmContainer}>
-              <Typography variant="caption" className={classes.vlmLabel}>
+            <Paper
+              elevation={0}
+              sx={{
+                padding: 1.5,
+                marginTop: 1,
+                backgroundColor: "rgba(0, 0, 0, 0.02)",
+                borderLeft: "3px solid",
+                borderColor: "primary.main",
+              }}
+            >
+              <Typography
+                variant="caption"
+                sx={{
+                  fontWeight: 600,
+                  display: "block",
+                  marginBottom: 0.5,
+                  color: "text.secondary",
+                }}
+              >
                 VLM Analysis:
               </Typography>
-              <Typography variant="body2" className={classes.vlmDescription}>
+              <Typography
+                variant="body2"
+                sx={{
+                  whiteSpace: "pre-wrap",
+                  wordBreak: "break-word",
+                  lineHeight: 1.6,
+                }}
+              >
                 {testRun.vlmDescription}
               </Typography>
             </Paper>

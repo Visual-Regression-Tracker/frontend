@@ -6,20 +6,12 @@ import { buildTestRunLocation } from "../../_helpers/route.helpers";
 import { BaseModal } from "../BaseModal";
 import TestDetailsModal from "./TestDetailsModal";
 import { TestRun } from "../../types";
-import { makeStyles } from "@mui/styles";
 import {
   neighbourImageNames,
   prefetchImages,
 } from "../../_helpers/imagePrefetch.helper";
 
-const useStyles = makeStyles(() => ({
-  modal: {
-    margin: "20px 10px 10px 10px",
-  },
-}));
-
 export const TestDetailsDialog: React.FunctionComponent = () => {
-  const classes = useStyles();
   const {
     selectedTestRun,
     touched,
@@ -90,7 +82,7 @@ export const TestDetailsDialog: React.FunctionComponent = () => {
   }
 
   return (
-    <Dialog open={true} fullScreen className={classes.modal}>
+    <Dialog open={true} fullScreen sx={{ margin: "20px 10px 10px 10px" }}>
       <TestDetailsModal
         testRun={selectedTestRun}
         currentRunIndex={selectedTestRunIndex}

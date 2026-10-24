@@ -16,17 +16,6 @@ import { routes } from "../constants";
 import { TestVariationDetails } from "./TestVariationDetails";
 import { Delete } from "@mui/icons-material";
 import { BaseModal } from "./BaseModal";
-import { makeStyles } from "@mui/styles";
-
-const useStyles = makeStyles({
-  card: {
-    maxWidth: 345,
-  },
-  media: {
-    height: 140,
-    objectFit: "contain",
-  },
-});
 
 interface IProps {
   items: TestVariation[];
@@ -37,7 +26,6 @@ const TestVariationList: React.FunctionComponent<IProps> = ({
   items,
   onDeleteClick,
 }) => {
-  const classes = useStyles();
   const [selectedItem, setSelectedItem] = React.useState<TestVariation | null>(
     null,
   );
@@ -54,10 +42,10 @@ const TestVariationList: React.FunctionComponent<IProps> = ({
         )}
         {items.map((t) => (
           <Grid item key={t.id} xs={4}>
-            <Card className={classes.card}>
+            <Card sx={{ maxWidth: 345 }}>
               <CardMedia
                 component="img"
-                className={classes.media}
+                sx={{ height: 140, objectFit: "contain" }}
                 image={staticService.getImage(t.baselineName)}
                 title={t.name}
               />

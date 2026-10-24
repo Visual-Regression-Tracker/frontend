@@ -1,5 +1,4 @@
 import React, { FunctionComponent } from "react";
-import { makeStyles, createStyles } from "@mui/styles";
 import {
   List,
   ListItemButton,
@@ -41,26 +40,7 @@ import {
 } from "../../_helpers/route.helpers";
 import { Tooltip } from "../Tooltip";
 
-const useStyles = makeStyles(() =>
-  createStyles({
-    listContainer: {
-      height: "100%",
-      overflow: "auto",
-    },
-    listItemSecondaryAction: {
-      visibility: "hidden",
-    },
-    listItem: {
-      paddingRight: 48,
-      "&:hover $listItemSecondaryAction": {
-        visibility: "inherit",
-      },
-    },
-  }),
-);
-
 const BuildList: FunctionComponent = () => {
-  const classes = useStyles();
   const navigate = useNavigate();
   const location = useLocation();
   const { buildList, selectedBuild, loading, error, total, take } =
@@ -336,8 +316,11 @@ const BuildList: FunctionComponent = () => {
                   <ListItemButton
                     selected={selectedBuild?.id === build.id}
                     onClick={() => selectBuildCalback(build.id)}
-                    classes={{
-                      root: classes.listItem,
+                    sx={{
+                      paddingRight: "48px",
+                      "&:hover .build-secondary-action": {
+                        visibility: "inherit",
+                      },
                     }}
                   >
                     <Checkbox
@@ -397,7 +380,8 @@ const BuildList: FunctionComponent = () => {
                     />
 
                     <ListItemSecondaryAction
-                      className={classes.listItemSecondaryAction}
+                      className="build-secondary-action"
+                      sx={{ visibility: "hidden" }}
                     >
                       <IconButton
                         onClick={(event) => handleMenuClick(event, build)}

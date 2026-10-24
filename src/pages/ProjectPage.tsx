@@ -1,5 +1,4 @@
 import React, { useEffect } from "react";
-import { makeStyles } from "@mui/styles";
 import { Grid, Box } from "@mui/material";
 import { useParams, useNavigate } from "react-router-dom";
 import BuildList from "../components/BuildList";
@@ -16,14 +15,7 @@ import {
 } from "../constants";
 import { buildProjectPageUrl } from "../_helpers/route.helpers";
 
-const useStyles = makeStyles(() => ({
-  root: {
-    height: "100%",
-  },
-}));
-
 const ProjectPage = () => {
-  const classes = useStyles();
   const { projectId } = useParams<{ projectId: string }>();
   const navigate = useNavigate();
   const helpDispatch = useHelpDispatch();
@@ -34,12 +26,11 @@ const ProjectPage = () => {
 
   return (
     <>
-      <Grid container className={classes.root}>
+      <Grid container sx={{ height: "100%" }}>
         <Grid
           item
           xs={3}
-          className={classes.root}
-          sx={{ display: "flex", flexDirection: "column" }}
+          sx={{ height: "100%", display: "flex", flexDirection: "column" }}
         >
           <Box id={LOCATOR_PROJECT_PAGE_SELECT_PROJECT}>
             <ProjectSelect
@@ -54,8 +45,7 @@ const ProjectPage = () => {
         <Grid
           item
           xs={9}
-          className={classes.root}
-          sx={{ display: "flex", flexDirection: "column" }}
+          sx={{ height: "100%", display: "flex", flexDirection: "column" }}
         >
           <BuildDetails />
           <Box flex={1} minHeight={0} id={LOCATOR_PROJECT_PAGE_TEST_RUN_LIST}>

@@ -21,17 +21,8 @@ import { useSnackbar } from "notistack";
 import { formatDateTime } from "../_helpers/format.helper";
 import TestStatusChip from "../components/TestStatusChip";
 import { Baseline } from "../types/baseline";
-import { makeStyles } from "@mui/styles";
-
-const useStyles = makeStyles({
-  media: {
-    height: 600,
-    objectFit: "contain",
-  },
-});
 
 const TestVariationDetailsPage: React.FunctionComponent = () => {
-  const classes = useStyles();
   const navigate = useNavigate();
   const { enqueueSnackbar } = useSnackbar();
   const { testVariationId } = useParams<{ testVariationId: string }>();
@@ -100,7 +91,7 @@ const TestVariationDetailsPage: React.FunctionComponent = () => {
                   </CardActions>
                   <CardMedia
                     component="img"
-                    className={classes.media}
+                    sx={{ height: 600, objectFit: "contain" }}
                     image={staticService.getImage(baseline.baselineName)}
                   />
                 </Card>
