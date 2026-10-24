@@ -81,6 +81,9 @@ outside `src/services`. The one known cycle, `_helpers/service.helpers` ↔
 - Playwright specs live in `integration_tests/test` and mock the API with
   helpers from `integration_tests/utils/mocks.ts`; nothing there talks to a
   real backend. Test names say what the user gets, in plain English.
+- `integration_tests/test/screens.spec.ts` is the visual contract: every
+  view and notable state, in light and dark. A new screen, dialog or state
+  gets an entry there in the same change.
 - A behaviour change needs a test that would have failed before it. A bug
   fix starts with the failing test.
 
