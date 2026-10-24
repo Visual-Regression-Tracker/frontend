@@ -62,6 +62,12 @@ export class TestDetailsDialog {
     .getByRole("tooltip")
     .filter({ has: this.comment })
     .getByRole("button", { name: "Save" });
+  // the box in the popper: MUI's Fade sets its opacity to 0 the moment it
+  // starts to close, and keeps it at 1 while open
+  commentBox = this.page
+    .getByRole("tooltip")
+    .filter({ has: this.comment })
+    .locator(".MuiPaper-root");
 
   // the review of a screen's variations (e.g. one per locale) over the dialog
   variations = this.page

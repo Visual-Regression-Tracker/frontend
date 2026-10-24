@@ -146,8 +146,8 @@ test("keeps the box open and says so when saving fails", async ({
   await details.commentSaveBtn.click();
 
   await expect(notification.message).toHaveText("Could not save");
-  // past the popper's fade, which a closing box would have finished by now
-  await page.waitForTimeout(500);
-  await expect(details.comment).toBeVisible();
+  // the box closes in the same update that shows the error, so a box on its
+  // way out has already started to fade
+  await expect(details.commentBox).toHaveAttribute("style", /opacity: 1/);
   await expect(details.comment).toHaveValue("Will not stick");
 });
