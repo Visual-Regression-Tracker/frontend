@@ -8,8 +8,8 @@ const KB = 1000;
 
 // Gzipped kB: the size measured when the budget was set, plus 10%, rounded up.
 const BUDGETS_KB = {
-  "index-": 94, // entry chunk
-  "ProjectPage-": 18, // project page route
+  "index-": 94,
+  "ProjectPage-": 18,
 };
 
 const files = readdirSync(ASSETS_DIR).filter((name) => name.endsWith(".js"));

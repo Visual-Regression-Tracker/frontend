@@ -1,16 +1,11 @@
 name: Docker image
 
-# Builds visualregressiontracker/ui for linux/amd64 and linux/arm64 (Apple Silicon,
-# Graviton), so docker compose runs it natively instead of under emulation.
-# - pushing a vX.Y.Z tag publishes the image as X.Y.Z
-# - "Run workflow" with an existing tag (re)publishes it, e.g. to add arm64 to a released version
-# - pull requests that touch the image only build it, without pushing
-# Publishing needs the DOCKERHUB_USERNAME and DOCKERHUB_TOKEN repository secrets.
+# amd64 and arm64, so Apple Silicon and Graviton hosts run the image natively
 
 on:
   push:
     tags:
-      - 'v*'
+      - "v*"
   pull_request:
     branches: [master]
     paths:
