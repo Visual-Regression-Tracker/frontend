@@ -1,10 +1,7 @@
-import React from "react";
 import { Chip } from "@mui/material";
 import { statusColor } from "../theme";
 
-const TestStatusChip: React.FunctionComponent<{
-  status: string | undefined;
-}> = ({ status }) => (
+const TestStatusChip = ({ status }: { status: string | undefined }) => (
   <Chip
     variant="outlined"
     color={statusColor(status)}

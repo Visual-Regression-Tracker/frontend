@@ -3,8 +3,7 @@ import { BuildStatus } from "../types/buildStatus";
 
 export type StatusColor = "success" | "warning" | "error" | "info" | "default";
 
-// one meaning per colour across the app: green is settled, amber waits for a
-// reviewer, red failed, blue is new
+// one meaning per colour: green settled, amber awaits review, red failed, blue new
 export function statusColor(status: string | undefined): StatusColor {
   switch (status) {
     case TestStatus.new:

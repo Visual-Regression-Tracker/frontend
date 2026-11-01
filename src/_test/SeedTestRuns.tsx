@@ -1,17 +1,26 @@
-import React from "react";
+import { useEffect } from "react";
 import { useTestRunDispatch } from "../contexts";
 import { TestRun } from "../types";
 
-// Puts test runs into the TestRunProvider the way the list does after loading,
-// so a component that reads them from the context has something to read.
-export const SeedTestRuns: React.FunctionComponent<{ testRuns: TestRun[] }> = ({
+// `order` is what the list publishes as its filtered and sorted ids
+export const SeedTestRuns = ({
   testRuns,
+  order,
+}: {
+  testRuns: TestRun[];
+  order?: string[];
 }) => {
   const dispatch = useTestRunDispatch();
 
-  React.useEffect(() => {
+  useEffect(() => {
     dispatch({ type: "get", payload: testRuns });
   }, [dispatch, testRuns]);
+
+  useEffect(() => {
+    if (order) {
+      dispatch({ type: "filterSort", payload: order });
+    }
+  }, [dispatch, order]);
 
   return null;
 };

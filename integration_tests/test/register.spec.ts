@@ -1,6 +1,8 @@
 import { test } from "fixtures";
 import { expect } from "@playwright/test";
-import { API_URL, mockApiError } from "utils/mocks";
+import { LoginPage } from "pages";
+import { RegisterPage } from "pages/RegisterPage";
+import { API_URL, mockApiError, mockRegistrationEnabled } from "utils/mocks";
 import { waitForPage } from "utils/waitForPage";
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -42,7 +44,6 @@ test("does not register with invalid details", async ({ registerPage }) => {
   await registerPage.password.fill("1");
   await registerPage.registerBtn.click();
 
-  // first name, last name and password
   await expect(
     registerPage.page.getByText("Enter at least two characters."),
   ).toHaveCount(3);
@@ -70,4 +71,48 @@ test("shows why the API refused the registration", async ({ registerPage }) => {
     "User already exists",
   );
   await expect(registerPage.page).toHaveURL(/\/register$/);
+});
+
+test("explains that registration is off instead of showing the form", async ({
+  page,
+}) => {
+  await mockRegistrationEnabled(page, false);
+
+  await page.goto("/register");
+  const registerPage = new RegisterPage(page);
+
+  await expect(
+    page.getByText(
+      "Registration is turned off. Ask an administrator for an account.",
+    ),
+  ).toBeVisible();
+  await expect(registerPage.registerBtn).toHaveCount(0);
+});
+
+test("hides the register link on the login form when registration is off", async ({
+  page,
+}) => {
+  await mockRegistrationEnabled(page, false);
+
+  await page.goto("/login");
+  const loginPage = new LoginPage(page);
+
+  await expect(loginPage.loginBtn).toBeVisible();
+  await expect(loginPage.registerLink).toHaveCount(0);
+});
+
+test("links to registration from the login form when the API cannot say", async ({
+  page,
+}) => {
+  // an older backend without the endpoint
+  await mockApiError(
+    page,
+    `${API_URL}/users/registration/enabled`,
+    404,
+    "Not Found",
+  );
+
+  await page.goto("/login");
+
+  await expect(new LoginPage(page).registerLink).toBeVisible();
 });

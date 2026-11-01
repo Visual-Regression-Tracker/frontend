@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { screen, waitFor } from "@testing-library/react";
 import { ValidatorForm } from "react-material-ui-form-validator";
 import { renderWithProviders } from "../_test/render";
@@ -70,7 +70,6 @@ describe("PasswordField", () => {
 
     await user.type(screen.getByTestId("password"), "b");
 
-    // the validator checks asynchronously, so the message goes a tick later
     await waitFor(() =>
       expect(
         screen.queryByText("Enter at least two characters."),

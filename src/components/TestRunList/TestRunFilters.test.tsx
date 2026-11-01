@@ -1,12 +1,10 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { act, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { renderWithProviders } from "../../_test/render";
 import { TestStatus } from "../../types";
 import TestRunFilters from "./TestRunFilters";
 
-// What the page holding the filters would do: keep the state and let the test
-// see every value the name search reports.
 const Harness = ({
   onNameChange,
   initialName = "",
@@ -141,7 +139,6 @@ describe("TestRunFilters name search", () => {
     expect(onNameChange).toHaveBeenCalledTimes(1);
     expect(onNameChange).toHaveBeenCalledWith("abc");
 
-    // nothing is left over to report when the pause is over
     await elapse(400);
     expect(onNameChange).toHaveBeenCalledTimes(1);
   });

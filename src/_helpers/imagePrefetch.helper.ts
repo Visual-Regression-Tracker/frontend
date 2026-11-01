@@ -1,18 +1,10 @@
 import { TestRun } from "../types";
 import { staticService } from "../services";
 
-// How far around the reviewed run the dialog warms the browser cache. Review
-// moves forward, so it reaches further ahead than behind; each run costs three
-// requests, which is why the window is small.
-export const PREFETCH_AHEAD = 2;
-export const PREFETCH_BEHIND = 1;
+// Review moves forward, so reach further ahead; three requests per run keeps it small.
+const PREFETCH_AHEAD = 2;
+const PREFETCH_BEHIND = 1;
 
-/**
- * The pictures of the runs on either side of the one being reviewed, nearest
- * first and ahead before behind, so the run the arrow key lands on next is
- * requested first. Deduped, and empty names (a run compared to no baseline, or
- * not compared yet) are left out.
- */
 export const neighbourImageNames = (
   testRuns: TestRun[],
   index: number,
@@ -43,12 +35,7 @@ export const neighbourImageNames = (
   return [...names];
 };
 
-/**
- * Warms the browser cache for the given image names, through the very URL the
- * dialog will ask for, so arrow navigation shows a picture instead of a
- * spinner. `alreadyRequested` is carried by the caller across renders — a
- * second request for the same name would be wasted work.
- */
+/** Warms the cache through the dialog's own URL, so arrow navigation skips the spinner. */
 export const prefetchImages = (
   names: string[],
   alreadyRequested: Set<string>,

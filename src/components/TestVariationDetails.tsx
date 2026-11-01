@@ -1,4 +1,3 @@
-import React from "react";
 import { Box, Chip, Stack, Typography } from "@mui/material";
 import { AccountTree } from "@mui/icons-material";
 import { TestVariation } from "../types";
@@ -7,10 +6,7 @@ interface IProps {
   testVariation: TestVariation;
 }
 
-// a variation's name over the axes that tell it apart and its branch
-export const TestVariationDetails: React.FunctionComponent<IProps> = ({
-  testVariation,
-}) => {
+export const TestVariationDetails = ({ testVariation }: IProps) => {
   const tags: [string, string | undefined][] = [
     ["OS", testVariation.os],
     ["Device", testVariation.device],

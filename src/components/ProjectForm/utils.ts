@@ -24,11 +24,7 @@ export const getDefaultConfig = (imageComparison: ImageComparison): string => {
   }
 };
 
-/**
- * Carries the rendering-noise filter's keys from one config into another. The
- * filter is not one of a library's own options, so swapping in a library's (or
- * a VLM provider's) defaults must not silently switch it off.
- */
+/** The filter is no library's own option; swapped defaults must not switch it off. */
 export const withBlurAmplitudeOf = (
   config: string,
   previousConfig: string,

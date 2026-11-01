@@ -1,4 +1,13 @@
-import React, { FunctionComponent } from "react";
+import {
+  type ChangeEvent,
+  Fragment,
+  type MouseEvent,
+  memo,
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 import {
   List,
   ListItemButton,
@@ -32,14 +41,14 @@ import { TextValidator } from "react-material-ui-form-validator";
 import { Build } from "../../types";
 import { BaseModal } from "../BaseModal";
 import { buildsService } from "../../services";
-import { useLocation, useNavigate } from "react-router";
+import { useLocation, useNavigate } from "react-router-dom";
 import {
   buildTestRunLocation,
   getQueryParams,
 } from "../../_helpers/route.helpers";
 import { Tooltip } from "../Tooltip";
 
-const BuildList: FunctionComponent = () => {
+const BuildList = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { buildList, selectedBuild, loading, error, total, take } =
@@ -47,25 +56,23 @@ const BuildList: FunctionComponent = () => {
   const buildDispatch = useBuildDispatch();
   const { enqueueSnackbar } = useSnackbar();
   const { selectedProjectId } = useProjectState();
-  const [deleteDialogOpen, setDeleteDialogOpen] = React.useState(false);
-  const [editDialogOpen, setEditDialogOpen] = React.useState(false);
-  const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
-  const [menuBuild, setMenuBuild] = React.useState<Build | null>();
-  const [newCiBuildId, setNewCiBuildId] = React.useState("");
-  const [paginationPage, setPaginationPage] = React.useState(1);
-  // the build the page was opened on, if any: read once, since picking a build
-  // from the list afterwards must not move the list under the reviewer
-  const linkedBuildId = React.useRef(getQueryParams(location.search).buildId);
-  const [searchQuery, setSearchQuery] = React.useState("");
-  const listRef = React.useRef<HTMLDivElement>(null);
-  const [selectedIds, setSelectedIds] = React.useState<string[]>([]);
-  const [bulkDeleteDialogOpen, setBulkDeleteDialogOpen] = React.useState(false);
-  const [bulkDeleting, setBulkDeleting] = React.useState(false);
-  const [selectingAll, setSelectingAll] = React.useState(false);
-  const selectAllRequest = React.useRef(0);
-  // only the latest page request may fill the list: an answer for the project
-  // or search the reviewer has left can arrive after the one they are on
-  const pageRequest = React.useRef(0);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const [menuBuild, setMenuBuild] = useState<Build | null>();
+  const [newCiBuildId, setNewCiBuildId] = useState("");
+  const [paginationPage, setPaginationPage] = useState(1);
+  // the opened build, read once: picking a build later must not move the list
+  const linkedBuildId = useRef(getQueryParams(location.search).buildId);
+  const [searchQuery, setSearchQuery] = useState("");
+  const listRef = useRef<HTMLDivElement>(null);
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [bulkDeleteDialogOpen, setBulkDeleteDialogOpen] = useState(false);
+  const [bulkDeleting, setBulkDeleting] = useState(false);
+  const [selectingAll, setSelectingAll] = useState(false);
+  const selectAllRequest = useRef(0);
+  // answers for a project or search the reviewer has left must not fill the list
+  const pageRequest = useRef(0);
 
   const allSelected = total > 0 && selectedIds.length === total;
   const someSelected = selectedIds.length > 0 && !allSelected;
@@ -77,8 +84,6 @@ const BuildList: FunctionComponent = () => {
 
   const clearSelection = () => setSelectedIds([]);
 
-  // the list is paginated, so selecting everything the search matched needs the
-  // ids the current page does not hold
   const selectAllMatching = () => {
     if (buildList.length === total) {
       setSelectedIds(buildList.map((build) => build.id));
@@ -107,10 +112,7 @@ const BuildList: FunctionComponent = () => {
   const selectAllLabel =
     selectedIds.length > 0 ? "Clear selection" : `Select all (${total})`;
 
-  const handleMenuClick = (
-    event: React.MouseEvent<HTMLElement>,
-    build: Build,
-  ) => {
+  const handleMenuClick = (event: MouseEvent<HTMLElement>, build: Build) => {
     event.stopPropagation();
     setAnchorEl(event.currentTarget);
     setMenuBuild(build);
@@ -128,19 +130,20 @@ const BuildList: FunctionComponent = () => {
     setEditDialogOpen(!editDialogOpen);
   };
 
-  const selectBuildCalback = React.useCallback(
-    (id?: string) => navigate(buildTestRunLocation(id)),
+  const selectBuildCalback = useCallback(
+    (id?: string) => {
+      navigate(buildTestRunLocation(id));
+    },
     [navigate],
   );
 
-  const loadPage = React.useCallback(
+  const loadPage = useCallback(
     (page: number, aroundBuildId?: string) => {
       setPaginationPage(page);
       listRef.current?.scrollTo({ top: 0 });
       const request = ++pageRequest.current;
       if (selectedProjectId) {
-        // the link has been followed; from here the reviewer's own paging and
-        // searching decide the page
+        // the link is spent: from here paging and search decide the page
         linkedBuildId.current = undefined;
         buildDispatch({ type: "request" });
         buildsService
@@ -155,13 +158,11 @@ const BuildList: FunctionComponent = () => {
             if (request !== pageRequest.current) {
               return;
             }
-            // asked for a build's page, the answer says where that page starts
-            // and so which page number to show. A build the list cannot place
-            // leaves the skip as asked, and this lands back on the same page.
+            // the answer gives the build's page; an unplaced build stays on this one
             if (aroundBuildId && payload.take > 0) {
               setPaginationPage(Math.floor(payload.skip / payload.take) + 1);
             }
-            buildDispatch({ type: "get", payload });
+            buildDispatch({ type: "get", payload, search: searchQuery });
           })
           .catch((err: string) => {
             if (request !== pageRequest.current) {
@@ -177,26 +178,23 @@ const BuildList: FunctionComponent = () => {
     [buildDispatch, enqueueSnackbar, selectedProjectId, take, searchQuery],
   );
 
-  const handlePaginationChange = React.useCallback(
+  const handlePaginationChange = useCallback(
     (page: number) => loadPage(page),
     [loadPage],
   );
 
-  // A link carries a build, not the page it sits on, so the list has to ask for
-  // the page that holds it — otherwise a build on the fourth page opens behind
-  // a list showing the first.
-  React.useEffect(() => {
+  // A link names a build, not its page, so the list must ask for the page holding it.
+  useEffect(() => {
     loadPage(1, linkedBuildId.current);
   }, [loadPage]);
 
-  React.useEffect(() => {
+  useEffect(() => {
     // drops an in-flight select all so its ids cannot land on another search
     selectAllRequest.current += 1;
     setSelectedIds([]);
   }, [selectedProjectId, searchQuery]);
 
-  // another project's builds must not linger while its list is being fetched
-  React.useEffect(() => {
+  useEffect(() => {
     buildDispatch({ type: "reset" });
   }, [buildDispatch, selectedProjectId]);
 
@@ -208,7 +206,6 @@ const BuildList: FunctionComponent = () => {
     setBulkDeleteDialogOpen(false);
     const ids = [...selectedIds];
 
-    // every delete settles into a result, so this cannot reject
     void Promise.all(
       ids.map((id) =>
         deleteBuild(buildDispatch, id)
@@ -304,10 +301,12 @@ const BuildList: FunctionComponent = () => {
               />
             ) : (
               buildList.map((build) => (
-                <React.Fragment key={build.id}>
+                <Fragment key={build.id}>
                   <ListItemButton
                     selected={selectedBuild?.id === build.id}
-                    onClick={() => selectBuildCalback(build.id)}
+                    onClick={() => {
+                      selectBuildCalback(build.id);
+                    }}
                     sx={{
                       paddingRight: "48px",
                       "&:hover .build-secondary-action": {
@@ -384,7 +383,7 @@ const BuildList: FunctionComponent = () => {
                     </ListItemSecondaryAction>
                   </ListItemButton>
                   {build.isRunning && <LinearProgress />}
-                </React.Fragment>
+                </Fragment>
               ))
             )}
           </List>
@@ -398,7 +397,7 @@ const BuildList: FunctionComponent = () => {
               defaultPage={1}
               page={paginationPage}
               count={Math.ceil(total / take)}
-              onChange={(event, page) => handlePaginationChange(page)}
+              onChange={(_event, page) => handlePaginationChange(page)}
             />
           </Grid>
         </Grid>
@@ -438,7 +437,7 @@ const BuildList: FunctionComponent = () => {
           submitButtonText={"Edit"}
           onCancel={toggleEditDialogOpen}
           content={
-            <React.Fragment>
+            <Fragment>
               <Typography>{`Edit the ci build id for build: #${
                 menuBuild.number || menuBuild.id
               }`}</Typography>
@@ -454,12 +453,12 @@ const BuildList: FunctionComponent = () => {
                 required
                 value={newCiBuildId}
                 inputProps={{
-                  onChange: (event: React.ChangeEvent<HTMLInputElement>) =>
+                  onChange: (event: ChangeEvent<HTMLInputElement>) =>
                     setNewCiBuildId(event.target.value),
                   "data-testid": "newCiBuildId",
                 }}
               />
-            </React.Fragment>
+            </Fragment>
           }
           onSubmit={() => {
             buildsService
@@ -471,9 +470,7 @@ const BuildList: FunctionComponent = () => {
                   variant: "error",
                 }),
               );
-            // closed now, not on success: the dialog belongs to this menu's
-            // build, and left open after a failure it would come back for the
-            // next build whose menu is opened, holding this build's input
+            // closed now, even on failure: left open, it would reopen with this build's input
             setEditDialogOpen(false);
             setNewCiBuildId("");
             handleMenuClose();
@@ -494,6 +491,9 @@ const BuildList: FunctionComponent = () => {
           onSubmit={() => {
             deleteBuild(buildDispatch, menuBuild.id)
               .then(() => {
+                setSelectedIds((prev) =>
+                  prev.filter((id) => id !== menuBuild.id),
+                );
                 enqueueSnackbar(
                   `Build #${menuBuild.number || menuBuild.id} deleted`,
                   {
@@ -515,7 +515,6 @@ const BuildList: FunctionComponent = () => {
                   variant: "error",
                 }),
               );
-            // closed now, for the same reason as the edit dialog above
             setDeleteDialogOpen(false);
             handleMenuClose();
           }}
@@ -540,4 +539,4 @@ const BuildList: FunctionComponent = () => {
   );
 };
 
-export default React.memo(BuildList);
+export default memo(BuildList);

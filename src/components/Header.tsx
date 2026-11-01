@@ -1,4 +1,4 @@
-import React, { FunctionComponent } from "react";
+import { Fragment, type MouseEvent, useState } from "react";
 import {
   AppBar,
   Toolbar,
@@ -42,14 +42,10 @@ const menuAnchor = {
   transformOrigin: { vertical: "top", horizontal: "right" },
 } as const;
 
-const Header: FunctionComponent = () => {
-  const [avatarMenuRef, setAvatarMenuRef] = React.useState<null | HTMLElement>(
-    null,
-  );
+const Header = () => {
+  const [avatarMenuRef, setAvatarMenuRef] = useState<null | HTMLElement>(null);
 
-  const [helpMenuRef, setHelpMenuRef] = React.useState<null | HTMLElement>(
-    null,
-  );
+  const [helpMenuRef, setHelpMenuRef] = useState<null | HTMLElement>(null);
 
   const { loggedIn, user } = useUserState();
   const authDispatch = useUserDispatch();
@@ -64,7 +60,6 @@ const Header: FunctionComponent = () => {
     window.open(
       "https://github.com/Visual-Regression-Tracker/Visual-Regression-Tracker/issues/new",
       "_blank",
-      // the opened page gets no handle on this tab (window.opener)
       "noopener,noreferrer",
     );
   };
@@ -179,7 +174,7 @@ const Header: FunctionComponent = () => {
   );
 
   return (
-    <React.Fragment>
+    <Fragment>
       <AppBar position="static">
         <Toolbar sx={{ gap: 1, minHeight: { xs: 64 } }}>
           <Box
@@ -207,7 +202,7 @@ const Header: FunctionComponent = () => {
             <ColorModeToggle />
             <Tooltip title="Help">
               <IconButton
-                onClick={(event: React.MouseEvent<HTMLElement>) =>
+                onClick={(event: MouseEvent<HTMLElement>) =>
                   setHelpMenuRef(event.currentTarget)
                 }
                 data-testid={HEADER_HELP_MENU_BUTTON_TEST_ID}
@@ -217,7 +212,7 @@ const Header: FunctionComponent = () => {
             </Tooltip>
             {loggedIn && (
               <IconButton
-                onClick={(event: React.MouseEvent<HTMLElement>) =>
+                onClick={(event: MouseEvent<HTMLElement>) =>
                   setAvatarMenuRef(event.currentTarget)
                 }
                 data-testid={HEADER_AVATAR_BUTTON_TEST_ID}
@@ -232,7 +227,7 @@ const Header: FunctionComponent = () => {
                     bgcolor: "primary.main",
                     color: "primary.contrastText",
                   }}
-                >{`${user?.firstName[0]}${user?.lastName[0]}`}</Avatar>
+                >{`${user?.firstName?.[0] ?? ""}${user?.lastName?.[0] ?? ""}`}</Avatar>
               </IconButton>
             )}
           </Stack>
@@ -240,7 +235,7 @@ const Header: FunctionComponent = () => {
       </AppBar>
       {renderAvatarMenu}
       {renderHelpMenu}
-    </React.Fragment>
+    </Fragment>
   );
 };
 

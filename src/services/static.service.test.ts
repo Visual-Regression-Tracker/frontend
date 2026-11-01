@@ -1,4 +1,4 @@
-import FileSaver from "file-saver";
+import type { Mock } from "vitest";
 import noImage from "../static/no-image.png";
 import { staticService } from "./static.service";
 
@@ -19,8 +19,6 @@ vi.mock("jszip", () => ({
     return zip;
   },
 }));
-
-vi.mock("file-saver", () => ({ default: { saveAs: vi.fn() } }));
 
 describe("staticService", () => {
   beforeEach(() => {
@@ -52,12 +50,6 @@ describe("staticService", () => {
     });
   });
 
-  it("getImageDownloadUrl points at the download route of the API", () => {
-    expect(staticService.getImageDownloadUrl("a.png")).toBe(
-      "http://api.test/images/a.png/download",
-    );
-  });
-
   describe("downloadAsZip", () => {
     const blob = (name: string) => new Blob([name]);
     const answer = (status: number, body?: Blob) => ({
@@ -66,10 +58,22 @@ describe("staticService", () => {
       blob: async () => body,
     });
 
+    // jsdom has no object URLs; the archive link's href and download name stand in for the download
+    let downloads: { href: string; download: string }[];
+    let createObjectURL: Mock<() => string>;
+
     beforeEach(() => {
       zip.file.mockReset();
       zip.generateAsync.mockReset().mockResolvedValue("zip-blob");
-      vi.mocked(FileSaver.saveAs).mockReset();
+      createObjectURL = vi.fn(() => "blob:zip");
+      URL.createObjectURL = createObjectURL;
+      URL.revokeObjectURL = vi.fn();
+      downloads = [];
+      vi.spyOn(HTMLAnchorElement.prototype, "click").mockImplementation(
+        function (this: HTMLAnchorElement) {
+          downloads.push({ href: this.href, download: this.download });
+        },
+      );
     });
 
     it("zips every image from the download route and saves the archive", async () => {
@@ -96,10 +100,10 @@ describe("staticService", () => {
       expect(zip.file).toHaveBeenCalledWith("first.png", a);
       expect(zip.file).toHaveBeenCalledWith("second.png", b);
       expect(zip.generateAsync).toHaveBeenCalledWith({ type: "blob" });
-      expect(FileSaver.saveAs).toHaveBeenCalledWith(
-        "zip-blob",
-        "vrt_images.zip",
-      );
+      expect(createObjectURL).toHaveBeenCalledWith("zip-blob");
+      expect(downloads).toEqual([
+        { href: "blob:zip", download: "vrt_images.zip" },
+      ]);
     });
 
     it("keeps every image when several share a file name", async () => {
@@ -151,7 +155,8 @@ describe("staticService", () => {
         staticService.downloadAsZip([{ name: "a.png", filename: "first" }]),
       ).rejects.toThrow("Cannot download first: 500");
 
-      expect(FileSaver.saveAs).not.toHaveBeenCalled();
+      expect(createObjectURL).not.toHaveBeenCalled();
+      expect(downloads).toEqual([]);
     });
 
     it("rejects without saving when the fallback image cannot be fetched", async () => {
@@ -168,7 +173,8 @@ describe("staticService", () => {
       ).rejects.toThrow("Cannot download first: 403");
 
       expect(zip.file).not.toHaveBeenCalled();
-      expect(FileSaver.saveAs).not.toHaveBeenCalled();
+      expect(createObjectURL).not.toHaveBeenCalled();
+      expect(downloads).toEqual([]);
     });
   });
 });

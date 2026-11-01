@@ -7,4 +7,8 @@ export class Notification {
   constructor(public page: Page) {
     this.page = page;
   }
+
+  toast(text: string) {
+    return this.page.locator(".notistack-MuiContent", { hasText: text });
+  }
 }

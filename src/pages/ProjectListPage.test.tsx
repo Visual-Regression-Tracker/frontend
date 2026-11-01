@@ -1,5 +1,10 @@
-import React from "react";
-import { screen, within } from "@testing-library/react";
+import {
+  act,
+  fireEvent,
+  screen,
+  waitFor,
+  within,
+} from "@testing-library/react";
 import { renderWithProviders } from "../_test/render";
 import {
   EDITOR_USER,
@@ -8,11 +13,15 @@ import {
   TEST_USER,
 } from "../_test/test.data.helper";
 import { projectsService } from "../services";
-import { Project, User } from "../types";
+import { Project } from "../types";
 import ProjectsListPage from "./ProjectListPage";
 
-const project = (id: string, name: string, mainBranchName = "master") =>
-  ({ ...TEST_PROJECT, id, name, mainBranchName }) as Project;
+const project = (id: string, name: string, mainBranchName = "master") => ({
+  ...TEST_PROJECT,
+  id,
+  name,
+  mainBranchName,
+});
 
 const ALPHA = project("alpha-id", "Alpha");
 const BETA = project("beta-id", "Beta", "develop");
@@ -20,7 +29,7 @@ const GAMMA = project("gamma-id", "Gamma");
 const DELTA = project("delta-id", "Delta");
 
 const renderPage = async ({
-  user = TEST_USER as User | null,
+  user = TEST_USER,
   projects = [TEST_PROJECT] as Project[],
   favorites = [] as string[],
   recent = [] as string[],
@@ -36,7 +45,6 @@ const renderPage = async ({
   return result;
 };
 
-// the project cards' titles, top to bottom
 const cardNames = () =>
   screen
     .getAllByRole("heading", { level: 3 })
@@ -58,6 +66,47 @@ describe("ProjectListPage", () => {
     ).toBeInTheDocument();
     expect(screen.getByTestId("EditIcon")).toBeInTheDocument();
     expect(screen.getByTestId("delete")).toBeInTheDocument();
+  });
+
+  describe("while the projects load", () => {
+    test("shows a progress placeholder instead of the empty state", async () => {
+      let answer: (projects: Project[]) => void = () => {};
+      vi.spyOn(projectsService, "getAll").mockReturnValue(
+        new Promise((resolve) => (answer = resolve)),
+      );
+      vi.spyOn(projectsService, "getFavorites").mockResolvedValue([]);
+      renderWithProviders(<ProjectsListPage />, {
+        user: TEST_USER,
+        route: "/projects",
+      });
+
+      expect(
+        await screen.findByRole("status", { name: "Loading projects" }),
+      ).toBeInTheDocument();
+      expect(screen.queryByText("No projects yet")).not.toBeInTheDocument();
+
+      await act(async () => answer([]));
+
+      expect(await screen.findByText("No projects yet")).toBeInTheDocument();
+      expect(
+        screen.queryByRole("status", { name: "Loading projects" }),
+      ).not.toBeInTheDocument();
+    });
+
+    test("says so when the projects cannot be loaded", async () => {
+      vi.spyOn(projectsService, "getAll").mockRejectedValue("Offline");
+      vi.spyOn(projectsService, "getFavorites").mockResolvedValue([]);
+
+      renderWithProviders(<ProjectsListPage />, {
+        user: TEST_USER,
+        route: "/projects",
+      });
+
+      expect(await screen.findByText("Offline")).toBeInTheDocument();
+      expect(
+        screen.queryByRole("status", { name: "Loading projects" }),
+      ).not.toBeInTheDocument();
+    });
   });
 
   test("shows the projects read-only to a guest", async () => {
@@ -187,5 +236,95 @@ describe("ProjectListPage", () => {
 
     expect(screen.getByRole("searchbox")).toHaveFocus();
     expect(screen.getByRole("searchbox")).toHaveValue("");
+  });
+
+  test("creates a project once however often Create is clicked", async () => {
+    const create = vi
+      .spyOn(projectsService, "create")
+      .mockReturnValue(new Promise(() => {}));
+    const { user } = await renderPage({ projects: [ALPHA] });
+    await user.click(screen.getByRole("button", { name: /add project/i }));
+    const dialog = screen.getByRole("dialog", { name: "Create Project" });
+    await user.type(
+      within(dialog).getByRole("textbox", { name: /project name/i }),
+      "Beta",
+    );
+    await user.type(
+      within(dialog).getByRole("textbox", { name: /main branch/i }),
+      "main",
+    );
+
+    await user.click(within(dialog).getByRole("button", { name: "Create" }));
+    await waitFor(() => expect(create).toHaveBeenCalledTimes(1));
+    // a disabled button ignores clicks, but userEvent refuses to try one
+    fireEvent.click(within(dialog).getByRole("button", { name: "Create" }));
+    // the form validates asynchronously before it submits
+    await act(() => new Promise((resolve) => setTimeout(resolve, 50)));
+
+    expect(create).toHaveBeenCalledTimes(1);
+  });
+
+  describe("when the API refuses a change", () => {
+    const expectErrorToast = async (message: string) =>
+      expect(
+        (await screen.findByText(message)).closest(".notistack-MuiContent"),
+      ).toHaveClass("notistack-MuiContent-error");
+
+    test("keeps the create dialog open and shows the error", async () => {
+      vi.spyOn(projectsService, "create").mockRejectedValue(
+        "Name already used",
+      );
+      const { user } = await renderPage({ projects: [ALPHA] });
+      await user.click(screen.getByRole("button", { name: /add project/i }));
+      const dialog = screen.getByRole("dialog", { name: "Create Project" });
+      await user.type(
+        within(dialog).getByRole("textbox", { name: /project name/i }),
+        "Beta",
+      );
+      await user.type(
+        within(dialog).getByRole("textbox", { name: /main branch/i }),
+        "main",
+      );
+
+      await user.click(within(dialog).getByRole("button", { name: "Create" }));
+
+      await expectErrorToast("Name already used");
+      expect(
+        screen.getByRole("dialog", { name: "Create Project" }),
+      ).toBeInTheDocument();
+    });
+
+    test("keeps the edit dialog open and shows the error", async () => {
+      vi.spyOn(projectsService, "update").mockRejectedValue(
+        "Main branch is taken",
+      );
+      const { user } = await renderPage({ projects: [ALPHA] });
+      await user.click(screen.getByTestId("EditIcon"));
+      const dialog = screen.getByRole("dialog", { name: "Update Project" });
+
+      await user.click(within(dialog).getByRole("button", { name: "Update" }));
+
+      await expectErrorToast("Main branch is taken");
+      expect(
+        screen.getByRole("dialog", { name: "Update Project" }),
+      ).toBeInTheDocument();
+    });
+
+    test("keeps the delete dialog open and shows the error", async () => {
+      vi.spyOn(projectsService, "remove").mockRejectedValue(
+        "Project still has builds",
+      );
+      const { user } = await renderPage({ projects: [ALPHA] });
+      await user.click(screen.getByTestId("delete"));
+      const dialog = screen.getByRole("dialog", { name: "Delete Project" });
+
+      await user.click(within(dialog).getByRole("button", { name: "Delete" }));
+
+      await expectErrorToast("Project still has builds");
+      expect(
+        screen.getByRole("dialog", { name: "Delete Project" }),
+      ).toBeInTheDocument();
+      expect(screen.getByTestId(`project-${ALPHA.id}`)).toBeInTheDocument();
+    });
   });
 });

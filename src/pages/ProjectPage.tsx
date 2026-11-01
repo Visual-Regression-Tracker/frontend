@@ -1,11 +1,10 @@
-import React, { useEffect } from "react";
+import { Suspense, useEffect, lazy } from "react";
 import { GridLegacy as Grid, Box } from "@mui/material";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useLocation } from "react-router-dom";
 import BuildList from "../components/BuildList";
 import ProjectSelect from "../components/ProjectSelect";
 import TestRunList from "../components/TestRunList";
 import BuildDetails from "../components/BuildDetails";
-import { TestDetailsDialog } from "../components/TestDetailsDialog";
 import { useHelpDispatch, setHelpSteps } from "../contexts";
 import {
   PROJECT_PAGE_STEPS,
@@ -13,11 +12,24 @@ import {
   LOCATOR_PROJECT_PAGE_SELECT_PROJECT,
   LOCATOR_PROJECT_PAGE_TEST_RUN_LIST,
 } from "../constants";
-import { buildProjectPageUrl } from "../_helpers/route.helpers";
+import { buildProjectPageUrl, getQueryParams } from "../_helpers/route.helpers";
+
+const loadTestDetailsDialog = () => import("../components/TestDetailsDialog");
+const TestDetailsDialog = lazy(() =>
+  loadTestDetailsDialog().then((m) => ({ default: m.TestDetailsDialog })),
+);
 
 const ProjectPage = () => {
   const { projectId } = useParams<{ projectId: string }>();
   const navigate = useNavigate();
+  const { buildId, testId: openedRunId } = getQueryParams(useLocation().search);
+
+  // the dialog's chunk loads in the background once a build is open, so the first run opens at once
+  useEffect(() => {
+    if (buildId) {
+      void loadTestDetailsDialog();
+    }
+  }, [buildId]);
   const helpDispatch = useHelpDispatch();
 
   useEffect(() => {
@@ -42,7 +54,9 @@ const ProjectPage = () => {
           <Box id={LOCATOR_PROJECT_PAGE_SELECT_PROJECT}>
             <ProjectSelect
               projectId={projectId}
-              onProjectSelect={(id) => navigate(buildProjectPageUrl(id))}
+              onProjectSelect={(id) => {
+                navigate(buildProjectPageUrl(id));
+              }}
             />
           </Box>
           <Box flex={1} minHeight={0} id={LOCATOR_PROJECT_PAGE_BUILD_LIST}>
@@ -60,7 +74,11 @@ const ProjectPage = () => {
           </Box>
         </Grid>
       </Grid>
-      <TestDetailsDialog />
+      {openedRunId && (
+        <Suspense fallback={null}>
+          <TestDetailsDialog />
+        </Suspense>
+      )}
     </>
   );
 };

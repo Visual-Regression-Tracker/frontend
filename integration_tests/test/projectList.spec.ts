@@ -56,14 +56,12 @@ test("can dismiss a notification without waiting it out", async ({
 
   await projectListPage.notification.dismissBtn.click();
 
-  // shorter than autoHideDuration, so waiting the toast out cannot pass this
+  // shorter than autoHideDuration, so waiting the toast out cannot pass
   await expect(projectListPage.notification.message).toBeHidden({
     timeout: 1000,
   });
 });
 
-// TEST_PROJECT leaves bulkApproveVariations off, and the axis it names drives
-// the grid's grouping either way, so it has to stay visible and changeable
 test("offers the group by axis with bulk approve off", async ({
   projectListPage,
   page,
@@ -99,7 +97,6 @@ test("creates a project", async ({ projectListPage, page }) => {
     maxBranchLifetime: 7,
     autoApproveFeature: false,
     imageComparison: ImageComparison.odiff,
-    // switching the library swaps in that library's defaults
     imageComparisonConfig: ODIFF_DEFAULT_CONFIG,
   });
   await expect(projectListPage.notification.message).toHaveText(
@@ -139,7 +136,6 @@ test("edits a project", async ({ projectListPage, page }) => {
   await mockSaveProject(page);
 
   await projectListPage.editBtn.click();
-  // the form opens on the project as it is
   await expect(projectListPage.name).toHaveValue(project.name);
   await expect(projectListPage.mainBranch).toHaveValue(project.mainBranchName);
   await projectListPage.name.fill("Renamed project");
@@ -179,7 +175,6 @@ const ALPHA = named("alpha-id", "Alpha");
 const BETA = named("beta-id", "Beta", "develop");
 const GAMMA = named("gamma-id", "Gamma");
 
-// opened straight, with the API's projects and favourites set up first
 const openWith = async (
   page: Page,
   projects: Project[],
@@ -313,8 +308,6 @@ test.describe("favourites and search", () => {
   });
 });
 
-// The rendering-noise filter is switched on in the library's config, where a
-// library that supports it offers it; the backend applies it to every library.
 const savedConfig = (request: Request) =>
   JSON.parse(request.postDataJSON().imageComparisonConfig);
 
@@ -349,7 +342,6 @@ test("creates a project with the rendering-noise filter on", async ({
   });
 });
 
-// the threshold means nothing with the filter off, so it is only offered on
 test("offers the threshold only while the filter is on", async ({
   projectListPage,
 }) => {
@@ -357,7 +349,6 @@ test("offers the threshold only while the filter is on", async ({
   await expect(projectListPage.noiseThreshold).toHaveCount(0);
 
   await projectListPage.noiseFilter.check();
-  // the backend's default, until changed
   await expect(projectListPage.noiseThreshold).toHaveValue("80");
 
   await projectListPage.noiseFilter.uncheck();
@@ -396,8 +387,6 @@ for (const [threshold, message] of [
   });
 }
 
-// switching swaps in the new library's defaults; the filter is not one of the
-// library's own options and would otherwise be silently switched off
 test("keeps the rendering-noise filter when the library changes", async ({
   projectListPage,
   page,
@@ -424,7 +413,6 @@ test("keeps the rendering-noise filter when the library changes", async ({
   });
 });
 
-// switching provider rebuilds the VLM config from scratch
 test("keeps the rendering-noise filter when the VLM provider changes", async ({
   projectListPage,
 }) => {
@@ -495,7 +483,6 @@ test.describe("DINOv2 check", () => {
     await projectListPage.editBtn.click();
     await projectListPage.noiseFilter.check();
     await projectListPage.dinov2Check.check();
-    // the backend's default, until changed
     await expect(projectListPage.dinov2Threshold).toHaveValue("0.15");
     await projectListPage.dinov2Threshold.fill("0.2");
 
@@ -512,8 +499,6 @@ test.describe("DINOv2 check", () => {
     });
   });
 
-  // with no service, the backend would send every run the filter passes to
-  // review
   test("cannot be turned on where the server has no service", async ({
     projectListPage,
     page,

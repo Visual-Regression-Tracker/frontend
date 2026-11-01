@@ -1,4 +1,4 @@
-import { formatDateTime } from "./format.helper";
+import { formatDateTime, partialFailureText, pluralize } from "./format.helper";
 
 describe("formatDateTime", () => {
   it.each([
@@ -19,5 +19,32 @@ describe("formatDateTime", () => {
 
   it("shows Invalid Date for something that is not a date", () => {
     expect(formatDateTime("not a date")).toBe("Invalid Date");
+  });
+});
+
+describe("pluralize", () => {
+  it.each([
+    [0, "runs"],
+    [1, "run"],
+    [2, "runs"],
+  ])("uses the right form for %i", (count, expected) => {
+    expect(pluralize(count, "run")).toBe(expected);
+  });
+
+  it("takes an irregular plural", () => {
+    expect(pluralize(2, "is", "are")).toBe("are");
+    expect(pluralize(1, "is", "are")).toBe("is");
+  });
+});
+
+describe("partialFailureText", () => {
+  it("says how many succeeded and why the first one failed", () => {
+    expect(
+      partialFailureText(
+        "Approved",
+        { succeeded: ["a"], failed: [{ message: "X" }] },
+        "2 test runs",
+      ),
+    ).toBe("Approved 1 of 2 test runs. 1 failed: X");
   });
 });

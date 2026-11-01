@@ -1,6 +1,5 @@
 import { expect } from "@playwright/test";
 
-// only what the tests read off the Konva node under the canvas
 type KonvaStage = {
   findOne: (selector: string) => {
     opacity: () => number;
@@ -44,7 +43,6 @@ test.beforeEach(async ({ page }) => {
     TEST_RUN_NEW,
     TEST_RUN_OK,
   ]);
-  // every run's details, so a test can walk to the next screenshot
   await mockTestRun(page, TEST_UNRESOLVED);
   await mockTestRun(page, TEST_RUN_APPROVED);
   await mockTestRun(page, TEST_RUN_NEW);
@@ -61,6 +59,10 @@ test("renders", async ({ openProjectPage, page }) => {
   await expect(page).toHaveScreenshot("project-page-test-run-list.png");
 
   await projectPage.testRunList.getRow(TEST_UNRESOLVED.id).click();
+  // the dialog is a lazy chunk: wait for it like screens.spec does
+  await expect(projectPage.details.step).toBeVisible();
+  await expect(projectPage.details.drawAreas).toHaveCount(2);
+  await expect(projectPage.details.toggleDiff).toBeChecked();
 
   await expect(page).toHaveScreenshot("project-page-test-run-details.png");
 });
@@ -97,7 +99,6 @@ test("selects every build the search matched and deletes them", async ({
 
   await projectPage.buildList.selectAll.click();
 
-  // a page holds ten builds, so the other five have to be selected as well
   await expect(projectPage.buildList.deleteSelectedBtn).toHaveAttribute(
     "aria-label",
     "Delete 15 selected",
@@ -123,7 +124,6 @@ test("keeps the search field in place when nothing matches", async ({
   await projectPage.buildList.searchInput.fill("no such build");
   await expect(projectPage.buildList.emptyMessage).toBeVisible();
 
-  // the select all checkbox has to hold its place, or the field jumps sideways
   expect(await projectPage.buildList.searchInput.boundingBox()).toEqual(before);
 });
 
@@ -170,7 +170,6 @@ test("scrolls back to the top of the list on page change", async ({
   expect(await projectPage.buildList.scrollTop()).toBe(0);
 });
 
-// 35 builds, ten to a page: the last one is on the fourth
 const manyBuilds = Array.from({ length: 35 }, (_, i) => ({
   ...TEST_BUILD_PASSED,
   id: `build-${i}`,
@@ -202,7 +201,6 @@ test("stays on the first page for a link to a build it cannot place", async ({
   openProjectPage,
   page,
 }) => {
-  // deleted since the link was sent, or another project's
   const stranger = { ...TEST_BUILD_PASSED, id: "gone", number: 999 };
 
   const projectPage = await openLinkedTo(openProjectPage, page, stranger);
@@ -235,8 +233,7 @@ test("keeps wheel zoom inside the image pane", async ({
   const pane = page.getByTestId("drawArea").first();
   await expect(pane).toBeVisible();
 
-  // a wheel over the pane but off the artwork must still be handled by the
-  // dialog, otherwise the browser zooms the whole page instead
+  // a wheel off the artwork must still be handled, or the browser zooms the page
   const prevented = await pane.evaluate((el) => {
     const box = el.getBoundingClientRect();
     const event = new WheelEvent("wheel", {
@@ -265,7 +262,6 @@ test("zooms with the cursor off the artwork", async ({
   const canvas = page.locator("canvas").first();
   const bounds = await pane.boundingBox();
 
-  // shrink the image until it no longer reaches the far side of the pane
   await page.mouse.move(bounds.x + bounds.width / 2, bounds.y + 20);
   for (let i = 0; i < 40; i++) {
     await page.mouse.wheel(0, 120);
@@ -274,7 +270,6 @@ test("zooms with the cursor off the artwork", async ({
   const shrunk = await canvas.boundingBox();
   expect(shrunk.x + shrunk.width).toBeLessThan(bounds.x + bounds.width - 20);
 
-  // the empty half of the pane has to zoom the image just the same
   await page.mouse.move(bounds.x + bounds.width - 10, bounds.y + 20);
   for (let i = 0; i < 10; i++) {
     await page.mouse.wheel(0, -120);
@@ -291,9 +286,7 @@ test("zooms towards the cursor", async ({ openProjectPage, page }) => {
   const pane = page.getByTestId("drawArea").first();
   await expect(pane).toBeVisible();
 
-  // zooming in near the right edge has to pull that edge into view; anchoring
-  // at the top left would leave the pane scrolled to 0. Only the horizontal
-  // axis is checked because the pane grows in height instead of scrolling.
+  // only the horizontal axis: the pane grows in height instead of scrolling
   const scroll = await pane.evaluate(async (el) => {
     const box = el.getBoundingClientRect();
 
@@ -331,7 +324,6 @@ test("holds the zoom buttons to the same limits as the wheel", async ({
     await zoomOut.click();
   }
 
-  // unclamped this shrinks the image to a fraction of a pixel
   const width = await pane.evaluate(
     (el) => (el.firstElementChild as HTMLElement).offsetWidth,
   );
@@ -349,7 +341,7 @@ test("eases the zoom out instead of stopping dead", async ({
   await expect(pane).toBeVisible();
 
   const widths = await pane.evaluate(async (el) => {
-    const canvas = el.querySelector("canvas") as HTMLCanvasElement;
+    const canvas = el.querySelector<HTMLCanvasElement>("canvas");
     const box = el.getBoundingClientRect();
 
     for (let i = 0; i < 20; i++) {
@@ -432,8 +424,6 @@ const openDialogWithoutDiff = async (openProjectPage, page) => {
   return projectPage;
 };
 
-// walking to the next screenshot has to land on another run under review:
-// a settled one carries no fade to have been forgotten
 const openDialogWithNextUnderReview = async (openProjectPage, page) => {
   const next = {
     ...TEST_UNRESOLVED,
@@ -452,14 +442,12 @@ const openDialogWithNextUnderReview = async (openProjectPage, page) => {
 const openDialog = async (openProjectPage, page) => {
   const projectPage = await openProjectPage(project.id, TEST_BUILD_FAILED.id);
   await projectPage.testRunList.getRow(TEST_UNRESOLVED.id).click();
-  // both panes, or a count asserted a moment later proves nothing
+  // both panes, or a count asserted later proves nothing
   await expect(page.getByTestId("drawArea")).toHaveCount(2);
 
   return projectPage;
 };
 
-// the fade lives on the image pane, so both panes stay and the baseline shows
-// through the image rather than replacing it
 const overlaidOpacity = (page) =>
   page
     .getByTestId("drawArea")
@@ -490,8 +478,6 @@ test("keeps both panes and fades the image over the baseline", async ({
   expect(await overlaidOpacity(page)).toBe(0);
 });
 
-// the dialog opens on the server's diff whenever there is one, so a fade that
-// only worked in the image view would look broken on arrival
 test("takes the pane off the diff when the fade is touched", async ({
   openProjectPage,
   page,
@@ -549,16 +535,13 @@ test("blends at full strength, whatever the fade says", async ({
 
   await page.getByTestId("differenceToggle").click();
 
-  // faded, a difference blend washes out instead of blacking out what matches,
-  // so the fade has no meaning here
+  // a difference blend washes out when faded, so the fade is off here
   expect(await overlaidOpacity(page)).toBe(1);
   await expect(
     page.getByTestId("overlayOpacity").getByRole("slider"),
   ).toBeDisabled();
 });
 
-// the fade belongs to the run being looked at, like the diff switch beside it:
-// carrying a half-faded image onto the next screenshot would hide its own diff
 test("forgets the fade on the next screenshot", async ({
   openProjectPage,
   page,
@@ -567,13 +550,10 @@ test("forgets the fade on the next screenshot", async ({
   await page.getByTestId("overlayOpacity").getByRole("slider").press("Home");
   expect(await overlaidOpacity(page)).toBe(0);
 
-  // the slider keeps the focus and would take the arrow itself, as the diff
-  // switch does; a reviewer clicks away or uses the arrow button
+  // the slider keeps focus and would take the arrow itself
   await page.evaluate(() => (document.activeElement as HTMLElement)?.blur());
   await page.keyboard.press("ArrowRight");
 
-  // back on the diff, and the fade back to opaque, so the next screenshot is
-  // shown as it arrived
   await expect(diffSwitch(page)).toBeChecked();
   await expect(
     page.getByTestId("overlayOpacity").getByRole("slider"),
@@ -600,8 +580,6 @@ test("forgets the blend on the next screenshot", async ({
   );
 });
 
-// nothing to see through on either: an ok run matched the baseline it has, and
-// a new one has no baseline behind it at all
 for (const settled of [TEST_RUN_OK, TEST_RUN_NEW]) {
   test(`hides the fade and the blend on a ${settled.status} screenshot`, async ({
     openProjectPage,
@@ -617,8 +595,6 @@ for (const settled of [TEST_RUN_OK, TEST_RUN_NEW]) {
   });
 }
 
-// an approved run keeps the diff it was approved with, so it keeps the fade
-// alongside the diff toggle: what was approved is still worth looking at
 test("keeps the fade on an approved screenshot carrying a diff", async ({
   openProjectPage,
   page,

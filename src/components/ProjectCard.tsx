@@ -1,4 +1,3 @@
-import React from "react";
 import { Link as RouterLink } from "react-router-dom";
 import {
   Box,
@@ -23,14 +22,19 @@ import { buildProjectPageUrl } from "../_helpers/route.helpers";
 import { formatDateTime } from "../_helpers/format.helper";
 import { Project } from "../types";
 
-export const ProjectCard: React.FunctionComponent<{
+export const ProjectCard = ({
+  project,
+  favorite,
+  onToggleFavorite,
+  onEdit,
+  onDelete,
+}: {
   project: Project;
   favorite: boolean;
   onToggleFavorite: () => void;
-  // left out for those who may not change projects
   onEdit?: () => void;
   onDelete?: () => void;
-}> = ({ project, favorite, onToggleFavorite, onEdit, onDelete }) => {
+}) => {
   const favoriteLabel = favorite
     ? "Remove from favourites"
     : "Add to favourites";

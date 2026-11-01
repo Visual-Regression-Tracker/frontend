@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState, Fragment, useMemo, useRef } from "react";
 import {
   Typography,
   Button,
@@ -102,9 +102,10 @@ interface TestDetailsModalProps {
   handleClose: () => void;
   handlePrevious: () => void;
   handleNext: () => void;
+  navigateTo: (id: string) => void;
 }
 
-const TestDetailsModal: React.FunctionComponent<TestDetailsModalProps> = ({
+const TestDetailsModal = ({
   testRun,
   currentRunIndex,
   totalTestRunCount,
@@ -112,7 +113,8 @@ const TestDetailsModal: React.FunctionComponent<TestDetailsModalProps> = ({
   handlePrevious,
   handleNext,
   handleClose,
-}) => {
+  navigateTo,
+}: TestDetailsModalProps) => {
   const { enqueueSnackbar } = useDialogSnackbar();
   const testRunDispatch = useTestRunDispatch();
   const { selectedProjectId, projectList } = useProjectState();
@@ -121,12 +123,12 @@ const TestDetailsModal: React.FunctionComponent<TestDetailsModalProps> = ({
     useState<MatchingVariationsMode | null>(null);
 
   const stageScaleBy = 1.2;
-  const [stageScale, setStageScale] = React.useState(1);
-  const [stagePos, setStagePos] = React.useState(defaultStagePos);
-  const [stageScrollPos, setStageScrollPos] = React.useState(defaultStagePos);
-  const [stageInitPos, setStageInitPos] = React.useState(defaultStagePos);
-  const [stageOffset, setStageOffset] = React.useState(defaultStagePos);
-  const [processing, setProcessing] = React.useState(false);
+  const [stageScale, setStageScale] = useState(1);
+  const [stagePos, setStagePos] = useState(defaultStagePos);
+  const [stageScrollPos, setStageScrollPos] = useState(defaultStagePos);
+  const [stageInitPos, setStageInitPos] = useState(defaultStagePos);
+  const [stageOffset, setStageOffset] = useState(defaultStagePos);
+  const [processing, setProcessing] = useState(false);
   const [isDrawMode, setIsDrawMode] = useState(false);
 
   const [valueOfIgnoreOrCompare, setValueOfIgnoreOrCompare] =
@@ -135,23 +137,20 @@ const TestDetailsModal: React.FunctionComponent<TestDetailsModalProps> = ({
   const [isDiffShown, setIsDiffShown] = useState(false);
   const [overlayOpacity, setOverlayOpacity] = useState(1);
   const [blendDifference, setBlendDifference] = useState(false);
-  const [selectedRectId, setSelectedRectId] = React.useState<string>();
-  const [ignoreAreas, setIgnoreAreas] = React.useState<IgnoreArea[]>([]);
+  const [selectedRectId, setSelectedRectId] = useState<string>();
+  const [ignoreAreas, setIgnoreAreas] = useState<IgnoreArea[]>([]);
 
-  const [applyIgnoreDialogOpen, setApplyIgnoreDialogOpen] =
-    React.useState(false);
+  const [applyIgnoreDialogOpen, setApplyIgnoreDialogOpen] = useState(false);
 
-  const [goToNextAutomatically, setGoToNextAutomatically] = React.useState(
-    () => {
-      const json = localStorage.getItem(GO_TO_NEXT_KEY);
+  const [goToNextAutomatically, setGoToNextAutomatically] = useState(() => {
+    const json = localStorage.getItem(GO_TO_NEXT_KEY);
 
-      if (json) {
-        return JSON.parse(json);
-      }
+    if (json) {
+      return JSON.parse(json);
+    }
 
-      return false;
-    },
-  );
+    return false;
+  });
 
   useEffect(() => {
     localStorage.setItem(GO_TO_NEXT_KEY, JSON.stringify(goToNextAutomatically));
@@ -163,8 +162,8 @@ const TestDetailsModal: React.FunctionComponent<TestDetailsModalProps> = ({
     }
   };
 
-  const leftItemRef = React.useRef<HTMLDivElement>(null);
-  const rightItemRef = React.useRef<HTMLDivElement>(null);
+  const leftItemRef = useRef<HTMLDivElement>(null);
+  const rightItemRef = useRef<HTMLDivElement>(null);
 
   const toggleApplyIgnoreDialogOpen = () => {
     setApplyIgnoreDialogOpen(!applyIgnoreDialogOpen);
@@ -185,38 +184,38 @@ const TestDetailsModal: React.FunctionComponent<TestDetailsModalProps> = ({
   const applyIgnoreAreaText =
     "Apply selected ignore area to all images in this build.";
 
-  const fitImageToStage = (image: HTMLImageElement, container: HTMLElement) => {
-    const scale = calculateScale(
+  const fitImageToStage = (image: HTMLImageElement, container: HTMLElement) =>
+    calculateScale(
       image.width + 20,
       image.height + 20,
       container.offsetWidth,
       container.offsetHeight - 48,
     );
 
-    if (scale < stageScale) {
-      setStageScale(scale);
-    }
-  };
+  // one scale for both panes, set by the largest image; capped at 1 so small ones stay put
+  const fitScale = (): number | undefined => {
+    const scales: number[] = [];
 
-  const fitImagesToStage = () => {
     if (currentImage && leftItemRef.current) {
-      fitImageToStage(currentImage, leftItemRef.current);
+      scales.push(fitImageToStage(currentImage, leftItemRef.current));
     }
 
     if (baselineImage && rightItemRef.current) {
-      fitImageToStage(baselineImage, rightItemRef.current);
+      scales.push(fitImageToStage(baselineImage, rightItemRef.current));
     }
 
+    return scales.length > 0 ? Math.min(1, ...scales) : undefined;
+  };
+
+  const fitImagesToStage = () => {
+    const scale = fitScale();
+    if (scale !== undefined) {
+      setStageScale(scale);
+    }
     resetPosition();
   };
 
-  // the fade, the blend and the drawing tools belong to the run being looked
-  // at, like the diff does: a half-faded image carried onto the next
-  // screenshot would hide it, and draw mode carried over turned the reviewer's
-  // next click into an ignore area on a screen they never meant to edit —
-  // which marked that run touched and then blocked the very navigation that
-  // would have cleared the flag. This dialog is not remounted between runs, so
-  // whatever belongs to one screen has to be cleared here.
+  // per-run view state; this dialog is not remounted between runs
   useEffect(() => {
     setIsDiffShown(!!testRun.diffName);
     setOverlayOpacity(1);
@@ -225,17 +224,27 @@ const TestDetailsModal: React.FunctionComponent<TestDetailsModalProps> = ({
     setSelectedRectId(undefined);
   }, [testRun.id, testRun.diffName]);
 
-  // by id and saved areas, not the run object: any update to the run (a
-  // comment, someone else's change) hands over a new object, and that wiped
-  // the areas drawn here and not saved yet while they still counted as unsaved
+  // by id, not the run object: an update to the run would wipe the unsaved areas drawn here
   useEffect(() => {
     setIgnoreAreas(JSON.parse(testRun.ignoreAreas));
   }, [testRun.id, testRun.ignoreAreas]);
 
+  // the next run keeps the reviewer's zoom and place when its images are the same size
+  const fittedSizes = useRef<string>(undefined);
   useEffect(() => {
+    if (currentImageStatus === "loading" || baselineImageStatus === "loading") {
+      return;
+    }
+    const sizes = [currentImage, baselineImage]
+      .map((image) => (image ? `${image.width}x${image.height}` : "-"))
+      .join("|");
+    if (sizes === fittedSizes.current) {
+      return;
+    }
+    fittedSizes.current = sizes;
     fitImagesToStage();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [baselineImage, currentImage]);
+  }, [baselineImage, currentImage, currentImageStatus, baselineImageStatus]);
 
   useHotkeys("right", handleNext, hotkeyOptions, [currentRunIndex, handleNext]);
   useHotkeys("left", handlePrevious, hotkeyOptions, [
@@ -243,7 +252,12 @@ const TestDetailsModal: React.FunctionComponent<TestDetailsModalProps> = ({
     handlePrevious,
   ]);
 
-  const isImageSizeDiffer = React.useMemo(
+  const tempIgnoreAreas = useMemo<IgnoreArea[]>(
+    () => JSON.parse(testRun.tempIgnoreAreas),
+    [testRun.tempIgnoreAreas],
+  );
+
+  const isImageSizeDiffer = useMemo(
     () =>
       testRun.baselineName &&
       testRun.imageName &&
@@ -261,7 +275,6 @@ const TestDetailsModal: React.FunctionComponent<TestDetailsModalProps> = ({
   };
 
   const removeSelection = (event: Konva.KonvaEventObject<MouseEvent>) => {
-    // deselect when clicked not on Rect
     const isRectClicked = event.target.className === "Rect";
 
     if (!isRectClicked) {
@@ -284,8 +297,7 @@ const TestDetailsModal: React.FunctionComponent<TestDetailsModalProps> = ({
         enqueueSnackbar(successMessage, {
           variant: "success",
         });
-        // only once they are stored: a failed save left the areas marked
-        // saved, and leaving the run then dropped them without asking
+        // only once stored: a failed save must leave the areas unsaved
         testRunDispatch({
           type: "touched",
           payload: false,
@@ -305,7 +317,7 @@ const TestDetailsModal: React.FunctionComponent<TestDetailsModalProps> = ({
       const invertedIgnoreAreas = invertIgnoreArea(
         currentImage.width,
         currentImage.height,
-        ignoreAreas[0],
+        ignoreAreas[ignoreAreas.length - 1],
       );
 
       handleIgnoreAreaChange(invertedIgnoreAreas);
@@ -350,8 +362,6 @@ const TestDetailsModal: React.FunctionComponent<TestDetailsModalProps> = ({
             ignoreAreas: [newIgnoreArea],
           };
 
-          // returned, so a failure reaches the catch below: the progress bar
-          // stayed up for good and nobody heard about the error
           return testRunService.addIgnoreAreas(data);
         })
         .then(() => {
@@ -399,15 +409,14 @@ const TestDetailsModal: React.FunctionComponent<TestDetailsModalProps> = ({
   };
 
   const ignoreAreasToolbar = () => (
-    <React.Fragment>
+    <Fragment>
       <Grid container alignItems="center" spacing={2}>
         <Grid item>
           <Select
             variant="standard"
             id="area-select"
             labelId="areaSelect"
-            // a standard select underlines itself, which reads as a text field
-            // among the buttons it now sits with
+            // a standard select underlines itself and would read as a text field among buttons
             sx={{
               "&:before, &:after, &:hover:not(.Mui-disabled):before": {
                 borderBottom: "none",
@@ -415,7 +424,7 @@ const TestDetailsModal: React.FunctionComponent<TestDetailsModalProps> = ({
             }}
             value={valueOfIgnoreOrCompare}
             onChange={(event: SelectChangeEvent<string>) =>
-              onIgnoreOrCompareSelectChange(event.target.value as string)
+              onIgnoreOrCompareSelectChange(event.target.value)
             }
           >
             {["Ignore Areas", "Compare Area"].map((eachItem) => (
@@ -483,7 +492,7 @@ const TestDetailsModal: React.FunctionComponent<TestDetailsModalProps> = ({
           </IconButton>
         </Grid>
       </Grid>
-    </React.Fragment>
+    </Fragment>
   );
 
   const baselinePanel = () => (
@@ -552,7 +561,7 @@ const TestDetailsModal: React.FunctionComponent<TestDetailsModalProps> = ({
           branchName={branchName}
           imageName={imageName}
           image={image}
-          ignoreAreas={JSON.parse(testRun.tempIgnoreAreas)}
+          ignoreAreas={tempIgnoreAreas}
         />
         {testRun.diffName && (
           <Grid item>
@@ -566,13 +575,7 @@ const TestDetailsModal: React.FunctionComponent<TestDetailsModalProps> = ({
             </Tooltip>
           </Grid>
         )}
-        {/* one flexible item holding both: a plain flex row, not a nested Grid,
-            whose spacing would lift the controls off the row's line. The item
-            grows so the row can shrink on a narrow window, and the pair sits at
-            its start rather than being pushed to the pane's edge */}
-        {/* the fade and the blend read a checkpoint against its baseline, so
-            they go away once there is nothing left to see through — the same
-            reason the diff toggle above only shows while a diff exists */}
+        {/* a plain flex row, not a nested Grid, whose spacing lifts the controls off the line */}
         <Grid item xs minWidth={0}>
           {canCompareToBaseline(testRun) && (
             <Box display="flex" alignItems="center" gap={1}>
@@ -594,8 +597,8 @@ const TestDetailsModal: React.FunctionComponent<TestDetailsModalProps> = ({
                       max={1}
                       step={0.05}
                       value={overlayOpacity}
-                      onChange={(event, value) => {
-                        setOverlayOpacity(value as number);
+                      onChange={(_event, value) => {
+                        setOverlayOpacity(value);
                         setIsDiffShown(false);
                       }}
                       aria-label="Fade to the baseline"
@@ -629,7 +632,7 @@ const TestDetailsModal: React.FunctionComponent<TestDetailsModalProps> = ({
         overlayOpacity={overlayOpacity}
         blendDifference={blendDifference && !isDiffShown}
         ignoreAreas={ignoreAreas}
-        tempIgnoreAreas={JSON.parse(testRun.tempIgnoreAreas)}
+        tempIgnoreAreas={tempIgnoreAreas}
         setIgnoreAreas={handleIgnoreAreaChange}
         selectedRectId={selectedRectId}
         deleteIgnoreArea={deleteIgnoreArea}
@@ -856,13 +859,16 @@ const TestDetailsModal: React.FunctionComponent<TestDetailsModalProps> = ({
           applyIgnoreArea();
         }}
       />
-      <MatchingVariationsDialog
-        key={testRun.id}
-        mode={variationsMode}
-        testRun={testRun}
-        groupBy={project?.bulkApproveGroupBy}
-        onClose={() => setVariationsMode(null)}
-      />
+      {variationsMode && (
+        <MatchingVariationsDialog
+          key={testRun.id}
+          mode={variationsMode}
+          testRun={testRun}
+          groupBy={project?.bulkApproveGroupBy}
+          onClose={() => setVariationsMode(null)}
+          navigateTo={navigateTo}
+        />
+      )}
     </>
   );
 };

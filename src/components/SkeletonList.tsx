@@ -1,7 +1,6 @@
-import React from "react";
 import { Box, Skeleton } from "@mui/material";
 
-export const SkeletonList: React.FunctionComponent = () => {
+export const SkeletonList = () => {
   const list = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11];
   return (
     <Box height={1} overflow="auto">

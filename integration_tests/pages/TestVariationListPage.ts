@@ -10,7 +10,6 @@ export class TestVariationListPage extends BasePage {
   );
   cards = this.page.locator(".MuiCard-root");
 
-  // TestVariationMergeForm
   mergeForm = this.page.locator("form").filter({
     has: this.page.locator(`#${LOCATOR_TEST_VARIATION_SELECT_BRANCH}`),
   });

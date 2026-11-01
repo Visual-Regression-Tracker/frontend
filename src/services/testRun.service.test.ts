@@ -77,6 +77,81 @@ describe("testRunService", () => {
     },
   );
 
+  describe("bulk results", () => {
+    const bulkCalls: [string, () => Promise<unknown>][] = [
+      ["removeBulk", () => testRunService.removeBulk(["t1", "t2"])],
+      ["rejectBulk", () => testRunService.rejectBulk(["t1", "t2"])],
+      ["approveBulk", () => testRunService.approveBulk(["t1", "t2"], false)],
+    ];
+
+    it.each(bulkCalls)(
+      "%s counts every id as done when the body is empty",
+      async (_name, call) => {
+        vi.stubGlobal(
+          "fetch",
+          vi.fn().mockResolvedValue(new Response("", { status: 201 })),
+        );
+
+        expect(await call()).toEqual({
+          succeeded: ["t1", "t2"],
+          failed: [],
+        });
+      },
+    );
+
+    it.each(bulkCalls)(
+      "%s returns what the server says about each id",
+      async (_name, call) => {
+        stubFetch({
+          succeeded: ["t1"],
+          failed: [{ id: "t2", message: "Not allowed" }],
+        });
+
+        expect(await call()).toEqual({
+          succeeded: ["t1"],
+          failed: [{ id: "t2", message: "Not allowed" }],
+        });
+      },
+    );
+
+    it("counts numeric ids as done by their string form", async () => {
+      vi.stubGlobal(
+        "fetch",
+        vi.fn().mockResolvedValue(new Response("", { status: 201 })),
+      );
+
+      expect(await testRunService.rejectBulk([1, 2])).toEqual({
+        succeeded: ["1", "2"],
+        failed: [],
+      });
+    });
+  });
+
+  describe("one run", () => {
+    it("approveOne and rejectOne resolve when the run is not refused", async () => {
+      stubFetch({ succeeded: ["t1"], failed: [] });
+
+      await expect(testRunService.approveOne("t1", false)).resolves.toBe(
+        undefined,
+      );
+      await expect(testRunService.rejectOne("t1")).resolves.toBe(undefined);
+    });
+
+    it("approveOne and rejectOne reject with the refusal message", async () => {
+      stubFetch({
+        succeeded: [],
+        failed: [{ id: "t1", message: "Baseline is locked" }],
+      });
+
+      await expect(testRunService.approveOne("t1", true)).rejects.toBe(
+        "Baseline is locked",
+      );
+      await expect(testRunService.rejectOne("t1")).rejects.toBe(
+        "Baseline is locked",
+      );
+    });
+  });
+
   it("getMatchingVariations fetches the siblings of a test run", async () => {
     const answer = { variations: [], skipped: [] };
     const fetchMock = stubFetch(answer);

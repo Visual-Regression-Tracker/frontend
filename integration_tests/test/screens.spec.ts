@@ -33,21 +33,17 @@ import {
   mockMatchingVariations,
   mockDinov2Status,
   mockOllamaModels,
+  mockRegistrationEnabled,
   mockTestRun,
   mockUpdateTestRun,
 } from "utils/mocks";
 
-/**
- * The visual contract of the app: every view, in both colour schemes. Each
- * test is named "renders <view>" and writes <view>-<scheme>.png, so
- * `-g renders` updates exactly these baselines.
- */
+// "renders <view>" tests write <view>-<scheme>.png: `-g renders` updates the baselines
 
 const project = TEST_PROJECT;
 const build = TEST_BUILD_FAILED;
 const SCHEMES = ["light", "dark"] as const;
 
-// a list long enough for favourites, recently opened and the rest
 const LISTED_PROJECTS = [
   project,
   {
@@ -67,7 +63,6 @@ const LISTED_PROJECTS = [
 const FAVORITE_ID = "storybook-id";
 const RECENT_ID = "checkout-id";
 
-// only what the wait for the canvases reads off Konva
 type KonvaWindow = {
   Konva?: {
     stages: {
@@ -76,8 +71,7 @@ type KonvaWindow = {
   };
 };
 
-// Pictures and fonts are in, and so is every image the dialog's canvases
-// draw: those are not <img> elements, so the DOM alone would not tell.
+// the dialog's canvases draw Konva images, not <img>: the DOM alone would not tell
 const hasSettled = (page: Page) =>
   page.evaluate(async () => {
     await document.fonts.ready;
@@ -109,7 +103,6 @@ const test = base.extend<{
 
 type Body = Parameters<typeof test>[2];
 
-// the runs of one screen in two locales, and a screen of its own
 const VARIATION_EN: TestRun = {
   ...TEST_UNRESOLVED,
   id: "variation-en",
@@ -132,7 +125,6 @@ const LONE_SCREEN: TestRun = {
   diffPercent: 3,
 };
 
-// the run under review for bulk approve, its siblings and the one held back
 const REVIEWED: TestRun = { ...TEST_UNRESOLVED, customTags: "en" };
 const sibling = (customTags: string, diffPercent: number): TestRun => ({
   ...REVIEWED,
@@ -147,7 +139,6 @@ const SPANISH = {
   reason: "The change is not the same",
 };
 
-// a run with no areas of its own, so that the one drawn is the only one
 const WITHOUT_AREAS: TestRun = {
   ...TEST_UNRESOLVED,
   ignoreAreas: "[]",
@@ -196,6 +187,34 @@ const VIEWS: [name: string, body: Body][] = [
       await expect(registerPage.registerBtn).toBeVisible();
 
       await shot("register");
+    },
+  ],
+
+  [
+    "register when registration is turned off",
+    async ({ page, shot }) => {
+      await mockRegistrationEnabled(page, false);
+      await page.goto("/register");
+
+      await expect(
+        page.getByText("Registration is turned off.", { exact: false }),
+      ).toBeVisible();
+      await shot("register-off");
+    },
+  ],
+
+  [
+    "project list while it loads",
+    async ({ page, authUser, shot }) => {
+      void authUser;
+      // never answered, so the page stays in its loading state
+      await page.route(`${API_URL}/projects`, () => undefined);
+      await page.goto("/projects");
+
+      await expect(
+        page.getByRole("status", { name: "Loading projects" }),
+      ).toBeVisible();
+      await shot("project-list-loading");
     },
   ],
 
@@ -278,8 +297,7 @@ const VIEWS: [name: string, body: Body][] = [
       await projectListPage.editBtn.click();
       await projectListPage.selectImageComparison(ImageComparison.vlm);
       await projectListPage.selectOllamaModel("llava:13b");
-      // the focused field keeps its tooltip open over the form: take the focus
-      // off it
+      // blur: the focused field keeps its tooltip open over the form
       await projectListPage.dialog.getByRole("heading").first().click();
 
       await expect(projectListPage.ollamaModel).toHaveText("llava:13b");
@@ -293,8 +311,7 @@ const VIEWS: [name: string, body: Body][] = [
     async ({ projectListPage, shot }) => {
       await projectListPage.editBtn.click();
       await projectListPage.noiseFilter.check();
-      // the switch keeps its tooltip open while it has the focus: take it off,
-      // then bring the threshold the switch revealed into the dialog's view
+      // blur: the focused switch keeps its tooltip open
       await projectListPage.dialog.getByRole("heading").first().click();
       await projectListPage.noiseThreshold.scrollIntoViewIfNeeded();
 
@@ -311,7 +328,7 @@ const VIEWS: [name: string, body: Body][] = [
       await projectListPage.noiseFilter.check();
       await projectListPage.dinov2CheckLabel.scrollIntoViewIfNeeded();
       await projectListPage.dinov2Check.check();
-      // take the focus, and its tooltip, off the switch
+      // blur: the focused switch keeps its tooltip open
       await projectListPage.dialog.getByRole("heading").first().click();
       await projectListPage.dinov2Threshold.scrollIntoViewIfNeeded();
 
@@ -400,7 +417,6 @@ const VIEWS: [name: string, body: Body][] = [
       await projectPage.testRunList.gridViewToggle.click();
       await projectPage.testRunList.groupToggle.click();
 
-      // the three screens, collapsed into two cards
       await expect(projectPage.testRunList.cards).toHaveCount(2);
       await shot("project-page-grouped");
     },

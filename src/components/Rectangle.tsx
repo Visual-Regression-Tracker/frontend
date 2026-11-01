@@ -1,5 +1,5 @@
 import Konva from "konva";
-import React from "react";
+import { Fragment, useEffect, useRef } from "react";
 import { KonvaNodeEvents, Rect, Transformer } from "react-konva";
 import { clampToImage } from "../_helpers/ignoreArea.helper";
 
@@ -12,14 +12,9 @@ interface IProps {
   onChange?: (rectConfig: Konva.RectConfig) => void;
 }
 
-const Rectangle: React.FunctionComponent<IProps> = ({
-  shapeProps,
-  isSelected,
-  onSelect,
-  onChange,
-}) => {
-  const shapeRef = React.useRef<Konva.Rect>(null);
-  const trRef = React.useRef<Konva.Transformer>(null);
+const Rectangle = ({ shapeProps, isSelected, onSelect, onChange }: IProps) => {
+  const shapeRef = useRef<Konva.Rect>(null);
+  const trRef = useRef<Konva.Transformer>(null);
   const rectProps: KonvaNodeEvents & Konva.ShapeConfig = {
     fill: "gray",
     opacity: 0.4,
@@ -29,9 +24,8 @@ const Rectangle: React.FunctionComponent<IProps> = ({
     ...shapeProps,
   };
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (isSelected && shapeRef.current) {
-      // we need to attach transformer manually
       trRef.current!.nodes([shapeRef.current]);
       trRef.current!.getLayer()!.batchDraw();
     }
@@ -63,10 +57,7 @@ const Rectangle: React.FunctionComponent<IProps> = ({
       });
 
     rectProps.onTransformEnd = () => {
-      // transformer is changing scale of the node
-      // and NOT its width or height
-      // but in the store we have only width and height
-      // to match the data better we will reset scale on transform end
+      // the transformer scales the node; fold the scale into width and height
       const node = shapeRef.current;
 
       if (!node) {
@@ -76,14 +67,12 @@ const Rectangle: React.FunctionComponent<IProps> = ({
       const scaleX = node.scaleX();
       const scaleY = node.scaleY();
 
-      // we will reset it back
       node.scaleX(1);
       node.scaleY(1);
       onChange({
         ...shapeProps,
         x: node.x(),
         y: node.y(),
-        // set minimal value
         width: Math.max(MIN_RECT_SIDE_PIXEL, node.width() * scaleX),
         height: Math.max(MIN_RECT_SIDE_PIXEL, node.height() * scaleY),
       });
@@ -104,20 +93,18 @@ const Rectangle: React.FunctionComponent<IProps> = ({
   }
 
   return (
-    <React.Fragment>
+    <Fragment>
       <Rect ref={shapeRef} {...rectProps} />
       {isSelected && (
         <Transformer
           ref={trRef}
           rotateEnabled={false}
           boundBoxFunc={(oldBox, newBox) => {
-            // a handle pulled past the image stops at its border
             const layerSize = shapeRef.current?.getLayer()?.getSize();
             const box = layerSize
               ? clampToImage(newBox, layerSize.width, layerSize.height)
               : newBox;
 
-            // limit resize
             if (
               box.width < MIN_RECT_SIDE_PIXEL ||
               box.height < MIN_RECT_SIDE_PIXEL
@@ -129,7 +116,7 @@ const Rectangle: React.FunctionComponent<IProps> = ({
           }}
         />
       )}
-    </React.Fragment>
+    </Fragment>
   );
 };
 

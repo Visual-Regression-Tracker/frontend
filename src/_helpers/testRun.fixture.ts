@@ -1,8 +1,7 @@
 import { TestRun } from "../types";
 import { TestStatus } from "../types/testStatus";
 
-// spelled out here rather than taken from test.data.helper: that module does not
-// type check, and naming every axis keeps the grouping inputs obvious
+// not taken from test.data.helper, which does not type check
 const BASE: TestRun = {
   id: "run",
   buildId: "build",

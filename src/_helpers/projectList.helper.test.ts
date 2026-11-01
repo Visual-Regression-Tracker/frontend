@@ -1,4 +1,3 @@
-import { Project } from "../types";
 import { TEST_PROJECT } from "../_test/test.data.helper";
 import {
   RECENT_PROJECTS_LIMIT,
@@ -8,8 +7,12 @@ import {
   rememberRecentProject,
 } from "./projectList.helper";
 
-const project = (id: string, name: string, mainBranchName = "master") =>
-  ({ ...TEST_PROJECT, id, name, mainBranchName }) as Project;
+const project = (id: string, name: string, mainBranchName = "master") => ({
+  ...TEST_PROJECT,
+  id,
+  name,
+  mainBranchName,
+});
 
 const ALPHA = project("a-id", "Alpha");
 const BETA = project("b-id", "Beta", "main");
@@ -52,7 +55,6 @@ describe("groupProjects", () => {
     );
 
     expect(groups.favorites).toEqual([BETA, GAMMA]);
-    // a favourite is shown once, among the favourites
     expect(groups.recent).toEqual([DELTA]);
     expect(groups.others).toEqual([ALPHA]);
   });

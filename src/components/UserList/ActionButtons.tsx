@@ -1,4 +1,4 @@
-import React from "react";
+import { Fragment, useMemo } from "react";
 import { IconButton } from "@mui/material";
 import { Delete } from "@mui/icons-material";
 import {
@@ -11,7 +11,7 @@ import { useSnackbar } from "notistack";
 import { useUserDispatch, useUserState } from "../../contexts";
 import { Tooltip } from "../Tooltip";
 
-export const ActionButtons: React.FunctionComponent = () => {
+export const ActionButtons = () => {
   const apiRef = useGridApiContext();
   const selection = useGridSelector(apiRef, gridRowSelectionIdsSelector);
 
@@ -19,14 +19,10 @@ export const ActionButtons: React.FunctionComponent = () => {
   const userDispatch = useUserDispatch();
   const { userList, user } = useUserState();
 
-  // user ids are strings, so the grid's rows are keyed by strings
-  const ids = React.useMemo(
-    () => [...selection.keys()] as string[],
-    [selection],
-  );
+  const ids = useMemo(() => [...selection.keys()] as string[], [selection]);
 
   return (
-    <React.Fragment>
+    <Fragment>
       <Tooltip title="Delete selected rows." aria-label="delete">
         <span>
           <IconButton
@@ -65,6 +61,6 @@ export const ActionButtons: React.FunctionComponent = () => {
           </IconButton>
         </span>
       </Tooltip>
-    </React.Fragment>
+    </Fragment>
   );
 };

@@ -9,8 +9,6 @@ export interface ProjectGroups {
   others: Project[];
 }
 
-// what a reviewer remembers a project by: its name, the id CI is configured
-// with, or the branch it compares against
 export const matchesProjectQuery = (project: Project, query: string) => {
   const needle = query.trim().toLowerCase();
 
@@ -24,11 +22,7 @@ export const matchesProjectQuery = (project: Project, query: string) => {
 
 const byName = (a: Project, b: Project) => a.name.localeCompare(b.name);
 
-/**
- * Favourites by name, then the recently opened ones in the order they were
- * opened, then everything else by name. Each project shows up once, so a
- * favourite is not repeated among the recent ones.
- */
+/** Favourites by name, recent in opening order, the rest by name; each project appears once. */
 export const groupProjects = (
   projects: Project[],
   favoriteIds: string[],
@@ -54,8 +48,7 @@ export const groupProjects = (
 
 const storageKey = (userId: string) => `${RECENT_PROJECTS_KEY}:${userId}`;
 
-// storage can be missing or full (private windows, blocked site data); the
-// list is a convenience, so it is then simply empty or not kept
+// storage can be blocked or full (private windows); the list is a convenience, so it degrades to empty
 export const readRecentProjectIds = (userId: string): string[] => {
   try {
     const ids: unknown = JSON.parse(

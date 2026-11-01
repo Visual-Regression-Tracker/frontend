@@ -1,21 +1,21 @@
 import { FormControlLabel, Switch } from "@mui/material";
-import React from "react";
+import { type ChangeEvent, Fragment } from "react";
 import { TextValidator } from "react-material-ui-form-validator";
 import { LooksSameConfig } from "../../types/imageComparison";
 import { useConfigHook } from "./useConfigHook";
 import { BlurAmplitudeFields } from "./BlurAmplitudeFields";
 
-export const LooksSameConfigForm: React.FunctionComponent = () => {
+export const LooksSameConfigForm = () => {
   const [config, updateConfig] = useConfigHook<LooksSameConfig>();
 
   return (
-    <React.Fragment>
+    <Fragment>
       <FormControlLabel
         label="Strict"
         control={
           <Switch
             checked={config.strict}
-            onChange={(event, checked) => updateConfig("strict", checked)}
+            onChange={(_event, checked) => updateConfig("strict", checked)}
             color="primary"
             name="strict"
           />
@@ -38,7 +38,7 @@ export const LooksSameConfigForm: React.FunctionComponent = () => {
         fullWidth
         helperText="Default tolerance in non-strict mode is 2.3 which is enough for the most cases. Setting tolerance to 0 will produce the same result as strict: true, but strict mode is faster. Attempt to set tolerance in strict mode will produce an error."
         value={config.tolerance}
-        onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
+        onChange={(event: ChangeEvent<HTMLInputElement>) => {
           const { value } = event.target;
           updateConfig("tolerance", parseFloat(value));
         }}
@@ -48,7 +48,7 @@ export const LooksSameConfigForm: React.FunctionComponent = () => {
         control={
           <Switch
             checked={config.ignoreAntialiasing}
-            onChange={(event, checked) =>
+            onChange={(_event, checked) =>
               updateConfig("ignoreAntialiasing", checked)
             }
             color="primary"
@@ -73,7 +73,7 @@ export const LooksSameConfigForm: React.FunctionComponent = () => {
         fullWidth
         helperText="Minimum difference in brightness (zero by default) between the darkest/lightest pixel (which is adjacent to the antialiasing pixel) and theirs adjacent pixels."
         value={config.antialiasingTolerance}
-        onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
+        onChange={(event: ChangeEvent<HTMLInputElement>) => {
           const { value } = event.target;
           updateConfig("antialiasingTolerance", parseFloat(value));
         }}
@@ -83,7 +83,7 @@ export const LooksSameConfigForm: React.FunctionComponent = () => {
         control={
           <Switch
             checked={config.ignoreCaret}
-            onChange={(event, checked) => updateConfig("ignoreCaret", checked)}
+            onChange={(_event, checked) => updateConfig("ignoreCaret", checked)}
             color="primary"
             name="ignoreCaret"
           />
@@ -94,7 +94,7 @@ export const LooksSameConfigForm: React.FunctionComponent = () => {
         control={
           <Switch
             checked={config.allowDiffDimensions}
-            onChange={(event, checked) =>
+            onChange={(_event, checked) =>
               updateConfig("allowDiffDimensions", checked)
             }
             color="primary"
@@ -103,6 +103,6 @@ export const LooksSameConfigForm: React.FunctionComponent = () => {
         }
       />
       <BlurAmplitudeFields />
-    </React.Fragment>
+    </Fragment>
   );
 };

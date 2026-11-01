@@ -1,4 +1,4 @@
-import React from "react";
+import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { TestVariation } from "../types";
 import { testVariationService, staticService } from "../services";
@@ -22,13 +22,13 @@ import { formatDateTime } from "../_helpers/format.helper";
 import TestStatusChip from "../components/TestStatusChip";
 import { Baseline } from "../types/baseline";
 
-const TestVariationDetailsPage: React.FunctionComponent = () => {
+const TestVariationDetailsPage = () => {
   const navigate = useNavigate();
   const { enqueueSnackbar } = useSnackbar();
   const { testVariationId } = useParams<{ testVariationId: string }>();
-  const [testVariation, setTestVariation] = React.useState<TestVariation>();
+  const [testVariation, setTestVariation] = useState<TestVariation>();
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (testVariationId) {
       testVariationService
         .getDetails(testVariationId)

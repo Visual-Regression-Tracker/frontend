@@ -1,7 +1,6 @@
 import { BasePage } from "./BasePage";
 
 export class ProfilePage extends BasePage {
-  // each card is its own form with its own submit button
   userForm = this.page.locator("form").filter({ hasText: "User details" });
   firstName = this.userForm.getByTestId("firstName");
   lastName = this.userForm.getByTestId("lastName");

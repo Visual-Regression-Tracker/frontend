@@ -1,4 +1,3 @@
-import React from "react";
 import { screen, waitFor, within } from "@testing-library/react";
 import { renderWithProviders } from "../../_test/render";
 import { usersService } from "../../services";
@@ -32,8 +31,7 @@ const EDITOR: User = {
 };
 const USERS = [ADMIN, GUEST, EDITOR];
 
-// jsdom has no layout, so the grid sees a zero-width viewport and renders only
-// the first columns; give every element a size so all columns are rendered
+// jsdom has no layout: without sizes the grid renders only the first columns
 const stubLayout = () => {
   vi.spyOn(HTMLElement.prototype, "clientWidth", "get").mockReturnValue(1200);
   vi.spyOn(HTMLElement.prototype, "clientHeight", "get").mockReturnValue(800);

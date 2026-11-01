@@ -1,31 +1,75 @@
-import React from "react";
-import { render, RenderOptions } from "@testing-library/react";
+import { type ReactElement, type ReactNode, useEffect } from "react";
+import { act, render, RenderOptions } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { MemoryRouter } from "react-router-dom";
 import { ThemeProvider } from "@mui/material/styles";
 import { SnackbarProvider } from "notistack";
+import type { Socket } from "socket.io-client";
 import {
   UserProvider,
   ProjectProvider,
   BuildProvider,
   TestRunProvider,
+  SocketProvider,
   HelpProvider,
+  useSocketDispatch,
 } from "../contexts";
 import { theme } from "../theme";
 import { User } from "../types";
 
-interface Options extends Omit<RenderOptions, "wrapper"> {
-  // where the MemoryRouter starts
-  route?: string;
-  // the logged in user, seeded the way the app keeps it; null logs out
-  user?: User | null;
+type Handler = (payload: unknown) => void;
+
+export interface FakeSocket {
+  on: (event: string, handler: Handler) => FakeSocket;
+  removeAllListeners: () => FakeSocket;
+  // inside act() so React settles
+  emit: (event: string, payload: unknown) => void;
+  listening: () => string[];
 }
 
-// Renders a component inside the providers App sets up, minus the socket.
-// Services are expected to be mocked by the test (vi.mock("../services")).
+export function createFakeSocket(): FakeSocket {
+  const handlers = new Map<string, Handler[]>();
+  const socket: FakeSocket = {
+    on: (event, handler) => {
+      handlers.set(event, [...(handlers.get(event) ?? []), handler]);
+      return socket;
+    },
+    removeAllListeners: () => {
+      handlers.clear();
+      return socket;
+    },
+    emit: (event, payload) => {
+      act(() => {
+        (handlers.get(event) ?? []).forEach((handler) => handler(payload));
+      });
+    },
+    listening: () => [...handlers.keys()],
+  };
+  return socket;
+}
+
+// SocketProvider connects only when the API url is configured, which it is not under test
+const ConnectFakeSocket = ({ socket }: { socket: FakeSocket }) => {
+  const dispatch = useSocketDispatch();
+
+  useEffect(() => {
+    dispatch({ type: "connect", payload: socket as unknown as Socket });
+  }, [dispatch, socket]);
+
+  return null;
+};
+
+interface Options extends Omit<RenderOptions, "wrapper"> {
+  route?: string;
+  user?: User | null;
+  // when given, the app's SocketProvider is mounted and listens on this socket
+  socket?: FakeSocket;
+}
+
+// Services are expected to be mocked by the test (vi.mock("../services"))
 export function renderWithProviders(
-  ui: React.ReactElement,
-  { route = "/", user = null, ...options }: Options = {},
+  ui: ReactElement,
+  { route = "/", user = null, socket, ...options }: Options = {},
 ) {
   if (user) {
     localStorage.setItem("user", JSON.stringify(user));
@@ -33,7 +77,7 @@ export function renderWithProviders(
     localStorage.removeItem("user");
   }
 
-  const Wrapper = ({ children }: { children: React.ReactNode }) => (
+  const Wrapper = ({ children }: { children: ReactNode }) => (
     <MemoryRouter initialEntries={[route]}>
       <ThemeProvider theme={theme}>
         <SnackbarProvider>
@@ -41,7 +85,14 @@ export function renderWithProviders(
             <ProjectProvider>
               <BuildProvider>
                 <TestRunProvider>
-                  <HelpProvider>{children}</HelpProvider>
+                  {socket ? (
+                    <SocketProvider>
+                      <ConnectFakeSocket socket={socket} />
+                      <HelpProvider>{children}</HelpProvider>
+                    </SocketProvider>
+                  ) : (
+                    <HelpProvider>{children}</HelpProvider>
+                  )}
                 </TestRunProvider>
               </BuildProvider>
             </ProjectProvider>

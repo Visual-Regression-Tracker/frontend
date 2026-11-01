@@ -1,5 +1,4 @@
 import { routes } from "../constants";
-import qs from "qs";
 
 export const buildProjectPageUrl = (projectId: string) =>
   `${routes.HOME}${projectId}`;
@@ -20,10 +19,10 @@ export interface QueryParams {
   testId?: string;
 }
 
-export const getQueryParams = (guery: string): QueryParams => {
-  const queryParams = qs.parse(guery, { ignoreQueryPrefix: true });
+export const getQueryParams = (query: string): QueryParams => {
+  const params = new URLSearchParams(query);
   return {
-    buildId: queryParams.buildId as string,
-    testId: queryParams.testId as string,
+    buildId: params.get("buildId") ?? undefined,
+    testId: params.get("testId") ?? undefined,
   };
 };

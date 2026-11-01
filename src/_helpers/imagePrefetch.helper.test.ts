@@ -83,7 +83,6 @@ describe("prefetchImages", () => {
   beforeEach(() => {
     requestedSrcs = [];
     originalImage = window.Image;
-    // jsdom will not load anything, but it does record what was asked for
     window.Image = class {
       set src(value: string) {
         requestedSrcs.push(value);

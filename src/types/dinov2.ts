@@ -1,5 +1,4 @@
-// GET /dinov2/status: whether this server can run the rendering-noise
-// filter's DINOv2 check
+// GET /dinov2/status
 export interface Dinov2Status {
   // DINOV2_URL is set on the backend
   configured: boolean;

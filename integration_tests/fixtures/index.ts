@@ -1,4 +1,4 @@
-import { test as base } from "@playwright/test";
+import { Page, test as base } from "@playwright/test";
 import { LoginPage, ProfilePage, ProjectListPage, ProjectPage } from "pages";
 import { RegisterPage } from "pages/RegisterPage";
 import { TestVariationDetailsPage } from "pages/TestVariationDetailsPage";
@@ -8,7 +8,6 @@ import type { User } from "~client/types";
 import { mockGetFavoriteProjects } from "utils/mocks";
 
 type Options = {
-  // the role the signed-in user has; override with test.use({ userRole })
   userRole: User["role"];
 };
 
@@ -32,7 +31,6 @@ type Fixtures = {
   authUser: void;
 };
 
-// the user the authUser fixture signs in, before its role is applied
 export const AUTH_USER = {
   id: "00b428bf-9b4d-487f-9883-0dc5ec9403d3",
   email: "visual-regression-tracker@example.com",
@@ -42,6 +40,16 @@ export const AUTH_USER = {
   role: "admin",
   token: "eyJsgOE8Bw2bFwhZAugRRGm8U",
 };
+
+// seeded once per tab: a 401 logs out and reloads, and seeding again would loop
+export async function seedUser(page: Page, user: User): Promise<void> {
+  await page.addInitScript((value) => {
+    if (!window.sessionStorage.getItem("authUserSeeded")) {
+      window.localStorage.setItem("user", value);
+      window.sessionStorage.setItem("authUserSeeded", "1");
+    }
+  }, JSON.stringify(user));
+}
 
 export const test = base.extend<Fixtures & Options>({
   userRole: ["admin", { option: true }],
@@ -101,20 +109,9 @@ export const test = base.extend<Fixtures & Options>({
       return new TestVariationDetailsPage(page);
     });
   },
-  // Seeded before the app's own scripts, so a test can open its page straight
-  // away instead of loading "/" first just to reach localStorage. Only once per
-  // tab: a 401 logs out and reloads, and seeding again would loop it.
   authUser: async ({ page, userRole }, use) => {
-    await page.addInitScript(
-      (user) => {
-        if (!window.sessionStorage.getItem("authUserSeeded")) {
-          window.localStorage.setItem("user", user);
-          window.sessionStorage.setItem("authUserSeeded", "1");
-        }
-      },
-      JSON.stringify({ ...AUTH_USER, role: userRole }),
-    );
-    // every signed-in page asks for them; a test sets its own after this
+    await seedUser(page, { ...AUTH_USER, role: userRole });
+    // a test's own mock, registered later, takes precedence
     await mockGetFavoriteProjects(page, []);
 
     await use();

@@ -1,4 +1,3 @@
-import React from "react";
 import { screen, within } from "@testing-library/react";
 import { renderWithProviders } from "../_test/render";
 import { projectsService } from "../services";
@@ -88,7 +87,6 @@ describe("ProjectSelect", () => {
       favorites: [THIRD.id],
       recent: [SECOND.id],
     });
-    // the favourites arrive after the projects
     await vi.waitFor(() =>
       expect(projectsService.getFavorites).toHaveBeenCalled(),
     );

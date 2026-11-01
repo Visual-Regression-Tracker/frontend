@@ -1,4 +1,4 @@
-import React, { useMemo } from "react";
+import { useMemo, Fragment } from "react";
 import {
   FormControl,
   InputLabel,
@@ -18,12 +18,11 @@ import { OllamaConfigForm } from "./OllamaConfigForm";
 import { BlurAmplitudeFields } from "./BlurAmplitudeFields";
 import { withBlurAmplitudeOf } from "./utils";
 
-export const VlmConfigForm: React.FunctionComponent = () => {
+export const VlmConfigForm = () => {
   const [config] = useConfigHook<VlmConfig>();
   const { projectEditState: project } = useProjectState();
   const projectDispatch = useProjectDispatch();
 
-  // Determine current provider (default to ollama if not set)
   const currentProvider = useMemo(() => {
     if ("provider" in config && config.provider === "gemini") {
       return "gemini";
@@ -37,7 +36,6 @@ export const VlmConfigForm: React.FunctionComponent = () => {
     const currentTemperature = config.temperature;
     const currentUseThinking = config.useThinking;
 
-    // We need to update the entire config when switching providers
     let newConfig: VlmConfig;
     if (newProvider === "gemini") {
       newConfig = {
@@ -68,7 +66,7 @@ export const VlmConfigForm: React.FunctionComponent = () => {
   };
 
   return (
-    <React.Fragment>
+    <Fragment>
       <FormControl variant="standard" fullWidth margin="dense" required>
         <InputLabel id="provider-select-label">VLM Provider</InputLabel>
         <Select
@@ -88,6 +86,6 @@ export const VlmConfigForm: React.FunctionComponent = () => {
         <OllamaConfigForm />
       )}
       <BlurAmplitudeFields />
-    </React.Fragment>
+    </Fragment>
   );
 };

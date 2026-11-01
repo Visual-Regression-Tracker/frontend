@@ -1,16 +1,18 @@
-import React from "react";
+import { useEffect, useRef } from "react";
 import { InputAdornment, TextField } from "@mui/material";
 import { Search } from "@mui/icons-material";
 import { isTypingTarget } from "../_helpers/hotkeys.helper";
 
-// "/" puts the cursor here, as on GitHub and in most docs
-export const ProjectSearchField: React.FunctionComponent<{
+export const ProjectSearchField = ({
+  value,
+  onChange,
+}: {
   value: string;
   onChange: (value: string) => void;
-}> = ({ value, onChange }) => {
-  const inputRef = React.useRef<HTMLInputElement>(null);
+}) => {
+  const inputRef = useRef<HTMLInputElement>(null);
 
-  React.useEffect(() => {
+  useEffect(() => {
     const focusSearch = (event: KeyboardEvent) => {
       if (event.key === "/" && !isTypingTarget(event.target)) {
         event.preventDefault();

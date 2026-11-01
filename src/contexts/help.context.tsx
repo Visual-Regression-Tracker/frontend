@@ -1,5 +1,5 @@
-import React from "react";
-import { Step } from "react-joyride";
+import { type ReactNode, createContext, useContext, useReducer } from "react";
+import type { Step } from "react-joyride";
 
 interface ISetStepAction {
   type: "setSteps";
@@ -11,11 +11,11 @@ type State = {
   helpSteps: Step[];
 };
 type HelpProviderProps = {
-  children: React.ReactNode;
+  children: ReactNode;
 };
 
-const StateContext = React.createContext<State | undefined>(undefined);
-const DispatchContext = React.createContext<Dispatch | undefined>(undefined);
+const StateContext = createContext<State | undefined>(undefined);
+const DispatchContext = createContext<Dispatch | undefined>(undefined);
 
 const initialState: State = {
   helpSteps: [],
@@ -31,8 +31,8 @@ export function reducer(state: State, action: ISetStepAction): State {
   return state;
 }
 
-function HelpProvider({ children }: HelpProviderProps) {
-  const [state, dispatch] = React.useReducer(reducer, initialState);
+function HelpProvider({ children }: Readonly<HelpProviderProps>) {
+  const [state, dispatch] = useReducer(reducer, initialState);
 
   return (
     <StateContext.Provider value={state}>
@@ -44,7 +44,7 @@ function HelpProvider({ children }: HelpProviderProps) {
 }
 
 function useHelpState() {
-  const context = React.useContext(StateContext);
+  const context = useContext(StateContext);
 
   if (context === undefined) {
     throw Error("must be used within a HelpContext");
@@ -54,7 +54,7 @@ function useHelpState() {
 }
 
 function useHelpDispatch() {
-  const context = React.useContext(DispatchContext);
+  const context = useContext(DispatchContext);
 
   if (context === undefined) {
     throw Error("must be used within a HelpContext");

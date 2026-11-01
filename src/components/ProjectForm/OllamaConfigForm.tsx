@@ -1,4 +1,10 @@
-import React, { useState, useEffect, useMemo } from "react";
+import {
+  useState,
+  useEffect,
+  useMemo,
+  type ChangeEvent,
+  Fragment,
+} from "react";
 import {
   LinearProgress,
   FormControl,
@@ -21,7 +27,7 @@ import {
   VlmUseThinkingField,
 } from "./VlmSharedFields";
 
-export const OllamaConfigForm: React.FunctionComponent = () => {
+export const OllamaConfigForm = () => {
   const { enqueueSnackbar } = useSnackbar();
   const [config, updateConfig] = useConfigHook<OllamaVlmConfig>();
   const [models, setModels] = useState<OllamaModel[]>([]);
@@ -99,7 +105,7 @@ export const OllamaConfigForm: React.FunctionComponent = () => {
           required
           value={config.model || ""}
           helperText="No models available. Enter model name manually."
-          onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
+          onChange={(event: ChangeEvent<HTMLInputElement>) => {
             updateConfig("model", event.target.value);
           }}
         />
@@ -138,7 +144,7 @@ export const OllamaConfigForm: React.FunctionComponent = () => {
   };
 
   return (
-    <React.Fragment>
+    <Fragment>
       <Tooltip title="The Ollama model name to use for image comparison. Models are fetched from the Ollama service.">
         <div>
           {renderModelField()}
@@ -164,7 +170,6 @@ export const OllamaConfigForm: React.FunctionComponent = () => {
         value={config.useThinking || false}
         onChange={(value) => updateConfig("useThinking", value)}
       />
-    </React.Fragment>
+    </Fragment>
   );
 };
-

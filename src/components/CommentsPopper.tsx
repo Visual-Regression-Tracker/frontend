@@ -1,4 +1,10 @@
-import React from "react";
+import {
+  type ChangeEvent,
+  Fragment,
+  type KeyboardEvent,
+  useEffect,
+  useState,
+} from "react";
 import { Button, Popper, Fade, Paper, TextField, Badge } from "@mui/material";
 import {
   usePopupState,
@@ -11,22 +17,18 @@ interface IProps {
   onSave: (comment: string) => Promise<void | string | number>;
 }
 
-export const CommentsPopper: React.FunctionComponent<IProps> = ({
-  text,
-  onSave,
-}) => {
+export const CommentsPopper = ({ text, onSave }: IProps) => {
   const popupState = usePopupState({
     variant: "popper",
     popupId: "commentPopper",
   });
 
-  const [comment, setComment] = React.useState("");
+  const [comment, setComment] = useState("");
 
-  React.useEffect(() => setComment(text || ""), [text]);
+  useEffect(() => setComment(text || ""), [text]);
 
-  // Escape closes the box, not the dialog around it, which would drop the
-  // draft from view; the draft itself stays for the next open
-  const closeOnEscape = (event: React.KeyboardEvent) => {
+  // Escape closes the box, not the dialog around it
+  const closeOnEscape = (event: KeyboardEvent) => {
     if (event.key === "Escape" && popupState.isOpen) {
       event.stopPropagation();
       popupState.close();
@@ -62,7 +64,7 @@ export const CommentsPopper: React.FunctionComponent<IProps> = ({
         {({ TransitionProps }) => (
           <Fade {...TransitionProps} timeout={350}>
             <Paper sx={{ padding: 2 }} onKeyDown={closeOnEscape}>
-              <React.Fragment>
+              <Fragment>
                 <TextField
                   id="comment"
                   name="comment"
@@ -72,7 +74,7 @@ export const CommentsPopper: React.FunctionComponent<IProps> = ({
                   multiline
                   rows={4}
                   fullWidth
-                  onChange={(event: React.ChangeEvent<HTMLInputElement>) =>
+                  onChange={(event: ChangeEvent<HTMLInputElement>) =>
                     setComment(event.target.value)
                   }
                   inputProps={{
@@ -81,8 +83,7 @@ export const CommentsPopper: React.FunctionComponent<IProps> = ({
                 />
                 <Button
                   onClick={() => {
-                    // a failed save is the caller's to report; the box stays
-                    // open with the draft so it can be saved again
+                    // a failed save is the caller's to report; the box stays open
                     onSave(comment).then(
                       () => popupState.close(),
                       () => undefined,
@@ -91,7 +92,7 @@ export const CommentsPopper: React.FunctionComponent<IProps> = ({
                 >
                   Save
                 </Button>
-              </React.Fragment>
+              </Fragment>
             </Paper>
           </Fade>
         )}

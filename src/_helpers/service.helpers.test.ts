@@ -16,7 +16,6 @@ describe("authHeader", () => {
     expect(authHeader()).toEqual({ Authorization: "Bearer abc" });
   });
 
-  // NOTE: the "no header" answer is an empty array rather than an empty object
   it("sends no headers when nobody is logged in", () => {
     expect(authHeader()).toEqual([]);
   });
@@ -94,7 +93,6 @@ describe("handleResponse", () => {
     expect(reload).toHaveBeenCalledTimes(1);
   });
 
-  // e.g. the HTML error page the proxy serves while the API restarts
   it("rejects with the status text when an error response is not JSON", async () => {
     const response = new Response("<html><body>502 Bad Gateway</body></html>", {
       status: 502,

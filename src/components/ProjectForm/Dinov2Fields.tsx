@@ -1,5 +1,5 @@
 import { FormControlLabel, FormHelperText, Switch } from "@mui/material";
-import React from "react";
+import { type ChangeEvent, Fragment } from "react";
 import { TextValidator } from "react-material-ui-form-validator";
 import { useDinov2Status } from "../../_helpers/useDinov2Status";
 import { DEFAULT_DINOV2_THRESHOLD } from "../../constants";
@@ -7,8 +7,7 @@ import { BlurAmplitudeConfig, Dinov2Status } from "../../types";
 import { Tooltip } from "../Tooltip";
 import { useConfigHook } from "./useConfigHook";
 
-// What the check does on this server, said where it matters: with no service
-// the backend sends every run the filter would pass to review.
+// with no service the backend sends every run the filter would pass to review
 const statusNote = (
   status: Dinov2Status | undefined,
   checked: boolean,
@@ -35,31 +34,28 @@ const statusNote = (
   return undefined;
 };
 
-// Rendered under the rendering-noise filter while it is on.
-export const Dinov2Fields: React.FunctionComponent = () => {
+export const Dinov2Fields = () => {
   const [config, updateConfig] = useConfigHook<BlurAmplitudeConfig>();
   const status = useDinov2Status();
   const checked = config.dinov2Check === true;
   const note = statusNote(status, checked);
 
-  // absent: the backend default applies; null: the field was cleared, which
-  // the required validator then refuses
+  // absent: backend default; null: cleared, which the required validator refuses
   const threshold =
     config.dinov2Threshold === undefined
       ? DEFAULT_DINOV2_THRESHOLD
       : (config.dinov2Threshold ?? "");
 
   return (
-    <React.Fragment>
+    <Fragment>
       <Tooltip title="Before a run passes as rendering noise, the DINOv2 service compares what the two screenshots show. Catches faint changes of content the blur misses, such as a missing light icon.">
         <FormControlLabel
           label="Check with DINOv2"
-          // a project saved with the check on can still turn it off
           disabled={!checked && !status?.configured}
           control={
             <Switch
               checked={checked}
-              onChange={(event, value) => updateConfig("dinov2Check", value)}
+              onChange={(_event, value) => updateConfig("dinov2Check", value)}
               color="primary"
               name="dinov2Check"
             />
@@ -99,12 +95,12 @@ export const Dinov2Fields: React.FunctionComponent = () => {
           type="number"
           fullWidth
           value={threshold}
-          onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
+          onChange={(event: ChangeEvent<HTMLInputElement>) => {
             const value = parseFloat(event.target.value);
             updateConfig("dinov2Threshold", Number.isNaN(value) ? null : value);
           }}
         />
       )}
-    </React.Fragment>
+    </Fragment>
   );
 };

@@ -1,4 +1,4 @@
-import React from "react";
+import { Fragment, useCallback, useEffect } from "react";
 import { Box, Toolbar } from "@mui/material";
 import {
   DataGrid,
@@ -56,7 +56,7 @@ const UserList = () => {
   const userDispatch = useUserDispatch();
   const { userList } = useUserState();
 
-  React.useEffect(() => {
+  useEffect(() => {
     usersService
       .getAll()
       .then((users) =>
@@ -73,7 +73,7 @@ const UserList = () => {
   }, [userDispatch, enqueueSnackbar]);
 
   // the grid shows the row this resolves to, so a rejected role reverts
-  const processRowUpdate = React.useCallback(
+  const processRowUpdate = useCallback(
     (newState: User, oldState: User) => {
       if (newState.role === oldState.role) {
         return newState;
@@ -120,8 +120,8 @@ const UserList = () => {
 
 export default UserList;
 
-const DataGridCustomToolbar: React.FunctionComponent = () => (
-  <React.Fragment>
+const DataGridCustomToolbar = () => (
+  <Fragment>
     <Toolbar variant="dense">
       <GridToolbarFilterButton />
       <GridToolbarDensitySelector />
@@ -129,5 +129,5 @@ const DataGridCustomToolbar: React.FunctionComponent = () => (
         <ActionButtons />
       </Box>
     </Toolbar>
-  </React.Fragment>
+  </Fragment>
 );

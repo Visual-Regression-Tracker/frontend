@@ -1,4 +1,3 @@
-import React from "react";
 import { screen, waitFor, within } from "@testing-library/react";
 import { renderWithProviders } from "../_test/render";
 import { projectsService, usersService } from "../services";
@@ -16,13 +15,11 @@ const clear = async (user: User, field: HTMLElement) => {
   await user.clear(field);
 };
 
-// the page has two forms, each with its own submit button: user details first
 const submitDetails = (user: User) =>
   user.click(screen.getAllByTestId("submit")[0]);
 const submitPassword = (user: User) =>
   user.click(screen.getAllByTestId("submit")[1]);
 
-// resolves once the project list has loaded, so nothing updates after a test
 const renderPage = async () => {
   const rendered = renderWithProviders(<ProfilePage />, { user: TEST_USER });
   await screen.findByRole("combobox", { name: /Project/ });
@@ -288,9 +285,8 @@ describe("ProfilePage", () => {
     it("shows a config file with the api url, key and the default project", async () => {
       await renderPage();
 
-      const config = (
-        screen.getByDisplayValue(/"apiKey"/) as HTMLTextAreaElement
-      ).value;
+      const config =
+        screen.getByDisplayValue<HTMLTextAreaElement>(/"apiKey"/).value;
       expect(config).toContain('"apiUrl": "http://api.test"');
       expect(config).toContain(`"apiKey": "${TEST_USER.apiKey}"`);
       expect(config).toContain('"project": "Default project"');
@@ -301,9 +297,8 @@ describe("ProfilePage", () => {
 
       await user.click(screen.getByRole("tab", { name: "ENV variables" }));
 
-      const env = (
-        screen.getByDisplayValue(/VRT_APIKEY/) as HTMLTextAreaElement
-      ).value;
+      const env =
+        screen.getByDisplayValue<HTMLTextAreaElement>(/VRT_APIKEY/).value;
       expect(env).toContain('VRT_APIURL="http://api.test"');
       expect(env).toContain(`VRT_APIKEY="${TEST_USER.apiKey}"`);
       expect(env).toContain('VRT_PROJECT="Default project"\n');
@@ -324,7 +319,7 @@ describe("ProfilePage", () => {
 
       await waitFor(() =>
         expect(
-          (screen.getByDisplayValue(/"apiKey"/) as HTMLTextAreaElement).value,
+          screen.getByDisplayValue<HTMLTextAreaElement>(/"apiKey"/).value,
         ).toContain(`"project": "${TEST_PROJECT.id}"`),
       );
     });

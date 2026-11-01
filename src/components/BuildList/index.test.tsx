@@ -1,6 +1,7 @@
-import React, { useEffect } from "react";
-import { act, screen, waitFor } from "@testing-library/react";
+import { useEffect } from "react";
+import { act, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { CurrentSearch } from "../../_test/location";
 import type { MockInstance } from "vitest";
 import { renderWithProviders } from "../../_test/render";
 import { selectProject, useProjectDispatch } from "../../contexts";
@@ -11,11 +12,6 @@ import {
 } from "../../_test/test.data.helper";
 import { Build } from "../../types";
 import BuildList from "./index";
-
-// BuildList imports from "react-router", the render helper's router comes from
-// "react-router-dom"; under Vitest those load as two copies of the library, so
-// hand BuildList the copy the router belongs to
-vi.mock("react-router", async () => import("react-router-dom"));
 
 const PROJECT_ID = "project-1";
 
@@ -70,8 +66,6 @@ describe("BuildList", () => {
         await vi.advanceTimersByTimeAsync(ms);
       });
 
-    // the list loads on its own when the project is selected; searching is
-    // what comes after
     const renderSettled = async () => {
       renderWithProviders(<OpenProject />);
       await waitFor(() => expect(getList).toHaveBeenCalledTimes(1));
@@ -117,8 +111,6 @@ describe("BuildList", () => {
       );
     });
 
-    // NOTE: unlike the name filters (Filters, TestRunFilters), this search sets
-    // no minLength, so a single character is searched for. Pinned as it is.
     it("searches for a single character too", async () => {
       await renderSettled();
 
@@ -156,7 +148,6 @@ describe("BuildList", () => {
         undefined,
       );
 
-      // nothing is left over to search for when the pause is over
       await elapse(400);
       expect(getList).toHaveBeenCalledTimes(1);
     });
@@ -265,6 +256,371 @@ describe("BuildList", () => {
 
       expect(screen.getByText("#2")).toBeVisible();
       expect(screen.queryByText("Project A is gone")).not.toBeInTheDocument();
+    });
+  });
+
+  describe("deleting and selecting builds", () => {
+    type Page = Awaited<ReturnType<typeof buildsService.getList>>;
+    type User = ReturnType<typeof userEvent.setup>;
+
+    const makeBuild = (n: number): Build => ({
+      ...TEST_BUILD_PASSED,
+      id: `build-${n}`,
+      number: n,
+      ciBuildId: `ci-${n}`,
+    });
+    const label = (n: number) => `#${n} ci-${n}`;
+    const builds = (from: number, to: number) =>
+      Array.from({ length: to - from + 1 }, (_, i) => makeBuild(from + i));
+    const pageOf = (data: Build[], total: number, skip = 0): Page => ({
+      data,
+      total,
+      skip,
+      take: 10,
+    });
+
+    const WithLocation = () => (
+      <>
+        <OpenProject />
+        <CurrentSearch />
+      </>
+    );
+
+    const rowCheckboxes = () =>
+      screen
+        .getAllByRole("checkbox")
+        .filter((box) => !box.getAttribute("aria-label"))
+        .map((box) => box as HTMLInputElement);
+    const confirm = async (user: User, title: string) => {
+      const dialog = await screen.findByRole("dialog", { name: title });
+      await user.click(within(dialog).getByTestId("submitButton"));
+    };
+    // the row's menu button only shows on hover in a browser; a click does not care
+    const openRowMenu = async (user: User, row: number, item: string) => {
+      await user.click(screen.getAllByTestId("MoreVertIcon")[row]);
+      await user.click(await screen.findByRole("menuitem", { name: item }));
+    };
+
+    describe("bulk delete", () => {
+      it("reports both the deleted and the failed builds, refetches and clears the selection", async () => {
+        getList.mockResolvedValue(pageOf(builds(1, 3), 3));
+        const remove = vi
+          .spyOn(buildsService, "remove")
+          .mockImplementation((id) =>
+            id === "build-2"
+              ? Promise.reject("Build is locked")
+              : Promise.resolve(makeBuild(1)),
+          );
+        const { user } = renderWithProviders(<OpenProject />);
+        await screen.findByText(label(1));
+
+        await user.click(
+          screen.getByRole("checkbox", { name: "Select all (3)" }),
+        );
+        expect(rowCheckboxes().every((box) => box.checked)).toBe(true);
+        await user.click(screen.getByTestId("buildDeleteSelected"));
+        expect(
+          await screen.findByText(
+            "Are you sure you want to delete 3 build(s)?",
+          ),
+        ).toBeVisible();
+
+        getList.mockClear();
+        getList.mockResolvedValue(pageOf([makeBuild(2)], 1));
+        await confirm(user, "Delete Builds");
+
+        expect(await screen.findByText("2 build(s) deleted")).toBeVisible();
+        expect(screen.getByText("Failed to delete 1 build(s)")).toBeVisible();
+        expect(remove).toHaveBeenCalledTimes(3);
+        expect(remove).toHaveBeenCalledWith("build-1");
+        expect(remove).toHaveBeenCalledWith("build-2");
+        expect(remove).toHaveBeenCalledWith("build-3");
+
+        await waitFor(() =>
+          expect(getList).toHaveBeenCalledWith(
+            PROJECT_ID,
+            10,
+            0,
+            "",
+            undefined,
+          ),
+        );
+        await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
+        expect(rowCheckboxes().every((box) => !box.checked)).toBe(true);
+        expect(
+          screen.getByRole("checkbox", { name: "Select all (1)" }),
+        ).not.toBeChecked();
+      });
+    });
+
+    describe("deleting from the build's menu", () => {
+      it("goes back a page when the last build of the last page is deleted", async () => {
+        getList.mockImplementation((_project, _take, skip) =>
+          Promise.resolve(
+            skip === 0
+              ? pageOf(builds(1, 10), 11)
+              : pageOf([makeBuild(11)], 11, 10),
+          ),
+        );
+        const remove = vi
+          .spyOn(buildsService, "remove")
+          .mockResolvedValue(makeBuild(11));
+        const { user } = renderWithProviders(<OpenProject />);
+        await screen.findByText(label(1));
+
+        await user.click(screen.getByRole("button", { name: "Go to page 2" }));
+        expect(await screen.findByText(label(11))).toBeVisible();
+        expect(getList).toHaveBeenLastCalledWith(
+          PROJECT_ID,
+          10,
+          10,
+          "",
+          undefined,
+        );
+
+        getList.mockClear();
+        await openRowMenu(user, 0, "Delete");
+        await confirm(user, "Delete Build");
+
+        expect(await screen.findByText("Build #11 deleted")).toBeVisible();
+        expect(remove).toHaveBeenCalledWith("build-11");
+        await waitFor(() =>
+          expect(getList).toHaveBeenCalledWith(
+            PROJECT_ID,
+            10,
+            0,
+            "",
+            undefined,
+          ),
+        );
+        expect(await screen.findByText(label(1))).toBeVisible();
+        expect(screen.getByRole("button", { name: "page 1" })).toHaveAttribute(
+          "aria-current",
+          "page",
+        );
+      });
+
+      it("stays on the page when it still has builds after the delete", async () => {
+        getList.mockImplementation((_project, _take, skip) =>
+          Promise.resolve(
+            skip === 0
+              ? pageOf(builds(1, 10), 12)
+              : pageOf([makeBuild(11), makeBuild(12)], 12, 10),
+          ),
+        );
+        vi.spyOn(buildsService, "remove").mockResolvedValue(makeBuild(11));
+        const { user } = renderWithProviders(<OpenProject />);
+        await screen.findByText(label(1));
+        await user.click(screen.getByRole("button", { name: "Go to page 2" }));
+        await screen.findByText(label(11));
+
+        getList.mockClear();
+        await openRowMenu(user, 0, "Delete");
+        await confirm(user, "Delete Build");
+
+        await waitFor(() =>
+          expect(getList).toHaveBeenCalledWith(
+            PROJECT_ID,
+            10,
+            10,
+            "",
+            undefined,
+          ),
+        );
+      });
+
+      it("shows no build as selected when the open build is deleted", async () => {
+        vi.spyOn(buildsService, "getDetails").mockResolvedValue(
+          TEST_BUILD_PASSED,
+        );
+        getList.mockResolvedValue(pageOf([TEST_BUILD_PASSED], 1));
+        vi.spyOn(buildsService, "remove").mockResolvedValue(TEST_BUILD_PASSED);
+        const { user } = renderWithProviders(<WithLocation />, {
+          route: `/?buildId=${TEST_BUILD_PASSED.id}`,
+        });
+        await screen.findByText("#2");
+        expect(screen.getByTestId("search")).toHaveTextContent(
+          `?buildId=${TEST_BUILD_PASSED.id}`,
+        );
+
+        await openRowMenu(user, 0, "Delete");
+        await confirm(user, "Delete Build");
+
+        await waitFor(() =>
+          expect(screen.getByTestId("search")).toBeEmptyDOMElement(),
+        );
+      });
+
+      it("drops the deleted build from the selection", async () => {
+        getList.mockResolvedValue(pageOf(builds(1, 3), 3));
+        vi.spyOn(buildsService, "remove").mockResolvedValue(makeBuild(2));
+        const { user } = renderWithProviders(<OpenProject />);
+        await screen.findByText(label(1));
+
+        await user.click(rowCheckboxes()[0]);
+        await user.click(rowCheckboxes()[1]);
+
+        getList.mockResolvedValue(pageOf([makeBuild(1), makeBuild(3)], 2));
+        await openRowMenu(user, 1, "Delete");
+        await confirm(user, "Delete Build");
+        expect(await screen.findByText("Build #2 deleted")).toBeVisible();
+        await waitFor(() =>
+          expect(screen.queryByText(label(2))).not.toBeInTheDocument(),
+        );
+
+        await user.click(screen.getByTestId("buildDeleteSelected"));
+        expect(
+          await screen.findByText(
+            "Are you sure you want to delete 1 build(s)?",
+          ),
+        ).toBeVisible();
+      });
+
+      it("keeps the open build when another build is deleted", async () => {
+        vi.spyOn(buildsService, "getDetails").mockResolvedValue(makeBuild(1));
+        getList.mockResolvedValue(pageOf(builds(1, 2), 2));
+        vi.spyOn(buildsService, "remove").mockResolvedValue(makeBuild(2));
+        const { user } = renderWithProviders(<WithLocation />, {
+          route: "/?buildId=build-1",
+        });
+        await screen.findByText(label(2));
+
+        await openRowMenu(user, 1, "Delete");
+        await confirm(user, "Delete Build");
+
+        expect(await screen.findByText("Build #2 deleted")).toBeVisible();
+        expect(screen.getByTestId("search")).toHaveTextContent(
+          "?buildId=build-1",
+        );
+      });
+    });
+
+    describe("select all", () => {
+      const TOTAL = 25;
+      // the list shows a page of ten; only the select-all request takes all
+      const answerSelectAll = (all: Page) =>
+        getList.mockImplementation((_project, take) =>
+          Promise.resolve(take === TOTAL ? all : pageOf(builds(1, 10), TOTAL)),
+        );
+
+      it("asks for every build and ticks them all", async () => {
+        answerSelectAll(pageOf(builds(1, TOTAL), TOTAL));
+        const { user } = renderWithProviders(<OpenProject />);
+        await screen.findByText(label(1));
+        getList.mockClear();
+
+        await user.click(
+          screen.getByRole("checkbox", { name: "Select all (25)" }),
+        );
+
+        await waitFor(() =>
+          expect(
+            screen.getByRole("checkbox", { name: "Clear selection" }),
+          ).toBeChecked(),
+        );
+        expect(getList).toHaveBeenCalledTimes(1);
+        expect(getList).toHaveBeenCalledWith(PROJECT_ID, 25, 0, "");
+        expect(rowCheckboxes()).toHaveLength(10);
+        expect(rowCheckboxes().every((box) => box.checked)).toBe(true);
+        await user.click(screen.getByTestId("buildDeleteSelected"));
+        expect(
+          await screen.findByText(
+            "Are you sure you want to delete 25 build(s)?",
+          ),
+        ).toBeVisible();
+      });
+
+      it("asks for the builds the search matched", async () => {
+        answerSelectAll(pageOf(builds(1, TOTAL), TOTAL));
+        const { user } = renderWithProviders(<OpenProject />);
+        await screen.findByText(label(1));
+
+        await user.type(searchInput(), "ci-{Enter}");
+        await waitFor(() =>
+          expect(getList).toHaveBeenLastCalledWith(
+            PROJECT_ID,
+            10,
+            0,
+            "ci-",
+            undefined,
+          ),
+        );
+        await screen.findByText(label(1));
+        getList.mockClear();
+
+        await user.click(
+          screen.getByRole("checkbox", { name: "Select all (25)" }),
+        );
+
+        await waitFor(() =>
+          expect(
+            screen.getByRole("checkbox", { name: "Clear selection" }),
+          ).toBeChecked(),
+        );
+        expect(getList).toHaveBeenCalledWith(PROJECT_ID, 25, 0, "ci-");
+      });
+
+      it("ignores an answer that arrives after the search changed", async () => {
+        let resolveAll!: (page: Page) => void;
+        getList.mockImplementation((_project, take, _skip, query) => {
+          if (take === TOTAL) {
+            return new Promise<Page>((resolve) => {
+              resolveAll = resolve;
+            });
+          }
+          return Promise.resolve(
+            query ? pageOf(builds(1, 3), 3) : pageOf(builds(1, 10), TOTAL),
+          );
+        });
+        const { user } = renderWithProviders(<OpenProject />);
+        await screen.findByText(label(1));
+
+        await user.click(
+          screen.getByRole("checkbox", { name: "Select all (25)" }),
+        );
+        await waitFor(() => expect(resolveAll).toBeDefined());
+
+        await user.type(searchInput(), "ci-{Enter}");
+        await waitFor(() =>
+          expect(
+            screen.getByRole("checkbox", { name: "Select all (3)" }),
+          ).toBeInTheDocument(),
+        );
+        await act(async () => resolveAll(pageOf(builds(1, TOTAL), TOTAL)));
+
+        expect(
+          screen.getByRole("checkbox", { name: "Select all (3)" }),
+        ).not.toBeChecked();
+        expect(rowCheckboxes().every((box) => !box.checked)).toBe(true);
+        expect(
+          screen.queryByRole("checkbox", { name: "Clear selection" }),
+        ).toBeNull();
+      });
+    });
+
+    describe("editing the CI build id", () => {
+      const editCiBuildId = async (user: User, value: string) => {
+        await openRowMenu(user, 0, "Edit CI Build");
+        const dialog = await screen.findByRole("dialog", {
+          name: "Edit CI Build ID",
+        });
+        await user.type(within(dialog).getByTestId("newCiBuildId"), value);
+        await user.click(within(dialog).getByTestId("submitButton"));
+      };
+
+      it("shows the error as a toast when saving fails", async () => {
+        getList.mockResolvedValue(pageOf([makeBuild(1)], 1));
+        const update = vi
+          .spyOn(buildsService, "update")
+          .mockRejectedValue("CI build id is taken");
+        const { user } = renderWithProviders(<OpenProject />);
+        await screen.findByText(label(1));
+
+        await editCiBuildId(user, "ci-new");
+
+        expect(await screen.findByText("CI build id is taken")).toBeVisible();
+        expect(update).toHaveBeenCalledWith("build-1", { ciBuildId: "ci-new" });
+      });
     });
   });
 });

@@ -1,4 +1,3 @@
-import React from "react";
 import { SnackbarProvider, closeSnackbar } from "notistack";
 import { Box, CssBaseline, IconButton } from "@mui/material";
 import { Close } from "@mui/icons-material";
@@ -27,8 +26,7 @@ function App() {
         <CssBaseline enableColorScheme />
         <SnackbarProvider
           maxSnack={3}
-          // the build list pagination sits bottom left and the test run
-          // pagination bottom right, so toasts go between the two
+          // toasts go between the build list's bottom-left and the test run list's bottom-right pagination
           anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
           action={(key) => (
             <IconButton
@@ -48,7 +46,6 @@ function App() {
                 <TestRunProvider>
                   <SocketProvider>
                     <HelpProvider>
-                      {/* the header takes what it needs, the page the rest */}
                       <Box
                         sx={{
                           height: "100%",

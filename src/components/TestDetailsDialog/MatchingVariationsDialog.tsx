@@ -1,10 +1,4 @@
-import React, {
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   Dialog,
   DialogTitle,
@@ -19,8 +13,7 @@ import {
   Box,
   IconButton,
 } from "@mui/material";
-// named imports: the production bundle hands the per-icon files' default
-// export over as a module object, which crashed the full-size view
+// named imports: per-icon default imports resolve to module objects in the prod bundle
 import {
   Close as CloseIcon,
   ChevronLeft as ChevronLeftIcon,
@@ -28,17 +21,16 @@ import {
 } from "@mui/icons-material";
 import { styled } from "@mui/material/styles";
 import { useDialogSnackbar } from "./useDialogSnackbar";
-import { useNavigate } from "react-router";
 import { Tooltip } from "../Tooltip";
 import { testRunService, staticService } from "../../services";
 import { MatchingVariations } from "../../services/testRun.service";
-import { useTestRunState, useBuildState } from "../../contexts";
-import { buildTestRunLocation } from "../../_helpers/route.helpers";
+import { useTestRunState } from "../../contexts";
 import { GO_TO_NEXT_KEY } from "../../constants";
 import { imageFor, thumbnailFor } from "../../_helpers/testRunImage.helper";
 import { TestRun } from "../../types";
 import { TestStatus } from "../../types/testStatus";
 import { imageSurface } from "../../theme/tokens";
+import { partialFailureText, pluralize } from "../../_helpers/format.helper";
 
 const Toolbar = styled("div")({
   display: "flex",
@@ -126,8 +118,7 @@ export type MatchingVariationsMode = "approve" | "reject";
 const byDiffDesc = (a: TestRun, b: TestRun): number =>
   (b.diffPercent ?? 0) - (a.diffPercent ?? 0);
 
-// Runs approved/rejected this session (per build), so "go to next unresolved" can
-// skip them immediately even before socket state catches up. Resets per build.
+// runs acted on this session, per build: go-to-next skips them before socket state catches up
 const acted: { buildId: string | null; ids: Set<string> } = {
   buildId: null,
   ids: new Set(),
@@ -142,16 +133,22 @@ const rememberActed = (buildId: string, ids: string[]): void => {
 const isActed = (buildId: string, id: string): boolean =>
   acted.buildId === buildId && acted.ids.has(id);
 
-export const MatchingVariationsDialog: React.FunctionComponent<{
-  mode: MatchingVariationsMode | null;
+export const MatchingVariationsDialog = ({
+  mode,
+  testRun,
+  groupBy = "customTags",
+  onClose,
+  navigateTo,
+}: {
+  mode: MatchingVariationsMode;
   testRun: TestRun;
   groupBy?: string;
   onClose: () => void;
-}> = ({ mode, testRun, groupBy = "customTags", onClose }) => {
+  // goes to another run through the dialog's unsaved-areas check
+  navigateTo: (id: string) => void;
+}) => {
   const { enqueueSnackbar } = useDialogSnackbar();
-  const navigate = useNavigate();
   const { testRuns: allTestRuns, filteredSortedTestRunIds } = useTestRunState();
-  const { selectedBuild } = useBuildState();
 
   const [loading, setLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -166,7 +163,6 @@ export const MatchingVariationsDialog: React.FunctionComponent<{
 
   const loadData = useCallback(
     (background: boolean) => {
-      if (!mode) return;
       if (!background) {
         setLoading(true);
         setData(null);
@@ -178,14 +174,15 @@ export const MatchingVariationsDialog: React.FunctionComponent<{
           const presentIds = new Set(
             [...result.variations, ...result.skipped].map((v) => v.id),
           );
+          // read now: the updater below runs later, after the ref is replaced
+          const seen = seenVariationIds.current;
           if (background) {
-            // Keep the reviewer's current choices; auto-select only newly-arrived matching runs.
             setSelected((prev) => {
               const next = new Set(
                 [...prev].filter((id) => presentIds.has(id)),
               );
               result.variations.forEach((v) => {
-                if (!seenVariationIds.current.has(v.id)) next.add(v.id);
+                if (!seen.has(v.id)) next.add(v.id);
               });
               return next;
             });
@@ -203,31 +200,25 @@ export const MatchingVariationsDialog: React.FunctionComponent<{
           if (!background) setLoading(false);
         });
     },
-    [mode, testRun.id, enqueueSnackbar],
+    [testRun.id, enqueueSnackbar],
   );
 
-  // Initial load when the dialog opens.
   useEffect(() => {
     loadData(false);
   }, [loadData]);
 
-  // Auto-refresh (background) when siblings of this screen change during a running
-  // build — e.g. more locales land. Debounced so a burst triggers a single refetch.
+  // background refresh when siblings change mid-build; debounced so a burst refetches once
   const groupKey = useMemo(
     () =>
       allTestRuns
         .filter((run) => run.name === testRun.name)
         .map((run) => `${run.id}:${run.status}`)
-        .sort()
+        .sort((a: string, b: string) => a.localeCompare(b))
         .join(","),
     [allTestRuns, testRun.name],
   );
   const lastGroupKey = useRef<string | null>(null);
   useEffect(() => {
-    if (!mode) {
-      lastGroupKey.current = null;
-      return;
-    }
     if (lastGroupKey.current === null || lastGroupKey.current === groupKey) {
       lastGroupKey.current = groupKey;
       return;
@@ -236,7 +227,7 @@ export const MatchingVariationsDialog: React.FunctionComponent<{
     if (submitting) return;
     const timer = setTimeout(() => loadData(true), 1500);
     return () => clearTimeout(timer);
-  }, [groupKey, mode, submitting, loadData]);
+  }, [groupKey, submitting, loadData]);
 
   const variations = useMemo(
     () => (data ? [...data.variations].sort(byDiffDesc) : []),
@@ -265,7 +256,6 @@ export const MatchingVariationsDialog: React.FunctionComponent<{
   );
 
   useEffect(() => {
-    if (!mode) return;
     const swallow = new Set([
       "ArrowLeft",
       "ArrowRight",
@@ -278,8 +268,7 @@ export const MatchingVariationsDialog: React.FunctionComponent<{
     ]);
     const onKey = (e: KeyboardEvent) => {
       if (!swallow.has(e.key)) return;
-      // Keep these keys from reaching the test-run detail page behind the modal —
-      // its arrow navigation and a/x hotkeys would change the reviewed run.
+      // the page behind would act on these keys (arrows, a/x) and change the reviewed run
       e.preventDefault();
       e.stopPropagation();
       if (e.key === "d" || e.key === "D") {
@@ -293,7 +282,7 @@ export const MatchingVariationsDialog: React.FunctionComponent<{
     };
     window.addEventListener("keydown", onKey, true);
     return () => window.removeEventListener("keydown", onKey, true);
-  }, [mode, preview, step]);
+  }, [preview, step]);
 
   const toggle = useCallback((id: string) => {
     setSelected((prev) => {
@@ -337,8 +326,6 @@ export const MatchingVariationsDialog: React.FunctionComponent<{
 
   const verb = mode === "approve" ? "Approve" : "Reject";
 
-  // Honours the shared "Go to the next after Approve/Reject" toggle used by the
-  // single approve/reject buttons (persisted in localStorage).
   const goToNextEnabled = (): boolean => {
     try {
       return JSON.parse(localStorage.getItem(GO_TO_NEXT_KEY) || "false");
@@ -347,9 +334,7 @@ export const MatchingVariationsDialog: React.FunctionComponent<{
     }
   };
 
-  // Next test run that still needs review (unresolved), skipping everything acted
-  // on this session. Wraps around the filtered/sorted list so the last item still
-  // finds an earlier unresolved one; returns undefined only when none remain.
+  // wraps round the list, so the last run still finds an earlier unresolved one
   const findNextUnresolved = (): TestRun | undefined => {
     let ordered = allTestRuns;
     if (filteredSortedTestRunIds) {
@@ -380,35 +365,37 @@ export const MatchingVariationsDialog: React.FunctionComponent<{
       ? testRunService.approveBulk(ids, testRun.merge)
       : testRunService.rejectBulk(ids)
     )
-      .then(() => {
-        // Only remember these as acted once the API confirms success, so a failed
-        // request doesn't make findNextUnresolved skip still-unresolved runs.
-        rememberActed(testRun.buildId, ids);
-        // Advance to the next screen that still needs review only when the shared
-        // toggle is on (same behaviour as the single Approve/Reject buttons).
+      .then(({ succeeded, failed }) => {
+        // only what the API confirms: a failed run must not be skipped as acted on
+        rememberActed(testRun.buildId, succeeded);
+        const done = mode === "approve" ? "Approved" : "Rejected";
+        const what = `${ids.length} ${pluralize(ids.length, "variation")}`;
+        if (failed.length > 0) {
+          enqueueSnackbar(
+            partialFailureText(done, { succeeded, failed }, what),
+            { variant: "warning" },
+          );
+          if (succeeded.length > 0) {
+            onClose();
+          }
+          return;
+        }
         if (goToNextEnabled()) {
           const next = findNextUnresolved();
           if (next) {
-            navigate(buildTestRunLocation(selectedBuild?.id, next.id));
+            navigateTo(next.id);
           }
         }
         onClose();
-        // Shown after we've landed on the destination screen.
-        enqueueSnackbar(
-          `${mode === "approve" ? "Approved" : "Rejected"} ${
-            ids.length
-          } variations`,
-          {
-            // green for an approval only: a rejection is a deliberate outcome,
-            // not a success, and must not read as its opposite
-            variant: mode === "approve" ? "success" : "info",
-          },
-        );
+        enqueueSnackbar(`${done} ${what}`, {
+          // green for approvals only: a rejection is a deliberate outcome, not a success
+          variant: mode === "approve" ? "success" : "info",
+        });
       })
       .catch((err) => {
         enqueueSnackbar(err, { variant: "error" });
-        setSubmitting(false);
-      });
+      })
+      .finally(() => setSubmitting(false));
   };
 
   const labelOf = (run: TestRun): string =>
@@ -463,7 +450,7 @@ export const MatchingVariationsDialog: React.FunctionComponent<{
 
   return (
     <>
-      <Dialog open={!!mode} onClose={onClose} maxWidth="lg" fullWidth>
+      <Dialog open onClose={onClose} maxWidth="lg" fullWidth>
         <DialogTitle>{verb} variations — review before applying</DialogTitle>
         <DialogContent dividers>
           {submitting && (
@@ -471,7 +458,7 @@ export const MatchingVariationsDialog: React.FunctionComponent<{
               <CircularProgress />
               <Typography style={{ marginLeft: 12 }}>
                 {mode === "approve" ? "Approving" : "Rejecting"} {selected.size}{" "}
-                variations…
+                {pluralize(selected.size, "variation")}…
               </Typography>
             </Loading>
           )}

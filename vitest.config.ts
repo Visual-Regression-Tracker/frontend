@@ -14,8 +14,7 @@ export default mergeConfig(
       testTimeout: 15_000,
       server: {
         deps: {
-          // its ESM build imports "@mui/material/styles" as a directory,
-          // which Node refuses; letting Vite transform it resolves the import
+          // its ESM build imports "@mui/material/styles" as a directory, which Node refuses; Vite transforming it fixes that
           inline: [/@mui\/x-data-grid/],
         },
       },
@@ -32,10 +31,10 @@ export default mergeConfig(
         reporter: ["text-summary", "html", "json-summary"],
         // a ratchet: raise these when tests are added, never lower them
         thresholds: {
-          statements: 74,
-          branches: 62,
-          functions: 68,
-          lines: 75,
+          statements: 88,
+          branches: 79,
+          functions: 86,
+          lines: 88,
         },
       },
     },

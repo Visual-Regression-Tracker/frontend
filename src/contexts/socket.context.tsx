@@ -1,43 +1,53 @@
-import * as React from "react";
+import {
+  type ReactNode,
+  createContext,
+  useContext,
+  useEffect,
+  useReducer,
+  useRef,
+} from "react";
+import { useNavigate } from "react-router-dom";
+import { useSnackbar } from "notistack";
 import socketIOClient, { Socket } from "socket.io-client";
 import {
   useBuildState,
   useBuildDispatch,
   addBuild,
   updateBuild,
+  consumeOwnDelete,
 } from "./build.context";
 import { Build, TestRun } from "../types";
 import {
   useTestRunDispatch,
+  useTestRunState,
   addTestRun,
   updateTestRun,
   deleteTestRun,
 } from "./testRun.context";
 import { API_URL } from "../_config/env.config";
 import { useProjectState } from "./project.context";
+import { logout, useUserDispatch, useUserState } from "./user.context";
+import { buildTestRunLocation } from "../_helpers/route.helpers";
 
 interface IConnectAction {
   type: "connect";
   payload: Socket;
 }
 
-interface IClearAction {
-  type: "clear";
-}
-
-type IAction = IConnectAction | IClearAction;
+type IAction = IConnectAction;
 type Dispatch = (action: IAction) => void;
 type State = {
   socket: Socket | undefined;
 };
 type SocketProviderProps = {
-  children: React.ReactNode;
+  children: ReactNode;
 };
 
-const SocketStateContext = React.createContext<State | undefined>(undefined);
-const SocketDispatchContext = React.createContext<Dispatch | undefined>(
-  undefined,
-);
+// the reason the server gives when it refuses the token the socket connects with
+export const SOCKET_UNAUTHORIZED = "unauthorized";
+
+const SocketStateContext = createContext<State | undefined>(undefined);
+const SocketDispatchContext = createContext<Dispatch | undefined>(undefined);
 
 const initialState: State = {
   socket: undefined,
@@ -52,20 +62,45 @@ export function socketReducer(state: State, action: IAction): State {
   return state;
 }
 
-function SocketProvider({ children }: SocketProviderProps) {
-  const [state, dispatch] = React.useReducer(socketReducer, initialState);
+function SocketProvider({ children }: Readonly<SocketProviderProps>) {
+  const [state, dispatch] = useReducer(socketReducer, initialState);
   const { selectedBuild } = useBuildState();
   const { selectedProjectId } = useProjectState();
   const testRunDispatch = useTestRunDispatch();
   const buildDispatch = useBuildDispatch();
+  const userDispatch = useUserDispatch();
+  const token = useUserState().user?.token;
+  const navigate = useNavigate();
+  const { enqueueSnackbar } = useSnackbar();
+  // a ref: paging through runs would otherwise re-register every handler on each step
+  const openTestRunId = useTestRunState().selectedTestRun?.id;
+  const selectedTestRunId = useRef(openTestRunId);
+  useEffect(() => {
+    selectedTestRunId.current = openTestRunId;
+  }, [openTestRunId]);
 
-  React.useEffect(() => {
-    connect(dispatch);
-  }, []);
+  // the server identifies the connection by token; a login or logout needs a connection of its own
+  useEffect(() => {
+    if (!token) {
+      return;
+    }
+    const socket = connect(dispatch, token);
 
-  React.useEffect(() => {
+    return () => {
+      socket?.disconnect();
+    };
+  }, [token]);
+
+  useEffect(() => {
     if (state.socket) {
       state.socket.removeAllListeners();
+
+      state.socket.on("connect_error", function (error: Error) {
+        // any other reason is a failed attempt that socket.io retries
+        if (error.message === SOCKET_UNAUTHORIZED) {
+          logout(userDispatch);
+        }
+      });
 
       state.socket.on("build_created", function (build: Build) {
         if (build.projectId === selectedProjectId) {
@@ -81,10 +116,18 @@ function SocketProvider({ children }: SocketProviderProps) {
       });
 
       state.socket.on("build_deleted", function (build: Build) {
+        const deletedHere = consumeOwnDelete(build.id);
         buildDispatch({
           type: "delete",
           payload: build.id,
         });
+
+        if (build.id === selectedBuild?.id) {
+          navigate(buildTestRunLocation());
+          if (!deletedHere) {
+            enqueueSnackbar("This build was deleted", { variant: "info" });
+          }
+        }
       });
 
       state.socket.on("testRun_created", function (testRuns: TestRun[]) {
@@ -92,8 +135,7 @@ function SocketProvider({ children }: SocketProviderProps) {
           return;
         }
 
-        // events for other builds arrive too — an empty dispatch would still
-        // replace the (possibly huge) testRuns array and re-render the grid
+        // events for other builds arrive too; an empty dispatch would still replace the huge testRuns array
         const created = testRuns.filter(
           (tr) => tr.buildId === selectedBuild.id,
         );
@@ -132,6 +174,12 @@ function SocketProvider({ children }: SocketProviderProps) {
         }
 
         deleteTestRun(testRunDispatch, deleted);
+
+        const openId = selectedTestRunId.current;
+        if (openId && deleted.includes(openId)) {
+          navigate(buildTestRunLocation(selectedBuild.id));
+          enqueueSnackbar("This test run was deleted", { variant: "info" });
+        }
       });
     }
   }, [
@@ -140,6 +188,9 @@ function SocketProvider({ children }: SocketProviderProps) {
     selectedProjectId,
     buildDispatch,
     testRunDispatch,
+    userDispatch,
+    navigate,
+    enqueueSnackbar,
   ]);
 
   return (
@@ -151,18 +202,8 @@ function SocketProvider({ children }: SocketProviderProps) {
   );
 }
 
-function useSocketState() {
-  const context = React.useContext(SocketStateContext);
-
-  if (context === undefined) {
-    throw Error("must be used within a SocketProvider");
-  }
-
-  return context;
-}
-
 function useSocketDispatch() {
-  const context = React.useContext(SocketDispatchContext);
+  const context = useContext(SocketDispatchContext);
 
   if (context === undefined) {
     throw Error("must be used within a SocketProvider");
@@ -171,14 +212,17 @@ function useSocketDispatch() {
   return context;
 }
 
-function connect(dispatch: Dispatch) {
-  if (API_URL) {
-    const socket = socketIOClient(API_URL);
-    dispatch({
-      type: "connect",
-      payload: socket,
-    });
+function connect(dispatch: Dispatch, token: string): Socket | undefined {
+  if (!API_URL) {
+    return undefined;
   }
+  const socket = socketIOClient(API_URL, { auth: { token } });
+  dispatch({
+    type: "connect",
+    payload: socket,
+  });
+
+  return socket;
 }
 
-export { SocketProvider, useSocketState, useSocketDispatch, connect };
+export { SocketProvider, useSocketDispatch, connect };

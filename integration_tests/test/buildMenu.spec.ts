@@ -142,7 +142,6 @@ test("opens nothing by itself after a failed CI build id change", async ({
   await modal.confirmBtn.click();
   await expect(notification.message).toHaveText("Could not save");
 
-  // the next menu opens as a menu, not straight into the old edit dialog
   await buildList.openMenu(runningBuild.number);
   await expect(buildList.menu).toBeVisible();
   await expect(modal.dialog).toHaveCount(0);

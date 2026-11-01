@@ -1,16 +1,21 @@
-import React from "react";
+import type { ReactNode } from "react";
 import { Box, Typography } from "@mui/material";
 
-// What a list or panel shows when it has nothing to show, and why.
-export const EmptyState: React.FunctionComponent<{
-  icon: React.ReactNode;
+export const EmptyState = ({
+  icon,
+  title,
+  description,
+  action,
+  dense,
+  ...props
+}: {
+  icon: ReactNode;
   title: string;
   description?: string;
-  action?: React.ReactNode;
-  // a narrow panel (the build list) gets a smaller icon and less air
+  action?: ReactNode;
   dense?: boolean;
   "data-testid"?: string;
-}> = ({ icon, title, description, action, dense, ...props }) => (
+}) => (
   <Box
     data-testid={props["data-testid"]}
     sx={{

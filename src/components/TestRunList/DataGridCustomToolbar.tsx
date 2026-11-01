@@ -1,5 +1,5 @@
-import React from "react";
 import { Toolbar, Box } from "@mui/material";
+import type { ToolbarPropsOverrides } from "@mui/x-data-grid";
 import { BulkOperation } from "./BulkOperation";
 import {
   TestRunDensity,
@@ -9,7 +9,6 @@ import {
 import { TestRun } from "../../types";
 import { GroupByAxis } from "../../_helpers/testRunGroup.helper";
 
-// how the data grid learns the types of the props passed via slotProps.toolbar
 declare module "@mui/x-data-grid" {
   interface ToolbarPropsOverrides {
     selectedIds: string[];
@@ -23,24 +22,11 @@ declare module "@mui/x-data-grid" {
     groupByAxis: GroupByAxis;
     showDiff: boolean;
     onShowDiffChange: (showDiff: boolean) => void;
-    onProcessed: () => void;
+    onProcessed: (failedIds: string[]) => void;
   }
 }
 
-export const DataGridCustomToolbar: React.FunctionComponent<{
-  selectedIds: string[];
-  rows: TestRun[];
-  view: TestRunView;
-  onViewChange: (view: TestRunView) => void;
-  density: TestRunDensity;
-  onDensityChange: (density: TestRunDensity) => void;
-  grouped: boolean;
-  onGroupedChange: (grouped: boolean) => void;
-  groupByAxis: GroupByAxis;
-  showDiff: boolean;
-  onShowDiffChange: (showDiff: boolean) => void;
-  onProcessed: () => void;
-}> = ({
+export const DataGridCustomToolbar = ({
   selectedIds,
   rows,
   view,
@@ -53,7 +39,7 @@ export const DataGridCustomToolbar: React.FunctionComponent<{
   showDiff,
   onShowDiffChange,
   onProcessed,
-}) => (
+}: ToolbarPropsOverrides) => (
   <Toolbar variant="dense">
     <TestRunListControls
       view={view}

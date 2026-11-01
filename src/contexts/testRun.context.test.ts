@@ -133,7 +133,6 @@ describe("testRunReducer", () => {
       expect(ids(state)).toEqual(["t1"]);
     });
 
-    // NOTE: the selected test run stays selected after it is deleted from the list
     it("keeps the selected test run as it is", () => {
       const state = testRunReducer(
         { ...withRuns("t1"), selectedTestRun: run({ id: "t1" }) },
@@ -141,6 +140,38 @@ describe("testRunReducer", () => {
       );
 
       expect(state.selectedTestRun).toEqual(run({ id: "t1" }));
+    });
+
+    it("does not bring a deleted run back on a late update or create", () => {
+      const deleted = testRunReducer(withRuns("t1", "t2"), {
+        type: "delete",
+        payload: ["t2"],
+      });
+
+      const updated = testRunReducer(deleted, {
+        type: "update",
+        payload: [run({ id: "t2", comment: "late" })],
+      });
+      const created = testRunReducer(updated, {
+        type: "add",
+        payload: [run({ id: "t2" })],
+      });
+
+      expect(ids(created)).toEqual(["t1"]);
+    });
+
+    it("lets a reloaded list hold a run deleted before", () => {
+      const deleted = testRunReducer(withRuns("t1"), {
+        type: "delete",
+        payload: ["t1"],
+      });
+
+      const reloaded = testRunReducer(
+        testRunReducer(deleted, { type: "get", payload: [] }),
+        { type: "update", payload: [run({ id: "t1" })] },
+      );
+
+      expect(ids(reloaded)).toEqual(["t1"]);
     });
   });
 
@@ -203,14 +234,26 @@ describe("testRunReducer", () => {
       expect(state.selectedTestRun).toEqual(run({ id: "t1", comment: "new" }));
     });
 
-    it("refreshes the selected test run even when it is not in the list", () => {
+    it("appends a run the list does not hold yet", () => {
+      const state = testRunReducer(withRuns("t1"), {
+        type: "update",
+        payload: [run({ id: "t2", comment: "new" })],
+      });
+
+      expect(state.testRuns).toEqual([
+        run({ id: "t1" }),
+        run({ id: "t2", comment: "new" }),
+      ]);
+    });
+
+    it("adds and refreshes the selected test run when it is not in the list", () => {
       const state = testRunReducer(
         { ...withRuns("t1"), selectedTestRun: run({ id: "t9" }) },
         { type: "update", payload: [run({ id: "t9", comment: "new" })] },
       );
 
       expect(state.selectedTestRun).toEqual(run({ id: "t9", comment: "new" }));
-      expect(ids(state)).toEqual(["t1"]);
+      expect(ids(state)).toEqual(["t1", "t9"]);
     });
 
     it("keeps the selected test run when it is not among the updated", () => {
@@ -222,7 +265,7 @@ describe("testRunReducer", () => {
       expect(state.selectedTestRun).toEqual(run({ id: "t1" }));
     });
 
-    it("keeps the very same state when nothing matches", () => {
+    it("keeps the very same state when there is nothing to update", () => {
       const before = {
         ...withRuns("t1"),
         selectedTestRun: run({ id: "t1" }),
@@ -230,7 +273,7 @@ describe("testRunReducer", () => {
 
       const state = testRunReducer(before, {
         type: "update",
-        payload: [run({ id: "t9" })],
+        payload: [],
       });
 
       expect(state).toBe(before);
@@ -248,21 +291,6 @@ describe("testRunReducer", () => {
       ).touched,
     ).toBe(false);
   });
-
-  // NOTE: "approve" and "reject" are declared actions but the reducer ignores them
-  it.each(["approve", "reject"] as const)(
-    "does not change the state for %s",
-    (type) => {
-      const before = withRuns("t1");
-
-      const state = testRunReducer(before, {
-        type,
-        payload: run({ id: "t1" }),
-      });
-
-      expect(state).toBe(before);
-    },
-  );
 
   it("does not change the state for an unknown action", () => {
     expect(testRunReducer(initial, { type: "nope" } as never)).toBe(initial);

@@ -1,11 +1,17 @@
-import React, { useState } from "react";
+import {
+  useState,
+  type ChangeEvent,
+  type Dispatch,
+  type MouseEvent,
+  type SetStateAction,
+} from "react";
 import { IconButton, InputAdornment } from "@mui/material";
 import { Visibility, VisibilityOff } from "@mui/icons-material";
 import { TextValidator } from "react-material-ui-form-validator";
 
 interface PasswordFieldProps {
   password: string;
-  setPassword: React.Dispatch<React.SetStateAction<string>>;
+  setPassword: Dispatch<SetStateAction<string>>;
   label?: string;
 }
 
@@ -18,9 +24,7 @@ const PasswordField = ({
 
   const handleClickShowPassword = () => setShowPassword((show) => !show);
 
-  const handleMouseDownPassword = (
-    event: React.MouseEvent<HTMLButtonElement>,
-  ) => {
+  const handleMouseDownPassword = (event: MouseEvent<HTMLButtonElement>) => {
     event.preventDefault();
   };
 
@@ -53,7 +57,7 @@ const PasswordField = ({
       required
       fullWidth
       inputProps={{
-        onChange: (event: React.ChangeEvent<HTMLInputElement>) =>
+        onChange: (event: ChangeEvent<HTMLInputElement>) =>
           setPassword(event.target.value),
         "data-testid": "password",
       }}

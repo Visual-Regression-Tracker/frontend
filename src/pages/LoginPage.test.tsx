@@ -1,4 +1,3 @@
-import React from "react";
 import { screen, waitFor } from "@testing-library/react";
 import { renderWithProviders } from "../_test/render";
 import { usersService } from "../services";
@@ -130,7 +129,6 @@ describe("LoginPage", () => {
 
       renderWithProviders(<LoginPage />, { route: "/login" });
 
-      // give a wrongly started login the chance to show itself
       await screen.findByTestId("loginBtn");
       expect(completeOidcLogin).not.toHaveBeenCalled();
       expect(screen.queryByText("SSO login failed.")).not.toBeInTheDocument();

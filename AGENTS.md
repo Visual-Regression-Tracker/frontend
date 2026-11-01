@@ -7,15 +7,16 @@ the image canvas, socket.io for live updates.
 
 ## Commands
 
-| What                                                  | Command                                                   |
-| ----------------------------------------------------- | --------------------------------------------------------- |
-| Dev server (needs `.env`, API on `REACT_APP_API_URL`) | `npm start`                                               |
-| Unit and component tests (Vitest)                     | `npm test`, `npm run test:watch`, `npm run test:coverage` |
-| Lint / types                                          | `npm run lint`, `npm run typecheck`                       |
-| Production build                                      | `npm run build`                                           |
-| Playwright, functional, on your machine               | `npx playwright test --grep-invert renders`               |
-| Playwright, everything incl. screenshots (Docker)     | `npm run test:pw:docker`                                  |
-| Regenerate screenshot baselines (Docker only)         | `npm run test:pw:docker:update`                           |
+| What                                                    | Command                                                   |
+| ------------------------------------------------------- | --------------------------------------------------------- |
+| Dev server (needs `.env`, API on `REACT_APP_API_URL`)   | `npm start`                                               |
+| Unit and component tests (Vitest)                       | `npm test`, `npm run test:watch`, `npm run test:coverage` |
+| Lint / types                                            | `npm run lint`, `npm run typecheck`                       |
+| Production build                                        | `npm run build`                                           |
+| Playwright, functional, on your machine                 | `npx playwright test --grep-invert renders`               |
+| Playwright, everything incl. screenshots (Docker)       | `npm run test:pw:docker`                                  |
+| Regenerate screenshot baselines (Docker only)           | `npm run test:pw:docker:update`                           |
+| E2E smoke against the backend stack (`docs/TESTING.md`) | `PW_E2E=1 npx playwright test`                            |
 
 ## Definition of done
 
@@ -42,6 +43,7 @@ integration_tests/
   pages/        page objects; specs use these, not raw selectors
   utils/mocks.ts  page.route mocks of the API
   fixtures/     Playwright fixtures (signed-in user, page openers)
+  e2e/          smoke specs (*.e2e.ts) against the real backend, no mocks
 ```
 
 Imports flow one way: `pages → components → contexts → services → types`.
@@ -71,8 +73,18 @@ outside `src/services`. The one known cycle, `_helpers/service.helpers` ↔
   explicitly.
 - Keep files focused; split a component when it passes ~300 lines rather than
   growing it.
+- Comments: by default, none. Write one only for a non-obvious _why_ that a
+  reader would otherwise get wrong, and keep it to one line. Delete on sight:
+  comments that restate the code or its names, narrate past bugs or earlier
+  versions (that goes in the commit message), explain what a well-named
+  function already says, or run for several lines without changing what a
+  reader would do. No TODOs (open an issue). Tests follow the same rule: the
+  test name says what is checked. Before a pull request, see the
+  `pre-pr-review` skill.
 
 ## Tests
+
+Patterns that already work here, with example files: `docs/TESTING.md`.
 
 - `Foo.tsx` → `Foo.test.tsx` next to it (Vitest + Testing Library). Render
   with `renderWithProviders` from `src/_test/render.tsx`, mock services with

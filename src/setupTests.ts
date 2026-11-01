@@ -1,10 +1,7 @@
-// jest-dom adds DOM matchers such as toBeInTheDocument
-// https://github.com/testing-library/jest-dom
 import "@testing-library/jest-dom/vitest";
 import { configure } from "@testing-library/react";
 
-// findBy/waitFor give up after 1s by default, which a busy CI runner exceeds
-// while MUI renders a dialog
+// findBy/waitFor's 1s default is exceeded on a busy CI runner while MUI renders a dialog
 configure({ asyncUtilTimeout: 5000 });
 
 // jsdom has no matchMedia; MUI's useMediaQuery and the colour mode read it

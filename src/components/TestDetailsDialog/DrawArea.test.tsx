@@ -1,16 +1,14 @@
-import React from "react";
+import type { Dispatch, ReactNode, SetStateAction } from "react";
 import { fireEvent, screen } from "@testing-library/react";
 import { renderWithProviders } from "../../_test/render";
 import { IgnoreArea } from "../../types/ignoreArea";
 import { DrawArea } from "./DrawArea";
 
-// Konva needs the native canvas package under Node, which jsdom has not got.
-// The stage is stood in for by the element it lives in, which is all the
-// keyboard handling here touches: stage.container().
+// Konva needs native canvas under Node, so the stage is a stand-in: only container() is used
 vi.mock("react-konva", async () => {
   const { forwardRef, useImperativeHandle, useRef, createElement } =
     await import("react");
-  const Stage = forwardRef<unknown, { children?: React.ReactNode }>(
+  const Stage = forwardRef<unknown, { children?: ReactNode }>(
     ({ children }, ref) => {
       const container = useRef<HTMLDivElement>(null);
       useImperativeHandle(ref, () => ({ container: () => container.current }));
@@ -33,7 +31,7 @@ const image = Object.assign(document.createElement("img"), {
 const stageState = () =>
   [{ x: 0, y: 0 }, vi.fn()] as [
     { x: number; y: number },
-    React.Dispatch<React.SetStateAction<{ x: number; y: number }>>,
+    Dispatch<SetStateAction<{ x: number; y: number }>>,
   ];
 
 const drawArea = (deleteIgnoreArea: (id: string) => void) => (

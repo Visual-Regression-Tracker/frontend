@@ -69,7 +69,6 @@ describe("buildsService", () => {
       );
     });
 
-    // NOTE: authHeader answers [] (not {}) when logged out, and it is passed as is
     it("sends no Authorization header when nobody is logged in", async () => {
       localStorage.clear();
       const fetchMock = stubFetch({});
@@ -126,21 +125,5 @@ describe("buildsService", () => {
       headers: { "Content-Type": "application/json", ...AUTH },
       body: JSON.stringify(body),
     });
-  });
-
-  describe("approve", () => {
-    it.each([true, false])(
-      "patches the approve route with merge=%s in the query",
-      async (merge) => {
-        const fetchMock = stubFetch({});
-
-        await buildsService.approve("b1", merge);
-
-        expect(fetchMock).toHaveBeenCalledWith(
-          `${API}/builds/b1/approve?merge=${merge}`,
-          { method: "PATCH", headers: AUTH },
-        );
-      },
-    );
   });
 });

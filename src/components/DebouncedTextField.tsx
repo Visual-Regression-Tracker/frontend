@@ -1,4 +1,4 @@
-import React from "react";
+import { useEffect, useRef, useState } from "react";
 import { TextField, TextFieldProps } from "@mui/material";
 
 type Props = Omit<TextFieldProps, "value" | "onChange"> & {
@@ -9,10 +9,7 @@ type Props = Omit<TextFieldProps, "value" | "onChange"> & {
   minLength?: number;
 };
 
-// A text field that reports what was typed once typing pauses. Enter and
-// blur report a pending change at once, and a value set from outside (a
-// filter reset) replaces what is shown unless a change is still pending.
-export const DebouncedTextField: React.FunctionComponent<Props> = ({
+export const DebouncedTextField = ({
   value,
   onChange,
   debounceTimeout = 300,
@@ -20,11 +17,11 @@ export const DebouncedTextField: React.FunctionComponent<Props> = ({
   onKeyDown,
   onBlur,
   ...props
-}) => {
-  const [text, setText] = React.useState(value ?? "");
-  const timer = React.useRef<ReturnType<typeof setTimeout>>(undefined);
-  const pending = React.useRef<string | undefined>(undefined);
-  const onChangeRef = React.useRef(onChange);
+}: Props) => {
+  const [text, setText] = useState(value ?? "");
+  const timer = useRef<ReturnType<typeof setTimeout>>(undefined);
+  const pending = useRef<string | undefined>(undefined);
+  const onChangeRef = useRef(onChange);
   onChangeRef.current = onChange;
 
   const cancel = () => {
@@ -41,7 +38,6 @@ export const DebouncedTextField: React.FunctionComponent<Props> = ({
     }, debounceTimeout);
   };
 
-  // report a pending change now, with what the field shows
   const flush = () => {
     if (pending.current === undefined) {
       return;
@@ -50,14 +46,13 @@ export const DebouncedTextField: React.FunctionComponent<Props> = ({
     onChangeRef.current(text);
   };
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (pending.current === undefined) {
       setText(value ?? "");
     }
   }, [value]);
 
-  // a change still waiting when the field goes away is not lost
-  React.useEffect(
+  useEffect(
     () => () => {
       if (pending.current !== undefined) {
         clearTimeout(timer.current);

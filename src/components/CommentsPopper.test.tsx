@@ -1,4 +1,3 @@
-import React from "react";
 import { screen, waitFor } from "@testing-library/react";
 import { renderWithProviders } from "../_test/render";
 import { CommentsPopper } from "./CommentsPopper";
@@ -16,8 +15,7 @@ const renderPopper = ({
   ...renderWithProviders(<CommentsPopper text={text} onSave={onSave} />),
 });
 
-// pasting keeps these tests quick; typing each character through MUI's
-// multiline field is slow
+// paste, not type: typing through MUI's multiline field is slow
 const write = async (
   user: ReturnType<typeof renderPopper>["user"],
   editor: HTMLElement,
@@ -214,8 +212,6 @@ describe("CommentsPopper", () => {
   });
 
   it("keeps an unsaved draft when it is closed and opened again", async () => {
-    // NOTE: the draft lives in the component, so closing with the toggle does
-    // not discard it; only a change of the text prop resets it.
     const { user } = renderPopper({ text: "saved" });
 
     await user.click(openButton());

@@ -1,4 +1,3 @@
-import React from "react";
 import { render, screen } from "@testing-library/react";
 import type { ChipProps } from "@mui/material";
 import { TestStatus } from "../types/testStatus";

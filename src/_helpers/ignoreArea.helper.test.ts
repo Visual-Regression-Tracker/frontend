@@ -14,14 +14,11 @@ describe("invertIgnoreArea", () => {
   it("covers the image around the area with eight rectangles", () => {
     // 100 x 100 image with the area at x 20..50, y 10..50
     expect(withoutIds(invertIgnoreArea(100, 100, area))).toEqual([
-      // top row: left, middle, right
       { x: 0, y: 0, width: 20, height: 10 },
       { x: 20, y: 0, width: 30, height: 10 },
       { x: 50, y: 0, width: 50, height: 10 },
-      // middle row: left and right of the area
       { x: 0, y: 10, width: 20, height: 40 },
       { x: 50, y: 10, width: 50, height: 40 },
-      // bottom row: left, middle, right
       { x: 0, y: 50, width: 20, height: 50 },
       { x: 20, y: 50, width: 30, height: 50 },
       { x: 50, y: 50, width: 50, height: 50 },
@@ -63,7 +60,6 @@ describe("invertIgnoreArea", () => {
     expect(rectangles.every((r) => r.width === 0 || r.height === 0)).toBe(true);
   });
 
-  // NOTE: an area reaching past the image is not clipped, it yields negative sizes
   it("yields negative sizes for an area reaching past the image", () => {
     const rectangles = withoutIds(
       invertIgnoreArea(100, 100, {
@@ -118,5 +114,27 @@ describe("clampToImage", () => {
     const box = { x: 90, y: 0, width: 20, height: 10, rotation: 0 };
 
     expect(clampToImage(box, 100, 50)).toEqual({ ...box, width: 10 });
+  });
+});
+
+describe("invertIgnoreArea outside a secure context", () => {
+  it("still gives each rectangle its own id when crypto.randomUUID is missing", () => {
+    vi.stubGlobal("crypto", {
+      getRandomValues: globalThis.crypto.getRandomValues.bind(
+        globalThis.crypto,
+      ),
+    });
+    try {
+      const ids = invertIgnoreArea(100, 100, area).map(({ id }) => id);
+
+      expect(new Set(ids).size).toBe(8);
+      ids.forEach((id) =>
+        expect(id).toMatch(
+          /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/,
+        ),
+      );
+    } finally {
+      vi.unstubAllGlobals();
+    }
   });
 });

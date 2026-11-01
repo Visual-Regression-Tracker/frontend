@@ -23,7 +23,6 @@ const project = TEST_PROJECT;
 
 const toggle = (page: Page) => page.getByTestId("colorModeToggle");
 
-// the page background, which the theme sets per colour scheme
 const background = (page: Page) =>
   page.evaluate(() => getComputedStyle(document.body).backgroundColor);
 
@@ -113,6 +112,10 @@ test.describe("on a dark system", () => {
     await expect(page).toHaveScreenshot("project-page-dark.png");
 
     await projectPage.testRunList.getRow(TEST_UNRESOLVED.id).click();
+    // the dialog is a lazy chunk: wait for it like screens.spec does
+    await expect(projectPage.details.step).toBeVisible();
+    await expect(projectPage.details.drawAreas).toHaveCount(2);
+    await expect(projectPage.details.toggleDiff).toBeChecked();
 
     await expect(page).toHaveScreenshot("test-run-details-dark.png");
   });

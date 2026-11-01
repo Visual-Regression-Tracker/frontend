@@ -1,4 +1,4 @@
-import React from "react";
+import { useEffect, useState } from "react";
 import { screen, waitFor, within } from "@testing-library/react";
 import { useLocation } from "react-router-dom";
 import { renderWithProviders } from "../_test/render";
@@ -6,6 +6,7 @@ import { usersService, projectsService } from "../services";
 import { routes } from "../constants";
 import { useHelpDispatch, setHelpSteps } from "../contexts";
 import { EDITOR_USER, GUEST_USER, TEST_USER } from "../_test/test.data.helper";
+import { User } from "../types";
 import {
   HEADER_AVATAR_BUTTON_TEST_ID,
   HEADER_HELP_MENU_BUTTON_TEST_ID,
@@ -18,9 +19,9 @@ const CurrentLocation = () => (
   <div data-testid="location">{useLocation().pathname}</div>
 );
 
-const HelpSteps: React.FunctionComponent<{ target: string }> = ({ target }) => {
+const HelpSteps = ({ target }: { target: string }) => {
   const dispatch = useHelpDispatch();
-  React.useEffect(() => {
+  useEffect(() => {
     setHelpSteps(dispatch, [{ target, content: "First step of the tour" }]);
   }, [dispatch, target]);
   return null;
@@ -35,10 +36,8 @@ const renderHeader = (options: Parameters<typeof renderWithProviders>[1]) =>
     { route: "/somewhere", ...options },
   );
 
-// menus are keepMounted, so a closed menu's items are in the document but
-// hidden from the accessibility tree
+// keepMounted menus: closed items are hidden from the accessibility tree
 const menuItem = (name: string) => screen.getByRole("menuitem", { name });
-// a hidden element has no accessible name, so look the item up by its text
 const mountedMenuItemLabels = () =>
   screen
     .queryAllByRole("menuitem", { hidden: true })
@@ -77,6 +76,20 @@ describe("Header", () => {
       expect(
         screen.getByTestId(HEADER_AVATAR_BUTTON_TEST_ID),
       ).toHaveTextContent("FL");
+    });
+
+    it("shows the avatar without throwing when the first name is empty and the last name is missing", () => {
+      const nameless = {
+        ...TEST_USER,
+        firstName: "",
+        lastName: undefined,
+      } as unknown as User;
+
+      renderHeader({ user: nameless });
+
+      expect(
+        screen.getByTestId(HEADER_AVATAR_BUTTON_TEST_ID),
+      ).toBeInTheDocument();
     });
 
     it("keeps the avatar menu closed until the avatar is clicked", async () => {
@@ -163,7 +176,6 @@ describe("Header", () => {
 
     it("shows the take-tour button and the VRT version", async () => {
       const { user } = renderHeader({ user: TEST_USER });
-      // keepMounted: the button is in the document, just not shown
       expect(screen.getByTestId(TAKE_TOUR_BUTTON_TEST_ID)).not.toBeVisible();
 
       await user.click(screen.getByTestId(HEADER_HELP_MENU_BUTTON_TEST_ID));
@@ -209,11 +221,9 @@ describe("Header", () => {
       expect(await screen.findByText("First step of the tour")).toBeVisible();
     });
 
-    // a page without a tour (profile, users) must not leave the button stuck
-    // for the page visited next
     it("starts the tour once steps arrive after a click on a page without any", async () => {
       const StepsLater = () => {
-        const [shown, setShown] = React.useState(false);
+        const [shown, setShown] = useState(false);
         return shown ? (
           <>
             <HelpSteps target="#tour-target" />

@@ -17,6 +17,8 @@ const UI_LAYERS = [
   "**/contexts/**",
 ];
 
+const TYPED_FILES = ["src/**/*.{ts,tsx}", "integration_tests/**/*.ts"];
+
 export default tseslint.config(
   {
     ignores: [
@@ -28,19 +30,22 @@ export default tseslint.config(
       "public/env-config.js",
       "env-config.js",
       ".claude/",
+      "docs/",
     ],
   },
   js.configs.recommended,
   ...tseslint.configs.recommended,
+  // Type-aware rules need a tsconfig: src/ uses the root one, integration_tests/ its own
+  ...tseslint.configs.recommendedTypeChecked.map((config) => ({
+    ...config,
+    files: TYPED_FILES,
+  })),
   react.configs.flat.recommended,
   react.configs.flat["jsx-runtime"],
   jsxA11y.flatConfigs.recommended,
   // the rules SonarCloud runs on every PR, so they fail here first
   sonarjs.configs.recommended,
-  // Warnings, not errors: an open-task comment is debt to see, not a reason
-  // to fail the build, and an async function with nothing to await (Sonar's
-  // S7503, which the plugin leaves to require-await) is common in older tests
-  // and mocks. SonarCloud flags both in new code only.
+  // Warnings, not errors: SonarCloud flags these in new code only, and older tests and mocks have many
   {
     rules: {
       "sonarjs/todo-tag": "warn",
@@ -48,8 +53,46 @@ export default tseslint.config(
     },
   },
   {
-    plugins: { "react-hooks": reactHooks },
-    rules: reactHooks.configs.recommended.rules,
+    files: TYPED_FILES,
+    languageOptions: { parserOptions: { projectService: true } },
+    rules: {
+      // the typed variant of require-await replaces the base rule
+      "require-await": "off",
+      "@typescript-eslint/require-await": "warn",
+      // navigate()'s promise only matters with flushSync or view transitions
+      "@typescript-eslint/no-floating-promises": [
+        "error",
+        {
+          allowForKnownSafeCalls: [
+            {
+              from: "package",
+              name: "NavigateFunction",
+              package: "react-router",
+            },
+          ],
+        },
+      ],
+      // warnings until fixed; the app rejects with strings, authHeader returns [] or an object, tests pass undefined on purpose, so the last ones stay
+      "@typescript-eslint/no-unsafe-member-access": "warn",
+      "@typescript-eslint/no-unsafe-call": "warn",
+      "@typescript-eslint/no-unsafe-assignment": "warn",
+      "@typescript-eslint/no-unsafe-argument": "warn",
+      "@typescript-eslint/no-unsafe-return": "warn",
+      "@typescript-eslint/prefer-promise-reject-errors": "warn",
+      "sonarjs/deprecation": "warn",
+      "sonarjs/no-undefined-argument": "warn",
+      "sonarjs/function-return-type": "warn",
+    },
+  },
+  reactHooks.configs.flat.recommended,
+  {
+    // React Compiler rules: warnings until the components are reworked
+    rules: {
+      "react-hooks/set-state-in-effect": "warn",
+      "react-hooks/refs": "warn",
+      "react-hooks/immutability": "warn",
+      "react-hooks/purity": "warn",
+    },
   },
   {
     languageOptions: {
@@ -58,11 +101,7 @@ export default tseslint.config(
     settings: { react: { version: "detect" } },
     rules: {
       "@typescript-eslint/no-non-null-assertion": "warn",
-      // most files still import React from the classic JSX transform days
-      "@typescript-eslint/no-unused-vars": [
-        "error",
-        { varsIgnorePattern: "^React$" },
-      ],
+      "@typescript-eslint/no-unused-vars": "error",
       "no-restricted-imports": [
         "error",
         {
@@ -121,10 +160,7 @@ export default tseslint.config(
     },
   },
   {
-    // Playwright fixtures call a parameter named use(), which is not a hook.
-    // Specs assert through shared helpers and page objects, which the
-    // assertion check does not follow, and `void fixture` asks for a fixture
-    // that is wanted only for its setup.
+    // Fixtures call use(), not a hook; specs assert through helpers and page objects the assertion check cannot follow
     files: ["integration_tests/**"],
     rules: {
       "react-hooks/rules-of-hooks": "off",

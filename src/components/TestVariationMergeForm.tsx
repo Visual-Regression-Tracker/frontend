@@ -1,4 +1,4 @@
-import React from "react";
+import { type FormEvent, useState } from "react";
 import {
   Autocomplete,
   GridLegacy as Grid,
@@ -25,17 +25,14 @@ interface IProps {
   items: string[];
 }
 
-export const TestVariationMergeForm: React.FunctionComponent<IProps> = ({
-  projectId,
-  items,
-}) => {
+export const TestVariationMergeForm = ({ projectId, items }: IProps) => {
   const navigate = useNavigate();
   const buildDispatch = useBuildDispatch();
   const { enqueueSnackbar } = useSnackbar();
-  const [fromBranch, setFromBranch] = React.useState("");
-  const [toBranch, setToBranch] = React.useState("");
+  const [fromBranch, setFromBranch] = useState("");
+  const [toBranch, setToBranch] = useState("");
 
-  const handleSubmit = (event: React.FormEvent) => {
+  const handleSubmit = (event: FormEvent) => {
     event.preventDefault();
     testVariationService
       .merge(projectId, fromBranch, toBranch)
@@ -47,7 +44,8 @@ export const TestVariationMergeForm: React.FunctionComponent<IProps> = ({
           pathname: buildProjectPageUrl(projectId),
           ...buildTestRunLocation(build.id),
         });
-        selectBuild(buildDispatch, build.id);
+        // selectBuild handles its own failure
+        void selectBuild(buildDispatch, build.id);
       })
       .catch((err) =>
         enqueueSnackbar(err, {
@@ -67,7 +65,7 @@ export const TestVariationMergeForm: React.FunctionComponent<IProps> = ({
             displayEmpty
             value={fromBranch}
             onChange={(event: SelectChangeEvent<string>) =>
-              setFromBranch(event.target.value as string)
+              setFromBranch(event.target.value)
             }
           >
             <MenuItem value="">

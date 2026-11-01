@@ -1,5 +1,5 @@
 import { FormControlLabel, Switch } from "@mui/material";
-import React from "react";
+import { type ChangeEvent, Fragment } from "react";
 import { TextValidator } from "react-material-ui-form-validator";
 import { DEFAULT_BLUR_AMPLITUDE_THRESHOLD } from "../../constants";
 import { BlurAmplitudeConfig } from "../../types/imageComparison";
@@ -7,26 +7,24 @@ import { Tooltip } from "../Tooltip";
 import { Dinov2Fields } from "./Dinov2Fields";
 import { useConfigHook } from "./useConfigHook";
 
-// Rendered by the config form of every library that supports the filter.
-export const BlurAmplitudeFields: React.FunctionComponent = () => {
+export const BlurAmplitudeFields = () => {
   const [config, updateConfig] = useConfigHook<BlurAmplitudeConfig>();
 
-  // absent: the backend default applies; null: the field was cleared, which
-  // the required validator then refuses
+  // absent: backend default; null: cleared, which the required validator refuses
   const threshold =
     config.blurAmplitudeThreshold === undefined
       ? DEFAULT_BLUR_AMPLITUDE_THRESHOLD
       : (config.blurAmplitudeThreshold ?? "");
 
   return (
-    <React.Fragment>
+    <Fragment>
       <Tooltip title="Pass a failing comparison when its change, blurred by about a pixel, is no stronger than anti-aliasing or sub-pixel rendering noise.">
         <FormControlLabel
           label="Ignore rendering noise"
           control={
             <Switch
               checked={config.blurAmplitudeFilter === true}
-              onChange={(event, checked) =>
+              onChange={(_event, checked) =>
                 updateConfig("blurAmplitudeFilter", checked)
               }
               color="primary"
@@ -36,7 +34,7 @@ export const BlurAmplitudeFields: React.FunctionComponent = () => {
         />
       </Tooltip>
       {config.blurAmplitudeFilter === true && (
-        <React.Fragment>
+        <Fragment>
           <TextValidator
             name="blurAmplitudeThreshold"
             // minNumber and maxNumber compare whole numbers: 128.5 would pass
@@ -51,8 +49,7 @@ export const BlurAmplitudeFields: React.FunctionComponent = () => {
                 min: 0,
                 // the backend's ceiling: near 255 almost any change would pass
                 max: 128,
-                // the backend takes fractions; a whole step would make the
-                // browser refuse them
+                // fractions are valid; a whole step would make the browser refuse them
                 step: "any",
               },
             }}
@@ -63,7 +60,7 @@ export const BlurAmplitudeFields: React.FunctionComponent = () => {
             type="number"
             fullWidth
             value={threshold}
-            onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
+            onChange={(event: ChangeEvent<HTMLInputElement>) => {
               const value = parseFloat(event.target.value);
               updateConfig(
                 "blurAmplitudeThreshold",
@@ -72,8 +69,8 @@ export const BlurAmplitudeFields: React.FunctionComponent = () => {
             }}
           />
           <Dinov2Fields />
-        </React.Fragment>
+        </Fragment>
       )}
-    </React.Fragment>
+    </Fragment>
   );
 };

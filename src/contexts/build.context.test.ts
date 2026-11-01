@@ -91,7 +91,7 @@ describe("buildReducer", () => {
           take: 25,
           skip: 50,
           total: 120,
-        } as never,
+        },
       },
     );
 
@@ -113,7 +113,28 @@ describe("buildReducer", () => {
     expect(state.buildList).toEqual([build("b2")]);
   });
 
-  // NOTE: the selected build stays selected even after it is deleted from the list
+  it("delete counts a listed build out of the total once", () => {
+    const listed = {
+      ...initial,
+      buildList: [build("b1"), build("b2")],
+      total: 12,
+    };
+
+    const once = buildReducer(listed, { type: "delete", payload: "b1" });
+    const twice = buildReducer(once, { type: "delete", payload: "b1" });
+
+    expect(once.total).toBe(11);
+    expect(twice).toBe(once);
+  });
+
+  it("delete of a build the list does not hold changes nothing", () => {
+    const listed = { ...initial, buildList: [build("b1")], total: 12 };
+
+    expect(buildReducer(listed, { type: "delete", payload: "b9" })).toBe(
+      listed,
+    );
+  });
+
   it("delete keeps the selected build as it is", () => {
     const state = buildReducer(
       { ...initial, buildList: [build("b1")], selectedBuild: build("b1") },
@@ -123,23 +144,74 @@ describe("buildReducer", () => {
     expect(state.selectedBuild).toEqual(build("b1"));
   });
 
-  it("add puts the new build first", () => {
-    const state = buildReducer(
-      { ...initial, buildList: [build("b1")] },
-      { type: "add", payload: build("b2") },
-    );
+  describe("add", () => {
+    const listOf = (n: number) =>
+      Array.from({ length: n }, (_, i) => build(`b${i + 1}`));
 
-    expect(state.buildList.map((b) => b.id)).toEqual(["b2", "b1"]);
+    it("puts the new build first on the first page and drops the last one", () => {
+      const state = buildReducer(
+        { ...initial, buildList: listOf(10), total: 10, take: 10, skip: 0 },
+        { type: "add", payload: build("new") },
+      );
+
+      expect(state.buildList).toHaveLength(10);
+      expect(state.buildList[0].id).toBe("new");
+      expect(state.buildList[9].id).toBe("b9");
+      expect(state.total).toBe(11);
+    });
+
+    it("keeps every build while the first page is not full", () => {
+      const state = buildReducer(
+        { ...initial, buildList: [build("b1")], total: 1 },
+        { type: "add", payload: build("b2") },
+      );
+
+      expect(state.buildList.map((b) => b.id)).toEqual(["b2", "b1"]);
+      expect(state.total).toBe(2);
+    });
+
+    it("leaves the list alone on a later page but counts the build", () => {
+      const list = listOf(10);
+      const state = buildReducer(
+        { ...initial, buildList: list, total: 20, take: 10, skip: 10 },
+        { type: "add", payload: build("new") },
+      );
+
+      expect(state.buildList).toEqual(list);
+      expect(state.total).toBe(21);
+    });
+
+    it("leaves the list alone while a search is active but counts the build", () => {
+      const list = listOf(3);
+      const state = buildReducer(
+        { ...initial, buildList: list, total: 3, search: "ci-1" },
+        { type: "add", payload: build("new") },
+      );
+
+      expect(state.buildList).toEqual(list);
+      expect(state.total).toBe(4);
+    });
   });
 
-  // NOTE: add does not de-duplicate, unlike the test run reducer
-  it("add lists a build twice when it is already there", () => {
+  it("add changes nothing when the build is already listed", () => {
+    const before = { ...initial, buildList: [build("b1")], total: 1 };
+
+    const state = buildReducer(before, { type: "add", payload: build("b1") });
+
+    expect(state).toBe(before);
+  });
+
+  it("get keeps the search the page was fetched with", () => {
     const state = buildReducer(
-      { ...initial, buildList: [build("b1")] },
-      { type: "add", payload: build("b1") },
+      { ...initial, search: "old" },
+      {
+        type: "get",
+        payload: { data: [], take: 10, skip: 0, total: 0 },
+        search: "ci-1",
+      },
     );
 
-    expect(state.buildList.map((b) => b.id)).toEqual(["b1", "b1"]);
+    expect(state.search).toBe("ci-1");
   });
 
   describe("update", () => {
@@ -189,6 +261,21 @@ describe("buildReducer", () => {
       });
 
       expect(state.selectedBuild).toBeUndefined();
+    });
+
+    it("returns the same state when no updated build is listed or selected", () => {
+      const state = {
+        ...initial,
+        buildList: [build("b1")],
+        selectedBuild: build("b1"),
+      };
+
+      expect(
+        buildReducer(state, {
+          type: "update",
+          payload: [build("b9")],
+        }),
+      ).toBe(state);
     });
   });
 

@@ -10,7 +10,7 @@ import {
 
 describe("resolveGroupByAxis", () => {
   it("falls back to customTags", () => {
-    expect(resolveGroupByAxis(undefined)).toBe("customTags");
+    expect(resolveGroupByAxis()).toBe("customTags");
     expect(resolveGroupByAxis("nonsense")).toBe("customTags");
   });
 
@@ -30,7 +30,11 @@ describe("groupTestRuns", () => {
     );
 
     expect(groups).toHaveLength(1);
-    expect(groups[0].runs.map((r) => r.id).sort()).toEqual(["de", "en"]);
+    expect(
+      groups[0].runs
+        .map((r) => r.id)
+        .sort((a: string, b: string) => a.localeCompare(b)),
+    ).toEqual(["de", "en"]);
   });
 
   it("keeps runs apart when they differ on a fixed axis", () => {
@@ -58,10 +62,6 @@ describe("groupTestRuns", () => {
     expect(groups).toHaveLength(3);
   });
 
-  // the group is an identity, not a review state: were the status part of it,
-  // approving one locale would drop that run out of its group and reshuffle the
-  // list mid-review, and a freshly added device (all runs new) would never join
-  // the existing ones (all unresolved)
   it("groups runs whatever their statuses", () => {
     const groups = groupTestRuns(
       [
@@ -72,7 +72,11 @@ describe("groupTestRuns", () => {
     );
 
     expect(groups).toHaveLength(1);
-    expect(groups[0].runs.map((r) => r.id).sort()).toEqual(["done", "todo"]);
+    expect(
+      groups[0].runs
+        .map((r) => r.id)
+        .sort((a: string, b: string) => a.localeCompare(b)),
+    ).toEqual(["done", "todo"]);
   });
 
   it("represents a group by the run that needs attention most", () => {

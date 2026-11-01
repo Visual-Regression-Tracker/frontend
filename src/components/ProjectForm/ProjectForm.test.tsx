@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import { useEffect } from "react";
 import { screen, waitFor, within } from "@testing-library/react";
 import { renderWithProviders } from "../../_test/render";
 import { dinov2Service, ollamaService } from "../../services";
@@ -34,8 +34,7 @@ const PROJECT: ProjectDto = {
   bulkApproveGroupBy: "customTags",
 };
 
-// The form the way the project pages use it: inside the validator form of
-// BaseModal, which submits what the edit state holds. The state is printed so the tests can read it back.
+// the project pages' wrapper: BaseModal's validator form, with the edit state printed
 const Harness = ({
   initial,
   onSubmit,
@@ -101,8 +100,7 @@ const choose = async (
 const switchEngine = (user: User, engine: ImageComparison) =>
   choose(user, /Image comparison library/, engine);
 
-// replaces the number the field holds; clearing it first would leave NaN in
-// the state and in the input
+// clearing first would leave NaN in the state and the input
 const replaceNumber = async (user: User, field: HTMLElement, value: string) => {
   await user.type(field, value, {
     initialSelectionStart: 0,
@@ -312,7 +310,9 @@ describe("ProjectForm", () => {
       ).toEqual(["pixelmatch", "lookSame", "odiff", "vlm"]);
     });
 
-    it.each(ALL_ENGINES.filter(([engine]) => engine !== "pixelmatch"))(
+    it.each(
+      ALL_ENGINES.filter(([engine]) => engine !== ImageComparison.pixelmatch),
+    )(
       "starts %s from its default config when switching to it",
       async (engine, defaultConfig) => {
         const { user } = await renderForm();
@@ -555,7 +555,6 @@ describe("ProjectForm", () => {
     );
   });
 
-  // switched on in each library's config; the backend applies it to all four
   describe("rendering-noise filter", () => {
     const noiseFilter = () => screen.getByLabelText("Ignore rendering noise");
     const noiseThreshold = () =>
@@ -580,7 +579,6 @@ describe("ProjectForm", () => {
       const { user } = await renderForm();
 
       await user.click(noiseFilter());
-      // the backend's default, until changed
       expect(noiseThreshold()).toHaveValue(80);
       await replaceNumber(user, noiseThreshold() as HTMLElement, "60.5");
 
@@ -629,8 +627,6 @@ describe("ProjectForm", () => {
       expect(onSubmit).not.toHaveBeenCalled();
     });
 
-    // the filter is not one of a library's own options: swapping in another
-    // library's defaults must not switch it off
     it("keeps the filter when the library changes", async () => {
       const { user } = await renderForm();
 
@@ -695,7 +691,6 @@ describe("ProjectForm", () => {
 
       await waitFor(() => expect(dinov2Check()).toBeEnabled());
       await user.click(dinov2Check());
-      // the backend's default, until changed
       expect(dinov2Threshold()).toHaveValue(0.15);
       await replaceNumber(user, dinov2Threshold() as HTMLElement, "0.2");
 
@@ -726,7 +721,6 @@ describe("ProjectForm", () => {
       expect(dinov2Check()).toBeDisabled();
     });
 
-    // an older backend has no status endpoint, and no check either
     it("cannot be turned on when the server does not say", async () => {
       vi.spyOn(dinov2Service, "getStatus").mockRejectedValue("Not Found");
       await renderForm(withFilter());
@@ -734,8 +728,6 @@ describe("ProjectForm", () => {
       await waitFor(() => expect(dinov2Check()).toBeDisabled());
     });
 
-    // with no service the backend sends every run the filter would pass to
-    // review: say so, and let it be turned off
     it("lets a project saved with it on turn it off where there is no service", async () => {
       serverHas(false);
       const { user } = await renderForm(withFilter({ dinov2Check: true }));
@@ -1115,6 +1107,54 @@ describe("ProjectForm", () => {
         expect(screen.getByLabelText("Use Thinking")).toBeChecked();
       });
 
+      describe("with a saved, masked api key", () => {
+        const masked: ProjectDto = {
+          ...vlm,
+          imageComparisonConfig: JSON.stringify({
+            provider: "gemini",
+            model: "gemini-1.5-flash",
+            apiKey: "••••abcd",
+            prompt: "Saved prompt",
+            temperature: 0.2,
+            useThinking: true,
+          }),
+        };
+        const HINT = "Leave as is to keep the saved key.";
+
+        it("shows the hint and submits the masked key unchanged", async () => {
+          const onSubmit = vi.fn();
+          const { user } = await renderForm(masked, onSubmit);
+
+          expect(screen.getByText(HINT)).toBeInTheDocument();
+
+          await user.click(screen.getByTestId("submitButton"));
+
+          await waitFor(() => expect(onSubmit).toHaveBeenCalledTimes(1));
+          expect(
+            JSON.parse(onSubmit.mock.calls[0][0].imageComparisonConfig),
+          ).toMatchObject({ apiKey: "••••abcd" });
+        });
+
+        it("submits a typed key instead of the masked one and drops the hint", async () => {
+          const onSubmit = vi.fn();
+          const { user } = await renderForm(masked, onSubmit);
+
+          await user.clear(screen.getByLabelText(/^Gemini API Key/));
+          await user.type(
+            screen.getByLabelText(/^Gemini API Key/),
+            "new-secret",
+          );
+
+          expect(screen.queryByText(HINT)).not.toBeInTheDocument();
+          await user.click(screen.getByTestId("submitButton"));
+
+          await waitFor(() => expect(onSubmit).toHaveBeenCalledTimes(1));
+          expect(
+            JSON.parse(onSubmit.mock.calls[0][0].imageComparisonConfig),
+          ).toMatchObject({ apiKey: "new-secret" });
+        });
+      });
+
       it("switches back to Ollama with an empty model, keeping the shared fields", async () => {
         const { user } = await renderForm(vlm);
         await switchToGemini(user);
@@ -1147,6 +1187,276 @@ describe("ProjectForm", () => {
         screen.getByRole("combobox", { name: /VLM Provider/ }),
       ).toHaveTextContent("Ollama");
       expect(screen.getByLabelText(/^Prompt/)).toHaveValue("Saved prompt");
+    });
+  });
+
+  // an emptied field goes out as null when no validator looks at it (NaN is not valid JSON)
+  describe("number fields", () => {
+    type NumberField = {
+      name: string;
+      initial: ProjectDto;
+      label: string | RegExp;
+      inRange: string;
+      expected: number;
+      sent: (project: ProjectDto) => unknown;
+      emptied:
+        { refusedWith: string } | { blockedByBrowser: true } | { sentAs: null };
+    };
+
+    const withConfig = (
+      imageComparison: ImageComparison,
+      config: Record<string, unknown>,
+    ): ProjectDto => ({
+      ...PROJECT,
+      imageComparison,
+      imageComparisonConfig: JSON.stringify(config),
+    });
+    const withDefaults = (
+      base: string,
+      extra: Record<string, unknown> = {},
+    ): Record<string, unknown> => ({ ...JSON.parse(base), ...extra });
+    const sentKey =
+      (key: string) =>
+      (project: ProjectDto): unknown =>
+        JSON.parse(project.imageComparisonConfig)[key];
+
+    const numberFieldTests = (rows: NumberField[]) => {
+      it.each(rows)("saves an in-range $name", async (row) => {
+        const onSubmit = vi.fn();
+        const { user } = await renderForm(row.initial, onSubmit);
+
+        await replaceNumber(
+          user,
+          screen.getByLabelText(row.label),
+          row.inRange,
+        );
+        await user.click(screen.getByTestId("submitButton"));
+
+        await waitFor(() => expect(onSubmit).toHaveBeenCalledTimes(1));
+        expect(row.sent(onSubmit.mock.calls[0][0])).toBe(row.expected);
+      });
+
+      it.each(rows)("pins what an emptied $name does on save", async (row) => {
+        const onSubmit = vi.fn();
+        const { user } = await renderForm(row.initial, onSubmit);
+        const field = screen.getByLabelText(row.label);
+
+        await user.clear(field);
+        await user.click(screen.getByTestId("submitButton"));
+
+        if ("sentAs" in row.emptied) {
+          await waitFor(() => expect(onSubmit).toHaveBeenCalledTimes(1));
+          expect(row.sent(onSubmit.mock.calls[0][0])).toBeNull();
+          return;
+        }
+        expect(field).toBeInvalid();
+        if ("refusedWith" in row.emptied) {
+          expect(
+            await screen.findByText(row.emptied.refusedWith),
+          ).toBeVisible();
+        }
+        expect(onSubmit).not.toHaveBeenCalled();
+      });
+    };
+
+    describe("project settings", () => {
+      numberFieldTests([
+        {
+          name: "number of builds to keep",
+          initial: PROJECT,
+          label: /^Number of builds/,
+          inRange: "7",
+          expected: 7,
+          sent: (project) => project.maxBuildAllowed,
+          emptied: { refusedWith: "Enter greater than 1" },
+        },
+        {
+          name: "max branch lifetime",
+          initial: PROJECT,
+          label: /^Max branch lifetime/,
+          inRange: "14",
+          expected: 14,
+          sent: (project) => project.maxBranchLifetime,
+          emptied: { refusedWith: "Enter greater than 1" },
+        },
+      ]);
+    });
+
+    describe("library thresholds", () => {
+      numberFieldTests([
+        {
+          name: "pixelmatch threshold",
+          initial: withConfig(
+            ImageComparison.pixelmatch,
+            withDefaults(PIXELMATCH_DEFAULT_CONFIG),
+          ),
+          label: /^Pixel diff threshold/,
+          inRange: "0.5",
+          expected: 0.5,
+          sent: sentKey("threshold"),
+          emptied: { blockedByBrowser: true },
+        },
+        {
+          name: "odiff threshold",
+          initial: withConfig(
+            ImageComparison.odiff,
+            withDefaults(ODIFF_DEFAULT_CONFIG),
+          ),
+          label: /^Pixel diff threshold/,
+          inRange: "0.3",
+          expected: 0.3,
+          sent: sentKey("threshold"),
+          emptied: { blockedByBrowser: true },
+        },
+        {
+          name: "looksame tolerance",
+          initial: withConfig(
+            ImageComparison.lookSame,
+            withDefaults(LOOKSSAME_DEFAULT_CONFIG),
+          ),
+          label: "Tolerance",
+          inRange: "4.5",
+          expected: 4.5,
+          sent: sentKey("tolerance"),
+          emptied: { sentAs: null },
+        },
+        {
+          name: "looksame antialiasing tolerance",
+          initial: withConfig(
+            ImageComparison.lookSame,
+            withDefaults(LOOKSSAME_DEFAULT_CONFIG),
+          ),
+          label: "Antialiasing tolerance",
+          inRange: "1.5",
+          expected: 1.5,
+          sent: sentKey("antialiasingTolerance"),
+          emptied: { sentAs: null },
+        },
+      ]);
+    });
+
+    describe("vlm temperature", () => {
+      numberFieldTests([
+        {
+          name: "temperature with Ollama",
+          initial: withConfig(
+            ImageComparison.vlm,
+            withDefaults(VLM_DEFAULT_CONFIG, { model: "gemma3:12b" }),
+          ),
+          label: /^Temperature/,
+          inRange: "0.7",
+          expected: 0.7,
+          sent: sentKey("temperature"),
+          emptied: { blockedByBrowser: true },
+        },
+        {
+          name: "temperature with Gemini",
+          initial: withConfig(
+            ImageComparison.vlm,
+            withDefaults(VLM_DEFAULT_CONFIG, {
+              provider: "gemini",
+              model: "gemini-1.5-flash",
+              apiKey: "saved-key",
+            }),
+          ),
+          label: /^Temperature/,
+          inRange: "0.7",
+          expected: 0.7,
+          sent: sentKey("temperature"),
+          emptied: { blockedByBrowser: true },
+        },
+      ]);
+    });
+
+    describe("rendering-noise threshold", () => {
+      const noise = { blurAmplitudeFilter: true };
+      numberFieldTests([
+        {
+          name: "rendering-noise threshold with pixelmatch",
+          initial: withConfig(
+            ImageComparison.pixelmatch,
+            withDefaults(PIXELMATCH_DEFAULT_CONFIG, noise),
+          ),
+          label: /^Rendering noise threshold/,
+          inRange: "60.5",
+          expected: 60.5,
+          sent: sentKey("blurAmplitudeThreshold"),
+          emptied: { refusedWith: "Enter a threshold" },
+        },
+        {
+          name: "rendering-noise threshold with odiff",
+          initial: withConfig(
+            ImageComparison.odiff,
+            withDefaults(ODIFF_DEFAULT_CONFIG, noise),
+          ),
+          label: /^Rendering noise threshold/,
+          inRange: "60.5",
+          expected: 60.5,
+          sent: sentKey("blurAmplitudeThreshold"),
+          emptied: { refusedWith: "Enter a threshold" },
+        },
+        {
+          name: "rendering-noise threshold with looksame",
+          initial: withConfig(
+            ImageComparison.lookSame,
+            withDefaults(LOOKSSAME_DEFAULT_CONFIG, noise),
+          ),
+          label: /^Rendering noise threshold/,
+          inRange: "60.5",
+          expected: 60.5,
+          sent: sentKey("blurAmplitudeThreshold"),
+          emptied: { refusedWith: "Enter a threshold" },
+        },
+        {
+          name: "rendering-noise threshold with the VLM",
+          initial: withConfig(
+            ImageComparison.vlm,
+            withDefaults(VLM_DEFAULT_CONFIG, {
+              model: "gemma3:12b",
+              ...noise,
+            }),
+          ),
+          label: /^Rendering noise threshold/,
+          inRange: "60.5",
+          expected: 60.5,
+          sent: sentKey("blurAmplitudeThreshold"),
+          emptied: { refusedWith: "Enter a threshold" },
+        },
+      ]);
+    });
+
+    describe("DINOv2 threshold", () => {
+      const withCheck = {
+        blurAmplitudeFilter: true,
+        dinov2Check: true,
+        dinov2Threshold: 0.3,
+      };
+      numberFieldTests([
+        {
+          name: "DINOv2 threshold with pixelmatch",
+          initial: withConfig(
+            ImageComparison.pixelmatch,
+            withDefaults(PIXELMATCH_DEFAULT_CONFIG, withCheck),
+          ),
+          label: /^DINOv2 threshold/,
+          inRange: "0.2",
+          expected: 0.2,
+          sent: sentKey("dinov2Threshold"),
+          emptied: { refusedWith: "Enter a threshold" },
+        },
+        {
+          name: "DINOv2 threshold with looksame",
+          initial: withConfig(
+            ImageComparison.lookSame,
+            withDefaults(LOOKSSAME_DEFAULT_CONFIG, withCheck),
+          ),
+          label: /^DINOv2 threshold/,
+          inRange: "0.2",
+          expected: 0.2,
+          sent: sentKey("dinov2Threshold"),
+          emptied: { refusedWith: "Enter a threshold" },
+        },
+      ]);
     });
   });
 });

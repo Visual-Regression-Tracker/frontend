@@ -1,17 +1,14 @@
-import React from "react";
+import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { BrowserRouter } from "react-router-dom";
 import App from "./App";
 
-// Global styles to override some defaults
 import "./index.css";
 
 // bundled, so screenshots do not depend on a font CDN
 import "@fontsource-variable/inter";
 
-// After a redeploy an open tab asks for page chunks that are gone; reload to
-// pick up the new build instead of leaving a blank page. At most once a
-// minute, so a deploy that really lacks a chunk cannot reload forever
+// After a redeploy old chunks are gone: reload at most once a minute, so a chunk that is really missing cannot loop
 window.addEventListener("vite:preloadError", (event) => {
   const key = "vrt-chunk-reload-at";
   try {
@@ -27,9 +24,9 @@ window.addEventListener("vite:preloadError", (event) => {
 });
 
 createRoot(document.getElementById("root") as HTMLElement).render(
-  <React.StrictMode>
+  <StrictMode>
     <BrowserRouter>
       <App />
     </BrowserRouter>
-  </React.StrictMode>,
+  </StrictMode>,
 );

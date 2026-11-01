@@ -1,4 +1,4 @@
-import React from "react";
+import { Fragment } from "react";
 import { Chip, GridLegacy as Grid, Typography, Paper } from "@mui/material";
 import { TestRun } from "../../types";
 import { Tooltip } from "../Tooltip";
@@ -7,9 +7,7 @@ interface IProps {
   testRun: TestRun;
 }
 
-export const TestRunDetails: React.FunctionComponent<IProps> = ({
-  testRun,
-}) => {
+export const TestRunDetails = ({ testRun }: IProps) => {
   const attributes = [
     { name: "OS", value: testRun.os },
     { name: "Device", value: testRun.device },
@@ -19,7 +17,7 @@ export const TestRunDetails: React.FunctionComponent<IProps> = ({
   ];
 
   return (
-    <React.Fragment>
+    <Fragment>
       {attributes
         .filter((attribute) => attribute.value)
         .map((attribute) => (
@@ -83,6 +81,6 @@ export const TestRunDetails: React.FunctionComponent<IProps> = ({
           </Tooltip>
         </Grid>
       )}
-    </React.Fragment>
+    </Fragment>
   );
 };

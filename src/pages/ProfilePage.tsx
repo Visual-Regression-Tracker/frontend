@@ -1,4 +1,4 @@
-import React, { useState, FormEvent } from "react";
+import { useState, FormEvent, type ChangeEvent } from "react";
 import {
   GridLegacy as Grid,
   Card,
@@ -42,7 +42,7 @@ const ProfilePage = () => {
   const [firstName, setFirstName] = useState(user?.firstName);
   const [lastName, setLastName] = useState(user?.lastName);
   const [password, setPassword] = useState("");
-  const [tabIndex, setTabIndex] = React.useState(0);
+  const [tabIndex, setTabIndex] = useState(0);
   const oidcEnabled = useOidcEnabled();
 
   const handleUserUpdateSubmit = (event: FormEvent) => {
@@ -120,9 +120,8 @@ const ProfilePage = () => {
                           required
                           fullWidth
                           inputProps={{
-                            onChange: (
-                              event: React.ChangeEvent<HTMLInputElement>,
-                            ) => setFirstName(event.target.value),
+                            onChange: (event: ChangeEvent<HTMLInputElement>) =>
+                              setFirstName(event.target.value),
                             "data-testid": "firstName",
                           }}
                         />
@@ -140,9 +139,8 @@ const ProfilePage = () => {
                           required
                           fullWidth
                           inputProps={{
-                            onChange: (
-                              event: React.ChangeEvent<HTMLInputElement>,
-                            ) => setLastName(event.target.value),
+                            onChange: (event: ChangeEvent<HTMLInputElement>) =>
+                              setLastName(event.target.value),
                             "data-testid": "lastName",
                           }}
                         />
@@ -162,9 +160,8 @@ const ProfilePage = () => {
                           // The identity provider owns the email of SSO users.
                           disabled={oidcEnabled !== false}
                           inputProps={{
-                            onChange: (
-                              event: React.ChangeEvent<HTMLInputElement>,
-                            ) => setEmail(event.target.value),
+                            onChange: (event: ChangeEvent<HTMLInputElement>) =>
+                              setEmail(event.target.value),
                             "data-testid": "email",
                           }}
                         />
@@ -290,7 +287,7 @@ const ProfilePage = () => {
                     indicatorColor="primary"
                     textColor="primary"
                     onChange={(
-                      event: React.ChangeEvent<unknown>,
+                      _event: ChangeEvent<unknown>,
                       newValue: number,
                     ) => {
                       setTabIndex(newValue);
