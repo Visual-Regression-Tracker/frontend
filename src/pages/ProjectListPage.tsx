@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { Typography, Button, Box, Stack, Container } from "@mui/material";
 import {
@@ -9,8 +9,7 @@ import {
   updateProject,
   setProjectEditState,
   toggleFavoriteProject,
-  useHelpDispatch,
-  setHelpSteps,
+  useHelpSteps,
   useUserState,
 } from "../contexts";
 import { Add, FolderOpenOutlined, Search } from "@mui/icons-material";
@@ -37,7 +36,6 @@ const ProjectsListPage = () => {
   const { enqueueSnackbar } = useSnackbar();
   const projectState = useProjectState();
   const projectDispatch = useProjectDispatch();
-  const helpDispatch = useHelpDispatch();
   const { user } = useUserState();
   const canEditProjects = !!user && PROJECT_EDITOR_ROLES.has(user.role);
   const { projectList, favoriteProjectIds, recentProjectIds, loading } =
@@ -50,9 +48,7 @@ const ProjectsListPage = () => {
   const [updateDialogOpen, setUpdateDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
 
-  useEffect(() => {
-    setHelpSteps(helpDispatch, PROJECT_LIST_PAGE_STEPS);
-  });
+  useHelpSteps(PROJECT_LIST_PAGE_STEPS);
 
   const groups = useMemo(
     () => groupProjects(projectList, favoriteProjectIds, recentProjectIds),
@@ -180,6 +176,14 @@ const ProjectsListPage = () => {
     );
   };
 
+  const submit = (action: Promise<Project>, done: string, close: () => void) =>
+    action
+      .then((project) => {
+        close();
+        enqueueSnackbar(`${project.name} ${done}`, { variant: "success" });
+      })
+      .catch((err) => enqueueSnackbar(err, { variant: "error" }));
+
   return (
     <Container maxWidth="lg" sx={{ py: 4 }}>
       <Stack
@@ -235,18 +239,11 @@ const ProjectsListPage = () => {
             onCancel={toggleCreateDialogOpen}
             content={<ProjectForm />}
             onSubmit={() =>
-              createProject(projectDispatch, projectState.projectEditState)
-                .then((project) => {
-                  toggleCreateDialogOpen();
-                  enqueueSnackbar(`${project.name} created`, {
-                    variant: "success",
-                  });
-                })
-                .catch((err) =>
-                  enqueueSnackbar(err, {
-                    variant: "error",
-                  }),
-                )
+              submit(
+                createProject(projectDispatch, projectState.projectEditState),
+                "created",
+                toggleCreateDialogOpen,
+              )
             }
           />
 
@@ -257,18 +254,11 @@ const ProjectsListPage = () => {
             onCancel={toggleUpdateDialogOpen}
             content={<ProjectForm />}
             onSubmit={() =>
-              updateProject(projectDispatch, projectState.projectEditState)
-                .then((project) => {
-                  toggleUpdateDialogOpen();
-                  enqueueSnackbar(`${project.name} updated`, {
-                    variant: "success",
-                  });
-                })
-                .catch((err) =>
-                  enqueueSnackbar(err, {
-                    variant: "error",
-                  }),
-                )
+              submit(
+                updateProject(projectDispatch, projectState.projectEditState),
+                "updated",
+                toggleUpdateDialogOpen,
+              )
             }
           />
 
@@ -281,18 +271,14 @@ const ProjectsListPage = () => {
               <Typography>{`Are you sure you want to delete: ${projectState.projectEditState.name}?`}</Typography>
             }
             onSubmit={() =>
-              deleteProject(projectDispatch, projectState.projectEditState.id)
-                .then((project) => {
-                  toggleDeleteDialogOpen();
-                  enqueueSnackbar(`${project.name} deleted`, {
-                    variant: "success",
-                  });
-                })
-                .catch((err) =>
-                  enqueueSnackbar(err, {
-                    variant: "error",
-                  }),
-                )
+              submit(
+                deleteProject(
+                  projectDispatch,
+                  projectState.projectEditState.id,
+                ),
+                "deleted",
+                toggleDeleteDialogOpen,
+              )
             }
           />
         </>

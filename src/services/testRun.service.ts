@@ -8,27 +8,38 @@ const DEFAULT_HEADERS = {
   "Content-Type": "application/json",
 };
 
-function getList(buildId: string): Promise<TestRun[]> {
+function getJson<T>(path: string): Promise<T> {
   const requestOptions = {
     method: "GET",
     headers: authHeader(),
   };
 
-  return fetch(
-    `${API_URL}${ENDPOINT_URL}?buildId=${buildId}`,
-    requestOptions,
-  ).then(handleResponse);
+  return fetch(`${API_URL}${ENDPOINT_URL}${path}`, requestOptions).then(
+    handleResponse,
+  );
+}
+
+function postJson<T>(path: string, body: unknown): Promise<T> {
+  const requestOptions = {
+    method: "POST",
+    headers: {
+      ...DEFAULT_HEADERS,
+      ...authHeader(),
+    },
+    body: JSON.stringify(body),
+  };
+
+  return fetch(`${API_URL}${ENDPOINT_URL}/${path}`, requestOptions).then(
+    handleResponse,
+  );
+}
+
+function getList(buildId: string): Promise<TestRun[]> {
+  return getJson(`?buildId=${buildId}`);
 }
 
 function getDetails(id: string): Promise<TestRun> {
-  const requestOptions = {
-    method: "GET",
-    headers: authHeader(),
-  };
-
-  return fetch(`${API_URL}${ENDPOINT_URL}/${id}`, requestOptions).then(
-    handleResponse,
-  );
+  return getJson(`/${id}`);
 }
 
 export interface BulkResult {
@@ -50,23 +61,8 @@ function toBulkResult(ids: string[] | number[], body: unknown): BulkResult {
   return allSucceeded(ids);
 }
 
-function postIds(path: string, ids: string[] | number[]): Promise<unknown> {
-  const requestOptions = {
-    method: "POST",
-    headers: {
-      ...DEFAULT_HEADERS,
-      ...authHeader(),
-    },
-    body: JSON.stringify(ids),
-  };
-
-  return fetch(`${API_URL}${ENDPOINT_URL}/${path}`, requestOptions).then(
-    handleResponse,
-  );
-}
-
 function postBulk(path: string, ids: string[] | number[]): Promise<BulkResult> {
-  return postIds(path, ids).then((body) => toBulkResult(ids, body));
+  return postJson(path, ids).then((body) => toBulkResult(ids, body));
 }
 
 function removeBulk(ids: string[] | number[]): Promise<BulkResult> {
@@ -104,7 +100,7 @@ function rejectOne(id: string): Promise<void> {
 
 // all or nothing: one run that cannot be reverted fails the whole request
 function revert(ids: string[]): Promise<void> {
-  return postIds("revert", ids).then(() => undefined);
+  return postJson("revert", ids).then(() => undefined);
 }
 
 export interface MatchingVariations {
@@ -113,47 +109,15 @@ export interface MatchingVariations {
 }
 
 function getMatchingVariations(id: string): Promise<MatchingVariations> {
-  const requestOptions = {
-    method: "GET",
-    headers: authHeader(),
-  };
-
-  return fetch(
-    `${API_URL}${ENDPOINT_URL}/matchingSiblings/${id}`,
-    requestOptions,
-  ).then(handleResponse);
+  return getJson(`/matchingSiblings/${id}`);
 }
 
 function updateIgnoreAreas(data: UpdateIgnoreAreaDto): Promise<void> {
-  const requestOptions = {
-    method: "POST",
-    headers: {
-      ...DEFAULT_HEADERS,
-      ...authHeader(),
-    },
-    body: JSON.stringify(data),
-  };
-
-  return fetch(
-    `${API_URL}${ENDPOINT_URL}/ignoreAreas/update`,
-    requestOptions,
-  ).then(handleResponse);
+  return postJson("ignoreAreas/update", data);
 }
 
 function addIgnoreAreas(data: UpdateIgnoreAreaDto): Promise<void> {
-  const requestOptions = {
-    method: "POST",
-    headers: {
-      ...DEFAULT_HEADERS,
-      ...authHeader(),
-    },
-    body: JSON.stringify(data),
-  };
-
-  return fetch(
-    `${API_URL}${ENDPOINT_URL}/ignoreAreas/add`,
-    requestOptions,
-  ).then(handleResponse);
+  return postJson("ignoreAreas/add", data);
 }
 
 function update(

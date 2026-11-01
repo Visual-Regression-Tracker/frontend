@@ -72,6 +72,7 @@ export const surface = {
     default: "#111318",
     paper: "#181b21",
     elevated: "#20242c",
+    tooltip: "#2c313b",
     divider: "rgba(255, 255, 255, 0.09)",
     textPrimary: "#e6e8ec",
     textSecondary: "#a1a8b4",

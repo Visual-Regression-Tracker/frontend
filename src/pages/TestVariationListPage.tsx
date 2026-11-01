@@ -18,7 +18,7 @@ import ProjectSelect from "../components/ProjectSelect";
 import Filters from "../components/Filters";
 import { TestVariationMergeForm } from "../components/TestVariationMergeForm";
 import { useSnackbar } from "notistack";
-import { setHelpSteps, useHelpDispatch } from "../contexts/help.context";
+import { useHelpSteps } from "../contexts/help.context";
 import {
   LOCATOR_TEST_VARIATION_LIST_PAGE_SELECT_PROJECT,
   routes,
@@ -30,7 +30,6 @@ const PAGE_SIZE_OPTIONS = [12, 24, 48, 96];
 const TestVariationListPage = () => {
   const navigate = useNavigate();
   const { enqueueSnackbar } = useSnackbar();
-  const helpDispatch = useHelpDispatch();
   const { projectId = "" } = useParams<{ projectId: string }>();
   const [testVariations, setTestVariations] = useState<TestVariation[]>([]);
 
@@ -44,9 +43,7 @@ const TestVariationListPage = () => {
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(PAGE_SIZE_OPTIONS[0]);
 
-  useEffect(() => {
-    setHelpSteps(helpDispatch, TEST_VARIATION_LIST_PAGE);
-  });
+  useHelpSteps(TEST_VARIATION_LIST_PAGE);
 
   useEffect(() => {
     setPage(1);

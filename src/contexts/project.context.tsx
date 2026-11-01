@@ -16,73 +16,18 @@ import {
   rememberRecentProject,
 } from "../_helpers/projectList.helper";
 
-interface IRequestAction {
-  type: "request";
-  payload?: undefined;
-}
-
-interface IFailureAction {
-  type: "failure";
-  payload?: undefined;
-}
-
-interface IGetction {
-  type: "get";
-  payload: Project[];
-}
-
-interface ICreateAction {
-  type: "create";
-  payload: Project;
-}
-
-interface IUpdateAction {
-  type: "update";
-  payload: Project;
-}
-
-interface IDeleteAction {
-  type: "delete";
-  payload: string;
-}
-
-interface ISelectAction {
-  type: "select";
-  payload: string;
-}
-
-interface IFavoritesAction {
-  type: "favorites";
-  payload: string[];
-}
-
-interface IFavoriteAction {
-  type: "favorite";
-  payload: { id: string; favorite: boolean };
-}
-
-interface IRecentAction {
-  type: "recent";
-  payload: string[];
-}
-
-interface ISetProjectEditState {
-  type: "setProjectEditState";
-  payload: ProjectDto;
-}
-
 type IAction =
-  | ISetProjectEditState
-  | IRequestAction
-  | IFailureAction
-  | IGetction
-  | ISelectAction
-  | ICreateAction
-  | IDeleteAction
-  | IUpdateAction
-  | IFavoritesAction
-  | IFavoriteAction
-  | IRecentAction;
+  | { type: "setProjectEditState"; payload: ProjectDto }
+  | { type: "request" }
+  | { type: "failure" }
+  | { type: "get"; payload: Project[] }
+  | { type: "select"; payload: string }
+  | { type: "create"; payload: Project }
+  | { type: "delete"; payload: string }
+  | { type: "update"; payload: Project }
+  | { type: "favorites"; payload: string[] }
+  | { type: "favorite"; payload: { id: string; favorite: boolean } }
+  | { type: "recent"; payload: string[] };
 type Dispatch = (action: IAction) => void;
 type State = {
   selectedProjectId: string | null;
