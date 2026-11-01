@@ -18,10 +18,11 @@ export const useDialogSnackbar = () => {
         closeSnackbar(lastConfirmation.current);
       }
 
+      // shorter than a screen's review; errors keep the default to be read, and a toast with an action keeps its own time
+      const isShort = isConfirmation && !options?.action;
       const key = enqueueSnackbar(message, {
         anchorOrigin: { vertical: "top", horizontal: "center" },
-        // shorter than a screen's review; errors keep the default to be read
-        ...(isConfirmation ? { autoHideDuration: 2000 } : {}),
+        ...(isShort ? { autoHideDuration: 2000 } : {}),
         ...options,
       });
 
