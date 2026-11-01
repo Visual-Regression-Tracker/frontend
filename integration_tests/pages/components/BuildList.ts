@@ -14,7 +14,6 @@ export class BuildList {
     this.page = page;
   }
 
-  // the menu of one build: stop, edit its CI build id, delete
   menu = this.page.getByRole("menu");
   ciBuildIdInput = this.page.getByTestId("newCiBuildId");
 
@@ -25,7 +24,7 @@ export class BuildList {
       .filter({ hasText: new RegExp(String.raw`#${number}(?!\d)`) });
   }
 
-  // the menu button only shows while the pointer is over its build
+  // the menu button only shows while the pointer is over the build
   async openMenu(number: number) {
     const item = this.getBuildItem(number);
     await item.hover();

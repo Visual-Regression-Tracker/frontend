@@ -1,4 +1,3 @@
-import React from "react";
 import { screen } from "@testing-library/react";
 import { renderWithProviders } from "../_test/render";
 import { TEST_USER } from "../_test/test.data.helper";
@@ -39,8 +38,6 @@ describe("ProjectProvider", () => {
     expect(await screen.findByTestId("favorites")).toHaveTextContent("p1,p3");
   });
 
-  // an API without favourites (older than this frontend) answers 404: the page
-  // works without them rather than greeting every login with an error
   it("goes on without favourites and without an error when they cannot be loaded", async () => {
     const getFavorites = vi
       .spyOn(projectsService, "getFavorites")

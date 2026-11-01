@@ -1,4 +1,4 @@
-import React from "react";
+import { useState } from "react";
 import { Link } from "react-router-dom";
 import { TestVariation } from "../types";
 import { staticService } from "../services";
@@ -26,19 +26,13 @@ interface IProps {
   onDeleteClick: (id: string) => void;
 }
 
-// the axes a variation is told apart by, in the order the API lists them
 const tagsOf = (t: TestVariation) =>
   [t.os, t.device, t.browser, t.viewport, t.customTags].filter(
     (tag): tag is string => !!tag,
   );
 
-const TestVariationList: React.FunctionComponent<IProps> = ({
-  items,
-  onDeleteClick,
-}) => {
-  const [selectedItem, setSelectedItem] = React.useState<TestVariation | null>(
-    null,
-  );
+const TestVariationList = ({ items, onDeleteClick }: IProps) => {
+  const [selectedItem, setSelectedItem] = useState<TestVariation | null>(null);
 
   const handleClose = () => {
     setSelectedItem(null);

@@ -37,7 +37,7 @@ npm run test
 
 #### Local Testing
 
-Run Playwright tests locally (builds the app and serves it with `vite preview` on port 4173):
+Run Playwright tests locally (builds the app and serves it with `vite preview` on port 4173, or on `PW_PORT` when set):
 
 ```bash
 npm run test:pw:local

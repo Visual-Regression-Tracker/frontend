@@ -1,4 +1,3 @@
-import React from "react";
 import { render } from "@testing-library/react";
 import { MemoryRouter, Route, Routes, useLocation } from "react-router-dom";
 import { useUserState } from "../contexts";
@@ -12,7 +11,7 @@ vi.mock("../contexts", () => ({
 
 const userWithRole = (role: User["role"]): User => ({
   id: role,
-  token: 123567,
+  token: "test-token",
   apiKey: "SOME KEY SECRET",
   email: `${role}@email.com`,
   firstName: "First name",
@@ -31,7 +30,7 @@ const mockUserState = (loggedIn: boolean, user?: User) =>
     userList: [],
   });
 
-const SecretPage: React.FC = () => <div>secret page</div>;
+const SecretPage = () => <div>secret page</div>;
 
 const renderAt = (roles?: User["role"][]) =>
   render(
@@ -57,10 +56,9 @@ describe("PrivateRoute", () => {
     expect(item.getByText("login page")).toBeInTheDocument();
   });
 
-  // CI posts links to a build or test run, which live in the query string
   test("remembers the full link for after login, query string and hash included", () => {
     mockUserState(false);
-    const LoginPage: React.FC = () => {
+    const LoginPage = () => {
       const { state } = useLocation();
       return <div>back to {(state as { from: string }).from}</div>;
     };

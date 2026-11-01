@@ -83,7 +83,6 @@ for (const { title, toBranch } of [
   test(title, async ({ openTestVariationListPage, page }) => {
     const build = { ...TEST_BUILD_PASSED, id: "mergeBuildId" };
     await mockMergeTestVariations(page, build);
-    // where the merge leads: the project page on the build it started
     await mockGetBuilds(page, TEST_PROJECT.id, [build]);
     await mockGetBuildDetails(page, build);
     await mockGetTestRuns(page, build.id, []);

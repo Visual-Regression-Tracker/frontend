@@ -33,3 +33,6 @@ yarn-error.log*
 # Claude Code
 .claude/settings.local.json
 .claude/worktrees/
+
+# working notes of the refactoring, kept local
+docs/refactor/

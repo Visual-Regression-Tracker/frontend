@@ -1,4 +1,4 @@
-import React from "react";
+import type { Dispatch, SetStateAction } from "react";
 import {
   GridLegacy as Grid,
   Select,
@@ -16,17 +16,17 @@ const emptyFn = () => undefined;
 
 interface IProps {
   items: TestRun[] | TestVariation[];
-  queryState: [string, React.Dispatch<React.SetStateAction<string>>];
-  osState: [string, React.Dispatch<React.SetStateAction<string>>];
-  deviceState: [string, React.Dispatch<React.SetStateAction<string>>];
-  browserState: [string, React.Dispatch<React.SetStateAction<string>>];
-  viewportState: [string, React.Dispatch<React.SetStateAction<string>>];
-  customTagsState: [string, React.Dispatch<React.SetStateAction<string>>];
-  testStatusState?: [string, React.Dispatch<React.SetStateAction<string>>];
-  branchNameState?: [string, React.Dispatch<React.SetStateAction<string>>];
+  queryState: [string, Dispatch<SetStateAction<string>>];
+  osState: [string, Dispatch<SetStateAction<string>>];
+  deviceState: [string, Dispatch<SetStateAction<string>>];
+  browserState: [string, Dispatch<SetStateAction<string>>];
+  viewportState: [string, Dispatch<SetStateAction<string>>];
+  customTagsState: [string, Dispatch<SetStateAction<string>>];
+  testStatusState?: [string, Dispatch<SetStateAction<string>>];
+  branchNameState?: [string, Dispatch<SetStateAction<string>>];
 }
 
-const Filters: React.FunctionComponent<IProps> = ({
+const Filters = ({
   items,
   queryState,
   osState,
@@ -36,7 +36,7 @@ const Filters: React.FunctionComponent<IProps> = ({
   customTagsState,
   testStatusState,
   branchNameState,
-}) => {
+}: IProps) => {
   const [query, setQuery] = queryState;
   const [os, setOs] = osState;
   const [device, setDevice] = deviceState;
@@ -106,7 +106,7 @@ const Filters: React.FunctionComponent<IProps> = ({
               value={os}
               displayEmpty
               onChange={(event: SelectChangeEvent<string>) =>
-                setOs(event.target.value as string)
+                setOs(event.target.value)
               }
             >
               <MenuItem value="">
@@ -133,7 +133,7 @@ const Filters: React.FunctionComponent<IProps> = ({
               value={device}
               displayEmpty
               onChange={(event: SelectChangeEvent<string>) =>
-                setDevice(event.target.value as string)
+                setDevice(event.target.value)
               }
             >
               <MenuItem value="">
@@ -160,7 +160,7 @@ const Filters: React.FunctionComponent<IProps> = ({
               value={browser}
               displayEmpty
               onChange={(event: SelectChangeEvent<string>) =>
-                setBrowser(event.target.value as string)
+                setBrowser(event.target.value)
               }
             >
               <MenuItem value="">
@@ -187,7 +187,7 @@ const Filters: React.FunctionComponent<IProps> = ({
               value={viewport}
               displayEmpty
               onChange={(event: SelectChangeEvent<string>) =>
-                setViewport(event.target.value as string)
+                setViewport(event.target.value)
               }
             >
               <MenuItem value="">
@@ -214,7 +214,7 @@ const Filters: React.FunctionComponent<IProps> = ({
               value={customTags}
               displayEmpty
               onChange={(event: SelectChangeEvent<string>) =>
-                setCustomTags(event.target.value as string)
+                setCustomTags(event.target.value)
               }
             >
               <MenuItem value="">
@@ -241,7 +241,7 @@ const Filters: React.FunctionComponent<IProps> = ({
               value={testStatus}
               displayEmpty
               onChange={(event: SelectChangeEvent<string>) =>
-                setTestStatus(event.target.value as string)
+                setTestStatus(event.target.value)
               }
             >
               <MenuItem value="">
@@ -268,7 +268,7 @@ const Filters: React.FunctionComponent<IProps> = ({
               value={branchName}
               displayEmpty
               onChange={(event: SelectChangeEvent<string>) =>
-                setBranchName(event.target.value as string)
+                setBranchName(event.target.value)
               }
             >
               <MenuItem value="">
@@ -295,6 +295,7 @@ const Filters: React.FunctionComponent<IProps> = ({
             setViewport("");
             setCustomTags("");
             setTestStatus("");
+            setBranchName("");
           }}
         >
           Reset

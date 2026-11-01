@@ -22,7 +22,7 @@ export const TEST_PROJECT: Project = {
 
 export const TEST_USER: User = {
   id: "1",
-  token: 123567,
+  token: "test-token",
   apiKey: "SOME KEY SECRET",
   email: "some@email.com",
   firstName: "First name",
@@ -32,7 +32,7 @@ export const TEST_USER: User = {
 
 export const GUEST_USER: User = {
   id: "2",
-  token: 123567,
+  token: "test-token",
   apiKey: "SOME KEY SECRET",
   email: "guest@email.com",
   firstName: "Guest name",
@@ -42,7 +42,7 @@ export const GUEST_USER: User = {
 
 export const EDITOR_USER: User = {
   id: "3",
-  token: 123567,
+  token: "test-token",
   apiKey: "SOME KEY SECRET",
   email: "guest@email.com",
   firstName: "Editor name",

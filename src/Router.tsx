@@ -1,11 +1,9 @@
-import React, { lazy, Suspense } from "react";
+import { lazy, Suspense } from "react";
 import { Route, Routes, Navigate } from "react-router-dom";
 import LoginPage from "./pages/LoginPage";
 import PrivateRoute from "./components/PrivateRoute";
 import { routes } from "./constants";
 
-// pages load on first visit, so the login screen does not wait for the
-// canvas, the data grid and the rest of the review UI
 const ProjectsListPage = lazy(() => import("./pages/ProjectListPage"));
 const ProjectPage = lazy(() => import("./pages/ProjectPage"));
 const RegisterPage = lazy(() => import("./pages/RegisterPage"));

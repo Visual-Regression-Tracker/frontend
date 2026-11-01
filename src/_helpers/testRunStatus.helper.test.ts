@@ -9,8 +9,6 @@ describe("canCompareToBaseline", () => {
     );
   });
 
-  // dimensions that differ leave no diff to look at, so fading between the two
-  // is the only comparison there is
   it("compares a run whose diff could not be produced", () => {
     expect(
       canCompareToBaseline(
@@ -19,7 +17,6 @@ describe("canCompareToBaseline", () => {
     ).toBe(true);
   });
 
-  // reviewing what was approved is exactly when the fade earns its place
   it.each([TestStatus.approved, TestStatus.autoApproved])(
     "keeps comparing an %s run against the baseline it differs from",
     (status) => {

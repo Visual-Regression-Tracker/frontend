@@ -1,4 +1,3 @@
-import React from "react";
 import { screen, waitFor, within } from "@testing-library/react";
 import { renderWithProviders } from "../_test/render";
 import { buildsService, testVariationService } from "../services";
@@ -16,8 +15,7 @@ const BRANCHES = ["develop", "feature-1", "main"];
 type User = ReturnType<typeof renderWithProviders>["user"];
 
 const pickFromBranch = async (user: User, branch: string) => {
-  // the from-branch select is the first combobox, the "To branch"
-  // autocomplete the second
+  // the first combobox is the from-branch select
   await user.click(screen.getAllByRole("combobox")[0]);
   await user.click(
     within(screen.getByRole("listbox")).getByRole("option", { name: branch }),
@@ -26,7 +24,6 @@ const pickFromBranch = async (user: User, branch: string) => {
 
 describe("TestVariationMergeForm", () => {
   beforeEach(() => {
-    // the merge build gets selected, which loads its details
     vi.spyOn(buildsService, "getDetails").mockResolvedValue(TEST_BUILD_PASSED);
   });
 

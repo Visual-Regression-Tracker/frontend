@@ -166,20 +166,18 @@ describe("usersService", () => {
     });
   });
 
-  describe("getMe", () => {
-    it("sends the given token rather than the stored one", async () => {
+  describe("completeOidcLogin", () => {
+    it("asks /me with the given token rather than the stored one", async () => {
       const fetchMock = stubFetch(TEST_USER);
 
-      await usersService.getMe("other-token");
+      await usersService.completeOidcLogin("other-token");
 
       expect(fetchMock).toHaveBeenCalledWith(`${API}/users/me`, {
         method: "GET",
         headers: { Authorization: "Bearer other-token" },
       });
     });
-  });
 
-  describe("completeOidcLogin", () => {
     it("stores the user /me answers with the token merged in", async () => {
       stubFetch({ id: "1", email: "sso@b.c" });
 
@@ -200,10 +198,6 @@ describe("usersService", () => {
   });
 
   describe("single sign-on helpers", () => {
-    it("getOidcLoginUrl points at the login route of the API", () => {
-      expect(usersService.getOidcLoginUrl()).toBe(`${API}/users/oidc/login`);
-    });
-
     it("remembers an explicit logout in the session", () => {
       expect(usersService.isOidcLoggedOut()).toBe(false);
 
@@ -269,12 +263,75 @@ describe("usersService", () => {
       await expect(service.isOidcEnabled()).resolves.toBe(false);
     });
 
+    it("asks again after a failed request instead of keeping its fallback", async () => {
+      const fetchMock = vi
+        .fn()
+        .mockRejectedValueOnce(new Error("offline"))
+        .mockResolvedValue(new Response(JSON.stringify(false)));
+      vi.stubGlobal("fetch", fetchMock);
+      const service = await freshService();
+
+      await expect(service.isRegistrationEnabled()).resolves.toBe(true);
+      await expect(service.isRegistrationEnabled()).resolves.toBe(false);
+      expect(fetchMock).toHaveBeenCalledTimes(2);
+    });
+
     it("asks the backend once and caches the answer", async () => {
       const fetchMock = stubFetch(true);
       const service = await freshService();
 
       await service.isOidcEnabled();
       await service.isOidcEnabled();
+
+      expect(fetchMock).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  describe("isRegistrationEnabled", () => {
+    // the answer is cached in a module variable, so each case needs a fresh module
+    const freshService = async () => {
+      vi.resetModules();
+      return (await import("./users.service")).usersService;
+    };
+
+    it("asks the backend without any request options", async () => {
+      const fetchMock = stubFetch(true);
+      const service = await freshService();
+
+      await expect(service.isRegistrationEnabled()).resolves.toBe(true);
+
+      expect(fetchMock).toHaveBeenCalledWith(
+        `${API}/users/registration/enabled`,
+      );
+    });
+
+    it("answers false when the backend says registration is off", async () => {
+      stubFetch(false);
+      const service = await freshService();
+
+      await expect(service.isRegistrationEnabled()).resolves.toBe(false);
+    });
+
+    it("answers true when the endpoint is missing", async () => {
+      stubFetch({ message: "Not found" }, { status: 404 });
+      const service = await freshService();
+
+      await expect(service.isRegistrationEnabled()).resolves.toBe(true);
+    });
+
+    it("answers true when the request fails", async () => {
+      vi.stubGlobal("fetch", vi.fn().mockRejectedValue(new Error("offline")));
+      const service = await freshService();
+
+      await expect(service.isRegistrationEnabled()).resolves.toBe(true);
+    });
+
+    it("asks the backend once and caches the answer", async () => {
+      const fetchMock = stubFetch(false);
+      const service = await freshService();
+
+      await service.isRegistrationEnabled();
+      await service.isRegistrationEnabled();
 
       expect(fetchMock).toHaveBeenCalledTimes(1);
     });

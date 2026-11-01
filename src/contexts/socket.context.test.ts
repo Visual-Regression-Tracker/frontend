@@ -36,13 +36,6 @@ describe("socketReducer", () => {
     expect(state.socket).toBe(other);
   });
 
-  // NOTE: "clear" is a declared action but the reducer ignores it
-  it("does not change the state for clear", () => {
-    const before = { socket };
-
-    expect(socketReducer(before, { type: "clear" })).toBe(before);
-  });
-
   it("does not change the state for an unknown action", () => {
     const before = { socket: undefined };
 
@@ -60,18 +53,22 @@ describe("connect", () => {
     vi.mocked(socketIOClient).mockReturnValue(socket);
     const dispatch = vi.fn();
 
-    connect(dispatch);
+    const connected = connect(dispatch, "a-token");
 
-    expect(socketIOClient).toHaveBeenCalledWith("http://api.test");
+    expect(socketIOClient).toHaveBeenCalledWith("http://api.test", {
+      auth: { token: "a-token" },
+    });
     expect(dispatch).toHaveBeenCalledWith({ type: "connect", payload: socket });
+    expect(connected).toBe(socket);
   });
 
   it("does nothing when there is no API URL", () => {
     const dispatch = vi.fn();
 
-    connect(dispatch);
+    const connected = connect(dispatch, "a-token");
 
     expect(socketIOClient).not.toHaveBeenCalled();
     expect(dispatch).not.toHaveBeenCalled();
+    expect(connected).toBeUndefined();
   });
 });

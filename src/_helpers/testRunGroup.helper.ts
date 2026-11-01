@@ -1,9 +1,8 @@
 import { TestRun, TestStatus } from "../types";
 import { byAttention, statusesByAttention } from "./testRunStatus.helper";
 
-// Test-variation axes, mirroring the backend. A sibling shares the screen name
-// and every axis except the one the project groups by (bulkApproveGroupBy).
-export const GROUP_BY_AXES = [
+// Mirrors the backend; siblings differ only on the axis the project groups by.
+const GROUP_BY_AXES = [
   "customTags",
   "os",
   "device",
@@ -27,12 +26,7 @@ export const resolveGroupByAxis = (value?: string): GroupByAxis =>
 const fixedAxes = (groupBy: GroupByAxis): GroupByAxis[] =>
   GROUP_BY_AXES.filter((axis) => axis !== groupBy);
 
-/**
- * Same variation family: the two runs would share a baseline were it not for the
- * axis the project groups by. Deliberately blind to status, because the details
- * dialog uses this to find siblings still worth reviewing and applies its own
- * status rules on top.
- */
+/** Blind to status on purpose: the details dialog applies its own status rules. */
 export const isSibling = (
   a: TestRun,
   b: TestRun,
@@ -42,10 +36,7 @@ export const isSibling = (
   a.branchName === b.branchName &&
   fixedAxes(groupBy).every((axis) => a[axis] === b[axis]);
 
-// The key is an identity, and the status is not part of it — same as isSibling.
-// Were it, approving one locale would drop that run out of its group and
-// reshuffle the list mid-review, and a freshly added device (every run new)
-// would never join the runs already there (every run unresolved).
+// The status is not part of the key, so approving doesn't regroup the list.
 const groupKey = (run: TestRun, groupBy: GroupByAxis): string =>
   JSON.stringify([
     run.name,
@@ -56,11 +47,6 @@ const groupKey = (run: TestRun, groupBy: GroupByAxis): string =>
 const byDiffDesc = (a: TestRun, b: TestRun): number =>
   (b.diffPercent ?? 0) - (a.diffPercent ?? 0);
 
-/**
- * The statuses of a mixed group, the most pressing first, e.g.
- * "2 unresolved · 1 approved". Empty when every run agrees, since the group's
- * own chip already says it.
- */
 export const groupStatusSummary = (runs: TestRun[]): string => {
   const counts = new Map<TestStatus, number>();
   runs.forEach((run) =>
@@ -76,12 +62,7 @@ export const groupStatusSummary = (runs: TestRun[]): string => {
     .join(" · ");
 };
 
-/**
- * Collapses runs that differ only along the group-by axis into one group each,
- * keeping the order the runs arrived in. The run needing attention most
- * represents the group, the biggest diff among equals, so the card shows what
- * is left to review rather than what is already settled.
- */
+/** The run needing most attention represents the group: what is left to review. */
 export const groupTestRuns = (
   runs: TestRun[],
   groupBy: GroupByAxis,

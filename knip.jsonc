@@ -1,0 +1,5 @@
+{
+  "entry": ["src/index.tsx"],
+  "project": ["src/**/*.{ts,tsx}"],
+  "ignore": ["docs/**"],
+}

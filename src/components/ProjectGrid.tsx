@@ -1,9 +1,7 @@
-import React from "react";
+import type { ReactNode } from "react";
 import { Box, Typography } from "@mui/material";
 
-export const ProjectGrid: React.FunctionComponent<{
-  children: React.ReactNode;
-}> = ({ children }) => (
+export const ProjectGrid = ({ children }: { children: ReactNode }) => (
   <Box
     sx={{
       display: "grid",
@@ -15,11 +13,13 @@ export const ProjectGrid: React.FunctionComponent<{
   </Box>
 );
 
-// a titled run of cards: favourites, recently opened, the rest
-export const ProjectSection: React.FunctionComponent<{
+export const ProjectSection = ({
+  title,
+  children,
+}: {
   title: string;
-  children: React.ReactNode;
-}> = ({ title, children }) => {
+  children: ReactNode;
+}) => {
   const headingId = `project-section-${title.toLowerCase().replace(/\W+/g, "-")}`;
 
   return (

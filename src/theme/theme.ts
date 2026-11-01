@@ -14,16 +14,14 @@ import {
 
 const STATUS_COLORS = ["success", "warning", "error", "info"] as const;
 
-// what floats over the page (menus, dialogs, popovers) sits one step lighter
-// than the panels in dark mode, the way a shadow sets it apart in light mode
+// in dark mode what floats sits one step lighter than the panels, as a shadow sets it apart in light
 const elevatedInDark = ({ theme }: { theme: Theme }) =>
   theme.applyStyles("dark", {
     backgroundColor: surface.dark.elevated,
     border: `1px solid ${surface.dark.divider}`,
   });
 
-// Light and dark live in one theme as colour schemes; MUI switches them with
-// CSS variables, so a mode change does not re-render the tree.
+// MUI switches colour schemes with CSS variables, so a mode change does not re-render the tree
 export const theme = createTheme({
   cssVariables: { colorSchemeSelector: "data-vrt-color-scheme" },
   colorSchemes: {
@@ -63,7 +61,6 @@ export const theme = createTheme({
           primary: surface.dark.textPrimary,
           secondary: surface.dark.textSecondary,
         },
-        // a selected row is a hint, not a block of colour
         action: { selectedOpacity: 0.1, hoverOpacity: 0.06 },
       },
     },
@@ -108,8 +105,7 @@ export const theme = createTheme({
         root: { borderRadius: 6, fontWeight: 500 },
         sizeSmall: { height: 22, fontSize: "0.75rem" },
       },
-      // a filled status chip is a tint with coloured text in dark mode; a
-      // solid saturated badge shouts on a dark surface
+      // in dark mode a filled chip is a tint with coloured text; a solid saturated badge shouts
       variants: STATUS_COLORS.map((color) => ({
         props: { variant: "filled" as const, color },
         style: ({ theme }: { theme: Theme }) =>
@@ -132,8 +128,7 @@ export const theme = createTheme({
       defaultProps: { elevation: 0, color: "inherit" },
       styleOverrides: {
         root: ({ theme }) => ({
-          // CSS variables when the theme has them (the app), plain values
-          // under a theme without (a test or story wrapping its own)
+          // CSS variables when the theme has them (the app), plain values under a theme without (a test)
           backgroundColor: theme.vars
             ? `rgba(${theme.vars.palette.background.paperChannel} / 0.86)`
             : alpha(theme.palette.background.paper, 0.86),

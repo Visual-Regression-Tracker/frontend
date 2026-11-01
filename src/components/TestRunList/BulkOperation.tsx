@@ -1,4 +1,4 @@
-import React from "react";
+import { Fragment, useMemo, useState } from "react";
 import { Typography, IconButton, LinearProgress } from "@mui/material";
 import { BaseModal } from "../BaseModal";
 import { useSnackbar } from "notistack";
@@ -10,63 +10,87 @@ import {
   ThumbUp,
 } from "@mui/icons-material";
 import { staticService, testRunService } from "../../services";
+import { BulkResult, allSucceeded } from "../../services/testRun.service";
 import { TestRun, TestStatus } from "../../types";
 import { Tooltip } from "../Tooltip";
 import { TAG_FIELDS, tagValuesOf } from "../../_helpers/testRunTags.helper";
+import { partialFailureText, pluralize } from "../../_helpers/format.helper";
 
-export const BulkOperation: React.FunctionComponent<{
-  selectedIds: string[];
-  rows: TestRun[];
-  // what the view calls the things you tick: rows in the table, cards in the grid
-  selectionNoun: "rows" | "cards";
-  // the selection has been acted on and no longer stands
-  onProcessed: () => void;
-}> = ({ selectedIds, rows, selectionNoun, onProcessed }) => {
-  const { enqueueSnackbar } = useSnackbar();
-  const [approveDialogOpen, setApproveDialogOpen] = React.useState(false);
-  const [rejectDialogOpen, setRejectDialogOpen] = React.useState(false);
-  const [deleteDialogOpen, setDeleteDialogOpen] = React.useState(false);
-  const [downloadDialogOpen, setDownloadDialogOpen] = React.useState(false);
+const testRuns = (count: number): string =>
+  `${count} test ${pluralize(count, "run")}`;
 
-  const [clearIgnoreDialogOpen, setClearIgnoreDialogOpen] =
-    React.useState(false);
+const PAST_TENSE: Record<string, string> = {
+  Approve: "Approved",
+  Reject: "Rejected",
+  Delete: "Deleted",
+  Download: "Downloaded",
+  Clear: "Cleared",
+};
 
-  const [isProcessing, setIsProcessing] = React.useState(false);
+const COUNTS_ELIGIBLE = new Set(["Approve", "Reject"]);
 
-  // thousands of rows against thousands of selected ids, on every render
-  const selectedIdSet = React.useMemo(
-    () => new Set(selectedIds),
-    [selectedIds],
+const processedText = (
+  verb: string,
+  eligibleCount: number,
+  selectedCount: number,
+): string =>
+  COUNTS_ELIGIBLE.has(verb)
+    ? `${testRuns(eligibleCount)} ${PAST_TENSE[verb].toLowerCase()}.`
+    : `${testRuns(selectedCount)} processed.`;
+
+const partialText = (verb: string, result: BulkResult): string =>
+  partialFailureText(
+    PAST_TENSE[verb],
+    result,
+    testRuns(result.succeeded.length + result.failed.length),
   );
 
-  // The selected rows that are shown. The selection can hold runs a filter has
-  // hidden since, and the actions must not reach what the reviewer cannot see.
-  // Rows are every filtered run, each run of a group included, not one page.
-  const shownSelectedRows: TestRun[] = React.useMemo(
+export const BulkOperation = ({
+  selectedIds,
+  rows,
+  selectionNoun,
+  onProcessed,
+}: {
+  selectedIds: string[];
+  rows: TestRun[];
+  selectionNoun: "rows" | "cards";
+  // failed ids stay ticked so the action can be retried
+  onProcessed: (failedIds: string[]) => void;
+}) => {
+  const { enqueueSnackbar } = useSnackbar();
+  const [approveDialogOpen, setApproveDialogOpen] = useState(false);
+  const [rejectDialogOpen, setRejectDialogOpen] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [downloadDialogOpen, setDownloadDialogOpen] = useState(false);
+
+  const [clearIgnoreDialogOpen, setClearIgnoreDialogOpen] = useState(false);
+
+  const [isProcessing, setIsProcessing] = useState(false);
+
+  const selectedIdSet = useMemo(() => new Set(selectedIds), [selectedIds]);
+
+  // the actions reach only the filtered rows, so ticks a filter hid are left alone
+  const shownSelectedRows: TestRun[] = useMemo(
     () => rows.filter((row) => selectedIdSet.has(row.id)),
     [selectedIdSet, rows],
   );
-  const shownSelectedIds: string[] = React.useMemo(
+  const shownSelectedIds: string[] = useMemo(
     () => shownSelectedRows.map((row) => row.id),
     [shownSelectedRows],
   );
 
-  const isMerge: boolean = React.useMemo(
-    () => !!rows.find((row) => selectedIdSet.has(row.id))?.merge,
+  const rowsEligibleForApproveOrReject: TestRun[] = useMemo(
+    () =>
+      rows.filter(
+        (row) =>
+          selectedIdSet.has(row.id) &&
+          [TestStatus.new, TestStatus.unresolved].includes(row.status),
+      ),
     [selectedIdSet, rows],
   );
-
-  // The ids of those rows that have status "new" or "resolved"
-  const idsEligibleForApproveOrReject: string[] = React.useMemo(
-    () =>
-      rows
-        .filter(
-          (row) =>
-            selectedIdSet.has(row.id) &&
-            [TestStatus.new, TestStatus.unresolved].includes(row.status),
-        )
-        .map((row) => row.id),
-    [selectedIdSet, rows],
+  const idsEligibleForApproveOrReject: string[] = useMemo(
+    () => rowsEligibleForApproveOrReject.map((row) => row.id),
+    [rowsEligibleForApproveOrReject],
   );
 
   const toggleApproveDialogOpen = () => {
@@ -121,6 +145,27 @@ export const BulkOperation: React.FunctionComponent<{
     return "";
   };
 
+  const confirmationText = (): string => {
+    const verb = submitButtonText();
+    if (!approveDialogOpen && !rejectDialogOpen) {
+      return `Are you sure you want to ${verb.toLowerCase()} ${
+        shownSelectedIds.length
+      } items?`;
+    }
+
+    const eligible = idsEligibleForApproveOrReject.length;
+    const settled = shownSelectedIds.length - eligible;
+    if (settled === 0) {
+      return `${verb} ${testRuns(eligible)}?`;
+    }
+
+    return `${verb} ${eligible} of ${shownSelectedIds.length} selected test runs? The other ${settled} ${pluralize(
+      settled,
+      "is",
+      "are",
+    )} already settled.`;
+  };
+
   const closeModal = () => {
     if (deleteDialogOpen) {
       return toggleDeleteDialogOpen();
@@ -143,20 +188,21 @@ export const BulkOperation: React.FunctionComponent<{
     }
   };
 
-  const getBulkAction = () => {
+  const getBulkAction = (): Promise<BulkResult> => {
     if (deleteDialogOpen) {
       return testRunService.removeBulk(shownSelectedIds);
     }
 
     if (downloadDialogOpen) {
-      // the same screen is taken in several browsers, viewports and devices,
-      // so the test name alone would give their images one file name
+      // one screen runs in several browsers and devices, so the name alone collides
       const images = shownSelectedRows.map((item) => ({
         filename: [item.name, ...tagValuesOf(item, TAG_FIELDS)].join(" - "),
         name: item.imageName,
       }));
 
-      return staticService.downloadAsZip(images);
+      return staticService
+        .downloadAsZip(images)
+        .then(() => allSucceeded(shownSelectedIds));
     }
 
     if (rejectDialogOpen) {
@@ -164,13 +210,48 @@ export const BulkOperation: React.FunctionComponent<{
     }
 
     if (approveDialogOpen) {
-      return testRunService.approveBulk(idsEligibleForApproveOrReject, isMerge);
+      // the API takes one merge flag per request, so each kind goes on its own
+      const mergeIds = rowsEligibleForApproveOrReject
+        .filter((row) => row.merge)
+        .map((row) => row.id);
+      const plainIds = rowsEligibleForApproveOrReject
+        .filter((row) => !row.merge)
+        .map((row) => row.id);
+
+      const groups = [
+        { ids: plainIds, merge: false },
+        { ids: mergeIds, merge: true },
+      ].filter(({ ids }) => ids.length > 0);
+      if (groups.length === 0) {
+        return Promise.resolve(allSucceeded([]));
+      }
+
+      // one request failing outright must not hide what the other approved
+      return Promise.allSettled(
+        groups.map(({ ids, merge }) => testRunService.approveBulk(ids, merge)),
+      ).then((outcomes) => {
+        if (outcomes.every((outcome) => outcome.status === "rejected")) {
+          throw outcomes[0].reason;
+        }
+        return {
+          succeeded: outcomes.flatMap((outcome) =>
+            outcome.status === "fulfilled" ? outcome.value.succeeded : [],
+          ),
+          failed: outcomes.flatMap((outcome, index) =>
+            outcome.status === "fulfilled"
+              ? outcome.value.failed
+              : groups[index].ids.map((id) => ({
+                  id,
+                  message: String(outcome.reason),
+                })),
+          ),
+        };
+      });
     }
 
-    return testRunService.updateIgnoreAreas({
-      ids: shownSelectedIds,
-      ignoreAreas: [],
-    });
+    return testRunService
+      .updateIgnoreAreas({ ids: shownSelectedIds, ignoreAreas: [] })
+      .then(() => allSucceeded(shownSelectedIds));
   };
 
   const dismissDialog = () => {
@@ -194,7 +275,7 @@ export const BulkOperation: React.FunctionComponent<{
   };
 
   return (
-    <React.Fragment>
+    <Fragment>
       <Tooltip
         title={`Approve unresolved in selected ${selectionNoun}.`}
         aria-label="approve"
@@ -273,30 +354,30 @@ export const BulkOperation: React.FunctionComponent<{
         title={getTitle()}
         submitButtonText={submitButtonText()}
         onCancel={dismissDialog}
-        content={
-          <Typography>
-            {`Are you sure you want to ${submitButtonText().toLowerCase()} ${
-              shownSelectedIds.length
-            } items?`}
-          </Typography>
-        }
+        content={<Typography>{confirmationText()}</Typography>}
         onSubmit={() => {
-          // a download leaves the runs as they were, so the selection is still
-          // about something and is kept; everything else has just consumed it
+          // a download changes no run, so its selection stays
           const consumesSelection = !downloadDialogOpen;
-          const count = shownSelectedIds.length;
+          const verb = submitButtonText();
+          const message = processedText(
+            verb,
+            idsEligibleForApproveOrReject.length,
+            shownSelectedIds.length,
+          );
           setIsProcessing(true);
           getBulkAction()
-            .then(() => {
+            .then((result) => {
               setIsProcessing(false);
-              // Dropped only once the API has confirmed: a failed request leaves
-              // the ticks in place so the action can be retried as it stands.
               if (consumesSelection) {
-                onProcessed();
+                onProcessed(result.failed.map((failure) => failure.id));
               }
-              enqueueSnackbar(`${count} test runs processed.`, {
-                variant: "success",
-              });
+              if (result.failed.length > 0) {
+                enqueueSnackbar(partialText(verb, result), {
+                  variant: "warning",
+                });
+              } else {
+                enqueueSnackbar(message, { variant: "success" });
+              }
             })
             .catch((err) => {
               setIsProcessing(false);
@@ -308,6 +389,6 @@ export const BulkOperation: React.FunctionComponent<{
         }}
       />
       {isProcessing && <LinearProgress />}
-    </React.Fragment>
+    </Fragment>
   );
 };

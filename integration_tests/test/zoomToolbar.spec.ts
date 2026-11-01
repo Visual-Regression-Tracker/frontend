@@ -9,16 +9,14 @@ import {
   mockGetBuildDetails,
   mockGetBuilds,
   mockGetProjects,
-  mockGetTestRuns,
   mockImage,
-  mockTestRun,
+  mockTestRunsWithDetails,
 } from "utils/mocks";
 
 const project = TEST_PROJECT;
 const build = TEST_BUILD_FAILED;
 const testRun = TEST_UNRESOLVED;
 
-// the screenshots are 1280 pixels wide, and the toolbar's buttons zoom by a fifth
 const IMAGE_WIDTH = 1280;
 const STEP = 1.2;
 
@@ -26,15 +24,12 @@ test.beforeEach(async ({ page }) => {
   await mockGetProjects(page, [project]);
   await mockGetBuilds(page, project.id, [build]);
   await mockGetBuildDetails(page, build);
-  await mockGetTestRuns(page, build.id, [testRun]);
-  await mockTestRun(page, testRun);
+  await mockTestRunsWithDetails(page, build.id, [testRun]);
   await mockImage(page, "image.png");
   await mockImage(page, "diff.png");
   await mockImage(page, "baseline.png");
 });
 
-// opens the run once both screenshots are in and fitted to their panes, and
-// answers with the width each pane's canvas shows them at
 const openFitted = async (
   openProjectPage: (
     id: string,
@@ -48,7 +43,6 @@ const openFitted = async (
     "(1280 x 720)",
     "(1280 x 720)",
   ]);
-  // both panes are fitted by the same scale, which is below the original
   await expect
     .poll(async () => {
       const [baseline, checkpoint] = await details.canvasWidths();
@@ -61,8 +55,6 @@ const openFitted = async (
   return { details, fitted };
 };
 
-// the width of both panes, once the zoom has landed; a scale applies at once,
-// so this settles within a render
 const expectWidth = async (
   details: Awaited<ReturnType<typeof openFitted>>["details"],
   width: number,
@@ -145,6 +137,57 @@ test("fits the screenshots into their panes again", async ({
   await expectWidth(details, fitted);
 });
 
+test("fits the screenshots into their panes after zooming out", async ({
+  openProjectPage,
+}) => {
+  const { details, fitted } = await openFitted(openProjectPage);
+  await details.zoomOut.click();
+  await expectWidth(details, fitted / STEP);
+  await details.zoomOut.click();
+  await expectWidth(details, fitted / STEP / STEP);
+
+  await details.fitToScreen.click();
+
+  await expectWidth(details, fitted);
+});
+
+test("fits the wider screenshot into its pane", async ({
+  page,
+  openProjectPage,
+}) => {
+  const mixedSizes = {
+    ...testRun,
+    imageName: "wide.png",
+    baselineName: "narrow.png",
+    diffName: null,
+  };
+  await mockTestRunsWithDetails(page, build.id, [mixedSizes]);
+  await mockImage(page, "wide.png");
+  await mockImage(page, "narrow.png");
+  const { details } = await openProjectPage(
+    project.id,
+    build.id,
+    mixedSizes.id,
+  );
+  await expect(details.page.getByTestId("image-size")).toHaveText([
+    "(800 x 450)",
+    "(1600 x 900)",
+  ]);
+  await details.originalSize.click();
+
+  await details.fitToScreen.click();
+
+  await expect
+    .poll(async () => {
+      const pane = await details.checkpointPane.boundingBox();
+      const [, checkpoint] = await details.canvasWidths();
+
+      // the fit's margin allows a fraction of a pixel over the pane's padding
+      return checkpoint > 0 && checkpoint <= pane.width + 1;
+    })
+    .toBe(true);
+});
+
 test("zooms from the original size too", async ({ openProjectPage }) => {
   const { details } = await openFitted(openProjectPage);
   await details.originalSize.click();
@@ -166,4 +209,68 @@ test("does not zoom in past ten times the original size", async ({
   }
 
   await expectWidth(details, IMAGE_WIDTH * 10);
+});
+
+test("keeps the zoom when moving to the next run of the same size", async ({
+  openProjectPage,
+  page,
+}) => {
+  const next = {
+    ...testRun,
+    id: "next_run_id",
+    name: "zz next run",
+    imageName: "next-image.png",
+    baselineName: "next-baseline.png",
+    diffName: "next-diff.png",
+  };
+  await mockTestRunsWithDetails(page, build.id, [testRun, next]);
+  await mockImage(page, "next-image.png", "image.png");
+  await mockImage(page, "next-baseline.png", "baseline.png");
+  await mockImage(page, "next-diff.png", "diff.png");
+  const { details, fitted } = await openFitted(openProjectPage);
+  await details.zoomIn.click();
+  await expectWidth(details, fitted * STEP);
+
+  await page.keyboard.press("ArrowRight");
+  await expect(page).toHaveURL(/testId=next_run_id$/);
+  await expect(details.page.getByTestId("image-size")).toHaveText([
+    "(1280 x 720)",
+    "(1280 x 720)",
+  ]);
+
+  await expectWidth(details, fitted * STEP);
+});
+
+test("fits again when the next run's screenshots are another size", async ({
+  openProjectPage,
+  page,
+}) => {
+  const next = {
+    ...testRun,
+    id: "next_run_id",
+    name: "zz next run",
+    imageName: "narrow.png",
+    baselineName: "narrow.png",
+    diffName: "narrow.png",
+  };
+  await mockTestRunsWithDetails(page, build.id, [testRun, next]);
+  await mockImage(page, "narrow.png");
+  const { details, fitted } = await openFitted(openProjectPage);
+  await details.zoomIn.click();
+  await expectWidth(details, fitted * STEP);
+
+  await page.keyboard.press("ArrowRight");
+  await expect(page).toHaveURL(/testId=next_run_id$/);
+  await expect(details.page.getByTestId("image-size")).toHaveText([
+    "(800 x 450)",
+    "(800 x 450)",
+  ]);
+
+  // the zoom of the 1280 px run would show this one at a width it no longer has
+  const inherited = 800 * (fitted / IMAGE_WIDTH) * STEP;
+  await expect
+    .poll(async () => (await details.canvasWidths())[0])
+    .toBeGreaterThan(inherited + 1);
+  const [refitted] = await details.canvasWidths();
+  expect(refitted).toBeLessThanOrEqual(800);
 });

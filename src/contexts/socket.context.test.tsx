@@ -1,5 +1,5 @@
-import React from "react";
-import { act, screen } from "@testing-library/react";
+import { useEffect } from "react";
+import { act, screen, within } from "@testing-library/react";
 import socketIOClient from "socket.io-client";
 import { renderWithProviders } from "../_test/render";
 import { SeedTestRuns } from "../_test/SeedTestRuns";
@@ -11,12 +11,17 @@ import {
   useBuildState,
   useProjectDispatch,
   useTestRunState,
+  useUserDispatch,
+  useUserState,
+  logout,
+  SOCKET_UNAUTHORIZED,
 } from ".";
-import { Build, TestRun, TestStatus } from "../types";
+import { Build, TestRun, TestStatus, User } from "../types";
 import { BuildStatus } from "../types/buildStatus";
 import {
   TEST_BUILD_FAILED,
   TEST_PROJECT,
+  TEST_USER,
   testRunMock,
 } from "../_test/test.data.helper";
 
@@ -29,8 +34,6 @@ vi.mock("../_config/env.config", () => ({
   OIDC_AUTO_REDIRECT: false,
 }));
 
-// the handlers the provider registers, by event name, as a real socket would
-// call them
 const handlers = vi.hoisted(
   () => new Map<string, (payload: unknown) => void>(),
 );
@@ -39,6 +42,7 @@ const fakeSocket = vi.hoisted(() => ({
     handlers.set(event, handler);
   }),
   removeAllListeners: vi.fn(() => handlers.clear()),
+  disconnect: vi.fn(),
 }));
 
 vi.mock("socket.io-client", () => ({
@@ -71,15 +75,13 @@ const testRun = (id: string, changes: Partial<TestRun> = {}): TestRun => ({
 const SELECTED_BUILD = build("selected-build");
 const OTHER_PROJECT_ID = "another-project";
 
-// Seeds the builds the list has loaded and picks the project, then lists what
-// the contexts hold so a test can read it like a screen
-const Consumer: React.FunctionComponent<{ builds: Build[] }> = ({ builds }) => {
+const Consumer = ({ builds }: { builds: Build[] }) => {
   const buildDispatch = useBuildDispatch();
   const projectDispatch = useProjectDispatch();
   const { buildList, selectedBuild } = useBuildState();
   const { testRuns } = useTestRunState();
 
-  React.useEffect(() => {
+  useEffect(() => {
     buildDispatch({
       type: "get",
       payload: { data: builds, take: 10, skip: 0, total: builds.length },
@@ -111,15 +113,40 @@ const listed = (testId: "builds" | "testRuns") =>
     (item) => item.textContent,
   );
 
-// renders the provider the way App nests it, with a build open by default
+const Session = () => {
+  const dispatch = useUserDispatch();
+  const { loggedIn } = useUserState();
+
+  return (
+    <>
+      <div data-testid="loggedIn">{String(loggedIn)}</div>
+      <button onClick={() => logout(dispatch)}>Log out</button>
+      <button
+        onClick={() =>
+          dispatch({
+            type: "success",
+            payload: { ...TEST_USER, token: NEW_TOKEN },
+          })
+        }
+      >
+        Log in again
+      </button>
+    </>
+  );
+};
+
+const NEW_TOKEN = "new-token";
+
 const renderSocket = async ({
   builds = [SELECTED_BUILD],
   testRuns = [],
-  openBuild = SELECTED_BUILD as Build | null,
+  openBuild = SELECTED_BUILD,
+  user = TEST_USER,
 }: {
   builds?: Build[];
   testRuns?: TestRun[];
   openBuild?: Build | null;
+  user?: User | null;
 } = {}) => {
   if (openBuild) {
     vi.spyOn(buildsService, "getDetails").mockResolvedValue(openBuild);
@@ -128,8 +155,9 @@ const renderSocket = async ({
     <SocketProvider>
       <SeedTestRuns testRuns={testRuns} />
       <Consumer builds={builds} />
+      <Session />
     </SocketProvider>,
-    { route: openBuild ? `/?buildId=${openBuild.id}` : "/" },
+    { route: openBuild ? `/?buildId=${openBuild.id}` : "/", user },
   );
   if (openBuild) {
     await vi.waitFor(() =>
@@ -137,8 +165,7 @@ const renderSocket = async ({
         `${openBuild.id}:${openBuild.status}`,
       ),
     );
-    // the build is on screen, but the effect that re-subscribes the handlers
-    // with it may still be pending; until it runs they see no open build
+    // the effect that re-subscribes the handlers with the open build may still be pending
     await act(async () => {});
   }
   await vi.waitFor(() => expect(handlers.has("build_created")).toBe(true));
@@ -155,15 +182,99 @@ describe("SocketProvider", () => {
   it("connects to the API and listens for every build and test run event", async () => {
     await renderSocket();
 
-    expect(socketIOClient).toHaveBeenCalledWith(API);
-    expect([...handlers.keys()].sort()).toEqual([
+    expect(socketIOClient).toHaveBeenCalledWith(API, {
+      auth: { token: TEST_USER.token },
+    });
+    expect(
+      [...handlers.keys()].sort((a: string, b: string) => a.localeCompare(b)),
+    ).toEqual([
       "build_created",
       "build_deleted",
       "build_updated",
+      "connect_error",
       "testRun_created",
       "testRun_deleted",
       "testRun_updated",
     ]);
+  });
+
+  describe("authentication", () => {
+    const loggedIn = () => within(screen.getByTestId("loggedIn"));
+
+    beforeEach(() => {
+      vi.mocked(socketIOClient).mockClear();
+      fakeSocket.disconnect.mockClear();
+    });
+
+    it("sends the user's token when it connects", async () => {
+      await renderSocket();
+
+      expect(socketIOClient).toHaveBeenCalledTimes(1);
+      expect(socketIOClient).toHaveBeenCalledWith(API, {
+        auth: { token: TEST_USER.token },
+      });
+    });
+
+    it("does not connect while nobody is logged in", async () => {
+      renderWithProviders(
+        <SocketProvider>
+          <Session />
+        </SocketProvider>,
+      );
+
+      await act(async () => {});
+
+      expect(screen.getByTestId("loggedIn")).toHaveTextContent("false");
+      expect(socketIOClient).not.toHaveBeenCalled();
+    });
+
+    it("disconnects when the user logs out", async () => {
+      const { user } = await renderSocket();
+      expect(fakeSocket.disconnect).not.toHaveBeenCalled();
+
+      await user.click(screen.getByRole("button", { name: "Log out" }));
+
+      expect(fakeSocket.disconnect).toHaveBeenCalledTimes(1);
+      expect(socketIOClient).toHaveBeenCalledTimes(1);
+    });
+
+    it("connects again with the new token after a login", async () => {
+      const { user } = await renderSocket();
+
+      await user.click(screen.getByRole("button", { name: "Log in again" }));
+
+      expect(fakeSocket.disconnect).toHaveBeenCalledTimes(1);
+      expect(socketIOClient).toHaveBeenCalledTimes(2);
+      expect(socketIOClient).toHaveBeenLastCalledWith(API, {
+        auth: { token: NEW_TOKEN },
+      });
+    });
+
+    it("disconnects when it is taken off the page", async () => {
+      const { unmount } = await renderSocket();
+
+      unmount();
+
+      expect(fakeSocket.disconnect).toHaveBeenCalledTimes(1);
+    });
+
+    it("logs the user out when the server refuses the token", async () => {
+      await renderSocket();
+      expect(loggedIn().getByText("true")).toBeVisible();
+
+      emit("connect_error", new Error(SOCKET_UNAUTHORIZED));
+
+      expect(loggedIn().getByText("false")).toBeVisible();
+      expect(localStorage.getItem("user")).toBeNull();
+    });
+
+    it("stays logged in when the connection fails for another reason", async () => {
+      await renderSocket();
+
+      emit("connect_error", new Error("xhr poll error"));
+
+      expect(loggedIn().getByText("true")).toBeVisible();
+    });
   });
 
   describe("build_created", () => {
@@ -277,6 +388,17 @@ describe("SocketProvider", () => {
       ]);
     });
 
+    it("keeps the state an earlier update brought over a late created batch", async () => {
+      await renderSocket();
+
+      emit("testRun_updated", [
+        testRun("uploaded", { status: TestStatus.approved }),
+      ]);
+      emit("testRun_created", [testRun("uploaded")]);
+
+      expect(listed("testRuns")).toEqual(["uploaded:approved"]);
+    });
+
     it("ignores test runs while no build is open", async () => {
       await renderSocket({ openBuild: null });
 
@@ -354,11 +476,9 @@ describe("SocketProvider", () => {
       build(SELECTED_BUILD.id, { status: BuildStatus.passed }),
     ]);
 
-    // the selected build changed, so the handlers were registered again
-    // against the new state, after the old ones were removed
     expect(fakeSocket.removeAllListeners.mock.calls.length).toBeGreaterThan(
       removalsBefore,
     );
-    expect(handlers.size).toBe(6);
+    expect(handlers.size).toBe(7);
   });
 });

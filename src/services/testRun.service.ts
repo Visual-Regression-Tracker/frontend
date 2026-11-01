@@ -31,37 +31,26 @@ function getDetails(id: string): Promise<TestRun> {
   );
 }
 
-function removeBulk(ids: string[] | number[]): Promise<void> {
-  const requestOptions = {
-    method: "POST",
-    headers: {
-      ...DEFAULT_HEADERS,
-      ...authHeader(),
-    },
-    body: JSON.stringify(ids),
-  };
-
-  return fetch(`${API_URL}${ENDPOINT_URL}/delete`, requestOptions).then(
-    handleResponse,
-  );
+export interface BulkResult {
+  succeeded: string[];
+  failed: { id: string; message: string }[];
 }
 
-function rejectBulk(ids: string[] | number[]): Promise<void> {
-  const requestOptions = {
-    method: "POST",
-    headers: {
-      ...DEFAULT_HEADERS,
-      ...authHeader(),
-    },
-    body: JSON.stringify(ids),
-  };
+export const allSucceeded = (ids: string[] | number[]): BulkResult => ({
+  succeeded: ids.map(String),
+  failed: [],
+});
 
-  return fetch(`${API_URL}${ENDPOINT_URL}/reject`, requestOptions).then(
-    handleResponse,
-  );
+// An older backend answers with an empty body: nothing failed, or it would have thrown.
+function toBulkResult(ids: string[] | number[], body: unknown): BulkResult {
+  const answer = (body || {}) as Partial<BulkResult>;
+  if (Array.isArray(answer.succeeded) && Array.isArray(answer.failed)) {
+    return { succeeded: answer.succeeded, failed: answer.failed };
+  }
+  return allSucceeded(ids);
 }
 
-function approveBulk(ids: string[] | number[], merge: boolean): Promise<void> {
+function postBulk(path: string, ids: string[] | number[]): Promise<BulkResult> {
   const requestOptions = {
     method: "POST",
     headers: {
@@ -71,10 +60,42 @@ function approveBulk(ids: string[] | number[], merge: boolean): Promise<void> {
     body: JSON.stringify(ids),
   };
 
-  return fetch(
-    `${API_URL}${ENDPOINT_URL}/approve?merge=${merge}`,
-    requestOptions,
-  ).then(handleResponse);
+  return fetch(`${API_URL}${ENDPOINT_URL}/${path}`, requestOptions)
+    .then(handleResponse)
+    .then((body) => toBulkResult(ids, body));
+}
+
+function removeBulk(ids: string[] | number[]): Promise<BulkResult> {
+  return postBulk("delete", ids);
+}
+
+function rejectBulk(ids: string[] | number[]): Promise<BulkResult> {
+  return postBulk("reject", ids);
+}
+
+function approveBulk(
+  ids: string[] | number[],
+  merge: boolean,
+): Promise<BulkResult> {
+  return postBulk(`approve?merge=${merge}`, ids);
+}
+
+// the backend answers per run, and a refusal comes back in a successful answer
+function rejectIfRefused(id: string, result: BulkResult): Promise<void> {
+  const refusal = result.failed.find((failure) => failure.id === id);
+  return refusal ? Promise.reject(refusal.message) : Promise.resolve();
+}
+
+function approveOne(id: string, merge: boolean): Promise<void> {
+  return testRunService
+    .approveBulk([id], merge)
+    .then((result) => rejectIfRefused(id, result));
+}
+
+function rejectOne(id: string): Promise<void> {
+  return testRunService
+    .rejectBulk([id])
+    .then((result) => rejectIfRefused(id, result));
 }
 
 export interface MatchingVariations {
@@ -152,6 +173,8 @@ export const testRunService = {
   removeBulk,
   rejectBulk,
   approveBulk,
+  approveOne,
+  rejectOne,
   getMatchingVariations,
   updateIgnoreAreas,
   addIgnoreAreas,

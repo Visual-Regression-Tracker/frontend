@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useSnackbar } from "notistack";
 import LoginForm from "../components/LoginForm";
@@ -17,9 +17,7 @@ const LoginPage = () => {
     setHelpSteps(helpDispatch, LOGIN_PAGE_STEPS);
   });
 
-  // Handle the redirect back from the OIDC provider. The token arrives in the
-  // url fragment (see backend buildFrontendRedirect), so it never reaches the
-  // server logs.
+  // the token arrives in the url fragment, so it never reaches server logs
   useEffect(() => {
     const params = new URLSearchParams(window.location.hash.replace(/^#/, ""));
     const token = params.get("token");
@@ -29,7 +27,7 @@ const LoginPage = () => {
       return;
     }
 
-    // Drop the fragment so the token is not kept in history or bookmarked.
+    // drop the fragment so the token stays out of history
     window.history.replaceState(null, "", window.location.pathname);
 
     if (token) {

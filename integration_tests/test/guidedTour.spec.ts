@@ -108,8 +108,7 @@ test.describe("Guided Tour", () => {
       // the help menu's backdrop would take the click while it fades out
       await expect(projectListPage.header.helpMenu).toBeHidden();
 
-      // a real pointer click where the link shows through the spotlight;
-      // locator.click() would wait for the cover to go away instead
+      // a real pointer click: locator.click() would wait for the spotlight's cover to go away
       const builds = page.getByRole("link", { name: "Builds" });
       const box = await builds.boundingBox();
       if (!box) {
@@ -165,6 +164,8 @@ test.describe("Guided Tour", () => {
       openTestVariationListPage,
     }) => {
       const variationListPage = await openTestVariationListPage(project.id);
+      // the page loads as a lazy chunk and a click before its steps arrive is ignored
+      await expect(variationListPage.selectProject).toBeVisible();
       const tour = await variationListPage.header.startTour();
 
       await expect(tour.joyrideOverlay).toContainText(

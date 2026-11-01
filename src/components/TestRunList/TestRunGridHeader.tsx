@@ -1,4 +1,3 @@
-import React from "react";
 import { Box, Button, Checkbox } from "@mui/material";
 import { ArrowDownward, ArrowUpward } from "@mui/icons-material";
 import { TestRunDensity } from "./TestRunListControls";
@@ -11,14 +10,15 @@ export type TestRunSort = {
   direction: "asc" | "desc";
 };
 
-export const SORT_LABELS: Record<TestRunSortField, string> = {
+const SORT_LABELS: Record<TestRunSortField, string> = {
   name: "Name",
   tags: "Tags",
   status: "Status",
 };
 
-// the direction a field is most useful in when it is first picked
-export const DEFAULT_SORT_DIRECTION: Record<
+export const SORT_FIELDS = Object.keys(SORT_LABELS) as TestRunSortField[];
+
+const DEFAULT_SORT_DIRECTION: Record<
   TestRunSortField,
   TestRunSort["direction"]
 > = {
@@ -30,8 +30,7 @@ export const DEFAULT_SORT_DIRECTION: Record<
 
 export const DEFAULT_SORT: TestRunSort = { field: "status", direction: "desc" };
 
-// picking the field already in use flips it, the way clicking a column header does
-export const nextSort = (
+const nextSort = (
   current: TestRunSort,
   field: TestRunSortField,
 ): TestRunSort =>
@@ -39,34 +38,31 @@ export const nextSort = (
     ? { field, direction: current.direction === "asc" ? "desc" : "asc" }
     : { field, direction: DEFAULT_SORT_DIRECTION[field] };
 
-// measured off the data grid's own header, so the two views line up when the
-// density changes and the header does not jump as you switch between them
+// measured off the data grid's header, so the views line up at every density
 const HEADER_HEIGHT_BY_DENSITY: Record<TestRunDensity, number> = {
   compact: 39,
   standard: 56,
   comfortable: 72,
 };
 
-export const TestRunGridHeader: React.FunctionComponent<{
-  sort: TestRunSort;
-  onSortChange: (sort: TestRunSort) => void;
-  density: TestRunDensity;
-  selectedCount: number;
-  totalCount: number;
-  onToggleAll: () => void;
-}> = ({
+export const TestRunGridHeader = ({
   sort,
   onSortChange,
   density,
   selectedCount,
   totalCount,
   onToggleAll,
+}: {
+  sort: TestRunSort;
+  onSortChange: (sort: TestRunSort) => void;
+  density: TestRunDensity;
+  selectedCount: number;
+  totalCount: number;
+  onToggleAll: () => void;
 }) => {
   const Arrow = sort.direction === "asc" ? ArrowUpward : ArrowDownward;
 
-  // the table's column widths, so the labels land where its headers are.
-  // textAlign is explicit because body carries a global text-align: center,
-  // which would otherwise centre each label inside its column
+  // the table's column widths; textAlign is explicit as body centres text globally
   const label = (field: TestRunSortField, flex: number) => (
     <Box flex={flex} minWidth={0} textAlign="left">
       <Button

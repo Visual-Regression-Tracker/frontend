@@ -1,4 +1,3 @@
-import React from "react";
 import { act, screen } from "@testing-library/react";
 import { useNavigate } from "react-router-dom";
 import { renderWithProviders } from "../_test/render";
@@ -7,7 +6,6 @@ import { testRunService } from "../services";
 import { TestRun } from "../types";
 import { useTestRunState } from ".";
 
-// the provider follows the testId in the URL; the reducer has its own tests
 const deferred = () => {
   let resolve!: (testRun: TestRun) => void;
   let reject!: (reason: string) => void;
@@ -27,7 +25,13 @@ const SelectedTestRun = () => {
       <output data-testid="selectedTestRun">
         {selectedTestRun?.id ?? "none"}
       </output>
-      <button onClick={() => navigate("/?testId=t2")}>Open t2</button>
+      <button
+        onClick={() => {
+          navigate("/?testId=t2");
+        }}
+      >
+        Open t2
+      </button>
     </>
   );
 };

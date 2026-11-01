@@ -2,7 +2,11 @@
   "compilerOptions": {
     "target": "ESNext",
     "lib": ["dom", "dom.iterable", "esnext"],
-    "types": ["vite/client", "vitest/globals", "@testing-library/jest-dom/vitest"],
+    "types": [
+      "vite/client",
+      "vitest/globals",
+      "@testing-library/jest-dom/vitest"
+    ],
     "allowJs": true,
     "skipLibCheck": true,
     "esModuleInterop": true,
@@ -15,7 +19,16 @@
     "isolatedModules": true,
     "noEmit": true,
     "jsx": "react-jsx",
-    "noFallthroughCasesInSwitch": true
+    "noFallthroughCasesInSwitch": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true
   },
-  "include": ["src"]
+  "include": ["src"],
+  // `include` drops a .tsx when a .ts of the same name exists, so these are listed
+  "files": [
+    "src/contexts/build.context.test.tsx",
+    "src/contexts/project.context.test.tsx",
+    "src/contexts/socket.context.test.tsx",
+    "src/contexts/testRun.context.test.tsx"
+  ]
 }

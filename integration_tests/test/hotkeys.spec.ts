@@ -18,6 +18,7 @@ import {
   mockRejectTestRuns,
   mockTestRun,
 } from "utils/mocks";
+import { afterTwoFrames } from "utils/afterTwoFrames";
 
 const project = TEST_PROJECT;
 const build = TEST_BUILD_FAILED;
@@ -139,9 +140,7 @@ test("ignores A and X on a run that is already approved", async ({
   await expect(details.step).toBeVisible();
   await expect(details.approve).toHaveCount(0);
 
-  // the keys are handled in order: once the dialog has moved on for the
-  // arrow, the two before it have had their say. The hotkeys bind a moment
-  // after the dialog shows, so the round is repeated until the arrow lands
+  // keys are handled in order; hotkeys bind late, so the round repeats until the arrow lands
   await expect(async () => {
     await page.keyboard.press("a");
     await page.keyboard.press("x");
@@ -195,11 +194,9 @@ test("closes the dialog with Escape", async ({ openProjectPage, page }) => {
 
   await expect(details.drawAreas).toHaveCount(0);
   await expect(page).not.toHaveURL(/testId=/);
-  // back on the build it was opened from
   await expect(page).toHaveURL(new RegExp(`buildId=${build.id}`));
 });
 
-// like the other keys, Escape belongs to the field being typed in
 test("keeps the dialog open on Escape in the comment field", async ({
   openProjectPage,
   page,
@@ -214,12 +211,7 @@ test("keeps the dialog open on Escape in the comment field", async ({
 
   await details.comment.press("Escape");
   // two frames on: a handled Escape would have closed the dialog by now
-  await page.evaluate(
-    () =>
-      new Promise((resolve) =>
-        requestAnimationFrame(() => requestAnimationFrame(resolve)),
-      ),
-  );
+  await afterTwoFrames(page);
 
   await expect(details.step).toBeVisible();
   await expect(page).toHaveURL(new RegExp(`testId=${TEST_UNRESOLVED.id}$`));
@@ -234,21 +226,19 @@ test("steps between runs with the arrow keys", async ({
     build.id,
     TEST_UNRESOLVED.id,
   );
-  await expect(details.step).toHaveText(/^Step 1\/3:/);
+  await expect(details.step).toHaveText(/^Step 2\/3:/);
   const first = page.url();
 
   await page.keyboard.press("ArrowRight");
-  await expect(details.step).toHaveText(/^Step 2\/3:/);
+  await expect(details.step).toHaveText(/^Step 3\/3:/);
   expect(page.url()).not.toBe(first);
 
-  // the keys act on the run on screen, so wait for it before the next
+  // the keys act on the run on screen: wait for it before the next
   await page.keyboard.press("ArrowLeft");
-  await expect(details.step).toHaveText(/^Step 1\/3:/);
+  await expect(details.step).toHaveText(/^Step 2\/3:/);
   await expect(page).toHaveURL(first);
 });
 
-// the diff is on a run's checkpoint to begin with, and D takes it off to show
-// the screenshot over its baseline
 test("toggles the diff with D", async ({ openProjectPage, page }) => {
   const { details } = await openProjectPage(
     project.id,
@@ -286,7 +276,6 @@ test("keeps D and the switch in step", async ({ openProjectPage, page }) => {
   await expect.poll(() => details.shownImage()).toBe("diff.png");
 });
 
-// the switch keeps focus after a click, and the keys still reach the hotkeys
 test("keeps D and the arrow keys working after a click on the diff switch", async ({
   openProjectPage,
   page,
@@ -308,8 +297,8 @@ test("keeps D and the arrow keys working after a click on the diff switch", asyn
 
   await page.keyboard.press("ArrowRight");
 
-  await expect(details.step).toHaveText(/^Step 2\/3:/);
-  await expect(page).toHaveURL(new RegExp(`testId=${TEST_RUN_NEW.id}$`));
+  await expect(details.step).toHaveText(/^Step 3\/3:/);
+  await expect(page).toHaveURL(new RegExp(`testId=${TEST_RUN_APPROVED.id}$`));
 });
 
 test("does nothing on D when the run has no diff", async ({
@@ -326,7 +315,6 @@ test("does nothing on D when the run has no diff", async ({
 
   await page.keyboard.press("d");
 
-  // the screenshot stays, and nothing makes it a diff
   await expect(details.toggleDiff).toHaveCount(0);
   await expect.poll(() => details.shownImage()).toBe("image.png");
 });

@@ -1,4 +1,4 @@
-import React from "react";
+import { Fragment, type SyntheticEvent } from "react";
 import {
   Box,
   Card,
@@ -19,11 +19,6 @@ import { thumbnailFor } from "../../_helpers/testRunImage.helper";
 import { tagValuesOf } from "../../_helpers/testRunTags.helper";
 import { TestRun } from "../../types";
 
-/**
- * Wraps onto the next line and stops after a few, rather than cutting the text
- * off at the first: a narrow card holds neither a long screen name nor a row of
- * tags on one line, and an ellipsis after two words says nothing.
- */
 const clampToLines = (lines: number) => ({
   display: "-webkit-box",
   WebkitBoxOrient: "vertical",
@@ -34,8 +29,7 @@ const clampToLines = (lines: number) => ({
 
 const CAPTION_LINE_HEIGHT = 1.66;
 
-// a button that reads as the caption text around it: inline so the row still
-// wraps, and with the caption's letter-spacing, which a button resets to normal
+// inline so the row wraps; letter-spacing restated because a button resets it
 const TAG_BUTTON = {
   display: "inline",
   font: "inherit",
@@ -47,11 +41,7 @@ const TAG_BUTTON = {
   "&:hover": { textDecoration: "underline" },
 };
 
-/**
- * The same two-line box for a row that holds elements rather than plain text:
- * `-webkit-box` blockifies its children, which would stop the tags from
- * flowing and wrapping as text.
- */
+/** Block, not -webkit-box, so the tag buttons still flow and wrap as text. */
 const clipToLines = (lines: number) => ({
   display: "block",
   lineHeight: CAPTION_LINE_HEIGHT,
@@ -60,19 +50,7 @@ const clipToLines = (lines: number) => ({
   overflowWrap: "anywhere",
 });
 
-export const TestRunGrid: React.FunctionComponent<{
-  groups: TestRunGroup[];
-  // a set rather than the array: a card looks its runs up on every render, and
-  // a build of thousands can have every one of them selected
-  selectedIdSet: Set<string>;
-  density: TestRunDensity;
-  showDiff: boolean;
-  activeTags: string[];
-  tagFieldsFor: (runCount: number) => Array<keyof TestRun>;
-  onToggleGroup: (ids: string[]) => void;
-  onToggleTag: (tag: string) => void;
-  onOpen: (id: string) => void;
-}> = ({
+export const TestRunGrid = ({
   groups,
   selectedIdSet,
   density,
@@ -82,6 +60,16 @@ export const TestRunGrid: React.FunctionComponent<{
   onToggleGroup,
   onToggleTag,
   onOpen,
+}: {
+  groups: TestRunGroup[];
+  selectedIdSet: Set<string>;
+  density: TestRunDensity;
+  showDiff: boolean;
+  activeTags: string[];
+  tagFieldsFor: (runCount: number) => Array<keyof TestRun>;
+  onToggleGroup: (ids: string[]) => void;
+  onToggleTag: (tag: string) => void;
+  onOpen: (id: string) => void;
 }) => (
   <Box
     display="grid"
@@ -97,9 +85,7 @@ export const TestRunGrid: React.FunctionComponent<{
 
       return (
         <Card key={key} variant="outlined" data-testid="testRunCard">
-          {/* the checkbox sits over the image, outside the action area, so the
-              picture keeps the full width of the card and a tick does not open
-              the dialog */}
+          {/* outside the action area, so a tick does not open the dialog */}
           <Box position="relative">
             <CardActionArea onClick={() => onOpen(representative.id)}>
               <Box
@@ -108,7 +94,7 @@ export const TestRunGrid: React.FunctionComponent<{
                 alt={representative.name}
                 loading="lazy"
                 decoding="async"
-                onError={(event: React.SyntheticEvent<HTMLImageElement>) => {
+                onError={(event: SyntheticEvent<HTMLImageElement>) => {
                   event.currentTarget.src = noImage;
                 }}
                 sx={{
@@ -132,7 +118,6 @@ export const TestRunGrid: React.FunctionComponent<{
                 top: 2,
                 left: 2,
                 padding: 0.5,
-                // legible over a screenshot of any colour
                 backgroundColor: "rgba(255, 255, 255, 0.85)",
                 "&:hover": { backgroundColor: "rgba(255, 255, 255, 0.95)" },
               }}
@@ -153,9 +138,7 @@ export const TestRunGrid: React.FunctionComponent<{
             )}
           </Box>
           <CardContent
-            // body carries a global text-align: center, hence the explicit left.
-            // Rules between the three lines read as a table; weight, colour and
-            // size already tell them apart, so they only need even spacing.
+            // body centres text globally, hence the explicit left
             sx={{
               display: "flex",
               flexDirection: "column",
@@ -177,15 +160,11 @@ export const TestRunGrid: React.FunctionComponent<{
             >
               {representative.name}
             </Typography>
-            {/* the chip speaks for the representative, so a half-reviewed
-                group has to say so somewhere */}
+            {/* the chip shows the representative only; the title gives the group's status */}
             <Box component="span" title={groupStatusSummary(runs) || undefined}>
               <TestStatusChip status={representative.status} />
             </Box>
-            {/* tags as quiet text, not chips: five chips wrap over three lines
-                on a narrow card and drown out the name and the status. Each one
-                filters the list by itself, as a button rather than a span so
-                the keyboard reaches it. */}
+            {/* buttons so the keyboard reaches them */}
             <Typography
               variant="caption"
               color="text.secondary"
@@ -198,7 +177,7 @@ export const TestRunGrid: React.FunctionComponent<{
                 const filteringBy = activeTags.includes(tag);
 
                 return (
-                  <React.Fragment key={`${index}-${tag}`}>
+                  <Fragment key={`${index}-${tag}`}>
                     {index > 0 && " · "}
                     <Box
                       component="button"
@@ -213,7 +192,7 @@ export const TestRunGrid: React.FunctionComponent<{
                     >
                       {tag}
                     </Box>
-                  </React.Fragment>
+                  </Fragment>
                 );
               })}
             </Typography>

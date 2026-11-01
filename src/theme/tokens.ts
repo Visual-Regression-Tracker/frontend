@@ -1,7 +1,5 @@
-// Design tokens. Components take colours from the theme built from these,
-// never from here directly, so light and dark stay in step.
+// Components take colours from the theme built from these, never from here, so light and dark stay in step
 
-// the cyan of the VRT logo, as a scale
 export const brand = {
   50: "#ecfeff",
   100: "#cffafe",
@@ -69,8 +67,7 @@ export const surface = {
     textPrimary: slate[900],
     textSecondary: slate[600],
   },
-  // neutral graphite rather than navy, in three steps: the page, the panels
-  // on it, and what floats over them (menus, dialogs, popovers)
+  // graphite rather than navy; elevated is what floats over the panels (menus, dialogs, popovers)
   dark: {
     default: "#111318",
     paper: "#181b21",
@@ -81,8 +78,7 @@ export const surface = {
   },
 } as const;
 
-// screenshots are shown on these in both colour modes, so transparent pixels
-// look the same to every reviewer
+// screenshots sit on these in both modes so transparent pixels look the same to every reviewer
 export const imageSurface = {
   canvas: "#ffffff",
   thumbnail: "#fafafa",

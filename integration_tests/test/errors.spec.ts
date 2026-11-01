@@ -69,7 +69,6 @@ test.describe("a failing API", () => {
     await expect(projectListPage.notification.message).toHaveText(
       "Database is down",
     );
-    // still logged in, and the page around the list is there
     await expect(page).toHaveURL(/\/projects$/);
     await expect(projectListPage.addBtn).toBeVisible();
     await expect(projectListPage.projects).toHaveCount(0);
@@ -95,7 +94,6 @@ test.describe("a failing API", () => {
     await expect(page).toHaveURL(new RegExp(`/${project.id}$`));
     await expect(projectPage.selectProject).toBeVisible();
     await expect(projectPage.buildList.searchInput).toBeVisible();
-    // in place of the loading skeletons, not "No builds"
     await expect(projectPage.buildList.errorMessage).toBeVisible();
     await expect(projectPage.buildList.emptyMessage).toBeHidden();
   });

@@ -15,7 +15,6 @@ export interface Build {
   createdBy: string;
   testRuns: TestRun[];
 
-  // stats
   unresolvedCount: number;
   passedCount: number;
   failedCount: number;

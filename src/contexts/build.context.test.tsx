@@ -1,4 +1,3 @@
-import React from "react";
 import { act, screen } from "@testing-library/react";
 import { useNavigate } from "react-router-dom";
 import { renderWithProviders } from "../_test/render";
@@ -6,8 +5,6 @@ import { buildsService } from "../services";
 import { Build } from "../types";
 import { useBuildState } from ".";
 
-// the provider follows the buildId in the URL; the reducer and the exported
-// actions have their own tests
 const deferred = () => {
   let resolve!: (build: Build) => void;
   let reject!: (reason: string) => void;
@@ -27,7 +24,13 @@ const SelectedBuild = () => {
   return (
     <>
       <output data-testid="selectedBuild">{selectedBuild?.id ?? "none"}</output>
-      <button onClick={() => navigate("/?buildId=b2")}>Open b2</button>
+      <button
+        onClick={() => {
+          navigate("/?buildId=b2");
+        }}
+      >
+        Open b2
+      </button>
     </>
   );
 };

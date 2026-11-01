@@ -23,6 +23,7 @@ const initial: State = {
   projectEditState: DEFAULT_PROJECT_EDIT_STATE,
   favoriteProjectIds: [],
   recentProjectIds: [],
+  loading: false,
 };
 
 describe("projectReducer", () => {
@@ -80,7 +81,6 @@ describe("projectReducer", () => {
     expect(state.projectList).toEqual([project("p2")]);
   });
 
-  // NOTE: the selected project id stays set after that project is deleted
   it("delete keeps the selected project id as it is", () => {
     const state = projectReducer(
       { ...initial, selectedProjectId: "p1", projectList: [project("p1")] },
@@ -151,8 +151,24 @@ describe("projectReducer", () => {
     expect(state.projectEditState).toEqual(editing);
   });
 
-  it("request does not change the state", () => {
-    expect(projectReducer(initial, { type: "request" })).toBe(initial);
+  it("request marks the list as loading, and get ends it", () => {
+    const loading = projectReducer(initial, { type: "request" });
+
+    expect(loading.loading).toBe(true);
+    expect(
+      projectReducer(loading, { type: "get", payload: [project("p1")] })
+        .loading,
+    ).toBe(false);
+  });
+
+  it("failure ends the loading and keeps the list", () => {
+    const state = projectReducer(
+      { ...initial, loading: true, projectList: [project("p1")] },
+      { type: "failure" },
+    );
+
+    expect(state.loading).toBe(false);
+    expect(state.projectList).toEqual([project("p1")]);
   });
 
   it("does not change the state for an unknown action", () => {
@@ -177,13 +193,16 @@ describe("project action creators", () => {
       });
     });
 
-    it("dispatches only request when the service fails", async () => {
+    it("dispatches request, then failure when the service fails", async () => {
       const dispatch = vi.fn();
       vi.spyOn(projectsService, "getAll").mockRejectedValue("boom");
 
       await expect(getProjectList(dispatch)).rejects.toBe("boom");
 
-      expect(dispatch.mock.calls).toEqual([[{ type: "request" }]]);
+      expect(dispatch.mock.calls).toEqual([
+        [{ type: "request" }],
+        [{ type: "failure" }],
+      ]);
     });
   });
 
@@ -206,7 +225,6 @@ describe("project action creators", () => {
     expect(create).toHaveBeenCalledWith(DEFAULT_PROJECT_EDIT_STATE);
     expect(result).toEqual(project("p1"));
     expect(dispatch.mock.calls).toEqual([
-      [{ type: "request" }],
       [{ type: "create", payload: project("p1") }],
     ]);
   });
@@ -222,7 +240,6 @@ describe("project action creators", () => {
     expect(update).toHaveBeenCalledWith(DEFAULT_PROJECT_EDIT_STATE);
     expect(result).toEqual(project("p1", { name: "Renamed" }));
     expect(dispatch.mock.calls).toEqual([
-      [{ type: "request" }],
       [{ type: "update", payload: project("p1", { name: "Renamed" }) }],
     ]);
   });
@@ -237,17 +254,14 @@ describe("project action creators", () => {
 
     expect(remove).toHaveBeenCalledWith("p1");
     expect(result).toEqual(project("p1"));
-    expect(dispatch.mock.calls).toEqual([
-      [{ type: "request" }],
-      [{ type: "delete", payload: "p1" }],
-    ]);
+    expect(dispatch.mock.calls).toEqual([[{ type: "delete", payload: "p1" }]]);
   });
 
   it.each([
     ["create", createProject, "create"],
     ["update", updateProject, "update"],
   ] as const)(
-    "%sProject dispatches only request when the service fails",
+    "%sProject dispatches nothing when the service fails",
     async (_name, action, method) => {
       const dispatch = vi.fn();
       vi.spyOn(projectsService, method).mockRejectedValue("boom");
@@ -256,7 +270,7 @@ describe("project action creators", () => {
         "boom",
       );
 
-      expect(dispatch.mock.calls).toEqual([[{ type: "request" }]]);
+      expect(dispatch).not.toHaveBeenCalled();
     },
   );
 

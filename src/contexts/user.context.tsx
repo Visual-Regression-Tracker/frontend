@@ -1,4 +1,4 @@
-import * as React from "react";
+import { type ReactNode, createContext, useContext, useReducer } from "react";
 import { User } from "../types";
 import { usersService } from "../services";
 
@@ -25,13 +25,11 @@ type State = {
   userList: User[];
 };
 type UserProviderProps = {
-  children: React.ReactNode;
+  children: ReactNode;
 };
 
-const UserStateContext = React.createContext<State | undefined>(undefined);
-const UserDispatchContext = React.createContext<Dispatch | undefined>(
-  undefined,
-);
+const UserStateContext = createContext<State | undefined>(undefined);
+const UserDispatchContext = createContext<Dispatch | undefined>(undefined);
 
 export function UserReducer(state: State, action: IAction): State {
   switch (action.type) {
@@ -60,7 +58,7 @@ export function UserReducer(state: State, action: IAction): State {
   }
 }
 
-function UserProvider({ children }: UserProviderProps) {
+function UserProvider({ children }: Readonly<UserProviderProps>) {
   const localStorageUser = localStorage.getItem("user");
   const initialState: State = {
     loggedIn: !!localStorageUser,
@@ -68,7 +66,7 @@ function UserProvider({ children }: UserProviderProps) {
     userList: [],
   };
 
-  const [state, dispatch] = React.useReducer(UserReducer, initialState);
+  const [state, dispatch] = useReducer(UserReducer, initialState);
 
   return (
     <UserStateContext.Provider value={state}>
@@ -80,7 +78,7 @@ function UserProvider({ children }: UserProviderProps) {
 }
 
 function useUserState() {
-  const context = React.useContext(UserStateContext);
+  const context = useContext(UserStateContext);
 
   if (context === undefined) {
     throw Error("must be used within a UserProvider");
@@ -90,7 +88,7 @@ function useUserState() {
 }
 
 function useUserDispatch() {
-  const context = React.useContext(UserDispatchContext);
+  const context = useContext(UserDispatchContext);
 
   if (context === undefined) {
     throw Error("must be used within a UserProvider");

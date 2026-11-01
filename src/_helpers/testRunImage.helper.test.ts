@@ -3,8 +3,6 @@ import { imageFor, thumbnailFor } from "./testRunImage.helper";
 import { staticService } from "../services";
 
 describe("thumbnailFor", () => {
-  // The grids draw these a hundred-odd pixels wide. Pulling the full-size file
-  // for that cost ~7 MB and 68 requests every time the variations dialog opened.
   it("uses the small copy of the diff", () => {
     const testRun = run({
       diffName: "diff.png",
@@ -27,7 +25,6 @@ describe("thumbnailFor", () => {
     );
   });
 
-  // runs ingested before thumbnails existed still have to draw something
   it("falls back to the full-size picture when there is no small copy", () => {
     const testRun = run({ diffName: "diff.png", diffThumbnailName: undefined });
 

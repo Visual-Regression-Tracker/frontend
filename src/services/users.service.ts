@@ -8,7 +8,6 @@ const DEFAULT_HEADERS = {
 };
 
 function setUserInLocalStorage(user: User) {
-  // store user details and jwt token in local storage to keep user logged in between page refreshes
   localStorage.setItem("user", JSON.stringify(user));
 }
 
@@ -106,25 +105,42 @@ function logout() {
   localStorage.removeItem("user");
 }
 
-let oidcEnabledPromise: Promise<boolean> | undefined;
-
-// The backend is the single source of truth for whether SSO is enabled.
-// Cached for the page lifetime; any failure (e.g. an older backend without
-// the endpoint) means the local login form is shown.
-function isOidcEnabled(): Promise<boolean> {
-  oidcEnabledPromise ??= fetch(`${API_URL}${ENDPOINT_URL}/oidc/enabled`)
-    .then((response) => (response.ok ? response.json() : false))
-    .then((enabled) => enabled === true)
-    .catch(() => false);
-  return oidcEnabledPromise;
+// Cached per page; anything but a boolean answer means the fallback.
+function cachedFlag(
+  path: string,
+  fallback: boolean,
+  { retryOnError }: { retryOnError: boolean },
+): () => Promise<boolean> {
+  let cached: Promise<boolean> | undefined;
+  return () => {
+    cached ??= fetch(`${API_URL}${ENDPOINT_URL}${path}`)
+      .then((response) => (response.ok ? response.json() : fallback))
+      .then((enabled) => (typeof enabled === "boolean" ? enabled : fallback))
+      .catch(() => {
+        if (retryOnError) {
+          cached = undefined;
+        }
+        return fallback;
+      });
+    return cached;
+  };
 }
+
+// The backend decides; any failure shows the local login form.
+const isOidcEnabled = cachedFlag("/oidc/enabled", false, {
+  retryOnError: false,
+});
+
+// On unless the backend says false: an older backend keeps it open, and a failed request is no answer, so ask again next time.
+const isRegistrationEnabled = cachedFlag("/registration/enabled", true, {
+  retryOnError: true,
+});
 
 function getOidcLoginUrl(): string {
   return `${API_URL}${ENDPOINT_URL}/oidc/login`;
 }
 
-// Set on an explicit logout so the login page does not auto-redirect to the
-// IdP, which would sign the user straight back in with its own session.
+// Set on an explicit logout so the login page does not redirect straight back to the IdP, whose session is still alive
 const OIDC_LOGGED_OUT_KEY = "oidcLoggedOut";
 
 function markOidcLoggedOut() {
@@ -155,9 +171,8 @@ function getMe(token: string): Promise<User> {
 
 function completeOidcLogin(token: string): Promise<User> {
   return getMe(token).then((user) => {
-    // The /me endpoint returns the user without the token, so merge it in here
-    // to keep the same shape the local login stores.
-    const userWithToken = { ...user, token } as unknown as User;
+    // /me omits the token; add it back so the user matches the local login's shape.
+    const userWithToken = { ...user, token };
     setUserInLocalStorage(userWithToken);
     return userWithToken;
   });
@@ -217,10 +232,9 @@ export const usersService = {
   assignRole,
   remove,
   isOidcEnabled,
-  getOidcLoginUrl,
+  isRegistrationEnabled,
   markOidcLoggedOut,
   isOidcLoggedOut,
   startOidcLogin,
-  getMe,
   completeOidcLogin,
 };

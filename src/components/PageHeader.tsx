@@ -1,12 +1,15 @@
-import React from "react";
+import type { ReactNode } from "react";
 import { Box, Stack, Typography } from "@mui/material";
 
-// The title row of a page: what it is, a line of context, and its actions.
-export const PageHeader: React.FunctionComponent<{
+export const PageHeader = ({
+  title,
+  subtitle,
+  actions,
+}: {
   title: string;
-  subtitle?: React.ReactNode;
-  actions?: React.ReactNode;
-}> = ({ title, subtitle, actions }) => (
+  subtitle?: ReactNode;
+  actions?: ReactNode;
+}) => (
   <Stack
     direction={{ xs: "column", sm: "row" }}
     alignItems={{ xs: "flex-start", sm: "center" }}

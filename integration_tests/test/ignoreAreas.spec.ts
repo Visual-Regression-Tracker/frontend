@@ -31,8 +31,6 @@ const EXISTING_AREA = {
 };
 const TEMP_AREA = { x: 100, y: 300, width: 600, height: 700 };
 
-// the run as the API sends it: one area the reviewer drew earlier, and one the
-// upload applied
 const withArea: TestRun = {
   ...TEST_UNRESOLVED,
   ignoreAreas: JSON.stringify([EXISTING_AREA]),
@@ -59,8 +57,7 @@ test.beforeEach(async ({ page }) => {
   await mockAddIgnoreAreas(page);
 });
 
-// opens the run at the image's own size, where a point on the screen is the
-// same point of the image, which is what the areas are measured in
+// at the image's own size a screen point is the image point the areas are measured in
 const openAtOriginalSize = async (
   openProjectPage: (
     id: string,
@@ -97,7 +94,6 @@ test("draws the areas the run already has", async ({
         height: EXISTING_AREA.height,
       },
     ]);
-  // nothing to save until something changes
   await expect(details.saveAreas).toBeDisabled();
 });
 
@@ -148,7 +144,6 @@ test("draws a rectangle and saves it as an ignore area", async ({
     ],
   });
   await expect(page.getByText("Ignore areas are updated.")).toBeVisible();
-  // saved, so there is nothing left to save
   await expect(details.saveAreas).toBeDisabled();
 });
 
@@ -181,8 +176,7 @@ test("leaves draw mode after one rectangle", async ({
   await details.drawMode.click();
   await details.drag({ x: 40, y: 40 }, { x: 200, y: 120 });
 
-  // NOTE: the toggle drops by itself, so the next rectangle needs it pressed
-  // again; a second drag would pan the image instead of drawing
+  // the toggle drops by itself: a second drag without pressing it again would pan
   await expect(details.drawMode).toHaveAttribute("aria-pressed", "false");
 });
 
@@ -294,7 +288,6 @@ test("applies the selected area to every run in the build", async ({
   openProjectPage,
   page,
 }) => {
-  // the list the dialog asks for to find every run of the build
   await page.route(
     (url) =>
       url.pathname === "/test-runs" &&
@@ -329,7 +322,6 @@ test("applies the selected area to every run in the build", async ({
   await expect(
     page.getByText("Ignore areas are updated in all images in this build."),
   ).toBeVisible();
-  // the area is let go of once it is applied
   await expect(details.applyAreas).toBeDisabled();
 });
 
@@ -390,6 +382,38 @@ test("saves the area drawn in compare mode as the areas around it", async ({
   ).toBeVisible();
 });
 
+test("saves the area drawn in compare mode, not the one the run had", async ({
+  openProjectPage,
+  page,
+}) => {
+  const details = await openAtOriginalSize(openProjectPage, page, withArea);
+  await details.areaKind.click();
+  await page.getByRole("option", { name: "Compare Area" }).click();
+  await details.drawMode.click();
+  await details.drag({ x: 500, y: 40 }, { x: 600, y: 100 });
+  await expect.poll(async () => (await details.ignoreRects()).length).toBe(2);
+
+  const [request] = await Promise.all([
+    page.waitForRequest(updatedAreas),
+    details.saveAreas.click(),
+  ]);
+
+  // the 1280 x 720 image minus the 100 x 60 area at (500, 40), cut in eight
+  const areas = request
+    .postDataJSON()
+    .ignoreAreas.map(({ x, y, width, height }) => ({ x, y, width, height }));
+  expect(areas).toEqual([
+    { x: 0, y: 0, width: 500, height: 40 },
+    { x: 500, y: 0, width: 100, height: 40 },
+    { x: 600, y: 0, width: 680, height: 40 },
+    { x: 0, y: 40, width: 500, height: 60 },
+    { x: 600, y: 40, width: 680, height: 60 },
+    { x: 0, y: 100, width: 500, height: 620 },
+    { x: 500, y: 100, width: 100, height: 620 },
+    { x: 600, y: 100, width: 680, height: 620 },
+  ]);
+});
+
 test("asks before leaving with an area that was not saved", async ({
   openProjectPage,
   page,
@@ -404,7 +428,6 @@ test("asks before leaving with an area that was not saved", async ({
   await expect(details.discardPrompt).toBeVisible();
   await page.getByRole("button", { name: "Cancel" }).click();
   await expect(details.discardPrompt).toBeHidden();
-  // still there, and still unsaved
   await expect(details.drawAreas).toHaveCount(2);
   await expect(details.saveAreas).toBeEnabled();
   expect(await details.ignoreRects()).toHaveLength(1);

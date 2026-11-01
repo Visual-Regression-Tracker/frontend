@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { Typography, Button, Box, Stack, Container } from "@mui/material";
 import {
@@ -15,6 +15,7 @@ import {
 } from "../contexts";
 import { Add, FolderOpenOutlined, Search } from "@mui/icons-material";
 import { EmptyState } from "../components/EmptyState";
+import { SkeletonList } from "../components/SkeletonList";
 import { ProjectCard } from "../components/ProjectCard";
 import { ProjectGrid, ProjectSection } from "../components/ProjectGrid";
 import { ProjectSearchField } from "../components/ProjectSearchField";
@@ -27,6 +28,7 @@ import { ProjectForm } from "../components/ProjectForm";
 import { useSnackbar } from "notistack";
 import { BaseModal } from "../components/BaseModal";
 import { Project, User } from "../types";
+import { pluralize } from "../_helpers/format.helper";
 
 // the roles the API lets create, update and delete projects
 const PROJECT_EDITOR_ROLES = new Set<User["role"]>(["admin", "editor"]);
@@ -38,30 +40,29 @@ const ProjectsListPage = () => {
   const helpDispatch = useHelpDispatch();
   const { user } = useUserState();
   const canEditProjects = !!user && PROJECT_EDITOR_ROLES.has(user.role);
-  const { projectList, favoriteProjectIds, recentProjectIds } = projectState;
+  const { projectList, favoriteProjectIds, recentProjectIds, loading } =
+    projectState;
 
-  // in the URL, so a search can be shared and survives going back
   const [searchParams, setSearchParams] = useSearchParams();
   const query = searchParams.get("q") ?? "";
 
-  const [createDialogOpen, setCreateDialogOpen] = React.useState(false);
-  const [updateDialogOpen, setUpdateDialogOpen] = React.useState(false);
-  const [deleteDialogOpen, setDeleteDialogOpen] = React.useState(false);
+  const [createDialogOpen, setCreateDialogOpen] = useState(false);
+  const [updateDialogOpen, setUpdateDialogOpen] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
 
   useEffect(() => {
     setHelpSteps(helpDispatch, PROJECT_LIST_PAGE_STEPS);
   });
 
-  const groups = React.useMemo(
+  const groups = useMemo(
     () => groupProjects(projectList, favoriteProjectIds, recentProjectIds),
     [projectList, favoriteProjectIds, recentProjectIds],
   );
-  const favoriteIdSet = React.useMemo(
+  const favoriteIdSet = useMemo(
     () => new Set(favoriteProjectIds),
     [favoriteProjectIds],
   );
-  // searching flattens the sections, keeping their order
-  const matches = React.useMemo(
+  const matches = useMemo(
     () =>
       [...groups.favorites, ...groups.recent, ...groups.others].filter(
         (project) => matchesProjectQuery(project, query),
@@ -92,11 +93,11 @@ const ProjectsListPage = () => {
         key={project.id}
         project={project}
         favorite={favorite}
-        onToggleFavorite={() =>
+        onToggleFavorite={() => {
           toggleFavoriteProject(projectDispatch, project.id, !favorite).catch(
             (err) => enqueueSnackbar(err, { variant: "error" }),
-          )
-        }
+          );
+        }}
         onEdit={
           canEditProjects
             ? () => {
@@ -155,6 +156,30 @@ const ProjectsListPage = () => {
     );
   };
 
+  const renderBody = () => {
+    if (projectList.length > 0) {
+      return renderProjects();
+    }
+    if (loading) {
+      return (
+        <Box role="status" aria-label="Loading projects">
+          <SkeletonList />
+        </Box>
+      );
+    }
+    return (
+      <EmptyState
+        icon={<FolderOpenOutlined />}
+        title="No projects yet"
+        description={
+          canEditProjects
+            ? "Create the first one with Add project, then point your test runs at it."
+            : "Projects shared with you will show up here."
+        }
+      />
+    );
+  };
+
   return (
     <Container maxWidth="lg" sx={{ py: 4 }}>
       <Stack
@@ -168,11 +193,11 @@ const ProjectsListPage = () => {
           <Typography variant="h4" component="h1">
             Projects
           </Typography>
-          <Typography variant="body2" color="text.secondary">
-            {projectList.length === 1
-              ? "1 project"
-              : `${projectList.length} projects`}
-          </Typography>
+          {!loading && (
+            <Typography variant="body2" color="text.secondary">
+              {`${projectList.length} ${pluralize(projectList.length, "project")}`}
+            </Typography>
+          )}
         </Box>
         <Stack
           direction="row"
@@ -199,19 +224,7 @@ const ProjectsListPage = () => {
         </Stack>
       </Stack>
 
-      {projectList.length === 0 ? (
-        <EmptyState
-          icon={<FolderOpenOutlined />}
-          title="No projects yet"
-          description={
-            canEditProjects
-              ? "Create the first one with Add project, then point your test runs at it."
-              : "Projects shared with you will show up here."
-          }
-        />
-      ) : (
-        renderProjects()
-      )}
+      {renderBody()}
 
       {canEditProjects && (
         <>

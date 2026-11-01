@@ -20,12 +20,11 @@ import {
   mockRejectTestRuns,
   mockTestRun,
 } from "utils/mocks";
+import { afterTwoFrames } from "utils/afterTwoFrames";
 
 const project = { ...TEST_PROJECT, bulkApproveVariations: true };
 const build = TEST_BUILD_FAILED;
 
-// the screen under review, in English, and the same screen in other locales:
-// siblings differ on the axis the project groups by, customTags, and on no other
 const current: TestRun = { ...TEST_UNRESOLVED, customTags: "en" };
 const sibling = (customTags: string, diffPercent: number): TestRun => ({
   ...current,
@@ -35,7 +34,6 @@ const sibling = (customTags: string, diffPercent: number): TestRun => ({
 });
 const german = sibling("de", 3);
 const french = sibling("fr", 2);
-// held back by the API: it does not match the change under review
 const spanish = {
   ...sibling("es", 9),
   reason: "The change is not the same",
@@ -77,7 +75,6 @@ const openVariations = async (
   await (
     verb === "Approve" ? details.approveVariations : details.rejectVariations
   ).click();
-  // the matching runs have loaded once the count is there
   await expect(details.variationsToggleAll).toBeVisible();
 
   return projectPage;
@@ -168,7 +165,11 @@ test("approves the matching variations", async ({ openProjectPage, page }) => {
     details.variationsConfirm("Approve").click(),
   ]);
 
-  expect(request.postDataJSON().sort()).toEqual([german.id, french.id].sort());
+  expect(
+    request.postDataJSON().sort((a: string, b: string) => a.localeCompare(b)),
+  ).toEqual(
+    [german.id, french.id].sort((a: string, b: string) => a.localeCompare(b)),
+  );
   await expect(notification.message).toHaveText("Approved 2 variations");
   await expect(details.variations).toBeHidden();
 });
@@ -207,7 +208,9 @@ test("approves a variation that did not match once it is ticked", async ({
   ]);
 
   expect(request.postDataJSON().sort()).toEqual(
-    [german.id, french.id, spanish.id].sort(),
+    [german.id, french.id, spanish.id].sort((a: string, b: string) =>
+      a.localeCompare(b),
+    ),
   );
 });
 
@@ -259,7 +262,11 @@ test("rejects the matching variations", async ({ openProjectPage, page }) => {
     details.variationsConfirm("Reject").click(),
   ]);
 
-  expect(request.postDataJSON().sort()).toEqual([german.id, french.id].sort());
+  expect(
+    request.postDataJSON().sort((a: string, b: string) => a.localeCompare(b)),
+  ).toEqual(
+    [german.id, french.id].sort((a: string, b: string) => a.localeCompare(b)),
+  );
   await expect(notification.message).toHaveText("Rejected 2 variations");
   await expect(details.variations).toBeHidden();
 });
@@ -283,7 +290,6 @@ test("sends nothing when the review is cancelled", async ({
   expect(sent).toEqual([]);
 });
 
-// the review sits over the run, whose hotkeys must not act through it
 test("leaves the run behind alone on its hotkeys while the review is open", async ({
   openProjectPage,
   page,
@@ -301,12 +307,7 @@ test("leaves the run behind alone on its hotkeys while the review is open", asyn
     await page.keyboard.press(key);
   }
   // two frames on: a handled key would have re-rendered by now
-  await page.evaluate(
-    () =>
-      new Promise((resolve) =>
-        requestAnimationFrame(() => requestAnimationFrame(resolve)),
-      ),
-  );
+  await afterTwoFrames(page);
 
   expect(sent).toEqual([]);
   await expect(page).toHaveURL(new RegExp(`testId=${current.id}$`));
@@ -330,7 +331,6 @@ test("keeps the review open and says so when approving fails", async ({
   await details.variationsConfirm("Approve").click();
 
   await expect(notification.message).toHaveText("Could not approve");
-  // still there to try again, with the choice as it was
   await expect(details.variations).toBeVisible();
   await expect(details.variationsConfirm("Approve")).toHaveText(
     "Approve 2 selected",
@@ -354,8 +354,6 @@ test("shows the diffs, and the screenshots when the diff is switched off", async
   }
 });
 
-// the full-size view used to blank the page in the production build: its
-// icons were default imports the bundle handed over as module objects
 test("opens a variation full size", async ({ openProjectPage, page }) => {
   const { details } = await openVariations(openProjectPage);
 

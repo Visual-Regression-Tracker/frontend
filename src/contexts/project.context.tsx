@@ -1,4 +1,11 @@
-import * as React from "react";
+import {
+  type ReactNode,
+  createContext,
+  useContext,
+  useEffect,
+  useLayoutEffect,
+  useReducer,
+} from "react";
 import { Project, ProjectDto } from "../types";
 import { projectsService } from "../services";
 import { useSnackbar } from "notistack";
@@ -11,6 +18,11 @@ import {
 
 interface IRequestAction {
   type: "request";
+  payload?: undefined;
+}
+
+interface IFailureAction {
+  type: "failure";
   payload?: undefined;
 }
 
@@ -62,6 +74,7 @@ interface ISetProjectEditState {
 type IAction =
   | ISetProjectEditState
   | IRequestAction
+  | IFailureAction
   | IGetction
   | ISelectAction
   | ICreateAction
@@ -79,22 +92,34 @@ type State = {
   favoriteProjectIds: string[];
   // opened last first, kept in this browser
   recentProjectIds: string[];
+  loading: boolean;
 };
 type ProjectProviderProps = {
-  children: React.ReactNode;
+  children: ReactNode;
 };
 
-const ProjectStateContext = React.createContext<State | undefined>(undefined);
-const ProjectDispatchContext = React.createContext<Dispatch | undefined>(
-  undefined,
-);
+const ProjectStateContext = createContext<State | undefined>(undefined);
+const ProjectDispatchContext = createContext<Dispatch | undefined>(undefined);
 
 export function projectReducer(state: State, action: IAction): State {
   switch (action.type) {
+    case "request":
+      return {
+        ...state,
+        loading: true,
+      };
+
+    case "failure":
+      return {
+        ...state,
+        loading: false,
+      };
+
     case "get":
       return {
         ...state,
         projectList: action.payload,
+        loading: false,
       };
 
     case "select":
@@ -166,7 +191,7 @@ export function projectReducer(state: State, action: IAction): State {
 }
 
 function useProjectState() {
-  const context = React.useContext(ProjectStateContext);
+  const context = useContext(ProjectStateContext);
 
   if (context === undefined) {
     throw Error("must be used within a ProjectProvider");
@@ -176,7 +201,7 @@ function useProjectState() {
 }
 
 function useProjectDispatch() {
-  const context = React.useContext(ProjectDispatchContext);
+  const context = useContext(ProjectDispatchContext);
 
   if (context === undefined) {
     throw Error("must be used within a ProjectProvider");
@@ -190,13 +215,19 @@ function getProjectList(dispatch: Dispatch): Promise<Project[]> {
     type: "request",
   });
 
-  return projectsService.getAll().then((projects) => {
-    dispatch({
-      type: "get",
-      payload: projects,
-    });
-    return projects;
-  });
+  return projectsService.getAll().then(
+    (projects) => {
+      dispatch({
+        type: "get",
+        payload: projects,
+      });
+      return projects;
+    },
+    (err) => {
+      dispatch({ type: "failure" });
+      throw err;
+    },
+  );
 }
 
 function selectProject(dispatch: Dispatch, id: string) {
@@ -207,10 +238,6 @@ function selectProject(dispatch: Dispatch, id: string) {
 }
 
 function createProject(dispatch: Dispatch, project: ProjectDto) {
-  dispatch({
-    type: "request",
-  });
-
   return projectsService.create(project).then((project: Project) => {
     dispatch({
       type: "create",
@@ -221,10 +248,6 @@ function createProject(dispatch: Dispatch, project: ProjectDto) {
 }
 
 function updateProject(dispatch: Dispatch, project: ProjectDto) {
-  dispatch({
-    type: "request",
-  });
-
   return projectsService.update(project).then((project: Project) => {
     dispatch({
       type: "update",
@@ -235,10 +258,6 @@ function updateProject(dispatch: Dispatch, project: ProjectDto) {
 }
 
 function deleteProject(dispatch: Dispatch, id: string) {
-  dispatch({
-    type: "request",
-  });
-
   return projectsService.remove(id).then((project) => {
     dispatch({
       type: "delete",
@@ -273,21 +292,24 @@ function setProjectEditState(dispatch: Dispatch, project?: ProjectDto) {
   });
 }
 
-function ProjectProvider({ children }: ProjectProviderProps) {
+function ProjectProvider({ children }: Readonly<ProjectProviderProps>) {
+  const { loggedIn, user } = useUserState();
   const initialState: State = {
     selectedProjectId: null,
     projectList: [],
     projectEditState: DEFAULT_PROJECT_EDIT_STATE,
     favoriteProjectIds: [],
     recentProjectIds: [],
+    // a signed-in user's list is on its way from the first render
+    loading: loggedIn,
   };
 
-  const { loggedIn, user } = useUserState();
   const userId = loggedIn ? user?.id : undefined;
-  const [state, dispatch] = React.useReducer(projectReducer, initialState);
+  const [state, dispatch] = useReducer(projectReducer, initialState);
   const { enqueueSnackbar } = useSnackbar();
 
-  React.useEffect(() => {
+  // a layout effect, so a login shows the loading state, not an empty list
+  useLayoutEffect(() => {
     if (loggedIn) {
       getProjectList(dispatch).catch((err) =>
         enqueueSnackbar(err, {
@@ -297,9 +319,8 @@ function ProjectProvider({ children }: ProjectProviderProps) {
     }
   }, [enqueueSnackbar, loggedIn]);
 
-  // An API older than this frontend has no favourites and answers 404: the
-  // lists work without them rather than greeting every login with an error.
-  React.useEffect(() => {
+  // An API older than this frontend has no favourites and answers 404; the lists work without them
+  useEffect(() => {
     if (!userId) {
       dispatch({ type: "favorites", payload: [] });
       dispatch({ type: "recent", payload: [] });
@@ -325,7 +346,7 @@ function ProjectProvider({ children }: ProjectProviderProps) {
   }, [userId]);
 
   // a project counts as opened once it is selected, whichever page did it
-  React.useEffect(() => {
+  useEffect(() => {
     if (userId && state.selectedProjectId) {
       dispatch({
         type: "recent",

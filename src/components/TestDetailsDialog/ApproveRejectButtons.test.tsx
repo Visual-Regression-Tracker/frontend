@@ -1,4 +1,4 @@
-import React from "react";
+import { useEffect } from "react";
 import { screen, waitFor } from "@testing-library/react";
 import { renderWithProviders } from "../../_test/render";
 import { SeedTestRuns } from "../../_test/SeedTestRuns";
@@ -15,6 +15,7 @@ import {
   testRunMock,
 } from "../../_test/test.data.helper";
 import { ApproveRejectButtons } from "./ApproveRejectButtons";
+import { NO_FAILURES } from "../../_test/bulkResult";
 
 const UNRESOLVED: TestRun = {
   ...testRunMock,
@@ -31,12 +32,11 @@ const siblingOf = (run: TestRun, changes: Partial<TestRun>): TestRun => ({
   ...changes,
 });
 
-// Selects the project, and says when it is selected and loaded, so that a test
-// of something that is NOT shown does not pass just because it came too early.
-const SelectProject: React.FunctionComponent<{ id: string }> = ({ id }) => {
+// waits until the project is selected and loaded, so a not-shown check cannot pass early
+const SelectProject = ({ id }: { id: string }) => {
   const dispatch = useProjectDispatch();
   const { projectList, selectedProjectId } = useProjectState();
-  React.useEffect(() => selectProject(dispatch, id), [dispatch, id]);
+  useEffect(() => selectProject(dispatch, id), [dispatch, id]);
   return projectList.length > 0 && selectedProjectId === id ? (
     <div data-testid="project-ready" />
   ) : null;
@@ -84,7 +84,6 @@ const renderButtons = async ({
     afterReject,
     onOpenVariations,
     showTestRun: (run: TestRun) => result.rerender(ui(run)),
-    // the same run, with new callbacks: what the dialog does on every render
     giveCallbacks: (callbacks: {
       afterApprove?: () => void;
       afterReject?: () => void;
@@ -109,7 +108,7 @@ describe("ApproveRejectButtons", () => {
     it("approves the test run by its id", async () => {
       const approveBulk = vi
         .spyOn(testRunService, "approveBulk")
-        .mockResolvedValue();
+        .mockResolvedValue(NO_FAILURES);
       const { user, afterApprove, afterReject } = await renderButtons();
 
       await user.click(approveButton());
@@ -127,7 +126,7 @@ describe("ApproveRejectButtons", () => {
       const mergeRun = { ...UNRESOLVED, merge: true };
       const approveBulk = vi
         .spyOn(testRunService, "approveBulk")
-        .mockResolvedValue();
+        .mockResolvedValue(NO_FAILURES);
       const { user } = await renderButtons({ testRun: mergeRun });
 
       expect(
@@ -159,10 +158,24 @@ describe("ApproveRejectButtons", () => {
       expect(screen.queryByText("Approved")).not.toBeInTheDocument();
     });
 
+    it("shows the reason and does not carry on when the backend refuses the run", async () => {
+      vi.spyOn(testRunService, "approveBulk").mockResolvedValue({
+        succeeded: [],
+        failed: [{ id: UNRESOLVED.id, message: "Baseline is locked" }],
+      });
+      const { user, afterApprove } = await renderButtons();
+
+      await user.click(approveButton());
+
+      expect(await screen.findByText("Baseline is locked")).toBeVisible();
+      expect(afterApprove).not.toHaveBeenCalled();
+      expect(screen.queryByText("Approved")).not.toBeInTheDocument();
+    });
+
     it("approves with the hotkey a", async () => {
       const approveBulk = vi
         .spyOn(testRunService, "approveBulk")
-        .mockResolvedValue();
+        .mockResolvedValue(NO_FAILURES);
       const { user, afterApprove } = await renderButtons();
 
       await user.keyboard("a");
@@ -177,7 +190,7 @@ describe("ApproveRejectButtons", () => {
     it("follows the test run it is given when the hotkey is pressed", async () => {
       const approveBulk = vi
         .spyOn(testRunService, "approveBulk")
-        .mockResolvedValue();
+        .mockResolvedValue(NO_FAILURES);
       const next = { ...UNRESOLVED, id: "next-id", merge: true };
       const { user, showTestRun } = await renderButtons();
 
@@ -190,7 +203,7 @@ describe("ApproveRejectButtons", () => {
     });
 
     it("carries on with the latest after-approve when the hotkey is pressed", async () => {
-      vi.spyOn(testRunService, "approveBulk").mockResolvedValue();
+      vi.spyOn(testRunService, "approveBulk").mockResolvedValue(NO_FAILURES);
       const latest = vi.fn();
       const { user, afterApprove, giveCallbacks } = await renderButtons();
 
@@ -206,7 +219,7 @@ describe("ApproveRejectButtons", () => {
     it("rejects the test run by its id", async () => {
       const rejectBulk = vi
         .spyOn(testRunService, "rejectBulk")
-        .mockResolvedValue();
+        .mockResolvedValue(NO_FAILURES);
       const { user, afterApprove, afterReject } = await renderButtons();
 
       await user.click(rejectButton());
@@ -231,10 +244,24 @@ describe("ApproveRejectButtons", () => {
       expect(screen.queryByText("Rejected")).not.toBeInTheDocument();
     });
 
+    it("shows the reason and does not carry on when the backend refuses the run", async () => {
+      vi.spyOn(testRunService, "rejectBulk").mockResolvedValue({
+        succeeded: [],
+        failed: [{ id: UNRESOLVED.id, message: "Run was deleted" }],
+      });
+      const { user, afterReject } = await renderButtons();
+
+      await user.click(rejectButton());
+
+      expect(await screen.findByText("Run was deleted")).toBeVisible();
+      expect(afterReject).not.toHaveBeenCalled();
+      expect(screen.queryByText("Rejected")).not.toBeInTheDocument();
+    });
+
     it("rejects with the hotkey x", async () => {
       const rejectBulk = vi
         .spyOn(testRunService, "rejectBulk")
-        .mockResolvedValue();
+        .mockResolvedValue(NO_FAILURES);
       const { user, afterReject } = await renderButtons();
 
       await user.keyboard("x");
@@ -247,7 +274,7 @@ describe("ApproveRejectButtons", () => {
     });
 
     it("carries on with the latest after-reject when the hotkey is pressed", async () => {
-      vi.spyOn(testRunService, "rejectBulk").mockResolvedValue();
+      vi.spyOn(testRunService, "rejectBulk").mockResolvedValue(NO_FAILURES);
       const latest = vi.fn();
       const { user, afterReject, giveCallbacks } = await renderButtons();
 
@@ -271,7 +298,6 @@ describe("ApproveRejectButtons", () => {
   });
 
   describe("variations buttons", () => {
-    // they need the project to allow it, an unresolved run, and a sibling that is still to review
     const SIBLING = siblingOf(UNRESOLVED, {});
     const variationButtons = () => ({
       approve: screen.queryByText("Approve variations"),
@@ -372,7 +398,6 @@ describe("ApproveRejectButtons", () => {
         },
         testRuns: [
           UNRESOLVED,
-          // same custom tags as the run, a different device: a sibling by device
           siblingOf(UNRESOLVED, {
             customTags: UNRESOLVED.customTags,
             device: "other device",

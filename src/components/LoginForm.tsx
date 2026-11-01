@@ -1,4 +1,4 @@
-import React, { useState, useEffect, FormEvent } from "react";
+import { useState, useEffect, FormEvent, type ChangeEvent } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import {
   Button,
@@ -16,6 +16,7 @@ import PasswordField from "../components/PasswordField";
 import { usersService } from "../services";
 import { OIDC_AUTO_REDIRECT } from "../_config/env.config";
 import { useOidcEnabled } from "../_helpers/useOidcEnabled";
+import { useRegistrationEnabled } from "../_helpers/useRegistrationEnabled";
 
 const LoginForm = () => {
   const location = useLocation();
@@ -26,8 +27,8 @@ const LoginForm = () => {
   const [password, setPassword] = useState("");
   const dispatch = useUserDispatch();
   const oidcEnabled = useOidcEnabled();
-  // Captured during the first render: LoginPage clears the fragment in an
-  // effect, before the async OIDC flag below has resolved.
+  const registrationEnabled = useRegistrationEnabled();
+  // read on first render: LoginPage clears the fragment in an effect
   const [isOidcCallback] = useState(
     () =>
       window.location.hash.includes("token=") ||
@@ -35,8 +36,7 @@ const LoginForm = () => {
   );
 
   useEffect(() => {
-    // Do not auto-redirect while a callback result (token/error) is being
-    // processed by LoginPage, otherwise we would bounce back to the IdP.
+    // redirecting during a callback would bounce back to the IdP
     if (
       oidcEnabled &&
       OIDC_AUTO_REDIRECT &&
@@ -101,7 +101,7 @@ const LoginForm = () => {
               required
               fullWidth
               inputProps={{
-                onChange: (event: React.ChangeEvent<HTMLInputElement>) =>
+                onChange: (event: ChangeEvent<HTMLInputElement>) =>
                   setEmail(event.target.value),
                 "data-testid": "email",
               }}
@@ -120,17 +120,19 @@ const LoginForm = () => {
           </Stack>
         </CardContent>
       </Card>
-      <Typography
-        variant="body2"
-        color="text.secondary"
-        textAlign="center"
-        mt={2}
-      >
-        New here?{" "}
-        <MuiLink component={Link} to={routes.REGISTER} fontWeight={600}>
-          Create an account
-        </MuiLink>
-      </Typography>
+      {registrationEnabled && (
+        <Typography
+          variant="body2"
+          color="text.secondary"
+          textAlign="center"
+          mt={2}
+        >
+          New here?{" "}
+          <MuiLink component={Link} to={routes.REGISTER} fontWeight={600}>
+            Create an account
+          </MuiLink>
+        </Typography>
+      )}
     </ValidatorForm>
   );
 };

@@ -1,4 +1,4 @@
-import React from "react";
+import { Fragment, type ReactNode } from "react";
 import {
   Box,
   Divider,
@@ -42,31 +42,24 @@ const groupDivider = (
   <Divider orientation="vertical" flexItem sx={{ marginY: 1, marginX: 0.5 }} />
 );
 
-/**
- * A toggle button with a tooltip that appears at once. Two traps live here:
- * the app's Tooltip wrapper forwards only title and children, so the props the
- * group hands down would vanish, and ToggleButtonGroup reads `value` off its
- * direct child to decide which button is selected. Hence MUI's tooltip, the
- * rest spread through it, and the value on both.
- */
+// MUI's tooltip, as the app's wrapper drops props; `value` must sit on the child
 type IconToggleProps = {
   value: string;
   title: string;
   ariaLabel: string;
   testId: string;
-  icon: React.ReactNode;
+  icon: ReactNode;
 } & Omit<TooltipProps, "title" | "children">;
 
-const IconToggle: React.FunctionComponent<IconToggleProps> = ({
+const IconToggle = ({
   value,
   title,
   ariaLabel,
   testId,
   icon,
   ...rest
-}) => (
-  // not interactive: the tooltip opens over the grid header below, and an
-  // interactive one would swallow clicks on the sort buttons under it
+}: IconToggleProps) => (
+  // not interactive, or it would swallow clicks on the sort buttons under it
   <MuiTooltip
     title={title}
     placement="bottom"
@@ -80,17 +73,7 @@ const IconToggle: React.FunctionComponent<IconToggleProps> = ({
   </MuiTooltip>
 );
 
-export const TestRunListControls: React.FunctionComponent<{
-  view: TestRunView;
-  onViewChange: (view: TestRunView) => void;
-  density: TestRunDensity;
-  onDensityChange: (density: TestRunDensity) => void;
-  grouped: boolean;
-  onGroupedChange: (grouped: boolean) => void;
-  groupByAxis: GroupByAxis;
-  showDiff: boolean;
-  onShowDiffChange: (showDiff: boolean) => void;
-}> = ({
+export const TestRunListControls = ({
   view,
   onViewChange,
   density,
@@ -100,14 +83,25 @@ export const TestRunListControls: React.FunctionComponent<{
   groupByAxis,
   showDiff,
   onShowDiffChange,
+}: {
+  view: TestRunView;
+  onViewChange: (view: TestRunView) => void;
+  density: TestRunDensity;
+  onDensityChange: (density: TestRunDensity) => void;
+  grouped: boolean;
+  onGroupedChange: (grouped: boolean) => void;
+  groupByAxis: GroupByAxis;
+  showDiff: boolean;
+  onShowDiffChange: (showDiff: boolean) => void;
 }) => (
   <Box display="flex" alignItems="center" gap={1}>
-    {/* laid out as a table or a grid */}
     <ToggleButtonGroup
       exclusive
       size="small"
       value={view}
-      onChange={(event, next: TestRunView | null) => next && onViewChange(next)}
+      onChange={(_event, next: TestRunView | null) =>
+        next && onViewChange(next)
+      }
     >
       <IconToggle
         value="table"
@@ -129,7 +123,7 @@ export const TestRunListControls: React.FunctionComponent<{
       exclusive
       size="small"
       value={density}
-      onChange={(event, next: TestRunDensity | null) =>
+      onChange={(_event, next: TestRunDensity | null) =>
         next && onDensityChange(next)
       }
     >
@@ -156,15 +150,11 @@ export const TestRunListControls: React.FunctionComponent<{
       />
     </ToggleButtonGroup>
     {groupDivider}
-    {/* what the runs show; switches rather than icons, so "on" is unmistakable.
-        The axis is named in the tooltip and not chosen here: it is a project
-        setting shared by everyone, and the details dialog groups by the same
-        one, so a selector in the toolbar would let the two drift apart */}
+    {/* the axis is a project setting the details dialog shares, so it is not picked here */}
     <Tooltip
       title={
-        // a node rather than a string, because the wrapper forwards only title
-        // and children, so the line breaks cannot come from a style
-        <React.Fragment>
+        // a node for the line breaks: the wrapper forwards only title and children
+        <Fragment>
           Collapses a screen&apos;s variations into one{" "}
           {view === "grid" ? "card" : "row"} by group.
           <br />
@@ -172,7 +162,7 @@ export const TestRunListControls: React.FunctionComponent<{
           by&quot;.
           <br />
           Current axis: {groupByAxis}.
-        </React.Fragment>
+        </Fragment>
       }
     >
       <FormControlLabel
@@ -189,7 +179,6 @@ export const TestRunListControls: React.FunctionComponent<{
         sx={{ marginLeft: 0, marginRight: 0 }}
       />
     </Tooltip>
-    {/* only the cards carry a picture, so the table has nothing to swap */}
     {view === "grid" && groupDivider}
     {view === "grid" && (
       <Tooltip title="Toggle diff. Hotkey: D">

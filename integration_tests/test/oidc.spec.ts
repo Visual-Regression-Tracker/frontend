@@ -81,7 +81,6 @@ test.describe("with SSO on", () => {
     ]);
 
     expect(request.headers()["authorization"]).toBe("Bearer sso-token");
-    // the fragment holding the token is gone from the address
     await expect(page).toHaveURL(/\/projects$/);
     const stored = await page.evaluate(() =>
       JSON.parse(window.localStorage.getItem("user") ?? "null"),
@@ -126,7 +125,6 @@ test.describe("with SSO on", () => {
   }) => {
     await expect(profilePage.email).toBeDisabled();
     await expect(profilePage.passwordForm).toHaveCount(0);
-    // the names are still the user's to change
     await expect(profilePage.firstName).toBeEnabled();
   });
 });
@@ -174,7 +172,6 @@ test.describe("with SSO on and auto redirect", () => {
     // the provider's session would sign the user straight back in
     expect(providerRequests).toEqual([]);
 
-    // asking for SSO again still works
     await loginPage.ssoBtn.click();
     await expect(page).toHaveURL(PROVIDER_URL);
   });

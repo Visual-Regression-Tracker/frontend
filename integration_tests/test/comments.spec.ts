@@ -16,6 +16,7 @@ import {
   mockTestRun,
   mockUpdateTestRun,
 } from "utils/mocks";
+import { afterTwoFrames } from "utils/afterTwoFrames";
 
 const project = TEST_PROJECT;
 const build = TEST_BUILD_FAILED;
@@ -75,7 +76,6 @@ test("saves a comment", async ({ openProjectPage, page }) => {
     comment: "Looks wrong on the footer",
   });
   await expect(notification.message).toHaveText("Comment updated");
-  // saved, so the box gets out of the way
   await expect(details.comment).toBeHidden();
 });
 
@@ -164,14 +164,8 @@ test("keeps the box open and says so when saving fails", async ({
   await details.commentSaveBtn.click();
 
   await expect(notification.message).toHaveText("Could not save");
-  // two frames on, a box on its way out has started to fade: its opacity
-  // drops to 0 at once and stays there until it is gone
-  await page.evaluate(
-    () =>
-      new Promise((resolve) =>
-        requestAnimationFrame(() => requestAnimationFrame(resolve)),
-      ),
-  );
+  // two frames on, a box on its way out already has opacity 0
+  await afterTwoFrames(page);
   await expect(details.commentBox).toHaveAttribute("style", /opacity: 1/);
   await expect(details.commentSaveBtn).toBeVisible();
   await expect(details.comment).toHaveValue("Will not stick");

@@ -1,4 +1,10 @@
-import React from "react";
+import {
+  type ReactNode,
+  createContext,
+  useContext,
+  useEffect,
+  useReducer,
+} from "react";
 import { TestRun } from "../types";
 import { useLocation } from "react-router-dom";
 import { getQueryParams } from "../_helpers/route.helpers";
@@ -38,16 +44,6 @@ interface IUpdateAction {
   payload: TestRun[];
 }
 
-interface IApproveAction {
-  type: "approve";
-  payload: TestRun;
-}
-
-interface IRejectAction {
-  type: "reject";
-  payload: TestRun;
-}
-
 interface IFilterSortAction {
   type: "filterSort";
   payload?: GridRowId[];
@@ -65,8 +61,6 @@ type IAction =
   | IDeleteAction
   | IAddAction
   | IUpdateAction
-  | IApproveAction
-  | IRejectAction
   | IFilterSortAction
   | ITouchedAction
   | ISelectAction;
@@ -75,17 +69,17 @@ type State = {
   selectedTestRun?: TestRun;
   filteredSortedTestRunIds?: GridRowId[];
   testRuns: TestRun[];
+  // socket events can trail a delete, and must not bring the run back
+  deletedIds?: ReadonlySet<string>;
   touched: boolean;
   loading: boolean;
 };
 type TestRunProviderProps = {
-  children: React.ReactNode;
+  children: ReactNode;
 };
 
-const TestRunStateContext = React.createContext<State | undefined>(undefined);
-const TestRunDispatchContext = React.createContext<Dispatch | undefined>(
-  undefined,
-);
+const TestRunStateContext = createContext<State | undefined>(undefined);
+const TestRunDispatchContext = createContext<Dispatch | undefined>(undefined);
 
 const initialState: State = {
   touched: false,
@@ -116,9 +110,7 @@ export function testRunReducer(state: State, action: IAction): State {
       };
 
     case "filterSort":
-      // The list republishes its order on every grid state change, and with
-      // thousands of runs a fresh array re-renders everything reading this
-      // context for nothing. Keep the previous one when the order is the same.
+      // The list republishes its order on every grid state change; a fresh array would re-render every reader for nothing
       if (sameOrder(state.filteredSortedTestRunIds, action.payload)) {
         return state;
       }
@@ -131,6 +123,8 @@ export function testRunReducer(state: State, action: IAction): State {
       return {
         ...state,
         testRuns: [],
+        deletedIds: undefined,
+        filteredSortedTestRunIds: undefined,
         loading: true,
       };
 
@@ -138,10 +132,11 @@ export function testRunReducer(state: State, action: IAction): State {
       return {
         ...state,
         testRuns: action.payload,
+        deletedIds: undefined,
+        filteredSortedTestRunIds: undefined,
         loading: false,
       };
 
-    // a failed fetch has to end the loading too, or the progress bar stays
     case "failure":
       return {
         ...state,
@@ -149,17 +144,22 @@ export function testRunReducer(state: State, action: IAction): State {
       };
 
     case "delete": {
-      const deletedIds = new Set(action.payload);
+      const deletedIds = new Set([
+        ...(state.deletedIds ?? []),
+        ...action.payload,
+      ]);
       return {
         ...state,
+        deletedIds,
         testRuns: state.testRuns.filter((p) => !deletedIds.has(p.id)),
       };
     }
 
     case "add": {
       const existingIds = new Set(state.testRuns.map((tr) => tr.id));
-      // remove duplicates
-      const added = action.payload.filter((i) => !existingIds.has(i.id));
+      const added = action.payload.filter(
+        (i) => !existingIds.has(i.id) && !state.deletedIds?.has(i.id),
+      );
       if (added.length === 0) {
         return state;
       }
@@ -170,21 +170,30 @@ export function testRunReducer(state: State, action: IAction): State {
     }
 
     case "update": {
-      const updatedById = new Map(action.payload.map((i) => [i.id, i]));
+      const updatedById = new Map(
+        action.payload
+          .filter((i) => !state.deletedIds?.has(i.id))
+          .map((i) => [i.id, i]),
+      );
+      // keep the testRuns reference stable: a new array invalidates every memo over a possibly huge list
+      if (updatedById.size === 0) {
+        return state;
+      }
+      const listedIds = new Set<string>();
+      const updated = state.testRuns.map((t) => {
+        listedIds.add(t.id);
+        return updatedById.get(t.id) ?? t;
+      });
+      // an update can arrive for a run the list does not hold yet: add it
+      const added = [...updatedById.values()].filter(
+        (i) => !listedIds.has(i.id),
+      );
       const selectedUpdate = state.selectedTestRun
         ? updatedById.get(state.selectedTestRun.id)
         : undefined;
-      // keep the testRuns reference stable when nothing matched: replacing the
-      // array invalidates every memo over a possibly huge run list
-      if (
-        !selectedUpdate &&
-        !state.testRuns.some((t) => updatedById.has(t.id))
-      ) {
-        return state;
-      }
       return {
         ...state,
-        testRuns: state.testRuns.map((t) => updatedById.get(t.id) ?? t),
+        testRuns: [...updated, ...added],
         selectedTestRun: selectedUpdate ?? state.selectedTestRun,
       };
     }
@@ -200,14 +209,13 @@ export function testRunReducer(state: State, action: IAction): State {
   }
 }
 
-function TestRunProvider({ children }: TestRunProviderProps) {
-  const [state, dispatch] = React.useReducer(testRunReducer, initialState);
+function TestRunProvider({ children }: Readonly<TestRunProviderProps>) {
+  const [state, dispatch] = useReducer(testRunReducer, initialState);
   const location = useLocation();
 
-  React.useEffect(() => {
+  useEffect(() => {
     const { testId } = getQueryParams(location.search);
-    // paging with the arrows moves the URL faster than the answers come back,
-    // and only the run the URL names now may be shown
+    // paging with the arrows moves the URL faster than answers return; only the run the URL names now may be shown
     let ignore = false;
 
     if (!testId) {
@@ -250,7 +258,7 @@ function TestRunProvider({ children }: TestRunProviderProps) {
 }
 
 function useTestRunState() {
-  const context = React.useContext(TestRunStateContext);
+  const context = useContext(TestRunStateContext);
 
   if (context === undefined) {
     throw Error("must be used within a TestRunProvider");
@@ -260,7 +268,7 @@ function useTestRunState() {
 }
 
 function useTestRunDispatch() {
-  const context = React.useContext(TestRunDispatchContext);
+  const context = useContext(TestRunDispatchContext);
 
   if (context === undefined) {
     throw Error("must be used within a TestRunProvider");

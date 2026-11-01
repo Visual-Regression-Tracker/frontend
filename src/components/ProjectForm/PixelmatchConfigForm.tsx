@@ -1,23 +1,23 @@
 import { FormControlLabel, Switch } from "@mui/material";
-import React from "react";
+import { type ChangeEvent, Fragment } from "react";
 import { TextValidator } from "react-material-ui-form-validator";
 import { PixelmatchConfig } from "../../types/imageComparison";
 import { Tooltip } from "../Tooltip";
 import { useConfigHook } from "./useConfigHook";
 import { BlurAmplitudeFields } from "./BlurAmplitudeFields";
 
-export const PixelmatchConfigForm: React.FunctionComponent = () => {
+export const PixelmatchConfigForm = () => {
   const [config, updateConfig] = useConfigHook<PixelmatchConfig>();
 
   return (
-    <React.Fragment>
+    <Fragment>
       <Tooltip title="Enable comparison of images with different sizes.">
         <FormControlLabel
           label="Allow diff dimensions"
           control={
             <Switch
               checked={config.allowDiffDimensions}
-              onChange={(event, checked) =>
+              onChange={(_event, checked) =>
                 updateConfig("allowDiffDimensions", checked)
               }
               color="primary"
@@ -32,7 +32,7 @@ export const PixelmatchConfigForm: React.FunctionComponent = () => {
           control={
             <Switch
               checked={config.ignoreAntialiasing}
-              onChange={(event, checked) =>
+              onChange={(_event, checked) =>
                 updateConfig("ignoreAntialiasing", checked)
               }
               color="primary"
@@ -60,12 +60,12 @@ export const PixelmatchConfigForm: React.FunctionComponent = () => {
         fullWidth
         required
         value={config.threshold}
-        onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
+        onChange={(event: ChangeEvent<HTMLInputElement>) => {
           const { value } = event.target;
           updateConfig("threshold", parseFloat(value));
         }}
       />
       <BlurAmplitudeFields />
-    </React.Fragment>
+    </Fragment>
   );
 };

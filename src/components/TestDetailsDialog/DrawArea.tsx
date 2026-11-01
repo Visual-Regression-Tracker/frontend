@@ -1,5 +1,14 @@
-/* eslint-disable jsx-a11y/no-static-element-interactions */
-import React, { FunctionComponent, useCallback } from "react";
+import {
+  useCallback,
+  type Dispatch,
+  type KeyboardEvent as ReactKeyboardEvent,
+  Fragment,
+  type SetStateAction,
+  type SyntheticEvent,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 import { Stage, Layer, Image } from "react-konva";
 import Rectangle, { MIN_RECT_SIDE_PIXEL } from "../Rectangle";
 import { IgnoreArea } from "../../types/ignoreArea";
@@ -25,14 +34,12 @@ type StageOffsetPosition = {
 
 type StageStateArray = [
   StageOffsetPosition,
-  React.Dispatch<React.SetStateAction<StageOffsetPosition>>,
+  Dispatch<SetStateAction<StageOffsetPosition>>,
 ];
 
 interface IDrawArea {
-  // nullable too: this already falls back to the placeholder when it is missing
   imageName: string | null | undefined;
   imageState: [undefined | HTMLImageElement, ImageStateLoad];
-  /** Drawn under the image, to compare the two in place rather than side by side. */
   underlayImage?: HTMLImageElement;
   overlayOpacity?: number;
   blendDifference?: boolean;
@@ -47,11 +54,11 @@ interface IDrawArea {
   stageInitPosState: StageStateArray;
   stagePosState: StageStateArray;
   stageScrollPosState: StageStateArray;
-  stageScaleState: [number, React.Dispatch<React.SetStateAction<number>>];
-  drawModeState: [boolean, React.Dispatch<React.SetStateAction<boolean>>];
+  stageScaleState: [number, Dispatch<SetStateAction<number>>];
+  drawModeState: [boolean, Dispatch<SetStateAction<boolean>>];
 }
 
-export const DrawArea: FunctionComponent<IDrawArea> = ({
+export const DrawArea = ({
   imageName,
   imageState,
   underlayImage,
@@ -70,38 +77,38 @@ export const DrawArea: FunctionComponent<IDrawArea> = ({
   stagePosState,
   stageScrollPosState,
   drawModeState,
-}) => {
+}: IDrawArea) => {
   const [stageInitPos, setStageInitPos] = stageInitPosState;
   const [stageOffset, setStageOffset] = stageOffsetState;
   const [stagePos, setStagePos] = stagePosState;
   const [stageScollPos, setStageScrollPos] = stageScrollPosState;
   const [stageScale, setStageScale] = stageScaleState;
-  const [isDrag, setIsDrag] = React.useState(false);
+  const [isDrag, setIsDrag] = useState(false);
 
   const [isDrawMode, setIsDrawMode] = drawModeState;
-  const [isDrawing, setIsDrawing] = React.useState(isDrawMode);
+  const [isDrawing, setIsDrawing] = useState(isDrawMode);
   const [image, imageStatus] = imageState;
   const stageWidth = Math.max(image?.width ?? 0, underlayImage?.width ?? 0);
   const stageHeight = Math.max(image?.height ?? 0, underlayImage?.height ?? 0);
-  const stageRef = React.useRef<Konva.Stage>(null);
-  const scrollContainerRef = React.useRef<HTMLDivElement>(null);
-  const scaleRef = React.useRef(stageScale);
-  const targetScaleRef = React.useRef(stageScale);
-  const frameRef = React.useRef<number | undefined>(undefined);
-  const lastFrameRef = React.useRef<number | undefined>(undefined);
-  const anchorRef = React.useRef<{
+  const stageRef = useRef<Konva.Stage>(null);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const scaleRef = useRef(stageScale);
+  const targetScaleRef = useRef(stageScale);
+  const frameRef = useRef<number | undefined>(undefined);
+  const lastFrameRef = useRef<number | undefined>(undefined);
+  const anchorRef = useRef<{
     pointerX: number;
     pointerY: number;
     imageX: number;
     imageY: number;
   }>(undefined);
 
-  const isDeleteKey = (event: KeyboardEvent | React.KeyboardEvent) => {
+  const isDeleteKey = (event: KeyboardEvent | ReactKeyboardEvent) => {
     return event.key === "Delete" || event.key === "Backspace";
   };
 
   const handleStageKeyDown = useCallback(
-    (event: KeyboardEvent | React.KeyboardEvent) => {
+    (event: KeyboardEvent | ReactKeyboardEvent) => {
       if (!deleteIgnoreArea || isModifierKeyPressed(event)) {
         return;
       }
@@ -113,30 +120,24 @@ export const DrawArea: FunctionComponent<IDrawArea> = ({
     [deleteIgnoreArea, selectedRectId],
   );
 
-  // Keys pressed on the stage reach handleStageKeyDown through the onKeyDown
-  // of the element around it. A native listener on the stage container used to
-  // be added too, anew on every render of the dialog and never removed: they
-  // piled up, deleted twice, and old ones deleted from stale area lists.
-
-  const isModifierKeyPressed = (event: KeyboardEvent | React.KeyboardEvent) => {
+  const isModifierKeyPressed = (event: KeyboardEvent | ReactKeyboardEvent) => {
     return event.altKey || event.ctrlKey || event.shiftKey;
   };
 
-  React.useEffect(() => {
+  useEffect(() => {
     scrollContainerRef.current?.scrollTo(stageScollPos.x, stageScollPos.y);
   }, [stageScollPos]);
 
-  React.useEffect(() => {
+  useEffect(() => {
     scaleRef.current = stageScale;
 
-    // zoom buttons and fit-to-screen set the scale outright; adopt it as the
-    // target unless an animation is the one driving the change
+    // outside changes (buttons, fit-to-screen) set the target, unless animating
     if (!frameRef.current) {
       targetScaleRef.current = stageScale;
     }
   }, [stageScale]);
 
-  React.useEffect(() => {
+  useEffect(() => {
     const container = scrollContainerRef.current;
 
     if (!container) {
@@ -154,8 +155,7 @@ export const DrawArea: FunctionComponent<IDrawArea> = ({
         return;
       }
 
-      // easing out over elapsed time rather than per frame, so the gesture
-      // takes as long on a 120Hz display as it does on a 60Hz one
+      // eased by elapsed time, so a gesture lasts the same on any refresh rate
       const elapsed = now - (lastFrameRef.current ?? now - FRAME_MS);
       lastFrameRef.current = now;
 
@@ -173,10 +173,7 @@ export const DrawArea: FunctionComponent<IDrawArea> = ({
       frameRef.current = requestAnimationFrame(step);
     };
 
-    // The canvas shrinks as you zoom out, so a listener on it stops receiving
-    // the wheel once it slips out from under the cursor and the browser zooms
-    // the page instead. The container keeps its size, so it owns the gesture.
-    // React registers onWheel passively, hence the manual listener.
+    // native listener on the container: onWheel is passive, and the canvas shrinks on zoom-out
     const zoom = (event: WheelEvent) => {
       event.preventDefault();
 
@@ -189,8 +186,7 @@ export const DrawArea: FunctionComponent<IDrawArea> = ({
           ? targetScaleRef.current * SCALE_BY
           : targetScaleRef.current / SCALE_BY,
       );
-      // the image point under the cursor has to stay under the cursor for the
-      // whole animation, so it is resolved once against the scale on screen
+      // resolved once, so the point under the cursor stays put for the whole animation
       anchorRef.current = {
         pointerX,
         pointerY,
@@ -228,8 +224,7 @@ export const DrawArea: FunctionComponent<IDrawArea> = ({
       return;
     }
 
-    // the smallest area started at a border would already cross it, so it
-    // starts far enough inside
+    // starts inside the border: the smallest area at the edge would cross it
     const newArea: IgnoreArea = {
       id: Date.now().toString(),
       x: Math.min(event.evt.offsetX, stageWidth - MIN_RECT_SIDE_PIXEL),
@@ -256,10 +251,8 @@ export const DrawArea: FunctionComponent<IDrawArea> = ({
     if (!isDrawMode) return;
 
     if (isDrawing) {
-      // update the current rectangle's width and height based on the mouse position + stage scale
       const newShapesList = ignoreAreas.map((i) => {
         if (i.id === selectedRectId) {
-          // new width and height
           return clampToImage(
             {
               ...i,
@@ -290,9 +283,8 @@ export const DrawArea: FunctionComponent<IDrawArea> = ({
         sx={{ overflow: "auto", backgroundColor: imageSurface.canvas }}
         data-testid="drawArea"
         ref={scrollContainerRef}
-        onScroll={(event: React.SyntheticEvent<HTMLElement>) => {
-          // while zooming the scroll position is already being driven from the
-          // animation; echoing it back would render the pane twice a frame
+        onScroll={(event: SyntheticEvent<HTMLElement>) => {
+          // mid-zoom the animation sets the scroll; echoing it back renders the pane twice
           if (frameRef.current) {
             return;
           }
@@ -303,6 +295,7 @@ export const DrawArea: FunctionComponent<IDrawArea> = ({
           });
         }}
       >
+        {/* eslint-disable-next-line jsx-a11y/no-static-element-interactions */}
         <div
           style={{
             height: image && image.height * stageScale,
@@ -340,9 +333,6 @@ export const DrawArea: FunctionComponent<IDrawArea> = ({
             ref={stageRef}
             width={stageWidth}
             height={stageHeight}
-            // Konva 8 dropped the content* events; the stage's own pointer
-            // events fire after the shape under the pointer has had its turn,
-            // as they did
             onMouseDown={(event) => {
               onStageClick(event);
               handleContentMousedown(event);
@@ -360,8 +350,7 @@ export const DrawArea: FunctionComponent<IDrawArea> = ({
                 image={image}
                 // named so the overlay's own state is reachable from a test
                 name={underlayImage ? "overlaid" : undefined}
-                // a half-faded difference washes out instead of blacking out
-                // what matches, so the blend ignores the fade
+                // the blend ignores the fade: a faded difference would wash out what matches
                 opacity={
                   underlayImage && (blendDifference ? 1 : overlayOpacity)
                 }
@@ -397,8 +386,6 @@ export const DrawArea: FunctionComponent<IDrawArea> = ({
                   onChange={(newAttrs: Konva.RectConfig) => {
                     const rects = ignoreAreas.slice();
 
-                    // what is stored is kept to the image whatever the
-                    // gesture that produced it
                     rects[i] = clampToImage(
                       {
                         ...rects[i],
@@ -427,8 +414,7 @@ export const DrawArea: FunctionComponent<IDrawArea> = ({
                     y: rect.y,
                     width: rect.width,
                     height: rect.height,
-                    // only shown: drawn over the areas being edited, they
-                    // must let the pointer through to them
+                    // shown only: over the areas being edited, so they must not take the pointer
                     listening: false,
                   }}
                 />
@@ -457,18 +443,16 @@ export const DrawArea: FunctionComponent<IDrawArea> = ({
   };
 
   const imageFailed = () => {
-    // TODO: Use SVG with separate text for failing to load and why...
     return <NoImagePlaceholder />;
   };
 
   const imageCanvas = () => (
-    <React.Fragment>
+    <Fragment>
       {(!imageName || imageStatus === "failed") && imageFailed()}
       {imageStatus === "loading" && imageLoading()}
       {imageStatus === "loaded" && imageLoaded()}
-    </React.Fragment>
+    </Fragment>
   );
 
-  // TODO: Separate SVG with reason...
   return <>{imageName ? imageCanvas() : <NoImagePlaceholder />}</>;
 };

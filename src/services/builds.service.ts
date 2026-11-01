@@ -13,9 +13,7 @@ function getList(
   take: number,
   skip: number,
   ciBuildId?: string,
-  // answer with the page this build is on rather than the one at skip; the
-  // payload says where that page starts. Ignored for a build the list has no
-  // page for, deleted or left out by the search
+  // answers with the page this build is on, not the one at skip; ignored for a build the list has no page for
   aroundBuildId?: string,
 ): Promise<PaginatedData<Build>> {
   const requestOptions = {
@@ -70,22 +68,9 @@ function update(id: string, body: BuildDto): Promise<Build> {
   );
 }
 
-function approve(id: string, merge: boolean): Promise<void> {
-  const requestOptions = {
-    method: "PATCH",
-    headers: authHeader(),
-  };
-
-  return fetch(
-    `${API_URL}${ENDPOINT_URL}/${id}/approve?merge=${merge}`,
-    requestOptions,
-  ).then(handleResponse);
-}
-
 export const buildsService = {
   getDetails,
   getList,
-  approve,
   remove,
   update,
 };

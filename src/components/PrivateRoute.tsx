@@ -1,23 +1,19 @@
-import React from "react";
+import type { ComponentType } from "react";
 import { Navigate, useLocation } from "react-router-dom";
 import { useUserState } from "../contexts";
 import { routes } from "../constants";
 import { User } from "../types";
 
 interface PropType {
-  component: React.FC;
+  component: ComponentType;
   roles?: User["role"][];
 }
 
-const PrivateRoute: React.FunctionComponent<PropType> = ({
-  component: Component,
-  roles,
-}) => {
+const PrivateRoute = ({ component: Component, roles }: PropType) => {
   const { loggedIn, user } = useUserState();
   const location = useLocation();
 
   if (!loggedIn) {
-    // keep the query: links to a build or test run carry its ids there
     const from = location.pathname + location.search + location.hash;
     return <Navigate to={routes.LOGIN} state={{ from }} />;
   }

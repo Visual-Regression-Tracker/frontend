@@ -34,10 +34,6 @@ test.beforeEach(async ({ page }) => {
   );
 });
 
-// The app anchors toasts bottom-centre, which is clear of both paginations on
-// the list. The dialog puts its approve/reject bar in exactly that spot, so a
-// toast there lands on the buttons and blocks the next screen's approval until
-// it times out or is dismissed.
 test("raises its toast clear of the approve buttons", async ({
   openProjectPage,
   page,
@@ -47,8 +43,7 @@ test("raises its toast clear of the approve buttons", async ({
     build.id,
     TEST_UNRESOLVED.id,
   );
-  // by text, not by role name: the tooltip wrapper makes "Hotkey: A" the
-  // button's accessible name. Anchored so "Approve variations" cannot match.
+  // by text: the tooltip wrapper makes "Hotkey: A" the name; anchored vs "Approve variations"
   const approve = page.locator("button").filter({ hasText: /^Approve$/ });
   await expect(approve).toBeVisible();
   const buttons = await approve.boundingBox();
@@ -60,8 +55,6 @@ test("raises its toast clear of the approve buttons", async ({
   expect(toast.y + toast.height).toBeLessThanOrEqual(buttons.y);
 });
 
-// A screen now takes a couple of seconds to review and a toast lives five, so
-// approving one after another piles them up over the checkpoint's header.
 test("replaces its confirmation rather than stacking them up", async ({
   openProjectPage,
   page,
@@ -76,8 +69,6 @@ test("replaces its confirmation rather than stacking them up", async ({
   await expect(page.getByText("Approved")).toHaveCount(1);
 });
 
-// notistack's default is five seconds, which outlives the screen the
-// confirmation belongs to and leaves one sitting over the header for good.
 test("lets the confirmation go before the next screen is reviewed", async ({
   openProjectPage,
   page,
@@ -90,12 +81,10 @@ test("lets the confirmation go before the next screen is reviewed", async ({
     .click();
 
   await expect(page.getByText("Approved")).toBeVisible();
-  // comfortably past a two-second toast, comfortably short of a five-second one
+  // past a two-second toast, short of notistack's five-second default
   await expect(page.getByText("Approved")).toBeHidden({ timeout: 3500 });
 });
 
-// Errors are not interchangeable the way the confirmations are: a failure must
-// not be swallowed by whatever the reviewer does next.
 test("lets an error outlive the confirmation that follows it", async ({
   openProjectPage,
   page,
@@ -119,31 +108,22 @@ test("lets an error outlive the confirmation that follows it", async ({
   await expect(page.getByText("Approved")).toBeVisible();
 });
 
-// The dialog stays mounted as the reviewer steps between runs, so state that
-// belongs to one screen has to be cleared with it. Draw mode was not: it rode
-// along, and the next click on a screenshot quietly drew an ignore area there,
-// marking a run touched that the reviewer never meant to edit — which then
-// blocked the very navigation that would have cleared the flag.
 test("leaves draw mode behind when moving to another run", async ({
   openProjectPage,
   page,
 }) => {
   await openProjectPage(project.id, build.id, TEST_UNRESOLVED.id);
-  // the toggle is an icon with no label, so it is located by the value MUI
-  // puts on the button element
+  // an unlabelled icon: found by the value MUI puts on the button
   const drawMode = page.locator('button[value="drawMode"]');
 
   await drawMode.click();
   await expect(drawMode).toHaveAttribute("aria-pressed", "true");
-  await page.keyboard.press("ArrowRight");
+  await page.keyboard.press("ArrowLeft");
 
   await expect(page).toHaveURL(new RegExp(`testId=${TEST_RUN_NEW.id}$`));
   await expect(drawMode).toHaveAttribute("aria-pressed", "false");
 });
 
-// A rejection is not a success. Dressing it in the same green tick as an
-// approval makes the two indistinguishable at a glance, which matters most
-// when they sit next to each other and are pressed in a hurry.
 test("does not dress a rejection up as a success", async ({
   openProjectPage,
   page,
@@ -151,16 +131,18 @@ test("does not dress a rejection up as a success", async ({
   await page.route(`${API_URL}/test-runs/reject`, (route) =>
     route.fulfill({ status: 200, body: "[]" }),
   );
-  await openProjectPage(project.id, build.id, TEST_UNRESOLVED.id);
+  const projectPage = await openProjectPage(
+    project.id,
+    build.id,
+    TEST_UNRESOLVED.id,
+  );
 
   await page
     .locator("button")
     .filter({ hasText: /^Reject$/ })
     .click();
 
-  const toast = page.locator(".notistack-MuiContent", {
-    hasText: "Rejected",
-  });
+  const toast = projectPage.notification.toast("Rejected");
   await expect(toast).toBeVisible();
   await expect(toast).not.toHaveClass(/notistack-MuiContent-success/);
 });

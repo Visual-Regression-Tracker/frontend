@@ -1,4 +1,3 @@
-import React from "react";
 import { screen, waitFor, within } from "@testing-library/react";
 import { renderWithProviders } from "../../_test/render";
 import { SeedTestRuns } from "../../_test/SeedTestRuns";
@@ -6,6 +5,7 @@ import { staticService, testRunService } from "../../services";
 import { TestRun, TestStatus } from "../../types";
 import { testRunMock } from "../../_test/test.data.helper";
 import { BulkOperation } from "./BulkOperation";
+import { allSucceeded } from "../../_test/bulkResult";
 
 const run = (id: string, status: TestStatus, merge = false): TestRun => ({
   ...testRunMock,
@@ -22,7 +22,6 @@ const APPROVED_RUN = run("approved-run", TestStatus.approved);
 const NOT_SELECTED_RUN = run("not-selected-run", TestStatus.unresolved);
 const ROWS = [NEW_RUN, UNRESOLVED_RUN, APPROVED_RUN, NOT_SELECTED_RUN];
 const SELECTED = [NEW_RUN.id, UNRESOLVED_RUN.id, APPROVED_RUN.id];
-// selected, then hidden by a filter or left behind in another build
 const HIDDEN_RUN = run("hidden-run", TestStatus.new);
 const SELECTED_WITH_HIDDEN = [NEW_RUN.id, HIDDEN_RUN.id];
 
@@ -49,7 +48,6 @@ const renderBulkOperation = ({
 }: {
   selectedIds?: string[];
   rows?: TestRun[];
-  // the build's runs, of which rows are the ones the filters let through
   testRuns?: TestRun[];
   onProcessed?: () => void;
 } = {}) => ({
@@ -66,6 +64,9 @@ const renderBulkOperation = ({
     </>,
   ),
 });
+
+const toastOf = async (text: string) =>
+  (await screen.findByText(text)).closest(".notistack-MuiContent");
 
 const confirm = async (user: ReturnType<typeof renderBulkOperation>["user"]) =>
   user.click(await screen.findByTestId("submitButton"));
@@ -101,7 +102,7 @@ describe("BulkOperation", () => {
   });
 
   describe("approve", () => {
-    it("asks for confirmation counting every selected item", async () => {
+    it("asks for confirmation counting only the runs that will be approved", async () => {
       const approveBulk = vi.spyOn(testRunService, "approveBulk");
       const { user } = renderBulkOperation();
 
@@ -110,15 +111,54 @@ describe("BulkOperation", () => {
       const dialog = await screen.findByRole("dialog");
       expect(within(dialog).getByText("Approve Test Runs")).toBeVisible();
       expect(
-        within(dialog).getByText("Are you sure you want to approve 3 items?"),
+        within(dialog).getByText(
+          "Approve 2 of 3 selected test runs? The other 1 is already settled.",
+        ),
       ).toBeVisible();
       expect(approveBulk).not.toHaveBeenCalled();
+    });
+
+    it("names the eligible and the selected runs when most were settled", async () => {
+      const runs = Array.from({ length: 50 }, (_, i) =>
+        run(`run-${i}`, i < 12 ? TestStatus.new : TestStatus.approved),
+      );
+      const approveBulk = vi
+        .spyOn(testRunService, "approveBulk")
+        .mockImplementation(allSucceeded);
+      const { user } = renderBulkOperation({
+        selectedIds: runs.map((r) => r.id),
+        rows: runs,
+      });
+
+      await user.click(actionButton(APPROVE));
+      expect(
+        await screen.findByText(
+          "Approve 12 of 50 selected test runs? The other 38 are already settled.",
+        ),
+      ).toBeVisible();
+      await confirm(user);
+
+      expect(await screen.findByText("12 test runs approved.")).toBeVisible();
+      expect(approveBulk).toHaveBeenCalledWith(
+        runs.slice(0, 12).map((r) => r.id),
+        false,
+      );
+    });
+
+    it("asks without the settled note when every selected run is eligible", async () => {
+      const { user } = renderBulkOperation({
+        selectedIds: [NEW_RUN.id, UNRESOLVED_RUN.id],
+      });
+
+      await user.click(actionButton(APPROVE));
+
+      expect(await screen.findByText("Approve 2 test runs?")).toBeVisible();
     });
 
     it("approves only the selected new and unresolved runs", async () => {
       const approveBulk = vi
         .spyOn(testRunService, "approveBulk")
-        .mockResolvedValue();
+        .mockImplementation(allSucceeded);
       const { user, onProcessed } = renderBulkOperation();
 
       await user.click(actionButton(APPROVE));
@@ -131,7 +171,7 @@ describe("BulkOperation", () => {
         ),
       );
       expect(approveBulk).toHaveBeenCalledTimes(1);
-      expect(await screen.findByText("3 test runs processed.")).toBeVisible();
+      expect(await screen.findByText("2 test runs approved.")).toBeVisible();
       expect(onProcessed).toHaveBeenCalledTimes(1);
     });
 
@@ -139,7 +179,7 @@ describe("BulkOperation", () => {
       const mergeRun = run("merge-run", TestStatus.unresolved, true);
       const approveBulk = vi
         .spyOn(testRunService, "approveBulk")
-        .mockResolvedValue();
+        .mockImplementation(allSucceeded);
       const { user } = renderBulkOperation({
         selectedIds: [mergeRun.id],
         rows: [mergeRun, NEW_RUN],
@@ -151,6 +191,153 @@ describe("BulkOperation", () => {
       await waitFor(() =>
         expect(approveBulk).toHaveBeenCalledWith([mergeRun.id], true),
       );
+    });
+
+    it("approves each run with its own merge flag in a mixed selection", async () => {
+      const plainRun = run("plain-run", TestStatus.unresolved, false);
+      const mergeRun = run("merge-run", TestStatus.unresolved, true);
+      const approveBulk = vi
+        .spyOn(testRunService, "approveBulk")
+        .mockImplementation(allSucceeded);
+      const { user, onProcessed } = renderBulkOperation({
+        selectedIds: [plainRun.id, mergeRun.id],
+        rows: [plainRun, mergeRun],
+      });
+
+      await user.click(actionButton(APPROVE));
+      await confirm(user);
+
+      await waitFor(() => expect(approveBulk).toHaveBeenCalledTimes(2));
+      expect(approveBulk).toHaveBeenCalledWith([plainRun.id], false);
+      expect(approveBulk).toHaveBeenCalledWith([mergeRun.id], true);
+      await waitFor(() => expect(onProcessed).toHaveBeenCalledTimes(1));
+    });
+
+    it("tells the user how many were approved when some failed, and keeps those selected", async () => {
+      const runs = Array.from({ length: 12 }, (_, i) =>
+        run(`run-${i}`, TestStatus.new),
+      );
+      vi.spyOn(testRunService, "approveBulk").mockResolvedValue({
+        succeeded: runs.slice(0, 10).map((r) => r.id),
+        failed: [
+          { id: "run-10", message: "Baseline is gone" },
+          { id: "run-11", message: "Image is missing" },
+        ],
+      });
+      const { user, onProcessed } = renderBulkOperation({
+        selectedIds: runs.map((r) => r.id),
+        rows: runs,
+      });
+
+      await user.click(actionButton(APPROVE));
+      await confirm(user);
+
+      const text = "Approved 10 of 12 test runs. 2 failed: Baseline is gone";
+      expect(await toastOf(text)).toHaveClass("notistack-MuiContent-warning");
+      expect(screen.queryByText("12 test runs approved.")).toBeNull();
+      expect(onProcessed).toHaveBeenCalledTimes(1);
+      expect(onProcessed).toHaveBeenCalledWith(["run-10", "run-11"]);
+    });
+
+    it("merges the results of the two approve calls of a mixed selection", async () => {
+      const plainRun = run("plain-run", TestStatus.unresolved, false);
+      const mergeRun = run("merge-run", TestStatus.unresolved, true);
+      vi.spyOn(testRunService, "approveBulk").mockImplementation(
+        (ids, merge) =>
+          merge
+            ? Promise.resolve({
+                succeeded: [],
+                failed: [{ id: String(ids[0]), message: "Merge conflict" }],
+              })
+            : allSucceeded(ids),
+      );
+      const { user, onProcessed } = renderBulkOperation({
+        selectedIds: [plainRun.id, mergeRun.id],
+        rows: [plainRun, mergeRun],
+      });
+
+      await user.click(actionButton(APPROVE));
+      await confirm(user);
+
+      expect(
+        await screen.findByText(
+          "Approved 1 of 2 test runs. 1 failed: Merge conflict",
+        ),
+      ).toBeVisible();
+      expect(onProcessed).toHaveBeenCalledWith([mergeRun.id]);
+    });
+
+    it("reports the approved half when the other approve call fails outright", async () => {
+      const plainRun = run("plain-run", TestStatus.unresolved, false);
+      const mergeRun = run("merge-run", TestStatus.unresolved, true);
+      vi.spyOn(testRunService, "approveBulk").mockImplementation(
+        (ids, merge) =>
+          merge ? Promise.reject("Server error") : allSucceeded(ids),
+      );
+      const { user, onProcessed } = renderBulkOperation({
+        selectedIds: [plainRun.id, mergeRun.id],
+        rows: [plainRun, mergeRun],
+      });
+
+      await user.click(actionButton(APPROVE));
+      await confirm(user);
+
+      expect(
+        await screen.findByText(
+          "Approved 1 of 2 test runs. 1 failed: Server error",
+        ),
+      ).toBeVisible();
+      expect(onProcessed).toHaveBeenCalledWith([mergeRun.id]);
+    });
+
+    it("says nothing was approved when every run failed", async () => {
+      vi.spyOn(testRunService, "approveBulk").mockResolvedValue({
+        succeeded: [],
+        failed: [
+          { id: NEW_RUN.id, message: "Baseline is gone" },
+          { id: UNRESOLVED_RUN.id, message: "Baseline is gone" },
+        ],
+      });
+      const { user, onProcessed } = renderBulkOperation();
+
+      await user.click(actionButton(APPROVE));
+      await confirm(user);
+
+      expect(
+        await screen.findByText(
+          "Approved 0 of 2 test runs. 2 failed: Baseline is gone",
+        ),
+      ).toBeVisible();
+      expect(onProcessed).toHaveBeenCalledWith([NEW_RUN.id, UNRESOLVED_RUN.id]);
+    });
+
+    it("drops the whole selection when the server answers with an empty body", async () => {
+      vi.stubGlobal(
+        "fetch",
+        vi.fn().mockResolvedValue(new Response("", { status: 201 })),
+      );
+      const { user, onProcessed } = renderBulkOperation();
+
+      await user.click(actionButton(APPROVE));
+      await confirm(user);
+
+      expect(await screen.findByText("2 test runs approved.")).toBeVisible();
+      expect(onProcessed).toHaveBeenCalledWith([]);
+      vi.unstubAllGlobals();
+    });
+
+    it("approves nothing and says so when every selected run is settled", async () => {
+      const approveBulk = vi.spyOn(testRunService, "approveBulk");
+      const { user, onProcessed } = renderBulkOperation({
+        selectedIds: [APPROVED_RUN.id],
+      });
+
+      await user.click(actionButton(APPROVE));
+      await confirm(user);
+
+      expect(await screen.findByText("0 test runs approved.")).toBeVisible();
+      expect(onProcessed).toHaveBeenCalledWith([]);
+      expect(approveBulk).not.toHaveBeenCalled();
     });
 
     it("does not call the service when cancelled", async () => {
@@ -178,7 +365,7 @@ describe("BulkOperation", () => {
 
       expect(await screen.findByText("Server says no")).toBeVisible();
       expect(onProcessed).not.toHaveBeenCalled();
-      expect(screen.queryByText(/test runs processed/)).not.toBeInTheDocument();
+      expect(screen.queryByText(/test runs approved/)).not.toBeInTheDocument();
     });
   });
 
@@ -186,12 +373,14 @@ describe("BulkOperation", () => {
     it("rejects only the selected new and unresolved runs", async () => {
       const rejectBulk = vi
         .spyOn(testRunService, "rejectBulk")
-        .mockResolvedValue();
+        .mockImplementation(allSucceeded);
       const { user, onProcessed } = renderBulkOperation();
 
       await user.click(actionButton(REJECT));
       expect(
-        await screen.findByText("Are you sure you want to reject 3 items?"),
+        await screen.findByText(
+          "Reject 2 of 3 selected test runs? The other 1 is already settled.",
+        ),
       ).toBeVisible();
       await confirm(user);
 
@@ -201,8 +390,24 @@ describe("BulkOperation", () => {
           UNRESOLVED_RUN.id,
         ]),
       );
-      expect(await screen.findByText("3 test runs processed.")).toBeVisible();
+      expect(await screen.findByText("2 test runs rejected.")).toBeVisible();
       expect(onProcessed).toHaveBeenCalledTimes(1);
+    });
+
+    it("tells the user how many were rejected when some failed", async () => {
+      vi.spyOn(testRunService, "rejectBulk").mockResolvedValue({
+        succeeded: [NEW_RUN.id],
+        failed: [{ id: UNRESOLVED_RUN.id, message: "Run is locked" }],
+      });
+      const { user, onProcessed } = renderBulkOperation();
+
+      await user.click(actionButton(REJECT));
+      await confirm(user);
+
+      expect(
+        await toastOf("Rejected 1 of 2 test runs. 1 failed: Run is locked"),
+      ).toHaveClass("notistack-MuiContent-warning");
+      expect(onProcessed).toHaveBeenCalledWith([UNRESOLVED_RUN.id]);
     });
   });
 
@@ -210,7 +415,7 @@ describe("BulkOperation", () => {
     it("deletes every selected run regardless of status", async () => {
       const removeBulk = vi
         .spyOn(testRunService, "removeBulk")
-        .mockResolvedValue();
+        .mockImplementation(allSucceeded);
       const { user, onProcessed } = renderBulkOperation();
 
       await user.click(actionButton(DELETE));
@@ -228,7 +433,7 @@ describe("BulkOperation", () => {
     it("deletes and counts only the selected runs that are shown", async () => {
       const removeBulk = vi
         .spyOn(testRunService, "removeBulk")
-        .mockResolvedValue();
+        .mockImplementation(allSucceeded);
       const { user } = renderBulkOperation({
         selectedIds: SELECTED_WITH_HIDDEN,
         testRuns: [...ROWS, HIDDEN_RUN],
@@ -243,7 +448,7 @@ describe("BulkOperation", () => {
       await waitFor(() =>
         expect(removeBulk).toHaveBeenCalledWith([NEW_RUN.id]),
       );
-      expect(await screen.findByText("1 test runs processed.")).toBeVisible();
+      expect(await screen.findByText("1 test run processed.")).toBeVisible();
     });
 
     it("does not delete when cancelled", async () => {
@@ -257,6 +462,22 @@ describe("BulkOperation", () => {
         expect(screen.queryByRole("dialog")).not.toBeInTheDocument(),
       );
       expect(removeBulk).not.toHaveBeenCalled();
+    });
+
+    it("tells the user how many were deleted when some failed", async () => {
+      vi.spyOn(testRunService, "removeBulk").mockResolvedValue({
+        succeeded: [NEW_RUN.id, UNRESOLVED_RUN.id],
+        failed: [{ id: APPROVED_RUN.id, message: "Run is in use" }],
+      });
+      const { user, onProcessed } = renderBulkOperation();
+
+      await user.click(actionButton(DELETE));
+      await confirm(user);
+
+      expect(
+        await toastOf("Deleted 2 of 3 test runs. 1 failed: Run is in use"),
+      ).toHaveClass("notistack-MuiContent-warning");
+      expect(onProcessed).toHaveBeenCalledWith([APPROVED_RUN.id]);
     });
   });
 
@@ -290,7 +511,6 @@ describe("BulkOperation", () => {
         ]),
       );
       expect(await screen.findByText("3 test runs processed.")).toBeVisible();
-      // a download changes nothing, so the ticks stay
       expect(onProcessed).not.toHaveBeenCalled();
     });
 

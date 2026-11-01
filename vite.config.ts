@@ -1,24 +1,18 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 
-// https://vitejs.dev/config/
 export default defineConfig({
   plugins: [react()],
   server: {
     fs: {
-      // Allow using "npm link" for packages when developing, that are in different base path
+      // for packages linked with "npm link" from another base path
       strict: false,
     },
-  },
-  optimizeDeps: {
-    // Dependencies to pre-bundle
   },
   build: {
     outDir: "build",
     sourcemap: true,
-    assetsInlineLimit: 0, // disable inlining assets
-
-    // When false, all CSS will be extracted into a single CSS file.
+    assetsInlineLimit: 0,
     cssCodeSplit: false,
   },
 });

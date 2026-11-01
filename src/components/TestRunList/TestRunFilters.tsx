@@ -1,4 +1,3 @@
-import React from "react";
 import {
   GridLegacy as Grid,
   TextField,
@@ -22,7 +21,7 @@ interface IProps {
   onReset: () => void;
 }
 
-const TestRunFilters: React.FunctionComponent<IProps> = ({
+const TestRunFilters = ({
   tagOptions,
   statusOptions,
   name,
@@ -32,7 +31,7 @@ const TestRunFilters: React.FunctionComponent<IProps> = ({
   onStatusesChange,
   onTagsChange,
   onReset,
-}) => {
+}: IProps) => {
   const hasActiveFilters =
     name.length > 0 || statuses.length > 0 || tags.length > 0;
 

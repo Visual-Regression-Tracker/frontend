@@ -1,4 +1,4 @@
-import React from "react";
+import { useCallback, useMemo } from "react";
 import {
   setProjectEditState,
   useProjectDispatch,
@@ -10,12 +10,12 @@ export const useConfigHook = <T extends ImageComparisonConfig>() => {
   const { projectEditState: project } = useProjectState();
   const projectDispatch = useProjectDispatch();
 
-  const config: T = React.useMemo(
+  const config: T = useMemo(
     () => JSON.parse(project.imageComparisonConfig),
     [project.imageComparisonConfig],
   );
 
-  const updateConfig = React.useCallback(
+  const updateConfig = useCallback(
     (name: keyof T, value: T[typeof name]) => {
       const parsed: T = JSON.parse(project.imageComparisonConfig);
 

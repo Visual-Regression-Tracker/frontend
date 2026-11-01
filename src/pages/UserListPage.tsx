@@ -1,8 +1,8 @@
-import React from "react";
 import { Container, Paper } from "@mui/material";
 import UserList from "../components/UserList";
 import { PageHeader } from "../components/PageHeader";
 import { useUserState } from "../contexts";
+import { pluralize } from "../_helpers/format.helper";
 
 const UserListPage = () => {
   const { userList } = useUserState();
@@ -14,7 +14,7 @@ const UserListPage = () => {
     >
       <PageHeader
         title="Users"
-        subtitle={`${userList.length} ${userList.length === 1 ? "user" : "users"} · double-click a role to change it`}
+        subtitle={`${userList.length} ${pluralize(userList.length, "user")} · double-click a role to change it`}
       />
       <Paper
         variant="outlined"

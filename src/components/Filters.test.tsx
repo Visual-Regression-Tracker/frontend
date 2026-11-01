@@ -1,12 +1,10 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { act, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { renderWithProviders } from "../_test/render";
 import { TEST_RUN_APPROVED } from "../_test/test.data.helper";
 import Filters from "./Filters";
 
-// What the page holding the filters would do: keep the state and let the test
-// see every value the name search reports.
 const Harness = ({
   onQueryChange,
   initialQuery = "",
@@ -28,8 +26,7 @@ const Harness = ({
         queryState={[
           query,
           (value) => {
-            const next =
-              typeof value === "function" ? value(query) : (value as string);
+            const next = typeof value === "function" ? value(query) : value;
             onQueryChange(next);
             setQuery(next);
           },
@@ -136,7 +133,6 @@ describe("Filters name search", () => {
     expect(onQueryChange).toHaveBeenCalledTimes(1);
     expect(onQueryChange).toHaveBeenCalledWith("abc");
 
-    // nothing is left over to report when the pause is over
     await elapse(400);
     expect(onQueryChange).toHaveBeenCalledTimes(1);
   });

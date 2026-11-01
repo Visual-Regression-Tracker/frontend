@@ -23,7 +23,6 @@ test.beforeEach(async ({ page }) => {
   await mockOllamaModels(page, ["gemma3:12b", "llava:13b"]);
 });
 
-// what a save sends, parsed: the config travels as a JSON string
 const savedProject = async (
   page: Page,
   save: () => Promise<void>,
@@ -74,8 +73,7 @@ test("offers the four image comparison libraries", async ({
   await projectListPage.editBtn.click();
   await projectListPage.imageComparison.click();
 
-  // NOTE: Ollama and Gemini are not libraries of their own: both live under
-  // "vlm", behind a second "VLM Provider" select
+  // Ollama and Gemini live under "vlm", behind a second "VLM Provider" select
   await expect(page.getByRole("option")).toHaveText([
     ImageComparison.pixelmatch,
     ImageComparison.lookSame,
@@ -96,7 +94,6 @@ test("shows the pixelmatch fields", async ({ projectListPage }) => {
     projectListPage.switchLabelled("Ignore anti-aliasing"),
   ).toBeVisible();
   await expect(projectListPage.threshold).toBeVisible();
-  // none of the other engines' fields
   await expect(projectListPage.switchLabelled("Strict")).toHaveCount(0);
   await expect(projectListPage.switchLabelled("Output diff mask")).toHaveCount(
     0,
@@ -111,7 +108,7 @@ test("shows the looksSame fields", async ({ projectListPage }) => {
 
   await expect(projectListPage.switchLabelled("Strict")).toBeVisible();
   await expect(projectListPage.tolerance).toBeVisible();
-  // NOTE: the labels are spelled "anti-alliasing" and "carret" in the app
+  // the app spells the labels "anti-alliasing" and "carret"
   await expect(
     projectListPage.switchLabelled("Ignore anti-alliasing"),
   ).toBeVisible();
@@ -137,7 +134,7 @@ test("shows the odiff fields", async ({ projectListPage }) => {
   await expect(
     projectListPage.switchLabelled("Fail on layout diff"),
   ).toBeVisible();
-  // NOTE: spelled "anti-alliasing" here too
+  // spelled "anti-alliasing" here too
   await expect(
     projectListPage.switchLabelled("Ignore anti-alliasing"),
   ).toBeVisible();
@@ -204,7 +201,6 @@ test("shows the Gemini fields after switching the VLM provider", async ({
   await projectListPage.selectVlmProvider("Google Gemini");
 
   await expect(projectListPage.vlmProvider).toHaveText("Google Gemini");
-  // the defaults a provider switch fills in
   await expect(projectListPage.geminiModel).toHaveValue("gemini-1.5-pro");
   await expect(projectListPage.geminiApiKey).toHaveValue("");
   await expect(projectListPage.geminiApiKey).toHaveAttribute(
@@ -239,7 +235,6 @@ test("brings the defaults back when the engine is switched away and back", async
   await projectListPage.selectImageComparison(ImageComparison.odiff);
   await projectListPage.selectImageComparison(ImageComparison.pixelmatch);
 
-  // NOTE: the edit is thrown away; only the same engine keeps its config
   await expect(projectListPage.threshold).toHaveValue("0.1");
 });
 
@@ -316,7 +311,7 @@ test("saves a chosen Ollama model", async ({ projectListPage, page }) => {
   await projectListPage.editBtn.click();
   await projectListPage.selectImageComparison(ImageComparison.vlm);
   await projectListPage.selectOllamaModel("llava:13b");
-  // the switch first: a focused field keeps its tooltip open over the switch
+  // switch first: a focused field keeps its tooltip open over it
   await projectListPage.switchLabelled("Use Thinking").check();
   await projectListPage.temperature.fill("0.4");
 
@@ -371,8 +366,7 @@ test("does not save a Gemini project without its key", async ({
 
   await projectListPage.modal.confirmBtn.click();
 
-  // the browser's own required-field check stops the form before the
-  // validator's "API key is required" message could show
+  // the browser's required-field check stops the form before the validator's message
   await expect
     .poll(() =>
       projectListPage.geminiApiKey.evaluate(

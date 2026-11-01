@@ -1,6 +1,13 @@
 import { Dialog, Typography } from "@mui/material";
-import React from "react";
-import { useNavigate } from "react-router";
+import {
+  type KeyboardEvent,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
+import { useNavigate } from "react-router-dom";
 import { useBuildState, useTestRunState } from "../../contexts";
 import { buildTestRunLocation } from "../../_helpers/route.helpers";
 import { isTypingTarget } from "../../_helpers/hotkeys.helper";
@@ -12,7 +19,10 @@ import {
   prefetchImages,
 } from "../../_helpers/imagePrefetch.helper";
 
-export const TestDetailsDialog: React.FunctionComponent = () => {
+// the hotkeys stand down on this attribute; a variable, as a literal fails the paper's types
+const reviewPaperProps = { "data-review-dialog": "" };
+
+export const TestDetailsDialog = () => {
   const {
     selectedTestRun,
     touched,
@@ -21,13 +31,15 @@ export const TestDetailsDialog: React.FunctionComponent = () => {
   } = useTestRunState();
   const { selectedBuild } = useBuildState();
   const navigate = useNavigate();
-  const [notSavedChangesModal, setNotSavedChangesModal] = React.useState(false);
-  const [navigationTargetId, setNavigationTargetId] = React.useState<string>();
+  const [notSavedChangesModal, setNotSavedChangesModal] = useState(false);
+  const [navigationTargetId, setNavigationTargetId] = useState<string>();
 
-  // the published order is read by id, not scanned: a linear search per run —
-  // and two more per comparison while sorting — costs seconds on a build of
-  // thousands, and this runs on every list change, dialog open or not
-  const testRuns = React.useMemo(() => {
+  // looked up by id, not scanned: a linear search per run costs seconds on a build of thousands
+  const isOpen = !!selectedTestRun;
+  const testRuns = useMemo(() => {
+    if (!isOpen) {
+      return [];
+    }
     if (!filteredSortedTestRunIds) {
       return allTestRuns;
     }
@@ -38,25 +50,22 @@ export const TestDetailsDialog: React.FunctionComponent = () => {
     return allTestRuns
       .filter((testRun) => positionById.has(testRun.id))
       .sort((a, b) => positionById.get(a.id)! - positionById.get(b.id)!);
-  }, [allTestRuns, filteredSortedTestRunIds]);
+  }, [isOpen, allTestRuns, filteredSortedTestRunIds]);
 
-  const selectedTestRunIndex = React.useMemo(
+  const selectedTestRunIndex = useMemo(
     () => testRuns.findIndex((t) => t.id === selectedTestRun?.id),
     [testRuns, selectedTestRun?.id],
   );
 
-  // Screenshots are megapixels each, so stepping to the next run used to leave
-  // the pane blank under a "Loading..." while the browser fetched and decoded
-  // them. Fetch the neighbours' pictures while the reviewer looks at this one.
-  const prefetched = React.useRef<Set<string>>(new Set());
-  React.useEffect(() => {
+  const prefetched = useRef<Set<string>>(new Set());
+  useEffect(() => {
     prefetchImages(
       neighbourImageNames(testRuns, selectedTestRunIndex),
       prefetched.current,
     );
   }, [testRuns, selectedTestRunIndex]);
 
-  const navigateById = React.useCallback(
+  const navigateById = useCallback(
     (id?: string) => {
       if (touched) {
         setNavigationTargetId(id);
@@ -68,10 +77,8 @@ export const TestDetailsDialog: React.FunctionComponent = () => {
     [touched, navigate, selectedBuild?.id],
   );
 
-  // by position, not .at(): that wraps a negative index round to the end, so
-  // the left arrow on the first run opened the last. A run that is not in the
-  // list (filtered out) has no neighbours to step to at all.
-  const navigateByIndex = React.useCallback(
+  // by position, not .at(): a negative index would wrap round to the last run
+  const navigateByIndex = useCallback(
     (index: number) => {
       if (selectedTestRunIndex === -1) {
         return;
@@ -93,12 +100,12 @@ export const TestDetailsDialog: React.FunctionComponent = () => {
       open={true}
       fullScreen
       sx={{ margin: "20px 10px 10px 10px" }}
-      // Escape is the Dialog's to handle: it stops the key, so a hotkey
-      // listening on the document never sees it
+      slotProps={{ paper: reviewPaperProps }}
+      // Escape is the Dialog's: it stops the key before a document hotkey sees it
       onClose={(event, reason) => {
         if (
           reason === "escapeKeyDown" &&
-          !isTypingTarget((event as React.KeyboardEvent).target)
+          !isTypingTarget((event as KeyboardEvent).target)
         ) {
           navigateById();
         }
@@ -112,6 +119,7 @@ export const TestDetailsDialog: React.FunctionComponent = () => {
         handleClose={() => navigateById()}
         handlePrevious={() => navigateByIndex(selectedTestRunIndex - 1)}
         handleNext={() => navigateByIndex(selectedTestRunIndex + 1)}
+        navigateTo={navigateById}
       />
       <BaseModal
         open={notSavedChangesModal}

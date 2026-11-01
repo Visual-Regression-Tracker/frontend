@@ -1,12 +1,15 @@
-import React from "react";
+import type { ChangeEvent } from "react";
 import { FormControlLabel, Switch } from "@mui/material";
 import { TextValidator } from "react-material-ui-form-validator";
 import { Tooltip } from "../Tooltip";
 
-export const VlmPromptField: React.FunctionComponent<{
+export const VlmPromptField = ({
+  value,
+  onChange,
+}: {
   value: string;
   onChange: (value: string) => void;
-}> = ({ value, onChange }) => {
+}) => {
   return (
     <Tooltip title="The prompt text that will be sent to the VLM to analyze image differences.">
       <div>
@@ -23,7 +26,7 @@ export const VlmPromptField: React.FunctionComponent<{
           fullWidth
           required
           value={value}
-          onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
+          onChange={(event: ChangeEvent<HTMLInputElement>) => {
             onChange(event.target.value);
           }}
         />
@@ -32,10 +35,13 @@ export const VlmPromptField: React.FunctionComponent<{
   );
 };
 
-export const VlmTemperatureField: React.FunctionComponent<{
+export const VlmTemperatureField = ({
+  value,
+  onChange,
+}: {
   value: number;
   onChange: (value: number) => void;
-}> = ({ value, onChange }) => {
+}) => {
   return (
     <Tooltip title="Controls the randomness of the VLM response. Lower values (0-0.3) produce more consistent results, higher values (0.7-1) produce more creative responses.">
       <div>
@@ -61,7 +67,7 @@ export const VlmTemperatureField: React.FunctionComponent<{
           fullWidth
           required
           value={value}
-          onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
+          onChange={(event: ChangeEvent<HTMLInputElement>) => {
             const { value: inputValue } = event.target;
             onChange(Number.parseFloat(inputValue));
           }}
@@ -71,10 +77,13 @@ export const VlmTemperatureField: React.FunctionComponent<{
   );
 };
 
-export const VlmUseThinkingField: React.FunctionComponent<{
+export const VlmUseThinkingField = ({
+  value,
+  onChange,
+}: {
   value: boolean;
   onChange: (value: boolean) => void;
-}> = ({ value, onChange }) => {
+}) => {
   return (
     <Tooltip title="Enable thinking mode for the VLM model.">
       <FormControlLabel
@@ -82,7 +91,7 @@ export const VlmUseThinkingField: React.FunctionComponent<{
         control={
           <Switch
             checked={value || false}
-            onChange={(event, checked) => onChange(checked)}
+            onChange={(_event, checked) => onChange(checked)}
             color="primary"
             name="useThinking"
           />

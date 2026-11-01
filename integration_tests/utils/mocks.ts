@@ -7,7 +7,7 @@ import type {
   User,
 } from "~client/types";
 
-export const API_URL = "http://localhost:4200";
+export const API_URL = process.env.REACT_APP_API_URL ?? "http://localhost:4200";
 
 export const mockGetProjects = async (page: Page, projects: Project[]) => {
   return page.route(`${API_URL}/projects`, (route, request) => {
@@ -20,7 +20,6 @@ export const mockGetProjects = async (page: Page, projects: Project[]) => {
   });
 };
 
-// the signed-in user's favourite project ids; the authUser fixture answers none
 export const mockGetFavoriteProjects = (page: Page, ids: string[]) => {
   return page.route(`${API_URL}/projects/favorites`, (route, request) => {
     if (request.method() === "GET") {
@@ -30,14 +29,12 @@ export const mockGetFavoriteProjects = (page: Page, ids: string[]) => {
   });
 };
 
-// starring (PUT) and unstarring (DELETE) answer 204 with no body, as the API does
 export const mockToggleFavoriteProject = (page: Page) => {
   return page.route(`${API_URL}/projects/*/favorite`, (route) =>
     route.fulfill({ status: 204 }),
   );
 };
 
-// the API answers create and update with the project it saved
 export const mockSaveProject = async (page: Page) => {
   return page.route(`${API_URL}/projects`, (route, request) => {
     if (request.method() === "POST" || request.method() === "PUT") {
@@ -55,7 +52,6 @@ export const mockSaveProject = async (page: Page) => {
   });
 };
 
-// any endpoint failing the way the API does: a status and a message
 export const mockApiError = async (
   page: Page,
   url: string | ((url: URL) => boolean),
@@ -98,8 +94,7 @@ export const mockGetBuilds = async (
           )
         : builds;
 
-      // asked for the page holding a build, the API answers with that page and
-      // says where it starts; a build it does not hold leaves the skip alone
+      // like the API: the page holding that build, else the requested skip
       const around = params.get("aroundBuildId");
       const index = around
         ? matching.findIndex((build) => build.id === around)
@@ -159,16 +154,50 @@ export const mockTestRun = async (page: Page, testRun: TestRun) => {
   );
 };
 
-export const mockImage = async (page: Page, image: string) => {
+export const mockTestRunsWithDetails = async (
+  page: Page,
+  buildId: string,
+  testRuns: TestRun[],
+) => {
+  await mockGetTestRuns(page, buildId, testRuns);
+  await Promise.all(testRuns.map((testRun) => mockTestRun(page, testRun)));
+};
+
+// one route: mockTestRunsWithDetails adds one per run, too many for thousands
+export const mockAllTestRunDetails = (page: Page, testRuns: TestRun[]) => {
+  const byId = new Map(testRuns.map((testRun) => [testRun.id, testRun]));
+  return page.route(
+    (url) =>
+      url.origin === API_URL && /^\/test-runs\/[^/]+$/.test(url.pathname),
+    (route, request) => {
+      const testRun = byId.get(new URL(request.url()).pathname.split("/")[2]);
+      return request.method() === "GET" && testRun
+        ? route.fulfill({ body: JSON.stringify(testRun) })
+        : route.fallback();
+    },
+  );
+};
+
+export const mockEveryImage = (page: Page, image: string) => {
+  return page.route(
+    (url) => url.origin === API_URL && url.pathname.startsWith("/images/"),
+    (route) =>
+      route.fulfill({
+        path: `integration_tests/images/${image}`,
+        headers: { "cache-control": "max-age=3600" },
+      }),
+  );
+};
+
+export const mockImage = async (page: Page, name: string, file = name) => {
   const fulfillWithImage = (route: Route) =>
     route.fulfill({
-      path: `integration_tests/images/${image}`,
+      path: `integration_tests/images/${file}`,
     });
 
-  // the API serves an image two ways: a redirect to storage for display, and
-  // the bytes themselves for the download zip
-  await page.route(`${API_URL}/images/${image}`, fulfillWithImage);
-  return page.route(`${API_URL}/images/${image}/download`, fulfillWithImage);
+  // displayed through a redirect to storage, downloaded as bytes: two routes
+  await page.route(`${API_URL}/images/${name}`, fulfillWithImage);
+  return page.route(`${API_URL}/images/${name}/download`, fulfillWithImage);
 };
 
 export const mockUpdateUser = async (page: Page, user: object) => {
@@ -226,7 +255,7 @@ export const mockDeleteTestVariation = async (
   page: Page,
   testVariation: TestVariation,
 ) => {
-  // compared decoded: test variation ids may hold spaces
+  // decoded: ids may hold spaces
   return page.route(
     (url) =>
       decodeURIComponent(url.pathname) ===
@@ -238,7 +267,6 @@ export const mockDeleteTestVariation = async (
   );
 };
 
-// the models the Ollama server behind the API has pulled
 export const mockOllamaModels = (page: Page, names: string[]) => {
   return page.route(`${API_URL}/ollama/models`, (route) =>
     route.fulfill({
@@ -247,7 +275,6 @@ export const mockOllamaModels = (page: Page, names: string[]) => {
   );
 };
 
-// whether the backend has a DINOv2 service set up, and whether it answers
 export const mockDinov2Status = (
   page: Page,
   status: { configured: boolean; available: boolean },
@@ -257,8 +284,6 @@ export const mockDinov2Status = (
   );
 };
 
-// saving or applying ignore areas, and the comment, answer with nothing the
-// dialog reads
 export const mockUpdateIgnoreAreas = (page: Page) => {
   return page.route(`${API_URL}/test-runs/ignoreAreas/update`, (route) =>
     route.fulfill({ body: "{}" }),
@@ -290,8 +315,6 @@ export const mockRejectTestRuns = (page: Page) => {
   );
 };
 
-// the runs that share a screen with the one under review, and the ones the API
-// held back from the bulk action
 export const mockMatchingVariations = (
   page: Page,
   testRunId: string,
@@ -304,7 +327,6 @@ export const mockMatchingVariations = (
   );
 };
 
-// merging starts a build on the target branch and answers with it
 export const mockMergeTestVariations = async (page: Page, build: Build) => {
   return page.route(
     (url) => url.pathname === "/test-variations/merge",
@@ -312,8 +334,7 @@ export const mockMergeTestVariations = async (page: Page, build: Build) => {
   );
 };
 
-// the runtime settings env.sh writes to env-config.js, with some overridden;
-// the app reads them once, when it loads
+// appended to the real env-config.js, which the app reads once on load
 export const mockEnvConfig = (
   page: Page,
   overrides: Record<string, string>,
@@ -330,13 +351,19 @@ export const mockEnvConfig = (
   });
 };
 
-export const mockOidcEnabled = (page: Page, enabled: boolean) => {
-  return page.route(`${API_URL}/users/oidc/enabled`, (route) =>
+const mockUsersFlag = (page: Page, name: string, enabled: boolean) => {
+  return page.route(`${API_URL}/users/${name}/enabled`, (route) =>
     route.fulfill({ body: JSON.stringify(enabled) }),
   );
 };
 
-// stands in for the API's redirect to the identity provider
+export const mockOidcEnabled = (page: Page, enabled: boolean) =>
+  mockUsersFlag(page, "oidc", enabled);
+
+// without this mock the app treats registration as on, like an older backend
+export const mockRegistrationEnabled = (page: Page, enabled: boolean) =>
+  mockUsersFlag(page, "registration", enabled);
+
 export const mockOidcProvider = (page: Page) => {
   return page.route(`${API_URL}/users/oidc/login`, (route) =>
     route.fulfill({
@@ -346,7 +373,6 @@ export const mockOidcProvider = (page: Page) => {
   );
 };
 
-// the user behind a token, as /users/me answers: without the token itself
 export const mockGetMe = (page: Page, user: object) => {
   return page.route(`${API_URL}/users/me`, (route) =>
     route.fulfill({ body: JSON.stringify(user) }),
@@ -367,7 +393,6 @@ export const mockDeleteUsers = (page: Page) => {
   );
 };
 
-// the API answers a build patch with the build as patched
 export const mockUpdateBuild = (page: Page, build: Build) => {
   return page.route(`${API_URL}/builds/${build.id}`, (route, request) =>
     request.method() === "PATCH"

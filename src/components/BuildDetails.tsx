@@ -1,4 +1,4 @@
-import React from "react";
+import { useMemo } from "react";
 import {
   Typography,
   Chip,
@@ -12,9 +12,9 @@ import { useBuildState } from "../contexts";
 import { LOCATOR_BUILD_DETAILS } from "../constants/help";
 import { Tooltip } from "./Tooltip";
 
-const BuildDetails: React.FunctionComponent = () => {
+const BuildDetails = () => {
   const { selectedBuild } = useBuildState();
-  const buildNumber = React.useMemo(
+  const buildNumber = useMemo(
     () => `#${selectedBuild?.number} ${selectedBuild?.ciBuildId || ""}`,
     [selectedBuild?.number, selectedBuild?.ciBuildId],
   );

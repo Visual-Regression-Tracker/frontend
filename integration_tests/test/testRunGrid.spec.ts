@@ -40,8 +40,6 @@ test.beforeEach(async ({ page }) => {
   await mockImage(page, "baseline.png");
 });
 
-// same screen and branch, same on every axis but the locale, so these two are
-// variations of one another; the third screen stands on its own
 const VARIATION_EN = {
   ...TEST_UNRESOLVED,
   id: "variation-en",
@@ -64,12 +62,10 @@ const LONE_SCREEN = {
   diffPercent: 3,
 };
 
-// the data grid colours its own subtree, so the grid's chrome has to be told:
-// left alone it inherits pure black from the body and reads heavier
+// the data grid colours its own subtree: left alone its chrome inherits pure black
 const colourOf = (locator) =>
   locator.evaluate((el: HTMLElement) => getComputedStyle(el).color);
 
-// the ids each approve request carried, in the order they went out
 const captureApprovals = async (page): Promise<string[][]> => {
   const approved: string[][] = [];
   await page.route(
@@ -93,7 +89,6 @@ const mockVariations = async (page) => {
   await mockTestRun(page, LONE_SCREEN);
 };
 
-// the three screens of mockVariations, collapsed into two cards
 const openGroupedGrid = async (openProjectPage, page) => {
   await mockVariations(page);
   const projectPage = await openProjectPage(project.id, build.id);
@@ -102,7 +97,6 @@ const openGroupedGrid = async (openProjectPage, page) => {
   return projectPage;
 };
 
-// the same, as rows
 const openGroupedTable = async (openProjectPage, page) => {
   await mockVariations(page);
   const projectPage = await openProjectPage(project.id, build.id);
@@ -117,7 +111,6 @@ test("collapses the variations of one screen into a single card", async ({
   const projectPage = await openGroupedGrid(openProjectPage, page);
 
   await expect(projectPage.testRunList.cards).toHaveCount(2);
-  // the biggest diff represents the group
   await expect(
     projectPage.testRunList.getCard("Screen A").getByTestId("groupCount"),
   ).toHaveText("2");
@@ -133,14 +126,12 @@ test("groups on request and forgets it after a reload", async ({
   await mockVariations(page);
   const projectPage = await openProjectPage(project.id, build.id);
   await projectPage.testRunList.gridViewToggle.click();
-  // flat on arrival: grouping is off by default
   await expect(projectPage.testRunList.cards).toHaveCount(3);
 
   await projectPage.testRunList.groupToggle.click();
   await expect(projectPage.testRunList.cards).toHaveCount(2);
 
   await page.reload();
-  // the reload lands on the table, so the grid has to be asked for again
   await projectPage.testRunList.gridViewToggle.click();
 
   await expect(projectPage.testRunList.cards).toHaveCount(3);
@@ -158,12 +149,17 @@ test("selects every run in a group from its card", async ({
   await projectPage.modal.confirmBtn.click();
 
   await expect(projectPage.notification.message).toHaveText(
-    "2 test runs processed.",
+    "2 test runs approved.",
   );
-  // the request order follows the flat sorted list and both share a name, so it
-  // is a tie: what matters is that the whole group went out in one request
-  expect(approved.map((ids) => [...ids].sort())).toEqual([
-    [VARIATION_DE.id, VARIATION_EN.id].sort(),
+  // the sort ties on the shared name: what matters is one request for the whole group
+  expect(
+    approved.map((ids) =>
+      [...ids].sort((a: string, b: string) => a.localeCompare(b)),
+    ),
+  ).toEqual([
+    [VARIATION_DE.id, VARIATION_EN.id].sort((a: string, b: string) =>
+      a.localeCompare(b),
+    ),
   ]);
 });
 
@@ -179,15 +175,12 @@ test("forgets what was selected once a bulk action has run", async ({
   await projectPage.modal.confirmBtn.click();
   await expect.poll(() => approved.length).toBe(1);
 
-  // the runs just approved are done with: carried into the next selection they
-  // would be counted and sent again, and a group is several runs at a time
+  // approved runs must leave the selection or they would be counted and sent again
   await expect(projectPage.testRunList.selectionCount).toBeHidden();
 
   await projectPage.testRunList.checkCard("Screen B");
   await projectPage.testRunList.approveBtn.click();
-  await expect(
-    page.getByText("Are you sure you want to approve 1 items?"),
-  ).toBeVisible();
+  await expect(page.getByText("Approve 1 test run?")).toBeVisible();
   await projectPage.modal.confirmBtn.click();
 
   await expect.poll(() => approved.length).toBe(2);
@@ -206,11 +199,9 @@ test("walks the runs inside a group with the arrows", async ({
 
   await page.keyboard.press("ArrowRight");
 
-  // the group's other locale comes before the next screen
   await expect(page).toHaveURL(new RegExp(`testId=${VARIATION_EN.id}$`));
 });
 
-// two screens across six locales each: twelve cards flat, two when grouped
 const MANY_RUNS = ["Screen A", "Screen B"].flatMap((name, screenIndex) =>
   ["en_US", "de_DE", "fr_FR", "cs_CZ", "he_IL", "pl_PL"].map(
     (locale, localeIndex) => ({
@@ -259,13 +250,11 @@ test("does not leave the grid on a page that no longer exists", async ({
   await projectPage.testRunList.nextPage.click();
   await expect(projectPage.testRunList.cards).toHaveCount(2);
 
-  // grouping collapses twelve cards into two, so page two disappears
   await projectPage.testRunList.groupToggle.click();
 
   await expect(projectPage.testRunList.cards).toHaveCount(2);
 });
 
-// picked so that status, name and tag order are all different from one another
 const SORTABLE = [
   {
     ...TEST_UNRESOLVED,
@@ -283,7 +272,6 @@ test("sorts the cards by status or name", async ({ openProjectPage, page }) => {
   const projectPage = await openProjectPage(project.id, build.id);
   await projectPage.testRunList.gridViewToggle.click();
 
-  // needs attention first, then by name within a status
   await expect(projectPage.testRunList.cardNames).toHaveText([
     "Zebra",
     "Alpha",
@@ -347,7 +335,6 @@ test("selects every filtered run from the header, across pages", async ({
   await mockGetTestRuns(page, build.id, MANY_RUNS);
   const projectPage = await openProjectPage(project.id, build.id);
   await projectPage.testRunList.gridViewToggle.click();
-  // ten of the twelve cards fit on the page
   await expect(projectPage.testRunList.cards).toHaveCount(10);
 
   await projectPage.testRunList.selectAll.click();
@@ -360,7 +347,7 @@ test("selects every filtered run from the header, across pages", async ({
   await projectPage.modal.confirmBtn.click();
 
   await expect(projectPage.notification.message).toHaveText(
-    "12 test runs processed.",
+    "12 test runs approved.",
   );
   expect(approved[0]).toHaveLength(MANY_RUNS.length);
 });
@@ -392,8 +379,6 @@ test("opens on the status order, like the table", async ({
   await page.reload();
   await projectPage.testRunList.gridViewToggle.click();
 
-  // the sort is not remembered: the table's resets too, and a remembered card
-  // order left the two views opening on different columns
   await expect(projectPage.testRunList.cardNames).toHaveText([
     "Zebra",
     "Alpha",
@@ -485,11 +470,15 @@ test("applies the same density to the table rows", async ({
 }) => {
   const projectPage = await openProjectPage(project.id, build.id);
   const row = projectPage.testRunList.getRow(TEST_UNRESOLVED.id);
+  await expect(row).toBeVisible();
   const standard = (await row.boundingBox()).height;
 
   await projectPage.testRunList.compactDensity.click();
 
-  expect((await row.boundingBox()).height).toBeLessThan(standard);
+  // the grid applies density after the click
+  await expect
+    .poll(async () => (await row.boundingBox()).height)
+    .toBeLessThan(standard);
 });
 
 test("approves the runs selected in the grid", async ({
@@ -501,15 +490,14 @@ test("approves the runs selected in the grid", async ({
   const projectPage = await openProjectPage(project.id, build.id);
   await projectPage.testRunList.gridViewToggle.click();
 
-  // only new and unresolved runs are eligible, so an approved one would prove
-  // nothing: idsEligibleForApproveOrReject would drop it and send an empty list
+  // approved runs are not eligible (idsEligibleForApproveOrReject), so they would prove nothing
   await projectPage.testRunList.checkCard(TEST_RUN_NEW.name);
   await projectPage.testRunList.checkCard(TEST_UNRESOLVED.name);
   await projectPage.testRunList.approveBtn.click();
   await projectPage.modal.confirmBtn.click();
 
   await expect(projectPage.notification.message).toHaveText(
-    "2 test runs processed.",
+    "2 test runs approved.",
   );
   expect(approved).toEqual([[TEST_RUN_NEW.id, TEST_UNRESOLVED.id]]);
 });
@@ -519,16 +507,10 @@ test("navigates the dialog in the grid's order", async ({
   page,
 }) => {
   const projectPage = await openProjectPage(project.id, build.id);
-  // the data grid mounts first, since the view is not remembered, so the grid
-  // has to replace the order it published
   await projectPage.testRunList.gridViewToggle.click();
   await expect(projectPage.testRunList.grid).toBeVisible();
 
-  // the grid sorts by status, so unresolved follows new. The runs arrive from
-  // the API in a different order (unresolved, approved, new, ok), which is what
-  // the dialog would walk if the grid did not publish its own order.
-  // anchored: TEST_UNRESOLVED.id is a prefix of TEST_RUN_NEW.id, so an
-  // unanchored pattern would match either run and prove nothing
+  // anchored: TEST_UNRESOLVED.id is a prefix of TEST_RUN_NEW.id
   const openedRun = (id: string) => new RegExp(`testId=${id}$`);
 
   await projectPage.testRunList.getCard(TEST_RUN_NEW.name).click();
@@ -555,12 +537,10 @@ test("collapses the variations into one table row too", async ({
 }) => {
   const projectPage = await openGroupedTable(openProjectPage, page);
 
-  // grouped: the representative stands for both locales and carries the count
   await expect(projectPage.testRunList.rows).toHaveCount(2);
   await expect(
     projectPage.testRunList.getRow(VARIATION_DE.id).getByTestId("groupCount"),
   ).toHaveText("2");
-  // the locale varies inside the group, so it is not shown as a tag of the row
   await expect(
     projectPage.testRunList.getColumn(VARIATION_DE.id, "tags"),
   ).not.toContainText("de_DE");
@@ -585,10 +565,16 @@ test("selects a whole group from a table row", async ({
   await projectPage.modal.confirmBtn.click();
 
   await expect(projectPage.notification.message).toHaveText(
-    "2 test runs processed.",
+    "2 test runs approved.",
   );
-  expect(approved.map((ids) => [...ids].sort())).toEqual([
-    [VARIATION_DE.id, VARIATION_EN.id].sort(),
+  expect(
+    approved.map((ids) =>
+      [...ids].sort((a: string, b: string) => a.localeCompare(b)),
+    ),
+  ).toEqual([
+    [VARIATION_DE.id, VARIATION_EN.id].sort((a: string, b: string) =>
+      a.localeCompare(b),
+    ),
   ]);
 });
 
@@ -613,7 +599,6 @@ test("keeps every tag on a row that stands for one run", async ({
 }) => {
   const projectPage = await openGroupedTable(openProjectPage, page);
 
-  // Screen B has no variations, so hiding its locale would lose information
   await expect(
     projectPage.testRunList.getColumn(LONE_SCREEN.id, "tags"),
   ).toContainText("en_US");
@@ -630,8 +615,7 @@ test("swaps the card image between the diff and the screenshot", async ({
 
   await expect(image).toHaveAttribute("src", /diff\.png/);
 
-  // the hotkey first: clicking the switch leaves focus on its input, and
-  // react-hotkeys-hook ignores keys typed inside form fields by design
+  // hotkey first: clicking the switch focuses its input, and react-hotkeys-hook ignores form fields
   await page.keyboard.press("d");
 
   await expect(image).toHaveAttribute("src", /image\.png/);
@@ -644,14 +628,12 @@ test("swaps the card image between the diff and the screenshot", async ({
 test("shows the tags on the cards", async ({ openProjectPage, page }) => {
   const projectPage = await openGroupedGrid(openProjectPage, page);
 
-  // the lone screen keeps its locale, the group hides the axis it varies on
   await expect(projectPage.testRunList.getCard("Screen B")).toContainText(
     "en_US",
   );
   await expect(projectPage.testRunList.getCard("Screen A")).not.toContainText(
     "en_US",
   );
-  // the fixture's device tag; the axes that do not vary stay on the card
   await expect(projectPage.testRunList.getCard("Screen A")).toContainText(
     "device",
   );
@@ -685,7 +667,6 @@ test("counts cards, not the runs behind them, when grouped", async ({
   const projectPage = await openProjectPage(project.id, build.id);
   await projectPage.testRunList.gridViewToggle.click();
   await projectPage.testRunList.groupToggle.click();
-  // twelve runs collapse into two screens
   await expect(projectPage.testRunList.cards).toHaveCount(2);
 
   await projectPage.testRunList.selectAll.click();
@@ -703,7 +684,6 @@ test("wraps a long name and its tags rather than cutting them off", async ({
     {
       ...TEST_UNRESOLVED,
       id: "long",
-      // long enough to need a second line on the narrowest card in any font
       name: "Onboarding / ideal weight / metric units / imperial fallback",
       os: "",
       browser: "",
@@ -716,8 +696,6 @@ test("wraps a long name and its tags rather than cutting them off", async ({
   await projectPage.testRunList.gridViewToggle.click();
   await projectPage.testRunList.compactDensity.click();
 
-  // the tags stay on the narrowest card, and both run onto a second line
-  // instead of ending in an ellipsis after two words
   await expect(projectPage.testRunList.cardTags.first()).toBeVisible();
   const oneLine = 24;
   expect(
@@ -736,7 +714,7 @@ test("shows the icon tooltips without the browser's delay", async ({
 
   await projectPage.testRunList.gridViewToggle.hover();
 
-  // a native title attribute has no tooltip role and no text in the DOM
+  // a native title has no tooltip role and no DOM text
   await expect(page.getByRole("tooltip")).toHaveText("Grid");
 });
 
@@ -747,13 +725,11 @@ test("filters by a tag clicked on a card", async ({
   await mockVariations(page);
   const projectPage = await openProjectPage(project.id, build.id);
   await projectPage.testRunList.gridViewToggle.click();
-  // ungrouped, so that every card carries its own locale
   await expect(projectPage.testRunList.cards).toHaveCount(3);
 
   await projectPage.testRunList.clickTag("de_DE");
 
   await expect(projectPage.testRunList.cards).toHaveCount(1);
-  // the filter bar answers for the click, so it can also be undone there
   await expect(projectPage.testRunFilters.selectedTag("de_DE")).toBeVisible();
 });
 
@@ -812,7 +788,6 @@ test("groups runs of one screen whose reviews are half done", async ({
 
   const screenA = projectPage.testRunList.getCard("Screen A");
   await expect(screenA.getByTestId("groupCount")).toHaveText("2");
-  // the unresolved run represents the group, and the card owns up to the mix
   await expect(screenA.getByText("unresolved")).toBeVisible();
   await expect(
     screenA.locator('[title="1 unresolved · 1 approved"]'),

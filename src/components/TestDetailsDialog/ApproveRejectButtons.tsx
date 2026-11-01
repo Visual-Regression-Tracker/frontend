@@ -2,7 +2,7 @@ import { Chip, Button } from "@mui/material";
 import { useDialogSnackbar } from "./useDialogSnackbar";
 import { useHotkeys } from "react-hotkeys-hook";
 import { hotkeyOptions } from "../../_helpers/hotkeys.helper";
-import React from "react";
+import { useMemo } from "react";
 import { testRunService } from "../../services";
 import { useProjectState, useTestRunState } from "../../contexts";
 import { TestRun } from "../../types";
@@ -24,26 +24,33 @@ const wideActionButtonSx = {
   marginRight: "4px",
 };
 
-export const ApproveRejectButtons: React.FunctionComponent<{
+export const ApproveRejectButtons = ({
+  testRun,
+  afterApprove,
+  afterReject,
+  onOpenVariations,
+}: {
   testRun: TestRun;
   afterApprove?: () => void;
   afterReject?: () => void;
   onOpenVariations: (mode: MatchingVariationsMode) => void;
-}> = ({ testRun, afterApprove, afterReject, onOpenVariations }) => {
+}) => {
   const { enqueueSnackbar } = useDialogSnackbar();
   const { selectedProjectId, projectList } = useProjectState();
   const { testRuns } = useTestRunState();
   const project = projectList.find((item) => item.id === selectedProjectId);
-  // Only worth showing when there is at least one true sibling still to review —
-  // same screen and same on every axis except the group-by one (e.g. locale).
-  // A run that merely shares the name but differs on a fixed axis (e.g. another
-  // device) is NOT a sibling, so "variations" would be a single approve/reject.
+  // only a true sibling (same on every axis but group-by) makes variations worth showing
   const groupBy = resolveGroupByAxis(project?.bulkApproveGroupBy);
-  const hasSiblingsToReview = testRuns.some(
-    (run) =>
-      run.id !== testRun.id &&
-      isSibling(run, testRun, groupBy) &&
-      (run.status === TestStatus.unresolved || run.status === TestStatus.new),
+  const hasSiblingsToReview = useMemo(
+    () =>
+      testRuns.some(
+        (run) =>
+          run.id !== testRun.id &&
+          isSibling(run, testRun, groupBy) &&
+          (run.status === TestStatus.unresolved ||
+            run.status === TestStatus.new),
+      ),
+    [testRuns, testRun, groupBy],
   );
   const variationsEnabled =
     !!project?.bulkApproveVariations &&
@@ -52,7 +59,7 @@ export const ApproveRejectButtons: React.FunctionComponent<{
 
   const approve = () => {
     testRunService
-      .approveBulk([testRun.id], testRun.merge)
+      .approveOne(testRun.id, testRun.merge)
       .then(() => {
         enqueueSnackbar("Approved", {
           variant: "success",
@@ -68,11 +75,9 @@ export const ApproveRejectButtons: React.FunctionComponent<{
 
   const reject = () => {
     testRunService
-      .rejectBulk([testRun.id])
+      .rejectOne(testRun.id)
       .then(() => {
-        // not a success: a rejection is a deliberate outcome, and the green
-        // tick made it read as an approval at a glance — the two buttons sit
-        // next to each other and get pressed in a hurry
+        // not a success: no green tick, as the two buttons sit side by side
         enqueueSnackbar("Rejected", {
           variant: "info",
         });
@@ -85,9 +90,7 @@ export const ApproveRejectButtons: React.FunctionComponent<{
       );
   };
 
-  // the hook keeps the callback from when its deps last changed, and the
-  // after-callbacks read the dialog's current state (go to next, unsaved
-  // areas), so they are deps as much as the run is
+  // the hook keeps the callback from its last deps, so the after-callbacks must be deps too
   useHotkeys("a", approve, hotkeyOptions, [testRun, afterApprove]);
   useHotkeys("x", reject, hotkeyOptions, [testRun, afterReject]);
 

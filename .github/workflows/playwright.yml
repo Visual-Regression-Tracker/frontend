@@ -41,3 +41,25 @@ jobs:
           name: playwright-report
           path: playwright-report/
           retention-days: 30
+
+  # its own runner, so nothing else skews the throttled timings
+  perf:
+    timeout-minutes: 15
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - run: npm ci --ignore-scripts
+
+      - run: ./node_modules/.bin/playwright install --with-deps chromium
+
+      - name: Run the large-build perf spec
+        run: ./node_modules/.bin/playwright test
+        env:
+          CI: true
+          PW_PERF: 1

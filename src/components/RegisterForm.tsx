@@ -1,4 +1,4 @@
-import React, { useState, FormEvent } from "react";
+import { useState, FormEvent, type ChangeEvent } from "react";
 import { Button, Card, CardContent, Stack } from "@mui/material";
 import { useUserDispatch, login } from "../contexts";
 import { usersService } from "../services";
@@ -56,7 +56,7 @@ const RegisterForm = () => {
                 required
                 fullWidth
                 inputProps={{
-                  onChange: (event: React.ChangeEvent<HTMLInputElement>) =>
+                  onChange: (event: ChangeEvent<HTMLInputElement>) =>
                     setFirstName(event.target.value),
                   "data-testid": "firstName",
                 }}
@@ -73,7 +73,7 @@ const RegisterForm = () => {
                 required
                 fullWidth
                 inputProps={{
-                  onChange: (event: React.ChangeEvent<HTMLInputElement>) =>
+                  onChange: (event: ChangeEvent<HTMLInputElement>) =>
                     setLastName(event.target.value),
                   "data-testid": "lastName",
                 }}
@@ -91,7 +91,7 @@ const RegisterForm = () => {
               required
               fullWidth
               inputProps={{
-                onChange: (event: React.ChangeEvent<HTMLInputElement>) =>
+                onChange: (event: ChangeEvent<HTMLInputElement>) =>
                   setEmail(event.target.value),
                 "data-testid": "email",
               }}

@@ -1,0 +1,70 @@
+name: E2E smoke
+
+# The production frontend against the backend repo's docker-compose stack, without API mocks
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+  workflow_dispatch:
+    inputs:
+      backend_ref:
+        description: Backend branch, tag or commit to run against
+        required: false
+        default: master
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+permissions:
+  contents: read
+
+jobs:
+  smoke:
+    timeout-minutes: 25
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/checkout@v4
+        with:
+          repository: Visual-Regression-Tracker/backend
+          ref: ${{ inputs.backend_ref || 'master' }}
+          path: backend
+          persist-credentials: false
+
+      # the backend's committed .env seeds the admin the specs log in as
+      - name: Start the backend stack
+        working-directory: backend
+        run: |
+          docker compose up -d --build
+          test "$(docker wait vrt_migration)" = 0
+          timeout 120 sh -c 'until curl -s -o /dev/null http://localhost:4200; do sleep 2; done'
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - run: npm ci --ignore-scripts
+
+      - run: ./node_modules/.bin/playwright install --with-deps chromium
+
+      - name: Run the smoke
+        run: ./node_modules/.bin/playwright test
+        env:
+          CI: true
+          PW_E2E: 1
+
+      - name: Backend logs
+        if: failure()
+        working-directory: backend
+        run: docker compose logs --no-color
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: e2e-report
+          path: playwright-report/
+          retention-days: 30

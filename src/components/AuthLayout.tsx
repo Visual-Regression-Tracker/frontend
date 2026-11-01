@@ -1,13 +1,16 @@
-import React from "react";
+import type { ReactNode } from "react";
 import { Box, Typography } from "@mui/material";
 import logo from "../static/logo.png";
 
-// The frame of the signed-out pages: the product mark above one card.
-export const AuthLayout: React.FunctionComponent<{
+export const AuthLayout = ({
+  title,
+  subtitle,
+  children,
+}: {
   title: string;
   subtitle: string;
-  children: React.ReactNode;
-}> = ({ title, subtitle, children }) => (
+  children: ReactNode;
+}) => (
   <Box
     sx={{
       minHeight: "100%",

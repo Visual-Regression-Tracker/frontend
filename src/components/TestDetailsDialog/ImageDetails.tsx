@@ -1,4 +1,3 @@
-import React from "react";
 import { Typography, GridLegacy as Grid, IconButton } from "@mui/material";
 import { WarningRounded, AltRoute } from "@mui/icons-material";
 import { IgnoreArea } from "../../types/ignoreArea";
@@ -18,21 +17,19 @@ const BranchName = styled("span")({
 
 export interface ImageDetailsProps {
   type: "Baseline" | "Image" | "Diff";
-  // nullable like the run's own names: this already renders "Loading..." for a
-  // missing one, so the guard was there before the type admitted it
   imageName: string | null;
   image: HTMLImageElement | undefined;
   branchName: string;
   ignoreAreas?: IgnoreArea[];
 }
 
-const ImageDetails: React.FunctionComponent<ImageDetailsProps> = ({
+const ImageDetails = ({
   type,
   image,
   imageName,
   branchName,
   ignoreAreas,
-}) => {
+}: ImageDetailsProps) => {
   const imageSize = () => {
     return (
       imageName && (

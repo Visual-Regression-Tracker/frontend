@@ -1,4 +1,4 @@
-import React from "react";
+import { useMemo } from "react";
 import { IconButton } from "@mui/material";
 import { Delete } from "@mui/icons-material";
 import {
@@ -11,7 +11,7 @@ import { useSnackbar } from "notistack";
 import { useUserDispatch, useUserState } from "../../contexts";
 import { Tooltip } from "../Tooltip";
 
-export const ActionButtons: React.FunctionComponent = () => {
+export const ActionButtons = () => {
   const apiRef = useGridApiContext();
   const selection = useGridSelector(apiRef, gridRowSelectionIdsSelector);
 
@@ -19,52 +19,44 @@ export const ActionButtons: React.FunctionComponent = () => {
   const userDispatch = useUserDispatch();
   const { userList, user } = useUserState();
 
-  // user ids are strings, so the grid's rows are keyed by strings
-  const ids = React.useMemo(
-    () => [...selection.keys()] as string[],
-    [selection],
-  );
+  const ids = useMemo(() => [...selection.keys()] as string[], [selection]);
 
   return (
-    <React.Fragment>
-      <Tooltip title="Delete selected rows." aria-label="delete">
-        <span>
-          <IconButton
-            disabled={!ids.length}
-            onClick={() => {
-              const currentUserId = user?.id;
+    <Tooltip title="Delete selected rows." aria-label="delete">
+      <span>
+        <IconButton
+          disabled={!ids.length}
+          onClick={() => {
+            const currentUserId = user?.id;
 
-              if (currentUserId && ids.includes(currentUserId)) {
-                enqueueSnackbar(`You cannot delete yourself.`, {
-                  variant: "error",
-                });
-              } else {
-                usersService
-                  .remove(ids)
-                  .then(() => {
-                    enqueueSnackbar(`Removed`, {
-                      variant: "success",
-                    });
-                    userDispatch({
-                      type: "getAll",
-                      payload: userList.filter(
-                        (user) => !ids.includes(user.id),
-                      ),
-                    });
-                  })
-                  .catch((err) =>
-                    enqueueSnackbar(err, {
-                      variant: "error",
-                    }),
-                  );
-              }
-            }}
-            size="large"
-          >
-            <Delete data-testid="DeleteIcon" />
-          </IconButton>
-        </span>
-      </Tooltip>
-    </React.Fragment>
+            if (currentUserId && ids.includes(currentUserId)) {
+              enqueueSnackbar(`You cannot delete yourself.`, {
+                variant: "error",
+              });
+            } else {
+              usersService
+                .remove(ids)
+                .then(() => {
+                  enqueueSnackbar(`Removed`, {
+                    variant: "success",
+                  });
+                  userDispatch({
+                    type: "getAll",
+                    payload: userList.filter((user) => !ids.includes(user.id)),
+                  });
+                })
+                .catch((err) =>
+                  enqueueSnackbar(err, {
+                    variant: "error",
+                  }),
+                );
+            }
+          }}
+          size="large"
+        >
+          <Delete data-testid="DeleteIcon" />
+        </IconButton>
+      </span>
+    </Tooltip>
   );
 };

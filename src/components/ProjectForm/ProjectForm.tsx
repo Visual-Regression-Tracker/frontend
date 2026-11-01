@@ -7,7 +7,7 @@ import {
   Switch,
   SelectChangeEvent,
 } from "@mui/material";
-import React from "react";
+import { type ChangeEvent, Fragment, useMemo } from "react";
 import { TextValidator } from "react-material-ui-form-validator";
 import {
   useProjectState,
@@ -22,11 +22,11 @@ import { PixelmatchConfigForm } from "./PixelmatchConfigForm";
 import { VlmConfigForm } from "./VlmConfigForm";
 import { getDefaultConfig, withBlurAmplitudeOf } from "./utils";
 
-export const ProjectForm: React.FunctionComponent = () => {
+export const ProjectForm = () => {
   const { projectEditState: project } = useProjectState();
   const projectDispatch = useProjectDispatch();
 
-  const config = React.useMemo(() => {
+  const config = useMemo(() => {
     switch (project.imageComparison) {
       case ImageComparison.pixelmatch:
         return <PixelmatchConfigForm />;
@@ -46,7 +46,7 @@ export const ProjectForm: React.FunctionComponent = () => {
   }, [project.imageComparison]);
 
   return (
-    <React.Fragment>
+    <Fragment>
       <TextValidator
         name="projectName"
         validators={["minStringLength:2"]}
@@ -58,7 +58,7 @@ export const ProjectForm: React.FunctionComponent = () => {
         fullWidth
         required
         value={project.name}
-        onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
+        onChange={(event: ChangeEvent<HTMLInputElement>) => {
           setProjectEditState(projectDispatch, {
             ...project,
             name: event.target.value,
@@ -76,7 +76,7 @@ export const ProjectForm: React.FunctionComponent = () => {
         fullWidth
         required
         value={project.mainBranchName}
-        onChange={(event: React.ChangeEvent<HTMLInputElement>) =>
+        onChange={(event: ChangeEvent<HTMLInputElement>) =>
           setProjectEditState(projectDispatch, {
             ...project,
             mainBranchName: event.target.value,
@@ -100,7 +100,7 @@ export const ProjectForm: React.FunctionComponent = () => {
         fullWidth
         required
         value={project.maxBuildAllowed}
-        onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
+        onChange={(event: ChangeEvent<HTMLInputElement>) => {
           const { value } = event.target;
 
           setProjectEditState(projectDispatch, {
@@ -126,7 +126,7 @@ export const ProjectForm: React.FunctionComponent = () => {
         fullWidth
         required
         value={project.maxBranchLifetime}
-        onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
+        onChange={(event: ChangeEvent<HTMLInputElement>) => {
           const { value } = event.target;
 
           setProjectEditState(projectDispatch, {
@@ -140,7 +140,7 @@ export const ProjectForm: React.FunctionComponent = () => {
         control={
           <Switch
             checked={project.autoApproveFeature}
-            onChange={(event, checked) =>
+            onChange={(_event, checked) =>
               setProjectEditState(projectDispatch, {
                 ...project,
                 autoApproveFeature: checked,
@@ -157,7 +157,7 @@ export const ProjectForm: React.FunctionComponent = () => {
           control={
             <Switch
               checked={project.bulkApproveVariations}
-              onChange={(event, checked) =>
+              onChange={(_event, checked) =>
                 setProjectEditState(projectDispatch, {
                   ...project,
                   bulkApproveVariations: checked,
@@ -169,9 +169,7 @@ export const ProjectForm: React.FunctionComponent = () => {
           }
         />
       </Tooltip>
-      {/* not tied to the switch above: the axis also decides what the test run
-          list groups into one card, which it does whether or not variations can
-          be bulk approved */}
+      {/* Not tied to the switch: the axis groups runs in the list either way */}
       <Tooltip title="Which test-variation axis differs within a group. Screens that match on everything except this axis are grouped in the test run list and reviewed together — e.g. customTags for per-locale screenshots.">
         <FormControl variant="standard" fullWidth>
           <InputLabel id="bulkApproveGroupBySelect">
@@ -185,7 +183,7 @@ export const ProjectForm: React.FunctionComponent = () => {
             onChange={(event: SelectChangeEvent<string>) =>
               setProjectEditState(projectDispatch, {
                 ...project,
-                bulkApproveGroupBy: event.target.value as string,
+                bulkApproveGroupBy: event.target.value,
               })
             }
           >
@@ -235,6 +233,6 @@ export const ProjectForm: React.FunctionComponent = () => {
         </Select>
       </FormControl>
       {config}
-    </React.Fragment>
+    </Fragment>
   );
 };

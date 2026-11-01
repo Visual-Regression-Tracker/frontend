@@ -60,12 +60,8 @@ describe("getQueryParams", () => {
     });
   });
 
-  // NOTE: qs gives an array for a repeated param, but the result is typed as a string
-  it("hands back an array when a param is repeated", () => {
-    expect(getQueryParams("?buildId=b1&buildId=b2").buildId).toEqual([
-      "b1",
-      "b2",
-    ]);
+  it("takes the first value when a param is repeated", () => {
+    expect(getQueryParams("?buildId=b1&buildId=b2").buildId).toBe("b1");
   });
 
   it("round-trips what buildTestRunLocation builds", () => {

@@ -54,7 +54,6 @@ async function update(project: Partial<Project>): Promise<Project> {
   return handleResponse(response);
 }
 
-// the signed-in user's own favourites, as project ids
 async function getFavorites(): Promise<string[]> {
   const requestOptions = {
     method: "GET",

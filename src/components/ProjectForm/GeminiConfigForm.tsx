@@ -1,4 +1,4 @@
-import React from "react";
+import { type ChangeEvent, Fragment } from "react";
 import { Link } from "@mui/material";
 import { TextValidator } from "react-material-ui-form-validator";
 import { GeminiVlmConfig } from "../../types/imageComparison";
@@ -10,11 +10,15 @@ import {
   VlmUseThinkingField,
 } from "./VlmSharedFields";
 
-export const GeminiConfigForm: React.FunctionComponent = () => {
+// the API returns a saved key masked; sending the mask back keeps the key
+const MASKED_KEY_PREFIX = "••••";
+
+export const GeminiConfigForm = () => {
   const [config, updateConfig] = useConfigHook<GeminiVlmConfig>();
+  const keyIsMasked = (config.apiKey || "").startsWith(MASKED_KEY_PREFIX);
 
   return (
-    <React.Fragment>
+    <Fragment>
       <Tooltip title="The Google Gemini model to use for image comparison.">
         <div>
           <TextValidator
@@ -28,7 +32,7 @@ export const GeminiConfigForm: React.FunctionComponent = () => {
             fullWidth
             required
             value={config.model || ""}
-            onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
+            onChange={(event: ChangeEvent<HTMLInputElement>) => {
               updateConfig("model", event.target.value);
             }}
             helperText={
@@ -60,10 +64,14 @@ export const GeminiConfigForm: React.FunctionComponent = () => {
             fullWidth
             required
             value={config.apiKey || ""}
-            onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
+            onChange={(event: ChangeEvent<HTMLInputElement>) => {
               updateConfig("apiKey", event.target.value);
             }}
-            helperText="Enter your Google Gemini API key"
+            helperText={
+              keyIsMasked
+                ? "Leave as is to keep the saved key."
+                : "Enter your Google Gemini API key"
+            }
           />
         </div>
       </Tooltip>
@@ -79,7 +87,6 @@ export const GeminiConfigForm: React.FunctionComponent = () => {
         value={config.useThinking || false}
         onChange={(value) => updateConfig("useThinking", value)}
       />
-    </React.Fragment>
+    </Fragment>
   );
 };
-

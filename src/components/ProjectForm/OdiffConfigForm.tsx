@@ -1,21 +1,21 @@
 import { FormControlLabel, Switch } from "@mui/material";
-import React from "react";
+import { type ChangeEvent, Fragment } from "react";
 import { TextValidator } from "react-material-ui-form-validator";
 import { OdiffConfig } from "../../types/imageComparison";
 import { useConfigHook } from "./useConfigHook";
 import { BlurAmplitudeFields } from "./BlurAmplitudeFields";
 
-export const OdiffConfigForm: React.FunctionComponent = () => {
+export const OdiffConfigForm = () => {
   const [config, updateConfig] = useConfigHook<OdiffConfig>();
 
   return (
-    <React.Fragment>
+    <Fragment>
       <FormControlLabel
         label="Output diff mask"
         control={
           <Switch
             checked={config.outputDiffMask}
-            onChange={(event, checked) =>
+            onChange={(_event, checked) =>
               updateConfig("outputDiffMask", checked)
             }
             color="primary"
@@ -28,7 +28,7 @@ export const OdiffConfigForm: React.FunctionComponent = () => {
         control={
           <Switch
             checked={config.failOnLayoutDiff}
-            onChange={(event, checked) =>
+            onChange={(_event, checked) =>
               updateConfig("failOnLayoutDiff", checked)
             }
             color="primary"
@@ -41,7 +41,9 @@ export const OdiffConfigForm: React.FunctionComponent = () => {
         control={
           <Switch
             checked={config.antialiasing}
-            onChange={(event, checked) => updateConfig("antialiasing", checked)}
+            onChange={(_event, checked) =>
+              updateConfig("antialiasing", checked)
+            }
             color="primary"
             name="antialiasing"
           />
@@ -65,12 +67,12 @@ export const OdiffConfigForm: React.FunctionComponent = () => {
         fullWidth
         required
         value={config.threshold}
-        onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
+        onChange={(event: ChangeEvent<HTMLInputElement>) => {
           const { value } = event.target;
           updateConfig("threshold", parseFloat(value));
         }}
       />
       <BlurAmplitudeFields />
-    </React.Fragment>
+    </Fragment>
   );
 };

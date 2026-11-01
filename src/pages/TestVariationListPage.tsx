@@ -1,4 +1,4 @@
-import React from "react";
+import { useEffect, useMemo, useState } from "react";
 import TestVariationList from "../components/TestVariationList";
 import { useNavigate, useParams } from "react-router-dom";
 import { TestVariation } from "../types";
@@ -27,36 +27,32 @@ import {
 
 const PAGE_SIZE_OPTIONS = [12, 24, 48, 96];
 
-const TestVariationListPage: React.FunctionComponent = () => {
+const TestVariationListPage = () => {
   const navigate = useNavigate();
   const { enqueueSnackbar } = useSnackbar();
   const helpDispatch = useHelpDispatch();
   const { projectId = "" } = useParams<{ projectId: string }>();
-  const [testVariations, setTestVariations] = React.useState<TestVariation[]>(
-    [],
-  );
+  const [testVariations, setTestVariations] = useState<TestVariation[]>([]);
 
-  // filter
-  const [query, setQuery] = React.useState("");
-  const [os, setOs] = React.useState("");
-  const [device, setDevice] = React.useState("");
-  const [browser, setBrowser] = React.useState("");
-  const [viewport, setViewport] = React.useState("");
-  const [customTags, setCustomTags] = React.useState("");
-  const [branchName, setBranchName] = React.useState("");
-  const [filteredItems, setFilteredItems] = React.useState<TestVariation[]>([]);
-  const [page, setPage] = React.useState(1);
-  const [pageSize, setPageSize] = React.useState(PAGE_SIZE_OPTIONS[0]);
+  const [query, setQuery] = useState("");
+  const [os, setOs] = useState("");
+  const [device, setDevice] = useState("");
+  const [browser, setBrowser] = useState("");
+  const [viewport, setViewport] = useState("");
+  const [customTags, setCustomTags] = useState("");
+  const [branchName, setBranchName] = useState("");
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(PAGE_SIZE_OPTIONS[0]);
 
-  React.useEffect(() => {
+  useEffect(() => {
     setHelpSteps(helpDispatch, TEST_VARIATION_LIST_PAGE);
   });
 
-  React.useEffect(() => {
+  useEffect(() => {
     setPage(1);
   }, [query, os, device, browser, viewport, customTags, branchName]);
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (projectId) {
       testVariationService
         .getList(projectId)
@@ -71,29 +67,29 @@ const TestVariationListPage: React.FunctionComponent = () => {
     }
   }, [projectId, enqueueSnackbar]);
 
-  React.useEffect(() => {
-    setFilteredItems(
+  const filteredItems = useMemo(
+    () =>
       testVariations.filter(
         (t) =>
-          t.name.includes(query) && // by query
-          (branchName ? t.branchName === branchName : true) && // by branchName
-          (os ? t.os === os : true) && // by OS
-          (device ? t.device === device : true) && // by device
-          (viewport ? t.viewport === viewport : true) && // by viewport
-          (customTags ? t.customTags === customTags : true) && // by customTags
-          (browser ? t.browser === browser : true), // by browser
+          t.name.toLowerCase().includes(query.toLowerCase()) &&
+          (branchName ? t.branchName === branchName : true) &&
+          (os ? t.os === os : true) &&
+          (device ? t.device === device : true) &&
+          (viewport ? t.viewport === viewport : true) &&
+          (customTags ? t.customTags === customTags : true) &&
+          (browser ? t.browser === browser : true),
       ),
-    );
-  }, [
-    query,
-    branchName,
-    os,
-    device,
-    browser,
-    viewport,
-    customTags,
-    testVariations,
-  ]);
+    [
+      query,
+      branchName,
+      os,
+      device,
+      browser,
+      viewport,
+      customTags,
+      testVariations,
+    ],
+  );
 
   const handleDelete = (id: string) => {
     testVariationService
@@ -134,9 +130,9 @@ const TestVariationListPage: React.FunctionComponent = () => {
           >
             <ProjectSelect
               projectId={projectId}
-              onProjectSelect={(id) =>
-                navigate(`${routes.VARIATION_LIST_PAGE}/${id}`)
-              }
+              onProjectSelect={(id) => {
+                navigate(`${routes.VARIATION_LIST_PAGE}/${id}`);
+              }}
             />
           </Box>
         }
