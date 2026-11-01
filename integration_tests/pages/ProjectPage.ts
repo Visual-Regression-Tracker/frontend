@@ -13,7 +13,7 @@ export class ProjectPage extends BasePage {
   details: TestDetailsDialog;
   selectProject = this.page.locator(`#${LOCATOR_PROJECT_PAGE_SELECT_PROJECT}`);
   projectField = this.page.getByRole("combobox", { name: "Project" });
-  detailsDialog = this.page.getByRole("dialog");
+  detailsDialog = this.modal.dialog;
 
   constructor(page: Page) {
     super(page);

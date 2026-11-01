@@ -6,7 +6,8 @@ import { useSnackbar } from "notistack";
 import { TextValidator, ValidatorForm } from "react-material-ui-form-validator";
 import { useNavigate } from "react-router-dom";
 import { routes } from "../constants";
-import PasswordField from "../components/PasswordField";
+import PasswordField from "./PasswordField";
+import EmailField from "./EmailField";
 
 const RegisterForm = () => {
   const navigate = useNavigate();
@@ -38,64 +39,41 @@ const RegisterForm = () => {
 
   const errorForTwoChar = "Enter at least two characters.";
 
+  const nameField = (
+    name: "firstName" | "lastName",
+    label: string,
+    value: string,
+    setValue: (value: string) => void,
+  ) => (
+    <TextValidator
+      validators={["minStringLength:2"]}
+      errorMessages={[errorForTwoChar]}
+      id={name}
+      name={name}
+      value={value}
+      label={label}
+      type="text"
+      variant="outlined"
+      required
+      fullWidth
+      inputProps={{
+        onChange: (event: ChangeEvent<HTMLInputElement>) =>
+          setValue(event.target.value),
+        "data-testid": name,
+      }}
+    />
+  );
+
   return (
     <ValidatorForm onSubmit={handleSubmit} instantValidate>
       <Card>
         <CardContent sx={{ p: 3 }}>
           <Stack spacing={2}>
             <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
-              <TextValidator
-                validators={["minStringLength:2"]}
-                errorMessages={[errorForTwoChar]}
-                id="firstName"
-                name="firstName"
-                value={firstName}
-                label={"First name"}
-                type="text"
-                variant="outlined"
-                required
-                fullWidth
-                inputProps={{
-                  onChange: (event: ChangeEvent<HTMLInputElement>) =>
-                    setFirstName(event.target.value),
-                  "data-testid": "firstName",
-                }}
-              />
-              <TextValidator
-                validators={["minStringLength:2"]}
-                errorMessages={[errorForTwoChar]}
-                id="lastName"
-                name="lastName"
-                value={lastName}
-                label={"Last name"}
-                type="text"
-                variant="outlined"
-                required
-                fullWidth
-                inputProps={{
-                  onChange: (event: ChangeEvent<HTMLInputElement>) =>
-                    setLastName(event.target.value),
-                  "data-testid": "lastName",
-                }}
-              />
+              {nameField("firstName", "First name", firstName, setFirstName)}
+              {nameField("lastName", "Last name", lastName, setLastName)}
             </Stack>
-            <TextValidator
-              validators={["isEmail"]}
-              errorMessages={["Enter a valid email."]}
-              id="email"
-              name="email"
-              value={email}
-              label={"Email address"}
-              type="text"
-              variant="outlined"
-              required
-              fullWidth
-              inputProps={{
-                onChange: (event: ChangeEvent<HTMLInputElement>) =>
-                  setEmail(event.target.value),
-                "data-testid": "email",
-              }}
-            />
+            <EmailField email={email} setEmail={setEmail} />
             <PasswordField password={password} setPassword={setPassword} />
             <Button
               type="submit"

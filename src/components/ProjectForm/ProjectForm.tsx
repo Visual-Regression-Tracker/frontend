@@ -7,7 +7,7 @@ import {
   Switch,
   SelectChangeEvent,
 } from "@mui/material";
-import { type ChangeEvent, Fragment, useMemo } from "react";
+import { type ChangeEvent, Fragment } from "react";
 import { TextValidator } from "react-material-ui-form-validator";
 import {
   useProjectState,
@@ -22,28 +22,59 @@ import { PixelmatchConfigForm } from "./PixelmatchConfigForm";
 import { VlmConfigForm } from "./VlmConfigForm";
 import { getDefaultConfig, withBlurAmplitudeOf } from "./utils";
 
+const configFormFor = (imageComparison: ImageComparison) => {
+  switch (imageComparison) {
+    case ImageComparison.pixelmatch:
+      return <PixelmatchConfigForm />;
+
+    case ImageComparison.lookSame:
+      return <LooksSameConfigForm />;
+
+    case ImageComparison.odiff:
+      return <OdiffConfigForm />;
+
+    case ImageComparison.vlm:
+      return <VlmConfigForm />;
+
+    default:
+      return null;
+  }
+};
+
 export const ProjectForm = () => {
   const { projectEditState: project } = useProjectState();
   const projectDispatch = useProjectDispatch();
 
-  const config = useMemo(() => {
-    switch (project.imageComparison) {
-      case ImageComparison.pixelmatch:
-        return <PixelmatchConfigForm />;
+  const update = (patch: Partial<typeof project>) =>
+    setProjectEditState(projectDispatch, { ...project, ...patch });
 
-      case ImageComparison.lookSame:
-        return <LooksSameConfigForm />;
-
-      case ImageComparison.odiff:
-        return <OdiffConfigForm />;
-
-      case ImageComparison.vlm:
-        return <VlmConfigForm />;
-
-      default:
-        return null;
-    }
-  }, [project.imageComparison]);
+  const wholeNumberField = (
+    name: string,
+    label: string,
+    field: "maxBuildAllowed" | "maxBranchLifetime",
+  ) => (
+    <TextValidator
+      name={name}
+      validators={["minNumber:1"]}
+      errorMessages={["Enter greater than 1"]}
+      InputProps={{
+        inputProps: {
+          min: 1,
+          step: 1,
+        },
+      }}
+      margin="dense"
+      id={name}
+      label={label}
+      type="number"
+      fullWidth
+      required
+      value={project[field]}
+      onChange={(event: ChangeEvent<HTMLInputElement>) =>
+        update({ [field]: parseInt(event.target.value) })
+      }
+    />
+  );
 
   return (
     <Fragment>
@@ -58,12 +89,9 @@ export const ProjectForm = () => {
         fullWidth
         required
         value={project.name}
-        onChange={(event: ChangeEvent<HTMLInputElement>) => {
-          setProjectEditState(projectDispatch, {
-            ...project,
-            name: event.target.value,
-          });
-        }}
+        onChange={(event: ChangeEvent<HTMLInputElement>) =>
+          update({ name: event.target.value })
+        }
       />
       <TextValidator
         name="mainBranchName"
@@ -77,74 +105,26 @@ export const ProjectForm = () => {
         required
         value={project.mainBranchName}
         onChange={(event: ChangeEvent<HTMLInputElement>) =>
-          setProjectEditState(projectDispatch, {
-            ...project,
-            mainBranchName: event.target.value,
-          })
+          update({ mainBranchName: event.target.value })
         }
       />
-      <TextValidator
-        name="buildCount"
-        validators={["minNumber:1"]}
-        errorMessages={["Enter greater than 1"]}
-        InputProps={{
-          inputProps: {
-            min: 1,
-            step: 1,
-          },
-        }}
-        margin="dense"
-        id="buildCount"
-        label="Number of builds to keep"
-        type="number"
-        fullWidth
-        required
-        value={project.maxBuildAllowed}
-        onChange={(event: ChangeEvent<HTMLInputElement>) => {
-          const { value } = event.target;
-
-          setProjectEditState(projectDispatch, {
-            ...project,
-            maxBuildAllowed: parseInt(value),
-          });
-        }}
-      />
-      <TextValidator
-        name="maxBranchLifetime"
-        validators={["minNumber:1"]}
-        errorMessages={["Enter greater than 1"]}
-        InputProps={{
-          inputProps: {
-            min: 1,
-            step: 1,
-          },
-        }}
-        margin="dense"
-        id="maxBranchLifetime"
-        label="Max branch lifetime (days)"
-        type="number"
-        fullWidth
-        required
-        value={project.maxBranchLifetime}
-        onChange={(event: ChangeEvent<HTMLInputElement>) => {
-          const { value } = event.target;
-
-          setProjectEditState(projectDispatch, {
-            ...project,
-            maxBranchLifetime: parseInt(value),
-          });
-        }}
-      />
+      {wholeNumberField(
+        "buildCount",
+        "Number of builds to keep",
+        "maxBuildAllowed",
+      )}
+      {wholeNumberField(
+        "maxBranchLifetime",
+        "Max branch lifetime (days)",
+        "maxBranchLifetime",
+      )}
       <FormControlLabel
         label="Auto approve feature"
         control={
           <Switch
             checked={project.autoApproveFeature}
             onChange={(_event, checked) =>
-              setProjectEditState(projectDispatch, {
-                ...project,
-                autoApproveFeature: checked,
-              })
+              update({ autoApproveFeature: checked })
             }
             color="primary"
             name="autoApproveFeature"
@@ -158,10 +138,7 @@ export const ProjectForm = () => {
             <Switch
               checked={project.bulkApproveVariations}
               onChange={(_event, checked) =>
-                setProjectEditState(projectDispatch, {
-                  ...project,
-                  bulkApproveVariations: checked,
-                })
+                update({ bulkApproveVariations: checked })
               }
               color="primary"
               name="bulkApproveVariations"
@@ -181,10 +158,7 @@ export const ProjectForm = () => {
             labelId="bulkApproveGroupBySelect"
             value={project.bulkApproveGroupBy}
             onChange={(event: SelectChangeEvent<string>) =>
-              setProjectEditState(projectDispatch, {
-                ...project,
-                bulkApproveGroupBy: event.target.value,
-              })
+              update({ bulkApproveGroupBy: event.target.value })
             }
           >
             <MenuItem value="customTags">customTags</MenuItem>
@@ -207,8 +181,7 @@ export const ProjectForm = () => {
           onChange={(event: SelectChangeEvent<string>) => {
             const imageComparison = event.target.value as ImageComparison;
 
-            setProjectEditState(projectDispatch, {
-              ...project,
+            update({
               imageComparison,
               imageComparisonConfig:
                 project.imageComparison !== imageComparison
@@ -232,7 +205,7 @@ export const ProjectForm = () => {
           <MenuItem value={ImageComparison.vlm}>{ImageComparison.vlm}</MenuItem>
         </Select>
       </FormControl>
-      {config}
+      {configFormFor(project.imageComparison)}
     </Fragment>
   );
 };
