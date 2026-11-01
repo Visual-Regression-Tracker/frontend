@@ -20,30 +20,47 @@ import { User } from "../types";
 type Handler = (payload: unknown) => void;
 
 export interface FakeSocket {
+  connected: boolean;
   on: (event: string, handler: Handler) => FakeSocket;
-  removeAllListeners: () => FakeSocket;
-  // inside act() so React settles
-  emit: (event: string, payload: unknown) => void;
+  off: (event: string, handler: Handler) => FakeSocket;
+  // what the app sends to the server, such as join and leave
+  emit: (event: string, body?: unknown) => FakeSocket;
+  // an event from the server, inside act() so React settles
+  receive: (event: string, payload: unknown) => void;
   listening: () => string[];
+  sent: (event: string) => unknown[];
 }
 
 export function createFakeSocket(): FakeSocket {
   const handlers = new Map<string, Handler[]>();
+  const emitted: [string, unknown][] = [];
   const socket: FakeSocket = {
+    connected: true,
     on: (event, handler) => {
       handlers.set(event, [...(handlers.get(event) ?? []), handler]);
       return socket;
     },
-    removeAllListeners: () => {
-      handlers.clear();
+    off: (event, handler) => {
+      const rest = (handlers.get(event) ?? []).filter((h) => h !== handler);
+      if (rest.length > 0) {
+        handlers.set(event, rest);
+      } else {
+        handlers.delete(event);
+      }
       return socket;
     },
-    emit: (event, payload) => {
+    emit: (event, body) => {
+      emitted.push([event, body]);
+      return socket;
+    },
+    receive: (event, payload) => {
       act(() => {
         (handlers.get(event) ?? []).forEach((handler) => handler(payload));
       });
     },
     listening: () => [...handlers.keys()],
+    sent: (event) =>
+      emitted.filter(([name]) => name === event).map(([, body]) => body),
   };
   return socket;
 }

@@ -120,7 +120,7 @@ const renderProjectPage = async ({
   });
   await area("test-run-list").findByText(testRuns[0].name);
   // the handlers close over the open build and project, so they re-register
-  await vi.waitFor(() => expect(socket.listening()).toHaveLength(7));
+  await vi.waitFor(() => expect(socket.listening()).toContain("build_created"));
   if (openRun) {
     await screen.findByRole("heading", { name: /^Step \d+\/\d+:/ });
   }
@@ -134,12 +134,23 @@ describe("ProjectPage live updates", () => {
     Element.prototype.scrollTo = () => undefined;
   });
 
+  it("joins the rooms of the open project and build", async () => {
+    const { socket } = await renderProjectPage();
+
+    expect(socket.sent("join")).toEqual(
+      expect.arrayContaining([
+        { projectId: TEST_PROJECT.id },
+        { buildId: OPEN_BUILD.id },
+      ]),
+    );
+  });
+
   describe("test runs of the open build", () => {
     it("shows a changed status on the row", async () => {
       const { socket } = await renderProjectPage();
       expect(testRunRow("Screen A").getByText("unresolved")).toBeVisible();
 
-      socket.emit("testRun_updated", [
+      socket.receive("testRun_updated", [
         testRun("Screen A", { status: TestStatus.approved }),
       ]);
 
@@ -150,7 +161,7 @@ describe("ProjectPage live updates", () => {
     it("adds a row for a created test run", async () => {
       const { socket } = await renderProjectPage();
 
-      socket.emit("testRun_created", [testRun("Screen C")]);
+      socket.receive("testRun_created", [testRun("Screen C")]);
 
       expect(testRunNames()).toEqual(
         expect.arrayContaining(["Screen A", "Screen B", "Screen C"]),
@@ -161,7 +172,7 @@ describe("ProjectPage live updates", () => {
     it("removes the row of a deleted test run", async () => {
       const { socket } = await renderProjectPage();
 
-      socket.emit("testRun_deleted", [testRun("Screen A")]);
+      socket.receive("testRun_deleted", [testRun("Screen A")]);
 
       expect(testRunNames()).toEqual(["Screen B"]);
     });
@@ -170,11 +181,11 @@ describe("ProjectPage live updates", () => {
       const { socket } = await renderProjectPage();
       const elsewhere = { buildId: "another-build" };
 
-      socket.emit("testRun_updated", [
+      socket.receive("testRun_updated", [
         testRun("Screen A", { ...elsewhere, status: TestStatus.approved }),
       ]);
-      socket.emit("testRun_created", [testRun("Screen C", elsewhere)]);
-      socket.emit("testRun_deleted", [testRun("Screen B", elsewhere)]);
+      socket.receive("testRun_created", [testRun("Screen C", elsewhere)]);
+      socket.receive("testRun_deleted", [testRun("Screen B", elsewhere)]);
 
       expect(testRunNames()).toEqual(
         expect.arrayContaining(["Screen A", "Screen B"]),
@@ -188,7 +199,7 @@ describe("ProjectPage live updates", () => {
     it("puts a created build first in the list", async () => {
       const { socket } = await renderProjectPage();
 
-      socket.emit("build_created", build(2));
+      socket.receive("build_created", build(2));
 
       expect(buildLabels()).toEqual(["#2 ci-2", "#1 ci-1"]);
     });
@@ -196,7 +207,10 @@ describe("ProjectPage live updates", () => {
     it("ignores a created build of another project", async () => {
       const { socket } = await renderProjectPage();
 
-      socket.emit("build_created", build(2, { projectId: OTHER_PROJECT_ID }));
+      socket.receive(
+        "build_created",
+        build(2, { projectId: OTHER_PROJECT_ID }),
+      );
 
       expect(buildLabels()).toEqual(["#1 ci-1"]);
     });
@@ -207,7 +221,9 @@ describe("ProjectPage live updates", () => {
       });
       expect(buildItem("#2 ci-2").getByText("failed")).toBeVisible();
 
-      socket.emit("build_updated", [build(2, { status: BuildStatus.passed })]);
+      socket.receive("build_updated", [
+        build(2, { status: BuildStatus.passed }),
+      ]);
 
       expect(buildItem("#2 ci-2").getByText("passed")).toBeVisible();
       expect(buildItem("#1 ci-1").getByText("failed")).toBeVisible();
@@ -228,7 +244,7 @@ describe("ProjectPage live updates", () => {
         `?buildId=${OPEN_BUILD.id}&testId=${open.id}`,
       );
 
-      socket.emit("testRun_deleted", [open]);
+      socket.receive("testRun_deleted", [open]);
 
       expect(
         await screen.findByText("This test run was deleted"),
@@ -245,7 +261,7 @@ describe("ProjectPage live updates", () => {
         openRun: open,
       });
 
-      socket.emit("testRun_deleted", [testRun("Screen B")]);
+      socket.receive("testRun_deleted", [testRun("Screen B")]);
 
       await vi.waitFor(() => expect(testRunNames()).toEqual(["Screen A"]));
       expect(stepHeading()).toBeInTheDocument();
@@ -261,7 +277,7 @@ describe("ProjectPage live updates", () => {
       });
       expect(currentSearch()).toBe(`?buildId=${OPEN_BUILD.id}`);
 
-      socket.emit("build_deleted", OPEN_BUILD);
+      socket.receive("build_deleted", OPEN_BUILD);
 
       expect(await screen.findByText("This build was deleted")).toBeVisible();
       expect(currentSearch()).toBe("");
@@ -273,7 +289,7 @@ describe("ProjectPage live updates", () => {
         builds: [OPEN_BUILD, build(2)],
       });
 
-      socket.emit("build_deleted", build(2));
+      socket.receive("build_deleted", build(2));
 
       await vi.waitFor(() => expect(buildLabels()).toEqual(["#1 ci-1"]));
       expect(screen.queryByText("This build was deleted")).toBeNull();
@@ -293,7 +309,7 @@ describe("ProjectPage build count", () => {
       buildListArea().getByRole("checkbox", { name: "Select all (1)" }),
     ).toBeInTheDocument();
 
-    socket.emit("build_created", build(2));
+    socket.receive("build_created", build(2));
 
     expect(
       buildListArea().getByRole("checkbox", { name: "Select all (2)" }),
@@ -323,7 +339,7 @@ describe("ProjectPage deleting the open build", () => {
     const dialog = await screen.findByRole("dialog", { name: "Delete Build" });
     await user.click(within(dialog).getByTestId("submitButton"));
 
-    socket.emit("build_deleted", OPEN_BUILD);
+    socket.receive("build_deleted", OPEN_BUILD);
     answer.deleted?.(OPEN_BUILD);
 
     expect(await screen.findByText("Build #1 deleted")).toBeVisible();

@@ -51,11 +51,30 @@ jobs:
 
       - run: ./node_modules/.bin/playwright install --with-deps chromium
 
-      - name: Run the smoke
+      - name: Run the smoke with the backend's socket defaults
         run: ./node_modules/.bin/playwright test
         env:
           CI: true
           PW_E2E: 1
+
+      # where the rollout ends: sockets need a token and get only the events of the rooms they joined
+      - name: Switch the API to strict sockets
+        if: ${{ !cancelled() }}
+        working-directory: backend
+        env:
+          WS_AUTH_REQUIRED: true
+          WS_BROADCAST: false
+        run: |
+          docker compose up -d --no-build api
+          timeout 120 sh -c 'until curl -s -o /dev/null http://localhost:4200; do sleep 2; done'
+
+      - name: Run the smoke with strict sockets
+        if: ${{ !cancelled() }}
+        run: ./node_modules/.bin/playwright test --output test-results-strict
+        env:
+          CI: true
+          PW_E2E: 1
+          PLAYWRIGHT_HTML_OUTPUT_DIR: playwright-report-strict
 
       - name: Backend logs
         if: failure()
@@ -66,5 +85,7 @@ jobs:
         if: always()
         with:
           name: e2e-report
-          path: playwright-report/
+          path: |
+            playwright-report/
+            playwright-report-strict/
           retention-days: 30
