@@ -156,7 +156,7 @@ export const MatchingVariationsDialog = ({
   // goes to another run through the dialog's unsaved-areas check
   navigateTo: (id: string) => void;
 }) => {
-  const { enqueueSnackbar } = useDialogSnackbar();
+  const { enqueueSnackbar, enqueueAside } = useDialogSnackbar();
   const { testRuns: allTestRuns, filteredSortedTestRunIds } = useTestRunState();
 
   const [loading, setLoading] = useState(false);
@@ -382,7 +382,7 @@ export const MatchingVariationsDialog = ({
         const undo = undoSnackbarOptions({
           ids: succeeded,
           undoneText: `${variationCount(succeeded.length)} restored.`,
-          enqueueSnackbar,
+          enqueueSnackbar: enqueueAside,
           onUndone: () => forgetActed(testRun.buildId, succeeded),
         });
         if (failed.length > 0) {

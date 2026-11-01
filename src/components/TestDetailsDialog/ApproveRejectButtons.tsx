@@ -36,7 +36,7 @@ export const ApproveRejectButtons = ({
   afterReject?: () => void;
   onOpenVariations: (mode: MatchingVariationsMode) => void;
 }) => {
-  const { enqueueSnackbar } = useDialogSnackbar();
+  const { enqueueSnackbar, enqueueAside } = useDialogSnackbar();
   const { selectedProjectId, projectList } = useProjectState();
   const { testRuns } = useTestRunState();
   const project = projectList.find((item) => item.id === selectedProjectId);
@@ -59,7 +59,11 @@ export const ApproveRejectButtons = ({
     hasSiblingsToReview;
 
   const undoOptionsFor = (id: string) =>
-    undoSnackbarOptions({ ids: [id], undoneText: "Undone", enqueueSnackbar });
+    undoSnackbarOptions({
+      ids: [id],
+      undoneText: "Undone",
+      enqueueSnackbar: enqueueAside,
+    });
 
   const approve = () => {
     testRunService

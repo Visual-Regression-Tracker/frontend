@@ -320,6 +320,29 @@ describe("ApproveRejectButtons", () => {
       expect(revert).toHaveBeenCalledTimes(1);
     });
 
+    it("leaves a newer approval's toast up when an earlier undo finishes", async () => {
+      vi.spyOn(testRunService, "approveBulk").mockResolvedValue(NO_FAILURES);
+      let finishRevert = () => {};
+      vi.spyOn(testRunService, "revert").mockReturnValue(
+        new Promise<void>((resolve) => (finishRevert = resolve)),
+      );
+      const { user } = await renderButtons();
+
+      await user.click(approveButton());
+      await user.click(await undoIn("Approved"));
+      await user.click(approveButton());
+      await waitFor(() =>
+        expect(testRunService.approveBulk).toHaveBeenCalledTimes(2),
+      );
+      const newer = await undoIn("Approved");
+      finishRevert();
+
+      expect(await screen.findByText("Undone")).toBeVisible();
+      expect(newer).toBeInTheDocument();
+      await new Promise((resolve) => setTimeout(resolve, 500));
+      expect(newer).toBeInTheDocument();
+    });
+
     it("reverts a rejection from its toast", async () => {
       vi.spyOn(testRunService, "rejectBulk").mockResolvedValue(NO_FAILURES);
       const revert = vi
