@@ -89,11 +89,15 @@ for (const { title, toBranch } of [
     const listPage = await openTestVariationListPage(TEST_PROJECT.id);
 
     const [request] = await Promise.all([
-      page.waitForRequest("**/test-variations/merge?**"),
+      page.waitForRequest(
+        (request) =>
+          request.method() === "POST" &&
+          new URL(request.url()).pathname === "/test-variations/merge",
+      ),
       listPage.merge(TEST_VARIATION_ONE.branchName, toBranch),
     ]);
 
-    expect(Object.fromEntries(new URL(request.url()).searchParams)).toEqual({
+    expect(request.postDataJSON()).toEqual({
       projectId: TEST_PROJECT.id,
       fromBranch: TEST_VARIATION_ONE.branchName,
       toBranch,

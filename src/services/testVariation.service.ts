@@ -4,6 +4,10 @@ import { API_URL } from "../_config/env.config";
 
 const ENDPOINT_URL = "/test-variations";
 
+const DEFAULT_HEADERS = {
+  "Content-Type": "application/json",
+};
+
 function getList(projectId: string): Promise<TestVariation[]> {
   const requestOptions = {
     method: "GET",
@@ -33,17 +37,17 @@ function merge(
   toBranch: string,
 ): Promise<Build> {
   const requestOptions = {
-    method: "GET",
-    headers: authHeader(),
+    method: "POST",
+    headers: {
+      ...DEFAULT_HEADERS,
+      ...authHeader(),
+    },
+    body: JSON.stringify({ projectId, fromBranch, toBranch }),
   };
 
-  // branch names often hold "/" and may hold "&" or "#"
-  const branches = `fromBranch=${encodeURIComponent(fromBranch)}&toBranch=${encodeURIComponent(toBranch)}`;
-
-  return fetch(
-    `${API_URL}${ENDPOINT_URL}/merge?projectId=${projectId}&${branches}`,
-    requestOptions,
-  ).then(handleResponse);
+  return fetch(`${API_URL}${ENDPOINT_URL}/merge`, requestOptions).then(
+    handleResponse,
+  );
 }
 
 function remove(id: string): Promise<TestVariation> {
