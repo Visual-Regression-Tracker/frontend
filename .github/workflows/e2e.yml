@@ -47,12 +47,12 @@ jobs:
           node-version-file: .nvmrc
           cache: npm
 
-      - run: npm ci
+      - run: npm ci --ignore-scripts
 
-      - run: npx playwright install --with-deps chromium
+      - run: ./node_modules/.bin/playwright install --with-deps chromium
 
       - name: Run the smoke
-        run: npx playwright test
+        run: ./node_modules/.bin/playwright test
         env:
           CI: true
           PW_E2E: 1
