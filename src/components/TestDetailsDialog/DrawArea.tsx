@@ -1,8 +1,6 @@
 import {
-  useCallback,
   type Dispatch,
   type KeyboardEvent as ReactKeyboardEvent,
-  Fragment,
   type SetStateAction,
   type SyntheticEvent,
   useEffect,
@@ -22,6 +20,12 @@ import { imageSurface } from "../../theme/tokens";
 export type ImageStateLoad = "loaded" | "loading" | "failed";
 
 const SCALE_BY = 1.04;
+
+const isDeleteKey = (event: ReactKeyboardEvent) =>
+  event.key === "Delete" || event.key === "Backspace";
+
+const isModifierKeyPressed = (event: ReactKeyboardEvent) =>
+  event.altKey || event.ctrlKey || event.shiftKey;
 // how long the zoom keeps coasting; higher glides longer, lower is snappier
 const ZOOM_TIME_CONSTANT_MS = 140;
 const ZOOM_SETTLED = 0.001;
@@ -103,25 +107,14 @@ export const DrawArea = ({
     imageY: number;
   }>(undefined);
 
-  const isDeleteKey = (event: KeyboardEvent | ReactKeyboardEvent) => {
-    return event.key === "Delete" || event.key === "Backspace";
-  };
+  const handleStageKeyDown = (event: ReactKeyboardEvent) => {
+    if (!deleteIgnoreArea || isModifierKeyPressed(event)) {
+      return;
+    }
 
-  const handleStageKeyDown = useCallback(
-    (event: KeyboardEvent | ReactKeyboardEvent) => {
-      if (!deleteIgnoreArea || isModifierKeyPressed(event)) {
-        return;
-      }
-
-      if (selectedRectId && isDeleteKey(event)) {
-        deleteIgnoreArea(selectedRectId);
-      }
-    },
-    [deleteIgnoreArea, selectedRectId],
-  );
-
-  const isModifierKeyPressed = (event: KeyboardEvent | ReactKeyboardEvent) => {
-    return event.altKey || event.ctrlKey || event.shiftKey;
+    if (selectedRectId && isDeleteKey(event)) {
+      deleteIgnoreArea(selectedRectId);
+    }
   };
 
   useEffect(() => {
@@ -240,7 +233,7 @@ export const DrawArea = ({
 
   const handleContentMouseup = () => {
     if (isDrawing) {
-      setIsDrawing(!isDrawing);
+      setIsDrawing(false);
       setIsDrawMode(false);
     }
   };
@@ -327,7 +320,7 @@ export const DrawArea = ({
               y: event.clientY - stageOffset.y,
             });
           }}
-          onKeyDown={(event) => handleStageKeyDown(event)}
+          onKeyDown={handleStageKeyDown}
         >
           <Stage
             ref={stageRef}
@@ -442,17 +435,8 @@ export const DrawArea = ({
     );
   };
 
-  const imageFailed = () => {
+  if (!imageName || imageStatus === "failed") {
     return <NoImagePlaceholder />;
-  };
-
-  const imageCanvas = () => (
-    <Fragment>
-      {(!imageName || imageStatus === "failed") && imageFailed()}
-      {imageStatus === "loading" && imageLoading()}
-      {imageStatus === "loaded" && imageLoaded()}
-    </Fragment>
-  );
-
-  return <>{imageName ? imageCanvas() : <NoImagePlaceholder />}</>;
+  }
+  return imageStatus === "loading" ? imageLoading() : imageLoaded();
 };

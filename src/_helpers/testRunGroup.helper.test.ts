@@ -4,6 +4,7 @@ import {
   groupStatusSummary,
   groupTestRuns,
   isSibling,
+  orderByIds,
   resolveGroupByAxis,
   singleRunGroups,
 } from "./testRunGroup.helper";
@@ -181,5 +182,20 @@ describe("groupStatusSummary", () => {
         run({ id: "c", status: TestStatus.unresolved }),
       ]),
     ).toBe("2 unresolved · 1 approved");
+  });
+});
+
+describe("orderByIds", () => {
+  const runs = [run({ id: "a" }), run({ id: "b" }), run({ id: "c" })];
+
+  it("keeps the runs the ids name, in their order", () => {
+    expect(orderByIds(runs, ["c", "a"]).map(({ id }) => id)).toEqual([
+      "c",
+      "a",
+    ]);
+  });
+
+  it("keeps every run without ids", () => {
+    expect(orderByIds(runs, undefined)).toBe(runs);
   });
 });

@@ -11,6 +11,9 @@ export const statusesByAttention = (statuses: TestStatus[]): TestStatus[] =>
 export const byAttention = (a: TestRun, b: TestRun): number =>
   statusRank(a.status) - statusRank(b.status);
 
+export const isAwaitingReview = (status: TestStatus): boolean =>
+  status === TestStatus.unresolved || status === TestStatus.new;
+
 // A new run has no baseline, and an ok one matched it, so neither has a diff.
 const NOTHING_TO_COMPARE: TestStatus[] = [TestStatus.new, TestStatus.ok];
 

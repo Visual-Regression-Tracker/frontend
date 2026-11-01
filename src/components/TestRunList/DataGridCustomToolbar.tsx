@@ -13,6 +13,7 @@ declare module "@mui/x-data-grid" {
   interface ToolbarPropsOverrides {
     selectedIds: string[];
     rows: TestRun[];
+    selectionNoun: "rows" | "cards";
     view: TestRunView;
     onViewChange: (view: TestRunView) => void;
     density: TestRunDensity;
@@ -29,6 +30,7 @@ declare module "@mui/x-data-grid" {
 export const DataGridCustomToolbar = ({
   selectedIds,
   rows,
+  selectionNoun,
   view,
   onViewChange,
   density,
@@ -56,7 +58,7 @@ export const DataGridCustomToolbar = ({
       <BulkOperation
         selectedIds={selectedIds}
         rows={rows}
-        selectionNoun="rows"
+        selectionNoun={selectionNoun}
         onProcessed={onProcessed}
       />
     </Box>

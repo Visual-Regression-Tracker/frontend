@@ -11,6 +11,7 @@ import { useNavigate } from "react-router-dom";
 import { useBuildState, useTestRunState } from "../../contexts";
 import { buildTestRunLocation } from "../../_helpers/route.helpers";
 import { isTypingTarget } from "../../_helpers/hotkeys.helper";
+import { orderByIds } from "../../_helpers/testRunGroup.helper";
 import { BaseModal } from "../BaseModal";
 import TestDetailsModal from "./TestDetailsModal";
 import { TestRun } from "../../types";
@@ -34,22 +35,12 @@ export const TestDetailsDialog = () => {
   const [notSavedChangesModal, setNotSavedChangesModal] = useState(false);
   const [navigationTargetId, setNavigationTargetId] = useState<string>();
 
-  // looked up by id, not scanned: a linear search per run costs seconds on a build of thousands
   const isOpen = !!selectedTestRun;
   const testRuns = useMemo(() => {
     if (!isOpen) {
       return [];
     }
-    if (!filteredSortedTestRunIds) {
-      return allTestRuns;
-    }
-    const positionById = new Map(
-      filteredSortedTestRunIds.map((id, position) => [id, position]),
-    );
-
-    return allTestRuns
-      .filter((testRun) => positionById.has(testRun.id))
-      .sort((a, b) => positionById.get(a.id)! - positionById.get(b.id)!);
+    return orderByIds(allTestRuns, filteredSortedTestRunIds);
   }, [isOpen, allTestRuns, filteredSortedTestRunIds]);
 
   const selectedTestRunIndex = useMemo(

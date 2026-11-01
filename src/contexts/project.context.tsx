@@ -200,6 +200,11 @@ function useProjectState() {
   return context;
 }
 
+function useSelectedProject(): Project | undefined {
+  const { projectList, selectedProjectId } = useProjectState();
+  return projectList.find((project) => project.id === selectedProjectId);
+}
+
 function useProjectDispatch() {
   const context = useContext(ProjectDispatchContext);
 
@@ -367,6 +372,7 @@ function ProjectProvider({ children }: Readonly<ProjectProviderProps>) {
 export {
   ProjectProvider,
   useProjectState,
+  useSelectedProject,
   useProjectDispatch,
   createProject,
   updateProject,

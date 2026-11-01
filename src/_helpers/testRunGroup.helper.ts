@@ -1,3 +1,4 @@
+import { GridRowId } from "@mui/x-data-grid";
 import { TestRun, TestStatus } from "../types";
 import { byAttention, statusesByAttention } from "./testRunStatus.helper";
 
@@ -44,8 +45,19 @@ const groupKey = (run: TestRun, groupBy: GroupByAxis): string =>
     ...fixedAxes(groupBy).map((axis) => run[axis] ?? ""),
   ]);
 
-const byDiffDesc = (a: TestRun, b: TestRun): number =>
+export const byDiffDesc = (a: TestRun, b: TestRun): number =>
   (b.diffPercent ?? 0) - (a.diffPercent ?? 0);
+
+export const orderByIds = (runs: TestRun[], ids?: GridRowId[]): TestRun[] => {
+  if (!ids) {
+    return runs;
+  }
+  // looked up by id, not scanned: a linear search per run costs seconds on a build of thousands
+  const positionById = new Map(ids.map((id, position) => [id, position]));
+  return runs
+    .filter((run) => positionById.has(run.id))
+    .sort((a, b) => positionById.get(a.id)! - positionById.get(b.id)!);
+};
 
 export const groupStatusSummary = (runs: TestRun[]): string => {
   const counts = new Map<TestStatus, number>();
