@@ -1,6 +1,7 @@
 import { useEffect } from "react";
-import { screen, waitFor } from "@testing-library/react";
+import { screen, waitFor, within } from "@testing-library/react";
 import { renderWithProviders } from "../../_test/render";
+import { toastOf, undoIn } from "../../_test/toast";
 import { SeedTestRuns } from "../../_test/SeedTestRuns";
 import { projectsService, testRunService } from "../../services";
 import {
@@ -283,6 +284,101 @@ describe("ApproveRejectButtons", () => {
 
       await waitFor(() => expect(latest).toHaveBeenCalledTimes(1));
       expect(afterReject).not.toHaveBeenCalled();
+    });
+  });
+
+  describe("undo", () => {
+    it("reverts an approval from its toast and says so", async () => {
+      vi.spyOn(testRunService, "approveBulk").mockResolvedValue(NO_FAILURES);
+      const revert = vi
+        .spyOn(testRunService, "revert")
+        .mockResolvedValue(undefined);
+      const { user } = await renderButtons();
+
+      await user.click(approveButton());
+      await user.click(await undoIn("Approved"));
+
+      expect(revert).toHaveBeenCalledWith([UNRESOLVED.id]);
+      expect(revert).toHaveBeenCalledTimes(1);
+      expect(await toastOf("Undone")).toHaveClass("notistack-MuiContent-info");
+      await waitFor(() =>
+        expect(screen.queryByText("Approved")).not.toBeInTheDocument(),
+      );
+    });
+
+    it("reverts once when undo is double-clicked", async () => {
+      vi.spyOn(testRunService, "approveBulk").mockResolvedValue(NO_FAILURES);
+      const revert = vi
+        .spyOn(testRunService, "revert")
+        .mockResolvedValue(undefined);
+      const { user } = await renderButtons();
+
+      await user.click(approveButton());
+      await user.dblClick(await undoIn("Approved"));
+
+      expect(await screen.findByText("Undone")).toBeVisible();
+      expect(revert).toHaveBeenCalledTimes(1);
+    });
+
+    it("reverts a rejection from its toast", async () => {
+      vi.spyOn(testRunService, "rejectBulk").mockResolvedValue(NO_FAILURES);
+      const revert = vi
+        .spyOn(testRunService, "revert")
+        .mockResolvedValue(undefined);
+      const { user } = await renderButtons();
+
+      await user.click(rejectButton());
+      await user.click(await undoIn("Rejected"));
+
+      expect(revert).toHaveBeenCalledWith([UNRESOLVED.id]);
+      expect(await screen.findByText("Undone")).toBeVisible();
+    });
+
+    it("shows why the backend refused to undo", async () => {
+      vi.spyOn(testRunService, "approveBulk").mockResolvedValue(NO_FAILURES);
+      vi.spyOn(testRunService, "revert").mockRejectedValue(
+        "Test run was changed after the approval",
+      );
+      const { user } = await renderButtons();
+
+      await user.click(approveButton());
+      await user.click(await undoIn("Approved"));
+
+      expect(
+        await toastOf("Test run was changed after the approval"),
+      ).toHaveClass("notistack-MuiContent-error");
+      expect(screen.queryByText("Undone")).not.toBeInTheDocument();
+    });
+
+    it("keeps the dismiss button next to undo", async () => {
+      vi.spyOn(testRunService, "approveBulk").mockResolvedValue(NO_FAILURES);
+      const { user } = await renderButtons();
+
+      await user.click(approveButton());
+      await user.click(
+        within(await toastOf("Approved")).getByRole("button", {
+          name: "Dismiss notification",
+        }),
+      );
+
+      await waitFor(() =>
+        expect(screen.queryByText("Approved")).not.toBeInTheDocument(),
+      );
+    });
+
+    it("offers no undo on an error", async () => {
+      vi.spyOn(testRunService, "approveBulk").mockRejectedValue(
+        "Cannot approve",
+      );
+      const { user } = await renderButtons();
+
+      await user.click(approveButton());
+
+      expect(
+        within(await toastOf("Cannot approve")).queryByText("Undo", {
+          selector: "button",
+        }),
+      ).not.toBeInTheDocument();
     });
   });
 

@@ -8,6 +8,7 @@ import { useProjectState, useTestRunState } from "../../contexts";
 import { TestRun } from "../../types";
 import { TestStatus } from "../../types/testStatus";
 import { Tooltip } from "../Tooltip";
+import { undoSnackbarOptions } from "../UndoSnackbarAction";
 import { MatchingVariationsMode } from "./MatchingVariationsDialog";
 import {
   isSibling,
@@ -57,12 +58,16 @@ export const ApproveRejectButtons = ({
     testRun.status === TestStatus.unresolved &&
     hasSiblingsToReview;
 
+  const undoOptionsFor = (id: string) =>
+    undoSnackbarOptions({ ids: [id], undoneText: "Undone", enqueueSnackbar });
+
   const approve = () => {
     testRunService
       .approveOne(testRun.id, testRun.merge)
       .then(() => {
         enqueueSnackbar("Approved", {
           variant: "success",
+          ...undoOptionsFor(testRun.id),
         });
         afterApprove?.();
       })
@@ -80,6 +85,7 @@ export const ApproveRejectButtons = ({
         // not a success: no green tick, as the two buttons sit side by side
         enqueueSnackbar("Rejected", {
           variant: "info",
+          ...undoOptionsFor(testRun.id),
         });
         afterReject?.();
       })

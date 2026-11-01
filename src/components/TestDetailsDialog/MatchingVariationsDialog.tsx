@@ -22,6 +22,7 @@ import {
 import { styled } from "@mui/material/styles";
 import { useDialogSnackbar } from "./useDialogSnackbar";
 import { Tooltip } from "../Tooltip";
+import { undoSnackbarOptions } from "../UndoSnackbarAction";
 import { testRunService, staticService } from "../../services";
 import { MatchingVariations } from "../../services/testRun.service";
 import { useTestRunState } from "../../contexts";
@@ -113,6 +114,9 @@ const LightboxImg = styled("img")({
   background: imageSurface.thumbnail,
 });
 
+const variationCount = (count: number): string =>
+  `${count} ${pluralize(count, "variation")}`;
+
 export type MatchingVariationsMode = "approve" | "reject";
 
 const byDiffDesc = (a: TestRun, b: TestRun): number =>
@@ -129,6 +133,11 @@ const rememberActed = (buildId: string, ids: string[]): void => {
     acted.ids = new Set();
   }
   ids.forEach((id) => acted.ids.add(id));
+};
+const forgetActed = (buildId: string, ids: string[]): void => {
+  if (acted.buildId === buildId) {
+    ids.forEach((id) => acted.ids.delete(id));
+  }
 };
 const isActed = (buildId: string, id: string): boolean =>
   acted.buildId === buildId && acted.ids.has(id);
@@ -369,11 +378,17 @@ export const MatchingVariationsDialog = ({
         // only what the API confirms: a failed run must not be skipped as acted on
         rememberActed(testRun.buildId, succeeded);
         const done = mode === "approve" ? "Approved" : "Rejected";
-        const what = `${ids.length} ${pluralize(ids.length, "variation")}`;
+        const what = variationCount(ids.length);
+        const undo = undoSnackbarOptions({
+          ids: succeeded,
+          undoneText: `${variationCount(succeeded.length)} restored.`,
+          enqueueSnackbar,
+          onUndone: () => forgetActed(testRun.buildId, succeeded),
+        });
         if (failed.length > 0) {
           enqueueSnackbar(
             partialFailureText(done, { succeeded, failed }, what),
-            { variant: "warning" },
+            { variant: "warning", ...undo },
           );
           if (succeeded.length > 0) {
             onClose();
@@ -390,6 +405,7 @@ export const MatchingVariationsDialog = ({
         enqueueSnackbar(`${done} ${what}`, {
           // green for approvals only: a rejection is a deliberate outcome, not a success
           variant: mode === "approve" ? "success" : "info",
+          ...undo,
         });
       })
       .catch((err) => {

@@ -208,6 +208,36 @@ describe("testRunService", () => {
     });
   });
 
+  describe("revert", () => {
+    it("posts the ids to the revert route", async () => {
+      const fetchMock = vi
+        .fn()
+        .mockResolvedValue(new Response(null, { status: 204 }));
+      vi.stubGlobal("fetch", fetchMock);
+
+      await expect(
+        testRunService.revert(["t1", "t2"]),
+      ).resolves.toBeUndefined();
+
+      expect(fetchMock).toHaveBeenCalledWith(`${API}/test-runs/revert`, {
+        method: "POST",
+        headers: JSON_AUTH,
+        body: JSON.stringify(["t1", "t2"]),
+      });
+    });
+
+    it("rejects with the message of a refused revert", async () => {
+      stubFetch(
+        { statusCode: 409, message: "Baseline was approved again" },
+        { status: 409 },
+      );
+
+      await expect(testRunService.revert(["t1"])).rejects.toBe(
+        "Baseline was approved again",
+      );
+    });
+  });
+
   it("rejects with the API message when the request fails", async () => {
     stubFetch({ message: "Not found" }, { status: 404 });
 

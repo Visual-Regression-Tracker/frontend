@@ -21,6 +21,7 @@ import type { TestRun } from "~client/types";
 import {
   API_URL,
   mockApiError,
+  mockApproveTestRuns,
   mockGetBuildDetails,
   mockGetBuilds,
   mockGetFavoriteProjects,
@@ -438,6 +439,25 @@ const VIEWS: [name: string, body: Body][] = [
           .getByRole("checkbox"),
       ).toBeChecked();
       await shot("project-page-selected");
+    },
+  ],
+
+  [
+    "project page after a bulk approval, with undo",
+    async ({ openProjectPage, page, shot }) => {
+      await mockApproveTestRuns(page);
+      const projectPage = await openProjectPage(project.id, build.id);
+      await expect(projectPage.testRunList.rows).toHaveCount(4);
+      await projectPage.testRunList.checkRow(TEST_UNRESOLVED.id);
+      await projectPage.testRunList.checkRow(TEST_RUN_NEW.id);
+
+      await projectPage.testRunList.approveBtn.click();
+      await projectPage.modal.confirmBtn.click();
+
+      await expect(
+        projectPage.notification.undoBtn("2 test runs approved."),
+      ).toBeVisible();
+      await shot("project-page-bulk-approved-undo");
     },
   ],
 
