@@ -1,20 +1,16 @@
 import { testVariationService } from "./testVariation.service";
-import { API, stubFetch } from "../_test/fetch.helper";
+import {
+  API,
+  AUTH,
+  JSON_AUTH,
+  signInForEachTest,
+  stubFetch,
+} from "../_test/fetch.helper";
 
 vi.mock("../_config/env.config", () => ({ API_URL: "http://api.test" }));
 
-const AUTH = { Authorization: "Bearer token-1" };
-const JSON_AUTH = { "Content-Type": "application/json", ...AUTH };
-
 describe("testVariationService", () => {
-  beforeEach(() => {
-    localStorage.setItem("user", JSON.stringify({ token: "token-1" }));
-  });
-
-  afterEach(() => {
-    localStorage.clear();
-    vi.unstubAllGlobals();
-  });
+  signInForEachTest();
 
   it("getList fetches the variations of a project", async () => {
     const fetchMock = stubFetch([{ id: "v1" }]);

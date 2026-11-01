@@ -1,20 +1,11 @@
 import { buildsService } from "./builds.service";
-import { API, stubFetch } from "../_test/fetch.helper";
+import { API, AUTH, signInForEachTest, stubFetch } from "../_test/fetch.helper";
 import { BuildDto } from "../types/dto/build.dto";
 
 vi.mock("../_config/env.config", () => ({ API_URL: "http://api.test" }));
 
-const AUTH = { Authorization: "Bearer token-1" };
-
 describe("buildsService", () => {
-  beforeEach(() => {
-    localStorage.setItem("user", JSON.stringify({ token: "token-1" }));
-  });
-
-  afterEach(() => {
-    localStorage.clear();
-    vi.unstubAllGlobals();
-  });
+  signInForEachTest();
 
   describe("getList", () => {
     it("asks for one page of the project's builds", async () => {
