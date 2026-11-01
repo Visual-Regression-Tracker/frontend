@@ -63,3 +63,5 @@ jobs:
         env:
           CI: true
           PW_PERF: 1
+          # throttling is relative to the runner, which measures 270-600 ms where a laptop measures 130-180
+          PERF_UPDATE_LIMIT_MS: 800
