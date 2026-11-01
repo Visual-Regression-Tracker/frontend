@@ -41,7 +41,7 @@ function installProbe(regions: Record<string, string>) {
   const HOST_COMPONENT = 5;
   const PERFORMED_WORK = 1;
   // function component, forwardRef, simple memo
-  const COMPONENT_TAGS = [0, 11, 15];
+  const COMPONENT_TAGS = new Set([0, 11, 15]);
   const roots: FiberRoot[] = [];
   let socket: SocketLike | undefined;
 
@@ -98,7 +98,7 @@ function installProbe(regions: Record<string, string>) {
   };
 
   const didRender = (next: Fiber, prev: Fiber | null) =>
-    COMPONENT_TAGS.includes(next.tag) &&
+    COMPONENT_TAGS.has(next.tag) &&
     (!prev || (next.flags & PERFORMED_WORK) === PERFORMED_WORK);
 
   const attribute = (fiber: Fiber) => {

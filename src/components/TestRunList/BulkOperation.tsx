@@ -231,7 +231,7 @@ export const BulkOperation = ({
         groups.map(({ ids, merge }) => testRunService.approveBulk(ids, merge)),
       ).then((outcomes) => {
         if (outcomes.every((outcome) => outcome.status === "rejected")) {
-          return Promise.reject(outcomes[0].reason);
+          throw outcomes[0].reason;
         }
         return {
           succeeded: outcomes.flatMap((outcome) =>

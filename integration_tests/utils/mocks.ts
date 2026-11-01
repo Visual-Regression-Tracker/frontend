@@ -160,9 +160,7 @@ export const mockTestRunsWithDetails = async (
   testRuns: TestRun[],
 ) => {
   await mockGetTestRuns(page, buildId, testRuns);
-  for (const testRun of testRuns) {
-    await mockTestRun(page, testRun);
-  }
+  await Promise.all(testRuns.map((testRun) => mockTestRun(page, testRun)));
 };
 
 // one route: mockTestRunsWithDetails adds one per run, too many for thousands

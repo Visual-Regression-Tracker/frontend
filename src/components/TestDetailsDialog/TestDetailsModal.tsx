@@ -1,4 +1,4 @@
-import { useEffect, useState, Fragment, useMemo, useRef } from "react";
+import { useEffect, useState, useMemo, useRef } from "react";
 import {
   Typography,
   Button,
@@ -409,90 +409,88 @@ const TestDetailsModal = ({
   };
 
   const ignoreAreasToolbar = () => (
-    <Fragment>
-      <Grid container alignItems="center" spacing={2}>
+    <Grid container alignItems="center" spacing={2}>
+      <Grid item>
+        <Select
+          variant="standard"
+          id="area-select"
+          labelId="areaSelect"
+          // a standard select underlines itself and would read as a text field among buttons
+          sx={{
+            "&:before, &:after, &:hover:not(.Mui-disabled):before": {
+              borderBottom: "none",
+            },
+          }}
+          value={valueOfIgnoreOrCompare}
+          onChange={(event: SelectChangeEvent<string>) =>
+            onIgnoreOrCompareSelectChange(event.target.value)
+          }
+        >
+          {["Ignore Areas", "Compare Area"].map((eachItem) => (
+            <MenuItem key={eachItem} value={eachItem}>
+              {eachItem}
+            </MenuItem>
+          ))}
+        </Select>
+      </Grid>
+      <Grid item>
+        <ToggleButton
+          value={"drawMode"}
+          selected={isDrawMode}
+          size="small"
+          onClick={() => {
+            setIsDrawMode(!isDrawMode);
+          }}
+          style={{
+            padding: 4,
+          }}
+        >
+          <Add data-testid="AddIcon" />
+        </ToggleButton>
+      </Grid>
+      <Grid item>
+        <IconButton
+          size="small"
+          disabled={!selectedRectId || ignoreAreas.length === 0}
+          onClick={() => selectedRectId && deleteIgnoreArea(selectedRectId)}
+        >
+          <Delete data-testid="DeleteIcon" />
+        </IconButton>
+      </Grid>
+      <Tooltip title="Clears all ignore areas." aria-label="reject">
         <Grid item>
-          <Select
-            variant="standard"
-            id="area-select"
-            labelId="areaSelect"
-            // a standard select underlines itself and would read as a text field among buttons
-            sx={{
-              "&:before, &:after, &:hover:not(.Mui-disabled):before": {
-                borderBottom: "none",
-              },
-            }}
-            value={valueOfIgnoreOrCompare}
-            onChange={(event: SelectChangeEvent<string>) =>
-              onIgnoreOrCompareSelectChange(event.target.value)
-            }
-          >
-            {["Ignore Areas", "Compare Area"].map((eachItem) => (
-              <MenuItem key={eachItem} value={eachItem}>
-                {eachItem}
-              </MenuItem>
-            ))}
-          </Select>
-        </Grid>
-        <Grid item>
-          <ToggleButton
-            value={"drawMode"}
-            selected={isDrawMode}
+          <IconButton
             size="small"
+            disabled={ignoreAreas.length === 0}
             onClick={() => {
-              setIsDrawMode(!isDrawMode);
-            }}
-            style={{
-              padding: 4,
+              handleIgnoreAreaChange([]);
             }}
           >
-            <Add data-testid="AddIcon" />
-          </ToggleButton>
+            <LayersClear data-testid="LayersClearIcon" />
+          </IconButton>
         </Grid>
+      </Tooltip>
+      <Tooltip title={applyIgnoreAreaText} aria-label="apply ignore area">
         <Grid item>
           <IconButton
             size="small"
             disabled={!selectedRectId || ignoreAreas.length === 0}
-            onClick={() => selectedRectId && deleteIgnoreArea(selectedRectId)}
+            onClick={() => toggleApplyIgnoreDialogOpen()}
           >
-            <Delete data-testid="DeleteIcon" />
+            <Collections data-testid="CollectionsIcon" />
           </IconButton>
         </Grid>
-        <Tooltip title="Clears all ignore areas." aria-label="reject">
-          <Grid item>
-            <IconButton
-              size="small"
-              disabled={ignoreAreas.length === 0}
-              onClick={() => {
-                handleIgnoreAreaChange([]);
-              }}
-            >
-              <LayersClear data-testid="LayersClearIcon" />
-            </IconButton>
-          </Grid>
-        </Tooltip>
-        <Tooltip title={applyIgnoreAreaText} aria-label="apply ignore area">
-          <Grid item>
-            <IconButton
-              size="small"
-              disabled={!selectedRectId || ignoreAreas.length === 0}
-              onClick={() => toggleApplyIgnoreDialogOpen()}
-            >
-              <Collections data-testid="CollectionsIcon" />
-            </IconButton>
-          </Grid>
-        </Tooltip>
-        <Grid item>
-          <IconButton
-            size="small"
-            disabled={!touched}
-            onClick={() => saveIgnoreAreasOrCompareArea()}
-          >
-            <Save data-testid="SaveIcon" />
-          </IconButton>
-        </Grid>
+      </Tooltip>
+      <Grid item>
+        <IconButton
+          size="small"
+          disabled={!touched}
+          onClick={() => saveIgnoreAreasOrCompareArea()}
+        >
+          <Save data-testid="SaveIcon" />
+        </IconButton>
       </Grid>
-    </Fragment>
+    </Grid>
   );
 
   const baselinePanel = () => (

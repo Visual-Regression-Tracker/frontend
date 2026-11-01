@@ -59,9 +59,12 @@ export class VrtApi {
   private async post<T>(
     path: string,
     data: object,
-    headers: Record<string, string> = { apiKey: ADMIN.apiKey },
+    headers?: Record<string, string>,
   ): Promise<T> {
-    const answer = await this.request.post(path, { data, headers });
+    const answer = await this.request.post(path, {
+      data,
+      headers: headers ?? { apiKey: ADMIN.apiKey },
+    });
     expect(answer.ok(), `${path}: ${await answer.text()}`).toBe(true);
     return (await answer.json()) as T;
   }

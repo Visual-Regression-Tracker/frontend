@@ -17,7 +17,7 @@ let failed = false;
 
 for (const [prefix, budgetKb] of Object.entries(BUDGETS_KB)) {
   const matches = files.filter((name) =>
-    new RegExp(`^${prefix}[^.]+\\.js$`).test(name),
+    new RegExp(String.raw`^${prefix}[^.]+\.js$`).test(name),
   );
   if (matches.length !== 1) {
     console.error(

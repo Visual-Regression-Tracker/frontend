@@ -133,9 +133,7 @@ async function deliver(page: Page, event: string, payloads: unknown[]) {
 }
 
 test.describe("a build of thousands of runs", () => {
-  test.beforeEach(({ authUser }) => {
-    void authUser;
-  });
+  test.beforeEach(({ authUser }) => authUser);
 
   test("a build update nobody sees renders nothing in the run list", async ({
     page,
