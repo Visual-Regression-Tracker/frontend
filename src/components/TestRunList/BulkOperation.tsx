@@ -13,6 +13,7 @@ import { staticService, testRunService } from "../../services";
 import { BulkResult, allSucceeded } from "../../services/testRun.service";
 import { TestRun, TestStatus } from "../../types";
 import { Tooltip } from "../Tooltip";
+import { undoSnackbarOptions } from "../UndoSnackbarAction";
 import { TAG_FIELDS, tagValuesOf } from "../../_helpers/testRunTags.helper";
 import { partialFailureText, pluralize } from "../../_helpers/format.helper";
 
@@ -27,14 +28,14 @@ const PAST_TENSE: Record<string, string> = {
   Clear: "Cleared",
 };
 
-const COUNTS_ELIGIBLE = new Set(["Approve", "Reject"]);
+const REVIEW_VERBS = new Set(["Approve", "Reject"]);
 
 const processedText = (
   verb: string,
   eligibleCount: number,
   selectedCount: number,
 ): string =>
-  COUNTS_ELIGIBLE.has(verb)
+  REVIEW_VERBS.has(verb)
     ? `${testRuns(eligibleCount)} ${PAST_TENSE[verb].toLowerCase()}.`
     : `${testRuns(selectedCount)} processed.`;
 
@@ -371,12 +372,18 @@ export const BulkOperation = ({
               if (consumesSelection) {
                 onProcessed(result.failed.map((failure) => failure.id));
               }
+              const undo = undoSnackbarOptions({
+                ids: REVIEW_VERBS.has(verb) ? result.succeeded : [],
+                undoneText: `${testRuns(result.succeeded.length)} restored.`,
+                enqueueSnackbar,
+              });
               if (result.failed.length > 0) {
                 enqueueSnackbar(partialText(verb, result), {
                   variant: "warning",
+                  ...undo,
                 });
               } else {
-                enqueueSnackbar(message, { variant: "success" });
+                enqueueSnackbar(message, { variant: "success", ...undo });
               }
             })
             .catch((err) => {

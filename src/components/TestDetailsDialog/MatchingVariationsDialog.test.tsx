@@ -3,6 +3,7 @@ import { act, cleanup, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { useNavigate } from "react-router-dom";
 import { renderWithProviders } from "../../_test/render";
+import { undoIn } from "../../_test/toast";
 import { SeedTestRuns } from "../../_test/SeedTestRuns";
 import { buildsService, projectsService, testRunService } from "../../services";
 import { MatchingVariations } from "../../services/testRun.service";
@@ -127,6 +128,7 @@ const renderDialog = async ({
   );
   vi.spyOn(testRunService, "approveBulk").mockImplementation(allSucceeded);
   vi.spyOn(testRunService, "rejectBulk").mockImplementation(allSucceeded);
+  vi.spyOn(testRunService, "revert").mockResolvedValue(undefined);
 
   const onClose = vi.fn();
   let dispatchRuns: RunsDispatch | undefined;
@@ -450,6 +452,79 @@ describe("MatchingVariationsDialog", () => {
     });
   });
 
+  describe("undo", () => {
+    it("reverts the approved variations from the toast and says so", async () => {
+      const buildId = nextBuildId();
+      const current = run("current", buildId);
+      await renderDialog({
+        buildId,
+        current,
+        answer: {
+          variations: [run("v1", buildId), run("v2", buildId)],
+          skipped: [],
+        },
+      });
+      const reviewer = newReviewer();
+
+      await reviewer.click(submitButton(2));
+      await reviewer.click(await undoIn("Approved 2 variations"));
+
+      expect(testRunService.revert).toHaveBeenCalledWith(["v1", "v2"]);
+      expect(await screen.findByText("2 variations restored.")).toBeVisible();
+    });
+
+    it("reverts only the variations that went through when some failed", async () => {
+      const buildId = nextBuildId();
+      const current = run("current", buildId);
+      await renderDialog({
+        buildId,
+        current,
+        mode: "reject",
+        answer: {
+          variations: [run("v1", buildId), run("v2", buildId)],
+          skipped: [],
+        },
+      });
+      vi.mocked(testRunService.rejectBulk).mockResolvedValue({
+        succeeded: ["v1"],
+        failed: [{ id: "v2", message: "Run is locked" }],
+      });
+      const reviewer = newReviewer();
+
+      await reviewer.click(
+        screen.getByRole("button", { name: "Reject 2 selected" }),
+      );
+      await reviewer.click(
+        await undoIn("Rejected 1 of 2 variations. 1 failed: Run is locked"),
+      );
+
+      expect(testRunService.revert).toHaveBeenCalledWith(["v1"]);
+      expect(await screen.findByText("1 variation restored.")).toBeVisible();
+    });
+
+    it("shows why the backend refused to undo", async () => {
+      const buildId = nextBuildId();
+      const current = run("current", buildId);
+      await renderDialog({
+        buildId,
+        current,
+        answer: { variations: [run("v1", buildId)], skipped: [] },
+      });
+      vi.mocked(testRunService.revert).mockRejectedValue(
+        "Test run was changed after the approval",
+      );
+      const reviewer = newReviewer();
+
+      await reviewer.click(submitButton(1));
+      await reviewer.click(await undoIn("Approved 1 variation"));
+
+      expect(
+        await screen.findByText("Test run was changed after the approval"),
+      ).toBeVisible();
+      expect(screen.queryByText("1 variation restored.")).toBeNull();
+    });
+  });
+
   describe("go to the next", () => {
     const runsOf = (buildId: string) => [
       run("a", buildId),
@@ -519,6 +594,18 @@ describe("MatchingVariationsDialog", () => {
       const where = await approveAndSeeWhereItGoes(buildId, "d", ["x"]);
 
       expect(where).toBe("c");
+    });
+
+    it("goes to the runs again once their approval is undone", async () => {
+      const buildId = nextBuildId();
+      await approveAndSeeWhereItGoes(buildId, "d", ["a"]);
+      await newReviewer().click(await undoIn("Approved 1 variation"));
+      await screen.findByText("1 variation restored.");
+      cleanup();
+
+      const where = await approveAndSeeWhereItGoes(buildId, "d", ["x"]);
+
+      expect(where).toBe("a");
     });
 
     it("does not carry the acted runs over to another build", async () => {

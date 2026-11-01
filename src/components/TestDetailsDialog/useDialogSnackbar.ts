@@ -11,21 +11,27 @@ export const useDialogSnackbar = () => {
   const { enqueueSnackbar, closeSnackbar } = useSnackbar();
   const lastConfirmation = useRef<SnackbarKey | null>(null);
 
-  const enqueue = useCallback(
-    (message: SnackbarMessage, options?: OptionsObject) => {
+  const show = useCallback(
+    (
+      message: SnackbarMessage,
+      options: OptionsObject | undefined,
+      replaces: boolean,
+    ) => {
       const isConfirmation = options?.variant !== "error";
-      if (isConfirmation && lastConfirmation.current !== null) {
+      const isReplacing = replaces && isConfirmation;
+      if (isReplacing && lastConfirmation.current !== null) {
         closeSnackbar(lastConfirmation.current);
       }
 
+      // shorter than a screen's review; errors keep the default to be read, and a toast with an action keeps its own time
+      const isShort = isConfirmation && !options?.action;
       const key = enqueueSnackbar(message, {
         anchorOrigin: { vertical: "top", horizontal: "center" },
-        // shorter than a screen's review; errors keep the default to be read
-        ...(isConfirmation ? { autoHideDuration: 2000 } : {}),
+        ...(isShort ? { autoHideDuration: 2000 } : {}),
         ...options,
       });
 
-      if (isConfirmation) {
+      if (isReplacing) {
         lastConfirmation.current = key;
       }
       return key;
@@ -33,5 +39,18 @@ export const useDialogSnackbar = () => {
     [enqueueSnackbar, closeSnackbar],
   );
 
-  return { enqueueSnackbar: enqueue, closeSnackbar };
+  const enqueue = useCallback(
+    (message: SnackbarMessage, options?: OptionsObject) =>
+      show(message, options, true),
+    [show],
+  );
+
+  // for news about an earlier action, which must not close the confirmation of a newer one
+  const enqueueAside = useCallback(
+    (message: SnackbarMessage, options?: OptionsObject) =>
+      show(message, options, false),
+    [show],
+  );
+
+  return { enqueueSnackbar: enqueue, enqueueAside, closeSnackbar };
 };

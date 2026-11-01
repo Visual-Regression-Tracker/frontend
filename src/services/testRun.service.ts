@@ -50,7 +50,7 @@ function toBulkResult(ids: string[] | number[], body: unknown): BulkResult {
   return allSucceeded(ids);
 }
 
-function postBulk(path: string, ids: string[] | number[]): Promise<BulkResult> {
+function postIds(path: string, ids: string[] | number[]): Promise<unknown> {
   const requestOptions = {
     method: "POST",
     headers: {
@@ -60,9 +60,13 @@ function postBulk(path: string, ids: string[] | number[]): Promise<BulkResult> {
     body: JSON.stringify(ids),
   };
 
-  return fetch(`${API_URL}${ENDPOINT_URL}/${path}`, requestOptions)
-    .then(handleResponse)
-    .then((body) => toBulkResult(ids, body));
+  return fetch(`${API_URL}${ENDPOINT_URL}/${path}`, requestOptions).then(
+    handleResponse,
+  );
+}
+
+function postBulk(path: string, ids: string[] | number[]): Promise<BulkResult> {
+  return postIds(path, ids).then((body) => toBulkResult(ids, body));
 }
 
 function removeBulk(ids: string[] | number[]): Promise<BulkResult> {
@@ -96,6 +100,11 @@ function rejectOne(id: string): Promise<void> {
   return testRunService
     .rejectBulk([id])
     .then((result) => rejectIfRefused(id, result));
+}
+
+// all or nothing: one run that cannot be reverted fails the whole request
+function revert(ids: string[]): Promise<void> {
+  return postIds("revert", ids).then(() => undefined);
 }
 
 export interface MatchingVariations {
@@ -175,6 +184,7 @@ export const testRunService = {
   approveBulk,
   approveOne,
   rejectOne,
+  revert,
   getMatchingVariations,
   updateIgnoreAreas,
   addIgnoreAreas,
