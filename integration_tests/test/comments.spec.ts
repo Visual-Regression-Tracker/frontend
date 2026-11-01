@@ -79,6 +79,24 @@ test("saves a comment", async ({ openProjectPage, page }) => {
   await expect(details.comment).toBeHidden();
 });
 
+test("lets the comment confirmation go after two seconds", async ({
+  openProjectPage,
+  page,
+}) => {
+  await page.clock.install();
+  const { details, notification } = await openDialog(openProjectPage);
+  await details.commentsBtn.click();
+  await details.comment.fill("Looks wrong on the footer");
+
+  await details.commentSaveBtn.click();
+  await expect(notification.message).toHaveText("Comment updated");
+
+  await page.clock.runFor(1500);
+  await expect(notification.message).toBeVisible();
+  await page.clock.runFor(1000);
+  await expect(notification.message).toBeHidden();
+});
+
 test("keeps what was typed when the box is opened again", async ({
   openProjectPage,
 }) => {

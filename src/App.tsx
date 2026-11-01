@@ -1,8 +1,8 @@
-import { SnackbarProvider, closeSnackbar } from "notistack";
-import { Box, CssBaseline, IconButton } from "@mui/material";
-import { Close } from "@mui/icons-material";
+import { SnackbarProvider } from "notistack";
+import { Box, CssBaseline } from "@mui/material";
 import { ThemeProvider, StyledEngineProvider } from "@mui/material/styles";
 import Header from "./components/Header";
+import { DismissNotificationButton } from "./components/DismissNotificationButton";
 import {
   UserProvider,
   ProjectProvider,
@@ -28,17 +28,7 @@ function App() {
           maxSnack={3}
           // toasts go between the build list's bottom-left and the test run list's bottom-right pagination
           anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
-          action={(key) => (
-            <IconButton
-              size="small"
-              color="inherit"
-              aria-label="Dismiss notification"
-              onClick={() => closeSnackbar(key)}
-              data-testid="dismissNotification"
-            >
-              <Close data-testid="CloseIcon" fontSize="small" />
-            </IconButton>
-          )}
+          action={(key) => <DismissNotificationButton snackbarKey={key} />}
         >
           <UserProvider>
             <ProjectProvider>

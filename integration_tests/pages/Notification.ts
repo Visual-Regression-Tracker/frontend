@@ -11,4 +11,9 @@ export class Notification {
   toast(text: string) {
     return this.page.locator(".notistack-MuiContent", { hasText: text });
   }
+
+  undoBtn(text: string) {
+    // by text: an open dialog hides the toasts from the accessibility tree
+    return this.toast(text).locator("button", { hasText: /^Undo$/ });
+  }
 }

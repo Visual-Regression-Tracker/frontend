@@ -315,6 +315,16 @@ export const mockRejectTestRuns = (page: Page) => {
   );
 };
 
+export const mockRevertTestRuns = (page: Page) => {
+  return page.route(`${API_URL}/test-runs/revert`, (route) =>
+    route.fulfill({ status: 204 }),
+  );
+};
+
+export const reverts = (request: { url: () => string; method: () => string }) =>
+  request.url() === `${API_URL}/test-runs/revert` &&
+  request.method() === "POST";
+
 export const mockMatchingVariations = (
   page: Page,
   testRunId: string,

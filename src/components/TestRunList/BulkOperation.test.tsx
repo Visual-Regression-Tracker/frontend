@@ -1,5 +1,6 @@
 import { screen, waitFor, within } from "@testing-library/react";
 import { renderWithProviders } from "../../_test/render";
+import { toastOf, undoIn } from "../../_test/toast";
 import { SeedTestRuns } from "../../_test/SeedTestRuns";
 import { staticService, testRunService } from "../../services";
 import { TestRun, TestStatus } from "../../types";
@@ -64,9 +65,6 @@ const renderBulkOperation = ({
     </>,
   ),
 });
-
-const toastOf = async (text: string) =>
-  (await screen.findByText(text)).closest(".notistack-MuiContent");
 
 const confirm = async (user: ReturnType<typeof renderBulkOperation>["user"]) =>
   user.click(await screen.findByTestId("submitButton"));
@@ -408,6 +406,115 @@ describe("BulkOperation", () => {
         await toastOf("Rejected 1 of 2 test runs. 1 failed: Run is locked"),
       ).toHaveClass("notistack-MuiContent-warning");
       expect(onProcessed).toHaveBeenCalledWith([UNRESOLVED_RUN.id]);
+    });
+  });
+
+  describe("undo", () => {
+    it("reverts the approved runs from the toast and says so", async () => {
+      vi.spyOn(testRunService, "approveBulk").mockImplementation(allSucceeded);
+      const revert = vi
+        .spyOn(testRunService, "revert")
+        .mockResolvedValue(undefined);
+      const { user, onProcessed } = renderBulkOperation();
+
+      await user.click(actionButton(APPROVE));
+      await confirm(user);
+      await user.click(await undoIn("2 test runs approved."));
+
+      expect(revert).toHaveBeenCalledWith([NEW_RUN.id, UNRESOLVED_RUN.id]);
+      expect(revert).toHaveBeenCalledTimes(1);
+      expect(await toastOf("2 test runs restored.")).toHaveClass(
+        "notistack-MuiContent-info",
+      );
+      expect(onProcessed).toHaveBeenCalledTimes(1);
+    });
+
+    it("reverts the runs of both approve calls of a mixed selection", async () => {
+      const mergeRun = run("merge-run", TestStatus.unresolved, true);
+      vi.spyOn(testRunService, "approveBulk").mockImplementation(allSucceeded);
+      const revert = vi
+        .spyOn(testRunService, "revert")
+        .mockResolvedValue(undefined);
+      const { user } = renderBulkOperation({
+        selectedIds: [NEW_RUN.id, mergeRun.id],
+        rows: [NEW_RUN, mergeRun],
+      });
+
+      await user.click(actionButton(APPROVE));
+      await confirm(user);
+      await user.click(await undoIn("2 test runs approved."));
+
+      expect(revert).toHaveBeenCalledWith([NEW_RUN.id, mergeRun.id]);
+    });
+
+    it("reverts only the runs that went through when some failed", async () => {
+      vi.spyOn(testRunService, "rejectBulk").mockResolvedValue({
+        succeeded: [NEW_RUN.id],
+        failed: [{ id: UNRESOLVED_RUN.id, message: "Run is locked" }],
+      });
+      const revert = vi
+        .spyOn(testRunService, "revert")
+        .mockResolvedValue(undefined);
+      const { user } = renderBulkOperation();
+
+      await user.click(actionButton(REJECT));
+      await confirm(user);
+      await user.click(
+        await undoIn("Rejected 1 of 2 test runs. 1 failed: Run is locked"),
+      );
+
+      expect(revert).toHaveBeenCalledWith([NEW_RUN.id]);
+      expect(await screen.findByText("1 test run restored.")).toBeVisible();
+    });
+
+    it("offers no undo when every run failed", async () => {
+      vi.spyOn(testRunService, "approveBulk").mockResolvedValue({
+        succeeded: [],
+        failed: [
+          { id: NEW_RUN.id, message: "Baseline is gone" },
+          { id: UNRESOLVED_RUN.id, message: "Baseline is gone" },
+        ],
+      });
+      const { user } = renderBulkOperation();
+
+      await user.click(actionButton(APPROVE));
+      await confirm(user);
+
+      const toast = await toastOf(
+        "Approved 0 of 2 test runs. 2 failed: Baseline is gone",
+      );
+      expect(
+        within(toast).queryByText("Undo", { selector: "button" }),
+      ).not.toBeInTheDocument();
+    });
+
+    it("shows why the backend refused to undo", async () => {
+      vi.spyOn(testRunService, "rejectBulk").mockImplementation(allSucceeded);
+      vi.spyOn(testRunService, "revert").mockRejectedValue(
+        "Test run was changed after the rejection",
+      );
+      const { user } = renderBulkOperation();
+
+      await user.click(actionButton(REJECT));
+      await confirm(user);
+      await user.click(await undoIn("2 test runs rejected."));
+
+      expect(
+        await toastOf("Test run was changed after the rejection"),
+      ).toHaveClass("notistack-MuiContent-error");
+    });
+
+    it("offers no undo for a delete", async () => {
+      vi.spyOn(testRunService, "removeBulk").mockImplementation(allSucceeded);
+      const { user } = renderBulkOperation();
+
+      await user.click(actionButton(DELETE));
+      await confirm(user);
+
+      const toast = await toastOf("3 test runs processed.");
+      expect(
+        within(toast).queryByText("Undo", { selector: "button" }),
+      ).not.toBeInTheDocument();
     });
   });
 

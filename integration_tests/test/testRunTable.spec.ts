@@ -14,6 +14,8 @@ import {
   mockGetBuilds,
   mockGetProjects,
   mockImage,
+  mockRevertTestRuns,
+  reverts,
   mockTestRunsWithDetails,
 } from "utils/mocks";
 import { afterTwoFrames } from "utils/afterTwoFrames";
@@ -217,6 +219,32 @@ test("ticks every filtered run across the pages with the header checkbox", async
   await expect(notification.message).toHaveText(
     `${UNRESOLVED.length} test runs approved.`,
   );
+});
+
+test("undoes a bulk approval from its toast", async ({
+  openProjectPage,
+  page,
+}) => {
+  await mockRevertTestRuns(page);
+  const { testRunList, testRunFilters, modal, notification } =
+    await openProjectPage(project.id, build.id);
+  await testRunFilters.selectStatus("unresolved");
+  await testRunList.checkRow(UNRESOLVED[0].id);
+  await testRunList.checkRow(UNRESOLVED[1].id);
+  await testRunList.approveBtn.click();
+  await modal.confirmBtn.click();
+
+  const [request] = await Promise.all([
+    page.waitForRequest(reverts),
+    notification.undoBtn("2 test runs approved.").click(),
+  ]);
+
+  expect(
+    [...request.postDataJSON()].sort((a: string, b: string) =>
+      a.localeCompare(b),
+    ),
+  ).toEqual([UNRESOLVED[0].id, UNRESOLVED[1].id]);
+  await expect(notification.toast("2 test runs restored.")).toBeVisible();
 });
 
 test("clears the ticks when the header checkbox is unticked", async ({
