@@ -2,6 +2,7 @@
   "compilerOptions": {
     "baseUrl": "./",
     "skipLibCheck": true,
+    "lib": ["dom", "dom.iterable", "esnext"],
     "paths": {
       "~client/*": ["../src/*"]
     }
