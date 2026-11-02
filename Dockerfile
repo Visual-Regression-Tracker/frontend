@@ -22,7 +22,7 @@ RUN npm run build
 
 ### STAGE 2: Run ###
 # This image is around 5 megabytes
-FROM nginx:1.30-alpine-slim
+FROM nginx:1.31-alpine-slim
 
 COPY /nginx /etc/nginx/conf.d
 
