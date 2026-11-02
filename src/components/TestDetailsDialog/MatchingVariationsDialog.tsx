@@ -13,7 +13,7 @@ import {
 } from "@mui/material";
 import { styled } from "@mui/material/styles";
 import { useDialogSnackbar } from "./useDialogSnackbar";
-import { VariationLightbox } from "./VariationLightbox";
+import { LightboxPreview, VariationLightbox } from "./VariationLightbox";
 import { Tooltip } from "../Tooltip";
 import { undoSnackbarOptions } from "../UndoSnackbarAction";
 import { testRunService } from "../../services";
@@ -21,7 +21,7 @@ import { MatchingVariations } from "../../services/testRun.service";
 import { useTestRunState } from "../../contexts";
 import { GO_TO_NEXT_KEY } from "../../constants";
 import { thumbnailFor } from "../../_helpers/testRunImage.helper";
-import { byDiffDesc, orderByIds } from "../../_helpers/testRunGroup.helper";
+import { byDiffDesc, orderByIds } from "../../_helpers/testRunOrder.helper";
 import { TestRun } from "../../types";
 import { TestStatus } from "../../types/testStatus";
 import { imageSurface } from "../../theme/tokens";
@@ -129,10 +129,9 @@ export const MatchingVariationsDialog = ({
   const [data, setData] = useState<MatchingVariations | null>(null);
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [showDiff, setShowDiff] = useState(true);
-  const [preview, setPreview] = useState<{
-    index: number;
-    showDiff: boolean;
-  } | null>(null);
+  const [preview, setPreview] = useState<LightboxPreview | null>(null);
+  const setPreviewDiff = (showDiff: boolean) =>
+    setPreview((prev) => prev && { index: prev.index, showDiff });
   const seenVariationIds = useRef<Set<string>>(new Set());
 
   const loadData = useCallback(
@@ -246,8 +245,7 @@ export const MatchingVariationsDialog = ({
       e.preventDefault();
       e.stopPropagation();
       if (e.key === "d" || e.key === "D") {
-        if (preview)
-          setPreview({ index: preview.index, showDiff: !preview.showDiff });
+        if (preview) setPreviewDiff(!preview.showDiff);
         else setShowDiff((value) => !value);
         return;
       }
@@ -405,8 +403,6 @@ export const MatchingVariationsDialog = ({
     );
   };
 
-  const previewRun = preview ? allShown[preview.index] : null;
-
   return (
     <>
       <Dialog open onClose={onClose} maxWidth="lg" fullWidth>
@@ -512,14 +508,10 @@ export const MatchingVariationsDialog = ({
       </Dialog>
 
       <VariationLightbox
-        run={previewRun}
-        index={preview?.index ?? 0}
-        total={allShown.length}
-        showDiff={preview?.showDiff ?? false}
+        runs={allShown}
+        preview={preview}
         onStep={step}
-        onShowDiffChange={(showDiff) =>
-          setPreview((prev) => prev && { index: prev.index, showDiff })
-        }
+        onShowDiffChange={setPreviewDiff}
         onClose={() => setPreview(null)}
       />
     </>

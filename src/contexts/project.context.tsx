@@ -4,6 +4,7 @@ import {
   useContext,
   useEffect,
   useLayoutEffect,
+  useMemo,
   useReducer,
 } from "react";
 import { Project, ProjectDto } from "../types";
@@ -147,7 +148,10 @@ function useProjectState() {
 
 function useSelectedProject(): Project | undefined {
   const { projectList, selectedProjectId } = useProjectState();
-  return projectList.find((project) => project.id === selectedProjectId);
+  return useMemo(
+    () => projectList.find((project) => project.id === selectedProjectId),
+    [projectList, selectedProjectId],
+  );
 }
 
 function useProjectDispatch() {

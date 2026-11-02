@@ -19,6 +19,7 @@ import { ConfigurationExamples } from "../components/ConfigurationExamples";
 import { TextValidator, ValidatorForm } from "react-material-ui-form-validator";
 import { Role } from "../types";
 import PasswordField from "../components/PasswordField";
+import NameField from "../components/NameField";
 import { useOidcEnabled } from "../_helpers/useOidcEnabled";
 
 const ProfilePage = () => {
@@ -73,8 +74,6 @@ const ProfilePage = () => {
     }
   };
 
-  const errorForTwoChar = "Enter at least two characters.";
-
   return (
     <Container maxWidth="lg" sx={{ py: 4 }}>
       <PageHeader
@@ -94,41 +93,19 @@ const ProfilePage = () => {
                   <CardContent>
                     <Grid container spacing={2}>
                       <Grid item xs={6}>
-                        <TextValidator
-                          validators={["minStringLength:2"]}
-                          errorMessages={[errorForTwoChar]}
-                          id="firstName"
+                        <NameField
                           name="firstName"
+                          label="First name"
                           value={firstName}
-                          label={"First name"}
-                          type="text"
-                          variant="outlined"
-                          required
-                          fullWidth
-                          inputProps={{
-                            onChange: (event: ChangeEvent<HTMLInputElement>) =>
-                              setFirstName(event.target.value),
-                            "data-testid": "firstName",
-                          }}
+                          onChange={setFirstName}
                         />
                       </Grid>
                       <Grid item xs={6}>
-                        <TextValidator
-                          validators={["minStringLength:2"]}
-                          errorMessages={[errorForTwoChar]}
-                          id="lastName"
+                        <NameField
                           name="lastName"
+                          label="Last name"
                           value={lastName}
-                          label={"Last name"}
-                          type="text"
-                          variant="outlined"
-                          required
-                          fullWidth
-                          inputProps={{
-                            onChange: (event: ChangeEvent<HTMLInputElement>) =>
-                              setLastName(event.target.value),
-                            "data-testid": "lastName",
-                          }}
+                          onChange={setLastName}
                         />
                       </Grid>
                       <Grid item xs={12}>

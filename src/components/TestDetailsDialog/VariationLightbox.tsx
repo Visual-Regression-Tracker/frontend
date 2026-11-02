@@ -47,93 +47,103 @@ const LightboxImg = styled("img")({
   background: imageSurface.thumbnail,
 });
 
-interface VariationLightboxProps {
-  run: TestRun | null;
+export interface LightboxPreview {
   index: number;
-  total: number;
   showDiff: boolean;
+}
+
+interface VariationLightboxProps {
+  runs: TestRun[];
+  preview: LightboxPreview | null;
   onStep: (delta: number) => void;
   onShowDiffChange: (showDiff: boolean) => void;
   onClose: () => void;
 }
 
 export const VariationLightbox = ({
-  run,
-  index,
-  total,
-  showDiff,
+  runs,
+  preview,
   onStep,
   onShowDiffChange,
   onClose,
-}: VariationLightboxProps) => (
-  <Dialog open={!!run} onClose={onClose} maxWidth="xl" fullWidth>
-    {run && (
-      <>
-        <DialogTitle>
-          <Box
-            display="flex"
-            alignItems="center"
-            justifyContent="space-between"
-          >
-            <Box display="flex" alignItems="center">
-              <IconButton onClick={() => onStep(-1)} disabled={index === 0}>
-                <ChevronLeftIcon />
-              </IconButton>
-              <IconButton
-                onClick={() => onStep(1)}
-                disabled={index === total - 1}
-              >
-                <ChevronRightIcon />
-              </IconButton>
-              <span>
-                {run.name} ({index + 1}/{total})
-              </span>
+}: VariationLightboxProps) => {
+  const run = preview ? runs[preview.index] : undefined;
+  const index = preview?.index ?? 0;
+  const showDiff = preview?.showDiff ?? false;
+  const total = runs.length;
+
+  return (
+    <Dialog open={!!run} onClose={onClose} maxWidth="xl" fullWidth>
+      {run && (
+        <>
+          <DialogTitle>
+            <Box
+              display="flex"
+              alignItems="center"
+              justifyContent="space-between"
+            >
+              <Box display="flex" alignItems="center">
+                <IconButton onClick={() => onStep(-1)} disabled={index === 0}>
+                  <ChevronLeftIcon />
+                </IconButton>
+                <IconButton
+                  onClick={() => onStep(1)}
+                  disabled={index === total - 1}
+                >
+                  <ChevronRightIcon />
+                </IconButton>
+                <span>
+                  {run.name} ({index + 1}/{total})
+                </span>
+              </Box>
+              <Box display="flex" alignItems="center">
+                <Tooltip title="Toggle diff. Hotkey: D">
+                  <FormControlLabel
+                    control={
+                      <Switch
+                        checked={showDiff}
+                        onChange={(e) => onShowDiffChange(e.target.checked)}
+                      />
+                    }
+                    label="Show diff"
+                  />
+                </Tooltip>
+                <IconButton onClick={onClose}>
+                  <CloseIcon />
+                </IconButton>
+              </Box>
             </Box>
-            <Box display="flex" alignItems="center">
-              <Tooltip title="Toggle diff. Hotkey: D">
-                <FormControlLabel
-                  control={
-                    <Switch
-                      checked={showDiff}
-                      onChange={(e) => onShowDiffChange(e.target.checked)}
-                    />
-                  }
-                  label="Show diff"
+          </DialogTitle>
+          <Meta>
+            <Typography variant="caption">OS: {run.os || "—"}</Typography>
+            <Typography variant="caption">
+              Device: {run.device || "—"}
+            </Typography>
+            <Typography variant="caption">
+              Custom Tags: {run.customTags || "—"}
+            </Typography>
+            <Typography variant="caption">
+              Diff: {(run.diffPercent ?? 0).toFixed(2)}%
+            </Typography>
+            <Typography variant="caption">
+              Diff tolerance: {run.diffTollerancePercent ?? 0}%
+            </Typography>
+          </Meta>
+          <DialogContent dividers>
+            <LightboxRow>
+              <LightboxHalf>
+                <LightboxImg
+                  src={staticService.getImage(run.baselineName)}
+                  alt="baseline"
                 />
-              </Tooltip>
-              <IconButton onClick={onClose}>
-                <CloseIcon />
-              </IconButton>
-            </Box>
-          </Box>
-        </DialogTitle>
-        <Meta>
-          <Typography variant="caption">OS: {run.os || "—"}</Typography>
-          <Typography variant="caption">Device: {run.device || "—"}</Typography>
-          <Typography variant="caption">
-            Custom Tags: {run.customTags || "—"}
-          </Typography>
-          <Typography variant="caption">
-            Diff: {(run.diffPercent ?? 0).toFixed(2)}%
-          </Typography>
-          <Typography variant="caption">
-            Diff tolerance: {run.diffTollerancePercent ?? 0}%
-          </Typography>
-        </Meta>
-        <DialogContent dividers>
-          <LightboxRow>
-            <LightboxHalf>
-              <LightboxImg
-                src={staticService.getImage(run.baselineName)}
-                alt="baseline"
-              />
-            </LightboxHalf>
-            <LightboxHalf>
-              <LightboxImg src={imageFor(run, showDiff)} alt="checkpoint" />
-            </LightboxHalf>
-          </LightboxRow>
-        </DialogContent>
-      </>
-    )}
-  </Dialog>
-);
+              </LightboxHalf>
+              <LightboxHalf>
+                <LightboxImg src={imageFor(run, showDiff)} alt="checkpoint" />
+              </LightboxHalf>
+            </LightboxRow>
+          </DialogContent>
+        </>
+      )}
+    </Dialog>
+  );
+};

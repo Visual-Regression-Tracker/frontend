@@ -58,6 +58,7 @@ import { OverlayControls } from "./OverlayControls";
 import { ZoomControls } from "./ZoomControls";
 
 const footerSx = { bgcolor: "background.default" } as const;
+const scaleActionsSx = { display: "flex", alignItems: "center" } as const;
 const testRunActionsSx = {
   display: "flex",
   alignItems: "center",
@@ -672,12 +673,14 @@ const TestDetailsModal = ({
         </Grid>
       </Box>
       <Grid container sx={footerSx}>
-        <ZoomControls
-          scale={stageScale}
-          onScaleChange={setStageScale}
-          onOriginalSize={setOriginalSize}
-          onFit={fitImagesToStage}
-        />
+        <Grid item xs={3} sx={scaleActionsSx}>
+          <ZoomControls
+            scale={stageScale}
+            onScaleChange={setStageScale}
+            onOriginalSize={setOriginalSize}
+            onFit={fitImagesToStage}
+          />
+        </Grid>
         <Grid item xs={6} sx={centerActionsSx}>
           <Tooltip title={"Hotkey: ArrowLeft"}>
             <IconButton

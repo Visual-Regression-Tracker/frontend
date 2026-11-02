@@ -7,7 +7,7 @@ import {
   Switch,
   SelectChangeEvent,
 } from "@mui/material";
-import { type ChangeEvent, Fragment } from "react";
+import { type ChangeEvent, Fragment, useMemo } from "react";
 import { TextValidator } from "react-material-ui-form-validator";
 import {
   useProjectState,
@@ -21,6 +21,7 @@ import { OdiffConfigForm } from "./OdiffConfigForm";
 import { PixelmatchConfigForm } from "./PixelmatchConfigForm";
 import { VlmConfigForm } from "./VlmConfigForm";
 import { getDefaultConfig, withBlurAmplitudeOf } from "./utils";
+import { WholeNumberField } from "./WholeNumberField";
 
 const configFormFor = (imageComparison: ImageComparison) => {
   switch (imageComparison) {
@@ -45,36 +46,13 @@ export const ProjectForm = () => {
   const { projectEditState: project } = useProjectState();
   const projectDispatch = useProjectDispatch();
 
+  const configForm = useMemo(
+    () => configFormFor(project.imageComparison),
+    [project.imageComparison],
+  );
+
   const update = (patch: Partial<typeof project>) =>
     setProjectEditState(projectDispatch, { ...project, ...patch });
-
-  const wholeNumberField = (
-    name: string,
-    label: string,
-    field: "maxBuildAllowed" | "maxBranchLifetime",
-  ) => (
-    <TextValidator
-      name={name}
-      validators={["minNumber:1"]}
-      errorMessages={["Enter greater than 1"]}
-      InputProps={{
-        inputProps: {
-          min: 1,
-          step: 1,
-        },
-      }}
-      margin="dense"
-      id={name}
-      label={label}
-      type="number"
-      fullWidth
-      required
-      value={project[field]}
-      onChange={(event: ChangeEvent<HTMLInputElement>) =>
-        update({ [field]: parseInt(event.target.value) })
-      }
-    />
-  );
 
   return (
     <Fragment>
@@ -108,16 +86,18 @@ export const ProjectForm = () => {
           update({ mainBranchName: event.target.value })
         }
       />
-      {wholeNumberField(
-        "buildCount",
-        "Number of builds to keep",
-        "maxBuildAllowed",
-      )}
-      {wholeNumberField(
-        "maxBranchLifetime",
-        "Max branch lifetime (days)",
-        "maxBranchLifetime",
-      )}
+      <WholeNumberField
+        name="buildCount"
+        label="Number of builds to keep"
+        value={project.maxBuildAllowed}
+        onChange={(maxBuildAllowed) => update({ maxBuildAllowed })}
+      />
+      <WholeNumberField
+        name="maxBranchLifetime"
+        label="Max branch lifetime (days)"
+        value={project.maxBranchLifetime}
+        onChange={(maxBranchLifetime) => update({ maxBranchLifetime })}
+      />
       <FormControlLabel
         label="Auto approve feature"
         control={
@@ -205,7 +185,7 @@ export const ProjectForm = () => {
           <MenuItem value={ImageComparison.vlm}>{ImageComparison.vlm}</MenuItem>
         </Select>
       </FormControl>
-      {configFormFor(project.imageComparison)}
+      {configForm}
     </Fragment>
   );
 };

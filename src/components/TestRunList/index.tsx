@@ -27,7 +27,7 @@ import {
   GridSortModel,
   GridRowSelectionModel,
 } from "@mui/x-data-grid";
-import { DataGridCustomToolbar } from "./DataGridCustomToolbar";
+import { TestRunListToolbar } from "./TestRunListToolbar";
 import { EmptyState } from "../EmptyState";
 import { ViewListOutlined } from "@mui/icons-material";
 import { TestRunGrid } from "./TestRunGrid";
@@ -347,9 +347,8 @@ const TestRunList = () => {
     [filteredRows, activeSort],
   );
 
-  const groupByAxis = resolveGroupByAxis(
-    useSelectedProject()?.bulkApproveGroupBy,
-  );
+  const selectedProject = useSelectedProject();
+  const groupByAxis = resolveGroupByAxis(selectedProject?.bulkApproveGroupBy);
 
   const groups = useMemo(
     () =>
@@ -561,7 +560,6 @@ const TestRunList = () => {
       toolbar: {
         selectedIds,
         rows: filteredRows,
-        selectionNoun: "rows",
         view,
         onViewChange: setView,
         density,
@@ -644,7 +642,7 @@ const TestRunList = () => {
               pagination
               loading={loading}
               slots={{
-                toolbar: DataGridCustomToolbar,
+                toolbar: TestRunListToolbar,
               }}
               showToolbar
               density={density}
@@ -672,10 +670,9 @@ const TestRunList = () => {
               borderRadius={1}
               color="text.primary"
             >
-              <DataGridCustomToolbar
+              <TestRunListToolbar
                 selectedIds={selectedIds}
                 rows={sortedRows}
-                selectionNoun="cards"
                 view={view}
                 onViewChange={setView}
                 density={density}

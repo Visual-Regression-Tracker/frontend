@@ -12,8 +12,6 @@ import { TestRun, TestVariation } from "../types";
 import { DebouncedTextField } from "./DebouncedTextField";
 import { LOCATOR_RESET_FILTER } from "../constants/help";
 
-const emptyFn = () => undefined;
-
 const uniqueValues = (values: (string | null | undefined)[]): string[] =>
   values.filter(
     (value, index, array): value is string =>
@@ -64,7 +62,7 @@ const FilterSelect = ({
   );
 
 interface IProps {
-  items: TestRun[] | TestVariation[];
+  items: (TestRun | TestVariation)[];
   queryState: [string, Dispatch<SetStateAction<string>>];
   osState: [string, Dispatch<SetStateAction<string>>];
   deviceState: [string, Dispatch<SetStateAction<string>>];
@@ -91,15 +89,10 @@ const Filters = ({
   const [viewport, setViewport] = viewportState;
   const [customTags, setCustomTags] = customTagsState;
 
-  const [branchName, setBranchName] = branchNameState || ["", emptyFn];
-
   const valuesOf = (
     field:
       "os" | "device" | "browser" | "viewport" | "customTags" | "branchName",
-  ) =>
-    uniqueValues(
-      (items as (TestRun | TestVariation)[]).map((item) => item[field]),
-    );
+  ) => uniqueValues(items.map((item) => item[field]));
 
   return (
     <Grid container spacing={2} alignItems="flex-end">
@@ -153,9 +146,9 @@ const Filters = ({
         <FilterSelect
           id="filter_branchName"
           label="Branch"
-          value={branchName}
+          value={branchNameState[0]}
           options={valuesOf("branchName")}
-          onChange={setBranchName}
+          onChange={branchNameState[1]}
           formControlId={LOCATOR_RESET_FILTER}
         />
       )}
@@ -170,7 +163,7 @@ const Filters = ({
             setBrowser("");
             setViewport("");
             setCustomTags("");
-            setBranchName("");
+            branchNameState?.[1]("");
           }}
         >
           Reset

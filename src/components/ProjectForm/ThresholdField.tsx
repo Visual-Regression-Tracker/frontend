@@ -28,7 +28,7 @@ export const ThresholdField = ({
   return (
     <TextValidator
       name={field}
-      // minNumber and maxNumber compare whole numbers: 128.5 would pass
+      // minNumber and maxNumber compare whole numbers, so fractional bounds need the float rules
       validators={["required", `minFloat:${min}`, `maxFloat:${max}`]}
       errorMessages={[
         "Enter a threshold",

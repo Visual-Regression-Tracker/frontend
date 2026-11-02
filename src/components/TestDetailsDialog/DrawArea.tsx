@@ -20,16 +20,16 @@ import { imageSurface } from "../../theme/tokens";
 export type ImageStateLoad = "loaded" | "loading" | "failed";
 
 const SCALE_BY = 1.04;
+// how long the zoom keeps coasting; higher glides longer, lower is snappier
+const ZOOM_TIME_CONSTANT_MS = 140;
+const ZOOM_SETTLED = 0.001;
+const FRAME_MS = 1000 / 60;
 
 const isDeleteKey = (event: ReactKeyboardEvent) =>
   event.key === "Delete" || event.key === "Backspace";
 
 const isModifierKeyPressed = (event: ReactKeyboardEvent) =>
   event.altKey || event.ctrlKey || event.shiftKey;
-// how long the zoom keeps coasting; higher glides longer, lower is snappier
-const ZOOM_TIME_CONSTANT_MS = 140;
-const ZOOM_SETTLED = 0.001;
-const FRAME_MS = 1000 / 60;
 
 type StageOffsetPosition = {
   x: number;

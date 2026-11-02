@@ -28,26 +28,11 @@ export const VlmConfigForm = () => {
   const handleProviderChange = (event: SelectChangeEvent<string>) => {
     const newProvider = event.target.value as "ollama" | "gemini";
     const { prompt, temperature, useThinking } = config;
-
-    let newConfig: VlmConfig;
-    if (newProvider === "gemini") {
-      newConfig = {
-        provider: "gemini",
-        model: "gemini-1.5-pro",
-        apiKey: "",
-        prompt,
-        temperature,
-        useThinking,
-      };
-    } else {
-      newConfig = {
-        provider: "ollama",
-        model: "",
-        prompt,
-        temperature,
-        useThinking,
-      };
-    }
+    const shared = { prompt, temperature, useThinking };
+    const newConfig: VlmConfig =
+      newProvider === "gemini"
+        ? { provider: "gemini", model: "gemini-1.5-pro", apiKey: "", ...shared }
+        : { provider: "ollama", model: "", ...shared };
 
     setProjectEditState(projectDispatch, {
       ...project,

@@ -16,6 +16,13 @@ import { BuildStatusChip } from "../BuildStatusChip";
 import { Tooltip } from "../Tooltip";
 import { formatDateTime } from "../../_helpers/format.helper";
 
+const itemSx = {
+  paddingRight: "48px",
+  "&:hover .build-secondary-action": {
+    visibility: "inherit",
+  },
+} as const;
+
 interface BuildListItemProps {
   build: Build;
   selected: boolean;
@@ -34,16 +41,7 @@ export const BuildListItem = ({
   onMenuClick,
 }: BuildListItemProps) => (
   <Fragment>
-    <ListItemButton
-      selected={selected}
-      onClick={onOpen}
-      sx={{
-        paddingRight: "48px",
-        "&:hover .build-secondary-action": {
-          visibility: "inherit",
-        },
-      }}
-    >
+    <ListItemButton selected={selected} onClick={onOpen} sx={itemSx}>
       <Checkbox
         edge="start"
         size="small"

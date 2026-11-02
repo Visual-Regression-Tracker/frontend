@@ -19,9 +19,13 @@ function getJson<T>(path: string): Promise<T> {
   );
 }
 
-function postJson<T>(path: string, body: unknown): Promise<T> {
+function sendJson<T>(
+  method: "POST" | "PATCH",
+  path: string,
+  body: unknown,
+): Promise<T> {
   const requestOptions = {
-    method: "POST",
+    method,
     headers: {
       ...DEFAULT_HEADERS,
       ...authHeader(),
@@ -29,7 +33,7 @@ function postJson<T>(path: string, body: unknown): Promise<T> {
     body: JSON.stringify(body),
   };
 
-  return fetch(`${API_URL}${ENDPOINT_URL}/${path}`, requestOptions).then(
+  return fetch(`${API_URL}${ENDPOINT_URL}${path}`, requestOptions).then(
     handleResponse,
   );
 }
@@ -62,22 +66,22 @@ function toBulkResult(ids: string[] | number[], body: unknown): BulkResult {
 }
 
 function postBulk(path: string, ids: string[] | number[]): Promise<BulkResult> {
-  return postJson(path, ids).then((body) => toBulkResult(ids, body));
+  return sendJson("POST", path, ids).then((body) => toBulkResult(ids, body));
 }
 
 function removeBulk(ids: string[] | number[]): Promise<BulkResult> {
-  return postBulk("delete", ids);
+  return postBulk("/delete", ids);
 }
 
 function rejectBulk(ids: string[] | number[]): Promise<BulkResult> {
-  return postBulk("reject", ids);
+  return postBulk("/reject", ids);
 }
 
 function approveBulk(
   ids: string[] | number[],
   merge: boolean,
 ): Promise<BulkResult> {
-  return postBulk(`approve?merge=${merge}`, ids);
+  return postBulk(`/approve?merge=${merge}`, ids);
 }
 
 // the backend answers per run, and a refusal comes back in a successful answer
@@ -100,7 +104,7 @@ function rejectOne(id: string): Promise<void> {
 
 // all or nothing: one run that cannot be reverted fails the whole request
 function revert(ids: string[]): Promise<void> {
-  return postJson("revert", ids).then(() => undefined);
+  return sendJson("POST", "/revert", ids).then(() => undefined);
 }
 
 export interface MatchingVariations {
@@ -113,31 +117,15 @@ function getMatchingVariations(id: string): Promise<MatchingVariations> {
 }
 
 function updateIgnoreAreas(data: UpdateIgnoreAreaDto): Promise<void> {
-  return postJson("ignoreAreas/update", data);
+  return sendJson("POST", "/ignoreAreas/update", data);
 }
 
 function addIgnoreAreas(data: UpdateIgnoreAreaDto): Promise<void> {
-  return postJson("ignoreAreas/add", data);
+  return sendJson("POST", "/ignoreAreas/add", data);
 }
 
-function update(
-  id: string,
-  data: {
-    comment: string;
-  },
-): Promise<TestRun> {
-  const requestOptions = {
-    method: "PATCH",
-    headers: {
-      ...DEFAULT_HEADERS,
-      ...authHeader(),
-    },
-    body: JSON.stringify(data),
-  };
-
-  return fetch(`${API_URL}${ENDPOINT_URL}/update/${id}`, requestOptions).then(
-    handleResponse,
-  );
+function update(id: string, data: { comment: string }): Promise<TestRun> {
+  return sendJson("PATCH", `/update/${id}`, data);
 }
 
 export const testRunService = {

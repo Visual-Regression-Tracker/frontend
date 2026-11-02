@@ -1,13 +1,14 @@
-import { useState, FormEvent, type ChangeEvent } from "react";
+import { useState, FormEvent } from "react";
 import { Button, Card, CardContent, Stack } from "@mui/material";
 import { useUserDispatch, login } from "../contexts";
 import { usersService } from "../services";
 import { useSnackbar } from "notistack";
-import { TextValidator, ValidatorForm } from "react-material-ui-form-validator";
+import { ValidatorForm } from "react-material-ui-form-validator";
 import { useNavigate } from "react-router-dom";
 import { routes } from "../constants";
 import PasswordField from "./PasswordField";
 import EmailField from "./EmailField";
+import NameField from "./NameField";
 
 const RegisterForm = () => {
   const navigate = useNavigate();
@@ -37,41 +38,24 @@ const RegisterForm = () => {
       );
   };
 
-  const errorForTwoChar = "Enter at least two characters.";
-
-  const nameField = (
-    name: "firstName" | "lastName",
-    label: string,
-    value: string,
-    setValue: (value: string) => void,
-  ) => (
-    <TextValidator
-      validators={["minStringLength:2"]}
-      errorMessages={[errorForTwoChar]}
-      id={name}
-      name={name}
-      value={value}
-      label={label}
-      type="text"
-      variant="outlined"
-      required
-      fullWidth
-      inputProps={{
-        onChange: (event: ChangeEvent<HTMLInputElement>) =>
-          setValue(event.target.value),
-        "data-testid": name,
-      }}
-    />
-  );
-
   return (
     <ValidatorForm onSubmit={handleSubmit} instantValidate>
       <Card>
         <CardContent sx={{ p: 3 }}>
           <Stack spacing={2}>
             <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
-              {nameField("firstName", "First name", firstName, setFirstName)}
-              {nameField("lastName", "Last name", lastName, setLastName)}
+              <NameField
+                name="firstName"
+                label="First name"
+                value={firstName}
+                onChange={setFirstName}
+              />
+              <NameField
+                name="lastName"
+                label="Last name"
+                value={lastName}
+                onChange={setLastName}
+              />
             </Stack>
             <EmailField email={email} setEmail={setEmail} />
             <PasswordField password={password} setPassword={setPassword} />

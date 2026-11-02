@@ -21,7 +21,9 @@ import { partialFailureText, pluralize } from "../../_helpers/format.helper";
 const testRuns = (count: number): string =>
   `${count} test ${pluralize(count, "run")}`;
 
-const PAST_TENSE: Record<string, string> = {
+type BulkAction = "Approve" | "Reject" | "Download" | "Delete" | "Clear";
+
+const PAST_TENSE: Record<BulkAction, string> = {
   Approve: "Approved",
   Reject: "Rejected",
   Delete: "Deleted",
@@ -29,58 +31,57 @@ const PAST_TENSE: Record<string, string> = {
   Clear: "Cleared",
 };
 
-const REVIEW_VERBS = new Set(["Approve", "Reject"]);
-
-type BulkAction = "Approve" | "Reject" | "Download" | "Delete" | "Clear";
+const isReview = (action: BulkAction | null): boolean =>
+  action === "Approve" || action === "Reject";
 
 const ACTION_BUTTONS: {
   action: BulkAction;
-  title: string;
+  tooltip: string;
   ariaLabel: string;
   icon: ReactNode;
 }[] = [
   {
     action: "Approve",
-    title: "Approve unresolved in selected",
+    tooltip: "Approve unresolved in selected",
     ariaLabel: "approve",
     icon: <ThumbUp data-testid="ThumbUpIcon" />,
   },
   {
     action: "Reject",
-    title: "Reject unresolved in selected",
+    tooltip: "Reject unresolved in selected",
     ariaLabel: "reject",
     icon: <ThumbDown />,
   },
   {
     action: "Download",
-    title: "Download images for selected",
+    tooltip: "Download images for selected",
     ariaLabel: "download",
     icon: <CloudDownload data-testid="CloudDownloadIcon" />,
   },
   {
     action: "Delete",
-    title: "Delete selected",
+    tooltip: "Delete selected",
     ariaLabel: "delete",
     icon: <Delete data-testid="DeleteIcon" />,
   },
   {
     action: "Clear",
-    title: "Clear ignore areas for selected",
+    tooltip: "Clear ignore areas for selected",
     ariaLabel: "clear ignore area",
     icon: <LayersClear data-testid="LayersClearIcon" />,
   },
 ];
 
 const processedText = (
-  verb: string,
+  verb: BulkAction,
   eligibleCount: number,
   selectedCount: number,
 ): string =>
-  REVIEW_VERBS.has(verb)
+  isReview(verb)
     ? `${testRuns(eligibleCount)} ${PAST_TENSE[verb].toLowerCase()}.`
     : `${testRuns(selectedCount)} processed.`;
 
-const partialText = (verb: string, result: BulkResult): string =>
+const partialText = (verb: BulkAction, result: BulkResult): string =>
   partialFailureText(
     PAST_TENSE[verb],
     result,
@@ -135,7 +136,7 @@ export const BulkOperation = ({
       : `${verb} Test Runs`;
 
   const confirmationText = (): string => {
-    if (!REVIEW_VERBS.has(verb)) {
+    if (!isReview(action)) {
       return `Are you sure you want to ${verb.toLowerCase()} ${
         shownSelectedIds.length
       } items?`;
@@ -223,10 +224,10 @@ export const BulkOperation = ({
   return (
     <Fragment>
       {ACTION_BUTTONS.map(
-        ({ action: buttonAction, title, ariaLabel, icon }) => (
+        ({ action: buttonAction, tooltip, ariaLabel, icon }) => (
           <Tooltip
             key={buttonAction}
-            title={`${title} ${selectionNoun}.`}
+            title={`${tooltip} ${selectionNoun}.`}
             aria-label={ariaLabel}
           >
             <span>
@@ -248,10 +249,13 @@ export const BulkOperation = ({
         onCancel={() => setAction(null)}
         content={<Typography>{confirmationText()}</Typography>}
         onSubmit={() => {
+          if (!action) {
+            return;
+          }
           // a download changes no run, so its selection stays
           const consumesSelection = action !== "Download";
           const message = processedText(
-            verb,
+            action,
             idsEligibleForApproveOrReject.length,
             shownSelectedIds.length,
           );
@@ -263,12 +267,12 @@ export const BulkOperation = ({
                 onProcessed(result.failed.map((failure) => failure.id));
               }
               const undo = undoSnackbarOptions({
-                ids: REVIEW_VERBS.has(verb) ? result.succeeded : [],
+                ids: isReview(action) ? result.succeeded : [],
                 undoneText: `${testRuns(result.succeeded.length)} restored.`,
                 enqueueSnackbar,
               });
               if (result.failed.length > 0) {
-                enqueueSnackbar(partialText(verb, result), {
+                enqueueSnackbar(partialText(action, result), {
                   variant: "warning",
                   ...undo,
                 });

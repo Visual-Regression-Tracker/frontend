@@ -1,4 +1,5 @@
-import { GridLegacy as Grid, IconButton } from "@mui/material";
+import { Fragment } from "react";
+import { IconButton } from "@mui/material";
 import {
   Fullscreen,
   FullscreenExit,
@@ -9,7 +10,6 @@ import { Tooltip } from "../Tooltip";
 import { clampScale } from "../../_helpers/scale.helper";
 
 const SCALE_STEP = 1.2;
-const scaleActionsSx = { display: "flex", alignItems: "center" } as const;
 
 interface ZoomControlsProps {
   scale: number;
@@ -24,7 +24,7 @@ export const ZoomControls = ({
   onOriginalSize,
   onFit,
 }: ZoomControlsProps) => (
-  <Grid item xs={3} sx={scaleActionsSx}>
+  <Fragment>
     <Tooltip title={"Zoom In"}>
       <IconButton
         onClick={() => onScaleChange(clampScale(scale * SCALE_STEP))}
@@ -51,5 +51,5 @@ export const ZoomControls = ({
         <FullscreenExit data-testid="FullscreenExitIcon" />
       </IconButton>
     </Tooltip>
-  </Grid>
+  </Fragment>
 );
