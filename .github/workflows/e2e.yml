@@ -25,9 +25,9 @@ jobs:
     timeout-minutes: 25
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           repository: Visual-Regression-Tracker/backend
           ref: ${{ inputs.backend_ref || 'master' }}
@@ -42,7 +42,7 @@ jobs:
           test "$(docker wait vrt_migration)" = 0
           timeout 120 sh -c 'until curl -s -o /dev/null http://localhost:4200; do sleep 2; done'
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
           node-version-file: .nvmrc
           cache: npm
@@ -81,7 +81,7 @@ jobs:
         working-directory: backend
         run: docker compose logs --no-color
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         if: always()
         with:
           name: e2e-report
