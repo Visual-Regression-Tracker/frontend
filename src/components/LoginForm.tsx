@@ -90,7 +90,7 @@ const LoginForm = () => {
       <Card>
         <CardContent id={LOCATOR_LOGIN_FORM} sx={{ p: 3 }}>
           <Stack spacing={2}>
-            <EmailField email={email} setEmail={setEmail} />
+            <EmailField value={email} onChange={setEmail} />
             <PasswordField password={password} setPassword={setPassword} />
             <Button
               type="submit"

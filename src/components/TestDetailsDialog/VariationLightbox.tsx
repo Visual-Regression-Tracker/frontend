@@ -68,13 +68,10 @@ export const VariationLightbox = ({
   onClose,
 }: VariationLightboxProps) => {
   const run = preview ? runs[preview.index] : undefined;
-  const index = preview?.index ?? 0;
-  const showDiff = preview?.showDiff ?? false;
-  const total = runs.length;
 
   return (
     <Dialog open={!!run} onClose={onClose} maxWidth="xl" fullWidth>
-      {run && (
+      {preview && run && (
         <>
           <DialogTitle>
             <Box
@@ -83,17 +80,20 @@ export const VariationLightbox = ({
               justifyContent="space-between"
             >
               <Box display="flex" alignItems="center">
-                <IconButton onClick={() => onStep(-1)} disabled={index === 0}>
+                <IconButton
+                  onClick={() => onStep(-1)}
+                  disabled={preview.index === 0}
+                >
                   <ChevronLeftIcon />
                 </IconButton>
                 <IconButton
                   onClick={() => onStep(1)}
-                  disabled={index === total - 1}
+                  disabled={preview.index === runs.length - 1}
                 >
                   <ChevronRightIcon />
                 </IconButton>
                 <span>
-                  {run.name} ({index + 1}/{total})
+                  {run.name} ({preview.index + 1}/{runs.length})
                 </span>
               </Box>
               <Box display="flex" alignItems="center">
@@ -101,7 +101,7 @@ export const VariationLightbox = ({
                   <FormControlLabel
                     control={
                       <Switch
-                        checked={showDiff}
+                        checked={preview.showDiff}
                         onChange={(e) => onShowDiffChange(e.target.checked)}
                       />
                     }
@@ -138,7 +138,10 @@ export const VariationLightbox = ({
                 />
               </LightboxHalf>
               <LightboxHalf>
-                <LightboxImg src={imageFor(run, showDiff)} alt="checkpoint" />
+                <LightboxImg
+                  src={imageFor(run, preview.showDiff)}
+                  alt="checkpoint"
+                />
               </LightboxHalf>
             </LightboxRow>
           </DialogContent>

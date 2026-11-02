@@ -1,18 +1,18 @@
-import type { ChangeEvent, Dispatch, SetStateAction } from "react";
+import type { ChangeEvent } from "react";
 import { TextValidator } from "react-material-ui-form-validator";
 
 interface EmailFieldProps {
-  email: string;
-  setEmail: Dispatch<SetStateAction<string>>;
+  value: string;
+  onChange: (value: string) => void;
 }
 
-const EmailField = ({ email, setEmail }: EmailFieldProps) => (
+const EmailField = ({ value, onChange }: EmailFieldProps) => (
   <TextValidator
     validators={["isEmail"]}
     errorMessages={["Enter a valid email."]}
     id="email"
     name="email"
-    value={email}
+    value={value}
     label={"Email address"}
     type="text"
     variant="outlined"
@@ -20,7 +20,7 @@ const EmailField = ({ email, setEmail }: EmailFieldProps) => (
     fullWidth
     inputProps={{
       onChange: (event: ChangeEvent<HTMLInputElement>) =>
-        setEmail(event.target.value),
+        onChange(event.target.value),
       "data-testid": "email",
     }}
   />

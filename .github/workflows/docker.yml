@@ -1,6 +1,7 @@
 name: Docker image
 
 # amd64 and arm64, so Apple Silicon and Graviton hosts run the image natively
+# a vX.Y.Z tag publishes X.Y.Z; a manual run with an existing tag republishes it
 
 on:
   push:

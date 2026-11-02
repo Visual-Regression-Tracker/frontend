@@ -18,8 +18,8 @@ export const WholeNumberField = ({
     name={name}
     validators={["minNumber:1"]}
     errorMessages={["Enter greater than 1"]}
-    InputProps={{
-      inputProps: {
+    slotProps={{
+      htmlInput: {
         min: 1,
         step: 1,
       },

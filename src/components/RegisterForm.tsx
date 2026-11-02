@@ -57,7 +57,7 @@ const RegisterForm = () => {
                 onChange={setLastName}
               />
             </Stack>
-            <EmailField email={email} setEmail={setEmail} />
+            <EmailField value={email} onChange={setEmail} />
             <PasswordField password={password} setPassword={setPassword} />
             <Button
               type="submit"
