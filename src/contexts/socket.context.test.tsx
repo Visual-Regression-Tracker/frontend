@@ -34,28 +34,41 @@ vi.mock("../_config/env.config", () => ({
   OIDC_AUTO_REDIRECT: false,
 }));
 
-const handlers = vi.hoisted(
-  () => new Map<string, (payload: unknown) => void>(),
-);
+type Listener = (payload?: unknown) => void;
+
+const handlers = vi.hoisted(() => new Map<string, Set<Listener>>());
 const fakeSocket = vi.hoisted(() => ({
-  on: vi.fn((event: string, handler: (payload: unknown) => void) => {
-    handlers.set(event, handler);
+  connected: true,
+  on: vi.fn((event: string, handler: Listener) => {
+    handlers.set(event, (handlers.get(event) ?? new Set()).add(handler));
   }),
-  removeAllListeners: vi.fn(() => handlers.clear()),
+  off: vi.fn((event: string, handler: Listener) => {
+    handlers.get(event)?.delete(handler);
+    if (handlers.get(event)?.size === 0) handlers.delete(event);
+  }),
   disconnect: vi.fn(),
+  emit: vi.fn<(event: string, body?: unknown) => void>(),
 }));
 
 vi.mock("socket.io-client", () => ({
   default: vi.fn(() => fakeSocket),
 }));
 
-const emit = (event: string, payload: unknown) => {
-  const handler = handlers.get(event);
-  if (!handler) {
+// an event from the server
+const receive = (event: string, payload?: unknown) => {
+  const listeners = handlers.get(event);
+  if (!listeners) {
     throw new Error(`nothing is listening to ${event}`);
   }
-  act(() => handler(payload));
+  act(() => listeners.forEach((listener) => listener(payload)));
 };
+
+const reconnect = () => receive("connect");
+
+const sent = (event: string) =>
+  fakeSocket.emit.mock.calls
+    .filter(([name]) => name === event)
+    .map(([, body]) => body);
 
 const build = (id: string, changes: Partial<Build> = {}): Build => ({
   ...TEST_BUILD_FAILED,
@@ -91,6 +104,9 @@ const Consumer = ({ builds }: { builds: Build[] }) => {
 
   return (
     <>
+      <button onClick={() => selectProject(projectDispatch, OTHER_PROJECT_ID)}>
+        Open another project
+      </button>
       <div data-testid="selectedBuild">
         {selectedBuild ? `${selectedBuild.id}:${selectedBuild.status}` : "none"}
       </div>
@@ -175,6 +191,7 @@ const renderSocket = async ({
 describe("SocketProvider", () => {
   beforeEach(() => {
     handlers.clear();
+    fakeSocket.connected = true;
     // clearMocks keeps implementations, but a restored spy would not
     vi.mocked(socketIOClient).mockReturnValue(fakeSocket as never);
   });
@@ -191,6 +208,7 @@ describe("SocketProvider", () => {
       "build_created",
       "build_deleted",
       "build_updated",
+      "connect",
       "connect_error",
       "testRun_created",
       "testRun_deleted",
@@ -262,7 +280,7 @@ describe("SocketProvider", () => {
       await renderSocket();
       expect(loggedIn().getByText("true")).toBeVisible();
 
-      emit("connect_error", new Error(SOCKET_UNAUTHORIZED));
+      receive("connect_error", new Error(SOCKET_UNAUTHORIZED));
 
       expect(loggedIn().getByText("false")).toBeVisible();
       expect(localStorage.getItem("user")).toBeNull();
@@ -271,9 +289,86 @@ describe("SocketProvider", () => {
     it("stays logged in when the connection fails for another reason", async () => {
       await renderSocket();
 
-      emit("connect_error", new Error("xhr poll error"));
+      receive("connect_error", new Error("xhr poll error"));
 
       expect(loggedIn().getByText("true")).toBeVisible();
+    });
+  });
+
+  describe("rooms", () => {
+    it("joins the room of the selected project and the room of the open build", async () => {
+      await renderSocket();
+
+      expect(sent("join")).toEqual(
+        expect.arrayContaining([
+          { projectId: TEST_PROJECT.id },
+          { buildId: SELECTED_BUILD.id },
+        ]),
+      );
+      expect(sent("leave")).toEqual([]);
+    });
+
+    it("joins only the project's room while no build is open", async () => {
+      await renderSocket({ openBuild: null });
+
+      expect(sent("join")).toEqual([{ projectId: TEST_PROJECT.id }]);
+    });
+
+    it("leaves the project's room for the room of the project opened next", async () => {
+      const { user } = await renderSocket({ openBuild: null });
+      fakeSocket.emit.mockClear();
+
+      await user.click(
+        screen.getByRole("button", { name: "Open another project" }),
+      );
+
+      expect(sent("leave")).toEqual([{ projectId: TEST_PROJECT.id }]);
+      expect(sent("join")).toEqual([{ projectId: OTHER_PROJECT_ID }]);
+    });
+
+    it("joins its rooms again when the connection comes back", async () => {
+      await renderSocket();
+      fakeSocket.emit.mockClear();
+
+      reconnect();
+
+      expect(sent("join")).toHaveLength(2);
+      expect(sent("join")).toEqual(
+        expect.arrayContaining([
+          { projectId: TEST_PROJECT.id },
+          { buildId: SELECTED_BUILD.id },
+        ]),
+      );
+    });
+
+    it("does not join a room again after it left it", async () => {
+      const { user } = await renderSocket({ openBuild: null });
+      await user.click(
+        screen.getByRole("button", { name: "Open another project" }),
+      );
+      fakeSocket.emit.mockClear();
+
+      reconnect();
+
+      expect(sent("join")).toEqual([{ projectId: OTHER_PROJECT_ID }]);
+    });
+  });
+
+  describe("rooms while disconnected", () => {
+    it("joins once the socket connects and sends nothing before", async () => {
+      fakeSocket.connected = false;
+      const { user } = await renderSocket({ openBuild: null });
+
+      await user.click(
+        screen.getByRole("button", { name: "Open another project" }),
+      );
+      expect(fakeSocket.emit).not.toHaveBeenCalled();
+
+      fakeSocket.connected = true;
+      reconnect();
+
+      expect(sent("join")).toEqual([{ projectId: OTHER_PROJECT_ID }]);
+      expect(sent("leave")).toEqual([]);
     });
   });
 
@@ -281,7 +376,10 @@ describe("SocketProvider", () => {
     it("puts a new build of the selected project first in the list", async () => {
       await renderSocket({ builds: [SELECTED_BUILD] });
 
-      emit("build_created", build("new-build", { status: BuildStatus.passed }));
+      receive(
+        "build_created",
+        build("new-build", { status: BuildStatus.passed }),
+      );
 
       expect(listed("builds")).toEqual([
         "new-build:passed",
@@ -292,7 +390,10 @@ describe("SocketProvider", () => {
     it("ignores a build of another project", async () => {
       await renderSocket({ builds: [SELECTED_BUILD] });
 
-      emit("build_created", build("foreign", { projectId: OTHER_PROJECT_ID }));
+      receive(
+        "build_created",
+        build("foreign", { projectId: OTHER_PROJECT_ID }),
+      );
 
       expect(listed("builds")).toEqual(["selected-build:failed"]);
     });
@@ -303,7 +404,7 @@ describe("SocketProvider", () => {
       const untouched = build("untouched");
       await renderSocket({ builds: [SELECTED_BUILD, untouched] });
 
-      emit("build_updated", [
+      receive("build_updated", [
         build("untouched", { status: BuildStatus.passed }),
         build("not-in-list", { status: BuildStatus.passed }),
       ]);
@@ -317,7 +418,7 @@ describe("SocketProvider", () => {
     it("updates the build that is open", async () => {
       await renderSocket();
 
-      emit("build_updated", [
+      receive("build_updated", [
         build(SELECTED_BUILD.id, { status: BuildStatus.passed }),
       ]);
 
@@ -330,7 +431,7 @@ describe("SocketProvider", () => {
     it("ignores updates to builds of another project", async () => {
       await renderSocket();
 
-      emit("build_updated", [
+      receive("build_updated", [
         build(SELECTED_BUILD.id, {
           status: BuildStatus.passed,
           projectId: OTHER_PROJECT_ID,
@@ -348,7 +449,7 @@ describe("SocketProvider", () => {
     it("removes the build from the list", async () => {
       await renderSocket({ builds: [SELECTED_BUILD, build("other")] });
 
-      emit("build_deleted", build("other"));
+      receive("build_deleted", build("other"));
 
       expect(listed("builds")).toEqual(["selected-build:failed"]);
     });
@@ -358,7 +459,7 @@ describe("SocketProvider", () => {
     it("adds the new test runs of the open build", async () => {
       await renderSocket({ testRuns: [testRun("existing")] });
 
-      emit("testRun_created", [testRun("created-1"), testRun("created-2")]);
+      receive("testRun_created", [testRun("created-1"), testRun("created-2")]);
 
       expect(listed("testRuns")).toEqual([
         "existing:unresolved",
@@ -370,7 +471,7 @@ describe("SocketProvider", () => {
     it("ignores test runs of other builds", async () => {
       await renderSocket({ testRuns: [testRun("existing")] });
 
-      emit("testRun_created", [
+      receive("testRun_created", [
         testRun("created-elsewhere", { buildId: "another-build" }),
       ]);
 
@@ -380,7 +481,7 @@ describe("SocketProvider", () => {
     it("does not add a test run twice", async () => {
       await renderSocket({ testRuns: [testRun("existing")] });
 
-      emit("testRun_created", [testRun("existing"), testRun("fresh")]);
+      receive("testRun_created", [testRun("existing"), testRun("fresh")]);
 
       expect(listed("testRuns")).toEqual([
         "existing:unresolved",
@@ -391,10 +492,10 @@ describe("SocketProvider", () => {
     it("keeps the state an earlier update brought over a late created batch", async () => {
       await renderSocket();
 
-      emit("testRun_updated", [
+      receive("testRun_updated", [
         testRun("uploaded", { status: TestStatus.approved }),
       ]);
-      emit("testRun_created", [testRun("uploaded")]);
+      receive("testRun_created", [testRun("uploaded")]);
 
       expect(listed("testRuns")).toEqual(["uploaded:approved"]);
     });
@@ -402,7 +503,7 @@ describe("SocketProvider", () => {
     it("ignores test runs while no build is open", async () => {
       await renderSocket({ openBuild: null });
 
-      emit("testRun_created", [testRun("created")]);
+      receive("testRun_created", [testRun("created")]);
 
       expect(listed("testRuns")).toEqual([]);
     });
@@ -414,7 +515,7 @@ describe("SocketProvider", () => {
         testRuns: [testRun("first"), testRun("second")],
       });
 
-      emit("testRun_updated", [
+      receive("testRun_updated", [
         testRun("second", { status: TestStatus.approved }),
       ]);
 
@@ -427,7 +528,7 @@ describe("SocketProvider", () => {
     it("ignores updates to test runs of other builds", async () => {
       await renderSocket({ testRuns: [testRun("first")] });
 
-      emit("testRun_updated", [
+      receive("testRun_updated", [
         testRun("first", {
           status: TestStatus.approved,
           buildId: "another-build",
@@ -440,7 +541,7 @@ describe("SocketProvider", () => {
     it("ignores updates while no build is open", async () => {
       await renderSocket({ openBuild: null, testRuns: [testRun("first")] });
 
-      emit("testRun_updated", [
+      receive("testRun_updated", [
         testRun("first", { status: TestStatus.approved }),
       ]);
 
@@ -454,7 +555,7 @@ describe("SocketProvider", () => {
         testRuns: [testRun("first"), testRun("second"), testRun("third")],
       });
 
-      emit("testRun_deleted", [testRun("first"), testRun("third")]);
+      receive("testRun_deleted", [testRun("first"), testRun("third")]);
 
       expect(listed("testRuns")).toEqual(["second:unresolved"]);
     });
@@ -462,7 +563,9 @@ describe("SocketProvider", () => {
     it("ignores deletions of test runs of other builds", async () => {
       await renderSocket({ testRuns: [testRun("first")] });
 
-      emit("testRun_deleted", [testRun("first", { buildId: "another-build" })]);
+      receive("testRun_deleted", [
+        testRun("first", { buildId: "another-build" }),
+      ]);
 
       expect(listed("testRuns")).toEqual(["first:unresolved"]);
     });
@@ -470,15 +573,25 @@ describe("SocketProvider", () => {
 
   it("re-registers its listeners instead of stacking them when the open build changes", async () => {
     await renderSocket();
-    const removalsBefore = fakeSocket.removeAllListeners.mock.calls.length;
 
-    emit("build_updated", [
+    receive("build_updated", [
       build(SELECTED_BUILD.id, { status: BuildStatus.passed }),
     ]);
 
-    expect(fakeSocket.removeAllListeners.mock.calls.length).toBeGreaterThan(
-      removalsBefore,
-    );
-    expect(handlers.size).toBe(7);
+    expect(
+      Object.fromEntries(
+        [...handlers].map(([event, listeners]) => [event, listeners.size]),
+      ),
+    ).toEqual({
+      build_created: 1,
+      build_deleted: 1,
+      build_updated: 1,
+      // one per room: the project's and the open build's
+      connect: 2,
+      connect_error: 1,
+      testRun_created: 1,
+      testRun_deleted: 1,
+      testRun_updated: 1,
+    });
   });
 });

@@ -1,7 +1,7 @@
 ### STAGE 1: Build ###
 # This image is around 50 megabytes
 # The built ui is static files, so build it once on the native platform for every target platform
-FROM --platform=$BUILDPLATFORM node:22-alpine AS builder
+FROM --platform=$BUILDPLATFORM node:26-alpine AS builder
 
 # Create app directory
 WORKDIR /app
@@ -22,7 +22,7 @@ RUN npm run build
 
 ### STAGE 2: Run ###
 # This image is around 5 megabytes
-FROM nginx:1.25-alpine3.17-slim
+FROM nginx:1.30-alpine-slim
 
 COPY /nginx /etc/nginx/conf.d
 
