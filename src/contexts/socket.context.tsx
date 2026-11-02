@@ -91,31 +91,37 @@ function SocketProvider({ children }: Readonly<SocketProviderProps>) {
     };
   }, [token]);
 
-  useEffect(() => {
-    if (state.socket) {
-      state.socket.removeAllListeners();
+  useRoom(state.socket, "projectId", selectedProjectId);
+  useRoom(state.socket, "buildId", selectedBuild?.id);
 
-      state.socket.on("connect_error", function (error: Error) {
+  useEffect(() => {
+    const socket = state.socket;
+    if (!socket) {
+      return;
+    }
+
+    const listeners = {
+      connect_error(error: Error) {
         // any other reason is a failed attempt that socket.io retries
         if (error.message === SOCKET_UNAUTHORIZED) {
           logout(userDispatch);
         }
-      });
+      },
 
-      state.socket.on("build_created", function (build: Build) {
+      build_created(build: Build) {
         if (build.projectId === selectedProjectId) {
           addBuild(buildDispatch, build);
         }
-      });
+      },
 
-      state.socket.on("build_updated", function (builds: Build[]) {
+      build_updated(builds: Build[]) {
         updateBuild(
           buildDispatch,
           builds.filter((build) => build.projectId === selectedProjectId),
         );
-      });
+      },
 
-      state.socket.on("build_deleted", function (build: Build) {
+      build_deleted(build: Build) {
         const deletedHere = consumeOwnDelete(build.id);
         buildDispatch({
           type: "delete",
@@ -128,9 +134,9 @@ function SocketProvider({ children }: Readonly<SocketProviderProps>) {
             enqueueSnackbar("This build was deleted", { variant: "info" });
           }
         }
-      });
+      },
 
-      state.socket.on("testRun_created", function (testRuns: TestRun[]) {
+      testRun_created(testRuns: TestRun[]) {
         if (!selectedBuild) {
           return;
         }
@@ -144,9 +150,9 @@ function SocketProvider({ children }: Readonly<SocketProviderProps>) {
         }
 
         addTestRun(testRunDispatch, created);
-      });
+      },
 
-      state.socket.on("testRun_updated", function (testRuns: TestRun[]) {
+      testRun_updated(testRuns: TestRun[]) {
         if (!selectedBuild) {
           return;
         }
@@ -159,9 +165,9 @@ function SocketProvider({ children }: Readonly<SocketProviderProps>) {
         }
 
         updateTestRun(testRunDispatch, updated);
-      });
+      },
 
-      state.socket.on("testRun_deleted", function (testRuns: TestRun[]) {
+      testRun_deleted(testRuns: TestRun[]) {
         if (!selectedBuild) {
           return;
         }
@@ -180,8 +186,18 @@ function SocketProvider({ children }: Readonly<SocketProviderProps>) {
           navigate(buildTestRunLocation(selectedBuild.id));
           enqueueSnackbar("This test run was deleted", { variant: "info" });
         }
-      });
+      },
+    };
+
+    for (const [event, listener] of Object.entries(listeners)) {
+      socket.on(event, listener);
     }
+
+    return () => {
+      for (const [event, listener] of Object.entries(listeners)) {
+        socket.off(event, listener);
+      }
+    };
   }, [
     state.socket,
     selectedBuild,
@@ -200,6 +216,33 @@ function SocketProvider({ children }: Readonly<SocketProviderProps>) {
       </SocketDispatchContext.Provider>
     </SocketStateContext.Provider>
   );
+}
+
+// with WS_BROADCAST off the server sends build events to project rooms and test run events to build rooms
+function useRoom(
+  socket: Socket | undefined,
+  key: "projectId" | "buildId",
+  id: string | null | undefined,
+) {
+  useEffect(() => {
+    if (!socket || !id) {
+      return;
+    }
+    const room = { [key]: id };
+    const join = () => socket.emit("join", room);
+    // a reconnected socket starts in no room; emits while disconnected would queue up and replay
+    if (socket.connected) {
+      join();
+    }
+    socket.on("connect", join);
+
+    return () => {
+      socket.off("connect", join);
+      if (socket.connected) {
+        socket.emit("leave", room);
+      }
+    };
+  }, [socket, key, id]);
 }
 
 function useSocketDispatch() {
