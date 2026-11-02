@@ -1,11 +1,10 @@
 import { usersService } from "./users.service";
-import { API, stubFetch } from "../_test/fetch.helper";
+import { API, AUTH, stubFetch } from "../_test/fetch.helper";
 import { TEST_USER } from "../_test/test.data.helper";
 import { Role } from "../types/user";
 
 vi.mock("../_config/env.config", () => ({ API_URL: "http://api.test" }));
 
-const AUTH = { Authorization: "Bearer token-1" };
 const JSON_HEADERS = { "Content-Type": "application/json" };
 const storedUser = () => JSON.parse(localStorage.getItem("user") ?? "null");
 
