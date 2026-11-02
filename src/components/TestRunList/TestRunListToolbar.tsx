@@ -29,34 +29,16 @@ declare module "@mui/x-data-grid" {
 export const TestRunListToolbar = ({
   selectedIds,
   rows,
-  view,
-  onViewChange,
-  density,
-  onDensityChange,
-  grouped,
-  onGroupedChange,
-  groupByAxis,
-  showDiff,
-  onShowDiffChange,
   onProcessed,
+  ...controls
 }: ToolbarPropsOverrides) => (
   <Toolbar variant="dense">
-    <TestRunListControls
-      view={view}
-      onViewChange={onViewChange}
-      density={density}
-      onDensityChange={onDensityChange}
-      grouped={grouped}
-      onGroupedChange={onGroupedChange}
-      groupByAxis={groupByAxis}
-      showDiff={showDiff}
-      onShowDiffChange={onShowDiffChange}
-    />
+    <TestRunListControls {...controls} />
     <Box marginLeft="auto">
       <BulkOperation
         selectedIds={selectedIds}
         rows={rows}
-        selectionNoun={view === "grid" ? "cards" : "rows"}
+        selectionNoun={controls.view === "grid" ? "cards" : "rows"}
         onProcessed={onProcessed}
       />
     </Box>

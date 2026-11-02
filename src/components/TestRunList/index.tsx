@@ -26,6 +26,7 @@ import {
   GridSortDirection,
   GridSortModel,
   GridRowSelectionModel,
+  type ToolbarPropsOverrides,
 } from "@mui/x-data-grid";
 import { TestRunListToolbar } from "./TestRunListToolbar";
 import { EmptyState } from "../EmptyState";
@@ -555,22 +556,20 @@ const TestRunList = () => {
     testRunDispatch,
   ]);
 
-  const gridSlotProps = useMemo<DataGridProps["slotProps"]>(
+  const toolbarProps = useMemo<ToolbarPropsOverrides>(
     () => ({
-      toolbar: {
-        selectedIds,
-        rows: filteredRows,
-        view,
-        onViewChange: setView,
-        density,
-        onDensityChange: setDensity,
-        grouped: groupVariations,
-        onGroupedChange: setGroupVariations,
-        groupByAxis,
-        showDiff,
-        onShowDiffChange: setShowDiff,
-        onProcessed: setSelectedIds,
-      },
+      selectedIds,
+      rows: filteredRows,
+      view,
+      onViewChange: setView,
+      density,
+      onDensityChange: setDensity,
+      grouped: groupVariations,
+      onGroupedChange: setGroupVariations,
+      groupByAxis,
+      showDiff,
+      onShowDiffChange: setShowDiff,
+      onProcessed: setSelectedIds,
     }),
     [
       selectedIds,
@@ -581,6 +580,11 @@ const TestRunList = () => {
       groupByAxis,
       showDiff,
     ],
+  );
+
+  const gridSlotProps = useMemo<DataGridProps["slotProps"]>(
+    () => ({ toolbar: { ...toolbarProps } }),
+    [toolbarProps],
   );
 
   const onRowSelectionModelChange = useCallback(
@@ -670,20 +674,7 @@ const TestRunList = () => {
               borderRadius={1}
               color="text.primary"
             >
-              <TestRunListToolbar
-                selectedIds={selectedIds}
-                rows={sortedRows}
-                view={view}
-                onViewChange={setView}
-                density={density}
-                onDensityChange={setDensity}
-                grouped={groupVariations}
-                onGroupedChange={setGroupVariations}
-                groupByAxis={groupByAxis}
-                showDiff={showDiff}
-                onShowDiffChange={setShowDiff}
-                onProcessed={setSelectedIds}
-              />
+              <TestRunListToolbar {...toolbarProps} rows={sortedRows} />
               <TestRunGridHeader
                 sort={gridSort}
                 onSortChange={setGridSort}
