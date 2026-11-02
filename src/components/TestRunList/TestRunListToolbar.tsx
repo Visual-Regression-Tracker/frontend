@@ -26,7 +26,7 @@ declare module "@mui/x-data-grid" {
   }
 }
 
-export const DataGridCustomToolbar = ({
+export const TestRunListToolbar = ({
   selectedIds,
   rows,
   view,
@@ -56,7 +56,7 @@ export const DataGridCustomToolbar = ({
       <BulkOperation
         selectedIds={selectedIds}
         rows={rows}
-        selectionNoun="rows"
+        selectionNoun={view === "grid" ? "cards" : "rows"}
         onProcessed={onProcessed}
       />
     </Box>

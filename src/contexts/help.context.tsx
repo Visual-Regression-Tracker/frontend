@@ -1,4 +1,10 @@
-import { type ReactNode, createContext, useContext, useReducer } from "react";
+import {
+  type ReactNode,
+  createContext,
+  useContext,
+  useEffect,
+  useReducer,
+} from "react";
 import type { Step } from "react-joyride";
 
 interface ISetStepAction {
@@ -70,4 +76,17 @@ function setHelpSteps(dispatch: Dispatch, data: Step[]) {
   });
 }
 
-export { HelpProvider, useHelpDispatch, useHelpState, setHelpSteps };
+function useHelpSteps(steps: Step[]) {
+  const dispatch = useHelpDispatch();
+  useEffect(() => {
+    setHelpSteps(dispatch, steps);
+  });
+}
+
+export {
+  HelpProvider,
+  useHelpDispatch,
+  useHelpState,
+  useHelpSteps,
+  setHelpSteps,
+};

@@ -10,23 +10,19 @@ import {
 } from "react";
 import {
   List,
-  ListItemButton,
-  ListItemText,
-  ListItemSecondaryAction,
   IconButton,
   Checkbox,
-  Chip,
   Typography,
   GridLegacy as Grid,
   Pagination,
-  LinearProgress,
   Menu,
   MenuItem,
   Box,
   Fade,
 } from "@mui/material";
-import { MoreVert, DeleteOutline } from "@mui/icons-material";
+import { DeleteOutline } from "@mui/icons-material";
 import { BuildListPlaceholder } from "./BuildListPlaceholder";
+import { BuildListItem } from "./BuildListItem";
 import { DebouncedTextField } from "../DebouncedTextField";
 import {
   useBuildState,
@@ -34,8 +30,6 @@ import {
   deleteBuild,
   useProjectState,
 } from "../../contexts";
-import { BuildStatusChip } from "../BuildStatusChip";
-import { formatDateTime } from "../../_helpers/format.helper";
 import { useSnackbar } from "notistack";
 import { TextValidator } from "react-material-ui-form-validator";
 import { Build } from "../../types";
@@ -178,10 +172,10 @@ const BuildList = () => {
     [buildDispatch, enqueueSnackbar, selectedProjectId, take, searchQuery],
   );
 
-  const handlePaginationChange = useCallback(
-    (page: number) => loadPage(page),
-    [loadPage],
-  );
+  const reloadAfterDeleting = (count: number) =>
+    loadPage(
+      Math.min(paginationPage, Math.max(1, Math.ceil((total - count) / take))),
+    );
 
   // A link names a build, not its page, so the list must ask for the page holding it.
   useEffect(() => {
@@ -233,9 +227,7 @@ const BuildList = () => {
       setBulkDeleting(false);
       clearSelection();
 
-      const remaining = total - deleted.length;
-      const lastPage = Math.max(1, Math.ceil(remaining / take));
-      handlePaginationChange(Math.min(paginationPage, lastPage));
+      reloadAfterDeleting(deleted.length);
     });
   };
 
@@ -301,89 +293,15 @@ const BuildList = () => {
               />
             ) : (
               buildList.map((build) => (
-                <Fragment key={build.id}>
-                  <ListItemButton
-                    selected={selectedBuild?.id === build.id}
-                    onClick={() => {
-                      selectBuildCalback(build.id);
-                    }}
-                    sx={{
-                      paddingRight: "48px",
-                      "&:hover .build-secondary-action": {
-                        visibility: "inherit",
-                      },
-                    }}
-                  >
-                    <Checkbox
-                      edge="start"
-                      size="small"
-                      checked={selectedIds.includes(build.id)}
-                      onClick={(event) => event.stopPropagation()}
-                      onChange={() => toggleSelect(build.id)}
-                    />
-                    <ListItemText
-                      disableTypography
-                      primary={
-                        <Typography
-                          variant="subtitle2"
-                          style={{
-                            wordWrap: "break-word",
-                          }}
-                        >
-                          {`#${build.number} ${build.ciBuildId || ""}`}
-                        </Typography>
-                      }
-                      secondary={
-                        <Grid container direction="column">
-                          <Grid item>
-                            <Typography variant="caption" color="textPrimary">
-                              {formatDateTime(build.createdAt)}
-                            </Typography>
-                          </Grid>
-                          {build.updatedAt && (
-                            <Grid item>
-                              <Typography
-                                variant="caption"
-                                color="textSecondary"
-                              >
-                                Last run: {formatDateTime(build.updatedAt)}
-                              </Typography>
-                            </Grid>
-                          )}
-                          <Grid item>
-                            <Grid container justifyContent="space-between">
-                              <Grid item>
-                                <Tooltip title={build.branchName}>
-                                  <Chip
-                                    size="small"
-                                    label={build.branchName}
-                                    style={{ maxWidth: 180 }}
-                                  />
-                                </Tooltip>
-                              </Grid>
-                              <Grid item>
-                                <BuildStatusChip status={build.status} />
-                              </Grid>
-                            </Grid>
-                          </Grid>
-                        </Grid>
-                      }
-                    />
-
-                    <ListItemSecondaryAction
-                      className="build-secondary-action"
-                      sx={{ visibility: "hidden" }}
-                    >
-                      <IconButton
-                        onClick={(event) => handleMenuClick(event, build)}
-                        size="large"
-                      >
-                        <MoreVert data-testid="MoreVertIcon" />
-                      </IconButton>
-                    </ListItemSecondaryAction>
-                  </ListItemButton>
-                  {build.isRunning && <LinearProgress />}
-                </Fragment>
+                <BuildListItem
+                  key={build.id}
+                  build={build}
+                  selected={selectedBuild?.id === build.id}
+                  checked={selectedIds.includes(build.id)}
+                  onOpen={() => selectBuildCalback(build.id)}
+                  onToggleChecked={() => toggleSelect(build.id)}
+                  onMenuClick={(event) => handleMenuClick(event, build)}
+                />
               ))
             )}
           </List>
@@ -397,7 +315,7 @@ const BuildList = () => {
               defaultPage={1}
               page={paginationPage}
               count={Math.ceil(total / take)}
-              onChange={(_event, page) => handlePaginationChange(page)}
+              onChange={(_event, page) => loadPage(page)}
             />
           </Grid>
         </Grid>
@@ -501,10 +419,7 @@ const BuildList = () => {
                   },
                 );
               })
-              .then(() => {
-                const lastPage = Math.max(1, Math.ceil((total - 1) / take));
-                handlePaginationChange(Math.min(paginationPage, lastPage));
-              })
+              .then(() => reloadAfterDeleting(1))
               .then(() => {
                 if (menuBuild.id === selectedBuild?.id) {
                   selectBuildCalback();

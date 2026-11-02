@@ -50,15 +50,10 @@ export class TestDetailsDialog {
 
   commentsBtn = this.page.getByRole("button", { name: "Comments" });
   comment = this.page.getByTestId("comment");
-  commentSaveBtn = this.page
-    .getByRole("tooltip")
-    .filter({ has: this.comment })
-    .getByRole("button", { name: "Save" });
+  commentPopper = this.page.getByRole("tooltip").filter({ has: this.comment });
+  commentSaveBtn = this.commentPopper.getByRole("button", { name: "Save" });
   // MUI's Fade sets opacity to 0 the moment it starts to close, 1 while open
-  commentBox = this.page
-    .getByRole("tooltip")
-    .filter({ has: this.comment })
-    .locator(".MuiPaper-root");
+  commentBox = this.commentPopper.locator(".MuiPaper-root");
 
   variations = this.page
     .getByRole("dialog")
@@ -97,7 +92,15 @@ export class TestDetailsDialog {
   }
 
   ignoreRects(): Promise<Rect[]> {
-    return this.checkpointPane.evaluate((pane) => {
+    return this.rects(true);
+  }
+
+  lockedRects(): Promise<Rect[]> {
+    return this.rects(false);
+  }
+
+  private rects(draggable: boolean): Promise<Rect[]> {
+    return this.checkpointPane.evaluate((pane, draggable) => {
       const { Konva } = window as unknown as KonvaWindow;
       const stage = Konva.stages.find((s) => pane.contains(s.container()));
 
@@ -107,7 +110,7 @@ export class TestDetailsDialog {
           // the resize handles of a selected area are rects too
           .filter((rect) => rect.getParent().getClassName() !== "Transformer")
           // the areas applied at upload are drawn too, and cannot be moved
-          .filter((rect) => rect.draggable())
+          .filter((rect) => rect.draggable() === draggable)
           .map((rect) => ({
             x: rect.x(),
             y: rect.y(),
@@ -115,25 +118,7 @@ export class TestDetailsDialog {
             height: rect.height(),
           }))
       );
-    });
-  }
-
-  lockedRects(): Promise<Rect[]> {
-    return this.checkpointPane.evaluate((pane) => {
-      const { Konva } = window as unknown as KonvaWindow;
-      const stage = Konva.stages.find((s) => pane.contains(s.container()));
-
-      return stage
-        .find("Rect")
-        .filter((rect) => rect.getParent().getClassName() !== "Transformer")
-        .filter((rect) => !rect.draggable())
-        .map((rect) => ({
-          x: rect.x(),
-          y: rect.y(),
-          width: rect.width(),
-          height: rect.height(),
-        }));
-    });
+    }, draggable);
   }
 
   hasSelection(): Promise<boolean> {

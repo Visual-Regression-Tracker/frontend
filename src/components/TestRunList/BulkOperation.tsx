@@ -1,4 +1,4 @@
-import { Fragment, useMemo, useState } from "react";
+import { Fragment, ReactNode, useMemo, useState } from "react";
 import { Typography, IconButton, LinearProgress } from "@mui/material";
 import { BaseModal } from "../BaseModal";
 import { useSnackbar } from "notistack";
@@ -11,7 +11,8 @@ import {
 } from "@mui/icons-material";
 import { staticService, testRunService } from "../../services";
 import { BulkResult, allSucceeded } from "../../services/testRun.service";
-import { TestRun, TestStatus } from "../../types";
+import { TestRun } from "../../types";
+import { isAwaitingReview } from "../../_helpers/testRunStatus.helper";
 import { Tooltip } from "../Tooltip";
 import { undoSnackbarOptions } from "../UndoSnackbarAction";
 import { TAG_FIELDS, tagValuesOf } from "../../_helpers/testRunTags.helper";
@@ -20,7 +21,9 @@ import { partialFailureText, pluralize } from "../../_helpers/format.helper";
 const testRuns = (count: number): string =>
   `${count} test ${pluralize(count, "run")}`;
 
-const PAST_TENSE: Record<string, string> = {
+type BulkAction = "Approve" | "Reject" | "Download" | "Delete" | "Clear";
+
+const PAST_TENSE: Record<BulkAction, string> = {
   Approve: "Approved",
   Reject: "Rejected",
   Delete: "Deleted",
@@ -28,18 +31,57 @@ const PAST_TENSE: Record<string, string> = {
   Clear: "Cleared",
 };
 
-const REVIEW_VERBS = new Set(["Approve", "Reject"]);
+const isReview = (action: BulkAction | null): boolean =>
+  action === "Approve" || action === "Reject";
+
+const ACTION_BUTTONS: {
+  action: BulkAction;
+  tooltip: string;
+  ariaLabel: string;
+  icon: ReactNode;
+}[] = [
+  {
+    action: "Approve",
+    tooltip: "Approve unresolved in selected",
+    ariaLabel: "approve",
+    icon: <ThumbUp data-testid="ThumbUpIcon" />,
+  },
+  {
+    action: "Reject",
+    tooltip: "Reject unresolved in selected",
+    ariaLabel: "reject",
+    icon: <ThumbDown />,
+  },
+  {
+    action: "Download",
+    tooltip: "Download images for selected",
+    ariaLabel: "download",
+    icon: <CloudDownload data-testid="CloudDownloadIcon" />,
+  },
+  {
+    action: "Delete",
+    tooltip: "Delete selected",
+    ariaLabel: "delete",
+    icon: <Delete data-testid="DeleteIcon" />,
+  },
+  {
+    action: "Clear",
+    tooltip: "Clear ignore areas for selected",
+    ariaLabel: "clear ignore area",
+    icon: <LayersClear data-testid="LayersClearIcon" />,
+  },
+];
 
 const processedText = (
-  verb: string,
+  verb: BulkAction,
   eligibleCount: number,
   selectedCount: number,
 ): string =>
-  REVIEW_VERBS.has(verb)
+  isReview(verb)
     ? `${testRuns(eligibleCount)} ${PAST_TENSE[verb].toLowerCase()}.`
     : `${testRuns(selectedCount)} processed.`;
 
-const partialText = (verb: string, result: BulkResult): string =>
+const partialText = (verb: BulkAction, result: BulkResult): string =>
   partialFailureText(
     PAST_TENSE[verb],
     result,
@@ -59,12 +101,7 @@ export const BulkOperation = ({
   onProcessed: (failedIds: string[]) => void;
 }) => {
   const { enqueueSnackbar } = useSnackbar();
-  const [approveDialogOpen, setApproveDialogOpen] = useState(false);
-  const [rejectDialogOpen, setRejectDialogOpen] = useState(false);
-  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [downloadDialogOpen, setDownloadDialogOpen] = useState(false);
-
-  const [clearIgnoreDialogOpen, setClearIgnoreDialogOpen] = useState(false);
+  const [action, setAction] = useState<BulkAction | null>(null);
 
   const [isProcessing, setIsProcessing] = useState(false);
 
@@ -83,9 +120,7 @@ export const BulkOperation = ({
   const rowsEligibleForApproveOrReject: TestRun[] = useMemo(
     () =>
       rows.filter(
-        (row) =>
-          selectedIdSet.has(row.id) &&
-          [TestStatus.new, TestStatus.unresolved].includes(row.status),
+        (row) => selectedIdSet.has(row.id) && isAwaitingReview(row.status),
       ),
     [selectedIdSet, rows],
   );
@@ -94,61 +129,14 @@ export const BulkOperation = ({
     [rowsEligibleForApproveOrReject],
   );
 
-  const toggleApproveDialogOpen = () => {
-    setApproveDialogOpen(!approveDialogOpen);
-  };
-
-  const toggleRejectDialogOpen = () => {
-    setRejectDialogOpen(!rejectDialogOpen);
-  };
-
-  const toggleDeleteDialogOpen = () => {
-    setDeleteDialogOpen(!deleteDialogOpen);
-  };
-
-  const toggleDownloadDialogOpen = () => {
-    setDownloadDialogOpen(!downloadDialogOpen);
-  };
-
-  const toggleClearIgnoreDialogOpen = () => {
-    setClearIgnoreDialogOpen(!clearIgnoreDialogOpen);
-  };
-
-  const getTitle = () => {
-    if (clearIgnoreDialogOpen) {
-      return "Clear Ignore Area For Selected Items";
-    }
-
-    return submitButtonText() + " Test Runs";
-  };
-
-  const submitButtonText = (): string => {
-    if (approveDialogOpen) {
-      return "Approve";
-    }
-
-    if (rejectDialogOpen) {
-      return "Reject";
-    }
-
-    if (deleteDialogOpen) {
-      return "Delete";
-    }
-
-    if (downloadDialogOpen) {
-      return "Download";
-    }
-
-    if (clearIgnoreDialogOpen) {
-      return "Clear";
-    }
-
-    return "";
-  };
+  const verb = action ?? "";
+  const title =
+    action === "Clear"
+      ? "Clear Ignore Area For Selected Items"
+      : `${verb} Test Runs`;
 
   const confirmationText = (): string => {
-    const verb = submitButtonText();
-    if (!approveDialogOpen && !rejectDialogOpen) {
+    if (!isReview(action)) {
       return `Are you sure you want to ${verb.toLowerCase()} ${
         shownSelectedIds.length
       } items?`;
@@ -167,34 +155,12 @@ export const BulkOperation = ({
     )} already settled.`;
   };
 
-  const closeModal = () => {
-    if (deleteDialogOpen) {
-      return toggleDeleteDialogOpen();
-    }
-
-    if (downloadDialogOpen) {
-      return toggleDownloadDialogOpen();
-    }
-
-    if (approveDialogOpen) {
-      return toggleApproveDialogOpen();
-    }
-
-    if (rejectDialogOpen) {
-      return toggleRejectDialogOpen();
-    }
-
-    if (clearIgnoreDialogOpen) {
-      return toggleClearIgnoreDialogOpen();
-    }
-  };
-
   const getBulkAction = (): Promise<BulkResult> => {
-    if (deleteDialogOpen) {
+    if (action === "Delete") {
       return testRunService.removeBulk(shownSelectedIds);
     }
 
-    if (downloadDialogOpen) {
+    if (action === "Download") {
       // one screen runs in several browsers and devices, so the name alone collides
       const images = shownSelectedRows.map((item) => ({
         filename: [item.name, ...tagValuesOf(item, TAG_FIELDS)].join(" - "),
@@ -206,11 +172,11 @@ export const BulkOperation = ({
         .then(() => allSucceeded(shownSelectedIds));
     }
 
-    if (rejectDialogOpen) {
+    if (action === "Reject") {
       return testRunService.rejectBulk(idsEligibleForApproveOrReject);
     }
 
-    if (approveDialogOpen) {
+    if (action === "Approve") {
       // the API takes one merge flag per request, so each kind goes on its own
       const mergeIds = rowsEligibleForApproveOrReject
         .filter((row) => row.merge)
@@ -255,113 +221,41 @@ export const BulkOperation = ({
       .then(() => allSucceeded(shownSelectedIds));
   };
 
-  const dismissDialog = () => {
-    if (deleteDialogOpen) {
-      return toggleDeleteDialogOpen();
-    }
-
-    if (downloadDialogOpen) {
-      return toggleDownloadDialogOpen();
-    }
-
-    if (approveDialogOpen) {
-      return toggleApproveDialogOpen();
-    }
-
-    if (clearIgnoreDialogOpen) {
-      return toggleClearIgnoreDialogOpen();
-    }
-
-    return toggleRejectDialogOpen();
-  };
-
   return (
     <Fragment>
-      <Tooltip
-        title={`Approve unresolved in selected ${selectionNoun}.`}
-        aria-label="approve"
-      >
-        <span>
-          <IconButton
-            disabled={selectedIds.length === 0}
-            onClick={toggleApproveDialogOpen}
-            size="large"
+      {ACTION_BUTTONS.map(
+        ({ action: buttonAction, tooltip, ariaLabel, icon }) => (
+          <Tooltip
+            key={buttonAction}
+            title={`${tooltip} ${selectionNoun}.`}
+            aria-label={ariaLabel}
           >
-            <ThumbUp data-testid="ThumbUpIcon" />
-          </IconButton>
-        </span>
-      </Tooltip>
-      <Tooltip
-        title={`Reject unresolved in selected ${selectionNoun}.`}
-        aria-label="reject"
-      >
-        <span>
-          <IconButton
-            disabled={selectedIds.length === 0}
-            onClick={toggleRejectDialogOpen}
-            size="large"
-          >
-            <ThumbDown />
-          </IconButton>
-        </span>
-      </Tooltip>
-      <Tooltip
-        title={`Download images for selected ${selectionNoun}.`}
-        aria-label="download"
-      >
-        <span>
-          <IconButton
-            disabled={selectedIds.length === 0}
-            onClick={toggleDownloadDialogOpen}
-            size="large"
-          >
-            <CloudDownload data-testid="CloudDownloadIcon" />
-          </IconButton>
-        </span>
-      </Tooltip>
-      <Tooltip title={`Delete selected ${selectionNoun}.`} aria-label="delete">
-        <span>
-          <IconButton
-            disabled={selectedIds.length === 0}
-            onClick={toggleDeleteDialogOpen}
-            size="large"
-          >
-            <Delete data-testid="DeleteIcon" />
-          </IconButton>
-        </span>
-      </Tooltip>
-      <Tooltip
-        title={`Clear ignore areas for selected ${selectionNoun}.`}
-        aria-label="clear ignore area"
-      >
-        <span>
-          <IconButton
-            disabled={selectedIds.length === 0}
-            onClick={toggleClearIgnoreDialogOpen}
-            size="large"
-          >
-            <LayersClear data-testid="LayersClearIcon" />
-          </IconButton>
-        </span>
-      </Tooltip>
+            <span>
+              <IconButton
+                disabled={selectedIds.length === 0}
+                onClick={() => setAction(buttonAction)}
+                size="large"
+              >
+                {icon}
+              </IconButton>
+            </span>
+          </Tooltip>
+        ),
+      )}
       <BaseModal
-        open={
-          deleteDialogOpen ||
-          downloadDialogOpen ||
-          approveDialogOpen ||
-          rejectDialogOpen ||
-          clearIgnoreDialogOpen
-        }
-        title={getTitle()}
-        submitButtonText={submitButtonText()}
-        onCancel={dismissDialog}
+        open={action !== null}
+        title={title}
+        submitButtonText={verb}
+        onCancel={() => setAction(null)}
         content={<Typography>{confirmationText()}</Typography>}
         onSubmit={() => {
+          if (!action) {
+            return;
+          }
           // a download changes no run, so its selection stays
-          const consumesSelection = !downloadDialogOpen;
-          const verb = submitButtonText();
+          const consumesSelection = action !== "Download";
           const message = processedText(
-            verb,
+            action,
             idsEligibleForApproveOrReject.length,
             shownSelectedIds.length,
           );
@@ -373,12 +267,12 @@ export const BulkOperation = ({
                 onProcessed(result.failed.map((failure) => failure.id));
               }
               const undo = undoSnackbarOptions({
-                ids: REVIEW_VERBS.has(verb) ? result.succeeded : [],
+                ids: isReview(action) ? result.succeeded : [],
                 undoneText: `${testRuns(result.succeeded.length)} restored.`,
                 enqueueSnackbar,
               });
               if (result.failed.length > 0) {
-                enqueueSnackbar(partialText(verb, result), {
+                enqueueSnackbar(partialText(action, result), {
                   variant: "warning",
                   ...undo,
                 });
@@ -392,7 +286,7 @@ export const BulkOperation = ({
                 variant: "error",
               });
             });
-          closeModal();
+          setAction(null);
         }}
       />
       {isProcessing && <LinearProgress />}

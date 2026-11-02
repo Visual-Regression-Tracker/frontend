@@ -14,7 +14,7 @@ export const buildTestRunLocation = (buildId?: string, testRunId?: string) => {
   };
 };
 
-export interface QueryParams {
+interface QueryParams {
   buildId?: string;
   testId?: string;
 }

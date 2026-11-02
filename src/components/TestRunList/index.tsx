@@ -4,7 +4,6 @@ import {
   Chip,
   LinearProgress,
   TablePagination,
-  Toolbar,
   Typography,
 } from "@mui/material";
 import TestStatusChip from "../TestStatusChip";
@@ -12,7 +11,7 @@ import {
   useTestRunState,
   useTestRunDispatch,
   useBuildState,
-  useProjectState,
+  useSelectedProject,
 } from "../../contexts";
 import { useSnackbar } from "notistack";
 import { useHotkeys } from "react-hotkeys-hook";
@@ -28,16 +27,11 @@ import {
   GridSortModel,
   GridRowSelectionModel,
 } from "@mui/x-data-grid";
-import { DataGridCustomToolbar } from "./DataGridCustomToolbar";
+import { TestRunListToolbar } from "./TestRunListToolbar";
 import { EmptyState } from "../EmptyState";
 import { ViewListOutlined } from "@mui/icons-material";
-import { BulkOperation } from "./BulkOperation";
 import { TestRunGrid } from "./TestRunGrid";
-import {
-  TestRunDensity,
-  TestRunListControls,
-  TestRunView,
-} from "./TestRunListControls";
+import { TestRunDensity, TestRunView } from "./TestRunListControls";
 import {
   DEFAULT_SORT,
   SORT_FIELDS,
@@ -50,6 +44,7 @@ import { testRunService } from "../../services";
 import { useNavigate } from "react-router-dom";
 import { buildTestRunLocation } from "../../_helpers/route.helpers";
 import { TEST_RUN_SHOW_DIFF_KEY } from "../../constants";
+import { pluralize } from "../../_helpers/format.helper";
 import {
   groupStatusSummary,
   groupTestRuns,
@@ -60,7 +55,11 @@ import {
   byAttention,
   statusesByAttention,
 } from "../../_helpers/testRunStatus.helper";
-import { TAG_FIELDS, tagsOf } from "../../_helpers/testRunTags.helper";
+import {
+  TAG_FIELDS,
+  tagsOf,
+  tagValuesOf,
+} from "../../_helpers/testRunTags.helper";
 
 const HIDDEN_COLUMNS = { id: false };
 
@@ -75,7 +74,7 @@ const buildColumns = (
   {
     field: "name",
     headerName: "Name",
-    // Data Grid 7 does not centre a custom cell on its own
+    // the data grid does not centre a custom cell on its own
     display: "flex",
     flex: 1,
     filterable: false,
@@ -207,11 +206,6 @@ const matchesStatuses = (run: TestRun, statuses: TestStatus[]): boolean =>
 const matchesTagGroups = (run: TestRun, groups: TagGroups): boolean =>
   groups.every(([field, values]) => values.has(String(run[field] ?? "")));
 
-const runTagValues = (run: TestRun): string[] =>
-  TAG_FIELDS.map((field) => run[field]).filter(
-    (v): v is string => typeof v === "string" && Boolean(v),
-  );
-
 const TestRunList = () => {
   const apiRef = useGridApiRef();
   const { enqueueSnackbar } = useSnackbar();
@@ -219,7 +213,6 @@ const TestRunList = () => {
   const { selectedTestRun, filteredSortedTestRunIds, testRuns, loading } =
     useTestRunState();
   const { selectedBuild } = useBuildState();
-  const { selectedProjectId, projectList } = useProjectState();
   const testRunDispatch = useTestRunDispatch();
 
   const [paginationModel, setPaginationModel] = useState({
@@ -318,7 +311,8 @@ const TestRunList = () => {
     return map;
   }, [testRuns]);
 
-  const selectedTagsByField = useMemo(() => {
+  const query = nameFilter.trim().toLowerCase();
+  const tagGroups = useMemo(() => {
     const grouped = new Map<keyof TestRun, Set<string>>();
     tagFilter.forEach((tag) => {
       const field = tagFieldByValue.get(tag);
@@ -329,14 +323,8 @@ const TestRunList = () => {
       values.add(tag);
       grouped.set(field, values);
     });
-    return grouped;
+    return Array.from(grouped.entries());
   }, [tagFilter, tagFieldByValue]);
-
-  const query = nameFilter.trim().toLowerCase();
-  const tagGroups = useMemo(
-    () => Array.from(selectedTagsByField.entries()),
-    [selectedTagsByField],
-  );
 
   const filteredRows = useMemo(
     () =>
@@ -359,14 +347,8 @@ const TestRunList = () => {
     [filteredRows, activeSort],
   );
 
-  const groupByAxis = useMemo(
-    () =>
-      resolveGroupByAxis(
-        projectList.find((item) => item.id === selectedProjectId)
-          ?.bulkApproveGroupBy,
-      ),
-    [projectList, selectedProjectId],
-  );
+  const selectedProject = useSelectedProject();
+  const groupByAxis = resolveGroupByAxis(selectedProject?.bulkApproveGroupBy);
 
   const groups = useMemo(
     () =>
@@ -504,7 +486,7 @@ const TestRunList = () => {
     const existingTags = new Set<string>();
     const existingStatuses = new Set<TestStatus>();
     testRuns.forEach((run) => {
-      runTagValues(run).forEach((value) => existingTags.add(value));
+      tagValuesOf(run, TAG_FIELDS).forEach((value) => existingTags.add(value));
       existingStatuses.add(run.status);
     });
     setTagFilter((prev) => {
@@ -660,7 +642,7 @@ const TestRunList = () => {
               pagination
               loading={loading}
               slots={{
-                toolbar: DataGridCustomToolbar,
+                toolbar: TestRunListToolbar,
               }}
               showToolbar
               density={density}
@@ -688,27 +670,20 @@ const TestRunList = () => {
               borderRadius={1}
               color="text.primary"
             >
-              <Toolbar variant="dense">
-                <TestRunListControls
-                  view={view}
-                  onViewChange={setView}
-                  density={density}
-                  onDensityChange={setDensity}
-                  grouped={groupVariations}
-                  onGroupedChange={setGroupVariations}
-                  groupByAxis={groupByAxis}
-                  showDiff={showDiff}
-                  onShowDiffChange={setShowDiff}
-                />
-                <Box marginLeft="auto">
-                  <BulkOperation
-                    selectedIds={selectedIds}
-                    rows={sortedRows}
-                    selectionNoun="cards"
-                    onProcessed={setSelectedIds}
-                  />
-                </Box>
-              </Toolbar>
+              <TestRunListToolbar
+                selectedIds={selectedIds}
+                rows={sortedRows}
+                view={view}
+                onViewChange={setView}
+                density={density}
+                onDensityChange={setDensity}
+                grouped={groupVariations}
+                onGroupedChange={setGroupVariations}
+                groupByAxis={groupByAxis}
+                showDiff={showDiff}
+                onShowDiffChange={setShowDiff}
+                onProcessed={setSelectedIds}
+              />
               <TestRunGridHeader
                 sort={gridSort}
                 onSortChange={setGridSort}
@@ -757,9 +732,7 @@ const TestRunList = () => {
                     marginLeft={2}
                     data-testid="gridSelectionCount"
                   >
-                    {selectedCardCount === 1
-                      ? "1 card selected"
-                      : `${selectedCardCount} cards selected`}
+                    {`${selectedCardCount} ${pluralize(selectedCardCount, "card")} selected`}
                   </Typography>
                 )}
                 <Box marginLeft="auto">

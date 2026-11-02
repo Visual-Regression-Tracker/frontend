@@ -1,9 +1,11 @@
-import type { ChangeEvent } from "react";
+import { type ChangeEvent, Fragment } from "react";
 import { FormControlLabel, Switch } from "@mui/material";
 import { TextValidator } from "react-material-ui-form-validator";
 import { Tooltip } from "../Tooltip";
+import { VlmConfig } from "../../types/imageComparison";
+import { useConfigHook } from "./useConfigHook";
 
-export const VlmPromptField = ({
+const VlmPromptField = ({
   value,
   onChange,
 }: {
@@ -35,7 +37,7 @@ export const VlmPromptField = ({
   );
 };
 
-export const VlmTemperatureField = ({
+const VlmTemperatureField = ({
   value,
   onChange,
 }: {
@@ -77,7 +79,7 @@ export const VlmTemperatureField = ({
   );
 };
 
-export const VlmUseThinkingField = ({
+const VlmUseThinkingField = ({
   value,
   onChange,
 }: {
@@ -98,5 +100,25 @@ export const VlmUseThinkingField = ({
         }
       />
     </Tooltip>
+  );
+};
+
+export const VlmSharedFields = () => {
+  const [config, updateConfig] = useConfigHook<VlmConfig>();
+  return (
+    <Fragment>
+      <VlmPromptField
+        value={config.prompt}
+        onChange={(value) => updateConfig("prompt", value)}
+      />
+      <VlmTemperatureField
+        value={config.temperature}
+        onChange={(value) => updateConfig("temperature", value)}
+      />
+      <VlmUseThinkingField
+        value={config.useThinking || false}
+        onChange={(value) => updateConfig("useThinking", value)}
+      />
+    </Fragment>
   );
 };
