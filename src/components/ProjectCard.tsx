@@ -115,7 +115,6 @@ export const ProjectCard = ({
         </Box>
       </CardContent>
       <CardActions sx={{ px: 2, pb: 2 }}>
-        {/* router links: a plain href reloaded the whole app on every click */}
         <Button
           variant="contained"
           size="small"

@@ -72,7 +72,7 @@ export default tseslint.config(
           ],
         },
       ],
-      // warnings until fixed; the app rejects with strings, authHeader returns [] or an object, tests pass undefined on purpose, so the last ones stay
+      // warnings: the app rejects with strings, authHeader returns [] or an object, and tests pass undefined on purpose
       "@typescript-eslint/no-unsafe-member-access": "warn",
       "@typescript-eslint/no-unsafe-call": "warn",
       "@typescript-eslint/no-unsafe-assignment": "warn",
@@ -86,7 +86,7 @@ export default tseslint.config(
   },
   reactHooks.configs.flat.recommended,
   {
-    // React Compiler rules: warnings until the components are reworked
+    // React Compiler rules: warnings, as the older components do not follow them yet
     rules: {
       "react-hooks/set-state-in-effect": "warn",
       "react-hooks/refs": "warn",

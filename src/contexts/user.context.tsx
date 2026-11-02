@@ -2,22 +2,10 @@ import { type ReactNode, createContext, useContext, useReducer } from "react";
 import { User } from "../types";
 import { usersService } from "../services";
 
-interface ISuccessAction {
-  type: "success";
-  payload: User;
-}
-
-interface ILogoutAction {
-  type: "logout";
-  payload?: undefined;
-}
-
-interface IGetAllAction {
-  type: "getAll";
-  payload: User[];
-}
-
-type IAction = ISuccessAction | ILogoutAction | IGetAllAction;
+type IAction =
+  | { type: "success"; payload: User }
+  | { type: "logout" }
+  | { type: "getAll"; payload: User[] };
 type Dispatch = (action: IAction) => void;
 type State = {
   loggedIn: boolean;

@@ -1,4 +1,4 @@
-import { useState, useEffect, FormEvent, type ChangeEvent } from "react";
+import { useState, useEffect, FormEvent } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import {
   Button,
@@ -11,8 +11,9 @@ import {
 import { useUserDispatch, login } from "../contexts";
 import { LOCATOR_LOGIN_FORM, routes } from "../constants";
 import { useSnackbar } from "notistack";
-import { TextValidator, ValidatorForm } from "react-material-ui-form-validator";
-import PasswordField from "../components/PasswordField";
+import { ValidatorForm } from "react-material-ui-form-validator";
+import PasswordField from "./PasswordField";
+import EmailField from "./EmailField";
 import { usersService } from "../services";
 import { OIDC_AUTO_REDIRECT } from "../_config/env.config";
 import { useOidcEnabled } from "../_helpers/useOidcEnabled";
@@ -89,23 +90,7 @@ const LoginForm = () => {
       <Card>
         <CardContent id={LOCATOR_LOGIN_FORM} sx={{ p: 3 }}>
           <Stack spacing={2}>
-            <TextValidator
-              validators={["isEmail"]}
-              errorMessages={["Enter a valid email."]}
-              id="email"
-              name="email"
-              value={email}
-              label={"Email address"}
-              type="text"
-              variant="outlined"
-              required
-              fullWidth
-              inputProps={{
-                onChange: (event: ChangeEvent<HTMLInputElement>) =>
-                  setEmail(event.target.value),
-                "data-testid": "email",
-              }}
-            />
+            <EmailField value={email} onChange={setEmail} />
             <PasswordField password={password} setPassword={setPassword} />
             <Button
               type="submit"

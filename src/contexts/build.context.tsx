@@ -10,54 +10,15 @@ import { buildsService } from "../services";
 import { useLocation } from "react-router-dom";
 import { getQueryParams } from "../_helpers/route.helpers";
 
-interface IRequestAction {
-  type: "request";
-}
-
-interface IResetAction {
-  type: "reset";
-}
-
-interface IFailureAction {
-  type: "failure";
-  payload: string;
-}
-
-interface IGetAction {
-  type: "get";
-  payload: PaginatedData<Build>;
-  search?: string;
-}
-
-interface ISelectAction {
-  type: "select";
-  payload?: Build;
-}
-
-interface IDeleteAction {
-  type: "delete";
-  payload: string;
-}
-
-interface IAddAction {
-  type: "add";
-  payload: Build;
-}
-
-interface IUpdateAction {
-  type: "update";
-  payload: Build[];
-}
-
 type IAction =
-  | IRequestAction
-  | IResetAction
-  | IFailureAction
-  | IGetAction
-  | IDeleteAction
-  | IAddAction
-  | IUpdateAction
-  | ISelectAction;
+  | { type: "request" }
+  | { type: "reset" }
+  | { type: "failure"; payload: string }
+  | { type: "get"; payload: PaginatedData<Build>; search?: string }
+  | { type: "delete"; payload: string }
+  | { type: "add"; payload: Build }
+  | { type: "update"; payload: Build[] }
+  | { type: "select"; payload?: Build };
 type Dispatch = (action: IAction) => void;
 type State = {
   selectedBuild?: Build;
@@ -116,8 +77,7 @@ export function buildReducer(state: State, action: IAction): State {
         error: action.payload,
       };
 
-    case "get":
-      // eslint-disable-next-line no-case-declarations
+    case "get": {
       const { data, take, skip, total } = action.payload;
 
       return {
@@ -129,6 +89,7 @@ export function buildReducer(state: State, action: IAction): State {
         search: action.search,
         loading: false,
       };
+    }
 
     // the same delete arrives twice, from the request and from the socket
     case "delete":

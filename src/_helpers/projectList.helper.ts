@@ -3,7 +3,7 @@ import { Project } from "../types";
 
 export const RECENT_PROJECTS_LIMIT = 5;
 
-export interface ProjectGroups {
+interface ProjectGroups {
   favorites: Project[];
   recent: Project[];
   others: Project[];

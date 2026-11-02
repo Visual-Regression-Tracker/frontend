@@ -5,7 +5,7 @@ import BuildList from "../components/BuildList";
 import ProjectSelect from "../components/ProjectSelect";
 import TestRunList from "../components/TestRunList";
 import BuildDetails from "../components/BuildDetails";
-import { useHelpDispatch, setHelpSteps } from "../contexts";
+import { useHelpSteps } from "../contexts";
 import {
   PROJECT_PAGE_STEPS,
   LOCATOR_PROJECT_PAGE_BUILD_LIST,
@@ -30,11 +30,8 @@ const ProjectPage = () => {
       void loadTestDetailsDialog();
     }
   }, [buildId]);
-  const helpDispatch = useHelpDispatch();
 
-  useEffect(() => {
-    setHelpSteps(helpDispatch, PROJECT_PAGE_STEPS);
-  });
+  useHelpSteps(PROJECT_PAGE_STEPS);
 
   return (
     <>

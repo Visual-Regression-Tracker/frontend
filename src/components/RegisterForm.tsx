@@ -1,12 +1,14 @@
-import { useState, FormEvent, type ChangeEvent } from "react";
+import { useState, FormEvent } from "react";
 import { Button, Card, CardContent, Stack } from "@mui/material";
 import { useUserDispatch, login } from "../contexts";
 import { usersService } from "../services";
 import { useSnackbar } from "notistack";
-import { TextValidator, ValidatorForm } from "react-material-ui-form-validator";
+import { ValidatorForm } from "react-material-ui-form-validator";
 import { useNavigate } from "react-router-dom";
 import { routes } from "../constants";
-import PasswordField from "../components/PasswordField";
+import PasswordField from "./PasswordField";
+import EmailField from "./EmailField";
+import NameField from "./NameField";
 
 const RegisterForm = () => {
   const navigate = useNavigate();
@@ -36,66 +38,26 @@ const RegisterForm = () => {
       );
   };
 
-  const errorForTwoChar = "Enter at least two characters.";
-
   return (
     <ValidatorForm onSubmit={handleSubmit} instantValidate>
       <Card>
         <CardContent sx={{ p: 3 }}>
           <Stack spacing={2}>
             <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
-              <TextValidator
-                validators={["minStringLength:2"]}
-                errorMessages={[errorForTwoChar]}
-                id="firstName"
+              <NameField
                 name="firstName"
+                label="First name"
                 value={firstName}
-                label={"First name"}
-                type="text"
-                variant="outlined"
-                required
-                fullWidth
-                inputProps={{
-                  onChange: (event: ChangeEvent<HTMLInputElement>) =>
-                    setFirstName(event.target.value),
-                  "data-testid": "firstName",
-                }}
+                onChange={setFirstName}
               />
-              <TextValidator
-                validators={["minStringLength:2"]}
-                errorMessages={[errorForTwoChar]}
-                id="lastName"
+              <NameField
                 name="lastName"
+                label="Last name"
                 value={lastName}
-                label={"Last name"}
-                type="text"
-                variant="outlined"
-                required
-                fullWidth
-                inputProps={{
-                  onChange: (event: ChangeEvent<HTMLInputElement>) =>
-                    setLastName(event.target.value),
-                  "data-testid": "lastName",
-                }}
+                onChange={setLastName}
               />
             </Stack>
-            <TextValidator
-              validators={["isEmail"]}
-              errorMessages={["Enter a valid email."]}
-              id="email"
-              name="email"
-              value={email}
-              label={"Email address"}
-              type="text"
-              variant="outlined"
-              required
-              fullWidth
-              inputProps={{
-                onChange: (event: ChangeEvent<HTMLInputElement>) =>
-                  setEmail(event.target.value),
-                "data-testid": "email",
-              }}
-            />
+            <EmailField value={email} onChange={setEmail} />
             <PasswordField password={password} setPassword={setPassword} />
             <Button
               type="submit"

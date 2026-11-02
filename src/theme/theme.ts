@@ -152,11 +152,12 @@ export const theme = createTheme({
           fontSize: "0.75rem",
           borderRadius: 6,
           ...theme.applyStyles("dark", {
-            backgroundColor: "#2c313b",
+            backgroundColor: surface.dark.tooltip,
             border: `1px solid ${surface.dark.divider}`,
           }),
         }),
-        arrow: ({ theme }) => theme.applyStyles("dark", { color: "#2c313b" }),
+        arrow: ({ theme }) =>
+          theme.applyStyles("dark", { color: surface.dark.tooltip }),
       },
     },
     MuiOutlinedInput: {

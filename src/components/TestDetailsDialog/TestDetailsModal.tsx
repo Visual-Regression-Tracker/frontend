@@ -14,37 +14,28 @@ import {
   Checkbox,
   ToggleButton,
   SelectChangeEvent,
-  Slider,
-  Tooltip as MuiTooltip,
 } from "@mui/material";
 import { useHotkeys } from "react-hotkeys-hook";
 import { hotkeyOptions } from "../../_helpers/hotkeys.helper";
 import { TestRun } from "../../types";
 import { testRunService, staticService } from "../../services";
-import { TestStatus } from "../../types/testStatus";
 import { IgnoreArea, UpdateIgnoreAreaDto } from "../../types/ignoreArea";
 import Konva from "konva";
 import {
-  Close,
   Add,
   Delete,
   Save,
   WarningRounded,
   LayersClear,
-  Compare,
   Collections,
   OpenInNew,
-  ZoomIn,
-  ZoomOut,
-  Fullscreen,
-  FullscreenExit,
   NavigateNext,
   NavigateBefore,
 } from "@mui/icons-material";
 import { TestRunDetails } from "./TestRunDetails";
 import useImage from "use-image";
 import { routes, GO_TO_NEXT_KEY } from "../../constants";
-import { useTestRunDispatch, useProjectState } from "../../contexts";
+import { useTestRunDispatch, useSelectedProject } from "../../contexts";
 import { DrawArea, ImageStateLoad } from "./DrawArea";
 import { CommentsPopper } from "../CommentsPopper";
 import { useDialogSnackbar } from "./useDialogSnackbar";
@@ -57,17 +48,15 @@ import { invertIgnoreArea } from "../../_helpers/ignoreArea.helper";
 import { BaseModal } from "../BaseModal";
 import { Tooltip } from "../Tooltip";
 import ImageDetails, { ImageDetailsProps } from "./ImageDetails";
-import { calculateScale, clampScale } from "../../_helpers/scale.helper";
-import { canCompareToBaseline } from "../../_helpers/testRunStatus.helper";
-import TestStatusChip from "../TestStatusChip";
+import { calculateScale } from "../../_helpers/scale.helper";
+import {
+  canCompareToBaseline,
+  isAwaitingReview,
+} from "../../_helpers/testRunStatus.helper";
+import { TestDetailsHeader } from "./TestDetailsHeader";
+import { OverlayControls } from "./OverlayControls";
+import { ZoomControls } from "./ZoomControls";
 
-const headerSx = {
-  position: "relative",
-  textAlign: "left",
-  bgcolor: "background.default",
-  paddingLeft: "8px",
-  paddingBottom: "8px",
-} as const;
 const footerSx = { bgcolor: "background.default" } as const;
 const scaleActionsSx = { display: "flex", alignItems: "center" } as const;
 const testRunActionsSx = {
@@ -82,8 +71,6 @@ const centerActionsSx = {
   flexWrap: "wrap",
   gap: "4px",
 } as const;
-const testRunNameSx = { fontWeight: 300 } as const;
-const closeIconSx = { position: "absolute", right: "8px" } as const;
 const testRunDetailsSx = { paddingLeft: "8px" } as const;
 const drawAreaContainerSx = { width: "100%", height: "100%" } as const;
 const drawAreaItemSx = { padding: "0 4px", height: "100%" } as const;
@@ -117,12 +104,10 @@ const TestDetailsModal = ({
 }: TestDetailsModalProps) => {
   const { enqueueSnackbar } = useDialogSnackbar();
   const testRunDispatch = useTestRunDispatch();
-  const { selectedProjectId, projectList } = useProjectState();
-  const project = projectList.find((item) => item.id === selectedProjectId);
+  const project = useSelectedProject();
   const [variationsMode, setVariationsMode] =
     useState<MatchingVariationsMode | null>(null);
 
-  const stageScaleBy = 1.2;
   const [stageScale, setStageScale] = useState(1);
   const [stagePos, setStagePos] = useState(defaultStagePos);
   const [stageScrollPos, setStageScrollPos] = useState(defaultStagePos);
@@ -328,14 +313,6 @@ const TestDetailsModal = ({
     }
   };
 
-  const onIgnoreOrCompareSelectChange = (value: string) => {
-    if (value.includes("Compare")) {
-      setValueOfIgnoreOrCompare("Compare Area");
-    } else {
-      setValueOfIgnoreOrCompare("Ignore Areas");
-    }
-  };
-
   const setOriginalSize = () => {
     setStageScale(1);
     resetPosition();
@@ -423,7 +400,7 @@ const TestDetailsModal = ({
           }}
           value={valueOfIgnoreOrCompare}
           onChange={(event: SelectChangeEvent<string>) =>
-            onIgnoreOrCompareSelectChange(event.target.value)
+            setValueOfIgnoreOrCompare(event.target.value)
           }
         >
           {["Ignore Areas", "Compare Area"].map((eachItem) => (
@@ -547,7 +524,6 @@ const TestDetailsModal = ({
 
   const diffPanel = (
     type: ImageDetailsProps["type"],
-    branchName: string,
     imageName: string | null,
     imageStatus: ImageStateLoad,
     image: HTMLImageElement | undefined,
@@ -556,7 +532,7 @@ const TestDetailsModal = ({
       <Grid container alignItems="center" spacing={1} sx={imageToolbarSx}>
         <ImageDetails
           type={type}
-          branchName={branchName}
+          branchName={testRun.branchName}
           imageName={imageName}
           image={image}
           ignoreAreas={tempIgnoreAreas}
@@ -576,50 +552,18 @@ const TestDetailsModal = ({
         {/* a plain flex row, not a nested Grid, whose spacing lifts the controls off the line */}
         <Grid item xs minWidth={0}>
           {canCompareToBaseline(testRun) && (
-            <Box display="flex" alignItems="center" gap={1}>
-              <MuiTooltip title="Fade the checkpoint out to see the baseline through it">
-                <Box display="flex" alignItems="center" gap={1} minWidth={0}>
-                  <Typography variant="caption" color="textSecondary" noWrap>
-                    Fade
-                  </Typography>
-                  <Box
-                    width={180}
-                    maxWidth="100%"
-                    display="flex"
-                    data-testid="overlayOpacity"
-                  >
-                    <Slider
-                      size="small"
-                      disabled={blendDifference}
-                      min={0}
-                      max={1}
-                      step={0.05}
-                      value={overlayOpacity}
-                      onChange={(_event, value) => {
-                        setOverlayOpacity(value);
-                        setIsDiffShown(false);
-                      }}
-                      aria-label="Fade to the baseline"
-                    />
-                  </Box>
-                </Box>
-              </MuiTooltip>
-              <MuiTooltip title="Blend the two as a difference: what matches goes black, and a shift shows as an offset ghost">
-                <ToggleButton
-                  value="blend"
-                  size="small"
-                  selected={blendDifference}
-                  onChange={() => {
-                    setBlendDifference((blend) => !blend);
-                    setIsDiffShown(false);
-                  }}
-                  data-testid="differenceToggle"
-                  style={{ padding: 4, marginLeft: 8 }}
-                >
-                  <Compare fontSize="small" />
-                </ToggleButton>
-              </MuiTooltip>
-            </Box>
+            <OverlayControls
+              opacity={overlayOpacity}
+              blendDifference={blendDifference}
+              onOpacityChange={(opacity) => {
+                setOverlayOpacity(opacity);
+                setIsDiffShown(false);
+              }}
+              onBlendToggle={() => {
+                setBlendDifference((blend) => !blend);
+                setIsDiffShown(false);
+              }}
+            />
           )}
         </Grid>
       </Grid>
@@ -644,29 +588,6 @@ const TestDetailsModal = ({
         drawModeState={[isDrawMode, setIsDrawMode]}
       />
     </Grid>
-  );
-
-  const header = () => (
-    <Box mt={1} ml={1}>
-      <Grid container alignItems="center" sx={headerSx} spacing={2}>
-        <Grid item>
-          <Typography variant="h6" display="inline">{`Step ${
-            currentRunIndex + 1
-          }/${totalTestRunCount}: `}</Typography>
-          <Typography variant="h6" display="inline" sx={testRunNameSx}>
-            {testRun.name}
-          </Typography>
-        </Grid>
-        <Grid item>
-          <TestStatusChip status={testRun.status} />
-        </Grid>
-        <Grid item sx={closeIconSx}>
-          <IconButton color="inherit" onClick={handleClose} size="large">
-            <Close data-testid="CloseIcon" />
-          </IconButton>
-        </Grid>
-      </Grid>
-    </Box>
   );
 
   const testRunDetails = () => (
@@ -722,7 +643,12 @@ const TestDetailsModal = ({
 
   return (
     <>
-      {header()}
+      <TestDetailsHeader
+        testRun={testRun}
+        currentRunIndex={currentRunIndex}
+        totalTestRunCount={totalTestRunCount}
+        onClose={handleClose}
+      />
       <Divider />
       {processing && <LinearProgress />}
       {testRunDetails()}
@@ -737,16 +663,9 @@ const TestDetailsModal = ({
         >
           {baselinePanel()}
           {isDiffShown
-            ? diffPanel(
-                "Diff",
-                testRun.branchName,
-                testRun.diffName,
-                diffImageStatus,
-                diffImage,
-              )
+            ? diffPanel("Diff", testRun.diffName, diffImageStatus, diffImage)
             : diffPanel(
                 "Image",
-                testRun.branchName,
                 testRun.imageName,
                 currentImageStatus,
                 currentImage,
@@ -755,36 +674,12 @@ const TestDetailsModal = ({
       </Box>
       <Grid container sx={footerSx}>
         <Grid item xs={3} sx={scaleActionsSx}>
-          <Tooltip title={"Zoom In"}>
-            <IconButton
-              onClick={() =>
-                setStageScale(clampScale(stageScale * stageScaleBy))
-              }
-              size="large"
-            >
-              <ZoomIn data-testid="ZoomInIcon" />
-            </IconButton>
-          </Tooltip>
-          <Tooltip title={"Zoom Out"}>
-            <IconButton
-              onClick={() =>
-                setStageScale(clampScale(stageScale / stageScaleBy))
-              }
-              size="large"
-            >
-              <ZoomOut data-testid="ZoomOutIcon" />
-            </IconButton>
-          </Tooltip>
-          <Tooltip title={"Original size"}>
-            <IconButton onClick={setOriginalSize} size="large">
-              <Fullscreen data-testid="FullscreenIcon" />
-            </IconButton>
-          </Tooltip>
-          <Tooltip title={"Fit into screen"}>
-            <IconButton onClick={fitImagesToStage} size="large">
-              <FullscreenExit data-testid="FullscreenExitIcon" />
-            </IconButton>
-          </Tooltip>
+          <ZoomControls
+            scale={stageScale}
+            onScaleChange={setStageScale}
+            onOriginalSize={setOriginalSize}
+            onFit={fitImagesToStage}
+          />
         </Grid>
         <Grid item xs={6} sx={centerActionsSx}>
           <Tooltip title={"Hotkey: ArrowLeft"}>
@@ -799,8 +694,7 @@ const TestDetailsModal = ({
               <NavigateBefore />
             </IconButton>
           </Tooltip>
-          {(testRun.status === TestStatus.unresolved ||
-            testRun.status === TestStatus.new) && (
+          {isAwaitingReview(testRun.status) && (
             <ApproveRejectButtons
               testRun={testRun}
               afterApprove={handleGoToNextAutomatically}

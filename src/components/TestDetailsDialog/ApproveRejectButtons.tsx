@@ -4,9 +4,10 @@ import { useHotkeys } from "react-hotkeys-hook";
 import { hotkeyOptions } from "../../_helpers/hotkeys.helper";
 import { useMemo } from "react";
 import { testRunService } from "../../services";
-import { useProjectState, useTestRunState } from "../../contexts";
+import { useSelectedProject, useTestRunState } from "../../contexts";
 import { TestRun } from "../../types";
 import { TestStatus } from "../../types/testStatus";
+import { isAwaitingReview } from "../../_helpers/testRunStatus.helper";
 import { Tooltip } from "../Tooltip";
 import { undoSnackbarOptions } from "../UndoSnackbarAction";
 import { MatchingVariationsMode } from "./MatchingVariationsDialog";
@@ -37,9 +38,8 @@ export const ApproveRejectButtons = ({
   onOpenVariations: (mode: MatchingVariationsMode) => void;
 }) => {
   const { enqueueSnackbar, enqueueAside } = useDialogSnackbar();
-  const { selectedProjectId, projectList } = useProjectState();
+  const project = useSelectedProject();
   const { testRuns } = useTestRunState();
-  const project = projectList.find((item) => item.id === selectedProjectId);
   // only a true sibling (same on every axis but group-by) makes variations worth showing
   const groupBy = resolveGroupByAxis(project?.bulkApproveGroupBy);
   const hasSiblingsToReview = useMemo(
@@ -48,8 +48,7 @@ export const ApproveRejectButtons = ({
         (run) =>
           run.id !== testRun.id &&
           isSibling(run, testRun, groupBy) &&
-          (run.status === TestStatus.unresolved ||
-            run.status === TestStatus.new),
+          isAwaitingReview(run.status),
       ),
     [testRuns, testRun, groupBy],
   );

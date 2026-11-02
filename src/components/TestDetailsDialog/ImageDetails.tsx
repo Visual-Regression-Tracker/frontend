@@ -38,7 +38,7 @@ const ImageDetails = ({
           style={{ marginRight: 3, fontSize: "0.7rem" }}
           data-testid="image-size"
         >
-          {image ? `(${image?.width} x ${image?.height})` : "Loading..."}
+          {image ? `(${image.width} x ${image.height})` : "Loading..."}
         </Typography>
       )
     );

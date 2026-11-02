@@ -1,8 +1,7 @@
-import { Fragment, useCallback, useEffect } from "react";
+import { useCallback, useEffect } from "react";
 import { Box, Toolbar } from "@mui/material";
 import {
   DataGrid,
-  useGridApiRef,
   GridColDef,
   GridToolbarDensitySelector,
   GridToolbarFilterButton,
@@ -96,11 +95,8 @@ const UserList = () => {
     [enqueueSnackbar],
   );
 
-  const apiRef = useGridApiRef();
-
   return (
     <DataGrid
-      apiRef={apiRef}
       rows={userList}
       columns={columnsDef}
       columnVisibilityModel={{
@@ -121,13 +117,11 @@ const UserList = () => {
 export default UserList;
 
 const DataGridCustomToolbar = () => (
-  <Fragment>
-    <Toolbar variant="dense">
-      <GridToolbarFilterButton />
-      <GridToolbarDensitySelector />
-      <Box marginLeft="auto">
-        <ActionButtons />
-      </Box>
-    </Toolbar>
-  </Fragment>
+  <Toolbar variant="dense">
+    <GridToolbarFilterButton />
+    <GridToolbarDensitySelector />
+    <Box marginLeft="auto">
+      <ActionButtons />
+    </Box>
+  </Toolbar>
 );

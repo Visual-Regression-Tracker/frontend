@@ -1,4 +1,4 @@
-import { useMemo, Fragment } from "react";
+import { Fragment } from "react";
 import {
   FormControl,
   InputLabel,
@@ -23,38 +23,16 @@ export const VlmConfigForm = () => {
   const { projectEditState: project } = useProjectState();
   const projectDispatch = useProjectDispatch();
 
-  const currentProvider = useMemo(() => {
-    if ("provider" in config && config.provider === "gemini") {
-      return "gemini";
-    }
-    return "ollama";
-  }, [config]);
+  const currentProvider = config.provider === "gemini" ? "gemini" : "ollama";
 
   const handleProviderChange = (event: SelectChangeEvent<string>) => {
     const newProvider = event.target.value as "ollama" | "gemini";
-    const currentPrompt = config.prompt;
-    const currentTemperature = config.temperature;
-    const currentUseThinking = config.useThinking;
-
-    let newConfig: VlmConfig;
-    if (newProvider === "gemini") {
-      newConfig = {
-        provider: "gemini",
-        model: "gemini-1.5-pro",
-        apiKey: "",
-        prompt: currentPrompt,
-        temperature: currentTemperature,
-        useThinking: currentUseThinking,
-      };
-    } else {
-      newConfig = {
-        provider: "ollama",
-        model: "",
-        prompt: currentPrompt,
-        temperature: currentTemperature,
-        useThinking: currentUseThinking,
-      };
-    }
+    const { prompt, temperature, useThinking } = config;
+    const shared = { prompt, temperature, useThinking };
+    const newConfig: VlmConfig =
+      newProvider === "gemini"
+        ? { provider: "gemini", model: "gemini-1.5-pro", apiKey: "", ...shared }
+        : { provider: "ollama", model: "", ...shared };
 
     setProjectEditState(projectDispatch, {
       ...project,

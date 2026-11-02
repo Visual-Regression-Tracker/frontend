@@ -4,11 +4,7 @@ import { TextValidator } from "react-material-ui-form-validator";
 import { GeminiVlmConfig } from "../../types/imageComparison";
 import { Tooltip } from "../Tooltip";
 import { useConfigHook } from "./useConfigHook";
-import {
-  VlmPromptField,
-  VlmTemperatureField,
-  VlmUseThinkingField,
-} from "./VlmSharedFields";
+import { VlmSharedFields } from "./VlmSharedFields";
 
 // the API returns a saved key masked; sending the mask back keeps the key
 const MASKED_KEY_PREFIX = "••••";
@@ -75,18 +71,7 @@ export const GeminiConfigForm = () => {
           />
         </div>
       </Tooltip>
-      <VlmPromptField
-        value={config.prompt}
-        onChange={(value) => updateConfig("prompt", value)}
-      />
-      <VlmTemperatureField
-        value={config.temperature}
-        onChange={(value) => updateConfig("temperature", value)}
-      />
-      <VlmUseThinkingField
-        value={config.useThinking || false}
-        onChange={(value) => updateConfig("useThinking", value)}
-      />
+      <VlmSharedFields />
     </Fragment>
   );
 };

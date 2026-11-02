@@ -1,5 +1,6 @@
 import { TestRun, TestStatus } from "../types";
 import { byAttention, statusesByAttention } from "./testRunStatus.helper";
+import { byDiffDesc } from "./testRunOrder.helper";
 
 // Mirrors the backend; siblings differ only on the axis the project groups by.
 const GROUP_BY_AXES = [
@@ -43,9 +44,6 @@ const groupKey = (run: TestRun, groupBy: GroupByAxis): string =>
     run.branchName,
     ...fixedAxes(groupBy).map((axis) => run[axis] ?? ""),
   ]);
-
-const byDiffDesc = (a: TestRun, b: TestRun): number =>
-  (b.diffPercent ?? 0) - (a.diffPercent ?? 0);
 
 export const groupStatusSummary = (runs: TestRun[]): string => {
   const counts = new Map<TestStatus, number>();

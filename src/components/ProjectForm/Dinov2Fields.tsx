@@ -1,11 +1,11 @@
 import { FormControlLabel, FormHelperText, Switch } from "@mui/material";
-import { type ChangeEvent, Fragment } from "react";
-import { TextValidator } from "react-material-ui-form-validator";
+import { Fragment } from "react";
 import { useDinov2Status } from "../../_helpers/useDinov2Status";
 import { DEFAULT_DINOV2_THRESHOLD } from "../../constants";
 import { BlurAmplitudeConfig, Dinov2Status } from "../../types";
 import { Tooltip } from "../Tooltip";
 import { useConfigHook } from "./useConfigHook";
+import { ThresholdField } from "./ThresholdField";
 
 // with no service the backend sends every run the filter would pass to review
 const statusNote = (
@@ -40,12 +40,6 @@ export const Dinov2Fields = () => {
   const checked = config.dinov2Check === true;
   const note = statusNote(status, checked);
 
-  // absent: backend default; null: cleared, which the required validator refuses
-  const threshold =
-    config.dinov2Threshold === undefined
-      ? DEFAULT_DINOV2_THRESHOLD
-      : (config.dinov2Threshold ?? "");
-
   return (
     <Fragment>
       <Tooltip title="Before a run passes as rendering noise, the DINOv2 service compares what the two screenshots show. Catches faint changes of content the blur misses, such as a missing light icon.">
@@ -72,33 +66,14 @@ export const Dinov2Fields = () => {
         </FormHelperText>
       )}
       {checked && (
-        <TextValidator
-          name="dinov2Threshold"
-          validators={["required", "minFloat:0.01", "maxFloat:2"]}
-          errorMessages={[
-            "Enter a threshold",
-            "Enter at least 0.01",
-            "Enter at most 2",
-          ]}
-          slotProps={{
-            htmlInput: {
-              min: 0.01,
-              // cosine distance: 2 is as different as two patches get
-              max: 2,
-              step: "any",
-            },
-          }}
-          margin="dense"
-          id="dinov2Threshold"
+        <ThresholdField
+          field="dinov2Threshold"
           label="DINOv2 threshold"
           helperText="Content change (0.01-2) still treated as noise. Lower is stricter."
-          type="number"
-          fullWidth
-          value={threshold}
-          onChange={(event: ChangeEvent<HTMLInputElement>) => {
-            const value = parseFloat(event.target.value);
-            updateConfig("dinov2Threshold", Number.isNaN(value) ? null : value);
-          }}
+          min={0.01}
+          // cosine distance: 2 is as different as two patches get
+          max={2}
+          fallback={DEFAULT_DINOV2_THRESHOLD}
         />
       )}
     </Fragment>

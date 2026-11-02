@@ -11,59 +11,16 @@ import { getQueryParams } from "../_helpers/route.helpers";
 import { testRunService } from "../services";
 import { GridRowId } from "@mui/x-data-grid";
 
-interface IRequestAction {
-  type: "request";
-}
-
-interface IGetAction {
-  type: "get";
-  payload: TestRun[];
-}
-
-interface IFailureAction {
-  type: "failure";
-}
-
-interface ISelectAction {
-  type: "select";
-  payload?: TestRun;
-}
-
-interface IDeleteAction {
-  type: "delete";
-  payload: string[];
-}
-
-interface IAddAction {
-  type: "add";
-  payload: TestRun[];
-}
-
-interface IUpdateAction {
-  type: "update";
-  payload: TestRun[];
-}
-
-interface IFilterSortAction {
-  type: "filterSort";
-  payload?: GridRowId[];
-}
-
-interface ITouchedAction {
-  type: "touched";
-  payload: boolean;
-}
-
 type IAction =
-  | IRequestAction
-  | IFailureAction
-  | IGetAction
-  | IDeleteAction
-  | IAddAction
-  | IUpdateAction
-  | IFilterSortAction
-  | ITouchedAction
-  | ISelectAction;
+  | { type: "request" }
+  | { type: "failure" }
+  | { type: "get"; payload: TestRun[] }
+  | { type: "delete"; payload: string[] }
+  | { type: "add"; payload: TestRun[] }
+  | { type: "update"; payload: TestRun[] }
+  | { type: "filterSort"; payload?: GridRowId[] }
+  | { type: "touched"; payload: boolean }
+  | { type: "select"; payload?: TestRun };
 type Dispatch = (action: IAction) => void;
 type State = {
   selectedTestRun?: TestRun;

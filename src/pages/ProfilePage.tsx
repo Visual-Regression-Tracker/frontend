@@ -3,46 +3,33 @@ import {
   GridLegacy as Grid,
   Card,
   CardContent,
-  TextField,
   CardActions,
   Button,
   Typography,
-  Box,
   CardHeader,
-  Tabs,
-  Tab,
   Select,
   MenuItem,
   Container,
 } from "@mui/material";
 import { PageHeader } from "../components/PageHeader";
-import {
-  useUserDispatch,
-  useUserState,
-  update,
-  selectProject,
-  useProjectDispatch,
-  useProjectState,
-} from "../contexts";
+import { useUserDispatch, useUserState, update } from "../contexts";
 import { usersService } from "../services";
 import { useSnackbar } from "notistack";
-import ProjectSelect from "../components/ProjectSelect";
+import { ConfigurationExamples } from "../components/ConfigurationExamples";
 import { TextValidator, ValidatorForm } from "react-material-ui-form-validator";
 import { Role } from "../types";
 import PasswordField from "../components/PasswordField";
+import NameField from "../components/NameField";
 import { useOidcEnabled } from "../_helpers/useOidcEnabled";
 
 const ProfilePage = () => {
   const { enqueueSnackbar } = useSnackbar();
   const { user } = useUserState();
   const authDispatch = useUserDispatch();
-  const projectDispatch = useProjectDispatch();
-  const { selectedProjectId } = useProjectState();
   const [email, setEmail] = useState(user?.email);
   const [firstName, setFirstName] = useState(user?.firstName);
   const [lastName, setLastName] = useState(user?.lastName);
   const [password, setPassword] = useState("");
-  const [tabIndex, setTabIndex] = useState(0);
   const oidcEnabled = useOidcEnabled();
 
   const handleUserUpdateSubmit = (event: FormEvent) => {
@@ -87,8 +74,6 @@ const ProfilePage = () => {
     }
   };
 
-  const errorForTwoChar = "Enter at least two characters.";
-
   return (
     <Container maxWidth="lg" sx={{ py: 4 }}>
       <PageHeader
@@ -108,41 +93,19 @@ const ProfilePage = () => {
                   <CardContent>
                     <Grid container spacing={2}>
                       <Grid item xs={6}>
-                        <TextValidator
-                          validators={["minStringLength:2"]}
-                          errorMessages={[errorForTwoChar]}
-                          id="firstName"
+                        <NameField
                           name="firstName"
+                          label="First name"
                           value={firstName}
-                          label={"First name"}
-                          type="text"
-                          variant="outlined"
-                          required
-                          fullWidth
-                          inputProps={{
-                            onChange: (event: ChangeEvent<HTMLInputElement>) =>
-                              setFirstName(event.target.value),
-                            "data-testid": "firstName",
-                          }}
+                          onChange={setFirstName}
                         />
                       </Grid>
                       <Grid item xs={6}>
-                        <TextValidator
-                          validators={["minStringLength:2"]}
-                          errorMessages={[errorForTwoChar]}
-                          id="lastName"
+                        <NameField
                           name="lastName"
+                          label="Last name"
                           value={lastName}
-                          label={"Last name"}
-                          type="text"
-                          variant="outlined"
-                          required
-                          fullWidth
-                          inputProps={{
-                            onChange: (event: ChangeEvent<HTMLInputElement>) =>
-                              setLastName(event.target.value),
-                            "data-testid": "lastName",
-                          }}
+                          onChange={setLastName}
                         />
                       </Grid>
                       <Grid item xs={12}>
@@ -272,80 +235,7 @@ const ProfilePage = () => {
               </Card>
             </Grid>
             <Grid item xs={12}>
-              <Card variant="outlined">
-                <CardHeader
-                  title="Configuration examples"
-                  slotProps={{ title: { variant: "h6" } }}
-                />
-                <CardContent>
-                  <ProjectSelect
-                    onProjectSelect={(id) => selectProject(projectDispatch, id)}
-                  />
-                  <Tabs
-                    variant="fullWidth"
-                    value={tabIndex}
-                    indicatorColor="primary"
-                    textColor="primary"
-                    onChange={(
-                      _event: ChangeEvent<unknown>,
-                      newValue: number,
-                    ) => {
-                      setTabIndex(newValue);
-                    }}
-                  >
-                    <Tab label="Config file" />
-                    <Tab label="ENV variables" />
-                  </Tabs>
-                  <div role="tabpanel" hidden={tabIndex !== 0}>
-                    {tabIndex === 0 && (
-                      <Box p={3}>
-                        <TextField
-                          id="configFile"
-                          name="configFile"
-                          variant="outlined"
-                          disabled
-                          value={`{
-    "apiUrl": "${window._env_.REACT_APP_API_URL}",
-    "apiKey": "${user?.apiKey}",
-    "project": "${selectedProjectId ?? "Default project"}",
-    "branchName": "master",
-    "ciBuildId": "commit_sha",
-    "enableSoftAssert": false
-}`}
-                          multiline
-                          rows={8}
-                          fullWidth
-                          helperText="Save as vrt.json in project root. Could be overridden with ENV variables"
-                        />
-                      </Box>
-                    )}
-                  </div>
-                  <div role="tabpanel" hidden={tabIndex !== 1}>
-                    {tabIndex === 1 && (
-                      <Box p={3}>
-                        <TextField
-                          id="envVariables"
-                          name="envVariables"
-                          variant="outlined"
-                          disabled
-                          value={`
-  VRT_APIURL="${window._env_.REACT_APP_API_URL}"
-  VRT_APIKEY="${user?.apiKey}"
-  VRT_PROJECT="${selectedProjectId ?? "Default project"}"
-  VRT_BRANCHNAME="master"
-  VRT_CIBUILDID="commit_sha"
-  VRT_ENABLESOFTASSERT=false
-  `}
-                          multiline
-                          rows={8}
-                          fullWidth
-                          helperText="Add Environment variables inside CI environment"
-                        />
-                      </Box>
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
+              <ConfigurationExamples />
             </Grid>
           </Grid>
         </Grid>

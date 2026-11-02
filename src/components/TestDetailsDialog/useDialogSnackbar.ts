@@ -52,5 +52,5 @@ export const useDialogSnackbar = () => {
     [show],
   );
 
-  return { enqueueSnackbar: enqueue, enqueueAside, closeSnackbar };
+  return { enqueueSnackbar: enqueue, enqueueAside };
 };

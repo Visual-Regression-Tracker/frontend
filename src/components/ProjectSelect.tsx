@@ -2,6 +2,7 @@ import { Fragment, useEffect, useMemo } from "react";
 import { Autocomplete, Box, ListSubheader, TextField } from "@mui/material";
 import {
   useProjectState,
+  useSelectedProject,
   useProjectDispatch,
   selectProject,
 } from "../contexts";
@@ -51,9 +52,7 @@ const ProjectSelect = ({
     return { options, groupOf };
   }, [projectList, favoriteProjectIds, recentProjectIds]);
 
-  const selected = projectList.find(
-    (project) => project.id === selectedProjectId,
-  );
+  const selected = useSelectedProject();
 
   if (projectList.length === 0) {
     return null;

@@ -6,8 +6,7 @@ on:
   pull_request:
     branches: [master]
 
-# a new push to a pull request makes the run for the previous one moot;
-# runs on master always finish
+# a new push to a pull request makes the run for the previous one moot
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}

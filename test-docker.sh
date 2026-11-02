@@ -19,13 +19,10 @@ if [[ -n "${CI}" ]]; then
     ENV_ARGS+=(-e CI)
 fi
 
-# Linux node_modules live in their own volume: installing them into the
-# mounted checkout would replace the host's platform binaries (esbuild,
-# rolldown), and the volume keeps them between runs
+# Linux node_modules in the mounted checkout would replace the host's platform binaries (esbuild, rolldown)
 NODE_MODULES_VOLUME="vrt-frontend-node-modules-$(echo -n "${LOCAL_DIR}" | shasum -a 256 | cut -c1-8)"
 
-# npm's download cache: a host folder when NPM_CACHE_DIR is set (CI caches
-# it between runs), otherwise a named volume that lives between local runs
+# CI caches NPM_CACHE_DIR between runs; locally a named volume keeps the cache
 NPM_CACHE_MOUNT="${NPM_CACHE_DIR:-vrt-frontend-npm-cache}"
 if [[ -n "${NPM_CACHE_DIR}" ]]; then
     mkdir -p "${NPM_CACHE_DIR}"

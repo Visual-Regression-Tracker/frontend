@@ -8,27 +8,42 @@ const DEFAULT_HEADERS = {
   "Content-Type": "application/json",
 };
 
-function getList(buildId: string): Promise<TestRun[]> {
+function getJson<T>(path: string): Promise<T> {
   const requestOptions = {
     method: "GET",
     headers: authHeader(),
   };
 
-  return fetch(
-    `${API_URL}${ENDPOINT_URL}?buildId=${buildId}`,
-    requestOptions,
-  ).then(handleResponse);
+  return fetch(`${API_URL}${ENDPOINT_URL}${path}`, requestOptions).then(
+    handleResponse,
+  );
+}
+
+function sendJson<T>(
+  method: "POST" | "PATCH",
+  path: string,
+  body: unknown,
+): Promise<T> {
+  const requestOptions = {
+    method,
+    headers: {
+      ...DEFAULT_HEADERS,
+      ...authHeader(),
+    },
+    body: JSON.stringify(body),
+  };
+
+  return fetch(`${API_URL}${ENDPOINT_URL}${path}`, requestOptions).then(
+    handleResponse,
+  );
+}
+
+function getList(buildId: string): Promise<TestRun[]> {
+  return getJson(`?buildId=${buildId}`);
 }
 
 function getDetails(id: string): Promise<TestRun> {
-  const requestOptions = {
-    method: "GET",
-    headers: authHeader(),
-  };
-
-  return fetch(`${API_URL}${ENDPOINT_URL}/${id}`, requestOptions).then(
-    handleResponse,
-  );
+  return getJson(`/${id}`);
 }
 
 export interface BulkResult {
@@ -50,38 +65,23 @@ function toBulkResult(ids: string[] | number[], body: unknown): BulkResult {
   return allSucceeded(ids);
 }
 
-function postIds(path: string, ids: string[] | number[]): Promise<unknown> {
-  const requestOptions = {
-    method: "POST",
-    headers: {
-      ...DEFAULT_HEADERS,
-      ...authHeader(),
-    },
-    body: JSON.stringify(ids),
-  };
-
-  return fetch(`${API_URL}${ENDPOINT_URL}/${path}`, requestOptions).then(
-    handleResponse,
-  );
-}
-
 function postBulk(path: string, ids: string[] | number[]): Promise<BulkResult> {
-  return postIds(path, ids).then((body) => toBulkResult(ids, body));
+  return sendJson("POST", path, ids).then((body) => toBulkResult(ids, body));
 }
 
 function removeBulk(ids: string[] | number[]): Promise<BulkResult> {
-  return postBulk("delete", ids);
+  return postBulk("/delete", ids);
 }
 
 function rejectBulk(ids: string[] | number[]): Promise<BulkResult> {
-  return postBulk("reject", ids);
+  return postBulk("/reject", ids);
 }
 
 function approveBulk(
   ids: string[] | number[],
   merge: boolean,
 ): Promise<BulkResult> {
-  return postBulk(`approve?merge=${merge}`, ids);
+  return postBulk(`/approve?merge=${merge}`, ids);
 }
 
 // the backend answers per run, and a refusal comes back in a successful answer
@@ -104,7 +104,7 @@ function rejectOne(id: string): Promise<void> {
 
 // all or nothing: one run that cannot be reverted fails the whole request
 function revert(ids: string[]): Promise<void> {
-  return postIds("revert", ids).then(() => undefined);
+  return sendJson("POST", "/revert", ids).then(() => undefined);
 }
 
 export interface MatchingVariations {
@@ -113,67 +113,19 @@ export interface MatchingVariations {
 }
 
 function getMatchingVariations(id: string): Promise<MatchingVariations> {
-  const requestOptions = {
-    method: "GET",
-    headers: authHeader(),
-  };
-
-  return fetch(
-    `${API_URL}${ENDPOINT_URL}/matchingSiblings/${id}`,
-    requestOptions,
-  ).then(handleResponse);
+  return getJson(`/matchingSiblings/${id}`);
 }
 
 function updateIgnoreAreas(data: UpdateIgnoreAreaDto): Promise<void> {
-  const requestOptions = {
-    method: "POST",
-    headers: {
-      ...DEFAULT_HEADERS,
-      ...authHeader(),
-    },
-    body: JSON.stringify(data),
-  };
-
-  return fetch(
-    `${API_URL}${ENDPOINT_URL}/ignoreAreas/update`,
-    requestOptions,
-  ).then(handleResponse);
+  return sendJson("POST", "/ignoreAreas/update", data);
 }
 
 function addIgnoreAreas(data: UpdateIgnoreAreaDto): Promise<void> {
-  const requestOptions = {
-    method: "POST",
-    headers: {
-      ...DEFAULT_HEADERS,
-      ...authHeader(),
-    },
-    body: JSON.stringify(data),
-  };
-
-  return fetch(
-    `${API_URL}${ENDPOINT_URL}/ignoreAreas/add`,
-    requestOptions,
-  ).then(handleResponse);
+  return sendJson("POST", "/ignoreAreas/add", data);
 }
 
-function update(
-  id: string,
-  data: {
-    comment: string;
-  },
-): Promise<TestRun> {
-  const requestOptions = {
-    method: "PATCH",
-    headers: {
-      ...DEFAULT_HEADERS,
-      ...authHeader(),
-    },
-    body: JSON.stringify(data),
-  };
-
-  return fetch(`${API_URL}${ENDPOINT_URL}/update/${id}`, requestOptions).then(
-    handleResponse,
-  );
+function update(id: string, data: { comment: string }): Promise<TestRun> {
+  return sendJson("PATCH", `/update/${id}`, data);
 }
 
 export const testRunService = {

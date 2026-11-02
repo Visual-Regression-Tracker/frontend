@@ -21,11 +21,7 @@ import { Tooltip } from "../Tooltip";
 import { useConfigHook } from "./useConfigHook";
 import { ollamaService } from "../../services";
 import { OllamaModel } from "../../types";
-import {
-  VlmPromptField,
-  VlmTemperatureField,
-  VlmUseThinkingField,
-} from "./VlmSharedFields";
+import { VlmSharedFields } from "./VlmSharedFields";
 
 export const OllamaConfigForm = () => {
   const { enqueueSnackbar } = useSnackbar();
@@ -67,12 +63,8 @@ export const OllamaConfigForm = () => {
     return !models.some((m) => m.name === config.model);
   }, [config.model, models, loading]);
 
-  const handleModelChange = (event: SelectChangeEvent<string>) => {
-    updateConfig("model", event.target.value);
-  };
-
   const renderModelField = () => {
-    if (loading) {
+    if (loading || models.length === 0) {
       return (
         <TextValidator
           name="model"
@@ -85,26 +77,12 @@ export const OllamaConfigForm = () => {
           fullWidth
           required
           value={config.model || ""}
-          disabled
-          helperText="Loading models..."
-        />
-      );
-    }
-
-    if (models.length === 0) {
-      return (
-        <TextValidator
-          name="model"
-          validators={["required"]}
-          errorMessages={["Model is required"]}
-          margin="dense"
-          id="model"
-          label="Model"
-          type="text"
-          fullWidth
-          required
-          value={config.model || ""}
-          helperText="No models available. Enter model name manually."
+          disabled={loading}
+          helperText={
+            loading
+              ? "Loading models..."
+              : "No models available. Enter model name manually."
+          }
           onChange={(event: ChangeEvent<HTMLInputElement>) => {
             updateConfig("model", event.target.value);
           }}
@@ -125,7 +103,9 @@ export const OllamaConfigForm = () => {
           labelId="model-select-label"
           id="model-select"
           value={config.model || ""}
-          onChange={handleModelChange}
+          onChange={(event: SelectChangeEvent<string>) =>
+            updateConfig("model", event.target.value)
+          }
           name="model"
         >
           {models.map((model) => (
@@ -158,18 +138,7 @@ export const OllamaConfigForm = () => {
         </div>
       </Tooltip>
       {loading && <LinearProgress />}
-      <VlmPromptField
-        value={config.prompt}
-        onChange={(value) => updateConfig("prompt", value)}
-      />
-      <VlmTemperatureField
-        value={config.temperature}
-        onChange={(value) => updateConfig("temperature", value)}
-      />
-      <VlmUseThinkingField
-        value={config.useThinking || false}
-        onChange={(value) => updateConfig("useThinking", value)}
-      />
+      <VlmSharedFields />
     </Fragment>
   );
 };
