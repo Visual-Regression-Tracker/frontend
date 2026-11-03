@@ -1,5 +1,11 @@
 import type { ReactNode } from "react";
-import { act, screen, waitFor, within } from "@testing-library/react";
+import {
+  act,
+  fireEvent,
+  screen,
+  waitFor,
+  within,
+} from "@testing-library/react";
 import { useNavigate } from "react-router-dom";
 import { renderWithProviders } from "../../_test/render";
 import { run } from "../../_helpers/testRun.fixture";
@@ -385,6 +391,15 @@ describe("TestRunList show diff", () => {
       await screen.findByRole("button", { name: "Grid view" }),
     );
     expect(showDiffSwitch()).not.toBeChecked();
+  });
+
+  it("toggles the diff with d wherever the layout puts it, as Dvorak does", async () => {
+    const { user } = renderList([A_EN]);
+    await user.click(await screen.findByRole("button", { name: "Grid view" }));
+
+    fireEvent.keyDown(document.body, { key: "d", code: "KeyH" });
+
+    await waitFor(() => expect(showDiffSwitch()).not.toBeChecked());
   });
 });
 
