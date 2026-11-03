@@ -1,22 +1,13 @@
 import { Box, Button, Checkbox } from "@mui/material";
 import { ArrowDownward, ArrowUpward } from "@mui/icons-material";
+import type { TestRunSort, TestRunSortField } from "../../types/testRunSort";
 import { TestRunDensity } from "./TestRunListControls";
-
-// the grid sorts on its own: the table sorts by clicking its column headers
-export type TestRunSortField = "status" | "name" | "tags";
-
-export type TestRunSort = {
-  field: TestRunSortField;
-  direction: "asc" | "desc";
-};
 
 const SORT_LABELS: Record<TestRunSortField, string> = {
   name: "Name",
   tags: "Tags",
   status: "Status",
 };
-
-export const SORT_FIELDS = Object.keys(SORT_LABELS) as TestRunSortField[];
 
 const DEFAULT_SORT_DIRECTION: Record<
   TestRunSortField,

@@ -2,6 +2,7 @@ import { Toolbar, Box } from "@mui/material";
 import type { ToolbarPropsOverrides } from "@mui/x-data-grid";
 import { BulkOperation } from "./BulkOperation";
 import {
+  DiffToggle,
   TestRunDensity,
   TestRunListControls,
   TestRunView,
@@ -20,8 +21,8 @@ declare module "@mui/x-data-grid" {
     grouped: boolean;
     onGroupedChange: (grouped: boolean) => void;
     groupByAxis: GroupByAxis;
-    showDiff: boolean;
-    onShowDiffChange: (showDiff: boolean) => void;
+    // only the card view has the switch, so the table leaves it out
+    diffToggle?: DiffToggle;
     onProcessed: (failedIds: string[]) => void;
   }
 }
