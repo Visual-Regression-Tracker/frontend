@@ -60,6 +60,7 @@ import { ZoomControls } from "./ZoomControls";
 const footerSx = { bgcolor: "background.default" } as const;
 const scaleActionsSx = { display: "flex", alignItems: "center" } as const;
 const testRunActionsSx = {
+  justifyContent: "flex-end",
   display: "flex",
   alignItems: "center",
   alignContent: "center",
@@ -71,10 +72,14 @@ const centerActionsSx = {
   flexWrap: "wrap",
   gap: "4px",
 } as const;
-const testRunDetailsSx = { paddingLeft: "8px" } as const;
+const testRunDetailsSx = { alignItems: "center", paddingLeft: "8px" } as const;
 const drawAreaContainerSx = { width: "100%", height: "100%" } as const;
 const drawAreaItemSx = { padding: "0 4px", height: "100%" } as const;
-const imageToolbarSx = { paddingLeft: "5px", height: "44px" } as const;
+const imageToolbarSx = {
+  alignItems: "center",
+  paddingLeft: "5px",
+  height: "44px",
+} as const;
 
 const defaultStagePos = {
   x: 0,
@@ -386,7 +391,7 @@ const TestDetailsModal = ({
   };
 
   const ignoreAreasToolbar = () => (
-    <Grid container alignItems="center" spacing={2}>
+    <Grid container spacing={2} sx={{ alignItems: "center" }}>
       <Grid>
         <Select
           variant="standard"
@@ -472,7 +477,7 @@ const TestDetailsModal = ({
 
   const baselinePanel = () => (
     <Grid size={6} ref={leftItemRef} sx={drawAreaItemSx}>
-      <Grid container alignItems="center" spacing={1} sx={imageToolbarSx}>
+      <Grid container spacing={1} sx={imageToolbarSx}>
         <ImageDetails
           type="Baseline"
           branchName={testRun.baselineBranchName}
@@ -518,7 +523,7 @@ const TestDetailsModal = ({
     image: HTMLImageElement | undefined,
   ) => (
     <Grid size={6} sx={drawAreaItemSx} ref={rightItemRef}>
-      <Grid container alignItems="center" spacing={1} sx={imageToolbarSx}>
+      <Grid container spacing={1} sx={imageToolbarSx}>
         <ImageDetails
           type={type}
           branchName={testRun.branchName}
@@ -581,7 +586,7 @@ const TestDetailsModal = ({
 
   const testRunDetails = () => (
     <Box sx={{ mx: 1 }}>
-      <Grid container alignItems="center" sx={testRunDetailsSx} spacing={1}>
+      <Grid container spacing={1} sx={testRunDetailsSx}>
         <TestRunDetails testRun={testRun} />
         {isImageSizeDiffer && (
           <Grid>
@@ -646,14 +651,7 @@ const TestDetailsModal = ({
           ...drawAreaContainerSx,
         }}
       >
-        <Grid
-          container
-          justifyContent="center"
-          alignItems="stretch"
-          style={{
-            height: "100%",
-          }}
-        >
+        <Grid container sx={{ height: "100%", justifyContent: "center" }}>
           {baselinePanel()}
           {isDiffShown
             ? diffPanel("Diff", testRun.diffName, diffImageStatus, diffImage)
@@ -711,7 +709,7 @@ const TestDetailsModal = ({
             </IconButton>
           </Tooltip>
         </Grid>
-        <Grid size={3} sx={testRunActionsSx} justifyContent="flex-end">
+        <Grid size={3} sx={testRunActionsSx}>
           <FormControlLabel
             control={
               <Checkbox

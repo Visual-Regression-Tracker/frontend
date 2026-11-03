@@ -4,6 +4,7 @@ import { TestRun } from "../../types";
 import TestStatusChip from "../TestStatusChip";
 
 const headerSx = {
+  alignItems: "center",
   position: "relative",
   textAlign: "left",
   bgcolor: "background.default",
@@ -27,7 +28,7 @@ export const TestDetailsHeader = ({
   totalTestRunCount,
   onClose,
 }: TestDetailsHeaderProps) => (
-  <Grid container alignItems="center" sx={headerSx} spacing={2}>
+  <Grid container spacing={2} sx={headerSx}>
     <Grid>
       <Typography
         variant="h6"
