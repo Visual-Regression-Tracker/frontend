@@ -389,6 +389,31 @@ describe("MatchingVariationsDialog", () => {
       ).toHaveClass("notistack-MuiContent-error");
     });
 
+    it("names the variation another editor got to first", async () => {
+      const buildId = nextBuildId();
+      const current = run("current", buildId);
+      await renderDialog({
+        buildId,
+        current,
+        answer: {
+          variations: [run("v1", buildId), run("v2", buildId)],
+          skipped: [],
+        },
+      });
+      vi.mocked(testRunService.approveBulk).mockResolvedValue({
+        succeeded: ["v1"],
+        failed: [{ id: "v2", message: "Test run v2 is already approved" }],
+      });
+
+      await newReviewer().click(submitButton(2));
+
+      expect(
+        await screen.findByText(
+          'Approved 1 of 2 variations. 1 failed: Test run "login screen (tags v2)" is already approved',
+        ),
+      ).toBeVisible();
+    });
+
     it("keeps the dialog open and the ticks when every run failed", async () => {
       const buildId = nextBuildId();
       const current = run("current", buildId);

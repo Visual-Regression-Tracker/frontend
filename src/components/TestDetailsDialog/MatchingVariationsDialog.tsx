@@ -325,7 +325,10 @@ export const MatchingVariationsDialog = ({
         });
         if (failed.length > 0) {
           enqueueSnackbar(
-            partialFailureText(done, { succeeded, failed }, what),
+            partialFailureText(done, { succeeded, failed }, what, (id) => {
+              const variation = data?.variations.find((run) => run.id === id);
+              return variation && `${variation.name} (${labelOf(variation)})`;
+            }),
             { variant: failureVariant(failed), ...undo },
           );
           if (succeeded.length > 0) {

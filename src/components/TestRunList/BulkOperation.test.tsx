@@ -339,6 +339,28 @@ describe("BulkOperation", () => {
       ).toHaveClass("notistack-MuiContent-error");
     });
 
+    it("names the run another editor got to first", async () => {
+      vi.spyOn(testRunService, "approveBulk").mockResolvedValue({
+        succeeded: [NEW_RUN.id],
+        failed: [
+          {
+            id: UNRESOLVED_RUN.id,
+            message: `Test run ${UNRESOLVED_RUN.id} is already approved`,
+          },
+        ],
+      });
+      const { user } = renderBulkOperation();
+
+      await user.click(actionButton(APPROVE));
+      await confirm(user);
+
+      expect(
+        await screen.findByText(
+          'Approved 1 of 2 test runs. 1 failed: Test run "name of unresolved-run (OS · device · browser · viewport · customTags)" is already approved',
+        ),
+      ).toBeVisible();
+    });
+
     it("approves nothing and says so when every selected run is settled", async () => {
       const approveBulk = vi.spyOn(testRunService, "approveBulk");
       const { user, onProcessed } = renderBulkOperation({
@@ -498,7 +520,8 @@ describe("BulkOperation", () => {
 
       await user.click(actionButton(APPROVE));
       await confirm(user);
-      const text = `Approved 1 of 2 test runs. 1 failed: ${lost}`;
+      const text =
+        'Approved 1 of 2 test runs. 1 failed: Test run "name of unresolved-run (OS · device · browser · viewport · customTags)" was changed by someone else meanwhile';
       expect(await toastOf(text)).toHaveClass("notistack-MuiContent-warning");
       await user.click(await undoIn(text));
 

@@ -15,7 +15,11 @@ import { TestRun } from "../../types";
 import { isAwaitingReview } from "../../_helpers/testRunStatus.helper";
 import { Tooltip } from "../Tooltip";
 import { undoSnackbarOptions } from "../UndoSnackbarAction";
-import { TAG_FIELDS, tagValuesOf } from "../../_helpers/testRunTags.helper";
+import {
+  TAG_FIELDS,
+  runLabel,
+  tagValuesOf,
+} from "../../_helpers/testRunTags.helper";
 import {
   failureVariant,
   partialFailureText,
@@ -79,11 +83,19 @@ const processedText = (
     ? `${testRuns(eligibleCount)} ${PAST_TENSE[verb].toLowerCase()}.`
     : `${testRuns(selectedCount)} processed.`;
 
-const partialText = (verb: BulkAction, result: BulkResult): string =>
+const partialText = (
+  verb: BulkAction,
+  result: BulkResult,
+  rows: TestRun[],
+): string =>
   partialFailureText(
     PAST_TENSE[verb],
     result,
     testRuns(result.succeeded.length + result.failed.length),
+    (id) => {
+      const row = rows.find((candidate) => candidate.id === id);
+      return row && runLabel(row);
+    },
   );
 
 export const BulkOperation = ({
@@ -268,7 +280,7 @@ export const BulkOperation = ({
                   })
                 : {};
               if (result.failed.length > 0) {
-                enqueueSnackbar(partialText(action, result), {
+                enqueueSnackbar(partialText(action, result, rows), {
                   variant: failureVariant(result.failed),
                   ...undo,
                 });

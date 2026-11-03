@@ -16,7 +16,15 @@ export const failureVariant = (
 
 export const partialFailureText = (
   verb: string,
-  result: { succeeded: unknown[]; failed: { message: string }[] },
+  result: { succeeded: unknown[]; failed: { id?: string; message: string }[] },
   what: string,
-): string =>
-  `${verb} ${result.succeeded.length} of ${what}. ${result.failed.length} failed: ${(result.failed.find(isInternalError) ?? result.failed[0]).message}`;
+  nameOf: (id: string) => string | undefined = () => undefined,
+): string => {
+  const shown = result.failed.find(isInternalError) ?? result.failed[0];
+  const name = shown.id && nameOf(shown.id);
+  const message =
+    shown.id && name
+      ? shown.message.replace(shown.id, `"${name}"`)
+      : shown.message;
+  return `${verb} ${result.succeeded.length} of ${what}. ${result.failed.length} failed: ${message}`;
+};
