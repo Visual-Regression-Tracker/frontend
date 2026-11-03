@@ -1,11 +1,4 @@
-import {
-  type ReactNode,
-  createContext,
-  useContext,
-  useEffect,
-  useReducer,
-  useRef,
-} from "react";
+import { type ReactNode, useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useSnackbar } from "notistack";
 import socketIOClient, { Socket } from "socket.io-client";
@@ -29,16 +22,6 @@ import { useProjectState } from "./project.context";
 import { logout, useUserDispatch, useUserState } from "./user.context";
 import { buildTestRunLocation } from "../_helpers/route.helpers";
 
-interface IConnectAction {
-  type: "connect";
-  payload: Socket;
-}
-
-type IAction = IConnectAction;
-type Dispatch = (action: IAction) => void;
-type State = {
-  socket: Socket | undefined;
-};
 type SocketProviderProps = {
   children: ReactNode;
 };
@@ -46,24 +29,8 @@ type SocketProviderProps = {
 // the reason the server gives when it refuses the token the socket connects with
 export const SOCKET_UNAUTHORIZED = "unauthorized";
 
-const SocketStateContext = createContext<State | undefined>(undefined);
-const SocketDispatchContext = createContext<Dispatch | undefined>(undefined);
-
-const initialState: State = {
-  socket: undefined,
-};
-
-export function socketReducer(state: State, action: IAction): State {
-  if (action.type === "connect") {
-    return {
-      socket: action.payload,
-    };
-  }
-  return state;
-}
-
 function SocketProvider({ children }: Readonly<SocketProviderProps>) {
-  const [state, dispatch] = useReducer(socketReducer, initialState);
+  const [socket, setSocket] = useState<Socket>();
   const { selectedBuild } = useBuildState();
   const { selectedProjectId } = useProjectState();
   const testRunDispatch = useTestRunDispatch();
@@ -81,21 +48,22 @@ function SocketProvider({ children }: Readonly<SocketProviderProps>) {
 
   // the server identifies the connection by token; a login or logout needs a connection of its own
   useEffect(() => {
-    if (!token) {
+    if (!token || !API_URL) {
       return;
     }
-    const socket = connect(dispatch, token);
+    const connection = socketIOClient(API_URL, { auth: { token } });
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- the effect opens the connection the state holds
+    setSocket(connection);
 
     return () => {
-      socket?.disconnect();
+      connection.disconnect();
     };
   }, [token]);
 
-  useRoom(state.socket, "projectId", selectedProjectId);
-  useRoom(state.socket, "buildId", selectedBuild?.id);
+  useRoom(socket, "projectId", selectedProjectId);
+  useRoom(socket, "buildId", selectedBuild?.id);
 
   useEffect(() => {
-    const socket = state.socket;
     if (!socket) {
       return;
     }
@@ -206,7 +174,7 @@ function SocketProvider({ children }: Readonly<SocketProviderProps>) {
       }
     };
   }, [
-    state.socket,
+    socket,
     selectedBuild,
     selectedProjectId,
     buildDispatch,
@@ -216,13 +184,7 @@ function SocketProvider({ children }: Readonly<SocketProviderProps>) {
     enqueueSnackbar,
   ]);
 
-  return (
-    <SocketStateContext.Provider value={state}>
-      <SocketDispatchContext.Provider value={dispatch}>
-        {children}
-      </SocketDispatchContext.Provider>
-    </SocketStateContext.Provider>
-  );
+  return children;
 }
 
 // with WS_BROADCAST off the server sends build events to project rooms and test run events to build rooms
@@ -252,27 +214,4 @@ function useRoom(
   }, [socket, key, id]);
 }
 
-function useSocketDispatch() {
-  const context = useContext(SocketDispatchContext);
-
-  if (context === undefined) {
-    throw Error("must be used within a SocketProvider");
-  }
-
-  return context;
-}
-
-function connect(dispatch: Dispatch, token: string): Socket | undefined {
-  if (!API_URL) {
-    return undefined;
-  }
-  const socket = socketIOClient(API_URL, { auth: { token } });
-  dispatch({
-    type: "connect",
-    payload: socket,
-  });
-
-  return socket;
-}
-
-export { SocketProvider, useSocketDispatch, connect };
+export { SocketProvider };

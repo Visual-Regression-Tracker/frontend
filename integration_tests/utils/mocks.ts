@@ -304,17 +304,20 @@ export const mockUpdateTestRun = (page: Page, testRun: TestRun) => {
   );
 };
 
-export const mockApproveTestRuns = (page: Page, result: unknown = []) => {
+export const fulfillBulk = (route: Route) =>
+  route.fulfill({
+    json: { succeeded: postData<string[]>(route.request()), failed: [] },
+  });
+
+export const mockApproveTestRuns = (page: Page, result?: unknown) => {
   return page.route(
     (url) => url.pathname === "/test-runs/approve",
-    (route) => route.fulfill({ body: JSON.stringify(result) }),
+    (route) => (result ? route.fulfill({ json: result }) : fulfillBulk(route)),
   );
 };
 
 export const mockRejectTestRuns = (page: Page) => {
-  return page.route(`${API_URL}/test-runs/reject`, (route) =>
-    route.fulfill({ body: "[]" }),
-  );
+  return page.route(`${API_URL}/test-runs/reject`, fulfillBulk);
 };
 
 export const isRevertUrl = (url: URL) => url.pathname === "/test-runs/revert";

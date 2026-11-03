@@ -56,17 +56,8 @@ export const allSucceeded = (ids: string[] | number[]): BulkResult => ({
   failed: [],
 });
 
-// An older backend answers with an empty body: nothing failed, or it would have thrown.
-function toBulkResult(ids: string[] | number[], body: unknown): BulkResult {
-  const answer = (body || {}) as Partial<BulkResult>;
-  if (Array.isArray(answer.succeeded) && Array.isArray(answer.failed)) {
-    return { succeeded: answer.succeeded, failed: answer.failed };
-  }
-  return allSucceeded(ids);
-}
-
 function postBulk(path: string, ids: string[] | number[]): Promise<BulkResult> {
-  return sendJson("POST", path, ids).then((body) => toBulkResult(ids, body));
+  return sendJson<BulkResult>("POST", path, ids);
 }
 
 function removeBulk(ids: string[] | number[]): Promise<BulkResult> {

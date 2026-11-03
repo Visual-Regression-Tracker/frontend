@@ -1,18 +1,15 @@
-import { type ReactElement, type ReactNode, useEffect } from "react";
+import type { ReactElement, ReactNode } from "react";
 import { act, render, renderHook, RenderOptions } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { MemoryRouter } from "react-router-dom";
 import { ThemeProvider } from "@mui/material/styles";
 import { SnackbarProvider } from "notistack";
-import type { Socket } from "socket.io-client";
 import {
   UserProvider,
   ProjectProvider,
   BuildProvider,
   TestRunProvider,
-  SocketProvider,
   HelpProvider,
-  useSocketDispatch,
 } from "../contexts";
 import { theme } from "../theme";
 import { User } from "../types";
@@ -25,6 +22,7 @@ export interface FakeSocket {
   off: (event: string, handler: Handler) => FakeSocket;
   // what the app sends to the server, such as join and leave
   emit: (event: string, body?: unknown) => FakeSocket;
+  disconnect: () => void;
   // an event from the server, inside act() so React settles
   receive: (event: string, payload: unknown) => void;
   listening: () => string[];
@@ -53,6 +51,7 @@ export function createFakeSocket(): FakeSocket {
       emitted.push([event, body]);
       return socket;
     },
+    disconnect: () => {},
     receive: (event, payload) => {
       act(() => {
         (handlers.get(event) ?? []).forEach((handler) => handler(payload));
@@ -65,22 +64,9 @@ export function createFakeSocket(): FakeSocket {
   return socket;
 }
 
-// SocketProvider connects only when the API url is configured, which it is not under test
-const ConnectFakeSocket = ({ socket }: { socket: FakeSocket }) => {
-  const dispatch = useSocketDispatch();
-
-  useEffect(() => {
-    dispatch({ type: "connect", payload: socket as unknown as Socket });
-  }, [dispatch, socket]);
-
-  return null;
-};
-
 interface Options extends Omit<RenderOptions, "wrapper"> {
   route?: string;
   user?: User | null;
-  // when given, the app's SocketProvider is mounted and listens on this socket
-  socket?: FakeSocket;
 }
 
 const seedUser = (user: User | null) => {
@@ -91,7 +77,7 @@ const seedUser = (user: User | null) => {
   }
 };
 
-const providers = (route: string, socket: FakeSocket | undefined) => {
+const providers = (route: string) => {
   const Wrapper = ({ children }: { children: ReactNode }) => (
     <MemoryRouter initialEntries={[route]}>
       <ThemeProvider theme={theme}>
@@ -100,14 +86,7 @@ const providers = (route: string, socket: FakeSocket | undefined) => {
             <ProjectProvider>
               <BuildProvider>
                 <TestRunProvider>
-                  {socket ? (
-                    <SocketProvider>
-                      <ConnectFakeSocket socket={socket} />
-                      <HelpProvider>{children}</HelpProvider>
-                    </SocketProvider>
-                  ) : (
-                    <HelpProvider>{children}</HelpProvider>
-                  )}
+                  <HelpProvider>{children}</HelpProvider>
                 </TestRunProvider>
               </BuildProvider>
             </ProjectProvider>
@@ -122,13 +101,13 @@ const providers = (route: string, socket: FakeSocket | undefined) => {
 // Services are expected to be mocked by the test (vi.mock("../services"))
 export function renderWithProviders(
   ui: ReactElement,
-  { route = "/", user = null, socket, ...options }: Options = {},
+  { route = "/", user = null, ...options }: Options = {},
 ) {
   seedUser(user);
 
   return {
     user: userEvent.setup(),
-    ...render(ui, { wrapper: providers(route, socket), ...options }),
+    ...render(ui, { wrapper: providers(route), ...options }),
   };
 }
 
@@ -138,14 +117,13 @@ export function renderHookWithProviders<Result, Props>(
   {
     route = "/",
     user = null,
-    socket,
     initialProps,
-  }: Pick<Options, "route" | "user" | "socket"> & { initialProps?: Props } = {},
+  }: Pick<Options, "route" | "user"> & { initialProps?: Props } = {},
 ) {
   seedUser(user);
 
   return renderHook(hook, {
-    wrapper: providers(route, socket),
+    wrapper: providers(route),
     initialProps,
   });
 }

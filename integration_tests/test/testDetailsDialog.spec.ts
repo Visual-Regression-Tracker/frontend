@@ -12,6 +12,7 @@ import {
   mockApiError,
   mockApproveTestRuns,
   mockGetBuildDetails,
+  fulfillBulk,
   mockGetBuilds,
   mockGetProjects,
   mockGetTestRuns,
@@ -37,9 +38,7 @@ test.beforeEach(async ({ page }) => {
   await mockImage(page, "image.png");
   await mockImage(page, "diff.png");
   await mockImage(page, "baseline.png");
-  await page.route(`${API_URL}/test-runs/approve?merge=false`, (route) =>
-    route.fulfill({ status: 200, body: "[]" }),
-  );
+  await page.route(`${API_URL}/test-runs/approve?merge=false`, fulfillBulk);
   await mockRejectTestRuns(page);
 });
 

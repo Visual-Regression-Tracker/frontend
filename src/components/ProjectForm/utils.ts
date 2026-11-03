@@ -8,6 +8,7 @@ import {
   RenderingNoiseConfig,
   ImageComparison,
 } from "../../types/imageComparison";
+import { parseJson } from "../../_helpers/parseJson";
 
 export const getDefaultConfig = (imageComparison: ImageComparison): string => {
   switch (imageComparison) {
@@ -29,8 +30,9 @@ export const withRenderingNoiseOf = (
   config: string,
   previousConfig: string,
 ): string => {
-  const { ignoreRenderingNoise } = JSON.parse(
+  const { ignoreRenderingNoise } = parseJson<RenderingNoiseConfig>(
     previousConfig,
-  ) as RenderingNoiseConfig;
+    {},
+  );
   return JSON.stringify({ ...JSON.parse(config), ignoreRenderingNoise });
 };

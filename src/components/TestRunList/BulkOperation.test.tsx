@@ -339,21 +339,6 @@ describe("BulkOperation", () => {
       ).toHaveClass("notistack-MuiContent-error");
     });
 
-    it("drops the whole selection when the server answers with an empty body", async () => {
-      vi.stubGlobal(
-        "fetch",
-        vi.fn().mockResolvedValue(new Response("", { status: 201 })),
-      );
-      const { user, onProcessed } = renderBulkOperation();
-
-      await user.click(actionButton(APPROVE));
-      await confirm(user);
-
-      expect(await screen.findByText("2 test runs approved.")).toBeVisible();
-      expect(onProcessed).toHaveBeenCalledWith([]);
-      vi.unstubAllGlobals();
-    });
-
     it("approves nothing and says so when every selected run is settled", async () => {
       const approveBulk = vi.spyOn(testRunService, "approveBulk");
       const { user, onProcessed } = renderBulkOperation({

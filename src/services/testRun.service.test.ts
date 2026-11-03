@@ -81,21 +81,6 @@ describe("testRunService", () => {
     ];
 
     it.each(bulkCalls)(
-      "%s counts every id as done when the body is empty",
-      async (_name, call) => {
-        vi.stubGlobal(
-          "fetch",
-          vi.fn().mockResolvedValue(new Response("", { status: 201 })),
-        );
-
-        expect(await call()).toEqual({
-          succeeded: ["t1", "t2"],
-          failed: [],
-        });
-      },
-    );
-
-    it.each(bulkCalls)(
       "%s returns what the server says about each id",
       async (_name, call) => {
         stubFetch({
@@ -109,18 +94,6 @@ describe("testRunService", () => {
         });
       },
     );
-
-    it("counts numeric ids as done by their string form", async () => {
-      vi.stubGlobal(
-        "fetch",
-        vi.fn().mockResolvedValue(new Response("", { status: 201 })),
-      );
-
-      expect(await testRunService.rejectBulk([1, 2])).toEqual({
-        succeeded: ["1", "2"],
-        failed: [],
-      });
-    });
   });
 
   it("getMatchingVariations fetches the siblings of a test run", async () => {

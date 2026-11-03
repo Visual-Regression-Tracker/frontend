@@ -45,12 +45,12 @@ function installProbe(regions: Record<string, string>) {
   const roots: FiberRoot[] = [];
   let socket: SocketLike | undefined;
 
-  // the app's socket sits in the state of SocketProvider's reducer
+  // the app's socket is the state of SocketProvider
   const socketInHooks = (fiber: Fiber): SocketLike | undefined => {
     let hook = fiber.memoizedState as HookCell | null;
     while (hook && typeof hook === "object" && "next" in hook) {
-      const state = hook.memoizedState as { socket?: SocketLike } | null;
-      if (typeof state?.socket?.listeners === "function") return state.socket;
+      const state = hook.memoizedState as SocketLike | null;
+      if (typeof state?.listeners === "function") return state;
       hook = hook.next;
     }
     return undefined;
