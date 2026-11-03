@@ -366,53 +366,38 @@ describe("MatchingVariationsDialog", () => {
       expect(currentSearch()).toBe(`?buildId=${buildId}`);
     });
 
-    it("shows the failures as an error when the server broke off", async () => {
-      const buildId = nextBuildId();
-      const current = run("current", buildId);
-      await renderDialog({
-        buildId,
-        current,
-        answer: {
-          variations: [run("v1", buildId), run("v2", buildId)],
-          skipped: [],
-        },
-      });
-      vi.mocked(testRunService.approveBulk).mockResolvedValue({
-        succeeded: ["v1"],
-        failed: [{ id: "v2", message: "Internal error" }],
-      });
+    it.each([
+      ["Internal error", "Internal error", "error"],
+      [
+        "Test run v2 is already approved",
+        'Test run "login screen (tags v2)" is already approved',
+        "warning",
+      ],
+    ])(
+      "names the variation and colours the toast for %s",
+      async (message, shown, variant) => {
+        const buildId = nextBuildId();
+        const current = run("current", buildId);
+        await renderDialog({
+          buildId,
+          current,
+          answer: {
+            variations: [run("v1", buildId), run("v2", buildId)],
+            skipped: [],
+          },
+        });
+        vi.mocked(testRunService.approveBulk).mockResolvedValue({
+          succeeded: ["v1"],
+          failed: [{ id: "v2", message }],
+        });
 
-      await newReviewer().click(submitButton(2));
+        await newReviewer().click(submitButton(2));
 
-      expect(
-        await toastOf("Approved 1 of 2 variations. 1 failed: Internal error"),
-      ).toHaveClass("notistack-MuiContent-error");
-    });
-
-    it("names the variation another editor got to first", async () => {
-      const buildId = nextBuildId();
-      const current = run("current", buildId);
-      await renderDialog({
-        buildId,
-        current,
-        answer: {
-          variations: [run("v1", buildId), run("v2", buildId)],
-          skipped: [],
-        },
-      });
-      vi.mocked(testRunService.approveBulk).mockResolvedValue({
-        succeeded: ["v1"],
-        failed: [{ id: "v2", message: "Test run v2 is already approved" }],
-      });
-
-      await newReviewer().click(submitButton(2));
-
-      expect(
-        await screen.findByText(
-          'Approved 1 of 2 variations. 1 failed: Test run "login screen (tags v2)" is already approved',
-        ),
-      ).toBeVisible();
-    });
+        expect(
+          await toastOf(`Approved 1 of 2 variations. 1 failed: ${shown}`),
+        ).toHaveClass(`notistack-MuiContent-${variant}`);
+      },
+    );
 
     it("keeps the dialog open and the ticks when every run failed", async () => {
       const buildId = nextBuildId();
