@@ -1,4 +1,4 @@
-import { useState, FormEvent, type ChangeEvent } from "react";
+import { useState } from "react";
 import {
   Grid,
   Card,
@@ -16,10 +16,11 @@ import { useUserDispatch, useUserState, update } from "../contexts";
 import { usersService } from "../services";
 import { useSnackbar } from "notistack";
 import { ConfigurationExamples } from "../components/ConfigurationExamples";
-import { TextValidator, ValidatorForm } from "react-material-ui-form-validator";
+import { ValidatedForm } from "../components/ValidatedForm";
 import { Role } from "../types";
 import PasswordField from "../components/PasswordField";
 import NameField from "../components/NameField";
+import EmailField from "../components/EmailField";
 import { useOidcEnabled } from "../_helpers/useOidcEnabled";
 
 const cardActionsSx = { justifyContent: "center" } as const;
@@ -34,8 +35,7 @@ const ProfilePage = () => {
   const [password, setPassword] = useState("");
   const oidcEnabled = useOidcEnabled();
 
-  const handleUserUpdateSubmit = (event: FormEvent) => {
-    event.preventDefault();
+  const handleUserUpdateSubmit = () => {
     if (user && firstName && lastName && email) {
       update(authDispatch, {
         firstName,
@@ -55,8 +55,7 @@ const ProfilePage = () => {
     }
   };
 
-  const handlePasswordUpdateSubmit = (event: FormEvent) => {
-    event.preventDefault();
+  const handlePasswordUpdateSubmit = () => {
     if (user && password) {
       usersService
         .changePassword(password)
@@ -86,7 +85,7 @@ const ProfilePage = () => {
         <Grid size={6}>
           <Grid container spacing={2}>
             <Grid size={12}>
-              <ValidatorForm onSubmit={handleUserUpdateSubmit} instantValidate>
+              <ValidatedForm onSubmit={handleUserUpdateSubmit}>
                 <Card variant="outlined">
                   <CardHeader
                     title="User details"
@@ -111,27 +110,11 @@ const ProfilePage = () => {
                         />
                       </Grid>
                       <Grid size={12}>
-                        <TextValidator
-                          validators={["isEmail"]}
-                          errorMessages={["Enter valid email address"]}
-                          id="email"
-                          name="email"
+                        <EmailField
                           value={email}
-                          label={"Email address"}
-                          type="text"
-                          variant="outlined"
-                          required
-                          fullWidth
+                          onChange={setEmail}
                           // The identity provider owns the email of SSO users.
                           disabled={oidcEnabled !== false}
-                          slotProps={{
-                            htmlInput: {
-                              onChange: (
-                                event: ChangeEvent<HTMLInputElement>,
-                              ) => setEmail(event.target.value),
-                              "data-testid": "email",
-                            },
-                          }}
                         />
                       </Grid>
                       <Grid size={12}>
@@ -164,14 +147,11 @@ const ProfilePage = () => {
                     </Button>
                   </CardActions>
                 </Card>
-              </ValidatorForm>
+              </ValidatedForm>
             </Grid>
             {oidcEnabled === false && (
               <Grid size={12}>
-                <ValidatorForm
-                  onSubmit={handlePasswordUpdateSubmit}
-                  instantValidate
-                >
+                <ValidatedForm onSubmit={handlePasswordUpdateSubmit}>
                   <Card variant="outlined">
                     <CardHeader
                       title="Change password"
@@ -199,7 +179,7 @@ const ProfilePage = () => {
                       </Button>
                     </CardActions>
                   </Card>
-                </ValidatorForm>
+                </ValidatedForm>
               </Grid>
             )}
           </Grid>

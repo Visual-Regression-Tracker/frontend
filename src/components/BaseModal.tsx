@@ -6,7 +6,7 @@ import {
   DialogActions,
   Button,
 } from "@mui/material";
-import { ValidatorForm } from "react-material-ui-form-validator";
+import { ValidatedForm } from "./ValidatedForm";
 
 interface IProps {
   open: boolean;
@@ -53,7 +53,7 @@ export const BaseModal = ({
       fullWidth
     >
       <DialogTitle id="form-dialog-title">{title}</DialogTitle>
-      <ValidatorForm onSubmit={handleSubmit} instantValidate>
+      <ValidatedForm onSubmit={handleSubmit}>
         <DialogContent>{content}</DialogContent>
         <DialogActions>
           <Button onClick={onCancel} color="primary">
@@ -68,7 +68,7 @@ export const BaseModal = ({
             {submitButtonText}
           </Button>
         </DialogActions>
-      </ValidatorForm>
+      </ValidatedForm>
     </Dialog>
   );
 };

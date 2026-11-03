@@ -1,13 +1,17 @@
 import { type ChangeEvent, Fragment } from "react";
 import { Link } from "@mui/material";
-import { TextValidator } from "react-material-ui-form-validator";
+import { ValidatedTextField } from "../ValidatedForm";
+import { required } from "../../_helpers/validation";
 import { GeminiVlmConfig } from "../../types/imageComparison";
 import { Tooltip } from "../Tooltip";
 import { useConfigHook } from "./useConfigHook";
 import { VlmSharedFields } from "./VlmSharedFields";
+import { MODEL_RULES } from "./rules";
 
 // the API returns a saved key masked; sending the mask back keeps the key
 const MASKED_KEY_PREFIX = "••••";
+
+const API_KEY_RULES = [required("API key is required")];
 
 export const GeminiConfigForm = () => {
   const [config, updateConfig] = useConfigHook<GeminiVlmConfig>();
@@ -17,10 +21,9 @@ export const GeminiConfigForm = () => {
     <Fragment>
       <Tooltip title="The Google Gemini model to use for image comparison.">
         <div>
-          <TextValidator
+          <ValidatedTextField
             name="model"
-            validators={["required"]}
-            errorMessages={["Model is required"]}
+            rules={MODEL_RULES}
             margin="dense"
             id="model"
             label="Gemini Model"
@@ -49,10 +52,9 @@ export const GeminiConfigForm = () => {
       </Tooltip>
       <Tooltip title="Your Google Gemini API key. Get one from https://makersuite.google.com/app/apikey">
         <div>
-          <TextValidator
+          <ValidatedTextField
             name="apiKey"
-            validators={["required"]}
-            errorMessages={["API key is required"]}
+            rules={API_KEY_RULES}
             margin="dense"
             id="apiKey"
             label="Gemini API Key"

@@ -1,5 +1,4 @@
 import {
-  type ChangeEvent,
   Fragment,
   type MouseEvent,
   memo,
@@ -31,7 +30,8 @@ import {
   useProjectState,
 } from "../../contexts";
 import { useSnackbar } from "notistack";
-import { TextValidator } from "react-material-ui-form-validator";
+import { ValidatedTextField } from "../ValidatedForm";
+import { AT_LEAST_TWO_CHARACTERS } from "../../_helpers/validation";
 import { Build } from "../../types";
 import { BaseModal } from "../BaseModal";
 import { buildsService } from "../../services";
@@ -365,10 +365,9 @@ const BuildList = () => {
               <Typography>{`Edit the ci build id for build: #${
                 menuBuild.number || menuBuild.id
               }`}</Typography>
-              <TextValidator
+              <ValidatedTextField
                 name="newCiBuildId"
-                validators={["minStringLength:2"]}
-                errorMessages={["Enter at least two characters."]}
+                rules={AT_LEAST_TWO_CHARACTERS}
                 margin="dense"
                 id="name"
                 label="New CI Build Id"
@@ -376,13 +375,8 @@ const BuildList = () => {
                 fullWidth
                 required
                 value={newCiBuildId}
-                slotProps={{
-                  htmlInput: {
-                    onChange: (event: ChangeEvent<HTMLInputElement>) =>
-                      setNewCiBuildId(event.target.value),
-                    "data-testid": "newCiBuildId",
-                  },
-                }}
+                onChange={(event) => setNewCiBuildId(event.target.value)}
+                slotProps={{ htmlInput: { "data-testid": "newCiBuildId" } }}
               />
             </Fragment>
           }

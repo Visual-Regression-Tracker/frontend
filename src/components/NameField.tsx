@@ -1,5 +1,5 @@
-import type { ChangeEvent } from "react";
-import { TextValidator } from "react-material-ui-form-validator";
+import { AT_LEAST_TWO_CHARACTERS } from "../_helpers/validation";
+import { ValidatedTextField } from "./ValidatedForm";
 
 interface NameFieldProps {
   name: "firstName" | "lastName";
@@ -9,9 +9,8 @@ interface NameFieldProps {
 }
 
 const NameField = ({ name, label, value, onChange }: NameFieldProps) => (
-  <TextValidator
-    validators={["minStringLength:2"]}
-    errorMessages={["Enter at least two characters."]}
+  <ValidatedTextField
+    rules={AT_LEAST_TWO_CHARACTERS}
     id={name}
     name={name}
     value={value}
@@ -20,13 +19,8 @@ const NameField = ({ name, label, value, onChange }: NameFieldProps) => (
     variant="outlined"
     required
     fullWidth
-    slotProps={{
-      htmlInput: {
-        onChange: (event: ChangeEvent<HTMLInputElement>) =>
-          onChange(event.target.value),
-        "data-testid": name,
-      },
-    }}
+    onChange={(event) => onChange(event.target.value)}
+    slotProps={{ htmlInput: { "data-testid": name } }}
   />
 );
 

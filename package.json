@@ -23,7 +23,6 @@
     "react-hotkeys-hook": "^5.3.3",
     "react-joyride": "^3.2.0",
     "react-konva": "^19.3.2",
-    "react-material-ui-form-validator": "^5.0.0",
     "react-router-dom": "^7.18.5",
     "socket.io-client": "^4.8.4",
     "use-image": "^1.1.4"
@@ -72,7 +71,6 @@
     "@types/node": "^26.6.6",
     "@types/react": "^19.3.0",
     "@types/react-dom": "^19.3.0",
-    "@types/react-material-ui-form-validator": "^2.1.5",
     "@vitejs/plugin-react": "^6.2.1",
     "@vitest/coverage-v8": "^5.1.0",
     "eslint": "^9.39.5",

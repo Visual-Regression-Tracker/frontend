@@ -1,13 +1,13 @@
 import {
   useState,
-  type ChangeEvent,
   type Dispatch,
   type MouseEvent,
   type SetStateAction,
 } from "react";
 import { IconButton, InputAdornment } from "@mui/material";
 import { Visibility, VisibilityOff } from "@mui/icons-material";
-import { TextValidator } from "react-material-ui-form-validator";
+import { AT_LEAST_TWO_CHARACTERS } from "../_helpers/validation";
+import { ValidatedTextField } from "./ValidatedForm";
 
 interface PasswordFieldProps {
   password: string;
@@ -28,12 +28,9 @@ const PasswordField = ({
     event.preventDefault();
   };
 
-  const errorForTwoChar = "Enter at least two characters.";
-
   return (
-    <TextValidator
-      validators={["minStringLength:2"]}
-      errorMessages={[errorForTwoChar]}
+    <ValidatedTextField
+      rules={AT_LEAST_TWO_CHARACTERS}
       id="password"
       name="password"
       value={password}
@@ -42,6 +39,7 @@ const PasswordField = ({
       variant="outlined"
       required
       fullWidth
+      onChange={(event) => setPassword(event.target.value)}
       slotProps={{
         input: {
           endAdornment: (
@@ -57,11 +55,7 @@ const PasswordField = ({
             </InputAdornment>
           ),
         },
-        htmlInput: {
-          onChange: (event: ChangeEvent<HTMLInputElement>) =>
-            setPassword(event.target.value),
-          "data-testid": "password",
-        },
+        htmlInput: { "data-testid": "password" },
       }}
     />
   );

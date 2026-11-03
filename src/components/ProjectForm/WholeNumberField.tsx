@@ -1,5 +1,9 @@
 import { type ChangeEvent } from "react";
-import { TextValidator } from "react-material-ui-form-validator";
+import { ValidatedTextField } from "../ValidatedForm";
+import { atLeast } from "./rules";
+
+const LOWEST = 1;
+const WHOLE_NUMBER_RULES = [atLeast(LOWEST)];
 
 interface WholeNumberFieldProps {
   name: string;
@@ -14,15 +18,11 @@ export const WholeNumberField = ({
   value,
   onChange,
 }: WholeNumberFieldProps) => (
-  <TextValidator
+  <ValidatedTextField
     name={name}
-    validators={["minNumber:1"]}
-    errorMessages={["Enter greater than 1"]}
+    rules={WHOLE_NUMBER_RULES}
     slotProps={{
-      htmlInput: {
-        min: 1,
-        step: 1,
-      },
+      htmlInput: { min: LOWEST, step: 1 },
     }}
     margin="dense"
     id={name}

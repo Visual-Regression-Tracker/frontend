@@ -1,14 +1,14 @@
-import { useState, FormEvent } from "react";
+import { useState } from "react";
 import { Button, Card, CardContent, Stack } from "@mui/material";
 import { useUserDispatch, login } from "../contexts";
 import { usersService } from "../services";
 import { useSnackbar } from "notistack";
-import { ValidatorForm } from "react-material-ui-form-validator";
 import { useNavigate } from "react-router-dom";
 import { routes } from "../constants";
 import PasswordField from "./PasswordField";
 import EmailField from "./EmailField";
 import NameField from "./NameField";
+import { ValidatedForm } from "./ValidatedForm";
 
 const RegisterForm = () => {
   const navigate = useNavigate();
@@ -19,8 +19,7 @@ const RegisterForm = () => {
   const [password, setPassword] = useState("");
   const dispatch = useUserDispatch();
 
-  const handleSubmit = (event: FormEvent) => {
-    event.preventDefault();
+  const handleSubmit = () => {
     usersService
       .register(firstName, lastName, email, password)
       .then(() => {
@@ -39,7 +38,7 @@ const RegisterForm = () => {
   };
 
   return (
-    <ValidatorForm onSubmit={handleSubmit} instantValidate>
+    <ValidatedForm onSubmit={handleSubmit}>
       <Card>
         <CardContent sx={{ p: 3 }}>
           <Stack spacing={2}>
@@ -72,7 +71,7 @@ const RegisterForm = () => {
           </Stack>
         </CardContent>
       </Card>
-    </ValidatorForm>
+    </ValidatedForm>
   );
 };
 

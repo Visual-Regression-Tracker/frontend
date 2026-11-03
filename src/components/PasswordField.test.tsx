@@ -1,20 +1,20 @@
 import { useState } from "react";
 import { screen, waitFor } from "@testing-library/react";
-import { ValidatorForm } from "react-material-ui-form-validator";
 import { renderWithProviders } from "../_test/render";
+import { ValidatedForm } from "./ValidatedForm";
 import PasswordField from "./PasswordField";
 
 const Harness = ({ label }: { label?: string }) => {
   const [password, setPassword] = useState("");
   return (
-    <ValidatorForm onSubmit={() => undefined} instantValidate>
+    <ValidatedForm onSubmit={() => undefined}>
       <PasswordField
         password={password}
         setPassword={setPassword}
         label={label}
       />
       <output data-testid="current">{password}</output>
-    </ValidatorForm>
+    </ValidatedForm>
   );
 };
 

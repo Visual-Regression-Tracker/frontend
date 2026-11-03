@@ -68,7 +68,7 @@ test("does not send user details that fail validation", async ({
     profilePage.userForm.getByText("Enter at least two characters."),
   ).toBeVisible();
   await expect(
-    profilePage.userForm.getByText("Enter valid email address"),
+    profilePage.userForm.getByText("Enter a valid email."),
   ).toBeVisible();
   expect(updates).toEqual([]);
 });

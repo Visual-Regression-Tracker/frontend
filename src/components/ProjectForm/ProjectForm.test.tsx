@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { screen, waitFor, within } from "@testing-library/react";
+import { fireEvent, screen, waitFor, within } from "@testing-library/react";
 import { renderWithProviders } from "../../_test/render";
 import { dinov2Service, ollamaService } from "../../services";
 import {
@@ -16,7 +16,7 @@ import {
 import { ProjectDto } from "../../types";
 import { ImageComparison } from "../../types/imageComparison";
 import { Button } from "@mui/material";
-import { ValidatorForm } from "react-material-ui-form-validator";
+import { ValidatedForm } from "../ValidatedForm";
 import { ProjectForm } from "./ProjectForm";
 
 type User = ReturnType<typeof renderWithProviders>["user"];
@@ -34,7 +34,7 @@ const PROJECT: ProjectDto = {
   bulkApproveGroupBy: "customTags",
 };
 
-// the project pages' wrapper: BaseModal's validator form, with the edit state printed
+// the project pages' wrapper: BaseModal's validated form, with the edit state printed
 const Harness = ({
   initial,
   onSubmit,
@@ -53,15 +53,12 @@ const Harness = ({
 
   return (
     <>
-      <ValidatorForm
-        onSubmit={() => onSubmit(projectEditState)}
-        instantValidate
-      >
+      <ValidatedForm onSubmit={() => onSubmit(projectEditState)}>
         <ProjectForm />
         <Button type="submit" data-testid="submitButton">
           Save
         </Button>
-      </ValidatorForm>
+      </ValidatedForm>
       <output data-testid="editState">
         {JSON.stringify(projectEditState)}
       </output>
@@ -281,7 +278,9 @@ describe("ProjectForm", () => {
       await replaceNumber(user, screen.getByLabelText(field), "0");
       await user.click(screen.getByTestId("submitButton"));
 
-      expect(await screen.findByText("Enter greater than 1")).toBeVisible();
+      expect(
+        await screen.findByText("Enter greater than or equal to 1"),
+      ).toBeVisible();
       expect(onSubmit).not.toHaveBeenCalled();
     });
 
@@ -428,8 +427,9 @@ describe("ProjectForm", () => {
     });
 
     it.each([
-      ["above 1", "2", "Enter less than 1"],
-      ["below 0", "-1", "Enter greater than 0"],
+      ["above 1", "2", "Enter less than or equal to 1"],
+      ["a decimal above 1", "1.5", "Enter less than or equal to 1"],
+      ["below 0", "-1", "Enter greater than or equal to 0"],
     ])("does not submit a threshold %s", async (_label, value, message) => {
       const onSubmit = vi.fn();
       const { user } = await renderForm(PROJECT, onSubmit);
@@ -493,7 +493,9 @@ describe("ProjectForm", () => {
       );
       await user.click(screen.getByTestId("submitButton"));
 
-      expect(await screen.findByText("Enter less than 1")).toBeVisible();
+      expect(
+        await screen.findByText("Enter less than or equal to 1"),
+      ).toBeVisible();
       expect(onSubmit).not.toHaveBeenCalled();
     });
   });
@@ -549,7 +551,9 @@ describe("ProjectForm", () => {
         await replaceNumber(user, screen.getByLabelText(label), "-1");
         await user.click(screen.getByTestId("submitButton"));
 
-        expect(await screen.findByText("Enter greater than 0")).toBeVisible();
+        expect(
+          await screen.findByText("Enter greater than or equal to 0"),
+        ).toBeVisible();
         expect(onSubmit).not.toHaveBeenCalled();
       },
     );
@@ -852,6 +856,21 @@ describe("ProjectForm", () => {
 
         await user.click(screen.getByTestId("submitButton"));
 
+        expect(onSubmit).not.toHaveBeenCalled();
+      });
+
+      // fireEvent.submit skips the browser's own required check on the select
+      it("says a model is required when none is picked from the list", async () => {
+        vi.spyOn(ollamaService, "listModels").mockResolvedValue([
+          { name: "gemma3:12b" },
+        ]);
+        const onSubmit = vi.fn();
+        await renderForm(vlm, onSubmit);
+        await screen.findByRole("combobox", { name: /^Model/ });
+
+        fireEvent.submit(screen.getByTestId("submitButton"));
+
+        expect(await screen.findByText("Model is required")).toBeVisible();
         expect(onSubmit).not.toHaveBeenCalled();
       });
 
@@ -1199,7 +1218,7 @@ describe("ProjectForm", () => {
           inRange: "7",
           expected: 7,
           sent: (project) => project.maxBuildAllowed,
-          emptied: { refusedWith: "Enter greater than 1" },
+          emptied: { refusedWith: "Enter greater than or equal to 1" },
         },
         {
           name: "max branch lifetime",
@@ -1208,7 +1227,7 @@ describe("ProjectForm", () => {
           inRange: "14",
           expected: 14,
           sent: (project) => project.maxBranchLifetime,
-          emptied: { refusedWith: "Enter greater than 1" },
+          emptied: { refusedWith: "Enter greater than or equal to 1" },
         },
       ]);
     });
