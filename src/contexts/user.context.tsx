@@ -50,7 +50,7 @@ function UserProvider({ children }: Readonly<UserProviderProps>) {
   const localStorageUser = localStorage.getItem("user");
   const initialState: State = {
     loggedIn: !!localStorageUser,
-    user: localStorageUser ? JSON.parse(localStorageUser) : undefined,
+    user: localStorageUser ? (JSON.parse(localStorageUser) as User) : undefined,
     userList: [],
   };
 

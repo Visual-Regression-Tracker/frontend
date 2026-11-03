@@ -4,6 +4,7 @@ import {
   memo,
   useCallback,
   useEffect,
+  useLayoutEffect,
   useRef,
   useState,
 } from "react";
@@ -67,6 +68,23 @@ const BuildList = () => {
   const selectAllRequest = useRef(0);
   // answers for a project or search the reviewer has left must not fill the list
   const pageRequest = useRef(0);
+
+  // a new project or search starts on the first page, with nothing selected
+  const [listedFor, setListedFor] = useState({
+    selectedProjectId,
+    searchQuery,
+    take,
+  });
+  const listChanged =
+    listedFor.selectedProjectId !== selectedProjectId ||
+    listedFor.searchQuery !== searchQuery;
+  if (listChanged || listedFor.take !== take) {
+    if (listChanged) {
+      setSelectedIds([]);
+    }
+    setPaginationPage(1);
+    setListedFor({ selectedProjectId, searchQuery, take });
+  }
 
   const allSelected = total > 0 && selectedIds.length === total;
   const someSelected = selectedIds.length > 0 && !allSelected;
@@ -133,7 +151,6 @@ const BuildList = () => {
 
   const loadPage = useCallback(
     (page: number, aroundBuildId?: string) => {
-      setPaginationPage(page);
       listRef.current?.scrollTo({ top: 0 });
       const request = ++pageRequest.current;
       if (selectedProjectId) {
@@ -172,8 +189,13 @@ const BuildList = () => {
     [buildDispatch, enqueueSnackbar, selectedProjectId, take, searchQuery],
   );
 
+  const showPage = (page: number) => {
+    setPaginationPage(page);
+    loadPage(page);
+  };
+
   const reloadAfterDeleting = (count: number) =>
-    loadPage(
+    showPage(
       Math.min(paginationPage, Math.max(1, Math.ceil((total - count) / take))),
     );
 
@@ -182,10 +204,9 @@ const BuildList = () => {
     loadPage(1, linkedBuildId.current);
   }, [loadPage]);
 
-  useEffect(() => {
-    // drops an in-flight select all so its ids cannot land on another search
+  // in the commit that cleared the selection, so an in-flight select all cannot land on another search
+  useLayoutEffect(() => {
     selectAllRequest.current += 1;
-    setSelectedIds([]);
   }, [selectedProjectId, searchQuery]);
 
   useEffect(() => {
@@ -321,7 +342,7 @@ const BuildList = () => {
               defaultPage={1}
               page={paginationPage}
               count={Math.ceil(total / take)}
-              onChange={(_event, page) => loadPage(page)}
+              onChange={(_event, page) => showPage(page)}
             />
           </Grid>
         </Grid>
@@ -339,7 +360,7 @@ const BuildList = () => {
                       variant: "success",
                     }),
                   )
-                  .catch((err) =>
+                  .catch((err: string) =>
                     enqueueSnackbar(err, {
                       variant: "error",
                     }),
@@ -385,7 +406,7 @@ const BuildList = () => {
               .update(menuBuild.id, {
                 ciBuildId: newCiBuildId,
               })
-              .catch((err) =>
+              .catch((err: string) =>
                 enqueueSnackbar(err, {
                   variant: "error",
                 }),
@@ -427,7 +448,7 @@ const BuildList = () => {
                   selectBuildCalback();
                 }
               })
-              .catch((err) =>
+              .catch((err: string) =>
                 enqueueSnackbar(err, {
                   variant: "error",
                 }),

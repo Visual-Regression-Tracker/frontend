@@ -1,27 +1,42 @@
 import { routes } from "../constants";
 import { usersService } from "../services";
-import { User } from "../types";
 
-export function authHeader() {
+function storedToken(): string | undefined {
   const userString = localStorage.getItem("user");
+  if (!userString) return undefined;
 
-  if (userString) {
-    const user: User = JSON.parse(userString);
-
-    if (user?.token) {
-      return {
-        Authorization: "Bearer " + user.token,
-      };
-    }
+  const user: unknown = JSON.parse(userString);
+  if (
+    typeof user === "object" &&
+    user !== null &&
+    "token" in user &&
+    typeof user.token === "string"
+  ) {
+    return user.token;
   }
-
-  return [];
+  return undefined;
 }
 
-export function handleResponse(response: Response) {
+export function authHeader(): Record<string, string> {
+  const token = storedToken();
+  return token ? { Authorization: "Bearer " + token } : {};
+}
+
+// callers show the reason itself as the snackbar message, so it stays a string, not an Error
+export const rejectWithMessage = (message: unknown): Promise<never> =>
+  // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
+  Promise.reject(message);
+
+function messageOf(data: unknown): unknown {
+  return typeof data === "object" && data !== null && "message" in data
+    ? data.message
+    : undefined;
+}
+
+export function handleResponse<T>(response: Response): Promise<T> {
   return response.text().then((text: string) => {
     // the proxy answers with an HTML page while the API restarts, so a failed parse must not skip status handling
-    let data;
+    let data: unknown;
     let isJson = true;
     try {
       data = text && JSON.parse(text);
@@ -39,13 +54,13 @@ export function handleResponse(response: Response) {
 
       // a successful status with a body that is not JSON is no answer either
       const error =
-        data?.message ||
+        messageOf(data) ||
         (response.ok ? "Unexpected response from the server" : "") ||
         response.statusText;
 
-      return Promise.reject(error);
+      return rejectWithMessage(error);
     }
 
-    return data;
+    return Promise.resolve(data as T);
   });
 }

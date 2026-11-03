@@ -17,7 +17,7 @@ function getList(projectId: string): Promise<TestVariation[]> {
   return fetch(
     `${API_URL}${ENDPOINT_URL}?projectId=${projectId}`,
     requestOptions,
-  ).then(handleResponse);
+  ).then(handleResponse<TestVariation[]>);
 }
 
 function getDetails(id: string): Promise<TestVariation> {
@@ -27,7 +27,7 @@ function getDetails(id: string): Promise<TestVariation> {
   };
 
   return fetch(`${API_URL}${ENDPOINT_URL}/details/${id}`, requestOptions).then(
-    handleResponse,
+    handleResponse<TestVariation>,
   );
 }
 
@@ -46,7 +46,7 @@ function merge(
   };
 
   return fetch(`${API_URL}${ENDPOINT_URL}/merge`, requestOptions).then(
-    handleResponse,
+    handleResponse<Build>,
   );
 }
 
@@ -57,7 +57,7 @@ function remove(id: string): Promise<TestVariation> {
   };
 
   return fetch(`${API_URL}${ENDPOINT_URL}/${id}`, requestOptions).then(
-    handleResponse,
+    handleResponse<TestVariation>,
   );
 }
 

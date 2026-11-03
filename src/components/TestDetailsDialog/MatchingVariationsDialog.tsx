@@ -124,7 +124,7 @@ export const MatchingVariationsDialog = ({
   const { enqueueSnackbar, enqueueAside } = useDialogSnackbar();
   const { testRuns: allTestRuns, filteredSortedTestRunIds } = useTestRunState();
 
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [data, setData] = useState<MatchingVariations | null>(null);
   const [selected, setSelected] = useState<Set<string>>(new Set());
@@ -136,10 +136,6 @@ export const MatchingVariationsDialog = ({
 
   const loadData = useCallback(
     (background: boolean) => {
-      if (!background) {
-        setLoading(true);
-        setData(null);
-      }
       testRunService
         .getMatchingVariations(testRun.id)
         .then((result) => {
@@ -166,7 +162,7 @@ export const MatchingVariationsDialog = ({
             result.variations.map((v) => v.id),
           );
         })
-        .catch((err) => {
+        .catch((err: string) => {
           if (!background) enqueueSnackbar(err, { variant: "error" });
         })
         .finally(() => {
@@ -286,7 +282,9 @@ export const MatchingVariationsDialog = ({
 
   const goToNextEnabled = (): boolean => {
     try {
-      return JSON.parse(localStorage.getItem(GO_TO_NEXT_KEY) || "false");
+      return Boolean(
+        JSON.parse(localStorage.getItem(GO_TO_NEXT_KEY) || "false"),
+      );
     } catch {
       return false;
     }
@@ -349,7 +347,7 @@ export const MatchingVariationsDialog = ({
           ...undo,
         });
       })
-      .catch((err) => {
+      .catch((err: string) => {
         enqueueSnackbar(err, { variant: "error" });
       })
       .finally(() => setSubmitting(false));

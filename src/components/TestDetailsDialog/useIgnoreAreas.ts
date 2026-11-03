@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import Konva from "konva";
 import type { SnackbarMessage } from "notistack";
 import { TestRun } from "../../types";
@@ -6,7 +6,10 @@ import { IgnoreArea, UpdateIgnoreAreaDto } from "../../types/ignoreArea";
 import { testRunService } from "../../services";
 import { useTestRunDispatch } from "../../contexts";
 import { AREA_KINDS } from "../../constants";
-import { invertIgnoreArea } from "../../_helpers/ignoreArea.helper";
+import {
+  invertIgnoreArea,
+  parseIgnoreAreas,
+} from "../../_helpers/ignoreArea.helper";
 import type { DialogEnqueue } from "./useDialogSnackbar";
 
 export const useIgnoreAreas = (
@@ -15,24 +18,33 @@ export const useIgnoreAreas = (
   enqueueSnackbar: DialogEnqueue,
 ) => {
   const testRunDispatch = useTestRunDispatch();
-  const [ignoreAreas, setIgnoreAreas] = useState<IgnoreArea[]>([]);
+  const [ignoreAreas, setIgnoreAreas] = useState(() =>
+    parseIgnoreAreas(testRun.ignoreAreas),
+  );
   const [selectedRectId, setSelectedRectId] = useState<string>();
   const [isDrawMode, setIsDrawMode] = useState(false);
   const [areaKind, setAreaKind] = useState(AREA_KINDS[0]);
   const [processing, setProcessing] = useState(false);
 
-  useEffect(() => {
-    setIsDrawMode(false);
-    setSelectedRectId(undefined);
-  }, [testRun.id, testRun.diffName]);
-
-  // by id, not the run object: an update to the run would wipe the unsaved areas drawn here
-  useEffect(() => {
-    setIgnoreAreas(JSON.parse(testRun.ignoreAreas) as IgnoreArea[]);
-  }, [testRun.id, testRun.ignoreAreas]);
+  // by fields, not the run object: an update to the run would wipe the unsaved areas drawn here
+  const { id, diffName, ignoreAreas: storedAreas } = testRun;
+  const [shownRun, setShownRun] = useState({ id, diffName, storedAreas });
+  const runChanged = shownRun.id !== id;
+  const imagesChanged = runChanged || shownRun.diffName !== diffName;
+  const areasChanged = runChanged || shownRun.storedAreas !== storedAreas;
+  if (imagesChanged || areasChanged) {
+    if (imagesChanged) {
+      setIsDrawMode(false);
+      setSelectedRectId(undefined);
+    }
+    if (areasChanged) {
+      setIgnoreAreas(parseIgnoreAreas(storedAreas));
+    }
+    setShownRun({ id, diffName, storedAreas });
+  }
 
   const tempIgnoreAreas = useMemo(
-    () => JSON.parse(testRun.tempIgnoreAreas) as IgnoreArea[],
+    () => parseIgnoreAreas(testRun.tempIgnoreAreas),
     [testRun.tempIgnoreAreas],
   );
 

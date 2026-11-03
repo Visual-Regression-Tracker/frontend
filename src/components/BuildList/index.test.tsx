@@ -3,6 +3,8 @@ import { act, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { CurrentSearch } from "../../_test/location";
 import type { MockInstance } from "vitest";
+import { actAsync } from "../../_test/act";
+import { rejectWithMessage } from "../../_helpers/service.helpers";
 import { renderWithProviders } from "../../_test/render";
 import { selectProject, useProjectDispatch } from "../../contexts";
 import { buildsService } from "../../services";
@@ -230,8 +232,8 @@ describe("BuildList", () => {
         undefined,
       );
 
-      await act(async () => second.resolve(page(TEST_BUILD_PASSED)));
-      await act(async () => first.resolve(page(TEST_BUILD_FAILED)));
+      await actAsync(() => second.resolve(page(TEST_BUILD_PASSED)));
+      await actAsync(() => first.resolve(page(TEST_BUILD_FAILED)));
 
       expect(screen.getByText("#2")).toBeVisible();
       expect(screen.queryByText("#1")).not.toBeInTheDocument();
@@ -251,8 +253,8 @@ describe("BuildList", () => {
       rerender(<InProject projectId="project-b" />);
       await waitFor(() => expect(getList).toHaveBeenCalledTimes(2));
 
-      await act(async () => second.resolve(page(TEST_BUILD_PASSED)));
-      await act(async () => first.reject("Project A is gone"));
+      await actAsync(() => second.resolve(page(TEST_BUILD_PASSED)));
+      await actAsync(() => first.reject("Project A is gone"));
 
       expect(screen.getByText("#2")).toBeVisible();
       expect(screen.queryByText("Project A is gone")).not.toBeInTheDocument();
@@ -308,7 +310,7 @@ describe("BuildList", () => {
           .spyOn(buildsService, "remove")
           .mockImplementation((id) =>
             id === "build-2"
-              ? Promise.reject("Build is locked")
+              ? rejectWithMessage("Build is locked")
               : Promise.resolve(makeBuild(1)),
           );
         const { user } = renderWithProviders(<OpenProject />);
@@ -495,6 +497,50 @@ describe("BuildList", () => {
       });
     });
 
+    describe("a new search", () => {
+      beforeEach(() => {
+        getList.mockImplementation((_project, _take, skip, query) =>
+          Promise.resolve(
+            skip === 0 || query
+              ? pageOf(builds(1, 10), 11)
+              : pageOf([makeBuild(11)], 11, 10),
+          ),
+        );
+      });
+
+      it("starts on the first page", async () => {
+        const { user } = renderWithProviders(<OpenProject />);
+        await screen.findByText(label(1));
+        await user.click(screen.getByRole("button", { name: "Go to page 2" }));
+        expect(await screen.findByText(label(11))).toBeVisible();
+
+        await user.type(searchInput(), "ci-{Enter}");
+
+        expect(
+          await screen.findByRole("button", { name: "page 1" }),
+        ).toHaveAttribute("aria-current", "page");
+        expect(
+          screen.getByRole("button", { name: "Go to page 2" }),
+        ).toBeVisible();
+      });
+
+      it("clears the selection", async () => {
+        const { user } = renderWithProviders(<OpenProject />);
+        await screen.findByText(label(1));
+        await user.click(rowCheckboxes()[0]);
+        expect(
+          screen.getByRole("checkbox", { name: "Clear selection" }),
+        ).toBeInTheDocument();
+
+        await user.type(searchInput(), "ci-{Enter}");
+
+        expect(
+          await screen.findByRole("checkbox", { name: "Select all (11)" }),
+        ).not.toBeChecked();
+        expect(rowCheckboxes().every((box) => !box.checked)).toBe(true);
+      });
+    });
+
     describe("select all", () => {
       const TOTAL = 25;
       // the list shows a page of ten; only the select-all request takes all
@@ -586,7 +632,7 @@ describe("BuildList", () => {
             screen.getByRole("checkbox", { name: "Select all (3)" }),
           ).toBeInTheDocument(),
         );
-        await act(async () => resolveAll(pageOf(builds(1, TOTAL), TOTAL)));
+        await actAsync(() => resolveAll(pageOf(builds(1, TOTAL), TOTAL)));
 
         expect(
           screen.getByRole("checkbox", { name: "Select all (3)" }),

@@ -59,8 +59,8 @@ describe("PrivateRoute", () => {
   test("remembers the full link for after login, query string and hash included", () => {
     mockUserState(false);
     const LoginPage = () => {
-      const { state } = useLocation();
-      return <div>back to {(state as { from: string }).from}</div>;
+      const { from } = useLocation().state as { from: string };
+      return <div>back to {from}</div>;
     };
     const item = render(
       <MemoryRouter

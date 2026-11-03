@@ -5,6 +5,7 @@ import {
   waitFor,
   within,
 } from "@testing-library/react";
+import { actAsync } from "../_test/act";
 import { renderWithProviders } from "../_test/render";
 import {
   EDITOR_USER,
@@ -85,7 +86,7 @@ describe("ProjectListPage", () => {
       ).toBeInTheDocument();
       expect(screen.queryByText("No projects yet")).not.toBeInTheDocument();
 
-      await act(async () => answer([]));
+      await actAsync(() => answer([]));
 
       expect(await screen.findByText("No projects yet")).toBeInTheDocument();
       expect(

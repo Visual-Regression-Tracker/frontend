@@ -82,7 +82,7 @@ test.describe("with SSO on", () => {
 
     expect(request.headers()["authorization"]).toBe("Bearer sso-token");
     await expect(page).toHaveURL(/\/projects$/);
-    const stored = await page.evaluate(() =>
+    const stored = await page.evaluate((): unknown =>
       JSON.parse(window.localStorage.getItem("user") ?? "null"),
     );
     expect(stored).toMatchObject({ email: ssoUser.email, token: "sso-token" });

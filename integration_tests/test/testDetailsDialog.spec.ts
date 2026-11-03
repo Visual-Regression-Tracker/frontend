@@ -19,6 +19,7 @@ import {
   reverts,
   mockTestRun,
 } from "utils/mocks";
+import { boxOf } from "utils/boxOf";
 
 const project = TEST_PROJECT;
 const build = TEST_BUILD_FAILED;
@@ -51,12 +52,12 @@ test("raises its toast clear of the approve buttons", async ({
   // by text: the tooltip wrapper makes "Hotkey: A" the name; anchored vs "Approve variations"
   const approve = page.locator("button").filter({ hasText: /^Approve$/ });
   await expect(approve).toBeVisible();
-  const buttons = await approve.boundingBox();
+  const buttons = await boxOf(approve);
 
   await approve.click();
 
   await expect(projectPage.notification.message).toBeVisible();
-  const toast = await projectPage.notification.message.boundingBox();
+  const toast = await boxOf(projectPage.notification.message);
   expect(toast.y + toast.height).toBeLessThanOrEqual(buttons.y);
 });
 

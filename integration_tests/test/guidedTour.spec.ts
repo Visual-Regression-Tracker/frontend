@@ -27,6 +27,7 @@ import {
   mockImage,
   mockTestRun,
 } from "utils/mocks";
+import { defined } from "utils/defined";
 
 const project = TEST_PROJECT;
 
@@ -169,7 +170,7 @@ test.describe("Guided Tour", () => {
       const tour = await variationListPage.header.startTour();
 
       await expect(tour.joyrideOverlay).toContainText(
-        TEST_VARIATION_LIST_PAGE[0].title,
+        defined(TEST_VARIATION_LIST_PAGE[0].title, "The first step's title"),
       );
       await tour.clickNext();
 

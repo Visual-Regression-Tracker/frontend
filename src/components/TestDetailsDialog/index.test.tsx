@@ -14,6 +14,7 @@ import {
 import { TestDetailsDialog } from ".";
 import { NO_FAILURES } from "../../_test/bulkResult";
 import { CurrentSearch, currentSearch } from "../../_test/location";
+import { detailsFrom } from "../../_test/detailsFrom";
 
 // Konva needs native canvas under Node; a stand-in lets tests draw and delete ignore areas
 vi.mock("./DrawArea", () => import("../../_test/FakeDrawArea"));
@@ -45,13 +46,9 @@ const renderDialog = async ({
   vi.spyOn(buildsService, "getDetails").mockResolvedValue(
     TEST_BUILD_UNRESOLVED,
   );
-  vi.spyOn(testRunService, "getDetails").mockImplementation(async (id) => {
-    const found = [...testRuns, openRun].find((item) => item.id === id);
-    if (!found) {
-      throw new Error(`no run ${id}`);
-    }
-    return found;
-  });
+  vi.spyOn(testRunService, "getDetails").mockImplementation(
+    detailsFrom([...testRuns, openRun]),
+  );
 
   const result = renderWithProviders(
     <>

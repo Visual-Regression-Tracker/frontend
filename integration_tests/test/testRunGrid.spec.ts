@@ -1,5 +1,5 @@
-import { expect } from "@playwright/test";
-import { test } from "fixtures";
+import { expect, Locator, Page } from "@playwright/test";
+import { OpenProjectPage, test } from "fixtures";
 import {
   TEST_BUILD_FAILED,
   TEST_PROJECT,
@@ -18,6 +18,8 @@ import {
   mockImage,
   mockTestRun,
 } from "utils/mocks";
+import { boxOf } from "utils/boxOf";
+import { postData } from "utils/postData";
 
 const project = TEST_PROJECT;
 const build = TEST_BUILD_FAILED;
@@ -63,22 +65,22 @@ const LONE_SCREEN = {
 };
 
 // the data grid colours its own subtree: left alone its chrome inherits pure black
-const colourOf = (locator) =>
+const colourOf = (locator: Locator) =>
   locator.evaluate((el: HTMLElement) => getComputedStyle(el).color);
 
-const captureApprovals = async (page): Promise<string[][]> => {
+const captureApprovals = async (page: Page): Promise<string[][]> => {
   const approved: string[][] = [];
   await page.route(
     `${API_URL}/test-runs/approve?merge=false`,
     (route, request) => {
-      approved.push(request.postDataJSON());
+      approved.push(postData<string[]>(request));
       return route.fulfill({ body: "{}" });
     },
   );
   return approved;
 };
 
-const mockVariations = async (page) => {
+const mockVariations = async (page: Page) => {
   await mockGetTestRuns(page, build.id, [
     VARIATION_EN,
     VARIATION_DE,
@@ -89,7 +91,10 @@ const mockVariations = async (page) => {
   await mockTestRun(page, LONE_SCREEN);
 };
 
-const openGroupedGrid = async (openProjectPage, page) => {
+const openGroupedGrid = async (
+  openProjectPage: OpenProjectPage,
+  page: Page,
+) => {
   await mockVariations(page);
   const projectPage = await openProjectPage(project.id, build.id);
   await projectPage.testRunList.gridViewToggle.click();
@@ -97,7 +102,10 @@ const openGroupedGrid = async (openProjectPage, page) => {
   return projectPage;
 };
 
-const openGroupedTable = async (openProjectPage, page) => {
+const openGroupedTable = async (
+  openProjectPage: OpenProjectPage,
+  page: Page,
+) => {
   await mockVariations(page);
   const projectPage = await openProjectPage(project.id, build.id);
   await projectPage.testRunList.groupToggle.click();
@@ -153,13 +161,9 @@ test("selects every run in a group from its card", async ({
   );
   // the sort ties on the shared name: what matters is one request for the whole group
   expect(
-    approved.map((ids) =>
-      [...ids].sort((a: string, b: string) => a.localeCompare(b)),
-    ),
+    approved.map((ids) => [...ids].sort((a, b) => a.localeCompare(b))),
   ).toEqual([
-    [VARIATION_DE.id, VARIATION_EN.id].sort((a: string, b: string) =>
-      a.localeCompare(b),
-    ),
+    [VARIATION_DE.id, VARIATION_EN.id].sort((a, b) => a.localeCompare(b)),
   ]);
 });
 
@@ -440,13 +444,13 @@ test("resizes the grid cards with the density control", async ({
   const projectPage = await openProjectPage(project.id, build.id);
   await projectPage.testRunList.gridViewToggle.click();
   const card = projectPage.testRunList.cards.first();
-  const standard = (await card.boundingBox()).width;
+  const standard = (await boxOf(card)).width;
 
   await projectPage.testRunList.compactDensity.click();
-  expect((await card.boundingBox()).width).toBeLessThan(standard);
+  expect((await boxOf(card)).width).toBeLessThan(standard);
 
   await projectPage.testRunList.comfortableDensity.click();
-  expect((await card.boundingBox()).width).toBeGreaterThan(standard);
+  expect((await boxOf(card)).width).toBeGreaterThan(standard);
 });
 
 test("comes back to the standard density after a reload", async ({
@@ -471,13 +475,13 @@ test("applies the same density to the table rows", async ({
   const projectPage = await openProjectPage(project.id, build.id);
   const row = projectPage.testRunList.getRow(TEST_UNRESOLVED.id);
   await expect(row).toBeVisible();
-  const standard = (await row.boundingBox()).height;
+  const standard = (await boxOf(row)).height;
 
   await projectPage.testRunList.compactDensity.click();
 
   // the grid applies density after the click
   await expect
-    .poll(async () => (await row.boundingBox()).height)
+    .poll(async () => (await boxOf(row)).height)
     .toBeLessThan(standard);
 });
 
@@ -568,13 +572,9 @@ test("selects a whole group from a table row", async ({
     "2 test runs approved.",
   );
   expect(
-    approved.map((ids) =>
-      [...ids].sort((a: string, b: string) => a.localeCompare(b)),
-    ),
+    approved.map((ids) => [...ids].sort((a, b) => a.localeCompare(b))),
   ).toEqual([
-    [VARIATION_DE.id, VARIATION_EN.id].sort((a: string, b: string) =>
-      a.localeCompare(b),
-    ),
+    [VARIATION_DE.id, VARIATION_EN.id].sort((a, b) => a.localeCompare(b)),
   ]);
 });
 
@@ -699,10 +699,10 @@ test("wraps a long name and its tags rather than cutting them off", async ({
   await expect(projectPage.testRunList.cardTags.first()).toBeVisible();
   const oneLine = 24;
   expect(
-    (await projectPage.testRunList.cardNames.first().boundingBox()).height,
+    (await boxOf(projectPage.testRunList.cardNames.first())).height,
   ).toBeGreaterThan(oneLine);
   expect(
-    (await projectPage.testRunList.cardTags.first().boundingBox()).height,
+    (await boxOf(projectPage.testRunList.cardTags.first())).height,
   ).toBeGreaterThan(oneLine);
 });
 

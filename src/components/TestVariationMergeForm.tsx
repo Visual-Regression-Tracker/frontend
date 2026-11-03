@@ -47,7 +47,7 @@ export const TestVariationMergeForm = ({ projectId, items }: IProps) => {
         // selectBuild handles its own failure
         void selectBuild(buildDispatch, build.id);
       })
-      .catch((err) =>
+      .catch((err: string) =>
         enqueueSnackbar(err, {
           variant: "error",
         }),

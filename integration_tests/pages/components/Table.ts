@@ -1,10 +1,7 @@
-import { Locator, Page } from "@playwright/test";
+import { Locator } from "@playwright/test";
+import { PageObject } from "../PageObject";
 
-export class Table {
-  constructor(public page: Page) {
-    this.page = page;
-  }
-
+export class Table extends PageObject {
   getRow(rowId: string): Locator {
     return this.page.locator(`[data-id='${rowId}']`);
   }

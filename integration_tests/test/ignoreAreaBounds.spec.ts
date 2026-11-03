@@ -5,7 +5,7 @@ import {
   TEST_PROJECT,
   TEST_UNRESOLVED,
 } from "~client/_test/test.data.helper";
-import type { IgnoreArea } from "~client/types/ignoreArea";
+import type { IgnoreArea, UpdateIgnoreAreaDto } from "~client/types/ignoreArea";
 import {
   API_URL,
   mockGetBuildDetails,
@@ -15,6 +15,9 @@ import {
   mockImage,
   mockTestRun,
 } from "utils/mocks";
+import { boxOf } from "utils/boxOf";
+import { defined } from "utils/defined";
+import { postData } from "utils/postData";
 
 const project = TEST_PROJECT;
 const build = TEST_BUILD_FAILED;
@@ -44,7 +47,7 @@ const openRunWith = async (
 
   const canvas = page.getByTestId("drawArea").last().locator("canvas").last();
   await expect(canvas).toBeVisible();
-  const box = await canvas.boundingBox();
+  const box = await boxOf(canvas);
   const scale = box.width / IMAGE.width;
   return (x: number, y: number) => ({
     x: box.x + x * scale,
@@ -58,7 +61,7 @@ const drag = async (
   to: { x: number; y: number },
 ) => {
   // Firefox never sees the release outside the window: stop at its edge, still past the image
-  const viewport = page.viewportSize();
+  const viewport = defined(page.viewportSize(), "The viewport size");
   await page.mouse.move(from.x, from.y);
   await page.mouse.down();
   await page.mouse.move(
@@ -77,7 +80,7 @@ const saveIgnoreAreas = async (page: Page) => {
     route.fulfill({ status: 200, body: "{}" }),
   );
   await page.locator('[data-testid="SaveIcon"]').click();
-  return (await request).postDataJSON().ignoreAreas as IgnoreArea[];
+  return postData<UpdateIgnoreAreaDto>(await request).ignoreAreas;
 };
 
 test("stops an area resized past the bottom-right of the image at its border", async ({

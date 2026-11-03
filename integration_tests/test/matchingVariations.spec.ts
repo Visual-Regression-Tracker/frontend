@@ -20,6 +20,7 @@ import {
   mockRejectTestRuns,
   mockTestRun,
 } from "utils/mocks";
+import { postData } from "utils/postData";
 import { afterTwoFrames } from "utils/afterTwoFrames";
 
 const project = { ...TEST_PROJECT, bulkApproveVariations: true };
@@ -166,10 +167,8 @@ test("approves the matching variations", async ({ openProjectPage, page }) => {
   ]);
 
   expect(
-    request.postDataJSON().sort((a: string, b: string) => a.localeCompare(b)),
-  ).toEqual(
-    [german.id, french.id].sort((a: string, b: string) => a.localeCompare(b)),
-  );
+    postData<string[]>(request).sort((a, b) => a.localeCompare(b)),
+  ).toEqual([german.id, french.id].sort((a, b) => a.localeCompare(b)));
   await expect(notification.message).toHaveText("Approved 2 variations");
   await expect(details.variations).toBeHidden();
 });
@@ -207,10 +206,10 @@ test("approves a variation that did not match once it is ticked", async ({
     details.variationsConfirm("Approve").click(),
   ]);
 
-  expect(request.postDataJSON().sort()).toEqual(
-    [german.id, french.id, spanish.id].sort((a: string, b: string) =>
-      a.localeCompare(b),
-    ),
+  expect(
+    postData<string[]>(request).sort((a, b) => a.localeCompare(b)),
+  ).toEqual(
+    [german.id, french.id, spanish.id].sort((a, b) => a.localeCompare(b)),
   );
 });
 
@@ -263,10 +262,8 @@ test("rejects the matching variations", async ({ openProjectPage, page }) => {
   ]);
 
   expect(
-    request.postDataJSON().sort((a: string, b: string) => a.localeCompare(b)),
-  ).toEqual(
-    [german.id, french.id].sort((a: string, b: string) => a.localeCompare(b)),
-  );
+    postData<string[]>(request).sort((a, b) => a.localeCompare(b)),
+  ).toEqual([german.id, french.id].sort((a, b) => a.localeCompare(b)));
   await expect(notification.message).toHaveText("Rejected 2 variations");
   await expect(details.variations).toBeHidden();
 });

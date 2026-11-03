@@ -104,9 +104,16 @@ const TestRunList = () => {
     );
   }, [groupVariations, view, sortedGroups, activeSort, tagFieldsFor]);
 
-  useEffect(() => {
+  const { name, statuses, tags } = filters;
+  const [pagedFilters, setPagedFilters] = useState({ name, statuses, tags });
+  if (
+    pagedFilters.name !== name ||
+    pagedFilters.statuses !== statuses ||
+    pagedFilters.tags !== tags
+  ) {
+    setPagedFilters({ name, statuses, tags });
     setPaginationModel((prev) => ({ ...prev, page: 0 }));
-  }, [filters.name, filters.statuses, filters.tags]);
+  }
 
   useEffect(() => {
     // switching builds outruns the answers, and only the open build's may land

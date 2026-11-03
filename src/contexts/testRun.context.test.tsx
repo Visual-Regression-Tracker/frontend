@@ -1,5 +1,6 @@
-import { act, screen } from "@testing-library/react";
+import { screen } from "@testing-library/react";
 import { useNavigate } from "react-router-dom";
+import { actAsync } from "../_test/act";
 import { renderWithProviders } from "../_test/render";
 import { run } from "../_helpers/testRun.fixture";
 import { testRunService } from "../services";
@@ -50,8 +51,8 @@ describe("TestRunProvider", () => {
     });
 
     await user.click(screen.getByRole("button", { name: "Open t2" }));
-    await act(async () => second.resolve(run({ id: "t2" })));
-    await act(async () => first.resolve(run({ id: "t1" })));
+    await actAsync(() => second.resolve(run({ id: "t2" })));
+    await actAsync(() => first.resolve(run({ id: "t1" })));
 
     expect(selected()).toHaveTextContent("t2");
   });
@@ -67,7 +68,7 @@ describe("TestRunProvider", () => {
     expect(await screen.findByText("t1")).toBeInTheDocument();
 
     await user.click(screen.getByRole("button", { name: "Open t2" }));
-    await act(async () => second.reject("Not found"));
+    await actAsync(() => second.reject("Not found"));
 
     expect(selected()).toHaveTextContent("none");
   });

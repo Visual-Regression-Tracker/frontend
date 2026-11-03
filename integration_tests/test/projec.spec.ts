@@ -1,12 +1,5 @@
-import { expect } from "@playwright/test";
-
-type KonvaStage = {
-  findOne: (selector: string) => {
-    opacity: () => number;
-    globalCompositeOperation: () => string;
-  };
-};
-import { test } from "fixtures";
+import { expect, Page } from "@playwright/test";
+import { OpenProjectPage, test } from "fixtures";
 import {
   TEST_BUILD_FAILED,
   TEST_BUILD_PASSED,
@@ -26,6 +19,16 @@ import {
   mockImage,
   mockTestRun,
 } from "utils/mocks";
+import type { Build } from "~client/types";
+import { boxOf } from "utils/boxOf";
+
+type KonvaStage = {
+  findOne: (
+    selector: string,
+  ) =>
+    | { opacity: () => number; globalCompositeOperation: () => string }
+    | undefined;
+};
 
 const project = TEST_PROJECT;
 
@@ -176,7 +179,11 @@ const manyBuilds = Array.from({ length: 35 }, (_, i) => ({
   number: 100 + i,
 }));
 
-const openLinkedTo = async (openProjectPage, page, build) => {
+const openLinkedTo = async (
+  openProjectPage: OpenProjectPage,
+  page: Page,
+  build: Build,
+) => {
   await mockGetBuilds(page, project.id, manyBuilds);
   await mockGetBuildDetails(page, build);
   await mockGetTestRuns(page, build.id, []);
@@ -260,14 +267,14 @@ test("zooms with the cursor off the artwork", async ({
   const pane = page.getByTestId("drawArea").first();
   await expect(pane).toBeVisible();
   const canvas = page.locator("canvas").first();
-  const bounds = await pane.boundingBox();
+  const bounds = await boxOf(pane);
 
   await page.mouse.move(bounds.x + bounds.width / 2, bounds.y + 20);
   for (let i = 0; i < 40; i++) {
     await page.mouse.wheel(0, 120);
   }
 
-  const shrunk = await canvas.boundingBox();
+  const shrunk = await boxOf(canvas);
   expect(shrunk.x + shrunk.width).toBeLessThan(bounds.x + bounds.width - 20);
 
   await page.mouse.move(bounds.x + bounds.width - 10, bounds.y + 20);
@@ -275,7 +282,7 @@ test("zooms with the cursor off the artwork", async ({
     await page.mouse.wheel(0, -120);
   }
 
-  const grown = await canvas.boundingBox();
+  const grown = await boxOf(canvas);
   expect(grown.width).toBeGreaterThan(shrunk.width);
 });
 
@@ -342,6 +349,7 @@ test("eases the zoom out instead of stopping dead", async ({
 
   const widths = await pane.evaluate(async (el) => {
     const canvas = el.querySelector<HTMLCanvasElement>("canvas");
+    if (!canvas) throw new Error("No canvas in the pane");
     const box = el.getBoundingClientRect();
 
     for (let i = 0; i < 20; i++) {
@@ -407,13 +415,16 @@ test("lines the Project label up with the select under it", async ({
 }) => {
   await openProjectPage(project.id);
 
-  const label = await page.locator("#project-select-label").boundingBox();
-  const select = await page.locator("#project-select").boundingBox();
+  const label = await boxOf(page.locator("#project-select-label"));
+  const select = await boxOf(page.locator("#project-select"));
 
   expect(label.x).toBe(select.x);
 });
 
-const openDialogWithoutDiff = async (openProjectPage, page) => {
+const openDialogWithoutDiff = async (
+  openProjectPage: OpenProjectPage,
+  page: Page,
+) => {
   const noDiff = { ...TEST_UNRESOLVED, diffName: null };
   await mockGetTestRuns(page, TEST_BUILD_FAILED.id, [noDiff]);
   await mockTestRun(page, noDiff);
@@ -424,7 +435,10 @@ const openDialogWithoutDiff = async (openProjectPage, page) => {
   return projectPage;
 };
 
-const openDialogWithNextUnderReview = async (openProjectPage, page) => {
+const openDialogWithNextUnderReview = async (
+  openProjectPage: OpenProjectPage,
+  page: Page,
+) => {
   const next = {
     ...TEST_UNRESOLVED,
     id: "next_unresolved_test_run_id",
@@ -439,7 +453,7 @@ const openDialogWithNextUnderReview = async (openProjectPage, page) => {
   return projectPage;
 };
 
-const openDialog = async (openProjectPage, page) => {
+const openDialog = async (openProjectPage: OpenProjectPage, page: Page) => {
   const projectPage = await openProjectPage(project.id, TEST_BUILD_FAILED.id);
   await projectPage.testRunList.getRow(TEST_UNRESOLVED.id).click();
   // both panes, or a count asserted later proves nothing
@@ -448,7 +462,7 @@ const openDialog = async (openProjectPage, page) => {
   return projectPage;
 };
 
-const overlaidOpacity = (page) =>
+const overlaidOpacity = (page: Page) =>
   page
     .getByTestId("drawArea")
     .first()
@@ -457,13 +471,16 @@ const overlaidOpacity = (page) =>
         Konva: { stages: KonvaStage[] };
       };
 
-      return Konva.stages
+      const overlaid = Konva.stages
         .map((stage) => stage.findOne(".overlaid"))
-        .find(Boolean)
-        .opacity();
+        .find(Boolean);
+      if (!overlaid) throw new Error("No overlaid image on any stage");
+
+      return overlaid.opacity();
     });
 
-const diffSwitch = (page) => page.getByRole("switch", { name: "Toggle diff" });
+const diffSwitch = (page: Page) =>
+  page.getByRole("switch", { name: "Toggle diff" });
 
 test("keeps both panes and fades the image over the baseline", async ({
   openProjectPage,
@@ -518,10 +535,12 @@ test("blends the two as a difference, diff image or not", async ({
           Konva: { stages: KonvaStage[] };
         };
 
-        return Konva.stages
+        const overlaid = Konva.stages
           .map((stage) => stage.findOne(".overlaid"))
-          .find(Boolean)
-          .globalCompositeOperation();
+          .find(Boolean);
+        if (!overlaid) throw new Error("No overlaid image on any stage");
+
+        return overlaid.globalCompositeOperation();
       }),
   ).toBe("difference");
 });

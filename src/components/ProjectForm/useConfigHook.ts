@@ -10,14 +10,14 @@ export const useConfigHook = <T extends ImageComparisonConfig>() => {
   const { projectEditState: project } = useProjectState();
   const projectDispatch = useProjectDispatch();
 
-  const config: T = useMemo(
-    () => JSON.parse(project.imageComparisonConfig),
+  const config = useMemo(
+    () => JSON.parse(project.imageComparisonConfig) as T,
     [project.imageComparisonConfig],
   );
 
   const updateConfig = useCallback(
     (name: keyof T, value: T[typeof name]) => {
-      const parsed: T = JSON.parse(project.imageComparisonConfig);
+      const parsed = JSON.parse(project.imageComparisonConfig) as T;
 
       const imageComparisonConfig = JSON.stringify({
         ...parsed,

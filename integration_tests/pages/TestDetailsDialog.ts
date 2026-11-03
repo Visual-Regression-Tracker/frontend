@@ -1,4 +1,6 @@
-import { Locator, Page } from "@playwright/test";
+import { Locator } from "@playwright/test";
+import { PageObject } from "./PageObject";
+import { boxOf } from "utils/boxOf";
 
 type KonvaNode = {
   x: () => number;
@@ -18,7 +20,7 @@ type KonvaWindow = { Konva: { stages: KonvaStage[] } };
 export type Rect = { x: number; y: number; width: number; height: number };
 
 // toolbar buttons have no label of their own: found by the icon MUI draws
-export class TestDetailsDialog {
+export class TestDetailsDialog extends PageObject {
   drawAreas = this.page.getByTestId("drawArea");
   checkpointPane = this.drawAreas.nth(1);
 
@@ -71,10 +73,6 @@ export class TestDetailsDialog {
 
   discardPrompt = this.page.getByText("You have not saved ignore areas");
 
-  constructor(public page: Page) {
-    this.page = page;
-  }
-
   variation(label: string): Locator {
     return this.variations.getByRole("checkbox", { name: label, exact: true });
   }
@@ -103,6 +101,7 @@ export class TestDetailsDialog {
     return this.checkpointPane.evaluate((pane, draggable) => {
       const { Konva } = window as unknown as KonvaWindow;
       const stage = Konva.stages.find((s) => pane.contains(s.container()));
+      if (!stage) throw new Error("No Konva stage in the checkpoint pane");
 
       return (
         stage
@@ -125,6 +124,7 @@ export class TestDetailsDialog {
     return this.checkpointPane.evaluate((pane) => {
       const { Konva } = window as unknown as KonvaWindow;
       const stage = Konva.stages.find((s) => pane.contains(s.container()));
+      if (!stage) throw new Error("No Konva stage in the checkpoint pane");
 
       return stage.find("Transformer").length > 0;
     });
@@ -134,9 +134,11 @@ export class TestDetailsDialog {
     const src = await this.checkpointPane.evaluate((pane) => {
       const { Konva } = window as unknown as KonvaWindow;
       const stage = Konva.stages.find((s) => pane.contains(s.container()));
-      const images = stage.find("Image");
+      if (!stage) throw new Error("No Konva stage in the checkpoint pane");
+      const image = stage.find("Image").at(-1);
+      if (!image) throw new Error("No image in the checkpoint pane");
 
-      return images.at(-1).image().src;
+      return image.image().src;
     });
 
     return src.split("/").pop() ?? "";
@@ -153,8 +155,8 @@ export class TestDetailsDialog {
     );
   }
 
-  private async checkpointCanvasBox() {
-    return await this.checkpointPane.locator("canvas").first().boundingBox();
+  private checkpointCanvasBox() {
+    return boxOf(this.checkpointPane.locator("canvas").first());
   }
 
   /** Image pixels from the top left; they match the screen's only at original size. */

@@ -54,7 +54,7 @@ const LoginForm = () => {
         const locationState = location.state as { from: string } | null;
         navigate(locationState?.from ?? routes.HOME);
       })
-      .catch((err) =>
+      .catch((err: string) =>
         enqueueSnackbar(err, {
           variant: "error",
         }),

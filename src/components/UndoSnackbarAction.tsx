@@ -37,7 +37,7 @@ const UndoSnackbarAction = ({
         onUndone?.();
         enqueueSnackbar(undoneText, { variant: "info" });
       })
-      .catch((err) => enqueueSnackbar(err, { variant: "error" }));
+      .catch((err: string) => enqueueSnackbar(err, { variant: "error" }));
   };
 
   return (

@@ -45,11 +45,9 @@ export default tseslint.config(
   jsxA11y.flatConfigs.recommended,
   // the rules SonarCloud runs on every PR, so they fail here first
   sonarjs.configs.recommended,
-  // Warnings, not errors: SonarCloud flags these in new code only, and older tests and mocks have many
   {
     rules: {
-      "sonarjs/todo-tag": "warn",
-      "require-await": "warn",
+      "require-await": "error",
     },
   },
   {
@@ -58,7 +56,7 @@ export default tseslint.config(
     rules: {
       // the typed variant of require-await replaces the base rule
       "require-await": "off",
-      "@typescript-eslint/require-await": "warn",
+      "@typescript-eslint/require-await": "error",
       // navigate()'s promise only matters with flushSync or view transitions
       "@typescript-eslint/no-floating-promises": [
         "error",
@@ -72,35 +70,16 @@ export default tseslint.config(
           ],
         },
       ],
-      // warnings: the app rejects with strings, authHeader returns [] or an object, and tests pass undefined on purpose
-      "@typescript-eslint/no-unsafe-member-access": "warn",
-      "@typescript-eslint/no-unsafe-call": "warn",
-      "@typescript-eslint/no-unsafe-assignment": "warn",
-      "@typescript-eslint/no-unsafe-argument": "warn",
-      "@typescript-eslint/no-unsafe-return": "warn",
-      "@typescript-eslint/prefer-promise-reject-errors": "warn",
-      "sonarjs/deprecation": "warn",
-      "sonarjs/no-undefined-argument": "warn",
-      "sonarjs/function-return-type": "warn",
     },
   },
   reactHooks.configs.flat.recommended,
-  {
-    // React Compiler rules: warnings, as the older components do not follow them yet
-    rules: {
-      "react-hooks/set-state-in-effect": "warn",
-      "react-hooks/refs": "warn",
-      "react-hooks/immutability": "warn",
-      "react-hooks/purity": "warn",
-    },
-  },
   {
     languageOptions: {
       globals: { ...globals.browser, ...globals.node },
     },
     settings: { react: { version: "detect" } },
     rules: {
-      "@typescript-eslint/no-non-null-assertion": "warn",
+      "@typescript-eslint/no-non-null-assertion": "error",
       "@typescript-eslint/no-unused-vars": "error",
       "no-restricted-imports": [
         "error",

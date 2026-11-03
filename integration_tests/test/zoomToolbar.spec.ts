@@ -12,6 +12,7 @@ import {
   mockImage,
   mockTestRunsWithDetails,
 } from "utils/mocks";
+import { boxOf } from "utils/boxOf";
 
 const project = TEST_PROJECT;
 const build = TEST_BUILD_FAILED;
@@ -179,7 +180,7 @@ test("fits the wider screenshot into its pane", async ({
 
   await expect
     .poll(async () => {
-      const pane = await details.checkpointPane.boundingBox();
+      const pane = await boxOf(details.checkpointPane);
       const [, checkpoint] = await details.canvasWidths();
 
       // the fit's margin allows a fraction of a pixel over the pane's padding

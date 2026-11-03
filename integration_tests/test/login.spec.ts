@@ -9,8 +9,8 @@ test("renders", async ({ loginPage }) => {
 });
 
 test("can login", async ({ loginPage }) => {
-  await loginPage.email.type("email@google.com");
-  await loginPage.password.type("123456");
+  await loginPage.email.fill("email@google.com");
+  await loginPage.password.fill("123456");
 
   const [request] = await Promise.all([
     loginPage.page.waitForRequest("**/login"),
@@ -24,7 +24,7 @@ test("can login", async ({ loginPage }) => {
 });
 
 test("show and hide password", async ({ loginPage }) => {
-  await loginPage.password.type("123456");
+  await loginPage.password.fill("123456");
 
   await loginPage.showPasswordBtn.click();
   expect(await loginPage.password.getAttribute("type")).toBe("text");

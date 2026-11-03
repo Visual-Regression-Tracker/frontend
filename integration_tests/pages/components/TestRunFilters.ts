@@ -1,6 +1,6 @@
-import { Page } from "@playwright/test";
+import { PageObject } from "../PageObject";
 
-export class TestRunFilters {
+export class TestRunFilters extends PageObject {
   name = this.page.getByTestId("testRunNameFilter");
   tags = this.page.getByTestId("testRunTagFilter");
   status = this.page.getByRole("combobox", { name: "Status" });
@@ -8,10 +8,6 @@ export class TestRunFilters {
   async selectStatus(status: string) {
     await this.status.click();
     await this.page.getByRole("option", { name: status, exact: true }).click();
-  }
-
-  constructor(public page: Page) {
-    this.page = page;
   }
 
   selectedTag(tag: string) {

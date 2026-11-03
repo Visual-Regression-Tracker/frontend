@@ -14,5 +14,7 @@ export const orderByIds = (
   const positionById = new Map(ids.map((id, position) => [id, position]));
   return runs
     .filter((run) => positionById.has(run.id))
-    .sort((a, b) => positionById.get(a.id)! - positionById.get(b.id)!);
+    .sort(
+      (a, b) => (positionById.get(a.id) ?? 0) - (positionById.get(b.id) ?? 0),
+    );
 };

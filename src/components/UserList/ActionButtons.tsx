@@ -45,7 +45,7 @@ export const ActionButtons = () => {
                     payload: userList.filter((user) => !ids.includes(user.id)),
                   });
                 })
-                .catch((err) =>
+                .catch((err: string) =>
                   enqueueSnackbar(err, {
                     variant: "error",
                   }),

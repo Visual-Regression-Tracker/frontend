@@ -8,7 +8,6 @@ const area = { id: "keep", x: 20, y: 10, width: 30, height: 40 };
 describe("invertIgnoreArea", () => {
   it("answers nothing when there is no area to invert", () => {
     expect(invertIgnoreArea(100, 100)).toEqual([]);
-    expect(invertIgnoreArea(100, 100, undefined)).toEqual([]);
   });
 
   it("covers the image around the area with eight rectangles", () => {

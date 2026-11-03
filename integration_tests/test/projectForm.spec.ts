@@ -8,12 +8,14 @@ import {
   VLM_DEFAULT_CONFIG,
 } from "~client/constants/project";
 import { ImageComparison } from "~client/types/imageComparison";
+import type { ProjectDto } from "~client/types";
 import {
   API_URL,
   mockGetProjects,
   mockOllamaModels,
   mockSaveProject,
 } from "utils/mocks";
+import { postData } from "utils/postData";
 
 const project = TEST_PROJECT;
 
@@ -29,7 +31,7 @@ const savedProject = async (
 ): Promise<{
   imageComparison: string;
   config: Record<string, unknown>;
-  body: Record<string, unknown>;
+  body: ProjectDto;
 }> => {
   const [request] = await Promise.all([
     page.waitForRequest(
@@ -38,11 +40,11 @@ const savedProject = async (
     ),
     save(),
   ]);
-  const body = request.postDataJSON();
+  const body = postData<ProjectDto>(request);
 
   return {
     imageComparison: body.imageComparison,
-    config: JSON.parse(body.imageComparisonConfig),
+    config: JSON.parse(body.imageComparisonConfig) as Record<string, unknown>,
     body,
   };
 };

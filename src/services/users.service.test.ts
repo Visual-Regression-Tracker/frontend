@@ -6,7 +6,8 @@ import { Role } from "../types/user";
 vi.mock("../_config/env.config", () => ({ API_URL: "http://api.test" }));
 
 const JSON_HEADERS = { "Content-Type": "application/json" };
-const storedUser = () => JSON.parse(localStorage.getItem("user") ?? "null");
+const storedUser = (): unknown =>
+  JSON.parse(localStorage.getItem("user") ?? "null");
 
 describe("usersService", () => {
   beforeEach(() => {

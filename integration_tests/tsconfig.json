@@ -3,9 +3,6 @@
     "skipLibCheck": true,
     "lib": ["dom", "dom.iterable", "esnext"],
     "types": ["node"],
-    "strict": false,
-    // page objects initialise fields from constructor parameter properties
-    "useDefineForClassFields": false,
     "paths": {
       "~client/*": ["../src/*"],
       "*": ["./*"]

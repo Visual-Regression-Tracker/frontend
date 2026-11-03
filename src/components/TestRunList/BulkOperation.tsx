@@ -280,7 +280,7 @@ export const BulkOperation = ({
                 enqueueSnackbar(message, { variant: "success", ...undo });
               }
             })
-            .catch((err) => {
+            .catch((err: string) => {
               setIsProcessing(false);
               enqueueSnackbar(err, {
                 variant: "error",

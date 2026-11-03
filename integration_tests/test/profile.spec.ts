@@ -43,7 +43,7 @@ test("updates the user details", async ({ profilePage, page }) => {
   });
   await expect(profilePage.notification.message).toHaveText("User updated");
   await expect(profilePage.header.avatarButton).toHaveText("JD");
-  const stored = await page.evaluate(() =>
+  const stored = await page.evaluate((): unknown =>
     JSON.parse(window.localStorage.getItem("user") ?? "{}"),
   );
   expect(stored).toMatchObject({ firstName: "Jane", lastName: "Doe" });

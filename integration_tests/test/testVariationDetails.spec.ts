@@ -7,6 +7,7 @@ import {
   mockGetTestVariationDetails,
   mockImage,
 } from "utils/mocks";
+import { defined } from "utils/defined";
 import {
   TEST_PROJECT,
   TEST_VARIATION_ONE,
@@ -50,15 +51,18 @@ test("opens the test run a baseline came from", async ({
   page,
 }) => {
   const detailsPage = await openTestVariationDetailsPage(TEST_VARIATION_ONE.id);
-  const { testRun } = TEST_VARIATION_ONE.baselines[0];
+  const testRun = defined(
+    TEST_VARIATION_ONE.baselines[0].testRun,
+    "The baseline's run",
+  );
 
   await detailsPage.testRunBtns.first().click();
 
   await expect(page).toHaveURL(
     (url) =>
       url.pathname === `/${TEST_VARIATION_ONE.projectId}` &&
-      url.searchParams.get("buildId") === testRun?.buildId &&
-      url.searchParams.get("testId") === testRun?.id,
+      url.searchParams.get("buildId") === testRun.buildId &&
+      url.searchParams.get("testId") === testRun.id,
   );
 });
 

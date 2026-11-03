@@ -12,6 +12,6 @@ describe("orderByIds", () => {
   });
 
   it("keeps every run without ids", () => {
-    expect(orderByIds(runs, undefined)).toBe(runs);
+    expect(orderByIds(runs)).toBe(runs);
   });
 });

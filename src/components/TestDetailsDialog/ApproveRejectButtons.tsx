@@ -74,7 +74,7 @@ export const ApproveRejectButtons = ({
         });
         afterApprove?.();
       })
-      .catch((err) =>
+      .catch((err: string) =>
         enqueueSnackbar(err, {
           variant: "error",
         }),
@@ -92,7 +92,7 @@ export const ApproveRejectButtons = ({
         });
         afterReject?.();
       })
-      .catch((err) =>
+      .catch((err: string) =>
         enqueueSnackbar(err, {
           variant: "error",
         }),
