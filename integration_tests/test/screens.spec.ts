@@ -485,10 +485,7 @@ const VIEWS: [name: string, body: Body][] = [
       );
       await expect(projectPage.details.step).toBeVisible();
 
-      await page
-        .locator("button")
-        .filter({ hasText: /^Approve$/ })
-        .click();
+      await projectPage.details.approve.click();
 
       await expect(projectPage.notification.toast(reason)).toBeVisible();
       await shot("test-run-already-approved");

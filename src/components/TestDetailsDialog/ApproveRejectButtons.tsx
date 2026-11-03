@@ -27,6 +27,13 @@ const wideActionButtonSx = {
   marginRight: "4px",
 };
 
+const DECIDED: Record<ReviewDecision, { text: string; variant: VariantType }> =
+  {
+    approve: { text: "Approved", variant: "success" },
+    // not a success: no green tick, as the two buttons sit side by side
+    reject: { text: "Rejected", variant: "info" },
+  };
+
 export const ApproveRejectButtons = ({
   testRun,
   afterApprove,
@@ -61,8 +68,6 @@ export const ApproveRejectButtons = ({
   const decide = (
     decision: ReviewDecision,
     request: Promise<BulkResult>,
-    done: string,
-    variant: VariantType,
     after?: () => void,
   ) => {
     request
@@ -71,8 +76,8 @@ export const ApproveRejectButtons = ({
           enqueueSnackbar(failed[0].message, { variant: "warning" });
           return;
         }
-        enqueueSnackbar(done, {
-          variant,
+        enqueueSnackbar(DECIDED[decision].text, {
+          variant: DECIDED[decision].variant,
           ...undoSnackbarOptions({
             ids: [testRun.id],
             decision,
@@ -89,20 +94,11 @@ export const ApproveRejectButtons = ({
     decide(
       "approve",
       testRunService.approveBulk([testRun.id], testRun.merge),
-      "Approved",
-      "success",
       afterApprove,
     );
 
-  // not a success: no green tick, as the two buttons sit side by side
   const reject = () =>
-    decide(
-      "reject",
-      testRunService.rejectBulk([testRun.id]),
-      "Rejected",
-      "info",
-      afterReject,
-    );
+    decide("reject", testRunService.rejectBulk([testRun.id]), afterReject);
 
   // the hook keeps the callback from its last deps, so the after-callbacks must be deps too
   useHotkeys("a", approve, hotkeyOptions, [testRun, afterApprove]);

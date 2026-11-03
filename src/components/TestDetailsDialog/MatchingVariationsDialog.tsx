@@ -17,7 +17,10 @@ import { LightboxPreview, VariationLightbox } from "./VariationLightbox";
 import { Tooltip } from "../Tooltip";
 import { undoSnackbarOptions } from "../UndoSnackbarAction";
 import { testRunService } from "../../services";
-import { MatchingVariations } from "../../services/testRun.service";
+import {
+  MatchingVariations,
+  ReviewDecision,
+} from "../../services/testRun.service";
 import { useTestRunState } from "../../contexts";
 import { GO_TO_NEXT_KEY } from "../../constants";
 import { thumbnailFor } from "../../_helpers/testRunImage.helper";
@@ -85,7 +88,7 @@ const Loading = styled("div")({
 const variationCount = (count: number): string =>
   `${count} ${pluralize(count, "variation")}`;
 
-export type MatchingVariationsMode = "approve" | "reject";
+export type MatchingVariationsMode = ReviewDecision;
 
 // runs acted on this session, per build: go-to-next skips them before socket state catches up
 const acted: { buildId: string | null; ids: Set<string> } = {

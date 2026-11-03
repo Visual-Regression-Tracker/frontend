@@ -213,16 +213,13 @@ test("warns without an undo when someone else approved the run first", async ({
     succeeded: [],
     failed: [{ id: TEST_UNRESOLVED.id, message: reason }],
   });
-  const { notification } = await openProjectPage(
+  const { notification, details } = await openProjectPage(
     project.id,
     build.id,
     TEST_UNRESOLVED.id,
   );
 
-  await page
-    .locator("button")
-    .filter({ hasText: /^Approve$/ })
-    .click();
+  await details.approve.click();
 
   await expect(notification.toast(reason)).toHaveClass(
     /notistack-MuiContent-warning/,
