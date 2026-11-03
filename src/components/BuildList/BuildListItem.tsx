@@ -23,6 +23,14 @@ const itemSx = {
   },
 } as const;
 
+const secondaryActionSx = {
+  position: "absolute",
+  right: 16,
+  top: "50%",
+  transform: "translateY(-50%)",
+  visibility: "hidden",
+} as const;
+
 interface BuildListItemProps {
   build: Build;
   selected: boolean;
@@ -95,16 +103,7 @@ export const BuildListItem = ({
         }
       />
 
-      <Box
-        className="build-secondary-action"
-        sx={{
-          position: "absolute",
-          right: 16,
-          top: "50%",
-          transform: "translateY(-50%)",
-          visibility: "hidden",
-        }}
-      >
+      <Box className="build-secondary-action" sx={secondaryActionSx}>
         <IconButton onClick={onMenuClick} size="large">
           <MoreVert data-testid="MoreVertIcon" />
         </IconButton>

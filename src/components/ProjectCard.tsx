@@ -50,17 +50,15 @@ export const ProjectCard = ({
       }}
     >
       <CardContent sx={{ flex: 1 }}>
-        <Stack direction="row" alignItems="flex-start" spacing={1}>
-          <Box flex={1} minWidth={0}>
+        <Stack direction="row" spacing={1} sx={{ alignItems: "flex-start" }}>
+          <Box sx={{ flex: 1, minWidth: 0 }}>
             <Typography variant="h6" component="h3" noWrap>
               {project.name}
             </Typography>
             <Stack
               direction="row"
-              alignItems="center"
               spacing={0.75}
-              color="text.secondary"
-              mt={0.5}
+              sx={{ alignItems: "center", color: "text.secondary", mt: 0.5 }}
             >
               <AccountTree sx={{ fontSize: 16 }} />
               <Typography variant="body2" noWrap>
@@ -131,7 +129,7 @@ export const ProjectCard = ({
         >
           Variations
         </Button>
-        <Box flex={1} />
+        <Box sx={{ flex: 1 }} />
         {onEdit && (
           <Tooltip title="Edit project">
             <IconButton onClick={onEdit}>

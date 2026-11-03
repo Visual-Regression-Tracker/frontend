@@ -46,7 +46,7 @@ export const ConfigurationExamples = () => {
         </Tabs>
         <div role="tabpanel" hidden={tabIndex !== 0}>
           {tabIndex === 0 && (
-            <Box p={3}>
+            <Box sx={{ p: 3 }}>
               <TextField
                 id="configFile"
                 name="configFile"
@@ -70,7 +70,7 @@ export const ConfigurationExamples = () => {
         </div>
         <div role="tabpanel" hidden={tabIndex !== 1}>
           {tabIndex === 1 && (
-            <Box p={3}>
+            <Box sx={{ p: 3 }}>
               <TextField
                 id="envVariables"
                 name="envVariables"

@@ -48,13 +48,16 @@ const TestVariationDetailsPage = () => {
       {testVariation && (
         <>
           <TestVariationDetails testVariation={testVariation} />
-          <Typography variant="subtitle1" component="h2" mt={4} mb={1.5}>
+          <Typography
+            variant="subtitle1"
+            component="h2"
+            sx={{ mt: 4, mb: 1.5 }}
+          >
             Baseline history
             <Typography
               component="span"
               variant="body2"
-              color="text.secondary"
-              ml={1}
+              sx={{ color: "text.secondary", ml: 1 }}
             >
               {testVariation.baselines.length}
             </Typography>
@@ -64,10 +67,13 @@ const TestVariationDetailsPage = () => {
               <Card key={baseline.id}>
                 <Stack
                   direction="row"
-                  alignItems="center"
-                  flexWrap="wrap"
-                  gap={1.5}
-                  sx={{ px: 2, py: 1.5 }}
+                  sx={{
+                    alignItems: "center",
+                    flexWrap: "wrap",
+                    gap: 1.5,
+                    px: 2,
+                    py: 1.5,
+                  }}
                 >
                   <Button
                     variant="outlined"
@@ -95,8 +101,8 @@ const TestVariationDetailsPage = () => {
                       {`${baseline.user.firstName} ${baseline.user.lastName} <${baseline.user.email}>`}
                     </Typography>
                   )}
-                  <Box flex={1} />
-                  <Typography variant="body2" color="text.secondary">
+                  <Box sx={{ flex: 1 }} />
+                  <Typography variant="body2" sx={{ color: "text.secondary" }}>
                     {formatDateTime(baseline.createdAt)}
                   </Typography>
                 </Stack>

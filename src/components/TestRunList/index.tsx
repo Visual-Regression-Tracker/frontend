@@ -65,6 +65,13 @@ import {
 
 const HIDDEN_COLUMNS = { id: false };
 
+const NAME_CELL_SX = {
+  display: "flex",
+  alignItems: "center",
+  gap: 0.5,
+  minWidth: 0,
+} as const;
+
 const buildColumns = (
   runsFor: (id: string) => TestRun[],
   tagFieldsFor: (runCount: number) => Array<keyof TestRun>,
@@ -84,7 +91,7 @@ const buildColumns = (
       const count = runsFor(params.row["id"]).length;
 
       return (
-        <Box display="flex" alignItems="center" gap={0.5} minWidth={0}>
+        <Box sx={NAME_CELL_SX}>
           <Typography variant="body2" noWrap title={params.row["name"]}>
             {params.row["name"]}
           </Typography>
@@ -621,8 +628,8 @@ const TestRunList = () => {
 
   if (selectedBuild) {
     return (
-      <Box display="flex" flexDirection="column" height="100%">
-        <Box paddingX={2} paddingTop={1} paddingBottom={1}>
+      <Box sx={{ display: "flex", flexDirection: "column", height: "100%" }}>
+        <Box sx={{ paddingX: 2, paddingTop: 1, paddingBottom: 1 }}>
           <TestRunFilters
             tagOptions={tagOptions}
             statusOptions={statusOptions}
@@ -635,7 +642,7 @@ const TestRunList = () => {
             onReset={resetFilters}
           />
         </Box>
-        <Box flex={1} minHeight={0}>
+        <Box sx={{ flex: 1, minHeight: 0 }}>
           {view === "table" ? (
             <DataGrid
               apiRef={apiRef}
@@ -668,13 +675,15 @@ const TestRunList = () => {
           ) : (
             // framed like the data grid; text.primary stops the body's black reading heavier
             <Box
-              height="100%"
-              display="flex"
-              flexDirection="column"
-              border={1}
-              borderColor="divider"
-              borderRadius={1}
-              color="text.primary"
+              sx={{
+                height: "100%",
+                display: "flex",
+                flexDirection: "column",
+                border: 1,
+                borderColor: "divider",
+                borderRadius: 1,
+                color: "text.primary",
+              }}
             >
               <TestRunListToolbar {...toolbarProps} rows={sortedRows} />
               <TestRunGridHeader
@@ -688,7 +697,7 @@ const TestRunList = () => {
                 onToggleAll={() => toggleAll(navigationIds)}
               />
               {loading && <LinearProgress />}
-              <Box flex={1} overflow="auto">
+              <Box sx={{ flex: 1, overflow: "auto" }}>
                 {sortedRows.length === 0 ? (
                   <Typography
                     variant="subtitle1"
@@ -714,21 +723,23 @@ const TestRunList = () => {
                 )}
               </Box>
               <Box
-                display="flex"
-                alignItems="center"
-                borderTop={1}
-                borderColor="divider"
+                sx={{
+                  display: "flex",
+                  alignItems: "center",
+                  borderTop: 1,
+                  borderColor: "divider",
+                }}
               >
                 {selectedCardCount > 0 && (
                   <Typography
                     variant="body2"
-                    marginLeft={2}
                     data-testid="gridSelectionCount"
+                    sx={{ marginLeft: 2 }}
                   >
                     {`${selectedCardCount} ${pluralize(selectedCardCount, "card")} selected`}
                   </Typography>
                 )}
-                <Box marginLeft="auto">
+                <Box sx={{ marginLeft: "auto" }}>
                   <TablePagination
                     component="div"
                     count={groups.length}

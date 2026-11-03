@@ -108,12 +108,14 @@ const LoginForm = () => {
       {registrationEnabled && (
         <Typography
           variant="body2"
-          color="text.secondary"
-          textAlign="center"
-          mt={2}
+          sx={{ color: "text.secondary", textAlign: "center", mt: 2 }}
         >
           New here?{" "}
-          <MuiLink component={Link} to={routes.REGISTER} fontWeight={600}>
+          <MuiLink
+            component={Link}
+            to={routes.REGISTER}
+            sx={{ fontWeight: 600 }}
+          >
             Create an account
           </MuiLink>
         </Typography>

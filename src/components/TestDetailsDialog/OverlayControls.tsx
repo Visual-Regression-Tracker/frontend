@@ -20,17 +20,15 @@ export const OverlayControls = ({
   onOpacityChange,
   onBlendToggle,
 }: OverlayControlsProps) => (
-  <Box display="flex" alignItems="center" gap={1}>
+  <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
     <MuiTooltip title="Fade the checkpoint out to see the baseline through it">
-      <Box display="flex" alignItems="center" gap={1} minWidth={0}>
+      <Box sx={{ display: "flex", alignItems: "center", gap: 1, minWidth: 0 }}>
         <Typography variant="caption" color="textSecondary" noWrap>
           Fade
         </Typography>
         <Box
-          width={180}
-          maxWidth="100%"
-          display="flex"
           data-testid="overlayOpacity"
+          sx={{ width: 180, maxWidth: "100%", display: "flex" }}
         >
           <Slider
             size="small"

@@ -111,14 +111,14 @@ const Header = () => {
           disableSticky
           sx={{ lineHeight: 1.4, py: 1, bgcolor: "transparent" }}
         >
-          <Typography variant="subtitle2" color="text.primary" noWrap>
+          <Typography variant="subtitle2" noWrap sx={{ color: "text.primary" }}>
             {user.firstName} {user.lastName}
           </Typography>
           <Typography
             variant="caption"
-            color="text.secondary"
             noWrap
             component="div"
+            sx={{ color: "text.secondary" }}
           >
             {user.email}
           </Typography>
@@ -197,8 +197,8 @@ const Header = () => {
               Visual Regression Tracker
             </Typography>
           </Box>
-          <Box flex={1} />
-          <Stack direction="row" alignItems="center" spacing={0.5}>
+          <Box sx={{ flex: 1 }} />
+          <Stack direction="row" spacing={0.5} sx={{ alignItems: "center" }}>
             <ColorModeToggle />
             <Tooltip title="Help">
               <IconButton

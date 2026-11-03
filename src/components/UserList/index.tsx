@@ -120,7 +120,7 @@ const DataGridCustomToolbar = () => (
   <Toolbar variant="dense">
     <GridToolbarFilterButton />
     <GridToolbarDensitySelector />
-    <Box marginLeft="auto">
+    <Box sx={{ marginLeft: "auto" }}>
       <ActionButtons />
     </Box>
   </Toolbar>

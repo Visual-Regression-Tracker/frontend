@@ -64,7 +64,7 @@ export const TestRunGridHeader = ({
 
   // the table's column widths; textAlign is explicit as body centres text globally
   const label = (field: TestRunSortField, flex: number) => (
-    <Box flex={flex} minWidth={0} textAlign="left">
+    <Box sx={{ flex, minWidth: 0, textAlign: "left" }}>
       <Button
         size="small"
         color="inherit"
@@ -80,14 +80,16 @@ export const TestRunGridHeader = ({
 
   return (
     <Box
-      display="flex"
-      alignItems="center"
-      height={HEADER_HEIGHT_BY_DENSITY[density]}
-      flexShrink={0}
-      borderBottom={1}
-      borderColor="divider"
+      sx={{
+        display: "flex",
+        alignItems: "center",
+        height: HEADER_HEIGHT_BY_DENSITY[density],
+        flexShrink: 0,
+        borderBottom: 1,
+        borderColor: "divider",
+      }}
     >
-      <Box width={50} display="flex" justifyContent="center">
+      <Box sx={{ width: 50, display: "flex", justifyContent: "center" }}>
         <Checkbox
           size="small"
           checked={totalCount > 0 && selectedCount === totalCount}

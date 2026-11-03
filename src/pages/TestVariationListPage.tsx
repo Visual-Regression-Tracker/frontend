@@ -134,9 +134,9 @@ const TestVariationListPage = () => {
           </Box>
         }
       />
-      <Stack spacing={2} mb={3}>
+      <Stack spacing={2} sx={{ mb: 3 }}>
         <Paper variant="outlined" sx={{ p: 2 }}>
-          <Typography variant="subtitle2" mb={1}>
+          <Typography variant="subtitle2" sx={{ mb: 1 }}>
             Merge branches
           </Typography>
           <TestVariationMergeForm
@@ -161,10 +161,8 @@ const TestVariationListPage = () => {
       {filteredItems.length > Math.min(...PAGE_SIZE_OPTIONS) && (
         <Stack
           direction="row"
-          justifyContent="center"
-          alignItems="center"
           spacing={2}
-          sx={{ pt: 3 }}
+          sx={{ justifyContent: "center", alignItems: "center", pt: 3 }}
         >
           {pageCount > 1 && (
             <Pagination

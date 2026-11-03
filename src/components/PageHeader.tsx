@@ -12,23 +12,25 @@ export const PageHeader = ({
 }) => (
   <Stack
     direction={{ xs: "column", sm: "row" }}
-    alignItems={{ xs: "flex-start", sm: "center" }}
-    justifyContent="space-between"
     spacing={2}
-    mb={3}
+    sx={{
+      alignItems: { xs: "flex-start", sm: "center" },
+      justifyContent: "space-between",
+      mb: 3,
+    }}
   >
-    <Box minWidth={0}>
+    <Box sx={{ minWidth: 0 }}>
       <Typography variant="h4" component="h1">
         {title}
       </Typography>
       {subtitle && (
-        <Typography variant="body2" color="text.secondary">
+        <Typography variant="body2" sx={{ color: "text.secondary" }}>
           {subtitle}
         </Typography>
       )}
     </Box>
     {actions && (
-      <Stack direction="row" alignItems="center" spacing={1.5}>
+      <Stack direction="row" spacing={1.5} sx={{ alignItems: "center" }}>
         {actions}
       </Stack>
     )}

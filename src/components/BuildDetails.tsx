@@ -22,7 +22,7 @@ const BuildDetails = () => {
   return (
     <Grid container direction="column" id={LOCATOR_BUILD_DETAILS}>
       <Grid>
-        <Box m={0.5}>
+        <Box sx={{ m: 0.5 }}>
           <Grid container spacing={1} alignItems="center">
             <Grid style={{ maxWidth: "20%", whiteSpace: "nowrap" }}>
               <Tooltip title={buildNumber}>
@@ -50,7 +50,7 @@ const BuildDetails = () => {
         </Box>
       </Grid>
       <Grid>
-        <Box m={0.5}>
+        <Box sx={{ m: 0.5 }}>
           <Grid container spacing={1}>
             <Grid>
               <Typography variant="caption">
@@ -68,7 +68,7 @@ const BuildDetails = () => {
         </Box>
       </Grid>
       <Grid>
-        <Box m={0.5}>
+        <Box sx={{ m: 0.5 }}>
           <Grid container spacing={1}>
             <Grid>
               <Typography variant="caption">{`${

@@ -233,8 +233,8 @@ const BuildList = () => {
 
   return (
     <>
-      <Box height="91%" display="flex" flexDirection="column">
-        <Box padding={1} display="flex" alignItems="center">
+      <Box sx={{ height: "91%", display: "flex", flexDirection: "column" }}>
+        <Box sx={{ padding: 1, display: "flex", alignItems: "center" }}>
           {/* kept mounted so an empty search does not shift the search field */}
           <Tooltip title={selectAllLabel}>
             <span>
@@ -251,7 +251,7 @@ const BuildList = () => {
               />
             </span>
           </Tooltip>
-          <Box flexGrow={1}>
+          <Box sx={{ flexGrow: 1 }}>
             <DebouncedTextField
               size="small"
               variant="outlined"
@@ -286,10 +286,9 @@ const BuildList = () => {
           </Fade>
         </Box>
         <Box
-          flex={1}
-          overflow="auto"
           ref={listRef}
           data-testid="buildListScroll"
+          sx={{ flex: 1, overflow: "auto" }}
         >
           <List>
             {buildList.length === 0 ? (
@@ -314,7 +313,7 @@ const BuildList = () => {
           </List>
         </Box>
       </Box>
-      <Box height="9%">
+      <Box sx={{ height: "9%" }}>
         <Grid container justifyContent="center">
           <Grid>
             <Pagination

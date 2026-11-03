@@ -75,11 +75,13 @@ export const VariationLightbox = ({
         <>
           <DialogTitle>
             <Box
-              display="flex"
-              alignItems="center"
-              justifyContent="space-between"
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+              }}
             >
-              <Box display="flex" alignItems="center">
+              <Box sx={{ display: "flex", alignItems: "center" }}>
                 <IconButton
                   onClick={() => onStep(-1)}
                   disabled={preview.index === 0}
@@ -96,7 +98,7 @@ export const VariationLightbox = ({
                   {run.name} ({preview.index + 1}/{runs.length})
                 </span>
               </Box>
-              <Box display="flex" alignItems="center">
+              <Box sx={{ display: "flex", alignItems: "center" }}>
                 <Tooltip title="Toggle diff. Hotkey: D">
                   <FormControlLabel
                     control={

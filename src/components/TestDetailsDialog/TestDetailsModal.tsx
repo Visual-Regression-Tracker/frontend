@@ -580,7 +580,7 @@ const TestDetailsModal = ({
   );
 
   const testRunDetails = () => (
-    <Box ml={1} mr={1} mt={0} mb={0}>
+    <Box sx={{ mx: 1 }}>
       <Grid container alignItems="center" sx={testRunDetailsSx} spacing={1}>
         <TestRunDetails testRun={testRun} />
         {isImageSizeDiffer && (
@@ -599,7 +599,7 @@ const TestDetailsModal = ({
             </Tooltip>
           </Grid>
         )}
-        <Grid style={{ marginLeft: "auto" }}>{ignoreAreasToolbar()}</Grid>
+        <Grid sx={{ ml: "auto" }}>{ignoreAreasToolbar()}</Grid>
         <Grid>
           <CommentsPopper
             text={testRun.comment}
@@ -639,7 +639,13 @@ const TestDetailsModal = ({
       <Divider />
       {processing && <LinearProgress />}
       {testRunDetails()}
-      <Box overflow="hidden" position="relative" sx={drawAreaContainerSx}>
+      <Box
+        sx={{
+          overflow: "hidden",
+          position: "relative",
+          ...drawAreaContainerSx,
+        }}
+      >
         <Grid
           container
           justifyContent="center"

@@ -395,7 +395,11 @@ export const MatchingVariationsDialog = ({
           />
         </ThumbButton>
         {reason && (
-          <Typography variant="caption" display="block" align="center">
+          <Typography
+            variant="caption"
+            align="center"
+            sx={{ display: "block" }}
+          >
             {reason}
           </Typography>
         )}
