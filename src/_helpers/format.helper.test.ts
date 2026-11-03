@@ -52,6 +52,19 @@ describe("partialFailureText", () => {
       ),
     ).toBe("Approved 1 of 2 test runs. 1 failed: X");
   });
+
+  it("quotes a server failure before a refusal", () => {
+    expect(
+      partialFailureText(
+        "Approved",
+        {
+          succeeded: [],
+          failed: [{ message: "Refused" }, { message: "Internal error" }],
+        },
+        "2 test runs",
+      ),
+    ).toBe("Approved 0 of 2 test runs. 2 failed: Internal error");
+  });
 });
 
 describe("failureVariant", () => {

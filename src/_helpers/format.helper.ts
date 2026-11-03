@@ -19,4 +19,4 @@ export const partialFailureText = (
   result: { succeeded: unknown[]; failed: { message: string }[] },
   what: string,
 ): string =>
-  `${verb} ${result.succeeded.length} of ${what}. ${result.failed.length} failed: ${result.failed[0].message}`;
+  `${verb} ${result.succeeded.length} of ${what}. ${result.failed.length} failed: ${(result.failed.find(isInternalError) ?? result.failed[0]).message}`;
