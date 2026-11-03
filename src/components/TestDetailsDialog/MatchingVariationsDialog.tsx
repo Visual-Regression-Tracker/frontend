@@ -127,13 +127,6 @@ export const MatchingVariationsDialog = ({
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [data, setData] = useState<MatchingVariations | null>(null);
-  // another run's matches load from scratch
-  const [loadedFor, setLoadedFor] = useState(testRun.id);
-  if (loadedFor !== testRun.id) {
-    setLoadedFor(testRun.id);
-    setLoading(true);
-    setData(null);
-  }
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [showDiff, setShowDiff] = useState(true);
   const [preview, setPreview] = useState<LightboxPreview | null>(null);

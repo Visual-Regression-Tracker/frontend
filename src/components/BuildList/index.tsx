@@ -4,6 +4,7 @@ import {
   memo,
   useCallback,
   useEffect,
+  useLayoutEffect,
   useRef,
   useState,
 } from "react";
@@ -203,8 +204,8 @@ const BuildList = () => {
     loadPage(1, linkedBuildId.current);
   }, [loadPage]);
 
-  useEffect(() => {
-    // drops an in-flight select all so its ids cannot land on another search
+  // in the commit that cleared the selection, so an in-flight select all cannot land on another search
+  useLayoutEffect(() => {
     selectAllRequest.current += 1;
   }, [selectedProjectId, searchQuery]);
 
