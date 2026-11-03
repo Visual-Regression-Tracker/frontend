@@ -10,7 +10,7 @@ import {
 import { Stage, Layer, Image } from "react-konva";
 import Rectangle, { MIN_RECT_SIDE_PIXEL } from "../Rectangle";
 import { IgnoreArea } from "../../types/ignoreArea";
-import { Box, GridLegacy as Grid, CircularProgress } from "@mui/material";
+import { Box, Grid, CircularProgress } from "@mui/material";
 import { NoImagePlaceholder } from "./NoImageAvailable";
 import Konva from "konva";
 import { clampScale } from "../../_helpers/scale.helper";
@@ -428,7 +428,7 @@ export const DrawArea = ({
         justifyContent="center"
         sx={{ minHeight: "300px" }}
       >
-        <Grid item>
+        <Grid>
           <CircularProgress />
         </Grid>
       </Grid>

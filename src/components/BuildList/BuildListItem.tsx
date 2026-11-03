@@ -2,7 +2,7 @@ import { Fragment, type MouseEvent } from "react";
 import {
   Checkbox,
   Chip,
-  GridLegacy as Grid,
+  Grid,
   IconButton,
   LinearProgress,
   ListItemButton,
@@ -63,21 +63,21 @@ export const BuildListItem = ({
         }
         secondary={
           <Grid container direction="column">
-            <Grid item>
+            <Grid>
               <Typography variant="caption" color="textPrimary">
                 {formatDateTime(build.createdAt)}
               </Typography>
             </Grid>
             {build.updatedAt && (
-              <Grid item>
+              <Grid>
                 <Typography variant="caption" color="textSecondary">
                   Last run: {formatDateTime(build.updatedAt)}
                 </Typography>
               </Grid>
             )}
-            <Grid item>
+            <Grid>
               <Grid container justifyContent="space-between">
-                <Grid item>
+                <Grid>
                   <Tooltip title={build.branchName}>
                     <Chip
                       size="small"
@@ -86,7 +86,7 @@ export const BuildListItem = ({
                     />
                   </Tooltip>
                 </Grid>
-                <Grid item>
+                <Grid>
                   <BuildStatusChip status={build.status} />
                 </Grid>
               </Grid>

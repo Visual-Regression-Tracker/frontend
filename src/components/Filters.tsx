@@ -1,6 +1,6 @@
 import type { Dispatch, SetStateAction } from "react";
 import {
-  GridLegacy as Grid,
+  Grid,
   Select,
   MenuItem,
   FormControl,
@@ -34,7 +34,7 @@ const FilterSelect = ({
   formControlId?: string;
 }) =>
   options.length > 0 && (
-    <Grid item xs>
+    <Grid size="grow">
       <FormControl variant="standard" fullWidth id={formControlId}>
         <InputLabel shrink id={id}>
           {label}
@@ -96,7 +96,7 @@ const Filters = ({
 
   return (
     <Grid container spacing={2} alignItems="flex-end">
-      <Grid item xs>
+      <Grid size="grow">
         <DebouncedTextField
           variant="standard"
           fullWidth
@@ -152,7 +152,7 @@ const Filters = ({
           formControlId={LOCATOR_RESET_FILTER}
         />
       )}
-      <Grid item>
+      <Grid>
         <Button
           variant="contained"
           color="primary"

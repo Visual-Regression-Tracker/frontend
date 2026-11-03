@@ -2,7 +2,7 @@ import { useEffect, useState, useMemo, useRef } from "react";
 import {
   Typography,
   Button,
-  GridLegacy as Grid,
+  Grid,
   Switch,
   IconButton,
   Box,
@@ -74,7 +74,7 @@ const centerActionsSx = {
 const testRunDetailsSx = { paddingLeft: "8px" } as const;
 const drawAreaContainerSx = { width: "100%", height: "100%" } as const;
 const drawAreaItemSx = { padding: "0 4px", height: "100%" } as const;
-const imageToolbarSx = { paddingLeft: "5px", height: "52px" } as const;
+const imageToolbarSx = { paddingLeft: "5px", height: "44px" } as const;
 
 const defaultStagePos = {
   x: 0,
@@ -387,7 +387,7 @@ const TestDetailsModal = ({
 
   const ignoreAreasToolbar = () => (
     <Grid container alignItems="center" spacing={2}>
-      <Grid item>
+      <Grid>
         <Select
           variant="standard"
           id="area-select"
@@ -410,7 +410,7 @@ const TestDetailsModal = ({
           ))}
         </Select>
       </Grid>
-      <Grid item>
+      <Grid>
         <ToggleButton
           value={"drawMode"}
           selected={isDrawMode}
@@ -425,7 +425,7 @@ const TestDetailsModal = ({
           <Add data-testid="AddIcon" />
         </ToggleButton>
       </Grid>
-      <Grid item>
+      <Grid>
         <IconButton
           size="small"
           disabled={!selectedRectId || ignoreAreas.length === 0}
@@ -435,7 +435,7 @@ const TestDetailsModal = ({
         </IconButton>
       </Grid>
       <Tooltip title="Clears all ignore areas." aria-label="reject">
-        <Grid item>
+        <Grid>
           <IconButton
             size="small"
             disabled={ignoreAreas.length === 0}
@@ -448,7 +448,7 @@ const TestDetailsModal = ({
         </Grid>
       </Tooltip>
       <Tooltip title={applyIgnoreAreaText} aria-label="apply ignore area">
-        <Grid item>
+        <Grid>
           <IconButton
             size="small"
             disabled={!selectedRectId || ignoreAreas.length === 0}
@@ -458,7 +458,7 @@ const TestDetailsModal = ({
           </IconButton>
         </Grid>
       </Tooltip>
-      <Grid item>
+      <Grid>
         <IconButton
           size="small"
           disabled={!touched}
@@ -471,13 +471,7 @@ const TestDetailsModal = ({
   );
 
   const baselinePanel = () => (
-    <Grid
-      item
-      xs={6}
-      ref={leftItemRef}
-      sx={drawAreaItemSx}
-      alignItems="stretch"
-    >
+    <Grid size={6} ref={leftItemRef} sx={drawAreaItemSx}>
       <Grid container alignItems="center" spacing={1} sx={imageToolbarSx}>
         <ImageDetails
           type="Baseline"
@@ -486,7 +480,7 @@ const TestDetailsModal = ({
           image={baselineImage}
           ignoreAreas={[]}
         />
-        <Grid item>
+        <Grid>
           <Button
             color="primary"
             disabled={!testRun.testVariationId}
@@ -496,12 +490,7 @@ const TestDetailsModal = ({
           </Button>
         </Grid>
       </Grid>
-      <Grid
-        item
-        style={{
-          flexGrow: "1",
-        }}
-      >
+      <Grid>
         <DrawArea
           imageName={testRun.baselineName}
           imageState={[baselineImage, baselineImageStatus]}
@@ -528,7 +517,7 @@ const TestDetailsModal = ({
     imageStatus: ImageStateLoad,
     image: HTMLImageElement | undefined,
   ) => (
-    <Grid item xs={6} sx={drawAreaItemSx} ref={rightItemRef}>
+    <Grid size={6} sx={drawAreaItemSx} ref={rightItemRef}>
       <Grid container alignItems="center" spacing={1} sx={imageToolbarSx}>
         <ImageDetails
           type={type}
@@ -538,7 +527,7 @@ const TestDetailsModal = ({
           ignoreAreas={tempIgnoreAreas}
         />
         {testRun.diffName && (
-          <Grid item>
+          <Grid>
             <Tooltip title={"Toggle diff. Hotkey: D"}>
               <Switch
                 checked={isDiffShown}
@@ -549,8 +538,8 @@ const TestDetailsModal = ({
             </Tooltip>
           </Grid>
         )}
-        {/* a plain flex row, not a nested Grid, whose spacing lifts the controls off the line */}
-        <Grid item xs minWidth={0}>
+        {/* OverlayControls is a plain flex row: a nested Grid's spacing would lift it off the line */}
+        <Grid size="grow">
           {canCompareToBaseline(testRun) && (
             <OverlayControls
               opacity={overlayOpacity}
@@ -595,7 +584,7 @@ const TestDetailsModal = ({
       <Grid container alignItems="center" sx={testRunDetailsSx} spacing={1}>
         <TestRunDetails testRun={testRun} />
         {isImageSizeDiffer && (
-          <Grid item>
+          <Grid>
             <Tooltip
               title={
                 "Image height/width differ from baseline! Cannot calculate diff!"
@@ -610,10 +599,8 @@ const TestDetailsModal = ({
             </Tooltip>
           </Grid>
         )}
-        <Grid item style={{ marginLeft: "auto" }}>
-          {ignoreAreasToolbar()}
-        </Grid>
-        <Grid item>
+        <Grid style={{ marginLeft: "auto" }}>{ignoreAreasToolbar()}</Grid>
+        <Grid>
           <CommentsPopper
             text={testRun.comment}
             onSave={(comment) =>
@@ -673,7 +660,7 @@ const TestDetailsModal = ({
         </Grid>
       </Box>
       <Grid container sx={footerSx}>
-        <Grid item xs={3} sx={scaleActionsSx}>
+        <Grid size={3} sx={scaleActionsSx}>
           <ZoomControls
             scale={stageScale}
             onScaleChange={setStageScale}
@@ -681,7 +668,7 @@ const TestDetailsModal = ({
             onFit={fitImagesToStage}
           />
         </Grid>
-        <Grid item xs={6} sx={centerActionsSx}>
+        <Grid size={6} sx={centerActionsSx}>
           <Tooltip title={"Hotkey: ArrowLeft"}>
             <IconButton
               color="secondary"
@@ -718,7 +705,7 @@ const TestDetailsModal = ({
             </IconButton>
           </Tooltip>
         </Grid>
-        <Grid item xs={3} sx={testRunActionsSx} justifyContent="flex-end">
+        <Grid size={3} sx={testRunActionsSx} justifyContent="flex-end">
           <FormControlLabel
             control={
               <Checkbox
