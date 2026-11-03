@@ -80,7 +80,9 @@ over the socket. Only `PW_E2E=1` runs them; CI does in `e2e.yml`, against the
 backend's `master` (or the `backend_ref` of a manual run).
 
 ```sh
-# in a checkout of the backend repo; its committed .env seeds the admin
+# in a checkout of the backend repo; its committed .env seeds the admin,
+# but its sample JWT_SECRET is refused by the production image
+export JWT_SECRET=$(openssl rand -hex 32)
 docker compose up -d --build
 # here, once the API answers on http://localhost:4200
 PW_E2E=1 PW_PORT=4311 npx playwright test
