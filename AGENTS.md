@@ -2,7 +2,7 @@
 
 Rules for anyone changing this repo, people and coding agents alike. The
 frontend of [Visual Regression Tracker](https://github.com/Visual-Regression-Tracker/Visual-Regression-Tracker):
-React 19, TypeScript (strict), Vite, MUI 9 with MUI X Data Grid, Konva for
+React, TypeScript (strict), Vite, MUI with MUI X Data Grid, Konva for
 the image canvas, socket.io for live updates.
 
 ## Commands
@@ -63,10 +63,8 @@ outside `src/services`. The one known cycle, `_helpers/service.helpers` ↔
 - Data: components call context actions or services; services return typed
   promises and go through `handleResponse`.
 - Strings shown to users are English, sentence case.
-- Layout: `Stack`, `Box` and the MUI 9 `Grid` in new code. Older screens
-  import `GridLegacy as Grid` to keep their exact layout; move a screen to
-  the new components when you rework it, not as a drive-by.
-- MUI 9 ignores some deprecated props when the new ones are set (a Switch's
+- Layout: `Stack`, `Box` and `Grid`.
+- MUI ignores some deprecated props when the new ones are set (a Switch's
   `inputProps` loses to `slotProps.input`), so use `slotProps` in new code.
 - Icons only carry `data-testid="<Name>Icon"` in development builds. E2E
   runs on the production bundle, so an icon a page object finds sets it
@@ -112,8 +110,7 @@ Patterns that already work here, with example files: `docs/TESTING.md`.
   Never commit baselines made on your machine. When a change moves pixels on
   purpose, regenerate in Docker and look at every changed PNG before
   committing.
-- `react-konva` follows React's major (react-konva 19 needs React 19.3 or
-  later), so the two are upgraded together.
-- The guided tour is `react-joyride` 3. Its look is set once, through the
+- `react-konva` follows React's major, so the two are upgraded together.
+- The guided tour is `react-joyride`. Its look is set once, through the
   `options` and `styles` props in `GuidedTour.tsx`, and page objects find it
   by `.react-joyride__tooltip`.
