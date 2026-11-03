@@ -1,13 +1,6 @@
 import { useCallback, useEffect } from "react";
-import { Box, Toolbar } from "@mui/material";
-import {
-  DataGrid,
-  GridColDef,
-  GridToolbarDensitySelector,
-  GridToolbarFilterButton,
-  GridRenderCellParams,
-} from "@mui/x-data-grid";
-import { ActionButtons } from "./ActionButtons";
+import { DataGrid, GridColDef, GridRenderCellParams } from "@mui/x-data-grid";
+import { UserListToolbar } from "./UserListToolbar";
 import { usersService } from "../../services";
 import { Role, User } from "../../types";
 import { useSnackbar } from "notistack";
@@ -107,7 +100,7 @@ const UserList = () => {
       disableRowSelectionOnClick
       showToolbar
       slots={{
-        toolbar: DataGridCustomToolbar,
+        toolbar: UserListToolbar,
       }}
       processRowUpdate={processRowUpdate}
     />
@@ -115,13 +108,3 @@ const UserList = () => {
 };
 
 export default UserList;
-
-const DataGridCustomToolbar = () => (
-  <Toolbar variant="dense">
-    <GridToolbarFilterButton />
-    <GridToolbarDensitySelector />
-    <Box sx={{ marginLeft: "auto" }}>
-      <ActionButtons />
-    </Box>
-  </Toolbar>
-);
