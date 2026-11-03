@@ -210,7 +210,7 @@ describe("useIgnoreAreas", () => {
       expect(touched()).toBe(true);
     });
 
-    it("stores everything around the last area as ignored in compare mode", async () => {
+    it("stores everything around the selected area as ignored and drops the selection in compare mode", async () => {
       const updateIgnoreAreas = vi
         .spyOn(testRunService, "updateIgnoreAreas")
         .mockResolvedValue();
@@ -230,11 +230,53 @@ describe("useIgnoreAreas", () => {
         ignoreAreas: inverted,
       });
       expect(editor().ignoreAreas).toEqual(inverted);
+      expect(editor().selectedRectId).toBeUndefined();
       expect(
         await screen.findByText(
           "Selected area has been inverted to ignore areas and saved.",
         ),
       ).toBeVisible();
+    });
+
+    it("inverts the selected area, not the last drawn one, in compare mode", () => {
+      const updateIgnoreAreas = vi
+        .spyOn(testRunService, "updateIgnoreAreas")
+        .mockResolvedValue();
+      const { editor } = renderEditor();
+      const elsewhere = { ...DRAWN, x: 100 };
+      act(() => {
+        editor().changeIgnoreAreas([SAVED, elsewhere]);
+        editor().setSelectedRectId(SAVED.id);
+        editor().setAreaKind("Compare Area");
+      });
+
+      act(() => editor().save());
+
+      const inverted = invertIgnoreArea(IMAGE.width, IMAGE.height, SAVED).map(
+        ({ x, y, width, height }) =>
+          expect.objectContaining({ x, y, width, height }) as IgnoreArea,
+      );
+      expect(updateIgnoreAreas).toHaveBeenCalledWith({
+        ids: [RUN.id],
+        ignoreAreas: inverted,
+      });
+    });
+
+    it("stores nothing and asks for a selection in compare mode with none selected", async () => {
+      const updateIgnoreAreas = vi.spyOn(testRunService, "updateIgnoreAreas");
+      const { editor } = renderEditor();
+      act(() => {
+        editor().changeIgnoreAreas([]);
+        editor().setAreaKind("Compare Area");
+      });
+
+      act(() => editor().save());
+
+      expect(
+        await screen.findByText("Select the area to compare first."),
+      ).toBeVisible();
+      expect(updateIgnoreAreas).not.toHaveBeenCalled();
+      expect(editor().ignoreAreas).toEqual([]);
     });
 
     it("stores nothing in compare mode before the image has loaded", () => {

@@ -286,6 +286,53 @@ test("clears every area at once and saves", async ({
   });
 });
 
+test("inverts the selected area, not the last drawn one, in compare mode", async ({
+  openProjectPage,
+  page,
+}) => {
+  const details = await openAtOriginalSize(openProjectPage, page, withArea);
+  await details.drawMode.click();
+  await details.drag({ x: 500, y: 40 }, { x: 600, y: 100 });
+  await details.clickAt({ x: 315, y: 192 });
+  await details.chooseAreaKind("Compare Area");
+
+  const [request] = await Promise.all([
+    page.waitForRequest(updatedAreas),
+    details.saveAreas.click(),
+  ]);
+
+  const { ignoreAreas } = postData<UpdateIgnoreAreaDto>(request);
+  expect(ignoreAreas).toHaveLength(8);
+  expect(ignoreAreas).toContainEqual({
+    id: expect.any(String),
+    x: EXISTING_AREA.x,
+    y: 0,
+    width: EXISTING_AREA.width,
+    height: EXISTING_AREA.y,
+  });
+});
+
+test("saves nothing in compare mode until an area is selected", async ({
+  openProjectPage,
+  page,
+}) => {
+  const details = await openAtOriginalSize(openProjectPage, page, withArea);
+  let saved = false;
+  page.on("request", (request) => {
+    saved ||= updatedAreas(request);
+  });
+  await details.clearAreas.click();
+  await details.chooseAreaKind("Compare Area");
+
+  await details.saveAreas.click();
+
+  await expect(
+    page.getByText("Select the area to compare first."),
+  ).toBeVisible();
+  expect(saved).toBe(false);
+  await expect(details.saveAreas).toBeEnabled();
+});
+
 test("applies the selected area to every run in the build", async ({
   openProjectPage,
   page,
@@ -352,8 +399,7 @@ test("saves the area drawn in compare mode as the areas around it", async ({
   page,
 }) => {
   const details = await openAtOriginalSize(openProjectPage, page, withoutAreas);
-  await details.areaKind.click();
-  await page.getByRole("option", { name: "Compare Area" }).click();
+  await details.chooseAreaKind("Compare Area");
   await details.drawMode.click();
   await details.drag({ x: 40, y: 40 }, { x: 200, y: 120 });
   await expect.poll(async () => (await details.ignoreRects()).length).toBe(1);
@@ -389,8 +435,7 @@ test("saves the area drawn in compare mode, not the one the run had", async ({
   page,
 }) => {
   const details = await openAtOriginalSize(openProjectPage, page, withArea);
-  await details.areaKind.click();
-  await page.getByRole("option", { name: "Compare Area" }).click();
+  await details.chooseAreaKind("Compare Area");
   await details.drawMode.click();
   await details.drag({ x: 500, y: 40 }, { x: 600, y: 100 });
   await expect.poll(async () => (await details.ignoreRects()).length).toBe(2);

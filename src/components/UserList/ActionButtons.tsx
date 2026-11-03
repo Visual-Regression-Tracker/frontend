@@ -22,9 +22,10 @@ export const ActionButtons = () => {
   const ids = useMemo(() => [...selection.keys()] as string[], [selection]);
 
   return (
-    <Tooltip title="Delete selected rows." aria-label="delete">
+    <Tooltip title="Delete selected rows.">
       <span>
         <IconButton
+          aria-label="Delete selected rows"
           disabled={!ids.length}
           onClick={() => {
             const currentUserId = user?.id;

@@ -19,7 +19,6 @@ type KonvaWindow = { Konva: { stages: KonvaStage[] } };
 
 export type Rect = { x: number; y: number; width: number; height: number };
 
-// toolbar buttons have no label of their own: found by the icon MUI draws
 export class TestDetailsDialog extends PageObject {
   drawAreas = this.page.getByTestId("drawArea");
   checkpointPane = this.drawAreas.nth(1);
@@ -174,5 +173,10 @@ export class TestDetailsDialog extends PageObject {
     const box = await this.checkpointCanvasBox();
 
     await this.page.mouse.click(box.x + point.x, box.y + point.y);
+  }
+
+  async chooseAreaKind(kind: "Ignore Areas" | "Compare Area") {
+    await this.areaKind.click();
+    await this.page.getByRole("option", { name: kind }).click();
   }
 }

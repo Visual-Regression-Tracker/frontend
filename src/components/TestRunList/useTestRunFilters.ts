@@ -3,7 +3,11 @@ import { TestRun, TestStatus } from "../../types";
 import { statusesByAttention } from "../../_helpers/testRunStatus.helper";
 import { TAG_FIELDS, tagValuesOf } from "../../_helpers/testRunTags.helper";
 
-type TagGroups = Array<[keyof TestRun, Set<string>]>;
+interface TagGroups {
+  picked: Set<string>;
+  // per picked tag, the fields it occurs in: a value of another picked tag there counts too
+  fieldsPerTag: Array<Array<keyof TestRun>>;
+}
 
 const matchesNameQuery = (run: TestRun, query: string): boolean =>
   !query || run.name.toLowerCase().includes(query);
@@ -11,8 +15,13 @@ const matchesNameQuery = (run: TestRun, query: string): boolean =>
 const matchesStatuses = (run: TestRun, statuses: TestStatus[]): boolean =>
   statuses.length === 0 || statuses.includes(run.status);
 
-const matchesTagGroups = (run: TestRun, groups: TagGroups): boolean =>
-  groups.every(([field, values]) => values.has(String(run[field] ?? "")));
+const matchesTagGroups = (
+  run: TestRun,
+  { picked, fieldsPerTag }: TagGroups,
+): boolean =>
+  fieldsPerTag.every((fields) =>
+    fields.some((field) => picked.has(String(run[field] ?? ""))),
+  );
 
 export const useTestRunFilters = (testRuns: TestRun[]) => {
   const [name, setName] = useState("");
@@ -35,13 +44,19 @@ export const useTestRunFilters = (testRuns: TestRun[]) => {
     setTags([]);
   }, []);
 
-  const tagFieldByValue = useMemo(() => {
-    const map = new Map<string, keyof TestRun>();
-    testRuns.forEach((run) => {
-      TAG_FIELDS.forEach((field) => {
+  const tagFieldsByValue = useMemo(() => {
+    const map = new Map<string, Array<keyof TestRun>>();
+    TAG_FIELDS.forEach((field) => {
+      testRuns.forEach((run) => {
         const value = run[field];
-        if (typeof value === "string" && value) {
-          map.set(value, field);
+        if (typeof value !== "string" || !value) {
+          return;
+        }
+        const fields = map.get(value);
+        if (!fields) {
+          map.set(value, [field]);
+        } else if (!fields.includes(field)) {
+          fields.push(field);
         }
       });
     });
@@ -49,19 +64,16 @@ export const useTestRunFilters = (testRuns: TestRun[]) => {
   }, [testRuns]);
 
   const query = name.trim().toLowerCase();
-  const tagGroups = useMemo(() => {
-    const grouped = new Map<keyof TestRun, Set<string>>();
-    tags.forEach((tag) => {
-      const field = tagFieldByValue.get(tag);
-      if (!field) {
-        return;
-      }
-      const values = grouped.get(field) ?? new Set<string>();
-      values.add(tag);
-      grouped.set(field, values);
-    });
-    return Array.from(grouped.entries());
-  }, [tags, tagFieldByValue]);
+  const tagGroups: TagGroups = useMemo(
+    () => ({
+      picked: new Set(tags),
+      fieldsPerTag: tags.flatMap((tag) => {
+        const fields = tagFieldsByValue.get(tag);
+        return fields ? [fields] : [];
+      }),
+    }),
+    [tags, tagFieldsByValue],
+  );
 
   const filteredRows = useMemo(
     () =>
@@ -99,13 +111,13 @@ export const useTestRunFilters = (testRuns: TestRun[]) => {
       }
     });
     const fieldIndex = (value: string): number => {
-      const field = tagFieldByValue.get(value);
+      const field = tagFieldsByValue.get(value)?.[0];
       return field ? TAG_FIELDS.indexOf(field) : TAG_FIELDS.length;
     };
     return Array.from(present).sort(
       (a, b) => fieldIndex(a) - fieldIndex(b) || a.localeCompare(b),
     );
-  }, [testRuns, query, statuses, tags, tagFieldByValue]);
+  }, [testRuns, query, statuses, tags, tagFieldsByValue]);
 
   // a tag or status no longer in the runs stops filtering them
   const [prunedFor, setPrunedFor] = useState(testRuns);

@@ -101,6 +101,14 @@ describe("UserList", () => {
     expect(deleteButton()).toBeEnabled();
   });
 
+  it("names the delete button for what it deletes", async () => {
+    await renderUserList();
+
+    expect(
+      screen.getByRole("button", { name: "Delete selected rows" }),
+    ).toBeDisabled();
+  });
+
   describe("changing a role", () => {
     it("assigns the chosen role to that user", async () => {
       const assignRole = vi

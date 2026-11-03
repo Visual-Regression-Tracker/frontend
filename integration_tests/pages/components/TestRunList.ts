@@ -18,9 +18,9 @@ export class TestRunList extends Table {
   bulkApproveBtn = this.page
     .getByRole("button")
     .filter({ has: this.approveBtn });
-  bulkRejectBtn = this.page
-    .getByLabel(/^Reject unresolved in selected /)
-    .getByRole("button");
+  bulkRejectBtn = this.page.getByRole("button", {
+    name: /^Reject unresolved in selected /,
+  });
   // scoped: the build list pagination carries the same aria labels
   pane = this.page.locator("#test-run-list");
   nextPage = this.pane.getByLabel("Go to next page");

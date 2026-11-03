@@ -78,6 +78,60 @@ describe("useTestRunFilters", () => {
     expect(ids(result.current.filteredRows)).toEqual(["login-en"]);
   });
 
+  describe("a tag value that several fields share", () => {
+    const ON_DEVICE = tagged({
+      id: "on-device",
+      os: "iOS",
+      device: "chrome",
+      customTags: "",
+    });
+    const IN_BROWSER = tagged({
+      id: "in-browser",
+      os: "Android",
+      browser: "chrome",
+      customTags: "",
+    });
+    const ELSEWHERE = tagged({
+      id: "elsewhere",
+      os: "iOS",
+      device: "pixel",
+      browser: "firefox",
+      customTags: "",
+    });
+    const SHARED = [ON_DEVICE, IN_BROWSER, ELSEWHERE];
+
+    it("keeps a run that has it in any of those fields", () => {
+      const { result } = renderFilters(SHARED);
+
+      act(() => result.current.onTagsChange(["chrome"]));
+
+      expect(ids(result.current.filteredRows)).toEqual([
+        "on-device",
+        "in-browser",
+      ]);
+    });
+
+    it("still needs one of every other picked field", () => {
+      const { result } = renderFilters(SHARED);
+
+      act(() => result.current.onTagsChange(["chrome", "iOS"]));
+
+      expect(ids(result.current.filteredRows)).toEqual(["on-device"]);
+    });
+
+    it("is offered among the tags of the first field that has it", () => {
+      const { result } = renderFilters(SHARED);
+
+      expect(result.current.tagOptions).toEqual([
+        "Android",
+        "iOS",
+        "chrome",
+        "pixel",
+        "firefox",
+      ]);
+    });
+  });
+
   it("offers the statuses and tags that still return runs under the other filters", () => {
     const { result } = renderFilters();
 

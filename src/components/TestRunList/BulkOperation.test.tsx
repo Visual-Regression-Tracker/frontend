@@ -100,6 +100,20 @@ describe("BulkOperation", () => {
     expect(screen.getByLabelText("Delete selected cards.")).toBeInTheDocument();
   });
 
+  it("names every button for its action on the selection", () => {
+    renderBulkOperation();
+
+    for (const name of [
+      "Approve unresolved in selected rows",
+      "Reject unresolved in selected rows",
+      "Download images for selected rows",
+      "Delete selected rows",
+      "Clear ignore areas for selected rows",
+    ]) {
+      expect(screen.getByRole("button", { name })).toBeEnabled();
+    }
+  });
+
   describe("approve", () => {
     it("asks for confirmation counting only the runs that will be approved", async () => {
       const approveBulk = vi.spyOn(testRunService, "approveBulk");

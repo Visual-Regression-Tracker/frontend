@@ -86,6 +86,7 @@ export const IgnoreAreasToolbar = ({
             value={"drawMode"}
             selected={isDrawMode}
             size="small"
+            aria-label="Draw area"
             onClick={() => {
               onDrawModeChange(!isDrawMode);
             }}
@@ -99,23 +100,30 @@ export const IgnoreAreasToolbar = ({
         <Grid>
           <IconButton
             size="small"
+            aria-label="Delete selected area"
             disabled={!hasSelection || !hasAreas}
             onClick={onDelete}
           >
             <Delete data-testid="DeleteIcon" />
           </IconButton>
         </Grid>
-        <Tooltip title="Clears all ignore areas." aria-label="reject">
+        <Tooltip title="Clears all ignore areas.">
           <Grid>
-            <IconButton size="small" disabled={!hasAreas} onClick={onClear}>
+            <IconButton
+              size="small"
+              aria-label="Clear all areas"
+              disabled={!hasAreas}
+              onClick={onClear}
+            >
               <LayersClear data-testid="LayersClearIcon" />
             </IconButton>
           </Grid>
         </Tooltip>
-        <Tooltip title={applyIgnoreAreaText} aria-label="apply ignore area">
+        <Tooltip title={applyIgnoreAreaText}>
           <Grid>
             <IconButton
               size="small"
+              aria-label="Apply selected area to build"
               disabled={!hasSelection || !hasAreas}
               onClick={toggleApplyDialogOpen}
             >
@@ -124,7 +132,12 @@ export const IgnoreAreasToolbar = ({
           </Grid>
         </Tooltip>
         <Grid>
-          <IconButton size="small" disabled={!touched} onClick={onSave}>
+          <IconButton
+            size="small"
+            aria-label="Save areas"
+            disabled={!touched}
+            onClick={onSave}
+          >
             <Save data-testid="SaveIcon" />
           </IconButton>
         </Grid>

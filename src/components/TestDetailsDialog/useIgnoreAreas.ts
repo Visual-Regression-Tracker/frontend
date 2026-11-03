@@ -96,13 +96,23 @@ export const useIgnoreAreas = (
     if (areaKind.includes("Ignore")) {
       store(ignoreAreas, "Ignore areas are updated.");
     } else if (currentImage) {
+      const compareArea = ignoreAreas.find(
+        (area) => area.id === selectedRectId,
+      );
+      if (!compareArea) {
+        enqueueSnackbar("Select the area to compare first.", {
+          variant: "warning",
+        });
+        return;
+      }
       const invertedIgnoreAreas = invertIgnoreArea(
         currentImage.width,
         currentImage.height,
-        ignoreAreas[ignoreAreas.length - 1],
+        compareArea,
       );
 
       changeIgnoreAreas(invertedIgnoreAreas);
+      setSelectedRectId(undefined);
       store(
         invertedIgnoreAreas,
         "Selected area has been inverted to ignore areas and saved.",

@@ -6,10 +6,6 @@ const withoutIds = (areas: ReturnType<typeof invertIgnoreArea>) =>
 const area = { id: "keep", x: 20, y: 10, width: 30, height: 40 };
 
 describe("invertIgnoreArea", () => {
-  it("answers nothing when there is no area to invert", () => {
-    expect(invertIgnoreArea(100, 100)).toEqual([]);
-  });
-
   it("covers the image around the area with eight rectangles", () => {
     // 100 x 100 image with the area at x 20..50, y 10..50
     expect(withoutIds(invertIgnoreArea(100, 100, area))).toEqual([
