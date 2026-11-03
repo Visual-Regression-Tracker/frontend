@@ -1,11 +1,5 @@
 import { useMemo } from "react";
-import {
-  Typography,
-  Chip,
-  GridLegacy as Grid,
-  Box,
-  LinearProgress,
-} from "@mui/material";
+import { Typography, Chip, Grid, Box, LinearProgress } from "@mui/material";
 import { BuildStatusChip } from "./BuildStatusChip";
 import { formatDateTime } from "../_helpers/format.helper";
 import { useBuildState } from "../contexts";
@@ -27,10 +21,10 @@ const BuildDetails = () => {
 
   return (
     <Grid container direction="column" id={LOCATOR_BUILD_DETAILS}>
-      <Grid item>
+      <Grid>
         <Box m={0.5}>
           <Grid container spacing={1} alignItems="center">
-            <Grid item style={{ maxWidth: "20%", whiteSpace: "nowrap" }}>
+            <Grid style={{ maxWidth: "20%", whiteSpace: "nowrap" }}>
               <Tooltip title={buildNumber}>
                 <Typography
                   variant="subtitle2"
@@ -40,7 +34,7 @@ const BuildDetails = () => {
                 </Typography>
               </Tooltip>
             </Grid>
-            <Grid item style={{ maxWidth: "70%" }}>
+            <Grid style={{ maxWidth: "70%" }}>
               <Tooltip title={selectedBuild.branchName}>
                 <Chip
                   size="small"
@@ -49,22 +43,22 @@ const BuildDetails = () => {
                 />
               </Tooltip>
             </Grid>
-            <Grid item>
+            <Grid>
               <BuildStatusChip status={selectedBuild.status} />
             </Grid>
           </Grid>
         </Box>
       </Grid>
-      <Grid item>
+      <Grid>
         <Box m={0.5}>
           <Grid container spacing={1}>
-            <Grid item>
+            <Grid>
               <Typography variant="caption">
                 {formatDateTime(selectedBuild.createdAt)}
               </Typography>
             </Grid>
             {selectedBuild.updatedAt && (
-              <Grid item>
+              <Grid>
                 <Typography variant="caption" color="textSecondary">
                   Last run: {formatDateTime(selectedBuild.updatedAt)}
                 </Typography>
@@ -73,23 +67,23 @@ const BuildDetails = () => {
           </Grid>
         </Box>
       </Grid>
-      <Grid item>
+      <Grid>
         <Box m={0.5}>
           <Grid container spacing={1}>
-            <Grid item>
+            <Grid>
               <Typography variant="caption">{`${
                 selectedBuild.unresolvedCount +
                 selectedBuild.failedCount +
                 selectedBuild.passedCount
               } total`}</Typography>
             </Grid>
-            <Grid item>
+            <Grid>
               <Typography variant="caption">{`${selectedBuild.unresolvedCount} unresolved`}</Typography>
             </Grid>
-            <Grid item>
+            <Grid>
               <Typography variant="caption">{`${selectedBuild.failedCount} failed`}</Typography>
             </Grid>
-            <Grid item>
+            <Grid>
               <Typography variant="caption">{`${selectedBuild.passedCount} passed`}</Typography>
             </Grid>
           </Grid>

@@ -1,4 +1,4 @@
-import { Typography, GridLegacy as Grid, IconButton } from "@mui/material";
+import { Typography, Grid, IconButton } from "@mui/material";
 import { WarningRounded, AltRoute } from "@mui/icons-material";
 import { IgnoreArea } from "../../types/ignoreArea";
 import { Tooltip } from "../Tooltip";
@@ -45,7 +45,6 @@ const ImageDetails = ({
   };
   return (
     <Grid
-      item
       sx={{ display: "flex", alignItems: "center", color: "text.secondary" }}
     >
       <Typography variant="overline" style={{ marginRight: 3 }}>

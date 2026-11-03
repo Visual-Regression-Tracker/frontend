@@ -1,5 +1,5 @@
 import {
-  GridLegacy as Grid,
+  Grid,
   TextField,
   Button,
   Autocomplete,
@@ -52,7 +52,7 @@ const TestRunFilters = ({
   return (
     <Paper variant="outlined" sx={{ p: 2, borderRadius: 2 }}>
       <Grid container spacing={2} alignItems="center" wrap="nowrap">
-        <Grid item xs={3}>
+        <Grid size={3}>
           <DebouncedTextField
             size="small"
             variant="outlined"
@@ -66,7 +66,7 @@ const TestRunFilters = ({
             inputProps={{ "data-testid": "testRunNameFilter" }}
           />
         </Grid>
-        <Grid item xs>
+        <Grid size="grow">
           <Autocomplete
             multiple
             size="small"
@@ -87,7 +87,7 @@ const TestRunFilters = ({
             )}
           />
         </Grid>
-        <Grid item xs>
+        <Grid size="grow">
           <Autocomplete
             multiple
             size="small"
@@ -107,7 +107,7 @@ const TestRunFilters = ({
             )}
           />
         </Grid>
-        <Grid item>
+        <Grid>
           <Button
             variant="outlined"
             color="primary"

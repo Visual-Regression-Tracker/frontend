@@ -1,4 +1,4 @@
-import { Box, GridLegacy as Grid, IconButton, Typography } from "@mui/material";
+import { Grid, IconButton, Typography } from "@mui/material";
 import { Close } from "@mui/icons-material";
 import { TestRun } from "../../types";
 import TestStatusChip from "../TestStatusChip";
@@ -7,8 +7,9 @@ const headerSx = {
   position: "relative",
   textAlign: "left",
   bgcolor: "background.default",
-  paddingLeft: "8px",
-  paddingBottom: "8px",
+  pt: 1,
+  pl: 2,
+  pb: 1,
 } as const;
 const testRunNameSx = { fontWeight: 300 } as const;
 const closeIconSx = { position: "absolute", right: "8px" } as const;
@@ -26,24 +27,22 @@ export const TestDetailsHeader = ({
   totalTestRunCount,
   onClose,
 }: TestDetailsHeaderProps) => (
-  <Box mt={1} ml={1}>
-    <Grid container alignItems="center" sx={headerSx} spacing={2}>
-      <Grid item>
-        <Typography variant="h6" display="inline">{`Step ${
-          currentRunIndex + 1
-        }/${totalTestRunCount}: `}</Typography>
-        <Typography variant="h6" display="inline" sx={testRunNameSx}>
-          {testRun.name}
-        </Typography>
-      </Grid>
-      <Grid item>
-        <TestStatusChip status={testRun.status} />
-      </Grid>
-      <Grid item sx={closeIconSx}>
-        <IconButton color="inherit" onClick={onClose} size="large">
-          <Close data-testid="CloseIcon" />
-        </IconButton>
-      </Grid>
+  <Grid container alignItems="center" sx={headerSx} spacing={2}>
+    <Grid>
+      <Typography variant="h6" display="inline">{`Step ${
+        currentRunIndex + 1
+      }/${totalTestRunCount}: `}</Typography>
+      <Typography variant="h6" display="inline" sx={testRunNameSx}>
+        {testRun.name}
+      </Typography>
     </Grid>
-  </Box>
+    <Grid>
+      <TestStatusChip status={testRun.status} />
+    </Grid>
+    <Grid sx={closeIconSx}>
+      <IconButton color="inherit" onClick={onClose} size="large">
+        <Close data-testid="CloseIcon" />
+      </IconButton>
+    </Grid>
+  </Grid>
 );

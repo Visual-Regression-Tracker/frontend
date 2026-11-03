@@ -1,5 +1,5 @@
 import { Fragment } from "react";
-import { Chip, GridLegacy as Grid, Typography, Paper } from "@mui/material";
+import { Chip, Grid, Typography, Paper } from "@mui/material";
 import { TestRun } from "../../types";
 import { Tooltip } from "../Tooltip";
 
@@ -21,13 +21,13 @@ export const TestRunDetails = ({ testRun }: IProps) => {
       {attributes
         .filter((attribute) => attribute.value)
         .map((attribute) => (
-          <Grid item key={attribute.name}>
+          <Grid key={attribute.name}>
             <Tooltip title={attribute.name}>
               <Chip size="small" label={attribute.value} />
             </Tooltip>
           </Grid>
         ))}
-      <Grid item>
+      <Grid>
         <Tooltip title="How many percent of pixels are different according to the defined settings.">
           <Typography variant="caption">
             <strong>
@@ -36,7 +36,7 @@ export const TestRunDetails = ({ testRun }: IProps) => {
           </Typography>
         </Tooltip>
       </Grid>
-      <Grid item>
+      <Grid>
         <Tooltip title="The allowed diff tolerance. Can be set with the diffTollerancePercent property in the track method.">
           <Typography variant="caption">
             <strong>Diff tolerance: {testRun.diffTollerancePercent}%</strong>
@@ -44,7 +44,7 @@ export const TestRunDetails = ({ testRun }: IProps) => {
         </Tooltip>
       </Grid>
       {testRun.vlmDescription && (
-        <Grid item xs={12}>
+        <Grid size={12}>
           <Tooltip title="AI-generated description of the differences found by the Vision Language Model (VLM).">
             <Paper
               elevation={0}

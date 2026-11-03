@@ -13,7 +13,7 @@ import {
   IconButton,
   Checkbox,
   Typography,
-  GridLegacy as Grid,
+  Grid,
   Pagination,
   Menu,
   MenuItem,
@@ -309,7 +309,7 @@ const BuildList = () => {
       </Box>
       <Box height="9%">
         <Grid container justifyContent="center">
-          <Grid item>
+          <Grid>
             <Pagination
               size="small"
               defaultPage={1}

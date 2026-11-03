@@ -1,5 +1,5 @@
 import { Suspense, useEffect, lazy } from "react";
-import { GridLegacy as Grid, Box } from "@mui/material";
+import { Grid, Box } from "@mui/material";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import BuildList from "../components/BuildList";
 import ProjectSelect from "../components/ProjectSelect";
@@ -37,8 +37,7 @@ const ProjectPage = () => {
     <>
       <Grid container sx={{ height: "100%" }}>
         <Grid
-          item
-          xs={3}
+          size={3}
           sx={{
             height: "100%",
             display: "flex",
@@ -61,8 +60,7 @@ const ProjectPage = () => {
           </Box>
         </Grid>
         <Grid
-          item
-          xs={9}
+          size={9}
           sx={{ height: "100%", display: "flex", flexDirection: "column" }}
         >
           <BuildDetails />

@@ -1,6 +1,6 @@
 import { useState, FormEvent, type ChangeEvent } from "react";
 import {
-  GridLegacy as Grid,
+  Grid,
   Card,
   CardContent,
   CardActions,
@@ -21,6 +21,8 @@ import { Role } from "../types";
 import PasswordField from "../components/PasswordField";
 import NameField from "../components/NameField";
 import { useOidcEnabled } from "../_helpers/useOidcEnabled";
+
+const cardActionsSx = { justifyContent: "center" } as const;
 
 const ProfilePage = () => {
   const { enqueueSnackbar } = useSnackbar();
@@ -81,9 +83,9 @@ const ProfilePage = () => {
         subtitle="Your details, password and the key your test runs use"
       />
       <Grid container spacing={2}>
-        <Grid item xs={6}>
+        <Grid size={6}>
           <Grid container spacing={2}>
-            <Grid item xs={12}>
+            <Grid size={12}>
               <ValidatorForm onSubmit={handleUserUpdateSubmit} instantValidate>
                 <Card variant="outlined">
                   <CardHeader
@@ -92,7 +94,7 @@ const ProfilePage = () => {
                   />
                   <CardContent>
                     <Grid container spacing={2}>
-                      <Grid item xs={6}>
+                      <Grid size={6}>
                         <NameField
                           name="firstName"
                           label="First name"
@@ -100,7 +102,7 @@ const ProfilePage = () => {
                           onChange={setFirstName}
                         />
                       </Grid>
-                      <Grid item xs={6}>
+                      <Grid size={6}>
                         <NameField
                           name="lastName"
                           label="Last name"
@@ -108,7 +110,7 @@ const ProfilePage = () => {
                           onChange={setLastName}
                         />
                       </Grid>
-                      <Grid item xs={12}>
+                      <Grid size={12}>
                         <TextValidator
                           validators={["isEmail"]}
                           errorMessages={["Enter valid email address"]}
@@ -129,7 +131,7 @@ const ProfilePage = () => {
                           }}
                         />
                       </Grid>
-                      <Grid item xs={12}>
+                      <Grid size={12}>
                         <Select
                           variant="standard"
                           id="role"
@@ -148,25 +150,21 @@ const ProfilePage = () => {
                       </Grid>
                     </Grid>
                   </CardContent>
-                  <CardActions>
-                    <Grid container justifyContent="center">
-                      <Grid item>
-                        <Button
-                          type="submit"
-                          color="primary"
-                          variant="contained"
-                          data-testid="submit"
-                        >
-                          Update
-                        </Button>
-                      </Grid>
-                    </Grid>
+                  <CardActions sx={cardActionsSx}>
+                    <Button
+                      type="submit"
+                      color="primary"
+                      variant="contained"
+                      data-testid="submit"
+                    >
+                      Update
+                    </Button>
                   </CardActions>
                 </Card>
               </ValidatorForm>
             </Grid>
             {oidcEnabled === false && (
-              <Grid item xs={12}>
+              <Grid size={12}>
                 <ValidatorForm
                   onSubmit={handlePasswordUpdateSubmit}
                   instantValidate
@@ -178,7 +176,7 @@ const ProfilePage = () => {
                     />
                     <CardContent>
                       <Grid container spacing={2}>
-                        <Grid item xs={12}>
+                        <Grid size={12}>
                           <PasswordField
                             password={password}
                             setPassword={setPassword}
@@ -187,19 +185,15 @@ const ProfilePage = () => {
                         </Grid>
                       </Grid>
                     </CardContent>
-                    <CardActions>
-                      <Grid container justifyContent="center">
-                        <Grid item>
-                          <Button
-                            type="submit"
-                            color="primary"
-                            variant="contained"
-                            data-testid="submit"
-                          >
-                            Update
-                          </Button>
-                        </Grid>
-                      </Grid>
+                    <CardActions sx={cardActionsSx}>
+                      <Button
+                        type="submit"
+                        color="primary"
+                        variant="contained"
+                        data-testid="submit"
+                      >
+                        Update
+                      </Button>
                     </CardActions>
                   </Card>
                 </ValidatorForm>
@@ -207,9 +201,9 @@ const ProfilePage = () => {
             )}
           </Grid>
         </Grid>
-        <Grid item xs={6}>
+        <Grid size={6}>
           <Grid container spacing={2}>
-            <Grid item xs={12}>
+            <Grid size={12}>
               <Card variant="outlined">
                 <CardHeader
                   title="Api key"
@@ -234,7 +228,7 @@ const ProfilePage = () => {
                 </CardContent>
               </Card>
             </Grid>
-            <Grid item xs={12}>
+            <Grid size={12}>
               <ConfigurationExamples />
             </Grid>
           </Grid>

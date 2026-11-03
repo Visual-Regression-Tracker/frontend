@@ -1,7 +1,7 @@
 import { type FormEvent, useState } from "react";
 import {
   Autocomplete,
-  GridLegacy as Grid,
+  Grid,
   Select,
   MenuItem,
   Button,
@@ -57,7 +57,7 @@ export const TestVariationMergeForm = ({ projectId, items }: IProps) => {
   return (
     <form onSubmit={handleSubmit}>
       <Grid container spacing={2} alignItems="flex-end">
-        <Grid item xs>
+        <Grid size="grow">
           <Select
             variant="standard"
             required
@@ -78,7 +78,7 @@ export const TestVariationMergeForm = ({ projectId, items }: IProps) => {
             ))}
           </Select>
         </Grid>
-        <Grid item xs>
+        <Grid size="grow">
           <Autocomplete
             id="toBranch"
             options={items.map((i) => ({
@@ -102,7 +102,7 @@ export const TestVariationMergeForm = ({ projectId, items }: IProps) => {
             }}
           />
         </Grid>
-        <Grid item>
+        <Grid>
           <Button
             type="submit"
             color="primary"
