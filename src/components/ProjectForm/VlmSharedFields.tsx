@@ -49,7 +49,7 @@ const VlmTemperatureField = ({
       <div>
         <TextValidator
           name="temperature"
-          validators={["minNumber:0", "maxNumber:1"]}
+          validators={["minFloat:0", "maxFloat:1"]}
           errorMessages={[
             "Enter greater than or equal to 0",
             "Enter less than or equal to 1",

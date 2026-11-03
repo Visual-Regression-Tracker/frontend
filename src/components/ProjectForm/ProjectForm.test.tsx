@@ -807,6 +807,29 @@ describe("ProjectForm", () => {
         });
       });
 
+      it.each([
+        ["above 1", "1.5", "Enter less than or equal to 1"],
+        ["below 0", "-0.5", "Enter greater than or equal to 0"],
+      ])("does not submit a temperature %s", async (_label, value, message) => {
+        const onSubmit = vi.fn();
+        const { user } = await renderForm(
+          {
+            ...vlm,
+            imageComparisonConfig: JSON.stringify({
+              ...defaults,
+              model: "gemma3:12b",
+            }),
+          },
+          onSubmit,
+        );
+
+        await replaceNumber(user, screen.getByLabelText(/^Temperature/), value);
+        await user.click(screen.getByTestId("submitButton"));
+
+        expect(await screen.findByText(message)).toBeVisible();
+        expect(onSubmit).not.toHaveBeenCalled();
+      });
+
       it("does not submit without a model", async () => {
         const onSubmit = vi.fn();
         const { user } = await renderForm(vlm, onSubmit);
