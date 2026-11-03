@@ -19,7 +19,7 @@ import {
   Box,
   Fade,
 } from "@mui/material";
-import { DeleteOutline } from "@mui/icons-material";
+import { DeleteOutlineOutlined } from "@mui/icons-material";
 import { BuildListPlaceholder } from "./BuildListPlaceholder";
 import { BuildListItem } from "./BuildListItem";
 import { DebouncedTextField } from "../DebouncedTextField";
@@ -279,7 +279,7 @@ const BuildList = () => {
                   onClick={() => setBulkDeleteDialogOpen(true)}
                   data-testid="buildDeleteSelected"
                 >
-                  <DeleteOutline />
+                  <DeleteOutlineOutlined />
                 </IconButton>
               </Tooltip>
             </span>
@@ -314,7 +314,7 @@ const BuildList = () => {
         </Box>
       </Box>
       <Box sx={{ height: "9%" }}>
-        <Grid container justifyContent="center">
+        <Grid container sx={{ justifyContent: "center" }}>
           <Grid>
             <Pagination
               size="small"

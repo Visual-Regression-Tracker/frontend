@@ -32,7 +32,7 @@ import {
   AllInbox,
   Face,
   GitHub,
-  HelpOutline,
+  HelpOutlineOutlined,
   People,
   Logout,
 } from "@mui/icons-material";
@@ -207,7 +207,7 @@ const Header = () => {
                 }
                 data-testid={HEADER_HELP_MENU_BUTTON_TEST_ID}
               >
-                <HelpOutline />
+                <HelpOutlineOutlined />
               </IconButton>
             </Tooltip>
             {loggedIn && (

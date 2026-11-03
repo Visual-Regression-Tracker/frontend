@@ -51,7 +51,7 @@ const TestRunFilters = ({
 
   return (
     <Paper variant="outlined" sx={{ p: 2, borderRadius: 2 }}>
-      <Grid container spacing={2} alignItems="center" wrap="nowrap">
+      <Grid container spacing={2} wrap="nowrap" sx={{ alignItems: "center" }}>
         <Grid size={3}>
           <DebouncedTextField
             size="small"

@@ -95,7 +95,7 @@ const Filters = ({
   ) => uniqueValues(items.map((item) => item[field]));
 
   return (
-    <Grid container spacing={2} alignItems="flex-end">
+    <Grid container spacing={2} sx={{ alignItems: "flex-end" }}>
       <Grid size="grow">
         <DebouncedTextField
           variant="standard"

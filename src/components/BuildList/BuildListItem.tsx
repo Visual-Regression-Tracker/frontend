@@ -8,6 +8,7 @@ import {
   LinearProgress,
   ListItemButton,
   ListItemText,
+  Stack,
   Typography,
 } from "@mui/material";
 import { MoreVert } from "@mui/icons-material";
@@ -70,21 +71,21 @@ export const BuildListItem = ({
           </Typography>
         }
         secondary={
-          <Grid container direction="column">
-            <Grid>
+          <Stack>
+            <Box>
               <Typography variant="caption" color="textPrimary">
                 {formatDateTime(build.createdAt)}
               </Typography>
-            </Grid>
+            </Box>
             {build.updatedAt && (
-              <Grid>
+              <Box>
                 <Typography variant="caption" color="textSecondary">
                   Last run: {formatDateTime(build.updatedAt)}
                 </Typography>
-              </Grid>
+              </Box>
             )}
-            <Grid>
-              <Grid container justifyContent="space-between">
+            <Box>
+              <Grid container sx={{ justifyContent: "space-between" }}>
                 <Grid>
                   <Tooltip title={build.branchName}>
                     <Chip
@@ -98,8 +99,8 @@ export const BuildListItem = ({
                   <BuildStatusChip status={build.status} />
                 </Grid>
               </Grid>
-            </Grid>
-          </Grid>
+            </Box>
+          </Stack>
         }
       />
 

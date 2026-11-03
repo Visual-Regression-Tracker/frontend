@@ -94,7 +94,10 @@ const ProjectSelect = ({
           variant="standard"
           label="Project"
           placeholder="Select project"
-          slotProps={{ inputLabel: { shrink: true } }}
+          slotProps={{
+            ...params.slotProps,
+            inputLabel: { ...params.slotProps.inputLabel, shrink: true },
+          }}
         />
       )}
     />
