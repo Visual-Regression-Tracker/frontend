@@ -210,6 +210,7 @@ describe("SocketProvider", () => {
       "build_updated",
       "connect",
       "connect_error",
+      "disconnect",
       "testRun_created",
       "testRun_deleted",
       "testRun_updated",
@@ -293,6 +294,26 @@ describe("SocketProvider", () => {
 
       expect(loggedIn().getByText("true")).toBeVisible();
     });
+
+    it("logs the user out when the server closes the connection", async () => {
+      await renderSocket();
+
+      receive("disconnect", "io server disconnect");
+
+      expect(loggedIn().getByText("false")).toBeVisible();
+      expect(localStorage.getItem("user")).toBeNull();
+    });
+
+    it.each(["io client disconnect", "transport close", "ping timeout"])(
+      "stays logged in when the connection ends with %s",
+      async (reason) => {
+        await renderSocket();
+
+        receive("disconnect", reason);
+
+        expect(loggedIn().getByText("true")).toBeVisible();
+      },
+    );
   });
 
   describe("rooms", () => {
@@ -589,6 +610,7 @@ describe("SocketProvider", () => {
       // one per room: the project's and the open build's
       connect: 2,
       connect_error: 1,
+      disconnect: 1,
       testRun_created: 1,
       testRun_deleted: 1,
       testRun_updated: 1,

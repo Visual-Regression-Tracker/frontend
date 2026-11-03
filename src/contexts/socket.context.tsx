@@ -108,6 +108,13 @@ function SocketProvider({ children }: Readonly<SocketProviderProps>) {
         }
       },
 
+      // the server closes the socket when its token expires or its user is deleted
+      disconnect(reason: Socket.DisconnectReason) {
+        if (reason === "io server disconnect") {
+          logout(userDispatch);
+        }
+      },
+
       build_created(build: Build) {
         if (build.projectId === selectedProjectId) {
           addBuild(buildDispatch, build);

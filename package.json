@@ -5,7 +5,7 @@
   "license": "Apache-2.0",
   "type": "module",
   "engines": {
-    "node": ">=24.15"
+    "node": ">=26"
   },
   "dependencies": {
     "@emotion/react": "^11.14.0",
