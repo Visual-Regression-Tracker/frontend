@@ -663,6 +663,23 @@ describe("ProjectForm", () => {
       expect(noiseFilter()).toBeDisabled();
     });
 
+    it("saves other changes of a project saved with it on where there is no service", async () => {
+      serverHas(false);
+      const onSubmit = vi.fn();
+      const { user } = await renderForm(withFilter(), onSubmit);
+
+      await user.clear(screen.getByLabelText(/^Project name/));
+      await user.type(screen.getByLabelText(/^Project name/), "Mobile app");
+      await user.click(screen.getByTestId("submitButton"));
+
+      await waitFor(() => expect(onSubmit).toHaveBeenCalledTimes(1));
+      const saved: ProjectDto = onSubmit.mock.calls[0][0];
+      expect(saved.name).toBe("Mobile app");
+      expect(JSON.parse(saved.imageComparisonConfig)).toMatchObject({
+        ignoreRenderingNoise: true,
+      });
+    });
+
     it("warns when the service is set up but not answering", async () => {
       serverHas(true, false);
       await renderForm();
