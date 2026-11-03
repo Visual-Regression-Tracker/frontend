@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { screen, waitFor, within } from "@testing-library/react";
+import { fireEvent, screen, waitFor, within } from "@testing-library/react";
 import { renderWithProviders } from "../../_test/render";
 import { toastOf, undoIn } from "../../_test/toast";
 import { SeedTestRuns } from "../../_test/SeedTestRuns";
@@ -186,6 +186,19 @@ describe("ApproveRejectButtons", () => {
       );
       expect(approveBulk).toHaveBeenCalledTimes(1);
       await waitFor(() => expect(afterApprove).toHaveBeenCalledTimes(1));
+    });
+
+    it("approves with the a key of a layout that puts it elsewhere, as AZERTY does", async () => {
+      const approveBulk = vi
+        .spyOn(testRunService, "approveBulk")
+        .mockResolvedValue(NO_FAILURES);
+      await renderButtons();
+
+      fireEvent.keyDown(document.body, { key: "a", code: "KeyQ" });
+
+      await waitFor(() =>
+        expect(approveBulk).toHaveBeenCalledWith([UNRESOLVED.id], false),
+      );
     });
 
     it("follows the test run it is given when the hotkey is pressed", async () => {

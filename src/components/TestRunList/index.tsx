@@ -15,6 +15,7 @@ import {
 } from "../../contexts";
 import { useSnackbar } from "notistack";
 import { useHotkeys } from "react-hotkeys-hook";
+import { hotkeyMatching } from "../../_helpers/hotkeys.helper";
 import {
   DataGrid,
   DataGridProps,
@@ -245,6 +246,7 @@ const TestRunList = () => {
   const [gridSort, setGridSort] = useState<TestRunSort>(DEFAULT_SORT);
 
   useHotkeys("d", () => setShowDiff((prev) => !prev), {
+    ...hotkeyMatching,
     enabled: view === "grid" && !selectedTestRun,
   });
 
