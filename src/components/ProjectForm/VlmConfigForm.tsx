@@ -15,8 +15,8 @@ import {
 } from "../../contexts";
 import { GeminiConfigForm } from "./GeminiConfigForm";
 import { OllamaConfigForm } from "./OllamaConfigForm";
-import { BlurAmplitudeFields } from "./BlurAmplitudeFields";
-import { withBlurAmplitudeOf } from "./utils";
+import { RenderingNoiseField } from "./RenderingNoiseField";
+import { withRenderingNoiseOf } from "./utils";
 
 export const VlmConfigForm = () => {
   const [config] = useConfigHook<VlmConfig>();
@@ -36,7 +36,7 @@ export const VlmConfigForm = () => {
 
     setProjectEditState(projectDispatch, {
       ...project,
-      imageComparisonConfig: withBlurAmplitudeOf(
+      imageComparisonConfig: withRenderingNoiseOf(
         JSON.stringify(newConfig),
         project.imageComparisonConfig,
       ),
@@ -63,7 +63,7 @@ export const VlmConfigForm = () => {
       ) : (
         <OllamaConfigForm />
       )}
-      <BlurAmplitudeFields />
+      <RenderingNoiseField />
     </Fragment>
   );
 };

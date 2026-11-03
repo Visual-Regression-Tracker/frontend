@@ -5,7 +5,7 @@ import {
   VLM_DEFAULT_CONFIG,
 } from "../../constants";
 import {
-  BlurAmplitudeConfig,
+  RenderingNoiseConfig,
   ImageComparison,
 } from "../../types/imageComparison";
 
@@ -25,21 +25,11 @@ export const getDefaultConfig = (imageComparison: ImageComparison): string => {
 };
 
 /** The filter is no library's own option; swapped defaults must not switch it off. */
-export const withBlurAmplitudeOf = (
+export const withRenderingNoiseOf = (
   config: string,
   previousConfig: string,
 ): string => {
-  const {
-    blurAmplitudeFilter,
-    blurAmplitudeThreshold,
-    dinov2Check,
-    dinov2Threshold,
-  }: BlurAmplitudeConfig = JSON.parse(previousConfig);
-  return JSON.stringify({
-    ...JSON.parse(config),
-    blurAmplitudeFilter,
-    blurAmplitudeThreshold,
-    dinov2Check,
-    dinov2Threshold,
-  });
+  const { ignoreRenderingNoise }: RenderingNoiseConfig =
+    JSON.parse(previousConfig);
+  return JSON.stringify({ ...JSON.parse(config), ignoreRenderingNoise });
 };

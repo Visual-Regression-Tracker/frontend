@@ -314,28 +314,11 @@ const VIEWS: [name: string, body: Body][] = [
       await projectListPage.noiseFilter.check();
       // blur: the focused switch keeps its tooltip open
       await projectListPage.dialog.getByRole("heading").first().click();
-      await projectListPage.noiseThreshold.scrollIntoViewIfNeeded();
+      await projectListPage.noiseFilter.scrollIntoViewIfNeeded();
 
-      await expect(projectListPage.noiseThreshold).toHaveValue("80");
+      await expect(projectListPage.noiseFilter).toBeChecked();
       await expect(projectListPage.page.getByRole("tooltip")).toHaveCount(0);
       await shot("edit-project-noise-filter");
-    },
-  ],
-
-  [
-    "edit project dialog with the DINOv2 check on",
-    async ({ projectListPage, shot }) => {
-      await projectListPage.editBtn.click();
-      await projectListPage.noiseFilter.check();
-      await projectListPage.dinov2CheckLabel.scrollIntoViewIfNeeded();
-      await projectListPage.dinov2Check.check();
-      // blur: the focused switch keeps its tooltip open
-      await projectListPage.dialog.getByRole("heading").first().click();
-      await projectListPage.dinov2Threshold.scrollIntoViewIfNeeded();
-
-      await expect(projectListPage.dinov2Threshold).toHaveValue("0.15");
-      await expect(projectListPage.page.getByRole("tooltip")).toHaveCount(0);
-      await shot("edit-project-dinov2-check");
     },
   ],
 
@@ -347,11 +330,9 @@ const VIEWS: [name: string, body: Body][] = [
         available: false,
       });
       await projectListPage.editBtn.click();
-      await projectListPage.noiseFilter.check();
-      await projectListPage.dialog.getByRole("heading").first().click();
-      await projectListPage.dinov2Status.scrollIntoViewIfNeeded();
+      await projectListPage.noiseStatus.scrollIntoViewIfNeeded();
 
-      await expect(projectListPage.dinov2Check).toBeDisabled();
+      await expect(projectListPage.noiseFilter).toBeDisabled();
       await expect(projectListPage.page.getByRole("tooltip")).toHaveCount(0);
       await shot("edit-project-no-dinov2");
     },

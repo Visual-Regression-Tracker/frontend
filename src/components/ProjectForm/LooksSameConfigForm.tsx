@@ -3,7 +3,7 @@ import { type ChangeEvent, Fragment } from "react";
 import { TextValidator } from "react-material-ui-form-validator";
 import { LooksSameConfig } from "../../types/imageComparison";
 import { useConfigHook } from "./useConfigHook";
-import { BlurAmplitudeFields } from "./BlurAmplitudeFields";
+import { RenderingNoiseField } from "./RenderingNoiseField";
 
 export const LooksSameConfigForm = () => {
   const [config, updateConfig] = useConfigHook<LooksSameConfig>();
@@ -102,7 +102,7 @@ export const LooksSameConfigForm = () => {
           />
         }
       />
-      <BlurAmplitudeFields />
+      <RenderingNoiseField />
     </Fragment>
   );
 };
