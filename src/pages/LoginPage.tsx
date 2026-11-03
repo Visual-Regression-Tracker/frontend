@@ -34,7 +34,7 @@ const LoginPage = () => {
           userDispatch({ type: "success", payload: user });
           navigate(routes.HOME);
         })
-        .catch((err) => enqueueSnackbar(err, { variant: "error" }));
+        .catch((err: string) => enqueueSnackbar(err, { variant: "error" }));
     } else {
       enqueueSnackbar("SSO login failed.", { variant: "error" });
     }

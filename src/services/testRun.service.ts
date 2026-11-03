@@ -15,7 +15,7 @@ function getJson<T>(path: string): Promise<T> {
   };
 
   return fetch(`${API_URL}${ENDPOINT_URL}${path}`, requestOptions).then(
-    handleResponse,
+    handleResponse<T>,
   );
 }
 
@@ -34,7 +34,7 @@ function sendJson<T>(
   };
 
   return fetch(`${API_URL}${ENDPOINT_URL}${path}`, requestOptions).then(
-    handleResponse,
+    handleResponse<T>,
   );
 }
 
@@ -87,7 +87,10 @@ function approveBulk(
 // the backend answers per run, and a refusal comes back in a successful answer
 function rejectIfRefused(id: string, result: BulkResult): Promise<void> {
   const refusal = result.failed.find((failure) => failure.id === id);
-  return refusal ? Promise.reject(refusal.message) : Promise.resolve();
+  return refusal
+    ? // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors -- callers show the reason itself as the snackbar message
+      Promise.reject(refusal.message)
+    : Promise.resolve();
 }
 
 function approveOne(id: string, merge: boolean): Promise<void> {

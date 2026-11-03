@@ -166,7 +166,7 @@ export const MatchingVariationsDialog = ({
             result.variations.map((v) => v.id),
           );
         })
-        .catch((err) => {
+        .catch((err: string) => {
           if (!background) enqueueSnackbar(err, { variant: "error" });
         })
         .finally(() => {
@@ -286,7 +286,9 @@ export const MatchingVariationsDialog = ({
 
   const goToNextEnabled = (): boolean => {
     try {
-      return JSON.parse(localStorage.getItem(GO_TO_NEXT_KEY) || "false");
+      return Boolean(
+        JSON.parse(localStorage.getItem(GO_TO_NEXT_KEY) || "false"),
+      );
     } catch {
       return false;
     }
@@ -349,7 +351,7 @@ export const MatchingVariationsDialog = ({
           ...undo,
         });
       })
-      .catch((err) => {
+      .catch((err: string) => {
         enqueueSnackbar(err, { variant: "error" });
       })
       .finally(() => setSubmitting(false));

@@ -28,7 +28,7 @@ function getList(
   return fetch(
     `${API_URL}${ENDPOINT_URL}?projectId=${projectId}&take=${take}&skip=${skip}${search}${around}`,
     requestOptions,
-  ).then(handleResponse);
+  ).then(handleResponse<PaginatedData<Build>>);
 }
 
 function getDetails(id: string): Promise<Build> {
@@ -38,7 +38,7 @@ function getDetails(id: string): Promise<Build> {
   };
 
   return fetch(`${API_URL}${ENDPOINT_URL}/${id}`, requestOptions).then(
-    handleResponse,
+    handleResponse<Build>,
   );
 }
 
@@ -49,7 +49,7 @@ function remove(id: string): Promise<Build> {
   };
 
   return fetch(`${API_URL}${ENDPOINT_URL}/${id}`, requestOptions).then(
-    handleResponse,
+    handleResponse<Build>,
   );
 }
 
@@ -64,7 +64,7 @@ function update(id: string, body: BuildDto): Promise<Build> {
   };
 
   return fetch(`${API_URL}${ENDPOINT_URL}/${id}`, requestOptions).then(
-    handleResponse,
+    handleResponse<Build>,
   );
 }
 

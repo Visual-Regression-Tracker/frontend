@@ -68,7 +68,7 @@ describe("buildsService", () => {
 
       expect(fetchMock.mock.calls[0][1]).toEqual({
         method: "GET",
-        headers: [],
+        headers: {},
       });
     });
 

@@ -91,7 +91,7 @@ const ProjectsListPage = () => {
         favorite={favorite}
         onToggleFavorite={() => {
           toggleFavoriteProject(projectDispatch, project.id, !favorite).catch(
-            (err) => enqueueSnackbar(err, { variant: "error" }),
+            (err: string) => enqueueSnackbar(err, { variant: "error" }),
           );
         }}
         onEdit={
@@ -182,7 +182,7 @@ const ProjectsListPage = () => {
         close();
         enqueueSnackbar(`${project.name} ${done}`, { variant: "success" });
       })
-      .catch((err) => enqueueSnackbar(err, { variant: "error" }));
+      .catch((err: string) => enqueueSnackbar(err, { variant: "error" }));
 
   return (
     <Container maxWidth="lg" sx={{ py: 4 }}>

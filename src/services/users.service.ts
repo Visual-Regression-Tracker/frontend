@@ -24,7 +24,7 @@ function login(email: string, password: string): Promise<User> {
   };
 
   return fetch(`${API_URL}${ENDPOINT_URL}/login`, requestOptions)
-    .then(handleResponse)
+    .then(handleResponse<User>)
     .then((user) => {
       setUserInLocalStorage(user);
       return user;
@@ -51,7 +51,7 @@ function register(
   };
 
   return fetch(`${API_URL}${ENDPOINT_URL}/register`, requestOptions)
-    .then(handleResponse)
+    .then(handleResponse<User>)
     .then((user) => {
       setUserInLocalStorage(user);
       return user;
@@ -77,7 +77,7 @@ function update({
   };
 
   return fetch(`${API_URL}${ENDPOINT_URL}`, requestOptions)
-    .then(handleResponse)
+    .then(handleResponse<User>)
     .then((user) => {
       setUserInLocalStorage(user);
       return user;
@@ -97,7 +97,7 @@ function changePassword(password: string): Promise<boolean> {
   };
 
   return fetch(`${API_URL}${ENDPOINT_URL}/password`, requestOptions).then(
-    handleResponse,
+    handleResponse<boolean>,
   );
 }
 
@@ -165,7 +165,7 @@ function getMe(token: string): Promise<User> {
   };
 
   return fetch(`${API_URL}${ENDPOINT_URL}/me`, requestOptions).then(
-    handleResponse,
+    handleResponse<User>,
   );
 }
 
@@ -203,7 +203,7 @@ function assignRole(id: string | number, role: Role): Promise<User> {
   };
 
   return fetch(`${API_URL}${ENDPOINT_URL}/assignRole`, requestOptions).then(
-    handleResponse,
+    handleResponse<User>,
   );
 }
 
@@ -218,7 +218,7 @@ function remove(ids: string[] | number[]): Promise<boolean> {
   };
 
   return fetch(`${API_URL}${ENDPOINT_URL}`, requestOptions).then(
-    handleResponse,
+    handleResponse<boolean>,
   );
 }
 

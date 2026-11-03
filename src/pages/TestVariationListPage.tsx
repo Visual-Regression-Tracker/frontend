@@ -56,7 +56,7 @@ const TestVariationListPage = () => {
         .then((testVariations) => {
           setTestVariations(testVariations);
         })
-        .catch((err) =>
+        .catch((err: string) =>
           enqueueSnackbar(err, {
             variant: "error",
           }),
@@ -97,7 +97,7 @@ const TestVariationListPage = () => {
           variant: "success",
         });
       })
-      .catch((err) =>
+      .catch((err: string) =>
         enqueueSnackbar(err, {
           variant: "error",
         }),

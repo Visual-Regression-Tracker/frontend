@@ -233,7 +233,7 @@ function toggleFavoriteProject(
     ? projectsService.addFavorite(id)
     : projectsService.removeFavorite(id);
 
-  return save.catch((err) => {
+  return save.catch((err: string) => {
     dispatch({ type: "favorite", payload: { id, favorite: !favorite } });
     throw err;
   });
@@ -265,7 +265,7 @@ function ProjectProvider({ children }: Readonly<ProjectProviderProps>) {
   // a layout effect, so a login shows the loading state, not an empty list
   useLayoutEffect(() => {
     if (loggedIn) {
-      getProjectList(dispatch).catch((err) =>
+      getProjectList(dispatch).catch((err: string) =>
         enqueueSnackbar(err, {
           variant: "error",
         }),

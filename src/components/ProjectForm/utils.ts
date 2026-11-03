@@ -29,7 +29,8 @@ export const withRenderingNoiseOf = (
   config: string,
   previousConfig: string,
 ): string => {
-  const { ignoreRenderingNoise }: RenderingNoiseConfig =
-    JSON.parse(previousConfig);
+  const { ignoreRenderingNoise } = JSON.parse(
+    previousConfig,
+  ) as RenderingNoiseConfig;
   return JSON.stringify({ ...JSON.parse(config), ignoreRenderingNoise });
 };

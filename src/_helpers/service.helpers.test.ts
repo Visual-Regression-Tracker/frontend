@@ -17,19 +17,19 @@ describe("authHeader", () => {
   });
 
   it("sends no headers when nobody is logged in", () => {
-    expect(authHeader()).toEqual([]);
+    expect(authHeader()).toEqual({});
   });
 
   it("sends no headers when the stored user has no token", () => {
     localStorage.setItem("user", JSON.stringify({ email: "a@b.c" }));
 
-    expect(authHeader()).toEqual([]);
+    expect(authHeader()).toEqual({});
   });
 
   it("sends no headers when the stored user is null", () => {
     localStorage.setItem("user", "null");
 
-    expect(authHeader()).toEqual([]);
+    expect(authHeader()).toEqual({});
   });
 });
 

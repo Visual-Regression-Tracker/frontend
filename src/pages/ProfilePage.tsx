@@ -47,7 +47,7 @@ const ProfilePage = () => {
             variant: "success",
           }),
         )
-        .catch((err) =>
+        .catch((err: string) =>
           enqueueSnackbar(err, {
             variant: "error",
           }),
@@ -67,7 +67,7 @@ const ProfilePage = () => {
             variant: "success",
           }),
         )
-        .catch((err) =>
+        .catch((err: string) =>
           enqueueSnackbar(err, {
             variant: "error",
           }),

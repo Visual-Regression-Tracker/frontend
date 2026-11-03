@@ -30,7 +30,7 @@ const RegisterForm = () => {
           navigate(routes.HOME),
         );
       })
-      .catch((err) =>
+      .catch((err: string) =>
         enqueueSnackbar(err, {
           variant: "error",
         }),

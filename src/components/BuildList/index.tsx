@@ -339,7 +339,7 @@ const BuildList = () => {
                       variant: "success",
                     }),
                   )
-                  .catch((err) =>
+                  .catch((err: string) =>
                     enqueueSnackbar(err, {
                       variant: "error",
                     }),
@@ -385,7 +385,7 @@ const BuildList = () => {
               .update(menuBuild.id, {
                 ciBuildId: newCiBuildId,
               })
-              .catch((err) =>
+              .catch((err: string) =>
                 enqueueSnackbar(err, {
                   variant: "error",
                 }),
@@ -427,7 +427,7 @@ const BuildList = () => {
                   selectBuildCalback();
                 }
               })
-              .catch((err) =>
+              .catch((err: string) =>
                 enqueueSnackbar(err, {
                   variant: "error",
                 }),

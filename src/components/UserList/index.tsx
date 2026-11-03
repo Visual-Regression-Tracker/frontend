@@ -57,7 +57,7 @@ const UserList = () => {
           payload: users,
         }),
       )
-      .catch((err) =>
+      .catch((err: string) =>
         enqueueSnackbar(err, {
           variant: "error",
         }),
@@ -78,7 +78,7 @@ const UserList = () => {
           });
           return newState;
         })
-        .catch((err) => {
+        .catch((err: string) => {
           enqueueSnackbar(err, {
             variant: "error",
           });

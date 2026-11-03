@@ -42,7 +42,7 @@ export const OllamaConfigForm = () => {
           setModels(fetchedModels);
         }
       })
-      .catch((err) => {
+      .catch((err: string) => {
         if (isMounted) {
           enqueueSnackbar(err, {
             variant: "error",
