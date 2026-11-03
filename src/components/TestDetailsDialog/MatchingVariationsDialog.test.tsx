@@ -3,7 +3,7 @@ import { act, cleanup, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { useNavigate } from "react-router-dom";
 import { renderWithProviders } from "../../_test/render";
-import { undoIn } from "../../_test/toast";
+import { toastOf, undoIn } from "../../_test/toast";
 import { SeedTestRuns } from "../../_test/SeedTestRuns";
 import { buildsService, projectsService, testRunService } from "../../services";
 import { MatchingVariations } from "../../services/testRun.service";
@@ -364,6 +364,29 @@ describe("MatchingVariationsDialog", () => {
       expect(onClose).toHaveBeenCalledTimes(1);
       await elapse(0);
       expect(currentSearch()).toBe(`?buildId=${buildId}`);
+    });
+
+    it("shows the failures as an error when the server broke off", async () => {
+      const buildId = nextBuildId();
+      const current = run("current", buildId);
+      await renderDialog({
+        buildId,
+        current,
+        answer: {
+          variations: [run("v1", buildId), run("v2", buildId)],
+          skipped: [],
+        },
+      });
+      vi.mocked(testRunService.approveBulk).mockResolvedValue({
+        succeeded: ["v1"],
+        failed: [{ id: "v2", message: "Internal error" }],
+      });
+
+      await newReviewer().click(submitButton(2));
+
+      expect(
+        await toastOf("Approved 1 of 2 variations. 1 failed: Internal error"),
+      ).toHaveClass("notistack-MuiContent-error");
     });
 
     it("keeps the dialog open and the ticks when every run failed", async () => {

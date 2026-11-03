@@ -16,7 +16,11 @@ import { isAwaitingReview } from "../../_helpers/testRunStatus.helper";
 import { Tooltip } from "../Tooltip";
 import { undoSnackbarOptions } from "../UndoSnackbarAction";
 import { TAG_FIELDS, tagValuesOf } from "../../_helpers/testRunTags.helper";
-import { partialFailureText, pluralize } from "../../_helpers/format.helper";
+import {
+  failureVariant,
+  partialFailureText,
+  pluralize,
+} from "../../_helpers/format.helper";
 
 const testRuns = (count: number): string =>
   `${count} test ${pluralize(count, "run")}`;
@@ -265,7 +269,7 @@ export const BulkOperation = ({
                 : {};
               if (result.failed.length > 0) {
                 enqueueSnackbar(partialText(action, result), {
-                  variant: "warning",
+                  variant: failureVariant(result.failed),
                   ...undo,
                 });
               } else {

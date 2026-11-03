@@ -208,10 +208,15 @@ test("warns without an undo when someone else approved the run first", async ({
   openProjectPage,
   page,
 }) => {
-  const reason = `Test run ${TEST_UNRESOLVED.id} is already approved`;
+  const shown = "This test run is already approved";
   await mockApproveTestRuns(page, {
     succeeded: [],
-    failed: [{ id: TEST_UNRESOLVED.id, message: reason }],
+    failed: [
+      {
+        id: TEST_UNRESOLVED.id,
+        message: `Test run ${TEST_UNRESOLVED.id} is already approved`,
+      },
+    ],
   });
   const { notification, details } = await openProjectPage(
     project.id,
@@ -221,9 +226,9 @@ test("warns without an undo when someone else approved the run first", async ({
 
   await details.approve.click();
 
-  await expect(notification.toast(reason)).toHaveClass(
+  await expect(notification.toast(shown)).toHaveClass(
     /notistack-MuiContent-warning/,
   );
-  await expect(notification.undoBtn(reason)).toHaveCount(0);
+  await expect(notification.undoBtn(shown)).toHaveCount(0);
   await expect(page.getByText("Approved", { exact: true })).toHaveCount(0);
 });

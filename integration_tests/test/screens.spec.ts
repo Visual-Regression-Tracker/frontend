@@ -473,10 +473,15 @@ const VIEWS: [name: string, body: Body][] = [
   [
     "test run details after someone else approved it first",
     async ({ openProjectPage, page, shot }) => {
-      const reason = `Test run ${TEST_UNRESOLVED.id} is already approved`;
+      const shown = "This test run is already approved";
       await mockApproveTestRuns(page, {
         succeeded: [],
-        failed: [{ id: TEST_UNRESOLVED.id, message: reason }],
+        failed: [
+          {
+            id: TEST_UNRESOLVED.id,
+            message: `Test run ${TEST_UNRESOLVED.id} is already approved`,
+          },
+        ],
       });
       const projectPage = await openProjectPage(
         project.id,
@@ -487,7 +492,7 @@ const VIEWS: [name: string, body: Body][] = [
 
       await projectPage.details.approve.click();
 
-      await expect(projectPage.notification.toast(reason)).toBeVisible();
+      await expect(projectPage.notification.toast(shown)).toBeVisible();
       await shot("test-run-already-approved");
     },
   ],

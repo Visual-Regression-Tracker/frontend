@@ -28,7 +28,11 @@ import { byDiffDesc, orderByIds } from "../../_helpers/testRunOrder.helper";
 import { TestRun } from "../../types";
 import { TestStatus } from "../../types/testStatus";
 import { imageSurface } from "../../theme/tokens";
-import { partialFailureText, pluralize } from "../../_helpers/format.helper";
+import {
+  failureVariant,
+  partialFailureText,
+  pluralize,
+} from "../../_helpers/format.helper";
 
 const Toolbar = styled("div")({
   display: "flex",
@@ -331,7 +335,7 @@ export const MatchingVariationsDialog = ({
         if (failed.length > 0) {
           enqueueSnackbar(
             partialFailureText(done, { succeeded, failed }, what),
-            { variant: "warning", ...undo },
+            { variant: failureVariant(failed), ...undo },
           );
           if (succeeded.length > 0) {
             onClose();

@@ -160,22 +160,45 @@ describe("ApproveRejectButtons", () => {
     });
 
     it("warns with the reason, offers no undo and does not carry on when the backend refuses the run", async () => {
-      const reason = `Test run ${UNRESOLVED.id} is already approved`;
       vi.spyOn(testRunService, "approveBulk").mockResolvedValue({
         succeeded: [],
-        failed: [{ id: UNRESOLVED.id, message: reason }],
+        failed: [
+          {
+            id: UNRESOLVED.id,
+            message: `Test run ${UNRESOLVED.id} is already approved`,
+          },
+        ],
       });
       const { user, afterApprove } = await renderButtons();
 
       await user.click(approveButton());
 
-      const toast = await toastOf(reason);
+      const toast = await toastOf("This test run is already approved");
       expect(toast).toHaveClass("notistack-MuiContent-warning");
       expect(
         within(toast).queryByText("Undo", { selector: "button" }),
       ).not.toBeInTheDocument();
       expect(afterApprove).not.toHaveBeenCalled();
       expect(screen.queryByText("Approved")).not.toBeInTheDocument();
+    });
+
+    it("shows a server failure as an error, offers no undo and does not carry on", async () => {
+      vi.spyOn(testRunService, "approveBulk").mockResolvedValue({
+        succeeded: [],
+        failed: [{ id: UNRESOLVED.id, message: "Internal error" }],
+      });
+      const { user, afterApprove } = await renderButtons();
+
+      await user.click(approveButton());
+
+      const toast = await toastOf(
+        "The server could not approve this test run. Try again.",
+      );
+      expect(toast).toHaveClass("notistack-MuiContent-error");
+      expect(
+        within(toast).queryByText("Undo", { selector: "button" }),
+      ).not.toBeInTheDocument();
+      expect(afterApprove).not.toHaveBeenCalled();
     });
 
     it("approves with the hotkey a", async () => {
@@ -264,22 +287,43 @@ describe("ApproveRejectButtons", () => {
     });
 
     it("warns with the reason, offers no undo and does not carry on when the backend refuses the run", async () => {
-      const reason = `Test run ${UNRESOLVED.id} was changed by someone else meanwhile`;
       vi.spyOn(testRunService, "rejectBulk").mockResolvedValue({
         succeeded: [],
-        failed: [{ id: UNRESOLVED.id, message: reason }],
+        failed: [
+          {
+            id: UNRESOLVED.id,
+            message: `Test run ${UNRESOLVED.id} was changed by someone else meanwhile`,
+          },
+        ],
       });
       const { user, afterReject } = await renderButtons();
 
       await user.click(rejectButton());
 
-      const toast = await toastOf(reason);
+      const toast = await toastOf(
+        "This test run was changed by someone else meanwhile",
+      );
       expect(toast).toHaveClass("notistack-MuiContent-warning");
       expect(
         within(toast).queryByText("Undo", { selector: "button" }),
       ).not.toBeInTheDocument();
       expect(afterReject).not.toHaveBeenCalled();
       expect(screen.queryByText("Rejected")).not.toBeInTheDocument();
+    });
+
+    it("shows a server failure as an error", async () => {
+      vi.spyOn(testRunService, "rejectBulk").mockResolvedValue({
+        succeeded: [],
+        failed: [{ id: UNRESOLVED.id, message: "Internal error" }],
+      });
+      const { user, afterReject } = await renderButtons();
+
+      await user.click(rejectButton());
+
+      expect(
+        await toastOf("The server could not reject this test run. Try again."),
+      ).toHaveClass("notistack-MuiContent-error");
+      expect(afterReject).not.toHaveBeenCalled();
     });
 
     it("rejects with the hotkey x", async () => {

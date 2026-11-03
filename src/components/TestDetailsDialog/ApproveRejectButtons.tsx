@@ -3,6 +3,7 @@ import { VariantType } from "notistack";
 import { useDialogSnackbar } from "./useDialogSnackbar";
 import { useHotkeys } from "react-hotkeys-hook";
 import { hotkeyOptions } from "../../_helpers/hotkeys.helper";
+import { failureVariant } from "../../_helpers/format.helper";
 import { useMemo } from "react";
 import { BulkResult, ReviewDecision, testRunService } from "../../services";
 import { useSelectedProject, useTestRunState } from "../../contexts";
@@ -73,7 +74,16 @@ export const ApproveRejectButtons = ({
     request
       .then(({ failed }) => {
         if (failed.length > 0) {
-          enqueueSnackbar(failed[0].message, { variant: "warning" });
+          const variant = failureVariant(failed);
+          enqueueSnackbar(
+            variant === "error"
+              ? `The server could not ${decision} this test run. Try again.`
+              : failed[0].message.replace(
+                  `Test run ${testRun.id}`,
+                  "This test run",
+                ),
+            { variant },
+          );
           return;
         }
         enqueueSnackbar(DECIDED[decision].text, {

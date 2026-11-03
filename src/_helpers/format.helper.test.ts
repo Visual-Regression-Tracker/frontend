@@ -1,4 +1,9 @@
-import { formatDateTime, partialFailureText, pluralize } from "./format.helper";
+import {
+  failureVariant,
+  formatDateTime,
+  partialFailureText,
+  pluralize,
+} from "./format.helper";
 
 describe("formatDateTime", () => {
   it.each([
@@ -46,5 +51,22 @@ describe("partialFailureText", () => {
         "2 test runs",
       ),
     ).toBe("Approved 1 of 2 test runs. 1 failed: X");
+  });
+});
+
+describe("failureVariant", () => {
+  it("warns about runs the backend refused", () => {
+    expect(
+      failureVariant([{ message: "Test run a is already approved" }]),
+    ).toBe("warning");
+  });
+
+  it("reports an error when the server broke off on any run", () => {
+    expect(
+      failureVariant([
+        { message: "Test run a is already approved" },
+        { message: "Internal error" },
+      ]),
+    ).toBe("error");
   });
 });

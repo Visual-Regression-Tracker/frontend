@@ -324,6 +324,21 @@ describe("BulkOperation", () => {
       expect(onProcessed).toHaveBeenCalledWith([NEW_RUN.id, UNRESOLVED_RUN.id]);
     });
 
+    it("shows the failures as an error when the server broke off", async () => {
+      vi.spyOn(testRunService, "approveBulk").mockResolvedValue({
+        succeeded: [NEW_RUN.id],
+        failed: [{ id: UNRESOLVED_RUN.id, message: "Internal error" }],
+      });
+      const { user } = renderBulkOperation();
+
+      await user.click(actionButton(APPROVE));
+      await confirm(user);
+
+      expect(
+        await toastOf("Approved 1 of 2 test runs. 1 failed: Internal error"),
+      ).toHaveClass("notistack-MuiContent-error");
+    });
+
     it("drops the whole selection when the server answers with an empty body", async () => {
       vi.stubGlobal(
         "fetch",
