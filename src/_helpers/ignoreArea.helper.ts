@@ -1,5 +1,8 @@
 import { IgnoreArea } from "../types/ignoreArea";
 
+export const parseIgnoreAreas = (json: string): IgnoreArea[] =>
+  JSON.parse(json) as IgnoreArea[];
+
 type Box = Pick<IgnoreArea, "x" | "y" | "width" | "height">;
 
 // crypto.randomUUID exists only in secure contexts, and VRT is often served over plain HTTP

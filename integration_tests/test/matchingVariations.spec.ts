@@ -167,12 +167,8 @@ test("approves the matching variations", async ({ openProjectPage, page }) => {
   ]);
 
   expect(
-    postData<string[]>(request).sort((a: string, b: string) =>
-      a.localeCompare(b),
-    ),
-  ).toEqual(
-    [german.id, french.id].sort((a: string, b: string) => a.localeCompare(b)),
-  );
+    postData<string[]>(request).sort((a, b) => a.localeCompare(b)),
+  ).toEqual([german.id, french.id].sort((a, b) => a.localeCompare(b)));
   await expect(notification.message).toHaveText("Approved 2 variations");
   await expect(details.variations).toBeHidden();
 });
@@ -211,13 +207,9 @@ test("approves a variation that did not match once it is ticked", async ({
   ]);
 
   expect(
-    postData<string[]>(request).sort((a: string, b: string) =>
-      a.localeCompare(b),
-    ),
+    postData<string[]>(request).sort((a, b) => a.localeCompare(b)),
   ).toEqual(
-    [german.id, french.id, spanish.id].sort((a: string, b: string) =>
-      a.localeCompare(b),
-    ),
+    [german.id, french.id, spanish.id].sort((a, b) => a.localeCompare(b)),
   );
 });
 
@@ -270,12 +262,8 @@ test("rejects the matching variations", async ({ openProjectPage, page }) => {
   ]);
 
   expect(
-    postData<string[]>(request).sort((a: string, b: string) =>
-      a.localeCompare(b),
-    ),
-  ).toEqual(
-    [german.id, french.id].sort((a: string, b: string) => a.localeCompare(b)),
-  );
+    postData<string[]>(request).sort((a, b) => a.localeCompare(b)),
+  ).toEqual([german.id, french.id].sort((a, b) => a.localeCompare(b)));
   await expect(notification.message).toHaveText("Rejected 2 variations");
   await expect(details.variations).toBeHidden();
 });

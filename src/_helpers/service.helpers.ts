@@ -22,6 +22,11 @@ export function authHeader(): Record<string, string> {
   return token ? { Authorization: "Bearer " + token } : {};
 }
 
+// callers show the reason itself as the snackbar message, so it stays a string, not an Error
+export const rejectWithMessage = (message: unknown): Promise<never> =>
+  // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
+  Promise.reject(message);
+
 function messageOf(data: unknown): unknown {
   return typeof data === "object" && data !== null && "message" in data
     ? data.message
@@ -53,8 +58,7 @@ export function handleResponse<T>(response: Response): Promise<T> {
         (response.ok ? "Unexpected response from the server" : "") ||
         response.statusText;
 
-      // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors -- callers show the reason itself as the snackbar message
-      return Promise.reject(error);
+      return rejectWithMessage(error);
     }
 
     return Promise.resolve(data as T);

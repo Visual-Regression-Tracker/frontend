@@ -4,7 +4,7 @@ import userEvent from "@testing-library/user-event";
 import { CurrentSearch } from "../../_test/location";
 import type { MockInstance } from "vitest";
 import { actAsync } from "../../_test/act";
-import { rejectWithMessage } from "../../_test/reject";
+import { rejectWithMessage } from "../../_helpers/service.helpers";
 import { renderWithProviders } from "../../_test/render";
 import { selectProject, useProjectDispatch } from "../../contexts";
 import { buildsService } from "../../services";

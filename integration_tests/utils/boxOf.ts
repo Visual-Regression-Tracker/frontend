@@ -1,7 +1,5 @@
 import type { Locator } from "@playwright/test";
+import { defined } from "./defined";
 
-export const boxOf = async (locator: Locator) => {
-  const box = await locator.boundingBox();
-  if (!box) throw new Error(`${locator.toString()} has no bounding box`);
-  return box;
-};
+export const boxOf = async (locator: Locator) =>
+  defined(await locator.boundingBox(), `${locator.toString()} bounding box`);

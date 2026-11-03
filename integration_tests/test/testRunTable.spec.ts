@@ -41,8 +41,8 @@ const OK = runsOf(TestStatus.ok, "Search", 4);
 // served in reverse, so that the table order is the table's own doing
 const ALL_RUNS = [...UNRESOLVED, ...NEW, ...APPROVED, ...OK].reverse();
 
-const UNRESOLVED_IN_TABLE_ORDER = UNRESOLVED.map((run) => run.id).sort(
-  (a: string, b: string) => a.localeCompare(b),
+const UNRESOLVED_IN_TABLE_ORDER = UNRESOLVED.map((run) => run.id).sort((a, b) =>
+  a.localeCompare(b),
 );
 
 test.beforeEach(async ({ page }) => {
@@ -213,9 +213,7 @@ test("ticks every filtered run across the pages with the header checkbox", async
   ]);
 
   expect(
-    postData<string[]>(request).sort((a: string, b: string) =>
-      a.localeCompare(b),
-    ),
+    postData<string[]>(request).sort((a, b) => a.localeCompare(b)),
   ).toEqual(UNRESOLVED_IN_TABLE_ORDER);
   await expect(notification.message).toHaveText(
     `${UNRESOLVED.length} test runs approved.`,
@@ -241,9 +239,7 @@ test("undoes a bulk approval from its toast", async ({
   ]);
 
   expect(
-    postData<string[]>(request).sort((a: string, b: string) =>
-      a.localeCompare(b),
-    ),
+    postData<string[]>(request).sort((a, b) => a.localeCompare(b)),
   ).toEqual([UNRESOLVED[0].id, UNRESOLVED[1].id]);
   await expect(notification.toast("2 test runs restored.")).toBeVisible();
 });

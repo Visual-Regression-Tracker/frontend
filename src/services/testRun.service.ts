@@ -1,5 +1,9 @@
 import { TestRun } from "../types";
-import { handleResponse, authHeader } from "../_helpers/service.helpers";
+import {
+  handleResponse,
+  authHeader,
+  rejectWithMessage,
+} from "../_helpers/service.helpers";
 import { API_URL } from "../_config/env.config";
 import { UpdateIgnoreAreaDto } from "../types/ignoreArea";
 
@@ -87,10 +91,7 @@ function approveBulk(
 // the backend answers per run, and a refusal comes back in a successful answer
 function rejectIfRefused(id: string, result: BulkResult): Promise<void> {
   const refusal = result.failed.find((failure) => failure.id === id);
-  return refusal
-    ? // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors -- callers show the reason itself as the snackbar message
-      Promise.reject(refusal.message)
-    : Promise.resolve();
+  return refusal ? rejectWithMessage(refusal.message) : Promise.resolve();
 }
 
 function approveOne(id: string, merge: boolean): Promise<void> {

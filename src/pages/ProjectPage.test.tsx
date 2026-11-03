@@ -12,6 +12,7 @@ import { Build, TestRun, TestStatus } from "../types";
 import { BuildStatus } from "../types/buildStatus";
 import ProjectPage from "./ProjectPage";
 import { CurrentSearch, currentSearch } from "../_test/location";
+import { detailsFrom } from "../_test/detailsFrom";
 
 // the dialog's canvas needs a native module jsdom does not have
 vi.mock("../components/TestDetailsDialog/DrawArea", () => ({
@@ -90,13 +91,9 @@ const renderProjectPage = async ({
   });
   vi.spyOn(buildsService, "getDetails").mockResolvedValue(OPEN_BUILD);
   vi.spyOn(testRunService, "getList").mockResolvedValue(testRuns);
-  vi.spyOn(testRunService, "getDetails").mockImplementation((id) => {
-    const found = testRuns.find((item) => item.id === id);
-
-    return found
-      ? Promise.resolve(found)
-      : Promise.reject(new Error(`no run ${id}`));
-  });
+  vi.spyOn(testRunService, "getDetails").mockImplementation(
+    detailsFrom(testRuns),
+  );
 
   const socket = createFakeSocket();
   const result = renderWithProviders(

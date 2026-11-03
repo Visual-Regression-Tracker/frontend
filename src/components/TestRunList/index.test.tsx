@@ -21,12 +21,15 @@ import { TestDetailsDialog } from "../TestDetailsDialog";
 import TestRunList from "./index";
 import { NO_FAILURES } from "../../_test/bulkResult";
 import { CurrentSearch } from "../../_test/location";
+import { detailsFrom } from "../../_test/detailsFrom";
 
 // Konva needs the native canvas package, which jsdom has not got
 vi.mock(
   "../TestDetailsDialog/DrawArea",
   () => import("../../_test/FakeDrawArea"),
 );
+
+const build = (id: string) => ({ id, ciBuildId: `ci-${id}` }) as Build;
 
 const RUNS_BY_BUILD = {
   "build-a": [run({ id: "a1", buildId: "build-a", name: "Screen A" })],
@@ -66,7 +69,7 @@ const actionButton = (label: string): HTMLButtonElement => {
 describe("TestRunList", () => {
   beforeEach(() => {
     vi.spyOn(buildsService, "getDetails").mockImplementation((id) =>
-      Promise.resolve({ id, ciBuildId: `ci-${id}` } as Build),
+      Promise.resolve(build(id)),
     );
     vi.spyOn(testRunService, "getList").mockImplementation((buildId) =>
       Promise.resolve(
@@ -136,7 +139,7 @@ type User = ReturnType<typeof renderWithProviders>["user"];
 
 const renderList = (runs: TestRun[], extra: ReactNode = null) => {
   vi.spyOn(buildsService, "getDetails").mockImplementation((id) =>
-    Promise.resolve({ id, ciBuildId: `ci-${id}` } as Build),
+    Promise.resolve(build(id)),
   );
   vi.spyOn(testRunService, "getList").mockResolvedValue(runs);
 
@@ -411,13 +414,9 @@ describe("TestRunList and the details dialog", () => {
   const O1 = run({ id: "o1", name: "O1", status: TestStatus.ok });
 
   it("keeps the arrow order while the dialog is open when a run is approved elsewhere", async () => {
-    vi.spyOn(testRunService, "getDetails").mockImplementation((id) => {
-      const found = [U1, U2, U3, O1].find((item) => item.id === id);
-      if (!found) {
-        return Promise.reject(new Error(`no run ${id}`));
-      }
-      return Promise.resolve(found);
-    });
+    vi.spyOn(testRunService, "getDetails").mockImplementation(
+      detailsFrom([U1, U2, U3, O1]),
+    );
     const { user } = renderList(
       [U1, U2, U3, O1],
       <>
@@ -440,7 +439,7 @@ describe("TestRunList and the details dialog", () => {
 
   it("walks the table's order when the run was opened by a link", async () => {
     vi.spyOn(buildsService, "getDetails").mockImplementation((id) =>
-      Promise.resolve({ id, ciBuildId: `ci-${id}` } as Build),
+      Promise.resolve(build(id)),
     );
     // the API's order differs from the table's (needs attention first, by name)
     vi.spyOn(testRunService, "getList").mockResolvedValue([O1, U2, U1]);

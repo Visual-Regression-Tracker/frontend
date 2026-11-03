@@ -74,15 +74,11 @@ const BuildList = () => {
     searchQuery,
     take,
   });
-  if (
+  const listChanged =
     listedFor.selectedProjectId !== selectedProjectId ||
-    listedFor.searchQuery !== searchQuery ||
-    listedFor.take !== take
-  ) {
-    if (
-      listedFor.selectedProjectId !== selectedProjectId ||
-      listedFor.searchQuery !== searchQuery
-    ) {
+    listedFor.searchQuery !== searchQuery;
+  if (listChanged || listedFor.take !== take) {
+    if (listChanged) {
       setSelectedIds([]);
     }
     setPaginationPage(1);

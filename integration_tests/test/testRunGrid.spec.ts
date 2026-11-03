@@ -161,13 +161,9 @@ test("selects every run in a group from its card", async ({
   );
   // the sort ties on the shared name: what matters is one request for the whole group
   expect(
-    approved.map((ids) =>
-      [...ids].sort((a: string, b: string) => a.localeCompare(b)),
-    ),
+    approved.map((ids) => [...ids].sort((a, b) => a.localeCompare(b))),
   ).toEqual([
-    [VARIATION_DE.id, VARIATION_EN.id].sort((a: string, b: string) =>
-      a.localeCompare(b),
-    ),
+    [VARIATION_DE.id, VARIATION_EN.id].sort((a, b) => a.localeCompare(b)),
   ]);
 });
 
@@ -576,13 +572,9 @@ test("selects a whole group from a table row", async ({
     "2 test runs approved.",
   );
   expect(
-    approved.map((ids) =>
-      [...ids].sort((a: string, b: string) => a.localeCompare(b)),
-    ),
+    approved.map((ids) => [...ids].sort((a, b) => a.localeCompare(b))),
   ).toEqual([
-    [VARIATION_DE.id, VARIATION_EN.id].sort((a: string, b: string) =>
-      a.localeCompare(b),
-    ),
+    [VARIATION_DE.id, VARIATION_EN.id].sort((a, b) => a.localeCompare(b)),
   ]);
 });
 

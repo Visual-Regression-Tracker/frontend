@@ -29,6 +29,7 @@ import {
 } from "./MatchingVariationsDialog";
 import { allSucceeded } from "../../_test/bulkResult";
 import { CurrentSearch, currentSearch } from "../../_test/location";
+import { detailsFrom } from "../../_test/detailsFrom";
 
 // Konva needs the native canvas package under Node, which jsdom has not got
 vi.mock("./DrawArea", () => import("../../_test/FakeDrawArea"));
@@ -731,11 +732,9 @@ describe("MatchingVariationsDialog", () => {
         ...TEST_BUILD_UNRESOLVED,
         id: buildId,
       });
-      vi.spyOn(testRunService, "getDetails").mockImplementation((id) => {
-        const found = testRuns.find((item) => item.id === id);
-        if (!found) return Promise.reject(new Error(`no run ${id}`));
-        return Promise.resolve(found);
-      });
+      vi.spyOn(testRunService, "getDetails").mockImplementation(
+        detailsFrom(testRuns),
+      );
       vi.spyOn(testRunService, "getMatchingVariations").mockResolvedValue({
         variations: [run("v1", buildId)],
         skipped: [],
