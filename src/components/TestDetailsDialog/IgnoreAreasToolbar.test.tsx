@@ -42,6 +42,20 @@ describe("IgnoreAreasToolbar", () => {
       expect(save()).toBeEnabled();
     });
 
+    it("names every button for what it does", () => {
+      renderToolbar();
+
+      for (const name of [
+        "Draw area",
+        "Delete selected area",
+        "Clear all areas",
+        "Apply selected area to build",
+        "Save areas",
+      ]) {
+        expect(screen.getByRole("button", { name })).toBeEnabled();
+      }
+    });
+
     it("only clears when there are areas but none is selected", () => {
       renderToolbar({ hasSelection: false });
 

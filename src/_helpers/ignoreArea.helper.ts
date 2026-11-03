@@ -50,12 +50,8 @@ export const clampToImage = <T extends Box>(
 export const invertIgnoreArea = (
   imageWidth: number,
   imageHeight: number,
-  ignoreArea?: IgnoreArea,
+  ignoreArea: IgnoreArea,
 ): IgnoreArea[] => {
-  if (!ignoreArea) {
-    return [];
-  }
-
   const ignoreArea1 = {
     x: 0,
     y: 0,

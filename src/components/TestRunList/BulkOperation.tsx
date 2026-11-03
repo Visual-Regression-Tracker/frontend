@@ -37,37 +37,31 @@ const isReview = (action: BulkAction | null): boolean =>
 const ACTION_BUTTONS: {
   action: BulkAction;
   tooltip: string;
-  ariaLabel: string;
   icon: ReactNode;
 }[] = [
   {
     action: "Approve",
     tooltip: "Approve unresolved in selected",
-    ariaLabel: "approve",
     icon: <ThumbUp data-testid="ThumbUpIcon" />,
   },
   {
     action: "Reject",
     tooltip: "Reject unresolved in selected",
-    ariaLabel: "reject",
     icon: <ThumbDown />,
   },
   {
     action: "Download",
     tooltip: "Download images for selected",
-    ariaLabel: "download",
     icon: <CloudDownload data-testid="CloudDownloadIcon" />,
   },
   {
     action: "Delete",
     tooltip: "Delete selected",
-    ariaLabel: "delete",
     icon: <Delete data-testid="DeleteIcon" />,
   },
   {
     action: "Clear",
     tooltip: "Clear ignore areas for selected",
-    ariaLabel: "clear ignore area",
     icon: <LayersClear data-testid="LayersClearIcon" />,
   },
 ];
@@ -223,25 +217,20 @@ export const BulkOperation = ({
 
   return (
     <Fragment>
-      {ACTION_BUTTONS.map(
-        ({ action: buttonAction, tooltip, ariaLabel, icon }) => (
-          <Tooltip
-            key={buttonAction}
-            title={`${tooltip} ${selectionNoun}.`}
-            aria-label={ariaLabel}
-          >
-            <span>
-              <IconButton
-                disabled={selectedIds.length === 0}
-                onClick={() => setAction(buttonAction)}
-                size="large"
-              >
-                {icon}
-              </IconButton>
-            </span>
-          </Tooltip>
-        ),
-      )}
+      {ACTION_BUTTONS.map(({ action: buttonAction, tooltip, icon }) => (
+        <Tooltip key={buttonAction} title={`${tooltip} ${selectionNoun}.`}>
+          <span>
+            <IconButton
+              aria-label={`${tooltip} ${selectionNoun}`}
+              disabled={selectedIds.length === 0}
+              onClick={() => setAction(buttonAction)}
+              size="large"
+            >
+              {icon}
+            </IconButton>
+          </span>
+        </Tooltip>
+      ))}
       <BaseModal
         open={action !== null}
         title={title}

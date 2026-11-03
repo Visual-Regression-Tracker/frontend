@@ -733,6 +733,22 @@ test("filters by a tag clicked on a card", async ({
   await expect(projectPage.testRunFilters.selectedTag("de_DE")).toBeVisible();
 });
 
+test("keeps every run that has the clicked tag, in whichever field", async ({
+  openProjectPage,
+  page,
+}) => {
+  const onDevice = { ...TEST_UNRESOLVED, id: "on-device", device: "Chrome" };
+  const inBrowser = { ...TEST_RUN_NEW, id: "in-browser", browser: "Chrome" };
+  await mockGetTestRuns(page, build.id, [onDevice, inBrowser, TEST_RUN_OK]);
+  const projectPage = await openProjectPage(project.id, build.id);
+  await projectPage.testRunList.gridViewToggle.click();
+  await expect(projectPage.testRunList.cards).toHaveCount(3);
+
+  await projectPage.testRunList.clickTag("Chrome");
+
+  await expect(projectPage.testRunList.cards).toHaveCount(2);
+});
+
 test("clears the tag when it is clicked a second time", async ({
   openProjectPage,
   page,
