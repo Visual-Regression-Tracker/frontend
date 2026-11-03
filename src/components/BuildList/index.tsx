@@ -68,6 +68,27 @@ const BuildList = () => {
   // answers for a project or search the reviewer has left must not fill the list
   const pageRequest = useRef(0);
 
+  // a new project or search starts on the first page, with nothing selected
+  const [listedFor, setListedFor] = useState({
+    selectedProjectId,
+    searchQuery,
+    take,
+  });
+  if (
+    listedFor.selectedProjectId !== selectedProjectId ||
+    listedFor.searchQuery !== searchQuery ||
+    listedFor.take !== take
+  ) {
+    if (
+      listedFor.selectedProjectId !== selectedProjectId ||
+      listedFor.searchQuery !== searchQuery
+    ) {
+      setSelectedIds([]);
+    }
+    setPaginationPage(1);
+    setListedFor({ selectedProjectId, searchQuery, take });
+  }
+
   const allSelected = total > 0 && selectedIds.length === total;
   const someSelected = selectedIds.length > 0 && !allSelected;
 
@@ -133,7 +154,6 @@ const BuildList = () => {
 
   const loadPage = useCallback(
     (page: number, aroundBuildId?: string) => {
-      setPaginationPage(page);
       listRef.current?.scrollTo({ top: 0 });
       const request = ++pageRequest.current;
       if (selectedProjectId) {
@@ -172,8 +192,13 @@ const BuildList = () => {
     [buildDispatch, enqueueSnackbar, selectedProjectId, take, searchQuery],
   );
 
+  const showPage = (page: number) => {
+    setPaginationPage(page);
+    loadPage(page);
+  };
+
   const reloadAfterDeleting = (count: number) =>
-    loadPage(
+    showPage(
       Math.min(paginationPage, Math.max(1, Math.ceil((total - count) / take))),
     );
 
@@ -185,7 +210,6 @@ const BuildList = () => {
   useEffect(() => {
     // drops an in-flight select all so its ids cannot land on another search
     selectAllRequest.current += 1;
-    setSelectedIds([]);
   }, [selectedProjectId, searchQuery]);
 
   useEffect(() => {
@@ -321,7 +345,7 @@ const BuildList = () => {
               defaultPage={1}
               page={paginationPage}
               count={Math.ceil(total / take)}
-              onChange={(_event, page) => loadPage(page)}
+              onChange={(_event, page) => showPage(page)}
             />
           </Grid>
         </Grid>

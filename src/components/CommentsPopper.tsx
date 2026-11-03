@@ -2,7 +2,6 @@ import {
   type ChangeEvent,
   Fragment,
   type KeyboardEvent,
-  useEffect,
   useState,
 } from "react";
 import { Button, Popper, Fade, Paper, TextField, Badge } from "@mui/material";
@@ -23,9 +22,12 @@ export const CommentsPopper = ({ text, onSave }: IProps) => {
     popupId: "commentPopper",
   });
 
-  const [comment, setComment] = useState("");
-
-  useEffect(() => setComment(text || ""), [text]);
+  const [comment, setComment] = useState(text || "");
+  const [shownText, setShownText] = useState(text);
+  if (text !== shownText) {
+    setShownText(text);
+    setComment(text || "");
+  }
 
   // Escape closes the box, not the dialog around it
   const closeOnEscape = (event: KeyboardEvent) => {

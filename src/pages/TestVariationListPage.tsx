@@ -45,9 +45,21 @@ const TestVariationListPage = () => {
 
   useHelpSteps(TEST_VARIATION_LIST_PAGE);
 
-  useEffect(() => {
+  // a changed filter starts again on the first page
+  const filters = JSON.stringify([
+    query,
+    os,
+    device,
+    browser,
+    viewport,
+    customTags,
+    branchName,
+  ]);
+  const [pagedFilters, setPagedFilters] = useState(filters);
+  if (pagedFilters !== filters) {
+    setPagedFilters(filters);
     setPage(1);
-  }, [query, os, device, browser, viewport, customTags, branchName]);
+  }
 
   useEffect(() => {
     if (projectId) {

@@ -25,23 +25,26 @@ const Rectangle = ({ shapeProps, isSelected, onSelect, onChange }: IProps) => {
   };
 
   useEffect(() => {
-    if (isSelected && shapeRef.current) {
-      trRef.current!.nodes([shapeRef.current]);
-      trRef.current!.getLayer()!.batchDraw();
+    const shape = shapeRef.current;
+    const transformer = trRef.current;
+    if (isSelected && shape && transformer) {
+      transformer.nodes([shape]);
+      transformer.getLayer()?.batchDraw();
     }
   }, [isSelected]);
 
+  const editProps: KonvaNodeEvents & Konva.ShapeConfig = {};
   if (rectProps.draggable && onChange) {
-    rectProps.dragBoundFunc = (pos) => {
+    editProps.dragBoundFunc = (pos) => {
       const component = shapeRef.current;
+      const layerSize = component?.getLayer()?.getSize();
 
-      if (!component) {
+      if (!component || !layerSize) {
         return pos;
       }
 
       const rectWidth = component.width() * component.scaleX();
       const rectHeight = component.height() * component.scaleY();
-      const layerSize = component.getLayer()!.getSize();
 
       return {
         x: pos.x > 0 ? Math.min(layerSize.width - rectWidth, pos.x) : 0,
@@ -49,14 +52,14 @@ const Rectangle = ({ shapeProps, isSelected, onSelect, onChange }: IProps) => {
       };
     };
 
-    rectProps.onDragEnd = (e) =>
+    editProps.onDragEnd = (e) =>
       onChange({
         ...shapeProps,
         x: e.target.x(),
         y: e.target.y(),
       });
 
-    rectProps.onTransformEnd = () => {
+    editProps.onTransformEnd = () => {
       // the transformer scales the node; fold the scale into width and height
       const node = shapeRef.current;
 
@@ -78,23 +81,23 @@ const Rectangle = ({ shapeProps, isSelected, onSelect, onChange }: IProps) => {
       });
     };
 
-    rectProps.onMouseOver = () => {
+    editProps.onMouseOver = () => {
       document.body.style.cursor = "pointer";
     };
-    rectProps.onMouseDown = () => {
+    editProps.onMouseDown = () => {
       document.body.style.cursor = "grabbing";
     };
-    rectProps.onMouseUp = () => {
+    editProps.onMouseUp = () => {
       document.body.style.cursor = "grab";
     };
-    rectProps.onMouseLeave = () => {
+    editProps.onMouseLeave = () => {
       document.body.style.cursor = "default";
     };
   }
 
   return (
     <Fragment>
-      <Rect ref={shapeRef} {...rectProps} />
+      <Rect ref={shapeRef} {...rectProps} {...editProps} />
       {isSelected && (
         <Transformer
           ref={trRef}

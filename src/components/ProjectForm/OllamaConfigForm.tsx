@@ -29,12 +29,11 @@ export const OllamaConfigForm = () => {
   const { enqueueSnackbar } = useSnackbar();
   const [config, updateConfig] = useConfigHook<OllamaVlmConfig>();
   const [models, setModels] = useState<OllamaModel[]>([]);
-  const [loading, setLoading] = useState<boolean>(false);
+  const [loading, setLoading] = useState(true);
   const modelError = useFieldValidation(config.model || "", MODEL_RULES);
 
   useEffect(() => {
     let isMounted = true;
-    setLoading(true);
     ollamaService
       .listModels()
       .then((fetchedModels) => {

@@ -219,6 +219,7 @@ export const DrawArea = ({
 
     // starts inside the border: the smallest area at the edge would cross it
     const newArea: IgnoreArea = {
+      // eslint-disable-next-line react-hooks/purity -- runs in the Stage's mouse-down handler, which the compiler cannot tell from render
       id: Date.now().toString(),
       x: Math.min(event.evt.offsetX, stageWidth - MIN_RECT_SIDE_PIXEL),
       y: Math.min(event.evt.offsetY, stageHeight - MIN_RECT_SIDE_PIXEL),

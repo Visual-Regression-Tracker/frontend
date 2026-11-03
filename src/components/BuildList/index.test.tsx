@@ -497,6 +497,50 @@ describe("BuildList", () => {
       });
     });
 
+    describe("a new search", () => {
+      beforeEach(() => {
+        getList.mockImplementation((_project, _take, skip, query) =>
+          Promise.resolve(
+            skip === 0 || query
+              ? pageOf(builds(1, 10), 11)
+              : pageOf([makeBuild(11)], 11, 10),
+          ),
+        );
+      });
+
+      it("starts on the first page", async () => {
+        const { user } = renderWithProviders(<OpenProject />);
+        await screen.findByText(label(1));
+        await user.click(screen.getByRole("button", { name: "Go to page 2" }));
+        expect(await screen.findByText(label(11))).toBeVisible();
+
+        await user.type(searchInput(), "ci-{Enter}");
+
+        expect(
+          await screen.findByRole("button", { name: "page 1" }),
+        ).toHaveAttribute("aria-current", "page");
+        expect(
+          screen.getByRole("button", { name: "Go to page 2" }),
+        ).toBeVisible();
+      });
+
+      it("clears the selection", async () => {
+        const { user } = renderWithProviders(<OpenProject />);
+        await screen.findByText(label(1));
+        await user.click(rowCheckboxes()[0]);
+        expect(
+          screen.getByRole("checkbox", { name: "Clear selection" }),
+        ).toBeInTheDocument();
+
+        await user.type(searchInput(), "ci-{Enter}");
+
+        expect(
+          await screen.findByRole("checkbox", { name: "Select all (11)" }),
+        ).not.toBeChecked();
+        expect(rowCheckboxes().every((box) => !box.checked)).toBe(true);
+      });
+    });
+
     describe("select all", () => {
       const TOTAL = 25;
       // the list shows a page of ten; only the select-all request takes all

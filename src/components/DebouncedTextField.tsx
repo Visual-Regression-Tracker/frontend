@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { TextField, TextFieldProps } from "@mui/material";
 
 type Props = Omit<TextFieldProps, "value" | "onChange"> & {
@@ -22,7 +22,9 @@ export const DebouncedTextField = ({
   const timer = useRef<ReturnType<typeof setTimeout>>(undefined);
   const pending = useRef<string | undefined>(undefined);
   const onChangeRef = useRef(onChange);
-  onChangeRef.current = onChange;
+  useLayoutEffect(() => {
+    onChangeRef.current = onChange;
+  });
 
   const cancel = () => {
     clearTimeout(timer.current);
