@@ -3,7 +3,7 @@ import { type ChangeEvent, Fragment } from "react";
 import { TextValidator } from "react-material-ui-form-validator";
 import { OdiffConfig } from "../../types/imageComparison";
 import { useConfigHook } from "./useConfigHook";
-import { BlurAmplitudeFields } from "./BlurAmplitudeFields";
+import { RenderingNoiseField } from "./RenderingNoiseField";
 
 export const OdiffConfigForm = () => {
   const [config, updateConfig] = useConfigHook<OdiffConfig>();
@@ -72,7 +72,7 @@ export const OdiffConfigForm = () => {
           updateConfig("threshold", parseFloat(value));
         }}
       />
-      <BlurAmplitudeFields />
+      <RenderingNoiseField />
     </Fragment>
   );
 };

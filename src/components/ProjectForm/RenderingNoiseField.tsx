@@ -1,13 +1,11 @@
 import { FormControlLabel, FormHelperText, Switch } from "@mui/material";
 import { Fragment } from "react";
 import { useDinov2Status } from "../../_helpers/useDinov2Status";
-import { DEFAULT_DINOV2_THRESHOLD } from "../../constants";
-import { BlurAmplitudeConfig, Dinov2Status } from "../../types";
+import { Dinov2Status, RenderingNoiseConfig } from "../../types";
 import { Tooltip } from "../Tooltip";
 import { useConfigHook } from "./useConfigHook";
-import { ThresholdField } from "./ThresholdField";
 
-// with no service the backend sends every run the filter would pass to review
+// without the service the backend leaves the filter off
 const statusNote = (
   status: Dinov2Status | undefined,
   checked: boolean,
@@ -18,7 +16,7 @@ const statusNote = (
   if (!status.configured) {
     return checked
       ? {
-          text: "This server has no DINOv2 service: every run the filter would pass goes to review. Turn the check off or set DINOV2_URL on the backend.",
+          text: "This server has no DINOv2 service, so the filter passes nothing. Turn it off or set DINOV2_URL on the backend.",
           error: true,
         }
       : {
@@ -34,47 +32,39 @@ const statusNote = (
   return undefined;
 };
 
-export const Dinov2Fields = () => {
-  const [config, updateConfig] = useConfigHook<BlurAmplitudeConfig>();
+export const RenderingNoiseField = () => {
+  const [config, updateConfig] = useConfigHook<RenderingNoiseConfig>();
   const status = useDinov2Status();
-  const checked = config.dinov2Check === true;
+  const checked = config.ignoreRenderingNoise === true;
   const note = statusNote(status, checked);
 
   return (
     <Fragment>
-      <Tooltip title="Before a run passes as rendering noise, the DINOv2 service compares what the two screenshots show. Catches faint changes of content the blur misses, such as a missing light icon.">
+      <Tooltip title="Pass a failing comparison when its change, blurred by about a pixel, is no stronger than anti-aliasing and the DINOv2 service sees no change of content.">
         <FormControlLabel
-          label="Check with DINOv2"
+          label="Ignore rendering noise"
+          // a project saved with the filter on can still turn it off
           disabled={!checked && !status?.configured}
           control={
             <Switch
               checked={checked}
-              onChange={(_event, value) => updateConfig("dinov2Check", value)}
+              onChange={(_event, value) =>
+                updateConfig("ignoreRenderingNoise", value)
+              }
               color="primary"
-              name="dinov2Check"
+              name="ignoreRenderingNoise"
             />
           }
         />
       </Tooltip>
       {note && (
         <FormHelperText
-          id="dinov2Status"
+          id="renderingNoiseStatus"
           error={note.error}
           sx={note.warning ? { color: "warning.main" } : undefined}
         >
           {note.text}
         </FormHelperText>
-      )}
-      {checked && (
-        <ThresholdField
-          field="dinov2Threshold"
-          label="DINOv2 threshold"
-          helperText="Content change (0.01-2) still treated as noise. Lower is stricter."
-          min={0.01}
-          // cosine distance: 2 is as different as two patches get
-          max={2}
-          fallback={DEFAULT_DINOV2_THRESHOLD}
-        />
       )}
     </Fragment>
   );

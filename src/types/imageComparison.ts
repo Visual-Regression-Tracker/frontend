@@ -8,24 +8,18 @@ export enum ImageComparison {
   vlm = "vlm",
 }
 
-/** Rendering-noise filter keys; the backend strips them before the library sees its options. */
-export interface BlurAmplitudeConfig {
-  blurAmplitudeFilter?: boolean;
-  // 0-128; absent means the backend default
-  blurAmplitudeThreshold?: number | null;
-  // a second look by the DINOv2 service before the filter passes a run
-  dinov2Check?: boolean;
-  // (0, 2]; absent means the backend default
-  dinov2Threshold?: number | null;
+/** Rendering-noise filter key; the backend strips it before the library sees its options. */
+export interface RenderingNoiseConfig {
+  ignoreRenderingNoise?: boolean;
 }
 
-export interface PixelmatchConfig extends BlurAmplitudeConfig {
+export interface PixelmatchConfig extends RenderingNoiseConfig {
   allowDiffDimensions?: boolean;
   ignoreAntialiasing: boolean;
   threshold: number;
 }
 
-export interface LooksSameConfig extends BlurAmplitudeConfig {
+export interface LooksSameConfig extends RenderingNoiseConfig {
   strict?: boolean;
   /** ΔE value treated as error in non-strict mode. */
   tolerance?: number;
@@ -35,7 +29,7 @@ export interface LooksSameConfig extends BlurAmplitudeConfig {
   allowDiffDimensions?: boolean;
 }
 
-export interface OdiffConfig extends BlurAmplitudeConfig {
+export interface OdiffConfig extends RenderingNoiseConfig {
   outputDiffMask: boolean;
   failOnLayoutDiff: boolean;
   /** Color difference threshold, 0 to 1; lower is more precise. */
@@ -43,7 +37,7 @@ export interface OdiffConfig extends BlurAmplitudeConfig {
   antialiasing: boolean;
 }
 
-interface BaseVlmConfig extends BlurAmplitudeConfig {
+interface BaseVlmConfig extends RenderingNoiseConfig {
   prompt: string;
 
   /** Response randomness, 0.0-1.0; lower is more consistent. @default 0.1 */

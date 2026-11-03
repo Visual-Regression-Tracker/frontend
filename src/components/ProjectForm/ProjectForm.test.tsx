@@ -557,14 +557,23 @@ describe("ProjectForm", () => {
 
   describe("rendering-noise filter", () => {
     const noiseFilter = () => screen.getByLabelText("Ignore rendering noise");
-    const noiseThreshold = () =>
-      screen.queryByLabelText(/Rendering noise threshold/);
+    const withFilter = (config: object = {}): ProjectDto => ({
+      ...PROJECT,
+      imageComparisonConfig: JSON.stringify({
+        ...JSON.parse(PIXELMATCH_DEFAULT_CONFIG),
+        ignoreRenderingNoise: true,
+        ...config,
+      }),
+    });
+    const serverHas = (configured: boolean, available = configured) =>
+      vi
+        .spyOn(dinov2Service, "getStatus")
+        .mockResolvedValue({ configured, available });
 
-    it("is off by default and offers no threshold", async () => {
+    it("is off by default", async () => {
       await renderForm();
 
       expect(noiseFilter()).not.toBeChecked();
-      expect(noiseThreshold()).not.toBeInTheDocument();
     });
 
     it.each(ALL_ENGINES)("is offered for %s", async (engine) => {
@@ -575,69 +584,32 @@ describe("ProjectForm", () => {
       expect(noiseFilter()).toBeInTheDocument();
     });
 
-    it("writes the switch and the threshold into the config json", async () => {
+    it("writes the switch into the config json", async () => {
       const { user } = await renderForm();
 
+      await waitFor(() => expect(noiseFilter()).toBeEnabled());
       await user.click(noiseFilter());
-      expect(noiseThreshold()).toHaveValue(80);
-      await replaceNumber(user, noiseThreshold() as HTMLElement, "60.5");
 
       expect(editConfig()).toEqual({
         ...JSON.parse(PIXELMATCH_DEFAULT_CONFIG),
-        blurAmplitudeFilter: true,
-        blurAmplitudeThreshold: 60.5,
+        ignoreRenderingNoise: true,
       });
     });
 
     it("shows the filter of a project saved with it on", async () => {
-      await renderForm({
-        ...PROJECT,
-        imageComparisonConfig: JSON.stringify({
-          ...JSON.parse(PIXELMATCH_DEFAULT_CONFIG),
-          blurAmplitudeFilter: true,
-          blurAmplitudeThreshold: 42,
-        }),
-      });
+      await renderForm(withFilter());
 
       expect(noiseFilter()).toBeChecked();
-      expect(noiseThreshold()).toHaveValue(42);
-    });
-
-    it("does not submit a fraction above 128", async () => {
-      const onSubmit = vi.fn();
-      const { user } = await renderForm(PROJECT, onSubmit);
-
-      await user.click(noiseFilter());
-      await replaceNumber(user, noiseThreshold() as HTMLElement, "128.5");
-      await user.click(screen.getByTestId("submitButton"));
-
-      expect(await screen.findByText("Enter at most 128")).toBeInTheDocument();
-      expect(onSubmit).not.toHaveBeenCalled();
-    });
-
-    it("does not submit a threshold above 128", async () => {
-      const onSubmit = vi.fn();
-      const { user } = await renderForm(PROJECT, onSubmit);
-
-      await user.click(noiseFilter());
-      await replaceNumber(user, noiseThreshold() as HTMLElement, "129");
-      await user.click(screen.getByTestId("submitButton"));
-
-      expect(await screen.findByText("Enter at most 128")).toBeInTheDocument();
-      expect(onSubmit).not.toHaveBeenCalled();
     });
 
     it("keeps the filter when the library changes", async () => {
-      const { user } = await renderForm();
+      const { user } = await renderForm(withFilter());
 
-      await user.click(noiseFilter());
-      await replaceNumber(user, noiseThreshold() as HTMLElement, "50");
       await switchEngine(user, ImageComparison.odiff);
 
       expect(editConfig()).toEqual({
         ...JSON.parse(ODIFF_DEFAULT_CONFIG),
-        blurAmplitudeFilter: true,
-        blurAmplitudeThreshold: 50,
+        ignoreRenderingNoise: true,
       });
     });
 
@@ -647,7 +619,7 @@ describe("ProjectForm", () => {
         imageComparison: ImageComparison.vlm,
         imageComparisonConfig: JSON.stringify({
           ...JSON.parse(VLM_DEFAULT_CONFIG),
-          blurAmplitudeFilter: true,
+          ignoreRenderingNoise: true,
         }),
       });
 
@@ -655,133 +627,69 @@ describe("ProjectForm", () => {
 
       expect(editConfig()).toMatchObject({
         provider: "gemini",
-        blurAmplitudeFilter: true,
+        ignoreRenderingNoise: true,
       });
-    });
-  });
-
-  describe("DINOv2 check", () => {
-    const dinov2Check = () => screen.getByLabelText("Check with DINOv2");
-    const dinov2Threshold = () => screen.queryByLabelText(/DINOv2 threshold/);
-    const withFilter = (config: object = {}): ProjectDto => ({
-      ...PROJECT,
-      imageComparisonConfig: JSON.stringify({
-        ...JSON.parse(PIXELMATCH_DEFAULT_CONFIG),
-        blurAmplitudeFilter: true,
-        ...config,
-      }),
-    });
-    const serverHas = (configured: boolean, available = configured) =>
-      vi
-        .spyOn(dinov2Service, "getStatus")
-        .mockResolvedValue({ configured, available });
-
-    it("is offered only while the noise filter is on", async () => {
-      const { user } = await renderForm();
-
-      expect(screen.queryByLabelText("Check with DINOv2")).toBeNull();
-      await user.click(screen.getByLabelText("Ignore rendering noise"));
-
-      expect(dinov2Check()).not.toBeChecked();
-      expect(dinov2Threshold()).toBeNull();
-    });
-
-    it("writes the switch and the threshold into the config json", async () => {
-      const { user } = await renderForm(withFilter());
-
-      await waitFor(() => expect(dinov2Check()).toBeEnabled());
-      await user.click(dinov2Check());
-      expect(dinov2Threshold()).toHaveValue(0.15);
-      await replaceNumber(user, dinov2Threshold() as HTMLElement, "0.2");
-
-      expect(editConfig()).toEqual({
-        ...JSON.parse(PIXELMATCH_DEFAULT_CONFIG),
-        blurAmplitudeFilter: true,
-        dinov2Check: true,
-        dinov2Threshold: 0.2,
-      });
-    });
-
-    it("shows the check of a project saved with it on", async () => {
-      await renderForm(withFilter({ dinov2Check: true, dinov2Threshold: 0.3 }));
-
-      expect(dinov2Check()).toBeChecked();
-      expect(dinov2Threshold()).toHaveValue(0.3);
     });
 
     it("cannot be turned on where the server has no DINOv2 service", async () => {
       serverHas(false);
-      await renderForm(withFilter());
+      await renderForm();
 
       expect(
         await screen.findByText(
           "Not available: this server has no DINOv2 service (DINOV2_URL).",
         ),
       ).toBeVisible();
-      expect(dinov2Check()).toBeDisabled();
+      expect(noiseFilter()).toBeDisabled();
     });
 
     it("cannot be turned on when the server does not say", async () => {
       vi.spyOn(dinov2Service, "getStatus").mockRejectedValue("Not Found");
-      await renderForm(withFilter());
+      await renderForm();
 
-      await waitFor(() => expect(dinov2Check()).toBeDisabled());
+      await waitFor(() => expect(noiseFilter()).toBeDisabled());
     });
 
     it("lets a project saved with it on turn it off where there is no service", async () => {
       serverHas(false);
-      const { user } = await renderForm(withFilter({ dinov2Check: true }));
+      const { user } = await renderForm(withFilter());
 
       expect(
-        await screen.findByText(
-          /every run the filter would pass goes to review/,
-        ),
+        await screen.findByText(/so the filter passes nothing/),
       ).toBeVisible();
-      await user.click(dinov2Check());
+      await user.click(noiseFilter());
 
-      expect(editConfig().dinov2Check).toBe(false);
-      expect(dinov2Check()).toBeDisabled();
+      expect(editConfig().ignoreRenderingNoise).toBe(false);
+      expect(noiseFilter()).toBeDisabled();
+    });
+
+    it("saves other changes of a project saved with it on where there is no service", async () => {
+      serverHas(false);
+      const onSubmit = vi.fn();
+      const { user } = await renderForm(withFilter(), onSubmit);
+
+      await user.clear(screen.getByLabelText(/^Project name/));
+      await user.type(screen.getByLabelText(/^Project name/), "Mobile app");
+      await user.click(screen.getByTestId("submitButton"));
+
+      await waitFor(() => expect(onSubmit).toHaveBeenCalledTimes(1));
+      const saved: ProjectDto = onSubmit.mock.calls[0][0];
+      expect(saved.name).toBe("Mobile app");
+      expect(JSON.parse(saved.imageComparisonConfig)).toMatchObject({
+        ignoreRenderingNoise: true,
+      });
     });
 
     it("warns when the service is set up but not answering", async () => {
       serverHas(true, false);
-      await renderForm(withFilter());
+      await renderForm();
 
       expect(
         await screen.findByText(
           /The DINOv2 service is not answering right now/,
         ),
       ).toBeVisible();
-      expect(dinov2Check()).toBeEnabled();
-    });
-
-    it("does not submit a threshold above 2", async () => {
-      const onSubmit = vi.fn();
-      const { user } = await renderForm(
-        withFilter({ dinov2Check: true }),
-        onSubmit,
-      );
-
-      await replaceNumber(user, dinov2Threshold() as HTMLElement, "2.5");
-      await user.click(screen.getByTestId("submitButton"));
-
-      expect(await screen.findByText("Enter at most 2")).toBeInTheDocument();
-      expect(onSubmit).not.toHaveBeenCalled();
-    });
-
-    it("keeps the check when the library changes", async () => {
-      const { user } = await renderForm(
-        withFilter({ dinov2Check: true, dinov2Threshold: 0.25 }),
-      );
-
-      await switchEngine(user, ImageComparison.lookSame);
-
-      expect(editConfig()).toEqual({
-        ...JSON.parse(LOOKSSAME_DEFAULT_CONFIG),
-        blurAmplitudeFilter: true,
-        dinov2Check: true,
-        dinov2Threshold: 0.25,
-      });
+      expect(noiseFilter()).toBeEnabled();
     });
   });
 
@@ -1364,97 +1272,6 @@ describe("ProjectForm", () => {
           expected: 0.7,
           sent: sentKey("temperature"),
           emptied: { blockedByBrowser: true },
-        },
-      ]);
-    });
-
-    describe("rendering-noise threshold", () => {
-      const noise = { blurAmplitudeFilter: true };
-      numberFieldTests([
-        {
-          name: "rendering-noise threshold with pixelmatch",
-          initial: withConfig(
-            ImageComparison.pixelmatch,
-            withDefaults(PIXELMATCH_DEFAULT_CONFIG, noise),
-          ),
-          label: /^Rendering noise threshold/,
-          inRange: "60.5",
-          expected: 60.5,
-          sent: sentKey("blurAmplitudeThreshold"),
-          emptied: { refusedWith: "Enter a threshold" },
-        },
-        {
-          name: "rendering-noise threshold with odiff",
-          initial: withConfig(
-            ImageComparison.odiff,
-            withDefaults(ODIFF_DEFAULT_CONFIG, noise),
-          ),
-          label: /^Rendering noise threshold/,
-          inRange: "60.5",
-          expected: 60.5,
-          sent: sentKey("blurAmplitudeThreshold"),
-          emptied: { refusedWith: "Enter a threshold" },
-        },
-        {
-          name: "rendering-noise threshold with looksame",
-          initial: withConfig(
-            ImageComparison.lookSame,
-            withDefaults(LOOKSSAME_DEFAULT_CONFIG, noise),
-          ),
-          label: /^Rendering noise threshold/,
-          inRange: "60.5",
-          expected: 60.5,
-          sent: sentKey("blurAmplitudeThreshold"),
-          emptied: { refusedWith: "Enter a threshold" },
-        },
-        {
-          name: "rendering-noise threshold with the VLM",
-          initial: withConfig(
-            ImageComparison.vlm,
-            withDefaults(VLM_DEFAULT_CONFIG, {
-              model: "gemma3:12b",
-              ...noise,
-            }),
-          ),
-          label: /^Rendering noise threshold/,
-          inRange: "60.5",
-          expected: 60.5,
-          sent: sentKey("blurAmplitudeThreshold"),
-          emptied: { refusedWith: "Enter a threshold" },
-        },
-      ]);
-    });
-
-    describe("DINOv2 threshold", () => {
-      const withCheck = {
-        blurAmplitudeFilter: true,
-        dinov2Check: true,
-        dinov2Threshold: 0.3,
-      };
-      numberFieldTests([
-        {
-          name: "DINOv2 threshold with pixelmatch",
-          initial: withConfig(
-            ImageComparison.pixelmatch,
-            withDefaults(PIXELMATCH_DEFAULT_CONFIG, withCheck),
-          ),
-          label: /^DINOv2 threshold/,
-          inRange: "0.2",
-          expected: 0.2,
-          sent: sentKey("dinov2Threshold"),
-          emptied: { refusedWith: "Enter a threshold" },
-        },
-        {
-          name: "DINOv2 threshold with looksame",
-          initial: withConfig(
-            ImageComparison.lookSame,
-            withDefaults(LOOKSSAME_DEFAULT_CONFIG, withCheck),
-          ),
-          label: /^DINOv2 threshold/,
-          inRange: "0.2",
-          expected: 0.2,
-          sent: sentKey("dinov2Threshold"),
-          emptied: { refusedWith: "Enter a threshold" },
         },
       ]);
     });

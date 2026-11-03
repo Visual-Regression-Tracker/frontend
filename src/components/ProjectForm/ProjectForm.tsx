@@ -20,7 +20,7 @@ import { LooksSameConfigForm } from "./LooksSameConfigForm";
 import { OdiffConfigForm } from "./OdiffConfigForm";
 import { PixelmatchConfigForm } from "./PixelmatchConfigForm";
 import { VlmConfigForm } from "./VlmConfigForm";
-import { getDefaultConfig, withBlurAmplitudeOf } from "./utils";
+import { getDefaultConfig, withRenderingNoiseOf } from "./utils";
 import { WholeNumberField } from "./WholeNumberField";
 
 const configFormFor = (imageComparison: ImageComparison) => {
@@ -165,7 +165,7 @@ export const ProjectForm = () => {
               imageComparison,
               imageComparisonConfig:
                 project.imageComparison !== imageComparison
-                  ? withBlurAmplitudeOf(
+                  ? withRenderingNoiseOf(
                       getDefaultConfig(imageComparison),
                       project.imageComparisonConfig,
                     )

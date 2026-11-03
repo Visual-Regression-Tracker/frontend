@@ -19,12 +19,7 @@ export class ProjectListPage extends BasePage {
   });
 
   noiseFilter = this.dialog.getByLabel("Ignore rendering noise");
-  noiseThreshold = this.dialog.locator("#blurAmplitudeThreshold");
-  dinov2Check = this.dialog.getByLabel("Check with DINOv2");
-  // scroll to this, not the input: the input overhangs the switch and shifts it
-  dinov2CheckLabel = this.dialog.getByText("Check with DINOv2");
-  dinov2Threshold = this.dialog.locator("#dinov2Threshold");
-  dinov2Status = this.dialog.locator("#dinov2Status");
+  noiseStatus = this.dialog.locator("#renderingNoiseStatus");
 
   vlmProvider = this.dialog.getByRole("combobox", { name: "VLM Provider" });
   ollamaModel = this.dialog.getByRole("combobox", { name: "Model" });
