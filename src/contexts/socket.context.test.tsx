@@ -26,9 +26,12 @@ import {
 } from "../_test/test.data.helper";
 
 const API = vi.hoisted(() => "http://api.test");
+const env: { apiUrl?: string } = vi.hoisted(() => ({ apiUrl: API }));
 
 vi.mock("../_config/env.config", () => ({
-  API_URL: API,
+  get API_URL() {
+    return env.apiUrl;
+  },
   STATIC_URL: undefined,
   VRT_VERSION: "test",
   OIDC_AUTO_REDIRECT: false,
@@ -191,6 +194,7 @@ const renderSocket = async ({
 describe("SocketProvider", () => {
   beforeEach(() => {
     handlers.clear();
+    env.apiUrl = API;
     fakeSocket.connected = true;
     // clearMocks keeps implementations, but a restored spy would not
     vi.mocked(socketIOClient).mockReturnValue(fakeSocket as never);
@@ -215,6 +219,21 @@ describe("SocketProvider", () => {
       "testRun_deleted",
       "testRun_updated",
     ]);
+  });
+
+  it("does not connect without an API URL", async () => {
+    env.apiUrl = undefined;
+
+    renderWithProviders(
+      <SocketProvider>
+        <Session />
+      </SocketProvider>,
+      { user: TEST_USER },
+    );
+
+    await act(async () => {});
+
+    expect(socketIOClient).not.toHaveBeenCalled();
   });
 
   describe("authentication", () => {

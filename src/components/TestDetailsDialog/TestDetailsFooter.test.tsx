@@ -122,6 +122,14 @@ describe("TestDetailsFooter", () => {
       expect(props.onNext).not.toHaveBeenCalled();
     });
 
+    it("starts unticked when the stored choice is corrupt", () => {
+      localStorage.setItem(GO_TO_NEXT_KEY, "{oops");
+
+      renderFooter();
+
+      expect(goToNext()).not.toBeChecked();
+    });
+
     it("remembers the choice both ways", async () => {
       const { user } = renderFooter();
 
