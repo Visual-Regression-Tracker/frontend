@@ -1,4 +1,4 @@
-import { type FormEvent, useState } from "react";
+import { type SubmitEvent, useState } from "react";
 import {
   Autocomplete,
   Grid,
@@ -32,7 +32,7 @@ export const TestVariationMergeForm = ({ projectId, items }: IProps) => {
   const [fromBranch, setFromBranch] = useState("");
   const [toBranch, setToBranch] = useState("");
 
-  const handleSubmit = (event: FormEvent) => {
+  const handleSubmit = (event: SubmitEvent<HTMLFormElement>) => {
     event.preventDefault();
     testVariationService
       .merge(projectId, fromBranch, toBranch)
