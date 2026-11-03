@@ -13,8 +13,9 @@ import {
   MenuItem,
   FormHelperText,
   SelectChangeEvent,
+  TextField,
 } from "@mui/material";
-import { TextValidator } from "react-material-ui-form-validator";
+import { useFieldValidation } from "../ValidatedForm";
 import { useSnackbar } from "notistack";
 import { OllamaVlmConfig } from "../../types/imageComparison";
 import { Tooltip } from "../Tooltip";
@@ -22,12 +23,14 @@ import { useConfigHook } from "./useConfigHook";
 import { ollamaService } from "../../services";
 import { OllamaModel } from "../../types";
 import { VlmSharedFields } from "./VlmSharedFields";
+import { MODEL_RULES } from "./rules";
 
 export const OllamaConfigForm = () => {
   const { enqueueSnackbar } = useSnackbar();
   const [config, updateConfig] = useConfigHook<OllamaVlmConfig>();
   const [models, setModels] = useState<OllamaModel[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
+  const modelError = useFieldValidation(config.model || "", MODEL_RULES);
 
   useEffect(() => {
     let isMounted = true;
@@ -56,20 +59,22 @@ export const OllamaConfigForm = () => {
     };
   }, [enqueueSnackbar]);
 
-  const hasError = useMemo(() => {
+  const notListed = useMemo(() => {
     if (!config.model || loading || models.length === 0) {
       return false;
     }
     return !models.some((m) => m.name === config.model);
   }, [config.model, models, loading]);
 
+  const selectHelp =
+    modelError ??
+    (notListed ? "Selected model is not in the available list." : undefined);
+
   const renderModelField = () => {
     if (loading || models.length === 0) {
       return (
-        <TextValidator
+        <TextField
           name="model"
-          validators={["required"]}
-          errorMessages={["Model is required"]}
           margin="dense"
           id="model"
           label="Model"
@@ -78,10 +83,12 @@ export const OllamaConfigForm = () => {
           required
           value={config.model || ""}
           disabled={loading}
+          error={modelError !== undefined}
           helperText={
-            loading
+            modelError ??
+            (loading
               ? "Loading models..."
-              : "No models available. Enter model name manually."
+              : "No models available. Enter model name manually.")
           }
           onChange={(event: ChangeEvent<HTMLInputElement>) => {
             updateConfig("model", event.target.value);
@@ -95,7 +102,7 @@ export const OllamaConfigForm = () => {
         variant="standard"
         fullWidth
         margin="dense"
-        error={hasError}
+        error={selectHelp !== undefined}
         required
       >
         <InputLabel id="model-select-label">Model</InputLabel>
@@ -114,11 +121,7 @@ export const OllamaConfigForm = () => {
             </MenuItem>
           ))}
         </Select>
-        {hasError && (
-          <FormHelperText>
-            Selected model is not in the available list.
-          </FormHelperText>
-        )}
+        {selectHelp && <FormHelperText>{selectHelp}</FormHelperText>}
       </FormControl>
     );
   };
@@ -126,16 +129,7 @@ export const OllamaConfigForm = () => {
   return (
     <Fragment>
       <Tooltip title="The Ollama model name to use for image comparison. Models are fetched from the Ollama service.">
-        <div>
-          {renderModelField()}
-          <TextValidator
-            name="model"
-            validators={["required"]}
-            errorMessages={["Model is required"]}
-            value={config.model || ""}
-            style={{ display: "none" }}
-          />
-        </div>
+        <div>{renderModelField()}</div>
       </Tooltip>
       {loading && <LinearProgress />}
       <VlmSharedFields />

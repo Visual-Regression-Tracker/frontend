@@ -5,7 +5,7 @@ import {
   Autocomplete,
   Chip,
   Paper,
-  AutocompleteRenderGetTagProps,
+  AutocompleteRenderValueGetItemProps,
 } from "@mui/material";
 import { DebouncedTextField } from "../DebouncedTextField";
 import { TestStatus } from "../../types";
@@ -24,11 +24,11 @@ interface IProps {
 
 const renderChips = <T extends string>(
   value: T[],
-  getTagProps: AutocompleteRenderGetTagProps,
+  getItemProps: AutocompleteRenderValueGetItemProps<true>,
 ) =>
   value.map((option, index) => (
     <Chip
-      {...getTagProps({ index })}
+      {...getItemProps({ index })}
       key={option}
       size="small"
       label={option}
@@ -63,7 +63,7 @@ const TestRunFilters = ({
             minLength={2}
             debounceTimeout={300}
             onChange={onNameChange}
-            inputProps={{ "data-testid": "testRunNameFilter" }}
+            slotProps={{ htmlInput: { "data-testid": "testRunNameFilter" } }}
           />
         </Grid>
         <Grid size="grow">
@@ -76,7 +76,7 @@ const TestRunFilters = ({
             options={tagOptions}
             value={tags}
             onChange={(_event, value) => onTagsChange(value)}
-            renderTags={renderChips}
+            renderValue={renderChips}
             renderInput={(params) => (
               <TextField
                 {...params}
@@ -96,7 +96,7 @@ const TestRunFilters = ({
             options={statusOptions}
             value={statuses}
             onChange={(_event, value) => onStatusesChange(value)}
-            renderTags={renderChips}
+            renderValue={renderChips}
             renderInput={(params) => (
               <TextField
                 {...params}

@@ -31,6 +31,13 @@ const tagsOf = (t: TestVariation) =>
     (tag): tag is string => !!tag,
   );
 
+const tagsSx = { flexWrap: "wrap", gap: 0.5, mt: 1 } as const;
+const branchSx = {
+  alignItems: "center",
+  color: "text.secondary",
+  mt: 1.5,
+} as const;
+
 const TestVariationList = ({ items, onDeleteClick }: IProps) => {
   const [selectedItem, setSelectedItem] = useState<TestVariation | null>(null);
 
@@ -84,19 +91,13 @@ const TestVariationList = ({ items, onDeleteClick }: IProps) => {
                 {t.name}
               </Typography>
               {tagsOf(t).length > 0 && (
-                <Stack direction="row" flexWrap="wrap" gap={0.5} mt={1}>
+                <Stack direction="row" sx={tagsSx}>
                   {tagsOf(t).map((tag) => (
                     <Chip key={tag} size="small" label={tag} />
                   ))}
                 </Stack>
               )}
-              <Stack
-                direction="row"
-                alignItems="center"
-                spacing={0.75}
-                color="text.secondary"
-                mt={1.5}
-              >
+              <Stack direction="row" spacing={0.75} sx={branchSx}>
                 <AccountTree sx={{ fontSize: 16 }} />
                 <Typography variant="caption" noWrap>
                   {t.branchName}
@@ -112,7 +113,7 @@ const TestVariationList = ({ items, onDeleteClick }: IProps) => {
               >
                 History
               </Button>
-              <Box flex={1} />
+              <Box sx={{ flex: 1 }} />
               <Tooltip title="Delete variation">
                 <IconButton onClick={() => setSelectedItem(t)}>
                   <Delete data-testid="DeleteIcon" fontSize="small" />

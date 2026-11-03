@@ -50,6 +50,14 @@ const clipToLines = (lines: number) => ({
   overflowWrap: "anywhere",
 });
 
+const CARD_NAME = { fontWeight: 600, width: "100%", ...clampToLines(2) };
+
+const CARD_TAGS = {
+  color: "text.secondary",
+  width: "100%",
+  ...clipToLines(2),
+};
+
 export const TestRunGrid = ({
   groups,
   selectedIdSet,
@@ -72,11 +80,13 @@ export const TestRunGrid = ({
   onOpen: (id: string) => void;
 }) => (
   <Box
-    display="grid"
-    gridTemplateColumns={`repeat(auto-fill, minmax(${CARD_SIZE_BY_DENSITY[density].width}px, 1fr))`}
-    gap={1}
-    padding={2}
     data-testid="testRunGrid"
+    sx={{
+      display: "grid",
+      gridTemplateColumns: `repeat(auto-fill, minmax(${CARD_SIZE_BY_DENSITY[density].width}px, 1fr))`,
+      gap: 1,
+      padding: 2,
+    }}
   >
     {groups.map(({ key, runs, representative }) => {
       const ids = runs.map((run) => run.id);
@@ -86,7 +96,7 @@ export const TestRunGrid = ({
       return (
         <Card key={key} variant="outlined" data-testid="testRunCard">
           {/* outside the action area, so a tick does not open the dialog */}
-          <Box position="relative">
+          <Box sx={{ position: "relative" }}>
             <CardActionArea onClick={() => onOpen(representative.id)}>
               <Box
                 component="img"
@@ -112,7 +122,6 @@ export const TestRunGrid = ({
               checked={selectedCount === ids.length}
               indeterminate={selectedCount > 0 && selectedCount < ids.length}
               onChange={() => onToggleGroup(ids)}
-              inputProps={{ "aria-label": `Select ${representative.name}` }}
               sx={{
                 position: "absolute",
                 top: 2,
@@ -120,6 +129,9 @@ export const TestRunGrid = ({
                 padding: 0.5,
                 backgroundColor: "rgba(255, 255, 255, 0.85)",
                 "&:hover": { backgroundColor: "rgba(255, 255, 255, 0.95)" },
+              }}
+              slotProps={{
+                input: { "aria-label": `Select ${representative.name}` },
               }}
             />
             {runs.length > 1 && (
@@ -152,11 +164,9 @@ export const TestRunGrid = ({
           >
             <Typography
               variant="body2"
-              fontWeight={600}
-              width="100%"
-              sx={clampToLines(2)}
               title={representative.name}
               data-testid="cardName"
+              sx={CARD_NAME}
             >
               {representative.name}
             </Typography>
@@ -167,11 +177,9 @@ export const TestRunGrid = ({
             {/* buttons so the keyboard reaches them */}
             <Typography
               variant="caption"
-              color="text.secondary"
-              width="100%"
-              sx={clipToLines(2)}
               title={tags.join(" · ")}
               data-testid="cardTags"
+              sx={CARD_TAGS}
             >
               {tags.map((tag, index) => {
                 const filteringBy = activeTags.includes(tag);

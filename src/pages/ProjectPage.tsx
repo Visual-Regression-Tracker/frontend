@@ -55,7 +55,10 @@ const ProjectPage = () => {
               }}
             />
           </Box>
-          <Box flex={1} minHeight={0} id={LOCATOR_PROJECT_PAGE_BUILD_LIST}>
+          <Box
+            id={LOCATOR_PROJECT_PAGE_BUILD_LIST}
+            sx={{ flex: 1, minHeight: 0 }}
+          >
             <BuildList />
           </Box>
         </Grid>
@@ -64,7 +67,10 @@ const ProjectPage = () => {
           sx={{ height: "100%", display: "flex", flexDirection: "column" }}
         >
           <BuildDetails />
-          <Box flex={1} minHeight={0} id={LOCATOR_PROJECT_PAGE_TEST_RUN_LIST}>
+          <Box
+            id={LOCATOR_PROJECT_PAGE_TEST_RUN_LIST}
+            sx={{ flex: 1, minHeight: 0 }}
+          >
             <TestRunList />
           </Box>
         </Grid>

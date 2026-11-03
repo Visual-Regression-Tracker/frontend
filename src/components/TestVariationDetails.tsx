@@ -20,7 +20,10 @@ export const TestVariationDetails = ({ testVariation }: IProps) => {
       <Typography variant="h4" component="h1" sx={{ overflowWrap: "anywhere" }}>
         {testVariation.name}
       </Typography>
-      <Stack direction="row" flexWrap="wrap" alignItems="center" gap={1} mt={1}>
+      <Stack
+        direction="row"
+        sx={{ flexWrap: "wrap", alignItems: "center", gap: 1, mt: 1 }}
+      >
         <Chip
           size="small"
           variant="outlined"

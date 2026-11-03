@@ -1,9 +1,10 @@
 import { FormControlLabel, Switch } from "@mui/material";
 import { type ChangeEvent, Fragment } from "react";
-import { TextValidator } from "react-material-ui-form-validator";
+import { ValidatedTextField } from "../ValidatedForm";
 import { OdiffConfig } from "../../types/imageComparison";
 import { useConfigHook } from "./useConfigHook";
 import { RenderingNoiseField } from "./RenderingNoiseField";
+import { UNIT_RANGE, UNIT_RANGE_RULES } from "./rules";
 
 export const OdiffConfigForm = () => {
   const [config, updateConfig] = useConfigHook<OdiffConfig>();
@@ -49,16 +50,11 @@ export const OdiffConfigForm = () => {
           />
         }
       />
-      <TextValidator
+      <ValidatedTextField
         name="threshold"
-        validators={["minNumber:0", "maxNumber:1"]}
-        errorMessages={["Enter greater than 0", "Enter less than 1"]}
-        InputProps={{
-          inputProps: {
-            min: 0,
-            max: 1,
-            step: 0.001,
-          },
+        rules={UNIT_RANGE_RULES}
+        slotProps={{
+          htmlInput: { ...UNIT_RANGE, step: 0.001 },
         }}
         margin="dense"
         id="threshold"

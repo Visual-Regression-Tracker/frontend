@@ -8,7 +8,8 @@ import {
   SelectChangeEvent,
 } from "@mui/material";
 import { type ChangeEvent, Fragment, useMemo } from "react";
-import { TextValidator } from "react-material-ui-form-validator";
+import { ValidatedTextField } from "../ValidatedForm";
+import { AT_LEAST_TWO_CHARACTERS } from "../../_helpers/validation";
 import {
   useProjectState,
   useProjectDispatch,
@@ -56,10 +57,9 @@ export const ProjectForm = () => {
 
   return (
     <Fragment>
-      <TextValidator
+      <ValidatedTextField
         name="projectName"
-        validators={["minStringLength:2"]}
-        errorMessages={["Enter at least two characters."]}
+        rules={AT_LEAST_TWO_CHARACTERS}
         margin="dense"
         id="name"
         label="Project name"
@@ -71,10 +71,9 @@ export const ProjectForm = () => {
           update({ name: event.target.value })
         }
       />
-      <TextValidator
+      <ValidatedTextField
         name="mainBranchName"
-        validators={["minStringLength:2"]}
-        errorMessages={["Enter at least two characters."]}
+        rules={AT_LEAST_TWO_CHARACTERS}
         margin="dense"
         id="branchName"
         label="Main branch"

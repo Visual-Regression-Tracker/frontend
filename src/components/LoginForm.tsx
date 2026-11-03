@@ -1,4 +1,4 @@
-import { useState, useEffect, FormEvent } from "react";
+import { useState, useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import {
   Button,
@@ -11,9 +11,9 @@ import {
 import { useUserDispatch, login } from "../contexts";
 import { LOCATOR_LOGIN_FORM, routes } from "../constants";
 import { useSnackbar } from "notistack";
-import { ValidatorForm } from "react-material-ui-form-validator";
 import PasswordField from "./PasswordField";
 import EmailField from "./EmailField";
+import { ValidatedForm } from "./ValidatedForm";
 import { usersService } from "../services";
 import { OIDC_AUTO_REDIRECT } from "../_config/env.config";
 import { useOidcEnabled } from "../_helpers/useOidcEnabled";
@@ -48,8 +48,7 @@ const LoginForm = () => {
     }
   }, [oidcEnabled, isOidcCallback]);
 
-  const handleSubmit = (event: FormEvent) => {
-    event.preventDefault();
+  const handleSubmit = () => {
     login(dispatch, email, password)
       .then(() => {
         const locationState = location.state as { from: string } | null;
@@ -86,7 +85,7 @@ const LoginForm = () => {
   }
 
   return (
-    <ValidatorForm onSubmit={handleSubmit} instantValidate>
+    <ValidatedForm onSubmit={handleSubmit}>
       <Card>
         <CardContent id={LOCATOR_LOGIN_FORM} sx={{ p: 3 }}>
           <Stack spacing={2}>
@@ -108,17 +107,19 @@ const LoginForm = () => {
       {registrationEnabled && (
         <Typography
           variant="body2"
-          color="text.secondary"
-          textAlign="center"
-          mt={2}
+          sx={{ color: "text.secondary", textAlign: "center", mt: 2 }}
         >
           New here?{" "}
-          <MuiLink component={Link} to={routes.REGISTER} fontWeight={600}>
+          <MuiLink
+            component={Link}
+            to={routes.REGISTER}
+            sx={{ fontWeight: 600 }}
+          >
             Create an account
           </MuiLink>
         </Typography>
       )}
-    </ValidatorForm>
+    </ValidatedForm>
   );
 };
 

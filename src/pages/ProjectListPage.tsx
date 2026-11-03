@@ -188,17 +188,19 @@ const ProjectsListPage = () => {
     <Container maxWidth="lg" sx={{ py: 4 }}>
       <Stack
         direction={{ xs: "column", sm: "row" }}
-        alignItems={{ xs: "flex-start", sm: "center" }}
-        justifyContent="space-between"
         spacing={2}
-        mb={3}
+        sx={{
+          alignItems: { xs: "flex-start", sm: "center" },
+          justifyContent: "space-between",
+          mb: 3,
+        }}
       >
         <Box>
           <Typography variant="h4" component="h1">
             Projects
           </Typography>
           {!loading && (
-            <Typography variant="body2" color="text.secondary">
+            <Typography variant="body2" sx={{ color: "text.secondary" }}>
               {`${projectList.length} ${pluralize(projectList.length, "project")}`}
             </Typography>
           )}
@@ -206,8 +208,10 @@ const ProjectsListPage = () => {
         <Stack
           direction="row"
           spacing={2}
-          alignItems="center"
-          width={{ xs: "100%", sm: "auto" }}
+          sx={{
+            alignItems: "center",
+            width: { xs: "100%", sm: "auto" },
+          }}
         >
           {projectList.length > 0 && (
             <ProjectSearchField value={query} onChange={setQuery} />

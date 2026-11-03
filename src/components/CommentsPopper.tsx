@@ -77,8 +77,10 @@ export const CommentsPopper = ({ text, onSave }: IProps) => {
                   onChange={(event: ChangeEvent<HTMLInputElement>) =>
                     setComment(event.target.value)
                   }
-                  inputProps={{
-                    "data-testid": "comment",
+                  slotProps={{
+                    htmlInput: {
+                      "data-testid": "comment",
+                    },
                   }}
                 />
                 <Button

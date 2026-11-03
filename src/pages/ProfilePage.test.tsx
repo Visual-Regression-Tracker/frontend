@@ -115,9 +115,7 @@ describe("ProfilePage", () => {
       await user.type(screen.getByTestId("email"), "not an email");
       await submitDetails(user);
 
-      expect(
-        await screen.findByText("Enter valid email address"),
-      ).toBeVisible();
+      expect(await screen.findByText("Enter a valid email.")).toBeVisible();
       expect(update).not.toHaveBeenCalled();
     });
 

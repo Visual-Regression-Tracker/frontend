@@ -1,9 +1,13 @@
 import { type ChangeEvent, Fragment } from "react";
 import { FormControlLabel, Switch } from "@mui/material";
-import { TextValidator } from "react-material-ui-form-validator";
+import { ValidatedTextField } from "../ValidatedForm";
+import { required } from "../../_helpers/validation";
 import { Tooltip } from "../Tooltip";
 import { VlmConfig } from "../../types/imageComparison";
 import { useConfigHook } from "./useConfigHook";
+import { UNIT_RANGE, UNIT_RANGE_RULES } from "./rules";
+
+const PROMPT_RULES = [required("Prompt is required")];
 
 const VlmPromptField = ({
   value,
@@ -15,10 +19,9 @@ const VlmPromptField = ({
   return (
     <Tooltip title="The prompt text that will be sent to the VLM to analyze image differences.">
       <div>
-        <TextValidator
+        <ValidatedTextField
           name="prompt"
-          validators={["required"]}
-          errorMessages={["Prompt is required"]}
+          rules={PROMPT_RULES}
           margin="dense"
           id="prompt"
           label="Prompt"
@@ -47,19 +50,11 @@ const VlmTemperatureField = ({
   return (
     <Tooltip title="Controls the randomness of the VLM response. Lower values (0-0.3) produce more consistent results, higher values (0.7-1) produce more creative responses.">
       <div>
-        <TextValidator
+        <ValidatedTextField
           name="temperature"
-          validators={["minNumber:0", "maxNumber:1"]}
-          errorMessages={[
-            "Enter greater than or equal to 0",
-            "Enter less than or equal to 1",
-          ]}
-          InputProps={{
-            inputProps: {
-              min: 0,
-              max: 1,
-              step: 0.01,
-            },
+          rules={UNIT_RANGE_RULES}
+          slotProps={{
+            htmlInput: { ...UNIT_RANGE, step: 0.01 },
           }}
           margin="dense"
           id="temperature"

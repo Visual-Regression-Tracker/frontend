@@ -28,8 +28,7 @@ export const ProjectSection = ({
         id={headingId}
         variant="subtitle2"
         component="h2"
-        color="text.secondary"
-        mb={1.5}
+        sx={{ color: "text.secondary", mb: 1.5 }}
       >
         {title}
       </Typography>

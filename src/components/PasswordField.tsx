@@ -1,13 +1,13 @@
 import {
   useState,
-  type ChangeEvent,
   type Dispatch,
   type MouseEvent,
   type SetStateAction,
 } from "react";
 import { IconButton, InputAdornment } from "@mui/material";
 import { Visibility, VisibilityOff } from "@mui/icons-material";
-import { TextValidator } from "react-material-ui-form-validator";
+import { AT_LEAST_TWO_CHARACTERS } from "../_helpers/validation";
+import { ValidatedTextField } from "./ValidatedForm";
 
 interface PasswordFieldProps {
   password: string;
@@ -28,38 +28,34 @@ const PasswordField = ({
     event.preventDefault();
   };
 
-  const errorForTwoChar = "Enter at least two characters.";
-
   return (
-    <TextValidator
-      validators={["minStringLength:2"]}
-      errorMessages={[errorForTwoChar]}
+    <ValidatedTextField
+      rules={AT_LEAST_TWO_CHARACTERS}
       id="password"
       name="password"
       value={password}
       label={label}
       type={showPassword ? "text" : "password"}
-      InputProps={{
-        endAdornment: (
-          <InputAdornment position="end">
-            <IconButton
-              aria-label="toggle password visibility"
-              onClick={handleClickShowPassword}
-              onMouseDown={handleMouseDownPassword}
-              edge="end"
-            >
-              {showPassword ? <VisibilityOff /> : <Visibility />}
-            </IconButton>
-          </InputAdornment>
-        ),
-      }}
       variant="outlined"
       required
       fullWidth
-      inputProps={{
-        onChange: (event: ChangeEvent<HTMLInputElement>) =>
-          setPassword(event.target.value),
-        "data-testid": "password",
+      onChange={(event) => setPassword(event.target.value)}
+      slotProps={{
+        input: {
+          endAdornment: (
+            <InputAdornment position="end">
+              <IconButton
+                aria-label="toggle password visibility"
+                onClick={handleClickShowPassword}
+                onMouseDown={handleMouseDownPassword}
+                edge="end"
+              >
+                {showPassword ? <VisibilityOff /> : <Visibility />}
+              </IconButton>
+            </InputAdornment>
+          ),
+        },
+        htmlInput: { "data-testid": "password" },
       }}
     />
   );

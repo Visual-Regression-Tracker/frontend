@@ -48,10 +48,13 @@ export const EmptyState = ({
     </Box>
     <Typography variant={dense ? "subtitle2" : "subtitle1"}>{title}</Typography>
     {description && (
-      <Typography variant="body2" color="text.secondary" maxWidth={420}>
+      <Typography
+        variant="body2"
+        sx={{ color: "text.secondary", maxWidth: 420 }}
+      >
         {description}
       </Typography>
     )}
-    {action && <Box mt={1}>{action}</Box>}
+    {action && <Box sx={{ mt: 1 }}>{action}</Box>}
   </Box>
 );

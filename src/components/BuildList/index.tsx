@@ -1,5 +1,4 @@
 import {
-  type ChangeEvent,
   Fragment,
   type MouseEvent,
   memo,
@@ -31,7 +30,8 @@ import {
   useProjectState,
 } from "../../contexts";
 import { useSnackbar } from "notistack";
-import { TextValidator } from "react-material-ui-form-validator";
+import { ValidatedTextField } from "../ValidatedForm";
+import { AT_LEAST_TWO_CHARACTERS } from "../../_helpers/validation";
 import { Build } from "../../types";
 import { BaseModal } from "../BaseModal";
 import { buildsService } from "../../services";
@@ -233,8 +233,8 @@ const BuildList = () => {
 
   return (
     <>
-      <Box height="91%" display="flex" flexDirection="column">
-        <Box padding={1} display="flex" alignItems="center">
+      <Box sx={{ height: "91%", display: "flex", flexDirection: "column" }}>
+        <Box sx={{ padding: 1, display: "flex", alignItems: "center" }}>
           {/* kept mounted so an empty search does not shift the search field */}
           <Tooltip title={selectAllLabel}>
             <span>
@@ -244,12 +244,14 @@ const BuildList = () => {
                 indeterminate={someSelected}
                 disabled={selectingAll || buildList.length === 0}
                 onChange={toggleSelectAll}
-                inputProps={{ "aria-label": selectAllLabel }}
                 data-testid="buildSelectAll"
+                slotProps={{
+                  input: { "aria-label": selectAllLabel },
+                }}
               />
             </span>
           </Tooltip>
-          <Box flexGrow={1}>
+          <Box sx={{ flexGrow: 1 }}>
             <DebouncedTextField
               size="small"
               variant="outlined"
@@ -259,7 +261,12 @@ const BuildList = () => {
               value={searchQuery}
               debounceTimeout={300}
               onChange={setSearchQuery}
-              inputProps={{ "data-testid": "buildSearch", autoComplete: "off" }}
+              slotProps={{
+                htmlInput: {
+                  "data-testid": "buildSearch",
+                  autoComplete: "off",
+                },
+              }}
             />
           </Box>
           {/* fades in place so picking a build does not resize the search field */}
@@ -279,10 +286,9 @@ const BuildList = () => {
           </Fade>
         </Box>
         <Box
-          flex={1}
-          overflow="auto"
           ref={listRef}
           data-testid="buildListScroll"
+          sx={{ flex: 1, overflow: "auto" }}
         >
           <List>
             {buildList.length === 0 ? (
@@ -307,7 +313,7 @@ const BuildList = () => {
           </List>
         </Box>
       </Box>
-      <Box height="9%">
+      <Box sx={{ height: "9%" }}>
         <Grid container justifyContent="center">
           <Grid>
             <Pagination
@@ -359,10 +365,9 @@ const BuildList = () => {
               <Typography>{`Edit the ci build id for build: #${
                 menuBuild.number || menuBuild.id
               }`}</Typography>
-              <TextValidator
+              <ValidatedTextField
                 name="newCiBuildId"
-                validators={["minStringLength:2"]}
-                errorMessages={["Enter at least two characters."]}
+                rules={AT_LEAST_TWO_CHARACTERS}
                 margin="dense"
                 id="name"
                 label="New CI Build Id"
@@ -370,11 +375,8 @@ const BuildList = () => {
                 fullWidth
                 required
                 value={newCiBuildId}
-                inputProps={{
-                  onChange: (event: ChangeEvent<HTMLInputElement>) =>
-                    setNewCiBuildId(event.target.value),
-                  "data-testid": "newCiBuildId",
-                }}
+                onChange={(event) => setNewCiBuildId(event.target.value)}
+                slotProps={{ htmlInput: { "data-testid": "newCiBuildId" } }}
               />
             </Fragment>
           }

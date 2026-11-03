@@ -1,9 +1,13 @@
 import { FormControlLabel, Switch } from "@mui/material";
 import { type ChangeEvent, Fragment } from "react";
-import { TextValidator } from "react-material-ui-form-validator";
+import { ValidatedTextField } from "../ValidatedForm";
 import { LooksSameConfig } from "../../types/imageComparison";
 import { useConfigHook } from "./useConfigHook";
 import { RenderingNoiseField } from "./RenderingNoiseField";
+import { atLeast } from "./rules";
+
+const LOWEST_TOLERANCE = 0;
+const TOLERANCE_RULES = [atLeast(LOWEST_TOLERANCE)];
 
 export const LooksSameConfigForm = () => {
   const [config, updateConfig] = useConfigHook<LooksSameConfig>();
@@ -21,15 +25,11 @@ export const LooksSameConfigForm = () => {
           />
         }
       />
-      <TextValidator
+      <ValidatedTextField
         name="tolerance"
-        validators={["minNumber:0"]}
-        errorMessages={["Enter greater than 0"]}
-        InputProps={{
-          inputProps: {
-            min: 0,
-            step: 0.001,
-          },
+        rules={TOLERANCE_RULES}
+        slotProps={{
+          htmlInput: { min: LOWEST_TOLERANCE, step: 0.001 },
         }}
         margin="dense"
         id="tolerance"
@@ -56,15 +56,11 @@ export const LooksSameConfigForm = () => {
           />
         }
       />
-      <TextValidator
+      <ValidatedTextField
         name="antialiasingTolerance"
-        validators={["minNumber:0"]}
-        errorMessages={["Enter greater than 0"]}
-        InputProps={{
-          inputProps: {
-            min: 0,
-            step: 0.001,
-          },
+        rules={TOLERANCE_RULES}
+        slotProps={{
+          htmlInput: { min: LOWEST_TOLERANCE, step: 0.001 },
         }}
         margin="dense"
         id="antialiasingTolerance"

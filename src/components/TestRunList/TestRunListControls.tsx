@@ -94,7 +94,7 @@ export const TestRunListControls = ({
   showDiff: boolean;
   onShowDiffChange: (showDiff: boolean) => void;
 }) => (
-  <Box display="flex" alignItems="center" gap={1}>
+  <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
     <ToggleButtonGroup
       exclusive
       size="small"

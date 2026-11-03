@@ -1,15 +1,17 @@
-import type { ChangeEvent } from "react";
-import { TextValidator } from "react-material-ui-form-validator";
+import { isEmail } from "../_helpers/validation";
+import { ValidatedTextField } from "./ValidatedForm";
+
+const EMAIL_RULES = [isEmail("Enter a valid email.")];
 
 interface EmailFieldProps {
-  value: string;
+  value: string | undefined;
   onChange: (value: string) => void;
+  disabled?: boolean;
 }
 
-const EmailField = ({ value, onChange }: EmailFieldProps) => (
-  <TextValidator
-    validators={["isEmail"]}
-    errorMessages={["Enter a valid email."]}
+const EmailField = ({ value, onChange, disabled }: EmailFieldProps) => (
+  <ValidatedTextField
+    rules={EMAIL_RULES}
     id="email"
     name="email"
     value={value}
@@ -18,11 +20,9 @@ const EmailField = ({ value, onChange }: EmailFieldProps) => (
     variant="outlined"
     required
     fullWidth
-    inputProps={{
-      onChange: (event: ChangeEvent<HTMLInputElement>) =>
-        onChange(event.target.value),
-      "data-testid": "email",
-    }}
+    disabled={disabled}
+    onChange={(event) => onChange(event.target.value)}
+    slotProps={{ htmlInput: { "data-testid": "email" } }}
   />
 );
 

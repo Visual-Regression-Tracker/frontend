@@ -25,12 +25,12 @@ export const AuthLayout = ({
     }}
   >
     <Box sx={{ width: "100%", maxWidth: 400 }}>
-      <Box textAlign="center" mb={3}>
+      <Box sx={{ textAlign: "center", mb: 3 }}>
         <img src={logo} width="72" height="72" alt="" />
-        <Typography variant="h5" component="h1" mt={1.5}>
+        <Typography variant="h5" component="h1" sx={{ mt: 1.5 }}>
           {title}
         </Typography>
-        <Typography variant="body2" color="text.secondary" mt={0.5}>
+        <Typography variant="body2" sx={{ color: "text.secondary", mt: 0.5 }}>
           {subtitle}
         </Typography>
       </Box>

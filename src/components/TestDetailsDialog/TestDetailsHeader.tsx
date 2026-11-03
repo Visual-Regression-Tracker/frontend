@@ -29,10 +29,11 @@ export const TestDetailsHeader = ({
 }: TestDetailsHeaderProps) => (
   <Grid container alignItems="center" sx={headerSx} spacing={2}>
     <Grid>
-      <Typography variant="h6" display="inline">{`Step ${
-        currentRunIndex + 1
-      }/${totalTestRunCount}: `}</Typography>
-      <Typography variant="h6" display="inline" sx={testRunNameSx}>
+      <Typography
+        variant="h6"
+        sx={{ display: "inline" }}
+      >{`Step ${currentRunIndex + 1}/${totalTestRunCount}: `}</Typography>
+      <Typography variant="h6" sx={{ display: "inline", ...testRunNameSx }}>
         {testRun.name}
       </Typography>
     </Grid>

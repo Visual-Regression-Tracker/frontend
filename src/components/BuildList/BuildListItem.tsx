@@ -1,12 +1,12 @@
 import { Fragment, type MouseEvent } from "react";
 import {
+  Box,
   Checkbox,
   Chip,
   Grid,
   IconButton,
   LinearProgress,
   ListItemButton,
-  ListItemSecondaryAction,
   ListItemText,
   Typography,
 } from "@mui/material";
@@ -21,6 +21,14 @@ const itemSx = {
   "&:hover .build-secondary-action": {
     visibility: "inherit",
   },
+} as const;
+
+const secondaryActionSx = {
+  position: "absolute",
+  right: 16,
+  top: "50%",
+  transform: "translateY(-50%)",
+  visibility: "hidden",
 } as const;
 
 interface BuildListItemProps {
@@ -95,14 +103,11 @@ export const BuildListItem = ({
         }
       />
 
-      <ListItemSecondaryAction
-        className="build-secondary-action"
-        sx={{ visibility: "hidden" }}
-      >
+      <Box className="build-secondary-action" sx={secondaryActionSx}>
         <IconButton onClick={onMenuClick} size="large">
           <MoreVert data-testid="MoreVertIcon" />
         </IconButton>
-      </ListItemSecondaryAction>
+      </Box>
     </ListItemButton>
     {build.isRunning && <LinearProgress />}
   </Fragment>
