@@ -1,5 +1,5 @@
 import { type ReactElement, type ReactNode, useEffect } from "react";
-import { act, render, RenderOptions } from "@testing-library/react";
+import { act, render, renderHook, RenderOptions } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { MemoryRouter } from "react-router-dom";
 import { ThemeProvider } from "@mui/material/styles";
@@ -83,17 +83,15 @@ interface Options extends Omit<RenderOptions, "wrapper"> {
   socket?: FakeSocket;
 }
 
-// Services are expected to be mocked by the test (vi.mock("../services"))
-export function renderWithProviders(
-  ui: ReactElement,
-  { route = "/", user = null, socket, ...options }: Options = {},
-) {
+const seedUser = (user: User | null) => {
   if (user) {
     localStorage.setItem("user", JSON.stringify(user));
   } else {
     localStorage.removeItem("user");
   }
+};
 
+const providers = (route: string, socket: FakeSocket | undefined) => {
   const Wrapper = ({ children }: { children: ReactNode }) => (
     <MemoryRouter initialEntries={[route]}>
       <ThemeProvider theme={theme}>
@@ -118,9 +116,36 @@ export function renderWithProviders(
       </ThemeProvider>
     </MemoryRouter>
   );
+  return Wrapper;
+};
+
+// Services are expected to be mocked by the test (vi.mock("../services"))
+export function renderWithProviders(
+  ui: ReactElement,
+  { route = "/", user = null, socket, ...options }: Options = {},
+) {
+  seedUser(user);
 
   return {
     user: userEvent.setup(),
-    ...render(ui, { wrapper: Wrapper, ...options }),
+    ...render(ui, { wrapper: providers(route, socket), ...options }),
   };
+}
+
+// the app's providers around a hook; snackbars it shows render into the document
+export function renderHookWithProviders<Result, Props>(
+  hook: (props: Props) => Result,
+  {
+    route = "/",
+    user = null,
+    socket,
+    initialProps,
+  }: Pick<Options, "route" | "user" | "socket"> & { initialProps?: Props } = {},
+) {
+  seedUser(user);
+
+  return renderHook(hook, {
+    wrapper: providers(route, socket),
+    initialProps,
+  });
 }

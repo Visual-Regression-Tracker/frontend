@@ -1,78 +1,39 @@
-import { useEffect, useState, useMemo, useRef } from "react";
+import { useEffect, useState } from "react";
 import {
-  Typography,
   Button,
   Grid,
   Switch,
-  IconButton,
   Box,
-  Select,
-  MenuItem,
   LinearProgress,
   Divider,
-  FormControlLabel,
-  Checkbox,
-  ToggleButton,
-  SelectChangeEvent,
 } from "@mui/material";
 import { useHotkeys } from "react-hotkeys-hook";
 import { hotkeyOptions } from "../../_helpers/hotkeys.helper";
 import { TestRun } from "../../types";
-import { testRunService, staticService } from "../../services";
-import { IgnoreArea, UpdateIgnoreAreaDto } from "../../types/ignoreArea";
-import Konva from "konva";
-import {
-  Add,
-  Delete,
-  Save,
-  WarningRounded,
-  LayersClear,
-  Collections,
-  OpenInNew,
-  NavigateNext,
-  NavigateBefore,
-} from "@mui/icons-material";
-import { TestRunDetails } from "./TestRunDetails";
+import { staticService } from "../../services";
+import { OpenInNew } from "@mui/icons-material";
 import useImage from "use-image";
-import { routes, GO_TO_NEXT_KEY } from "../../constants";
-import { useTestRunDispatch, useSelectedProject } from "../../contexts";
+import { routes } from "../../constants";
+import { useSelectedProject } from "../../contexts";
+import { imageSizesDiffer } from "../../_helpers/testRunImage.helper";
 import { DrawArea, ImageStateLoad } from "./DrawArea";
-import { CommentsPopper } from "../CommentsPopper";
-import { useDialogSnackbar } from "./useDialogSnackbar";
-import { ApproveRejectButtons } from "./ApproveRejectButtons";
 import {
   MatchingVariationsDialog,
   MatchingVariationsMode,
 } from "./MatchingVariationsDialog";
-import { invertIgnoreArea } from "../../_helpers/ignoreArea.helper";
-import { BaseModal } from "../BaseModal";
 import { Tooltip } from "../Tooltip";
 import ImageDetails, { ImageDetailsProps } from "./ImageDetails";
-import { calculateScale } from "../../_helpers/scale.helper";
-import {
-  canCompareToBaseline,
-  isAwaitingReview,
-} from "../../_helpers/testRunStatus.helper";
+import { canCompareToBaseline } from "../../_helpers/testRunStatus.helper";
 import { TestDetailsHeader } from "./TestDetailsHeader";
+import { TestDetailsFooter } from "./TestDetailsFooter";
 import { OverlayControls } from "./OverlayControls";
 import { ZoomControls } from "./ZoomControls";
+import { IgnoreAreasToolbar } from "./IgnoreAreasToolbar";
+import { TestRunInfoBar } from "./TestRunInfoBar";
+import { useIgnoreAreas } from "./useIgnoreAreas";
+import { useDialogSnackbar } from "./useDialogSnackbar";
+import { useStageView } from "./useStageView";
 
-const footerSx = { bgcolor: "background.default" } as const;
-const scaleActionsSx = { display: "flex", alignItems: "center" } as const;
-const testRunActionsSx = {
-  justifyContent: "flex-end",
-  display: "flex",
-  alignItems: "center",
-  alignContent: "center",
-} as const;
-const centerActionsSx = {
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "center",
-  flexWrap: "wrap",
-  gap: "4px",
-} as const;
-const testRunDetailsSx = { alignItems: "center", paddingLeft: "8px" } as const;
 const drawAreaContainerSx = { width: "100%", height: "100%" } as const;
 const drawAreaItemSx = { padding: "0 4px", height: "100%" } as const;
 const imageToolbarSx = {
@@ -80,11 +41,6 @@ const imageToolbarSx = {
   paddingLeft: "5px",
   height: "44px",
 } as const;
-
-const defaultStagePos = {
-  x: 0,
-  y: 0,
-};
 
 interface TestDetailsModalProps {
   testRun: TestRun;
@@ -107,57 +63,13 @@ const TestDetailsModal = ({
   handleClose,
   navigateTo,
 }: TestDetailsModalProps) => {
-  const { enqueueSnackbar } = useDialogSnackbar();
-  const testRunDispatch = useTestRunDispatch();
   const project = useSelectedProject();
   const [variationsMode, setVariationsMode] =
     useState<MatchingVariationsMode | null>(null);
 
-  const [stageScale, setStageScale] = useState(1);
-  const [stagePos, setStagePos] = useState(defaultStagePos);
-  const [stageScrollPos, setStageScrollPos] = useState(defaultStagePos);
-  const [stageInitPos, setStageInitPos] = useState(defaultStagePos);
-  const [stageOffset, setStageOffset] = useState(defaultStagePos);
-  const [processing, setProcessing] = useState(false);
-  const [isDrawMode, setIsDrawMode] = useState(false);
-
-  const [valueOfIgnoreOrCompare, setValueOfIgnoreOrCompare] =
-    useState("Ignore Areas");
-
   const [isDiffShown, setIsDiffShown] = useState(false);
   const [overlayOpacity, setOverlayOpacity] = useState(1);
   const [blendDifference, setBlendDifference] = useState(false);
-  const [selectedRectId, setSelectedRectId] = useState<string>();
-  const [ignoreAreas, setIgnoreAreas] = useState<IgnoreArea[]>([]);
-
-  const [applyIgnoreDialogOpen, setApplyIgnoreDialogOpen] = useState(false);
-
-  const [goToNextAutomatically, setGoToNextAutomatically] = useState(() => {
-    const json = localStorage.getItem(GO_TO_NEXT_KEY);
-
-    if (json) {
-      return JSON.parse(json);
-    }
-
-    return false;
-  });
-
-  useEffect(() => {
-    localStorage.setItem(GO_TO_NEXT_KEY, JSON.stringify(goToNextAutomatically));
-  }, [goToNextAutomatically]);
-
-  const handleGoToNextAutomatically = () => {
-    if (goToNextAutomatically) {
-      handleNext();
-    }
-  };
-
-  const leftItemRef = useRef<HTMLDivElement>(null);
-  const rightItemRef = useRef<HTMLDivElement>(null);
-
-  const toggleApplyIgnoreDialogOpen = () => {
-    setApplyIgnoreDialogOpen(!applyIgnoreDialogOpen);
-  };
 
   const [currentImage, currentImageStatus] = useImage(
     staticService.getImage(testRun.imageName),
@@ -171,206 +83,21 @@ const TestDetailsModal = ({
     staticService.getImage(testRun.diffName),
   );
 
-  const applyIgnoreAreaText =
-    "Apply selected ignore area to all images in this build.";
-
-  const fitImageToStage = (image: HTMLImageElement, container: HTMLElement) =>
-    calculateScale(
-      image.width + 20,
-      image.height + 20,
-      container.offsetWidth,
-      container.offsetHeight - 48,
-    );
-
-  // one scale for both panes, set by the largest image; capped at 1 so small ones stay put
-  const fitScale = (): number | undefined => {
-    const scales: number[] = [];
-
-    if (currentImage && leftItemRef.current) {
-      scales.push(fitImageToStage(currentImage, leftItemRef.current));
-    }
-
-    if (baselineImage && rightItemRef.current) {
-      scales.push(fitImageToStage(baselineImage, rightItemRef.current));
-    }
-
-    return scales.length > 0 ? Math.min(1, ...scales) : undefined;
-  };
-
-  const fitImagesToStage = () => {
-    const scale = fitScale();
-    if (scale !== undefined) {
-      setStageScale(scale);
-    }
-    resetPosition();
-  };
+  // one instance, so a toast replaces the last one whichever part of the dialog raised it
+  const { enqueueSnackbar } = useDialogSnackbar();
+  const areas = useIgnoreAreas(testRun, currentImage, enqueueSnackbar);
+  const stage = useStageView(
+    [currentImage, currentImageStatus],
+    [baselineImage, baselineImageStatus],
+  );
+  const [stageScale, setStageScale] = stage.stageProps.stageScaleState;
 
   // per-run view state; this dialog is not remounted between runs
   useEffect(() => {
     setIsDiffShown(!!testRun.diffName);
     setOverlayOpacity(1);
     setBlendDifference(false);
-    setIsDrawMode(false);
-    setSelectedRectId(undefined);
   }, [testRun.id, testRun.diffName]);
-
-  // by id, not the run object: an update to the run would wipe the unsaved areas drawn here
-  useEffect(() => {
-    setIgnoreAreas(JSON.parse(testRun.ignoreAreas));
-  }, [testRun.id, testRun.ignoreAreas]);
-
-  // the next run keeps the reviewer's zoom and place when its images are the same size
-  const fittedSizes = useRef<string>(undefined);
-  useEffect(() => {
-    if (currentImageStatus === "loading" || baselineImageStatus === "loading") {
-      return;
-    }
-    const sizes = [currentImage, baselineImage]
-      .map((image) => (image ? `${image.width}x${image.height}` : "-"))
-      .join("|");
-    if (sizes === fittedSizes.current) {
-      return;
-    }
-    fittedSizes.current = sizes;
-    fitImagesToStage();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [baselineImage, currentImage, currentImageStatus, baselineImageStatus]);
-
-  useHotkeys("right", handleNext, hotkeyOptions, [currentRunIndex, handleNext]);
-  useHotkeys("left", handlePrevious, hotkeyOptions, [
-    currentRunIndex,
-    handlePrevious,
-  ]);
-
-  const tempIgnoreAreas = useMemo<IgnoreArea[]>(
-    () => JSON.parse(testRun.tempIgnoreAreas),
-    [testRun.tempIgnoreAreas],
-  );
-
-  const isImageSizeDiffer = useMemo(
-    () =>
-      testRun.baselineName &&
-      testRun.imageName &&
-      (currentImage?.height !== baselineImage?.height ||
-        currentImage?.width !== baselineImage?.width),
-    [currentImage, baselineImage, testRun.baselineName, testRun.imageName],
-  );
-
-  const handleIgnoreAreaChange = (ignoreAreas: IgnoreArea[]) => {
-    setIgnoreAreas(ignoreAreas);
-    testRunDispatch({
-      type: "touched",
-      payload: testRun.ignoreAreas !== JSON.stringify(ignoreAreas),
-    });
-  };
-
-  const removeSelection = (event: Konva.KonvaEventObject<MouseEvent>) => {
-    const isRectClicked = event.target.className === "Rect";
-
-    if (!isRectClicked) {
-      setSelectedRectId(undefined);
-    }
-  };
-
-  const deleteIgnoreArea = (id: string) => {
-    handleIgnoreAreaChange(ignoreAreas.filter((area) => area.id !== id));
-    setSelectedRectId(undefined);
-  };
-
-  const saveTestRun = (ignoreAreas: IgnoreArea[], successMessage: string) => {
-    testRunService
-      .updateIgnoreAreas({
-        ids: [testRun.id],
-        ignoreAreas,
-      })
-      .then(() => {
-        enqueueSnackbar(successMessage, {
-          variant: "success",
-        });
-        // only once stored: a failed save must leave the areas unsaved
-        testRunDispatch({
-          type: "touched",
-          payload: false,
-        });
-      })
-      .catch((err) =>
-        enqueueSnackbar(err, {
-          variant: "error",
-        }),
-      );
-  };
-
-  const saveIgnoreAreasOrCompareArea = () => {
-    if (valueOfIgnoreOrCompare.includes("Ignore")) {
-      saveTestRun(ignoreAreas, "Ignore areas are updated.");
-    } else if (currentImage) {
-      const invertedIgnoreAreas = invertIgnoreArea(
-        currentImage.width,
-        currentImage.height,
-        ignoreAreas[ignoreAreas.length - 1],
-      );
-
-      handleIgnoreAreaChange(invertedIgnoreAreas);
-      saveTestRun(
-        invertedIgnoreAreas,
-        "Selected area has been inverted to ignore areas and saved.",
-      );
-    }
-  };
-
-  const setOriginalSize = () => {
-    setStageScale(1);
-    resetPosition();
-  };
-
-  const resetPosition = () => {
-    setStagePos(defaultStagePos);
-    setStageOffset(defaultStagePos);
-  };
-
-  const applyIgnoreArea = () => {
-    const newIgnoreArea = ignoreAreas.find(
-      (area) => selectedRectId === area.id,
-    );
-
-    if (newIgnoreArea) {
-      setProcessing(true);
-      testRunService
-        .getList(testRun.buildId)
-        .then((testRuns: TestRun[]) => {
-          const allIds = testRuns.map((item) => item.id);
-          const data: UpdateIgnoreAreaDto = {
-            ids: allIds,
-            ignoreAreas: [newIgnoreArea],
-          };
-
-          return testRunService.addIgnoreAreas(data);
-        })
-        .then(() => {
-          setProcessing(false);
-          setSelectedRectId(undefined);
-          enqueueSnackbar(
-            "Ignore areas are updated in all images in this build.",
-            {
-              variant: "success",
-            },
-          );
-        })
-        .catch((error) => {
-          enqueueSnackbar(`There was an error : ${error}`, {
-            variant: "error",
-          });
-          setProcessing(false);
-        });
-    } else {
-      enqueueSnackbar(
-        "There was an error determining which ignore area to apply.",
-        {
-          variant: "error",
-        },
-      );
-    }
-  };
 
   useHotkeys(
     "d",
@@ -390,93 +117,8 @@ const TestDetailsModal = ({
     );
   };
 
-  const ignoreAreasToolbar = () => (
-    <Grid container spacing={2} sx={{ alignItems: "center" }}>
-      <Grid>
-        <Select
-          variant="standard"
-          id="area-select"
-          labelId="areaSelect"
-          // a standard select underlines itself and would read as a text field among buttons
-          sx={{
-            "&:before, &:after, &:hover:not(.Mui-disabled):before": {
-              borderBottom: "none",
-            },
-          }}
-          value={valueOfIgnoreOrCompare}
-          onChange={(event: SelectChangeEvent<string>) =>
-            setValueOfIgnoreOrCompare(event.target.value)
-          }
-        >
-          {["Ignore Areas", "Compare Area"].map((eachItem) => (
-            <MenuItem key={eachItem} value={eachItem}>
-              {eachItem}
-            </MenuItem>
-          ))}
-        </Select>
-      </Grid>
-      <Grid>
-        <ToggleButton
-          value={"drawMode"}
-          selected={isDrawMode}
-          size="small"
-          onClick={() => {
-            setIsDrawMode(!isDrawMode);
-          }}
-          style={{
-            padding: 4,
-          }}
-        >
-          <Add data-testid="AddIcon" />
-        </ToggleButton>
-      </Grid>
-      <Grid>
-        <IconButton
-          size="small"
-          disabled={!selectedRectId || ignoreAreas.length === 0}
-          onClick={() => selectedRectId && deleteIgnoreArea(selectedRectId)}
-        >
-          <Delete data-testid="DeleteIcon" />
-        </IconButton>
-      </Grid>
-      <Tooltip title="Clears all ignore areas." aria-label="reject">
-        <Grid>
-          <IconButton
-            size="small"
-            disabled={ignoreAreas.length === 0}
-            onClick={() => {
-              handleIgnoreAreaChange([]);
-            }}
-          >
-            <LayersClear data-testid="LayersClearIcon" />
-          </IconButton>
-        </Grid>
-      </Tooltip>
-      <Tooltip title={applyIgnoreAreaText} aria-label="apply ignore area">
-        <Grid>
-          <IconButton
-            size="small"
-            disabled={!selectedRectId || ignoreAreas.length === 0}
-            onClick={() => toggleApplyIgnoreDialogOpen()}
-          >
-            <Collections data-testid="CollectionsIcon" />
-          </IconButton>
-        </Grid>
-      </Tooltip>
-      <Grid>
-        <IconButton
-          size="small"
-          disabled={!touched}
-          onClick={() => saveIgnoreAreasOrCompareArea()}
-        >
-          <Save data-testid="SaveIcon" />
-        </IconButton>
-      </Grid>
-    </Grid>
-  );
-
   const baselinePanel = () => (
-    <Grid size={6} ref={leftItemRef} sx={drawAreaItemSx}>
+    <Grid size={6} ref={stage.leftItemRef} sx={drawAreaItemSx}>
       <Grid container spacing={1} sx={imageToolbarSx}>
         <ImageDetails
           type="Baseline"
@@ -501,16 +143,12 @@ const TestDetailsModal = ({
           imageState={[baselineImage, baselineImageStatus]}
           ignoreAreas={[]}
           tempIgnoreAreas={[]}
-          setIgnoreAreas={handleIgnoreAreaChange}
-          selectedRectId={selectedRectId}
-          setSelectedRectId={setSelectedRectId}
-          onStageClick={removeSelection}
-          stageScaleState={[stageScale, setStageScale]}
-          stagePosState={[stagePos, setStagePos]}
-          stageScrollPosState={[stageScrollPos, setStageScrollPos]}
-          stageInitPosState={[stageInitPos, setStageInitPos]}
-          stageOffsetState={[stageOffset, setStageOffset]}
-          drawModeState={[false, setIsDrawMode]}
+          setIgnoreAreas={areas.changeIgnoreAreas}
+          selectedRectId={areas.selectedRectId}
+          setSelectedRectId={areas.setSelectedRectId}
+          onStageClick={areas.removeSelection}
+          {...stage.stageProps}
+          drawModeState={[false, areas.setIsDrawMode]}
         />
       </Grid>
     </Grid>
@@ -522,14 +160,14 @@ const TestDetailsModal = ({
     imageStatus: ImageStateLoad,
     image: HTMLImageElement | undefined,
   ) => (
-    <Grid size={6} sx={drawAreaItemSx} ref={rightItemRef}>
+    <Grid size={6} sx={drawAreaItemSx} ref={stage.rightItemRef}>
       <Grid container spacing={1} sx={imageToolbarSx}>
         <ImageDetails
           type={type}
           branchName={testRun.branchName}
           imageName={imageName}
           image={image}
-          ignoreAreas={tempIgnoreAreas}
+          ignoreAreas={areas.tempIgnoreAreas}
         />
         {testRun.diffName && (
           <Grid>
@@ -567,70 +205,17 @@ const TestDetailsModal = ({
         underlayImage={isDiffShown ? undefined : baselineImage}
         overlayOpacity={overlayOpacity}
         blendDifference={blendDifference && !isDiffShown}
-        ignoreAreas={ignoreAreas}
-        tempIgnoreAreas={tempIgnoreAreas}
-        setIgnoreAreas={handleIgnoreAreaChange}
-        selectedRectId={selectedRectId}
-        deleteIgnoreArea={deleteIgnoreArea}
-        setSelectedRectId={setSelectedRectId}
-        onStageClick={removeSelection}
-        stageScaleState={[stageScale, setStageScale]}
-        stagePosState={[stagePos, setStagePos]}
-        stageScrollPosState={[stageScrollPos, setStageScrollPos]}
-        stageInitPosState={[stageInitPos, setStageInitPos]}
-        stageOffsetState={[stageOffset, setStageOffset]}
-        drawModeState={[isDrawMode, setIsDrawMode]}
+        ignoreAreas={areas.ignoreAreas}
+        tempIgnoreAreas={areas.tempIgnoreAreas}
+        setIgnoreAreas={areas.changeIgnoreAreas}
+        selectedRectId={areas.selectedRectId}
+        deleteIgnoreArea={areas.deleteIgnoreArea}
+        setSelectedRectId={areas.setSelectedRectId}
+        onStageClick={areas.removeSelection}
+        {...stage.stageProps}
+        drawModeState={[areas.isDrawMode, areas.setIsDrawMode]}
       />
     </Grid>
-  );
-
-  const testRunDetails = () => (
-    <Box sx={{ mx: 1 }}>
-      <Grid container spacing={1} sx={testRunDetailsSx}>
-        <TestRunDetails testRun={testRun} />
-        {isImageSizeDiffer && (
-          <Grid>
-            <Tooltip
-              title={
-                "Image height/width differ from baseline! Cannot calculate diff!"
-              }
-            >
-              <IconButton size="large">
-                <WarningRounded
-                  data-testid="WarningRoundedIcon"
-                  color="secondary"
-                />
-              </IconButton>
-            </Tooltip>
-          </Grid>
-        )}
-        <Grid sx={{ ml: "auto" }}>{ignoreAreasToolbar()}</Grid>
-        <Grid>
-          <CommentsPopper
-            text={testRun.comment}
-            onSave={(comment) =>
-              testRunService
-                .update(testRun.id, {
-                  comment,
-                })
-                .then(() =>
-                  enqueueSnackbar("Comment updated", {
-                    variant: "success",
-                  }),
-                )
-                .catch((err) => {
-                  enqueueSnackbar(err, {
-                    variant: "error",
-                  });
-                  // still a failure, so the comment box stays open
-                  throw err;
-                })
-            }
-          />
-        </Grid>
-      </Grid>
-      <Divider />
-    </Box>
   );
 
   return (
@@ -642,8 +227,27 @@ const TestDetailsModal = ({
         onClose={handleClose}
       />
       <Divider />
-      {processing && <LinearProgress />}
-      {testRunDetails()}
+      {areas.processing && <LinearProgress />}
+      <TestRunInfoBar
+        testRun={testRun}
+        sizeMismatch={imageSizesDiffer(testRun, currentImage, baselineImage)}
+        enqueueSnackbar={enqueueSnackbar}
+        ignoreAreasToolbar={
+          <IgnoreAreasToolbar
+            areaKind={areas.areaKind}
+            onAreaKindChange={areas.setAreaKind}
+            isDrawMode={areas.isDrawMode}
+            onDrawModeChange={areas.setIsDrawMode}
+            hasSelection={!!areas.selectedRectId}
+            hasAreas={areas.ignoreAreas.length > 0}
+            touched={touched}
+            onDelete={areas.deleteSelected}
+            onClear={areas.clear}
+            onApplyToBuild={areas.applyToBuild}
+            onSave={areas.save}
+          />
+        }
+      />
       <Box
         sx={{
           overflow: "hidden",
@@ -663,84 +267,21 @@ const TestDetailsModal = ({
               )}
         </Grid>
       </Box>
-      <Grid container sx={footerSx}>
-        <Grid size={3} sx={scaleActionsSx}>
+      <TestDetailsFooter
+        testRun={testRun}
+        currentRunIndex={currentRunIndex}
+        totalTestRunCount={totalTestRunCount}
+        zoomControls={
           <ZoomControls
             scale={stageScale}
             onScaleChange={setStageScale}
-            onOriginalSize={setOriginalSize}
-            onFit={fitImagesToStage}
+            onOriginalSize={stage.setOriginalSize}
+            onFit={stage.fitImagesToStage}
           />
-        </Grid>
-        <Grid size={6} sx={centerActionsSx}>
-          <Tooltip title={"Hotkey: ArrowLeft"}>
-            <IconButton
-              color="secondary"
-              style={{
-                visibility: currentRunIndex > 0 ? "visible" : "hidden",
-              }}
-              onClick={handlePrevious}
-              size="large"
-            >
-              <NavigateBefore />
-            </IconButton>
-          </Tooltip>
-          {isAwaitingReview(testRun.status) && (
-            <ApproveRejectButtons
-              testRun={testRun}
-              afterApprove={handleGoToNextAutomatically}
-              afterReject={handleGoToNextAutomatically}
-              onOpenVariations={setVariationsMode}
-            />
-          )}
-          <Tooltip title={"Hotkey: ArrowRight"}>
-            <IconButton
-              color="secondary"
-              style={{
-                visibility:
-                  totalTestRunCount > currentRunIndex + 1
-                    ? "visible"
-                    : "hidden",
-              }}
-              onClick={handleNext}
-              size="large"
-            >
-              <NavigateNext />
-            </IconButton>
-          </Tooltip>
-        </Grid>
-        <Grid size={3} sx={testRunActionsSx}>
-          <FormControlLabel
-            control={
-              <Checkbox
-                color="primary"
-                size="small"
-                checked={goToNextAutomatically}
-                onChange={(e) => setGoToNextAutomatically(e.target.checked)}
-              />
-            }
-            label={
-              <Typography variant="body2" color="textSecondary">
-                Go to the next after Approve/Reject
-              </Typography>
-            }
-          />
-        </Grid>
-      </Grid>
-      <BaseModal
-        open={applyIgnoreDialogOpen}
-        title={applyIgnoreAreaText}
-        submitButtonText={"Yes"}
-        onCancel={toggleApplyIgnoreDialogOpen}
-        content={
-          <Typography>
-            {`All images in the current build will be re-compared with new ignore area taken into account. Are you sure?`}
-          </Typography>
         }
-        onSubmit={() => {
-          toggleApplyIgnoreDialogOpen();
-          applyIgnoreArea();
-        }}
+        onPrevious={handlePrevious}
+        onNext={handleNext}
+        onOpenVariations={setVariationsMode}
       />
       {variationsMode && (
         <MatchingVariationsDialog

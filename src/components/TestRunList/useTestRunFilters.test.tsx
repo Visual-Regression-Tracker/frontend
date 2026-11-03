@@ -1,0 +1,174 @@
+import { act, renderHook } from "@testing-library/react";
+import { run } from "../../_helpers/testRun.fixture";
+import { TestRun, TestStatus } from "../../types";
+import { useTestRunFilters } from "./useTestRunFilters";
+
+const ids = (runs: TestRun[]) => runs.map((item) => item.id);
+
+// only os and custom tags, so the options stay short
+const tagged = (overrides: Partial<TestRun>) =>
+  run({ device: "", browser: "", viewport: "", ...overrides });
+
+const HOME_EN = tagged({
+  id: "home-en",
+  name: "Home page",
+  os: "iOS",
+  customTags: "en",
+});
+const HOME_DE = tagged({
+  id: "home-de",
+  name: "Home page",
+  os: "Android",
+  customTags: "de",
+  status: TestStatus.approved,
+});
+const LOGIN_EN = tagged({
+  id: "login-en",
+  name: "Login",
+  os: "Android",
+  customTags: "en",
+  status: TestStatus.ok,
+});
+const RUNS = [HOME_EN, HOME_DE, LOGIN_EN];
+
+const renderFilters = (runs: TestRun[] = RUNS) =>
+  renderHook(({ testRuns }) => useTestRunFilters(testRuns), {
+    initialProps: { testRuns: runs },
+  });
+
+describe("useTestRunFilters", () => {
+  it("keeps every run until a filter is set", () => {
+    const { result } = renderFilters();
+
+    expect(result.current.filteredRows).toEqual(RUNS);
+    expect(result.current.name).toBe("");
+    expect(result.current.statuses).toEqual([]);
+    expect(result.current.tags).toEqual([]);
+  });
+
+  it("matches the name ignoring case and surrounding spaces", () => {
+    const { result } = renderFilters();
+
+    act(() => result.current.onNameChange("  HOME "));
+
+    expect(ids(result.current.filteredRows)).toEqual(["home-en", "home-de"]);
+  });
+
+  it("keeps the runs with any of the picked statuses", () => {
+    const { result } = renderFilters();
+
+    act(() =>
+      result.current.onStatusesChange([TestStatus.ok, TestStatus.approved]),
+    );
+
+    expect(ids(result.current.filteredRows)).toEqual(["home-de", "login-en"]);
+  });
+
+  it("keeps a run with any picked tag of a field and one of every picked field", () => {
+    const { result } = renderFilters();
+
+    act(() => result.current.onTagsChange(["en", "de"]));
+    expect(ids(result.current.filteredRows)).toEqual([
+      "home-en",
+      "home-de",
+      "login-en",
+    ]);
+
+    act(() => result.current.onTagsChange(["en", "Android"]));
+    expect(ids(result.current.filteredRows)).toEqual(["login-en"]);
+  });
+
+  it("offers the statuses and tags that still return runs under the other filters", () => {
+    const { result } = renderFilters();
+
+    expect(result.current.statusOptions).toEqual([
+      TestStatus.unresolved,
+      TestStatus.approved,
+      TestStatus.ok,
+    ]);
+    // by field (os before custom tags), then alphabetically
+    expect(result.current.tagOptions).toEqual(["Android", "iOS", "de", "en"]);
+
+    act(() => result.current.onNameChange("login"));
+
+    expect(result.current.statusOptions).toEqual([TestStatus.ok]);
+    expect(result.current.tagOptions).toEqual(["Android", "en"]);
+  });
+
+  it("keeps a picked status and tag on offer though no run left matches it", () => {
+    const { result } = renderFilters();
+
+    act(() => {
+      result.current.onNameChange("login");
+      result.current.onStatusesChange([TestStatus.unresolved]);
+      result.current.onTagsChange(["de"]);
+    });
+
+    expect(result.current.statusOptions).toContain(TestStatus.unresolved);
+    expect(result.current.tagOptions).toContain("de");
+  });
+
+  it("adds a tag on its first toggle and removes it on the second", () => {
+    const { result } = renderFilters();
+
+    act(() => result.current.toggleTag("en"));
+    act(() => result.current.toggleTag("iOS"));
+    expect(result.current.tags).toEqual(["en", "iOS"]);
+
+    act(() => result.current.toggleTag("en"));
+    expect(result.current.tags).toEqual(["iOS"]);
+  });
+
+  it("clears every filter on reset", () => {
+    const { result } = renderFilters();
+    act(() => {
+      result.current.onNameChange("home");
+      result.current.onStatusesChange([TestStatus.approved]);
+      result.current.onTagsChange(["de"]);
+    });
+
+    act(() => result.current.onReset());
+
+    expect(result.current.name).toBe("");
+    expect(result.current.statuses).toEqual([]);
+    expect(result.current.tags).toEqual([]);
+    expect(result.current.filteredRows).toEqual(RUNS);
+  });
+
+  it("drops a picked status and tag once no run has them", () => {
+    const { result, rerender } = renderFilters();
+    act(() => {
+      result.current.onStatusesChange([
+        TestStatus.unresolved,
+        TestStatus.approved,
+      ]);
+      result.current.onTagsChange(["iOS", "de"]);
+    });
+
+    rerender({
+      testRuns: [
+        { ...HOME_EN, status: TestStatus.approved, os: "Android" },
+        HOME_DE,
+        LOGIN_EN,
+      ],
+    });
+
+    expect(result.current.statuses).toEqual([TestStatus.approved]);
+    expect(result.current.tags).toEqual(["de"]);
+  });
+
+  it("keeps the picks while the build has no runs, as while it loads", () => {
+    const { result, rerender } = renderFilters();
+    act(() => {
+      result.current.onStatusesChange([TestStatus.unresolved]);
+      result.current.onTagsChange(["iOS"]);
+    });
+    const statuses = result.current.statuses;
+
+    rerender({ testRuns: [] });
+    rerender({ testRuns: RUNS });
+
+    expect(result.current.statuses).toBe(statuses);
+    expect(result.current.tags).toEqual(["iOS"]);
+  });
+});

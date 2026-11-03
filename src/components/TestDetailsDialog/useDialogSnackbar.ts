@@ -54,3 +54,7 @@ export const useDialogSnackbar = () => {
 
   return { enqueueSnackbar: enqueue, enqueueAside };
 };
+
+export type DialogEnqueue = ReturnType<
+  typeof useDialogSnackbar
+>["enqueueSnackbar"];

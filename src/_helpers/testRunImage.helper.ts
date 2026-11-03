@@ -14,3 +14,16 @@ export const thumbnailFor = (run: TestRun, showDiff: boolean): string => {
     ? staticService.getImage(thumbnail)
     : imageFor(run, showDiff);
 };
+
+/** Both images are known to exist for the run, yet they are not the same size. */
+export const imageSizesDiffer = (
+  testRun: Pick<TestRun, "baselineName" | "imageName">,
+  currentImage: HTMLImageElement | undefined,
+  baselineImage: HTMLImageElement | undefined,
+): boolean =>
+  !!(
+    testRun.baselineName &&
+    testRun.imageName &&
+    (currentImage?.height !== baselineImage?.height ||
+      currentImage?.width !== baselineImage?.width)
+  );
