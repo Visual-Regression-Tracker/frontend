@@ -38,6 +38,7 @@ import {
   mockTestRun,
   mockUpdateTestRun,
 } from "utils/mocks";
+import { defined } from "utils/defined";
 
 // "renders <view>" tests write <view>-<scheme>.png: `-g renders` updates the baselines
 
@@ -504,7 +505,9 @@ const VIEWS: [name: string, body: Body][] = [
 
       await details.commentsBtn.click();
 
-      await expect(details.comment).toHaveValue(TEST_UNRESOLVED.comment);
+      await expect(details.comment).toHaveValue(
+        defined(TEST_UNRESOLVED.comment, "The run's comment"),
+      );
       await shot("test-run-comments");
     },
   ],

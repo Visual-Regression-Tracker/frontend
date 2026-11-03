@@ -2,10 +2,12 @@ import { Page, Route } from "@playwright/test";
 import type {
   Build,
   Project,
+  ProjectDto,
   TestRun,
   TestVariation,
   User,
 } from "~client/types";
+import { postData } from "./postData";
 
 export const API_URL = process.env.REACT_APP_API_URL ?? "http://localhost:4200";
 
@@ -38,7 +40,7 @@ export const mockToggleFavoriteProject = (page: Page) => {
 export const mockSaveProject = async (page: Page) => {
   return page.route(`${API_URL}/projects`, (route, request) => {
     if (request.method() === "POST" || request.method() === "PUT") {
-      const project = request.postDataJSON();
+      const project = postData<Partial<ProjectDto>>(request);
       return route.fulfill({
         body: JSON.stringify({
           ...project,

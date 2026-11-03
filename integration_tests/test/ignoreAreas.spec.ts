@@ -7,6 +7,7 @@ import {
   TEST_UNRESOLVED,
 } from "~client/_test/test.data.helper";
 import type { TestRun } from "~client/types";
+import type { UpdateIgnoreAreaDto } from "~client/types/ignoreArea";
 import {
   API_URL,
   mockAddIgnoreAreas,
@@ -18,6 +19,7 @@ import {
   mockTestRun,
   mockUpdateIgnoreAreas,
 } from "utils/mocks";
+import { postData } from "utils/postData";
 
 const project = TEST_PROJECT;
 const build = TEST_BUILD_FAILED;
@@ -161,7 +163,7 @@ test("adds a drawn rectangle to the areas the run has", async ({
     details.saveAreas.click(),
   ]);
 
-  expect(request.postDataJSON().ignoreAreas).toEqual([
+  expect(postData<UpdateIgnoreAreaDto>(request).ignoreAreas).toEqual([
     EXISTING_AREA,
     { id: expect.any(String), x: 500, y: 40, width: 100, height: 60 },
   ]);
@@ -362,9 +364,9 @@ test("saves the area drawn in compare mode as the areas around it", async ({
   ]);
 
   // the 1280 x 720 image minus the 160 x 80 area at (40, 40), cut in eight
-  const areas = request
-    .postDataJSON()
-    .ignoreAreas.map(({ x, y, width, height }) => ({ x, y, width, height }));
+  const areas = postData<UpdateIgnoreAreaDto>(request).ignoreAreas.map(
+    ({ x, y, width, height }) => ({ x, y, width, height }),
+  );
   expect(areas).toEqual([
     { x: 0, y: 0, width: 40, height: 40 },
     { x: 40, y: 0, width: 160, height: 40 },
@@ -399,9 +401,9 @@ test("saves the area drawn in compare mode, not the one the run had", async ({
   ]);
 
   // the 1280 x 720 image minus the 100 x 60 area at (500, 40), cut in eight
-  const areas = request
-    .postDataJSON()
-    .ignoreAreas.map(({ x, y, width, height }) => ({ x, y, width, height }));
+  const areas = postData<UpdateIgnoreAreaDto>(request).ignoreAreas.map(
+    ({ x, y, width, height }) => ({ x, y, width, height }),
+  );
   expect(areas).toEqual([
     { x: 0, y: 0, width: 500, height: 40 },
     { x: 500, y: 0, width: 100, height: 40 },

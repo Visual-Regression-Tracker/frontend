@@ -8,7 +8,7 @@ import {
 } from "~client/constants/project";
 import { ImageComparison } from "~client/types/imageComparison";
 import { ProjectListPage } from "pages";
-import type { Project } from "~client/types";
+import type { Project, ProjectDto } from "~client/types";
 import {
   API_URL,
   mockDeleteProject,
@@ -19,6 +19,7 @@ import {
   mockSaveProject,
   mockToggleFavoriteProject,
 } from "utils/mocks";
+import { postData } from "utils/postData";
 import { waitForPage } from "utils/waitForPage";
 
 const project = TEST_PROJECT;
@@ -308,8 +309,8 @@ test.describe("favourites and search", () => {
   });
 });
 
-const savedConfig = (request: Request) =>
-  JSON.parse(request.postDataJSON().imageComparisonConfig);
+const savedConfig = (request: Request): unknown =>
+  JSON.parse(postData<ProjectDto>(request).imageComparisonConfig);
 
 const waitForSave = (page: Page, method: "POST" | "PUT") =>
   page.waitForRequest(

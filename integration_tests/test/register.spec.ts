@@ -12,10 +12,10 @@ test("renders", async ({ registerPage, page }) => {
 });
 
 test("can register", async ({ registerPage }) => {
-  await registerPage.firstName.type("firstName");
-  await registerPage.lastName.type("lastName");
-  await registerPage.email.type("email@google.com");
-  await registerPage.password.type("123456");
+  await registerPage.firstName.fill("firstName");
+  await registerPage.lastName.fill("lastName");
+  await registerPage.email.fill("email@google.com");
+  await registerPage.password.fill("123456");
 
   const [request] = await Promise.all([
     registerPage.page.waitForRequest("**/register"),

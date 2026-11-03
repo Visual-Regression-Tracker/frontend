@@ -1,4 +1,4 @@
-import { Page } from "@playwright/test";
+import { PageObject } from "./PageObject";
 import {
   HEADER_AVATAR_BUTTON_TEST_ID,
   HEADER_AVATAR_MENU_ID,
@@ -9,17 +9,13 @@ import {
 import { TAKE_TOUR_BUTTON_TEST_ID } from "~client/components/GuidedTour.locators";
 import { TourModal } from "./TourModal";
 
-export class Header {
+export class Header extends PageObject {
   helpMenuButton = this.page.getByTestId(HEADER_HELP_MENU_BUTTON_TEST_ID);
   helpMenu = this.page.getByTestId(HEADER_HELP_MENU_ID);
   takeTourButton = this.helpMenu.getByTestId(TAKE_TOUR_BUTTON_TEST_ID);
   avatarButton = this.page.getByTestId(HEADER_AVATAR_BUTTON_TEST_ID);
   avatarMenu = this.page.locator(`#${HEADER_AVATAR_MENU_ID}`);
   logoutBtn = this.avatarMenu.getByTestId(HEADER_LOGOUT_BUTTON_TEST_ID);
-
-  constructor(public page: Page) {
-    this.page = page;
-  }
 
   async startTour(): Promise<TourModal> {
     await this.helpMenuButton.click();

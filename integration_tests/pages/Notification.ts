@@ -1,12 +1,8 @@
-import { Page } from "@playwright/test";
+import { PageObject } from "./PageObject";
 
-export class Notification {
+export class Notification extends PageObject {
   message = this.page.locator("#notistack-snackbar");
   dismissBtn = this.page.getByTestId("dismissNotification");
-
-  constructor(public page: Page) {
-    this.page = page;
-  }
 
   toast(text: string) {
     return this.page.locator(".notistack-MuiContent", { hasText: text });

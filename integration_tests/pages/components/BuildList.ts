@@ -1,6 +1,6 @@
-import { Page } from "@playwright/test";
+import { PageObject } from "../PageObject";
 
-export class BuildList {
+export class BuildList extends PageObject {
   buildList = this.page.locator("#build-list");
   searchInput = this.page.getByTestId("buildSearch");
   emptyMessage = this.page.getByTestId("buildListEmpty");
@@ -9,10 +9,6 @@ export class BuildList {
   selectAll = this.page.getByTestId("buildSelectAll");
   deleteSelectedBtn = this.page.getByTestId("buildDeleteSelected");
   currentPage = this.buildList.locator('[aria-current="page"]');
-
-  constructor(public page: Page) {
-    this.page = page;
-  }
 
   menu = this.page.getByRole("menu");
   ciBuildIdInput = this.page.getByTestId("newCiBuildId");

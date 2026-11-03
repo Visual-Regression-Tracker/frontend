@@ -58,8 +58,7 @@ function installProbe(regions: Record<string, string>) {
 
   const findSocketIn = (root: FiberRoot): SocketLike | undefined => {
     const stack: Fiber[] = [root.current];
-    while (stack.length) {
-      const fiber = stack.pop();
+    for (let fiber = stack.pop(); fiber; fiber = stack.pop()) {
       const found = fiber.tag === 0 ? socketInHooks(fiber) : undefined;
       if (found) return found;
       if (fiber.child) stack.push(fiber.child);
@@ -113,8 +112,8 @@ function installProbe(regions: Record<string, string>) {
 
   const countRenders = (next: Fiber, prev: Fiber | null) => {
     const stack: Array<[Fiber, Fiber | null]> = [[next, prev]];
-    while (stack.length) {
-      const [n, p] = stack.pop();
+    for (let entry = stack.pop(); entry; entry = stack.pop()) {
+      const [n, p] = entry;
       if (didRender(n, p)) attribute(n);
       // a bailed-out subtree is the same objects as before
       if (p && n.child === p.child) continue;

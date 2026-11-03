@@ -16,6 +16,7 @@ import {
   mockTestRun,
   mockUpdateTestRun,
 } from "utils/mocks";
+import { defined } from "utils/defined";
 import { afterTwoFrames } from "utils/afterTwoFrames";
 
 const project = TEST_PROJECT;
@@ -59,7 +60,9 @@ test("opens on the comment the run already has", async ({
 
   await details.commentsBtn.click();
 
-  await expect(details.comment).toHaveValue(testRun.comment);
+  await expect(details.comment).toHaveValue(
+    defined(testRun.comment, "The run's comment"),
+  );
 });
 
 test("saves a comment", async ({ openProjectPage, page }) => {
