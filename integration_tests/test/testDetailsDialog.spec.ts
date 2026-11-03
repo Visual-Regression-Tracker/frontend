@@ -8,7 +8,9 @@ import {
 } from "~client/_test/test.data.helper";
 import {
   API_URL,
+  isRevertUrl,
   mockApiError,
+  mockApproveTestRuns,
   mockGetBuildDetails,
   mockGetBuilds,
   mockGetProjects,
@@ -17,6 +19,7 @@ import {
   mockRejectTestRuns,
   mockRevertTestRuns,
   reverts,
+  revertDecision,
   mockTestRun,
 } from "utils/mocks";
 import { boxOf } from "utils/boxOf";
@@ -112,6 +115,7 @@ test("undoes an approval from its toast", async ({ openProjectPage, page }) => {
   ]);
 
   expect(request.postDataJSON()).toEqual([TEST_UNRESOLVED.id]);
+  expect(revertDecision(request)).toBe("approve");
   await expect(notification.toast("Undone")).toBeVisible();
   await expect(notification.toast("Approved")).toBeHidden();
 });
@@ -119,7 +123,7 @@ test("undoes an approval from its toast", async ({ openProjectPage, page }) => {
 test("shows why an undo was refused", async ({ openProjectPage, page }) => {
   await mockApiError(
     page,
-    `${API_URL}/test-runs/revert`,
+    isRevertUrl,
     409,
     "Test run was changed after the approval",
   );
@@ -198,4 +202,31 @@ test("does not dress a rejection up as a success", async ({
   const toast = projectPage.notification.toast("Rejected");
   await expect(toast).toBeVisible();
   await expect(toast).not.toHaveClass(/notistack-MuiContent-success/);
+});
+
+test("warns without an undo when someone else approved the run first", async ({
+  openProjectPage,
+  page,
+}) => {
+  const reason = `Test run ${TEST_UNRESOLVED.id} is already approved`;
+  await mockApproveTestRuns(page, {
+    succeeded: [],
+    failed: [{ id: TEST_UNRESOLVED.id, message: reason }],
+  });
+  const { notification } = await openProjectPage(
+    project.id,
+    build.id,
+    TEST_UNRESOLVED.id,
+  );
+
+  await page
+    .locator("button")
+    .filter({ hasText: /^Approve$/ })
+    .click();
+
+  await expect(notification.toast(reason)).toHaveClass(
+    /notistack-MuiContent-warning/,
+  );
+  await expect(notification.undoBtn(reason)).toHaveCount(0);
+  await expect(page.getByText("Approved", { exact: true })).toHaveCount(0);
 });

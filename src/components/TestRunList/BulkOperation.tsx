@@ -31,7 +31,7 @@ const PAST_TENSE: Record<BulkAction, string> = {
   Clear: "Cleared",
 };
 
-const isReview = (action: BulkAction | null): boolean =>
+const isReview = (action: BulkAction | null): action is "Approve" | "Reject" =>
   action === "Approve" || action === "Reject";
 
 const ACTION_BUTTONS: {
@@ -255,11 +255,14 @@ export const BulkOperation = ({
               if (consumesSelection) {
                 onProcessed(result.failed.map((failure) => failure.id));
               }
-              const undo = undoSnackbarOptions({
-                ids: isReview(action) ? result.succeeded : [],
-                undoneText: `${testRuns(result.succeeded.length)} restored.`,
-                enqueueSnackbar,
-              });
+              const undo = isReview(action)
+                ? undoSnackbarOptions({
+                    ids: result.succeeded,
+                    decision: action === "Approve" ? "approve" : "reject",
+                    undoneText: `${testRuns(result.succeeded.length)} restored.`,
+                    enqueueSnackbar,
+                  })
+                : {};
               if (result.failed.length > 0) {
                 enqueueSnackbar(partialText(action, result), {
                   variant: "warning",

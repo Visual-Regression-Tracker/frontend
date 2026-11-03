@@ -1,9 +1,5 @@
 import { TestRun } from "../types";
-import {
-  handleResponse,
-  authHeader,
-  rejectWithMessage,
-} from "../_helpers/service.helpers";
+import { handleResponse, authHeader } from "../_helpers/service.helpers";
 import { API_URL } from "../_config/env.config";
 import { UpdateIgnoreAreaDto } from "../types/ignoreArea";
 
@@ -88,27 +84,13 @@ function approveBulk(
   return postBulk(`/approve?merge=${merge}`, ids);
 }
 
-// the backend answers per run, and a refusal comes back in a successful answer
-function rejectIfRefused(id: string, result: BulkResult): Promise<void> {
-  const refusal = result.failed.find((failure) => failure.id === id);
-  return refusal ? rejectWithMessage(refusal.message) : Promise.resolve();
-}
-
-function approveOne(id: string, merge: boolean): Promise<void> {
-  return testRunService
-    .approveBulk([id], merge)
-    .then((result) => rejectIfRefused(id, result));
-}
-
-function rejectOne(id: string): Promise<void> {
-  return testRunService
-    .rejectBulk([id])
-    .then((result) => rejectIfRefused(id, result));
-}
+export type ReviewDecision = "approve" | "reject";
 
 // all or nothing: one run that cannot be reverted fails the whole request
-function revert(ids: string[]): Promise<void> {
-  return sendJson("POST", "/revert", ids).then(() => undefined);
+function revert(ids: string[], decision: ReviewDecision): Promise<void> {
+  return sendJson("POST", `/revert?decision=${decision}`, ids).then(
+    () => undefined,
+  );
 }
 
 export interface MatchingVariations {
@@ -138,8 +120,6 @@ export const testRunService = {
   removeBulk,
   rejectBulk,
   approveBulk,
-  approveOne,
-  rejectOne,
   revert,
   getMatchingVariations,
   updateIgnoreAreas,

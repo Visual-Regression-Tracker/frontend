@@ -159,16 +159,21 @@ describe("ApproveRejectButtons", () => {
       expect(screen.queryByText("Approved")).not.toBeInTheDocument();
     });
 
-    it("shows the reason and does not carry on when the backend refuses the run", async () => {
+    it("warns with the reason, offers no undo and does not carry on when the backend refuses the run", async () => {
+      const reason = `Test run ${UNRESOLVED.id} is already approved`;
       vi.spyOn(testRunService, "approveBulk").mockResolvedValue({
         succeeded: [],
-        failed: [{ id: UNRESOLVED.id, message: "Baseline is locked" }],
+        failed: [{ id: UNRESOLVED.id, message: reason }],
       });
       const { user, afterApprove } = await renderButtons();
 
       await user.click(approveButton());
 
-      expect(await screen.findByText("Baseline is locked")).toBeVisible();
+      const toast = await toastOf(reason);
+      expect(toast).toHaveClass("notistack-MuiContent-warning");
+      expect(
+        within(toast).queryByText("Undo", { selector: "button" }),
+      ).not.toBeInTheDocument();
       expect(afterApprove).not.toHaveBeenCalled();
       expect(screen.queryByText("Approved")).not.toBeInTheDocument();
     });
@@ -258,16 +263,21 @@ describe("ApproveRejectButtons", () => {
       expect(screen.queryByText("Rejected")).not.toBeInTheDocument();
     });
 
-    it("shows the reason and does not carry on when the backend refuses the run", async () => {
+    it("warns with the reason, offers no undo and does not carry on when the backend refuses the run", async () => {
+      const reason = `Test run ${UNRESOLVED.id} was changed by someone else meanwhile`;
       vi.spyOn(testRunService, "rejectBulk").mockResolvedValue({
         succeeded: [],
-        failed: [{ id: UNRESOLVED.id, message: "Run was deleted" }],
+        failed: [{ id: UNRESOLVED.id, message: reason }],
       });
       const { user, afterReject } = await renderButtons();
 
       await user.click(rejectButton());
 
-      expect(await screen.findByText("Run was deleted")).toBeVisible();
+      const toast = await toastOf(reason);
+      expect(toast).toHaveClass("notistack-MuiContent-warning");
+      expect(
+        within(toast).queryByText("Undo", { selector: "button" }),
+      ).not.toBeInTheDocument();
       expect(afterReject).not.toHaveBeenCalled();
       expect(screen.queryByText("Rejected")).not.toBeInTheDocument();
     });
@@ -311,7 +321,7 @@ describe("ApproveRejectButtons", () => {
       await user.click(approveButton());
       await user.click(await undoIn("Approved"));
 
-      expect(revert).toHaveBeenCalledWith([UNRESOLVED.id]);
+      expect(revert).toHaveBeenCalledWith([UNRESOLVED.id], "approve");
       expect(revert).toHaveBeenCalledTimes(1);
       expect(await toastOf("Undone")).toHaveClass("notistack-MuiContent-info");
       await waitFor(() =>
@@ -366,7 +376,7 @@ describe("ApproveRejectButtons", () => {
       await user.click(rejectButton());
       await user.click(await undoIn("Rejected"));
 
-      expect(revert).toHaveBeenCalledWith([UNRESOLVED.id]);
+      expect(revert).toHaveBeenCalledWith([UNRESOLVED.id], "reject");
       expect(await screen.findByText("Undone")).toBeVisible();
     });
 

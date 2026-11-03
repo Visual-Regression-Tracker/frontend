@@ -470,7 +470,10 @@ describe("MatchingVariationsDialog", () => {
       await reviewer.click(submitButton(2));
       await reviewer.click(await undoIn("Approved 2 variations"));
 
-      expect(testRunService.revert).toHaveBeenCalledWith(["v1", "v2"]);
+      expect(testRunService.revert).toHaveBeenCalledWith(
+        ["v1", "v2"],
+        "approve",
+      );
       expect(await screen.findByText("2 variations restored.")).toBeVisible();
     });
 
@@ -499,7 +502,7 @@ describe("MatchingVariationsDialog", () => {
         await undoIn("Rejected 1 of 2 variations. 1 failed: Run is locked"),
       );
 
-      expect(testRunService.revert).toHaveBeenCalledWith(["v1"]);
+      expect(testRunService.revert).toHaveBeenCalledWith(["v1"], "reject");
       expect(await screen.findByText("1 variation restored.")).toBeVisible();
     });
 

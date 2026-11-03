@@ -436,7 +436,10 @@ describe("BulkOperation", () => {
       await confirm(user);
       await user.click(await undoIn("2 test runs approved."));
 
-      expect(revert).toHaveBeenCalledWith([NEW_RUN.id, UNRESOLVED_RUN.id]);
+      expect(revert).toHaveBeenCalledWith(
+        [NEW_RUN.id, UNRESOLVED_RUN.id],
+        "approve",
+      );
       expect(revert).toHaveBeenCalledTimes(1);
       expect(await toastOf("2 test runs restored.")).toHaveClass(
         "notistack-MuiContent-info",
@@ -459,7 +462,7 @@ describe("BulkOperation", () => {
       await confirm(user);
       await user.click(await undoIn("2 test runs approved."));
 
-      expect(revert).toHaveBeenCalledWith([NEW_RUN.id, mergeRun.id]);
+      expect(revert).toHaveBeenCalledWith([NEW_RUN.id, mergeRun.id], "approve");
     });
 
     it("reverts only the runs that went through when some failed", async () => {
@@ -478,8 +481,29 @@ describe("BulkOperation", () => {
         await undoIn("Rejected 1 of 2 test runs. 1 failed: Run is locked"),
       );
 
-      expect(revert).toHaveBeenCalledWith([NEW_RUN.id]);
+      expect(revert).toHaveBeenCalledWith([NEW_RUN.id], "reject");
       expect(await screen.findByText("1 test run restored.")).toBeVisible();
+    });
+
+    it("reverts only this user's approvals when another editor got to a run first", async () => {
+      const lost = `Test run ${UNRESOLVED_RUN.id} was changed by someone else meanwhile`;
+      vi.spyOn(testRunService, "approveBulk").mockResolvedValue({
+        succeeded: [NEW_RUN.id],
+        failed: [{ id: UNRESOLVED_RUN.id, message: lost }],
+      });
+      const revert = vi
+        .spyOn(testRunService, "revert")
+        .mockResolvedValue(undefined);
+      const { user } = renderBulkOperation();
+
+      await user.click(actionButton(APPROVE));
+      await confirm(user);
+      const text = `Approved 1 of 2 test runs. 1 failed: ${lost}`;
+      expect(await toastOf(text)).toHaveClass("notistack-MuiContent-warning");
+      await user.click(await undoIn(text));
+
+      expect(revert).toHaveBeenCalledWith([NEW_RUN.id], "approve");
+      expect(revert).toHaveBeenCalledTimes(1);
     });
 
     it("offers no undo when every run failed", async () => {

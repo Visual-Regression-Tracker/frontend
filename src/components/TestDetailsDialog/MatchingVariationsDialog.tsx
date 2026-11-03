@@ -320,6 +320,7 @@ export const MatchingVariationsDialog = ({
         const what = variationCount(ids.length);
         const undo = undoSnackbarOptions({
           ids: succeeded,
+          decision: mode,
           undoneText: `${variationCount(succeeded.length)} restored.`,
           enqueueSnackbar: enqueueAside,
           onUndone: () => forgetActed(testRun.buildId, succeeded),

@@ -123,31 +123,6 @@ describe("testRunService", () => {
     });
   });
 
-  describe("one run", () => {
-    it("approveOne and rejectOne resolve when the run is not refused", async () => {
-      stubFetch({ succeeded: ["t1"], failed: [] });
-
-      await expect(testRunService.approveOne("t1", false)).resolves.toBe(
-        undefined,
-      );
-      await expect(testRunService.rejectOne("t1")).resolves.toBe(undefined);
-    });
-
-    it("approveOne and rejectOne reject with the refusal message", async () => {
-      stubFetch({
-        succeeded: [],
-        failed: [{ id: "t1", message: "Baseline is locked" }],
-      });
-
-      await expect(testRunService.approveOne("t1", true)).rejects.toBe(
-        "Baseline is locked",
-      );
-      await expect(testRunService.rejectOne("t1")).rejects.toBe(
-        "Baseline is locked",
-      );
-    });
-  });
-
   it("getMatchingVariations fetches the siblings of a test run", async () => {
     const answer = { variations: [], skipped: [] };
     const fetchMock = stubFetch(answer);
@@ -205,22 +180,28 @@ describe("testRunService", () => {
   });
 
   describe("revert", () => {
-    it("posts the ids to the revert route", async () => {
-      const fetchMock = vi
-        .fn()
-        .mockResolvedValue(new Response(null, { status: 204 }));
-      vi.stubGlobal("fetch", fetchMock);
+    it.each(["approve", "reject"] as const)(
+      "posts the ids with the %s it undoes to the revert route",
+      async (decision) => {
+        const fetchMock = vi
+          .fn()
+          .mockResolvedValue(new Response(null, { status: 204 }));
+        vi.stubGlobal("fetch", fetchMock);
 
-      await expect(
-        testRunService.revert(["t1", "t2"]),
-      ).resolves.toBeUndefined();
+        await expect(
+          testRunService.revert(["t1", "t2"], decision),
+        ).resolves.toBeUndefined();
 
-      expect(fetchMock).toHaveBeenCalledWith(`${API}/test-runs/revert`, {
-        method: "POST",
-        headers: JSON_AUTH,
-        body: JSON.stringify(["t1", "t2"]),
-      });
-    });
+        expect(fetchMock).toHaveBeenCalledWith(
+          `${API}/test-runs/revert?decision=${decision}`,
+          {
+            method: "POST",
+            headers: JSON_AUTH,
+            body: JSON.stringify(["t1", "t2"]),
+          },
+        );
+      },
+    );
 
     it("rejects with the message of a refused revert", async () => {
       stubFetch(
@@ -228,7 +209,7 @@ describe("testRunService", () => {
         { status: 409 },
       );
 
-      await expect(testRunService.revert(["t1"])).rejects.toBe(
+      await expect(testRunService.revert(["t1"], "approve")).rejects.toBe(
         "Baseline was approved again",
       );
     });
