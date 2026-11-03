@@ -1,5 +1,6 @@
-import { act, screen } from "@testing-library/react";
+import { screen } from "@testing-library/react";
 import { useNavigate } from "react-router-dom";
+import { actAsync } from "../_test/act";
 import { renderWithProviders } from "../_test/render";
 import { buildsService } from "../services";
 import { Build } from "../types";
@@ -49,8 +50,8 @@ describe("BuildProvider", () => {
     });
 
     await user.click(screen.getByRole("button", { name: "Open b2" }));
-    await act(async () => second.resolve(build("b2")));
-    await act(async () => first.resolve(build("b1")));
+    await actAsync(() => second.resolve(build("b2")));
+    await actAsync(() => first.resolve(build("b1")));
 
     expect(selected()).toHaveTextContent("b2");
   });
@@ -66,7 +67,7 @@ describe("BuildProvider", () => {
     expect(await screen.findByText("b1")).toBeInTheDocument();
 
     await user.click(screen.getByRole("button", { name: "Open b2" }));
-    await act(async () => second.reject("Not found"));
+    await actAsync(() => second.reject("Not found"));
 
     expect(selected()).toHaveTextContent("none");
   });

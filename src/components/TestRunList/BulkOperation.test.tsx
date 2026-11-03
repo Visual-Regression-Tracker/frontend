@@ -1,4 +1,5 @@
 import { screen, waitFor, within } from "@testing-library/react";
+import { rejectWithMessage } from "../../_test/reject";
 import { renderWithProviders } from "../../_test/render";
 import { toastOf, undoIn } from "../../_test/toast";
 import { SeedTestRuns } from "../../_test/SeedTestRuns";
@@ -270,7 +271,7 @@ describe("BulkOperation", () => {
       const mergeRun = run("merge-run", TestStatus.unresolved, true);
       vi.spyOn(testRunService, "approveBulk").mockImplementation(
         (ids, merge) =>
-          merge ? Promise.reject("Server error") : allSucceeded(ids),
+          merge ? rejectWithMessage("Server error") : allSucceeded(ids),
       );
       const { user, onProcessed } = renderBulkOperation({
         selectedIds: [plainRun.id, mergeRun.id],

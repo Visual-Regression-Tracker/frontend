@@ -731,10 +731,10 @@ describe("MatchingVariationsDialog", () => {
         ...TEST_BUILD_UNRESOLVED,
         id: buildId,
       });
-      vi.spyOn(testRunService, "getDetails").mockImplementation(async (id) => {
+      vi.spyOn(testRunService, "getDetails").mockImplementation((id) => {
         const found = testRuns.find((item) => item.id === id);
-        if (!found) throw new Error(`no run ${id}`);
-        return found;
+        if (!found) return Promise.reject(new Error(`no run ${id}`));
+        return Promise.resolve(found);
       });
       vi.spyOn(testRunService, "getMatchingVariations").mockResolvedValue({
         variations: [run("v1", buildId)],

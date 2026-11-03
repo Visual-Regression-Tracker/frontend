@@ -3,6 +3,8 @@ import { act, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { CurrentSearch } from "../../_test/location";
 import type { MockInstance } from "vitest";
+import { actAsync } from "../../_test/act";
+import { rejectWithMessage } from "../../_test/reject";
 import { renderWithProviders } from "../../_test/render";
 import { selectProject, useProjectDispatch } from "../../contexts";
 import { buildsService } from "../../services";
@@ -230,8 +232,8 @@ describe("BuildList", () => {
         undefined,
       );
 
-      await act(async () => second.resolve(page(TEST_BUILD_PASSED)));
-      await act(async () => first.resolve(page(TEST_BUILD_FAILED)));
+      await actAsync(() => second.resolve(page(TEST_BUILD_PASSED)));
+      await actAsync(() => first.resolve(page(TEST_BUILD_FAILED)));
 
       expect(screen.getByText("#2")).toBeVisible();
       expect(screen.queryByText("#1")).not.toBeInTheDocument();
@@ -251,8 +253,8 @@ describe("BuildList", () => {
       rerender(<InProject projectId="project-b" />);
       await waitFor(() => expect(getList).toHaveBeenCalledTimes(2));
 
-      await act(async () => second.resolve(page(TEST_BUILD_PASSED)));
-      await act(async () => first.reject("Project A is gone"));
+      await actAsync(() => second.resolve(page(TEST_BUILD_PASSED)));
+      await actAsync(() => first.reject("Project A is gone"));
 
       expect(screen.getByText("#2")).toBeVisible();
       expect(screen.queryByText("Project A is gone")).not.toBeInTheDocument();
@@ -308,7 +310,7 @@ describe("BuildList", () => {
           .spyOn(buildsService, "remove")
           .mockImplementation((id) =>
             id === "build-2"
-              ? Promise.reject("Build is locked")
+              ? rejectWithMessage("Build is locked")
               : Promise.resolve(makeBuild(1)),
           );
         const { user } = renderWithProviders(<OpenProject />);
@@ -586,7 +588,7 @@ describe("BuildList", () => {
             screen.getByRole("checkbox", { name: "Select all (3)" }),
           ).toBeInTheDocument(),
         );
-        await act(async () => resolveAll(pageOf(builds(1, TOTAL), TOTAL)));
+        await actAsync(() => resolveAll(pageOf(builds(1, TOTAL), TOTAL)));
 
         expect(
           screen.getByRole("checkbox", { name: "Select all (3)" }),

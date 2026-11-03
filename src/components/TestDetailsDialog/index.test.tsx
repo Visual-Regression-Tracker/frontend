@@ -44,12 +44,12 @@ const renderDialog = async ({
   vi.spyOn(buildsService, "getDetails").mockResolvedValue(
     TEST_BUILD_UNRESOLVED,
   );
-  vi.spyOn(testRunService, "getDetails").mockImplementation(async (id) => {
+  vi.spyOn(testRunService, "getDetails").mockImplementation((id) => {
     const found = [...testRuns, openRun].find((item) => item.id === id);
     if (!found) {
-      throw new Error(`no run ${id}`);
+      return Promise.reject(new Error(`no run ${id}`));
     }
-    return found;
+    return Promise.resolve(found);
   });
 
   const result = renderWithProviders(

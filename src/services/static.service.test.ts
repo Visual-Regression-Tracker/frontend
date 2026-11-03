@@ -55,7 +55,7 @@ describe("staticService", () => {
     const answer = (status: number, body?: Blob) => ({
       ok: status >= 200 && status < 300,
       status,
-      blob: async () => body,
+      blob: () => Promise.resolve(body),
     });
 
     // jsdom has no object URLs; the archive link's href and download name stand in for the download
@@ -81,8 +81,10 @@ describe("staticService", () => {
       const b = blob("b");
       const fetchMock = vi
         .fn()
-        .mockImplementation(async (url: string) =>
-          url.includes("/a.png/") ? answer(200, a) : answer(200, b),
+        .mockImplementation((url: string) =>
+          Promise.resolve(
+            url.includes("/a.png/") ? answer(200, a) : answer(200, b),
+          ),
         );
       vi.stubGlobal("fetch", fetchMock);
 
@@ -113,9 +115,9 @@ describe("staticService", () => {
       const bodies: Record<string, Blob> = { a, b, c };
       vi.stubGlobal(
         "fetch",
-        vi.fn().mockImplementation(async (url: string) => {
+        vi.fn().mockImplementation((url: string) => {
           const name = url.replace("http://api.test/images/", "")[0];
-          return answer(200, bodies[name]);
+          return Promise.resolve(answer(200, bodies[name]));
         }),
       );
 

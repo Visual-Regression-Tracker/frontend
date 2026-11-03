@@ -14,7 +14,7 @@ import {
   useProjectState,
 } from "../../contexts";
 import { ProjectDto } from "../../types";
-import { ImageComparison } from "../../types/imageComparison";
+import { ImageComparison, VlmConfig } from "../../types/imageComparison";
 import { Button } from "@mui/material";
 import { ValidatedForm } from "../ValidatedForm";
 import { ProjectForm } from "./ProjectForm";
@@ -66,9 +66,13 @@ const Harness = ({
   );
 };
 
-const editState = (): ProjectDto =>
-  JSON.parse(screen.getByTestId("editState").textContent ?? "{}");
-const editConfig = () => JSON.parse(editState().imageComparisonConfig);
+type Config = Record<string, unknown>;
+const parseConfig = (json: string) => JSON.parse(json) as Config;
+
+const editState = () =>
+  JSON.parse(screen.getByTestId("editState").textContent ?? "{}") as ProjectDto;
+const editConfig = () => parseConfig(editState().imageComparisonConfig);
+const submitSpy = () => vi.fn<(project: ProjectDto) => void>();
 
 const renderForm = async (
   initial: ProjectDto | null = PROJECT,
@@ -237,7 +241,7 @@ describe("ProjectForm", () => {
 
   describe("submitting", () => {
     it("submits the project as it was edited", async () => {
-      const onSubmit = vi.fn();
+      const onSubmit = submitSpy();
       const { user } = await renderForm(PROJECT, onSubmit);
 
       await user.clear(screen.getByLabelText(/^Project name/));
@@ -254,7 +258,7 @@ describe("ProjectForm", () => {
     ])(
       "does not submit when the %s is a single character",
       async (_label, field) => {
-        const onSubmit = vi.fn();
+        const onSubmit = submitSpy();
         const { user } = await renderForm(PROJECT, onSubmit);
 
         await user.clear(screen.getByLabelText(field));
@@ -272,7 +276,7 @@ describe("ProjectForm", () => {
       ["number of builds to keep", /^Number of builds/],
       ["max branch lifetime", /^Max branch lifetime/],
     ])("does not submit a zero for the %s", async (_label, field) => {
-      const onSubmit = vi.fn();
+      const onSubmit = submitSpy();
       const { user } = await renderForm(PROJECT, onSubmit);
 
       await replaceNumber(user, screen.getByLabelText(field), "0");
@@ -285,7 +289,7 @@ describe("ProjectForm", () => {
     });
 
     it("does not submit a new project without a name", async () => {
-      const onSubmit = vi.fn();
+      const onSubmit = submitSpy();
       const { user } = await renderForm(null, onSubmit);
 
       await user.click(screen.getByTestId("submitButton"));
@@ -431,7 +435,7 @@ describe("ProjectForm", () => {
       ["a decimal above 1", "1.5", "Enter less than or equal to 1"],
       ["below 0", "-1", "Enter greater than or equal to 0"],
     ])("does not submit a threshold %s", async (_label, value, message) => {
-      const onSubmit = vi.fn();
+      const onSubmit = submitSpy();
       const { user } = await renderForm(PROJECT, onSubmit);
 
       await replaceNumber(
@@ -483,7 +487,7 @@ describe("ProjectForm", () => {
     });
 
     it("does not submit a threshold above 1", async () => {
-      const onSubmit = vi.fn();
+      const onSubmit = submitSpy();
       const { user } = await renderForm(odiff, onSubmit);
 
       await replaceNumber(
@@ -545,7 +549,7 @@ describe("ProjectForm", () => {
     it.each([["Tolerance"], ["Antialiasing tolerance"]])(
       "does not submit a negative %s",
       async (label) => {
-        const onSubmit = vi.fn();
+        const onSubmit = submitSpy();
         const { user } = await renderForm(lookSame, onSubmit);
 
         await replaceNumber(user, screen.getByLabelText(label), "-1");
@@ -669,7 +673,7 @@ describe("ProjectForm", () => {
 
     it("saves other changes of a project saved with it on where there is no service", async () => {
       serverHas(false);
-      const onSubmit = vi.fn();
+      const onSubmit = submitSpy();
       const { user } = await renderForm(withFilter(), onSubmit);
 
       await user.clear(screen.getByLabelText(/^Project name/));
@@ -703,7 +707,7 @@ describe("ProjectForm", () => {
       imageComparison: ImageComparison.vlm,
       imageComparisonConfig: VLM_DEFAULT_CONFIG,
     };
-    const defaults = JSON.parse(VLM_DEFAULT_CONFIG);
+    const defaults = JSON.parse(VLM_DEFAULT_CONFIG) as VlmConfig;
 
     describe("with the Ollama provider", () => {
       it("starts on Ollama with the default prompt, temperature and thinking", async () => {
@@ -815,7 +819,7 @@ describe("ProjectForm", () => {
         ["above 1", "1.5", "Enter less than or equal to 1"],
         ["below 0", "-0.5", "Enter greater than or equal to 0"],
       ])("does not submit a temperature %s", async (_label, value, message) => {
-        const onSubmit = vi.fn();
+        const onSubmit = submitSpy();
         const { user } = await renderForm(
           {
             ...vlm,
@@ -835,7 +839,7 @@ describe("ProjectForm", () => {
       });
 
       it("does not submit without a model", async () => {
-        const onSubmit = vi.fn();
+        const onSubmit = submitSpy();
         const { user } = await renderForm(vlm, onSubmit);
         await screen.findByText(
           "No models available. Enter model name manually.",
@@ -850,7 +854,7 @@ describe("ProjectForm", () => {
         vi.spyOn(ollamaService, "listModels").mockResolvedValue([
           { name: "gemma3:12b" },
         ]);
-        const onSubmit = vi.fn();
+        const onSubmit = submitSpy();
         const { user } = await renderForm(vlm, onSubmit);
         await screen.findByRole("combobox", { name: /^Model/ });
 
@@ -864,7 +868,7 @@ describe("ProjectForm", () => {
         vi.spyOn(ollamaService, "listModels").mockResolvedValue([
           { name: "gemma3:12b" },
         ]);
-        const onSubmit = vi.fn();
+        const onSubmit = submitSpy();
         await renderForm(vlm, onSubmit);
         await screen.findByRole("combobox", { name: /^Model/ });
 
@@ -875,7 +879,7 @@ describe("ProjectForm", () => {
       });
 
       it("does not submit without a prompt", async () => {
-        const onSubmit = vi.fn();
+        const onSubmit = submitSpy();
         const { user } = await renderForm(
           {
             ...vlm,
@@ -894,7 +898,7 @@ describe("ProjectForm", () => {
       });
 
       it("submits a complete config", async () => {
-        const onSubmit = vi.fn();
+        const onSubmit = submitSpy();
         const config = JSON.stringify({ ...defaults, model: "gemma3:12b" });
         const { user } = await renderForm(
           { ...vlm, imageComparisonConfig: config },
@@ -988,7 +992,7 @@ describe("ProjectForm", () => {
       });
 
       it("does not submit without an api key", async () => {
-        const onSubmit = vi.fn();
+        const onSubmit = submitSpy();
         const { user } = await renderForm(vlm, onSubmit);
         await switchToGemini(user);
 
@@ -998,7 +1002,7 @@ describe("ProjectForm", () => {
       });
 
       it("does not submit without a model", async () => {
-        const onSubmit = vi.fn();
+        const onSubmit = submitSpy();
         const { user } = await renderForm(vlm, onSubmit);
         await switchToGemini(user);
         await user.type(screen.getByLabelText(/^Gemini API Key/), "secret-key");
@@ -1010,7 +1014,7 @@ describe("ProjectForm", () => {
       });
 
       it("submits a complete Gemini config", async () => {
-        const onSubmit = vi.fn();
+        const onSubmit = submitSpy();
         const { user } = await renderForm(vlm, onSubmit);
         await switchToGemini(user);
         await user.type(screen.getByLabelText(/^Gemini API Key/), "secret-key");
@@ -1072,7 +1076,7 @@ describe("ProjectForm", () => {
         const HINT = "Leave as is to keep the saved key.";
 
         it("shows the hint and submits the masked key unchanged", async () => {
-          const onSubmit = vi.fn();
+          const onSubmit = submitSpy();
           const { user } = await renderForm(masked, onSubmit);
 
           expect(screen.getByText(HINT)).toBeInTheDocument();
@@ -1086,7 +1090,7 @@ describe("ProjectForm", () => {
         });
 
         it("submits a typed key instead of the masked one and drops the hint", async () => {
-          const onSubmit = vi.fn();
+          const onSubmit = submitSpy();
           const { user } = await renderForm(masked, onSubmit);
 
           await user.clear(screen.getByLabelText(/^Gemini API Key/));
@@ -1164,15 +1168,15 @@ describe("ProjectForm", () => {
     const withDefaults = (
       base: string,
       extra: Record<string, unknown> = {},
-    ): Record<string, unknown> => ({ ...JSON.parse(base), ...extra });
+    ): Config => ({ ...parseConfig(base), ...extra });
     const sentKey =
       (key: string) =>
       (project: ProjectDto): unknown =>
-        JSON.parse(project.imageComparisonConfig)[key];
+        parseConfig(project.imageComparisonConfig)[key];
 
     const numberFieldTests = (rows: NumberField[]) => {
       it.each(rows)("saves an in-range $name", async (row) => {
-        const onSubmit = vi.fn();
+        const onSubmit = submitSpy();
         const { user } = await renderForm(row.initial, onSubmit);
 
         await replaceNumber(
@@ -1187,7 +1191,7 @@ describe("ProjectForm", () => {
       });
 
       it.each(rows)("pins what an emptied $name does on save", async (row) => {
-        const onSubmit = vi.fn();
+        const onSubmit = submitSpy();
         const { user } = await renderForm(row.initial, onSubmit);
         const field = screen.getByLabelText(row.label);
 
