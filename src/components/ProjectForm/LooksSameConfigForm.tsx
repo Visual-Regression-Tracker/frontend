@@ -25,8 +25,8 @@ export const LooksSameConfigForm = () => {
         name="tolerance"
         validators={["minNumber:0"]}
         errorMessages={["Enter greater than 0"]}
-        InputProps={{
-          inputProps: {
+        slotProps={{
+          htmlInput: {
             min: 0,
             step: 0.001,
           },
@@ -60,8 +60,8 @@ export const LooksSameConfigForm = () => {
         name="antialiasingTolerance"
         validators={["minNumber:0"]}
         errorMessages={["Enter greater than 0"]}
-        InputProps={{
-          inputProps: {
+        slotProps={{
+          htmlInput: {
             min: 0,
             step: 0.001,
           },

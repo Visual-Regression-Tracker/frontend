@@ -18,10 +18,12 @@ const EmailField = ({ value, onChange }: EmailFieldProps) => (
     variant="outlined"
     required
     fullWidth
-    inputProps={{
-      onChange: (event: ChangeEvent<HTMLInputElement>) =>
-        onChange(event.target.value),
-      "data-testid": "email",
+    slotProps={{
+      htmlInput: {
+        onChange: (event: ChangeEvent<HTMLInputElement>) =>
+          onChange(event.target.value),
+        "data-testid": "email",
+      },
     }}
   />
 );

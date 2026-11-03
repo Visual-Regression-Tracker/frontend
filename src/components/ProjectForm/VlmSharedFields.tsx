@@ -54,8 +54,8 @@ const VlmTemperatureField = ({
             "Enter greater than or equal to 0",
             "Enter less than or equal to 1",
           ]}
-          InputProps={{
-            inputProps: {
+          slotProps={{
+            htmlInput: {
               min: 0,
               max: 1,
               step: 0.01,

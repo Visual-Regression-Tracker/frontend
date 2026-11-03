@@ -39,27 +39,29 @@ const PasswordField = ({
       value={password}
       label={label}
       type={showPassword ? "text" : "password"}
-      InputProps={{
-        endAdornment: (
-          <InputAdornment position="end">
-            <IconButton
-              aria-label="toggle password visibility"
-              onClick={handleClickShowPassword}
-              onMouseDown={handleMouseDownPassword}
-              edge="end"
-            >
-              {showPassword ? <VisibilityOff /> : <Visibility />}
-            </IconButton>
-          </InputAdornment>
-        ),
-      }}
       variant="outlined"
       required
       fullWidth
-      inputProps={{
-        onChange: (event: ChangeEvent<HTMLInputElement>) =>
-          setPassword(event.target.value),
-        "data-testid": "password",
+      slotProps={{
+        input: {
+          endAdornment: (
+            <InputAdornment position="end">
+              <IconButton
+                aria-label="toggle password visibility"
+                onClick={handleClickShowPassword}
+                onMouseDown={handleMouseDownPassword}
+                edge="end"
+              >
+                {showPassword ? <VisibilityOff /> : <Visibility />}
+              </IconButton>
+            </InputAdornment>
+          ),
+        },
+        htmlInput: {
+          onChange: (event: ChangeEvent<HTMLInputElement>) =>
+            setPassword(event.target.value),
+          "data-testid": "password",
+        },
       }}
     />
   );

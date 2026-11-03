@@ -112,7 +112,6 @@ export const TestRunGrid = ({
               checked={selectedCount === ids.length}
               indeterminate={selectedCount > 0 && selectedCount < ids.length}
               onChange={() => onToggleGroup(ids)}
-              inputProps={{ "aria-label": `Select ${representative.name}` }}
               sx={{
                 position: "absolute",
                 top: 2,
@@ -120,6 +119,9 @@ export const TestRunGrid = ({
                 padding: 0.5,
                 backgroundColor: "rgba(255, 255, 255, 0.85)",
                 "&:hover": { backgroundColor: "rgba(255, 255, 255, 0.95)" },
+              }}
+              slotProps={{
+                input: { "aria-label": `Select ${representative.name}` },
               }}
             />
             {runs.length > 1 && (

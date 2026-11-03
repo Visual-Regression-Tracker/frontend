@@ -53,8 +53,8 @@ export const OdiffConfigForm = () => {
         name="threshold"
         validators={["minNumber:0", "maxNumber:1"]}
         errorMessages={["Enter greater than 0", "Enter less than 1"]}
-        InputProps={{
-          inputProps: {
+        slotProps={{
+          htmlInput: {
             min: 0,
             max: 1,
             step: 0.001,

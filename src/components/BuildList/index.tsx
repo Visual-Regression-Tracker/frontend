@@ -244,8 +244,10 @@ const BuildList = () => {
                 indeterminate={someSelected}
                 disabled={selectingAll || buildList.length === 0}
                 onChange={toggleSelectAll}
-                inputProps={{ "aria-label": selectAllLabel }}
                 data-testid="buildSelectAll"
+                slotProps={{
+                  input: { "aria-label": selectAllLabel },
+                }}
               />
             </span>
           </Tooltip>
@@ -259,7 +261,12 @@ const BuildList = () => {
               value={searchQuery}
               debounceTimeout={300}
               onChange={setSearchQuery}
-              inputProps={{ "data-testid": "buildSearch", autoComplete: "off" }}
+              slotProps={{
+                htmlInput: {
+                  "data-testid": "buildSearch",
+                  autoComplete: "off",
+                },
+              }}
             />
           </Box>
           {/* fades in place so picking a build does not resize the search field */}
@@ -370,10 +377,12 @@ const BuildList = () => {
                 fullWidth
                 required
                 value={newCiBuildId}
-                inputProps={{
-                  onChange: (event: ChangeEvent<HTMLInputElement>) =>
-                    setNewCiBuildId(event.target.value),
-                  "data-testid": "newCiBuildId",
+                slotProps={{
+                  htmlInput: {
+                    onChange: (event: ChangeEvent<HTMLInputElement>) =>
+                      setNewCiBuildId(event.target.value),
+                    "data-testid": "newCiBuildId",
+                  },
                 }}
               />
             </Fragment>

@@ -124,10 +124,13 @@ const ProfilePage = () => {
                           fullWidth
                           // The identity provider owns the email of SSO users.
                           disabled={oidcEnabled !== false}
-                          inputProps={{
-                            onChange: (event: ChangeEvent<HTMLInputElement>) =>
-                              setEmail(event.target.value),
-                            "data-testid": "email",
+                          slotProps={{
+                            htmlInput: {
+                              onChange: (
+                                event: ChangeEvent<HTMLInputElement>,
+                              ) => setEmail(event.target.value),
+                              "data-testid": "email",
+                            },
                           }}
                         />
                       </Grid>

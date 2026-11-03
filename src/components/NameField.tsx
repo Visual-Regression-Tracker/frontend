@@ -20,10 +20,12 @@ const NameField = ({ name, label, value, onChange }: NameFieldProps) => (
     variant="outlined"
     required
     fullWidth
-    inputProps={{
-      onChange: (event: ChangeEvent<HTMLInputElement>) =>
-        onChange(event.target.value),
-      "data-testid": name,
+    slotProps={{
+      htmlInput: {
+        onChange: (event: ChangeEvent<HTMLInputElement>) =>
+          onChange(event.target.value),
+        "data-testid": name,
+      },
     }}
   />
 );

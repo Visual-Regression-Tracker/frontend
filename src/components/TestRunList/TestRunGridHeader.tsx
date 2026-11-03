@@ -93,8 +93,10 @@ export const TestRunGridHeader = ({
           checked={totalCount > 0 && selectedCount === totalCount}
           indeterminate={selectedCount > 0 && selectedCount < totalCount}
           onChange={onToggleAll}
-          inputProps={{ "aria-label": "Select all runs" }}
           data-testid="gridSelectAll"
+          slotProps={{
+            input: { "aria-label": "Select all runs" },
+          }}
         />
       </Box>
       {label("name", 1)}

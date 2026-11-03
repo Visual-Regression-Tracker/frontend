@@ -178,29 +178,31 @@ const TestVariationListPage = () => {
             size="small"
             label="Per page"
             sx={{ minWidth: 120 }}
-            SelectProps={{
-              sx: {
-                "& .MuiSelect-select": {
-                  textAlign: "center",
-                  pl: "32px",
-                },
-              },
-            }}
-            InputProps={{ notched: false }}
-            InputLabelProps={{
-              shrink: true,
-              sx: {
-                left: "50%",
-                transformOrigin: "top center",
-                transform: "translate(-50%, -9px) scale(0.75)",
-                px: 0.5,
-                bgcolor: "background.paper",
-              },
-            }}
             value={pageSize}
             onChange={(event) => {
               setPageSize(Number(event.target.value));
               setPage(1);
+            }}
+            slotProps={{
+              input: { notched: false },
+              select: {
+                sx: {
+                  "& .MuiSelect-select": {
+                    textAlign: "center",
+                    pl: "32px",
+                  },
+                },
+              },
+              inputLabel: {
+                shrink: true,
+                sx: {
+                  left: "50%",
+                  transformOrigin: "top center",
+                  transform: "translate(-50%, -9px) scale(0.75)",
+                  px: 0.5,
+                  bgcolor: "background.paper",
+                },
+              },
             }}
           >
             {PAGE_SIZE_OPTIONS.map((option) => (
