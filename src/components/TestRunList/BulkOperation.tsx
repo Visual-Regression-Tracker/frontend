@@ -15,8 +15,16 @@ import { TestRun } from "../../types";
 import { isAwaitingReview } from "../../_helpers/testRunStatus.helper";
 import { Tooltip } from "../Tooltip";
 import { undoSnackbarOptions } from "../UndoSnackbarAction";
-import { TAG_FIELDS, tagValuesOf } from "../../_helpers/testRunTags.helper";
-import { partialFailureText, pluralize } from "../../_helpers/format.helper";
+import {
+  TAG_FIELDS,
+  runLabel,
+  tagValuesOf,
+} from "../../_helpers/testRunTags.helper";
+import {
+  failureVariant,
+  partialFailureText,
+  pluralize,
+} from "../../_helpers/format.helper";
 
 const testRuns = (count: number): string =>
   `${count} test ${pluralize(count, "run")}`;
@@ -31,7 +39,7 @@ const PAST_TENSE: Record<BulkAction, string> = {
   Clear: "Cleared",
 };
 
-const isReview = (action: BulkAction | null): boolean =>
+const isReview = (action: BulkAction | null): action is "Approve" | "Reject" =>
   action === "Approve" || action === "Reject";
 
 const ACTION_BUTTONS: {
@@ -75,11 +83,19 @@ const processedText = (
     ? `${testRuns(eligibleCount)} ${PAST_TENSE[verb].toLowerCase()}.`
     : `${testRuns(selectedCount)} processed.`;
 
-const partialText = (verb: BulkAction, result: BulkResult): string =>
+const partialText = (
+  verb: BulkAction,
+  result: BulkResult,
+  rows: TestRun[],
+): string =>
   partialFailureText(
     PAST_TENSE[verb],
     result,
     testRuns(result.succeeded.length + result.failed.length),
+    (id) => {
+      const row = rows.find((candidate) => candidate.id === id);
+      return row && runLabel(row);
+    },
   );
 
 export const BulkOperation = ({
@@ -255,14 +271,17 @@ export const BulkOperation = ({
               if (consumesSelection) {
                 onProcessed(result.failed.map((failure) => failure.id));
               }
-              const undo = undoSnackbarOptions({
-                ids: isReview(action) ? result.succeeded : [],
-                undoneText: `${testRuns(result.succeeded.length)} restored.`,
-                enqueueSnackbar,
-              });
+              const undo = isReview(action)
+                ? undoSnackbarOptions({
+                    ids: result.succeeded,
+                    decision: action === "Approve" ? "approve" : "reject",
+                    undoneText: `${testRuns(result.succeeded.length)} restored.`,
+                    enqueueSnackbar,
+                  })
+                : {};
               if (result.failed.length > 0) {
-                enqueueSnackbar(partialText(action, result), {
-                  variant: "warning",
+                enqueueSnackbar(partialText(action, result, rows), {
+                  variant: failureVariant(result.failed),
                   ...undo,
                 });
               } else {

@@ -17,7 +17,10 @@ import { LightboxPreview, VariationLightbox } from "./VariationLightbox";
 import { Tooltip } from "../Tooltip";
 import { undoSnackbarOptions } from "../UndoSnackbarAction";
 import { testRunService } from "../../services";
-import { MatchingVariations } from "../../services/testRun.service";
+import {
+  MatchingVariations,
+  ReviewDecision,
+} from "../../services/testRun.service";
 import { useTestRunState } from "../../contexts";
 import { GO_TO_NEXT_KEY } from "../../constants";
 import { parseJson } from "../../_helpers/parseJson";
@@ -26,7 +29,11 @@ import { byDiffDesc, orderByIds } from "../../_helpers/testRunOrder.helper";
 import { TestRun } from "../../types";
 import { TestStatus } from "../../types/testStatus";
 import { imageSurface } from "../../theme/tokens";
-import { partialFailureText, pluralize } from "../../_helpers/format.helper";
+import {
+  failureVariant,
+  partialFailureText,
+  pluralize,
+} from "../../_helpers/format.helper";
 
 const Toolbar = styled("div")({
   display: "flex",
@@ -86,7 +93,7 @@ const Loading = styled("div")({
 const variationCount = (count: number): string =>
   `${count} ${pluralize(count, "variation")}`;
 
-export type MatchingVariationsMode = "approve" | "reject";
+export type MatchingVariationsMode = ReviewDecision;
 
 // runs acted on this session, per build: go-to-next skips them before socket state catches up
 const acted: { buildId: string | null; ids: Set<string> } = {
@@ -311,14 +318,18 @@ export const MatchingVariationsDialog = ({
         const what = variationCount(ids.length);
         const undo = undoSnackbarOptions({
           ids: succeeded,
+          decision: mode,
           undoneText: `${variationCount(succeeded.length)} restored.`,
           enqueueSnackbar: enqueueAside,
           onUndone: () => forgetActed(testRun.buildId, succeeded),
         });
         if (failed.length > 0) {
           enqueueSnackbar(
-            partialFailureText(done, { succeeded, failed }, what),
-            { variant: "warning", ...undo },
+            partialFailureText(done, { succeeded, failed }, what, (id) => {
+              const variation = data?.variations.find((run) => run.id === id);
+              return variation && `${variation.name} (${labelOf(variation)})`;
+            }),
+            { variant: failureVariant(failed), ...undo },
           );
           if (succeeded.length > 0) {
             onClose();

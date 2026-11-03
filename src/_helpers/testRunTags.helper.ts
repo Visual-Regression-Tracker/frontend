@@ -18,3 +18,8 @@ export const tagValuesOf = (
 
 export const tagsOf = (run: TestRun, fields: Array<keyof TestRun>): string =>
   tagValuesOf(run, fields).join(" · ");
+
+export const runLabel = (run: TestRun): string => {
+  const tags = tagsOf(run, TAG_FIELDS);
+  return tags ? `${run.name} (${tags})` : run.name;
+};

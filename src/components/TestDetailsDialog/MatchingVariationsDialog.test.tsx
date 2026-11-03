@@ -3,7 +3,7 @@ import { act, cleanup, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { useNavigate } from "react-router-dom";
 import { renderWithProviders } from "../../_test/render";
-import { undoIn } from "../../_test/toast";
+import { toastOf, undoIn } from "../../_test/toast";
 import { SeedTestRuns } from "../../_test/SeedTestRuns";
 import { buildsService, projectsService, testRunService } from "../../services";
 import { MatchingVariations } from "../../services/testRun.service";
@@ -366,6 +366,39 @@ describe("MatchingVariationsDialog", () => {
       expect(currentSearch()).toBe(`?buildId=${buildId}`);
     });
 
+    it.each([
+      ["Internal error", "Internal error", "error"],
+      [
+        "Test run v2 is already approved",
+        'Test run "login screen (tags v2)" is already approved',
+        "warning",
+      ],
+    ])(
+      "names the variation and colours the toast for %s",
+      async (message, shown, variant) => {
+        const buildId = nextBuildId();
+        const current = run("current", buildId);
+        await renderDialog({
+          buildId,
+          current,
+          answer: {
+            variations: [run("v1", buildId), run("v2", buildId)],
+            skipped: [],
+          },
+        });
+        vi.mocked(testRunService.approveBulk).mockResolvedValue({
+          succeeded: ["v1"],
+          failed: [{ id: "v2", message }],
+        });
+
+        await newReviewer().click(submitButton(2));
+
+        expect(
+          await toastOf(`Approved 1 of 2 variations. 1 failed: ${shown}`),
+        ).toHaveClass(`notistack-MuiContent-${variant}`);
+      },
+    );
+
     it("keeps the dialog open and the ticks when every run failed", async () => {
       const buildId = nextBuildId();
       const current = run("current", buildId);
@@ -470,7 +503,10 @@ describe("MatchingVariationsDialog", () => {
       await reviewer.click(submitButton(2));
       await reviewer.click(await undoIn("Approved 2 variations"));
 
-      expect(testRunService.revert).toHaveBeenCalledWith(["v1", "v2"]);
+      expect(testRunService.revert).toHaveBeenCalledWith(
+        ["v1", "v2"],
+        "approve",
+      );
       expect(await screen.findByText("2 variations restored.")).toBeVisible();
     });
 
@@ -499,7 +535,7 @@ describe("MatchingVariationsDialog", () => {
         await undoIn("Rejected 1 of 2 variations. 1 failed: Run is locked"),
       );
 
-      expect(testRunService.revert).toHaveBeenCalledWith(["v1"]);
+      expect(testRunService.revert).toHaveBeenCalledWith(["v1"], "reject");
       expect(await screen.findByText("1 variation restored.")).toBeVisible();
     });
 

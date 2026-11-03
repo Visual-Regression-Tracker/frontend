@@ -309,10 +309,10 @@ export const fulfillBulk = (route: Route) =>
     json: { succeeded: postData<string[]>(route.request()), failed: [] },
   });
 
-export const mockApproveTestRuns = (page: Page) => {
+export const mockApproveTestRuns = (page: Page, result?: unknown) => {
   return page.route(
     (url) => url.pathname === "/test-runs/approve",
-    fulfillBulk,
+    (route) => (result ? route.fulfill({ json: result }) : fulfillBulk(route)),
   );
 };
 
@@ -320,15 +320,17 @@ export const mockRejectTestRuns = (page: Page) => {
   return page.route(`${API_URL}/test-runs/reject`, fulfillBulk);
 };
 
+export const isRevertUrl = (url: URL) => url.pathname === "/test-runs/revert";
+
 export const mockRevertTestRuns = (page: Page) => {
-  return page.route(`${API_URL}/test-runs/revert`, (route) =>
-    route.fulfill({ status: 204 }),
-  );
+  return page.route(isRevertUrl, (route) => route.fulfill({ status: 204 }));
 };
 
 export const reverts = (request: { url: () => string; method: () => string }) =>
-  request.url() === `${API_URL}/test-runs/revert` &&
-  request.method() === "POST";
+  isRevertUrl(new URL(request.url())) && request.method() === "POST";
+
+export const revertDecision = (request: { url: () => string }) =>
+  new URL(request.url()).searchParams.get("decision");
 
 export const mockMatchingVariations = (
   page: Page,

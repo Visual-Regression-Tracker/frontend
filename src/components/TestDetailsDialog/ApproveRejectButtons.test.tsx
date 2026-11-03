@@ -159,18 +159,46 @@ describe("ApproveRejectButtons", () => {
       expect(screen.queryByText("Approved")).not.toBeInTheDocument();
     });
 
-    it("shows the reason and does not carry on when the backend refuses the run", async () => {
+    it("warns with the reason, offers no undo and does not carry on when the backend refuses the run", async () => {
       vi.spyOn(testRunService, "approveBulk").mockResolvedValue({
         succeeded: [],
-        failed: [{ id: UNRESOLVED.id, message: "Baseline is locked" }],
+        failed: [
+          {
+            id: UNRESOLVED.id,
+            message: `Test run ${UNRESOLVED.id} is already approved`,
+          },
+        ],
       });
       const { user, afterApprove } = await renderButtons();
 
       await user.click(approveButton());
 
-      expect(await screen.findByText("Baseline is locked")).toBeVisible();
+      const toast = await toastOf("This test run is already approved");
+      expect(toast).toHaveClass("notistack-MuiContent-warning");
+      expect(
+        within(toast).queryByText("Undo", { selector: "button" }),
+      ).not.toBeInTheDocument();
       expect(afterApprove).not.toHaveBeenCalled();
       expect(screen.queryByText("Approved")).not.toBeInTheDocument();
+    });
+
+    it("shows a server failure as an error, offers no undo and does not carry on", async () => {
+      vi.spyOn(testRunService, "approveBulk").mockResolvedValue({
+        succeeded: [],
+        failed: [{ id: UNRESOLVED.id, message: "Internal error" }],
+      });
+      const { user, afterApprove } = await renderButtons();
+
+      await user.click(approveButton());
+
+      const toast = await toastOf(
+        "The server could not approve this test run. Try again.",
+      );
+      expect(toast).toHaveClass("notistack-MuiContent-error");
+      expect(
+        within(toast).queryByText("Undo", { selector: "button" }),
+      ).not.toBeInTheDocument();
+      expect(afterApprove).not.toHaveBeenCalled();
     });
 
     it("approves with the hotkey a", async () => {
@@ -258,18 +286,44 @@ describe("ApproveRejectButtons", () => {
       expect(screen.queryByText("Rejected")).not.toBeInTheDocument();
     });
 
-    it("shows the reason and does not carry on when the backend refuses the run", async () => {
+    it("warns with the reason, offers no undo and does not carry on when the backend refuses the run", async () => {
       vi.spyOn(testRunService, "rejectBulk").mockResolvedValue({
         succeeded: [],
-        failed: [{ id: UNRESOLVED.id, message: "Run was deleted" }],
+        failed: [
+          {
+            id: UNRESOLVED.id,
+            message: `Test run ${UNRESOLVED.id} was changed by someone else meanwhile`,
+          },
+        ],
       });
       const { user, afterReject } = await renderButtons();
 
       await user.click(rejectButton());
 
-      expect(await screen.findByText("Run was deleted")).toBeVisible();
+      const toast = await toastOf(
+        "This test run was changed by someone else meanwhile",
+      );
+      expect(toast).toHaveClass("notistack-MuiContent-warning");
+      expect(
+        within(toast).queryByText("Undo", { selector: "button" }),
+      ).not.toBeInTheDocument();
       expect(afterReject).not.toHaveBeenCalled();
       expect(screen.queryByText("Rejected")).not.toBeInTheDocument();
+    });
+
+    it("shows a server failure as an error", async () => {
+      vi.spyOn(testRunService, "rejectBulk").mockResolvedValue({
+        succeeded: [],
+        failed: [{ id: UNRESOLVED.id, message: "Internal error" }],
+      });
+      const { user, afterReject } = await renderButtons();
+
+      await user.click(rejectButton());
+
+      expect(
+        await toastOf("The server could not reject this test run. Try again."),
+      ).toHaveClass("notistack-MuiContent-error");
+      expect(afterReject).not.toHaveBeenCalled();
     });
 
     it("rejects with the hotkey x", async () => {
@@ -311,7 +365,7 @@ describe("ApproveRejectButtons", () => {
       await user.click(approveButton());
       await user.click(await undoIn("Approved"));
 
-      expect(revert).toHaveBeenCalledWith([UNRESOLVED.id]);
+      expect(revert).toHaveBeenCalledWith([UNRESOLVED.id], "approve");
       expect(revert).toHaveBeenCalledTimes(1);
       expect(await toastOf("Undone")).toHaveClass("notistack-MuiContent-info");
       await waitFor(() =>
@@ -366,7 +420,7 @@ describe("ApproveRejectButtons", () => {
       await user.click(rejectButton());
       await user.click(await undoIn("Rejected"));
 
-      expect(revert).toHaveBeenCalledWith([UNRESOLVED.id]);
+      expect(revert).toHaveBeenCalledWith([UNRESOLVED.id], "reject");
       expect(await screen.findByText("Undone")).toBeVisible();
     });
 

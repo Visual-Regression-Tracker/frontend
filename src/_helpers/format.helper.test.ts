@@ -1,4 +1,9 @@
-import { formatDateTime, partialFailureText, pluralize } from "./format.helper";
+import {
+  failureVariant,
+  formatDateTime,
+  partialFailureText,
+  pluralize,
+} from "./format.helper";
 
 describe("formatDateTime", () => {
   it.each([
@@ -46,5 +51,65 @@ describe("partialFailureText", () => {
         "2 test runs",
       ),
     ).toBe("Approved 1 of 2 test runs. 1 failed: X");
+  });
+
+  it("names the run in place of its id", () => {
+    expect(
+      partialFailureText(
+        "Approved",
+        {
+          succeeded: ["a"],
+          failed: [{ id: "b", message: "Test run b is already approved" }],
+        },
+        "2 test runs",
+        (id) => (id === "b" ? "Login (chrome)" : undefined),
+      ),
+    ).toBe(
+      'Approved 1 of 2 test runs. 1 failed: Test run "Login (chrome)" is already approved',
+    );
+  });
+
+  it("keeps the id of a run it cannot name", () => {
+    expect(
+      partialFailureText(
+        "Deleted",
+        {
+          succeeded: [],
+          failed: [{ id: "b", message: "Test run not found: b" }],
+        },
+        "1 test run",
+        () => undefined,
+      ),
+    ).toBe("Deleted 0 of 1 test run. 1 failed: Test run not found: b");
+  });
+
+  it("quotes a server failure before a refusal", () => {
+    expect(
+      partialFailureText(
+        "Approved",
+        {
+          succeeded: [],
+          failed: [{ message: "Refused" }, { message: "Internal error" }],
+        },
+        "2 test runs",
+      ),
+    ).toBe("Approved 0 of 2 test runs. 2 failed: Internal error");
+  });
+});
+
+describe("failureVariant", () => {
+  it("warns about runs the backend refused", () => {
+    expect(
+      failureVariant([{ message: "Test run a is already approved" }]),
+    ).toBe("warning");
+  });
+
+  it("reports an error when the server broke off on any run", () => {
+    expect(
+      failureVariant([
+        { message: "Test run a is already approved" },
+        { message: "Internal error" },
+      ]),
+    ).toBe("error");
   });
 });

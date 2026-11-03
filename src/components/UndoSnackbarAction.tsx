@@ -6,13 +6,14 @@ import {
   ProviderContext,
   SnackbarKey,
 } from "notistack";
-import { testRunService } from "../services";
+import { ReviewDecision, testRunService } from "../services";
 import { DismissNotificationButton } from "./DismissNotificationButton";
 
 const UNDO_HIDE_DURATION = 6000;
 
 interface UndoOptions {
   ids: string[];
+  decision: ReviewDecision;
   undoneText: string;
   enqueueSnackbar: ProviderContext["enqueueSnackbar"];
   onUndone?: () => void;
@@ -21,6 +22,7 @@ interface UndoOptions {
 const UndoSnackbarAction = ({
   snackbarKey,
   ids,
+  decision,
   undoneText,
   enqueueSnackbar,
   onUndone,
@@ -32,7 +34,7 @@ const UndoSnackbarAction = ({
     setUndoing(true);
     closeSnackbar(snackbarKey);
     testRunService
-      .revert(ids)
+      .revert(ids, decision)
       .then(() => {
         onUndone?.();
         enqueueSnackbar(undoneText, { variant: "info" });

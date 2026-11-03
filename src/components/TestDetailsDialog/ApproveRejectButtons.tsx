@@ -1,9 +1,11 @@
 import { Chip, Button } from "@mui/material";
+import { VariantType } from "notistack";
 import { useDialogSnackbar } from "./useDialogSnackbar";
 import { useHotkeys } from "react-hotkeys-hook";
 import { hotkeyOptions } from "../../_helpers/hotkeys.helper";
+import { failureVariant } from "../../_helpers/format.helper";
 import { useMemo } from "react";
-import { testRunService } from "../../services";
+import { BulkResult, ReviewDecision, testRunService } from "../../services";
 import { useSelectedProject, useTestRunState } from "../../contexts";
 import { TestRun } from "../../types";
 import { TestStatus } from "../../types/testStatus";
@@ -25,6 +27,13 @@ const wideActionButtonSx = {
   marginLeft: "4px",
   marginRight: "4px",
 };
+
+const DECIDED: Record<ReviewDecision, { text: string; variant: VariantType }> =
+  {
+    approve: { text: "Approved", variant: "success" },
+    // not a success: no green tick, as the two buttons sit side by side
+    reject: { text: "Rejected", variant: "info" },
+  };
 
 export const ApproveRejectButtons = ({
   testRun,
@@ -57,47 +66,49 @@ export const ApproveRejectButtons = ({
     testRun.status === TestStatus.unresolved &&
     hasSiblingsToReview;
 
-  const undoOptionsFor = (id: string) =>
-    undoSnackbarOptions({
-      ids: [id],
-      undoneText: "Undone",
-      enqueueSnackbar: enqueueAside,
-    });
-
-  const approve = () => {
-    testRunService
-      .approveOne(testRun.id, testRun.merge)
-      .then(() => {
-        enqueueSnackbar("Approved", {
-          variant: "success",
-          ...undoOptionsFor(testRun.id),
+  const decide = (
+    decision: ReviewDecision,
+    request: Promise<BulkResult>,
+    after?: () => void,
+  ) => {
+    request
+      .then(({ failed }) => {
+        if (failed.length > 0) {
+          const variant = failureVariant(failed);
+          enqueueSnackbar(
+            variant === "error"
+              ? `The server could not ${decision} this test run. Try again.`
+              : failed[0].message.replace(
+                  `Test run ${testRun.id}`,
+                  "This test run",
+                ),
+            { variant },
+          );
+          return;
+        }
+        enqueueSnackbar(DECIDED[decision].text, {
+          variant: DECIDED[decision].variant,
+          ...undoSnackbarOptions({
+            ids: [testRun.id],
+            decision,
+            undoneText: "Undone",
+            enqueueSnackbar: enqueueAside,
+          }),
         });
-        afterApprove?.();
+        after?.();
       })
-      .catch((err: string) =>
-        enqueueSnackbar(err, {
-          variant: "error",
-        }),
-      );
+      .catch((err: string) => enqueueSnackbar(err, { variant: "error" }));
   };
 
-  const reject = () => {
-    testRunService
-      .rejectOne(testRun.id)
-      .then(() => {
-        // not a success: no green tick, as the two buttons sit side by side
-        enqueueSnackbar("Rejected", {
-          variant: "info",
-          ...undoOptionsFor(testRun.id),
-        });
-        afterReject?.();
-      })
-      .catch((err: string) =>
-        enqueueSnackbar(err, {
-          variant: "error",
-        }),
-      );
-  };
+  const approve = () =>
+    decide(
+      "approve",
+      testRunService.approveBulk([testRun.id], testRun.merge),
+      afterApprove,
+    );
+
+  const reject = () =>
+    decide("reject", testRunService.rejectBulk([testRun.id]), afterReject);
 
   // the hook keeps the callback from its last deps, so the after-callbacks must be deps too
   useHotkeys("a", approve, hotkeyOptions, [testRun, afterApprove]);

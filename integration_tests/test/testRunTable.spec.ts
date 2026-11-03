@@ -16,6 +16,7 @@ import {
   mockImage,
   mockRevertTestRuns,
   reverts,
+  revertDecision,
   mockTestRunsWithDetails,
 } from "utils/mocks";
 import { postData } from "utils/postData";
@@ -241,6 +242,7 @@ test("undoes a bulk approval from its toast", async ({
   expect(
     postData<string[]>(request).sort((a, b) => a.localeCompare(b)),
   ).toEqual([UNRESOLVED[0].id, UNRESOLVED[1].id]);
+  expect(revertDecision(request)).toBe("approve");
   await expect(notification.toast("2 test runs restored.")).toBeVisible();
 });
 
