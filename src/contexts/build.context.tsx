@@ -187,7 +187,6 @@ function useBuildDispatch() {
 // builds this client is deleting: their build_deleted event is already reported by the delete itself
 const ownDeletes = new Set<string>();
 
-// true once per own delete: the event arrives after the answer or before it
 function consumeOwnDelete(id: string) {
   return ownDeletes.delete(id);
 }

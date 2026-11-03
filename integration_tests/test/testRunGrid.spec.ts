@@ -12,6 +12,7 @@ import { TestStatus } from "~client/types/testStatus";
 import {
   API_URL,
   mockGetBuildDetails,
+  fulfillBulk,
   mockGetBuilds,
   mockGetProjects,
   mockGetTestRuns,
@@ -74,7 +75,7 @@ const captureApprovals = async (page: Page): Promise<string[][]> => {
     `${API_URL}/test-runs/approve?merge=false`,
     (route, request) => {
       approved.push(postData<string[]>(request));
-      return route.fulfill({ body: "{}" });
+      return fulfillBulk(route);
     },
   );
   return approved;

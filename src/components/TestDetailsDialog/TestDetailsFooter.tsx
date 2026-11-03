@@ -11,6 +11,7 @@ import { useHotkeys } from "react-hotkeys-hook";
 import { hotkeyOptions } from "../../_helpers/hotkeys.helper";
 import { isAwaitingReview } from "../../_helpers/testRunStatus.helper";
 import { GO_TO_NEXT_KEY } from "../../constants";
+import { parseJson } from "../../_helpers/parseJson";
 import { TestRun } from "../../types";
 import { Tooltip } from "../Tooltip";
 import { ApproveRejectButtons } from "./ApproveRejectButtons";
@@ -51,15 +52,9 @@ export const TestDetailsFooter = ({
   onNext,
   onOpenVariations,
 }: TestDetailsFooterProps) => {
-  const [goToNextAutomatically, setGoToNextAutomatically] = useState(() => {
-    const json = localStorage.getItem(GO_TO_NEXT_KEY);
-
-    if (json) {
-      return JSON.parse(json) as boolean;
-    }
-
-    return false;
-  });
+  const [goToNextAutomatically, setGoToNextAutomatically] = useState(() =>
+    parseJson(localStorage.getItem(GO_TO_NEXT_KEY), false),
+  );
 
   useEffect(() => {
     localStorage.setItem(GO_TO_NEXT_KEY, JSON.stringify(goToNextAutomatically));

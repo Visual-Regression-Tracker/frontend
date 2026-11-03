@@ -20,6 +20,7 @@ import { testRunService } from "../../services";
 import { MatchingVariations } from "../../services/testRun.service";
 import { useTestRunState } from "../../contexts";
 import { GO_TO_NEXT_KEY } from "../../constants";
+import { parseJson } from "../../_helpers/parseJson";
 import { thumbnailFor } from "../../_helpers/testRunImage.helper";
 import { byDiffDesc, orderByIds } from "../../_helpers/testRunOrder.helper";
 import { TestRun } from "../../types";
@@ -280,16 +281,6 @@ export const MatchingVariationsDialog = ({
 
   const verb = mode === "approve" ? "Approve" : "Reject";
 
-  const goToNextEnabled = (): boolean => {
-    try {
-      return Boolean(
-        JSON.parse(localStorage.getItem(GO_TO_NEXT_KEY) || "false"),
-      );
-    } catch {
-      return false;
-    }
-  };
-
   // wraps round the list, so the last run still finds an earlier unresolved one
   const findNextUnresolved = (): TestRun | undefined => {
     const ordered = orderByIds(allTestRuns, filteredSortedTestRunIds);
@@ -334,7 +325,7 @@ export const MatchingVariationsDialog = ({
           }
           return;
         }
-        if (goToNextEnabled()) {
+        if (parseJson(localStorage.getItem(GO_TO_NEXT_KEY), false)) {
           const next = findNextUnresolved();
           if (next) {
             navigateTo(next.id);

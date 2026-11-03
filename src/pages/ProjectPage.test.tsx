@@ -1,6 +1,7 @@
 import { Route, Routes } from "react-router-dom";
 import { screen, within } from "@testing-library/react";
 import { createFakeSocket, renderWithProviders } from "../_test/render";
+import { SocketProvider } from "../contexts";
 import { run } from "../_helpers/testRun.fixture";
 import { buildsService, projectsService, testRunService } from "../services";
 import {
@@ -13,6 +14,19 @@ import { BuildStatus } from "../types/buildStatus";
 import ProjectPage from "./ProjectPage";
 import { CurrentSearch, currentSearch } from "../_test/location";
 import { detailsFrom } from "../_test/detailsFrom";
+
+const sockets = vi.hoisted(() => ({
+  current: undefined as object | undefined,
+}));
+
+vi.mock("socket.io-client", () => ({
+  default: vi.fn(() => sockets.current),
+}));
+
+vi.mock("../_config/env.config", async (importOriginal) => ({
+  ...(await importOriginal<object>()),
+  API_URL: "http://api.test",
+}));
 
 // the dialog's canvas needs a native module jsdom does not have
 vi.mock("../components/TestDetailsDialog/DrawArea", () => ({
@@ -96,19 +110,19 @@ const renderProjectPage = async ({
   );
 
   const socket = createFakeSocket();
+  sockets.current = socket;
   const result = renderWithProviders(
-    <>
+    <SocketProvider>
       <CurrentSearch />
       <Routes>
         <Route path="/:projectId" element={<ProjectPage />} />
       </Routes>
-    </>,
+    </SocketProvider>,
     {
       user: TEST_USER,
       route: `/${TEST_PROJECT.id}?buildId=${OPEN_BUILD.id}${
         openRun ? `&testId=${openRun.id}` : ""
       }`,
-      socket,
     },
   );
 
