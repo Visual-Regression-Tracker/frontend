@@ -1,5 +1,6 @@
 import { screen, waitFor } from "@testing-library/react";
 import { renderWithProviders } from "../../_test/render";
+import { buttonAroundIcon } from "../../_test/buttonAroundIcon";
 import { testRunService } from "../../services";
 import { useTestRunState } from "../../contexts";
 import { TestRun } from "../../types";
@@ -72,16 +73,8 @@ const renderModal = (
 
 const ignoreAreaCount = () => screen.getByTestId("ignoreAreaCount").textContent;
 const drawAnArea = () => screen.getByRole("button", { name: "Draw an area" });
-// the toolbar's icon buttons have no name of their own, only their icon
-const buttonWithIcon = (iconTestId: string) => {
-  const button = screen.getByTestId(iconTestId).closest("button");
-  if (!button) {
-    throw new Error(`no button around ${iconTestId}`);
-  }
-  return button;
-};
-const saveButton = () => buttonWithIcon("SaveIcon");
-const applyToBuildButton = () => buttonWithIcon("CollectionsIcon");
+const saveButton = () => buttonAroundIcon("SaveIcon");
+const applyToBuildButton = () => buttonAroundIcon("CollectionsIcon");
 const deleteTheArea = () =>
   screen.getByRole("button", { name: "Delete the selected area" });
 // a tooltip names these two buttons after their hotkey, so they are found by text
@@ -124,6 +117,30 @@ describe("TestDetailsModal", () => {
 
       expect(await screen.findByText("Cannot save")).toBeVisible();
       expect(saveButton()).toBeEnabled();
+    });
+  });
+
+  describe("toasts", () => {
+    it("shows one confirmation at a time, a new one replacing the last", async () => {
+      vi.spyOn(testRunService, "update").mockResolvedValue(RUN);
+      vi.spyOn(testRunService, "updateIgnoreAreas").mockResolvedValue();
+      const { user } = renderModal({ ...RUN, comment: "" });
+
+      await user.click(screen.getByRole("button", { name: "Comments" }));
+      await user.type(await screen.findByTestId("comment"), "looks fine");
+      await user.click(screen.getByRole("button", { name: "Save" }));
+      expect(await screen.findByText("Comment updated")).toBeVisible();
+      await user.click(drawAnArea());
+      await user.click(saveButton());
+
+      expect(
+        await screen.findByText("Ignore areas are updated."),
+      ).toBeVisible();
+      await waitFor(
+        () =>
+          expect(screen.queryByText("Comment updated")).not.toBeInTheDocument(),
+        { timeout: 700 },
+      );
     });
   });
 
@@ -247,7 +264,7 @@ describe("TestDetailsModal", () => {
     it("calls for the next run with the next button and the right arrow", async () => {
       const { user, handlers } = renderModal(RUN, MIDDLE);
 
-      await user.click(buttonWithIcon("NavigateNextIcon"));
+      await user.click(buttonAroundIcon("NavigateNextIcon"));
       await user.keyboard("{ArrowRight}");
 
       expect(handlers.next).toHaveBeenCalledTimes(2);
@@ -257,7 +274,7 @@ describe("TestDetailsModal", () => {
     it("calls for the previous run with the previous button and the left arrow", async () => {
       const { user, handlers } = renderModal(RUN, MIDDLE);
 
-      await user.click(buttonWithIcon("NavigateBeforeIcon"));
+      await user.click(buttonAroundIcon("NavigateBeforeIcon"));
       await user.keyboard("{ArrowLeft}");
 
       expect(handlers.previous).toHaveBeenCalledTimes(2);
@@ -269,11 +286,11 @@ describe("TestDetailsModal", () => {
         currentRunIndex: 2,
         totalTestRunCount: 3,
       });
-      expect(buttonWithIcon("NavigateNextIcon")).not.toBeVisible();
+      expect(buttonAroundIcon("NavigateNextIcon")).not.toBeVisible();
       last.unmount();
 
       renderModal(RUN, { currentRunIndex: 0, totalTestRunCount: 3 });
-      expect(buttonWithIcon("NavigateBeforeIcon")).not.toBeVisible();
+      expect(buttonAroundIcon("NavigateBeforeIcon")).not.toBeVisible();
     });
   });
 
