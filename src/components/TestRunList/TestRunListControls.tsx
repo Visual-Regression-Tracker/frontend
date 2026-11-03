@@ -25,6 +25,13 @@ export type TestRunView = "table" | "grid";
 // the data grid's own density values, so it can take this straight as a prop
 export type TestRunDensity = "compact" | "standard" | "comfortable";
 
+export interface DiffToggle {
+  checked: boolean;
+  onChange: (checked: boolean) => void;
+}
+
+export const PAGE_SIZE_OPTIONS = [10, 30, 100];
+
 export const CARD_SIZE_BY_DENSITY: Record<
   TestRunDensity,
   { width: number; imageHeight: number }
@@ -81,8 +88,7 @@ export const TestRunListControls = ({
   grouped,
   onGroupedChange,
   groupByAxis,
-  showDiff,
-  onShowDiffChange,
+  diffToggle,
 }: {
   view: TestRunView;
   onViewChange: (view: TestRunView) => void;
@@ -91,8 +97,7 @@ export const TestRunListControls = ({
   grouped: boolean;
   onGroupedChange: (grouped: boolean) => void;
   groupByAxis: GroupByAxis;
-  showDiff: boolean;
-  onShowDiffChange: (showDiff: boolean) => void;
+  diffToggle?: DiffToggle;
 }) => (
   <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
     <ToggleButtonGroup
@@ -179,15 +184,15 @@ export const TestRunListControls = ({
         sx={{ marginLeft: 0, marginRight: 0 }}
       />
     </Tooltip>
-    {view === "grid" && groupDivider}
-    {view === "grid" && (
+    {diffToggle && groupDivider}
+    {diffToggle && (
       <Tooltip title="Toggle diff. Hotkey: D">
         <FormControlLabel
           control={
             <Switch
               size="small"
-              checked={showDiff}
-              onChange={(event) => onShowDiffChange(event.target.checked)}
+              checked={diffToggle.checked}
+              onChange={(event) => diffToggle.onChange(event.target.checked)}
               slotProps={{ input: { "aria-label": "Show diff" } }}
               data-testid="showDiffToggle"
             />

@@ -1,5 +1,6 @@
 import { screen, waitFor } from "@testing-library/react";
 import { renderWithProviders } from "../../_test/render";
+import { buttonAroundIcon } from "../../_test/buttonAroundIcon";
 import { SeedTestRuns } from "../../_test/SeedTestRuns";
 import { buildsService, testRunService } from "../../services";
 import { TestRun } from "../../types";
@@ -70,14 +71,6 @@ const renderDialog = async ({
   return result;
 };
 
-// the toolbar's arrows have no name of their own, only their icon
-const arrowButton = (iconTestId: "NavigateNextIcon" | "NavigateBeforeIcon") => {
-  const button = screen.getByTestId(iconTestId).closest("button");
-  if (!button) {
-    throw new Error(`no button around ${iconTestId}`);
-  }
-  return button;
-};
 const NOT_SAVED_TITLE = "You have not saved ignore areas";
 const drawAnArea = () => screen.getByRole("button", { name: "Draw an area" });
 const deleteTheArea = () =>
@@ -143,7 +136,7 @@ describe("TestDetailsDialog", () => {
     it("is what the next button visits, not the loaded order", async () => {
       const { user } = await renderDialog({ openRun: LAST, order: ORDER });
 
-      await user.click(arrowButton("NavigateNextIcon"));
+      await user.click(buttonAroundIcon("NavigateNextIcon"));
 
       await waitFor(() => expect(currentSearch()).toBe(searchOf(FIRST.id)));
     });
@@ -151,7 +144,7 @@ describe("TestDetailsDialog", () => {
     it("is what the previous button visits", async () => {
       const { user } = await renderDialog({ openRun: FIRST, order: ORDER });
 
-      await user.click(arrowButton("NavigateBeforeIcon"));
+      await user.click(buttonAroundIcon("NavigateBeforeIcon"));
 
       await waitFor(() => expect(currentSearch()).toBe(searchOf(LAST.id)));
     });
@@ -179,7 +172,7 @@ describe("TestDetailsDialog", () => {
     it("is the loaded order while the list has published none", async () => {
       const { user } = await renderDialog({ openRun: SECOND });
 
-      await user.click(arrowButton("NavigateNextIcon"));
+      await user.click(buttonAroundIcon("NavigateNextIcon"));
 
       await waitFor(() => expect(currentSearch()).toBe(searchOf(LAST.id)));
     });
@@ -211,7 +204,7 @@ describe("TestDetailsDialog", () => {
       const { user } = await renderDialog({ openRun: FIRST });
       await user.click(drawAnArea());
 
-      await user.click(arrowButton("NavigateNextIcon"));
+      await user.click(buttonAroundIcon("NavigateNextIcon"));
 
       expect(await screen.findByText(NOT_SAVED_TITLE)).toBeVisible();
       expect(currentSearch()).toBe(searchOf(FIRST.id));

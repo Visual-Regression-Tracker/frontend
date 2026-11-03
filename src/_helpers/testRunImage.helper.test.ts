@@ -1,5 +1,10 @@
 import { run } from "./testRun.fixture";
-import { imageFor, thumbnailFor } from "./testRunImage.helper";
+import { fakeImage } from "../_test/fakeImage";
+import {
+  imageFor,
+  imageSizesDiffer,
+  thumbnailFor,
+} from "./testRunImage.helper";
 import { staticService } from "../services";
 
 describe("thumbnailFor", () => {
@@ -42,5 +47,45 @@ describe("thumbnailFor", () => {
     expect(thumbnailFor(testRun, true)).toBe(
       staticService.getImage("image.thumb.png"),
     );
+  });
+});
+
+describe("imageSizesDiffer", () => {
+  const withBoth = run({ imageName: "image.png", baselineName: "base.png" });
+
+  it("is false for images of the same size", () => {
+    expect(
+      imageSizesDiffer(withBoth, fakeImage(100, 50), fakeImage(100, 50)),
+    ).toBe(false);
+  });
+
+  it("is true when the height or the width differs", () => {
+    expect(
+      imageSizesDiffer(withBoth, fakeImage(100, 60), fakeImage(100, 50)),
+    ).toBe(true);
+    expect(
+      imageSizesDiffer(withBoth, fakeImage(110, 50), fakeImage(100, 50)),
+    ).toBe(true);
+  });
+
+  it("is true while only one of the two has loaded", () => {
+    expect(imageSizesDiffer(withBoth, fakeImage(100, 50), undefined)).toBe(
+      true,
+    );
+  });
+
+  it("is false while neither has loaded", () => {
+    expect(imageSizesDiffer(withBoth, undefined, undefined)).toBe(false);
+  });
+
+  it("is false for a run without a baseline or without an image", () => {
+    const sized = [fakeImage(100, 60), fakeImage(100, 50)] as const;
+
+    expect(
+      imageSizesDiffer(run({ ...withBoth, baselineName: "" }), ...sized),
+    ).toBe(false);
+    expect(
+      imageSizesDiffer(run({ ...withBoth, imageName: "" }), ...sized),
+    ).toBe(false);
   });
 });
