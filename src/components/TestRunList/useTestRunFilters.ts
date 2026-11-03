@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { TestRun, TestStatus } from "../../types";
 import { statusesByAttention } from "../../_helpers/testRunStatus.helper";
 import { TAG_FIELDS, tagValuesOf } from "../../_helpers/testRunTags.helper";
@@ -107,25 +107,29 @@ export const useTestRunFilters = (testRuns: TestRun[]) => {
     );
   }, [testRuns, query, statuses, tags, tagFieldByValue]);
 
-  useEffect(() => {
-    if (testRuns.length === 0) {
-      return;
+  // a tag or status no longer in the runs stops filtering them
+  const [prunedFor, setPrunedFor] = useState(testRuns);
+  if (prunedFor !== testRuns) {
+    setPrunedFor(testRuns);
+    if (testRuns.length > 0) {
+      const existingTags = new Set<string>();
+      const existingStatuses = new Set<TestStatus>();
+      testRuns.forEach((run) => {
+        tagValuesOf(run, TAG_FIELDS).forEach((value) =>
+          existingTags.add(value),
+        );
+        existingStatuses.add(run.status);
+      });
+      setTags((prev) => {
+        const next = prev.filter((tag) => existingTags.has(tag));
+        return next.length === prev.length ? prev : next;
+      });
+      setStatuses((prev) => {
+        const next = prev.filter((status) => existingStatuses.has(status));
+        return next.length === prev.length ? prev : next;
+      });
     }
-    const existingTags = new Set<string>();
-    const existingStatuses = new Set<TestStatus>();
-    testRuns.forEach((run) => {
-      tagValuesOf(run, TAG_FIELDS).forEach((value) => existingTags.add(value));
-      existingStatuses.add(run.status);
-    });
-    setTags((prev) => {
-      const next = prev.filter((tag) => existingTags.has(tag));
-      return next.length === prev.length ? prev : next;
-    });
-    setStatuses((prev) => {
-      const next = prev.filter((status) => existingStatuses.has(status));
-      return next.length === prev.length ? prev : next;
-    });
-  }, [testRuns]);
+  }
 
   return {
     filteredRows,

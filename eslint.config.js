@@ -147,25 +147,5 @@ export default tseslint.config(
       "sonarjs/void-use": "off",
     },
   },
-  {
-    // removed by the PR that splits these files
-    files: [
-      "src/components/TestDetailsDialog/TestDetailsModal.tsx",
-      "src/components/TestDetailsDialog/TestDetailsModal.test.tsx",
-      "src/components/TestRunList/index.tsx",
-      "src/components/TestRunList/index.test.tsx",
-      "src/components/TestRunList/TestRunGrid.tsx",
-    ],
-    rules: {
-      "@typescript-eslint/require-await": "warn",
-      "@typescript-eslint/no-unsafe-assignment": "warn",
-      "@typescript-eslint/no-unsafe-return": "warn",
-      "@typescript-eslint/no-unsafe-argument": "warn",
-      "@typescript-eslint/no-unsafe-member-access": "warn",
-      "@typescript-eslint/no-unsafe-call": "warn",
-      "react-hooks/set-state-in-effect": "warn",
-      "react-hooks/immutability": "warn",
-    },
-  },
   prettier,
 );

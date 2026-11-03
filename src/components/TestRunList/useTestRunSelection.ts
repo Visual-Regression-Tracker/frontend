@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useState } from "react";
 
 export const useTestRunSelection = (buildId: string | undefined) => {
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
@@ -14,9 +14,11 @@ export const useTestRunSelection = (buildId: string | undefined) => {
   );
 
   // the list stays mounted across builds, so ticks must not carry over
-  useEffect(() => {
+  const [selectedFor, setSelectedFor] = useState(buildId);
+  if (selectedFor !== buildId) {
+    setSelectedFor(buildId);
     setSelectedIds([]);
-  }, [buildId]);
+  }
 
   const toggleGroup = useCallback(
     (ids: string[]) =>

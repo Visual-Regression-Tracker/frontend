@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import Konva from "konva";
 import type { SnackbarMessage } from "notistack";
 import { TestRun } from "../../types";
@@ -15,21 +15,31 @@ export const useIgnoreAreas = (
   enqueueSnackbar: DialogEnqueue,
 ) => {
   const testRunDispatch = useTestRunDispatch();
-  const [ignoreAreas, setIgnoreAreas] = useState<IgnoreArea[]>([]);
+  const [ignoreAreas, setIgnoreAreas] = useState(
+    () => JSON.parse(testRun.ignoreAreas) as IgnoreArea[],
+  );
   const [selectedRectId, setSelectedRectId] = useState<string>();
   const [isDrawMode, setIsDrawMode] = useState(false);
   const [areaKind, setAreaKind] = useState(AREA_KINDS[0]);
   const [processing, setProcessing] = useState(false);
 
-  useEffect(() => {
-    setIsDrawMode(false);
-    setSelectedRectId(undefined);
-  }, [testRun.id, testRun.diffName]);
-
-  // by id, not the run object: an update to the run would wipe the unsaved areas drawn here
-  useEffect(() => {
-    setIgnoreAreas(JSON.parse(testRun.ignoreAreas) as IgnoreArea[]);
-  }, [testRun.id, testRun.ignoreAreas]);
+  // by fields, not the run object: an update to the run would wipe the unsaved areas drawn here
+  const { id, diffName, ignoreAreas: storedAreas } = testRun;
+  const [shownRun, setShownRun] = useState({ id, diffName, storedAreas });
+  if (
+    shownRun.id !== id ||
+    shownRun.diffName !== diffName ||
+    shownRun.storedAreas !== storedAreas
+  ) {
+    if (shownRun.id !== id || shownRun.diffName !== diffName) {
+      setIsDrawMode(false);
+      setSelectedRectId(undefined);
+    }
+    if (shownRun.id !== id || shownRun.storedAreas !== storedAreas) {
+      setIgnoreAreas(JSON.parse(storedAreas) as IgnoreArea[]);
+    }
+    setShownRun({ id, diffName, storedAreas });
+  }
 
   const tempIgnoreAreas = useMemo(
     () => JSON.parse(testRun.tempIgnoreAreas) as IgnoreArea[],

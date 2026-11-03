@@ -156,7 +156,7 @@ describe("TestDetailsModal", () => {
       expect(saveButton()).toBeEnabled();
     });
 
-    it("shows the saved areas of the run when they change", async () => {
+    it("shows the saved areas of the run when they change", () => {
       const { showTestRun } = renderModal();
 
       showTestRun({ ...RUN, ignoreAreas: JSON.stringify([SAVED_AREA]) });
@@ -255,6 +255,40 @@ describe("TestDetailsModal", () => {
 
       expect(ignoreAreaCount()).toBe("1");
       expect(saveButton()).toBeDisabled();
+    });
+  });
+
+  describe("the view of a run", () => {
+    const diffSwitch = () =>
+      screen.getByRole("switch", { name: "Toggle diff" });
+    const fade = () =>
+      screen.getByRole("slider", { name: "Fade to the baseline" });
+    const blend = () => screen.getByTestId("differenceToggle");
+
+    it("starts over with the diff shown, no fade and no blend when another run opens", async () => {
+      const { user, showTestRun } = renderModal(UNRESOLVED_RUN);
+
+      fade().focus();
+      await user.keyboard("{ArrowLeft}");
+      await user.click(blend());
+      expect(diffSwitch()).not.toBeChecked();
+      expect(fade()).toHaveAttribute("aria-valuenow", "0.95");
+      expect(blend()).toHaveAttribute("aria-pressed", "true");
+
+      showTestRun({ ...UNRESOLVED_RUN, id: "another run" });
+
+      expect(diffSwitch()).toBeChecked();
+      expect(fade()).toHaveAttribute("aria-valuenow", "1");
+      expect(blend()).toHaveAttribute("aria-pressed", "false");
+    });
+
+    it("keeps the view when the same run comes back changed elsewhere", async () => {
+      const { user, showTestRun } = renderModal(UNRESOLVED_RUN);
+
+      await user.click(diffSwitch());
+      showTestRun({ ...UNRESOLVED_RUN, comment: "a new comment" });
+
+      expect(diffSwitch()).not.toBeChecked();
     });
   });
 

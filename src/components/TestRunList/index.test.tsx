@@ -65,12 +65,13 @@ const actionButton = (label: string): HTMLButtonElement => {
 
 describe("TestRunList", () => {
   beforeEach(() => {
-    vi.spyOn(buildsService, "getDetails").mockImplementation(
-      async (id) => ({ id, ciBuildId: `ci-${id}` }) as Build,
+    vi.spyOn(buildsService, "getDetails").mockImplementation((id) =>
+      Promise.resolve({ id, ciBuildId: `ci-${id}` } as Build),
     );
-    vi.spyOn(testRunService, "getList").mockImplementation(
-      async (buildId) =>
+    vi.spyOn(testRunService, "getList").mockImplementation((buildId) =>
+      Promise.resolve(
         RUNS_BY_BUILD[buildId as keyof typeof RUNS_BY_BUILD] ?? [],
+      ),
     );
   });
 
@@ -134,8 +135,8 @@ describe("TestRunList", () => {
 type User = ReturnType<typeof renderWithProviders>["user"];
 
 const renderList = (runs: TestRun[], extra: ReactNode = null) => {
-  vi.spyOn(buildsService, "getDetails").mockImplementation(
-    async (id) => ({ id, ciBuildId: `ci-${id}` }) as Build,
+  vi.spyOn(buildsService, "getDetails").mockImplementation((id) =>
+    Promise.resolve({ id, ciBuildId: `ci-${id}` } as Build),
   );
   vi.spyOn(testRunService, "getList").mockResolvedValue(runs);
 
@@ -410,12 +411,12 @@ describe("TestRunList and the details dialog", () => {
   const O1 = run({ id: "o1", name: "O1", status: TestStatus.ok });
 
   it("keeps the arrow order while the dialog is open when a run is approved elsewhere", async () => {
-    vi.spyOn(testRunService, "getDetails").mockImplementation(async (id) => {
+    vi.spyOn(testRunService, "getDetails").mockImplementation((id) => {
       const found = [U1, U2, U3, O1].find((item) => item.id === id);
       if (!found) {
-        throw new Error(`no run ${id}`);
+        return Promise.reject(new Error(`no run ${id}`));
       }
-      return found;
+      return Promise.resolve(found);
     });
     const { user } = renderList(
       [U1, U2, U3, O1],

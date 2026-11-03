@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import {
   Button,
   Grid,
@@ -67,7 +67,7 @@ const TestDetailsModal = ({
   const [variationsMode, setVariationsMode] =
     useState<MatchingVariationsMode | null>(null);
 
-  const [isDiffShown, setIsDiffShown] = useState(false);
+  const [isDiffShown, setIsDiffShown] = useState(!!testRun.diffName);
   const [overlayOpacity, setOverlayOpacity] = useState(1);
   const [blendDifference, setBlendDifference] = useState(false);
 
@@ -93,11 +93,16 @@ const TestDetailsModal = ({
   const [stageScale, setStageScale] = stage.stageProps.stageScaleState;
 
   // per-run view state; this dialog is not remounted between runs
-  useEffect(() => {
+  const [shownRun, setShownRun] = useState({
+    id: testRun.id,
+    diffName: testRun.diffName,
+  });
+  if (shownRun.id !== testRun.id || shownRun.diffName !== testRun.diffName) {
+    setShownRun({ id: testRun.id, diffName: testRun.diffName });
     setIsDiffShown(!!testRun.diffName);
     setOverlayOpacity(1);
     setBlendDifference(false);
-  }, [testRun.id, testRun.diffName]);
+  }
 
   useHotkeys(
     "d",
