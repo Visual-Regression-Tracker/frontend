@@ -425,9 +425,9 @@ const VIEWS: [name: string, body: Body][] = [
       await expect(projectPage.testRunList.noiseChips).toHaveCount(5);
       await expect(
         projectPage.testRunList.noiseChip(PENDING_SEARCH.id),
-      ).toHaveText("analysing…");
+      ).toHaveText("Analysing…");
       await expect(projectPage.testRunList.analyseNoiseBtn).toHaveText(
-        "analysing 1 of 5…",
+        "Analysing 1 of 5…",
       );
 
       await projectPage.testRunFilters.noiseHint.click();

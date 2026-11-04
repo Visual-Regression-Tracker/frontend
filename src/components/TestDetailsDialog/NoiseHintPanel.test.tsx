@@ -63,14 +63,14 @@ describe("NoiseHintPanel", () => {
       await user.click(analyseButton());
 
       expect(analyse).toHaveBeenCalledExactlyOnceWith(["r1"]);
-      expect(within(panel()).getByText("analysing…")).toBeVisible();
+      expect(within(panel()).getByText("Analysing…")).toBeVisible();
       expect(screen.queryByTestId("analyse-noise-run-button")).toBeNull();
 
       show({ analysis: NOISE_ANALYSIS_PENDING });
-      expect(within(panel()).getByText("analysing…")).toBeVisible();
+      expect(within(panel()).getByText("Analysing…")).toBeVisible();
 
       show({ analysis: CHANGE });
-      expect(within(panel()).queryByText("analysing…")).toBeNull();
+      expect(within(panel()).queryByText("Analysing…")).toBeNull();
       expect(
         within(panel()).getByText("Rendering-noise check: likely change"),
       ).toBeVisible();
@@ -87,14 +87,14 @@ describe("NoiseHintPanel", () => {
       show({ analysis: NOISE_ANALYSIS_PENDING });
       show({ analysis: null });
 
-      expect(within(panel()).queryByText("analysing…")).toBeNull();
+      expect(within(panel()).queryByText("Analysing…")).toBeNull();
       expect(analyseButton()).toHaveTextContent("Analyse");
     });
 
     it("shows analysing for a pending run without a click", () => {
       renderPanel({ analysis: NOISE_ANALYSIS_PENDING });
 
-      expect(within(panel()).getByText("analysing…")).toBeVisible();
+      expect(within(panel()).getByText("Analysing…")).toBeVisible();
       expect(screen.queryByTestId("analyse-noise-run-button")).toBeNull();
     });
 
@@ -164,7 +164,7 @@ describe("NoiseHintPanel", () => {
       await user.click(analyseButton());
 
       expect(analyse).toHaveBeenCalledExactlyOnceWith(["r2"]);
-      expect(within(panel()).getByText("analysing…")).toBeVisible();
+      expect(within(panel()).getByText("Analysing…")).toBeVisible();
       expect(
         within(panel()).queryByText("Rendering-noise check: likely change"),
       ).toBeNull();
@@ -172,7 +172,7 @@ describe("NoiseHintPanel", () => {
       show({
         analysis: { ...CHANGE, computedAt: "2026-11-04T11:00:00Z", score: 0.5 },
       });
-      expect(within(panel()).queryByText("analysing…")).toBeNull();
+      expect(within(panel()).queryByText("Analysing…")).toBeNull();
       expect(within(panel()).getByText("· score 0.50")).toBeVisible();
     });
 

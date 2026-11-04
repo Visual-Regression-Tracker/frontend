@@ -30,7 +30,7 @@ export const AnalyseNoiseButton = ({ runs }: { runs: TestRun[] }) => {
       onClick={() => void analyse(unresolvedIds)}
     >
       {pending > 0
-        ? `analysing ${pending} of ${unresolvedIds.length}…`
+        ? `Analysing ${pending} of ${unresolvedIds.length}…`
         : `Analyse unresolved (${unresolvedIds.length})`}
     </Button>
   );

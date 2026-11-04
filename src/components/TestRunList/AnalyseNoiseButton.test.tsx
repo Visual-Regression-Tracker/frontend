@@ -106,7 +106,7 @@ describe("AnalyseNoiseButton", () => {
       />,
     );
 
-    expect(button()).toHaveTextContent("analysing 2 of 4…");
+    expect(button()).toHaveTextContent("Analysing 2 of 4…");
     expect(button()).toBeDisabled();
   });
 
@@ -118,7 +118,7 @@ describe("AnalyseNoiseButton", () => {
     const { rerender } = renderWithProviders(
       <AnalyseNoiseButton runs={[pending("a"), pending("b")]} />,
     );
-    expect(button()).toHaveTextContent("analysing 2 of 2…");
+    expect(button()).toHaveTextContent("Analysing 2 of 2…");
 
     rerender(
       <AnalyseNoiseButton
@@ -128,7 +128,7 @@ describe("AnalyseNoiseButton", () => {
         ]}
       />,
     );
-    expect(button()).toHaveTextContent("analysing 1 of 2…");
+    expect(button()).toHaveTextContent("Analysing 1 of 2…");
 
     rerender(
       <AnalyseNoiseButton
@@ -184,7 +184,7 @@ describe("AnalyseNoiseButton", () => {
 
       await user.click(screen.getByText("Mark pending"));
 
-      expect(button()).toHaveTextContent("analysing 2 of 2…");
+      expect(button()).toHaveTextContent("Analysing 2 of 2…");
       expect(button()).toBeDisabled();
     });
 

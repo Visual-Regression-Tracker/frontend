@@ -858,7 +858,7 @@ describe("TestRunList analyse unresolved button", () => {
   it("follows the pending runs of the list as results arrive", async () => {
     const { user } = await renderWith({});
     const button = screen.getByTestId("analyse-noise-button");
-    expect(button).toHaveTextContent("analysing 1 of 2…");
+    expect(button).toHaveTextContent("Analysing 1 of 2…");
     expect(button).toBeDisabled();
 
     await user.click(screen.getByRole("button", { name: "Deliver result" }));

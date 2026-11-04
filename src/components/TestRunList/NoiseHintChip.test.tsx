@@ -46,7 +46,7 @@ describe("NoiseHintChip", () => {
   it("shows analysing while the analysis is pending", () => {
     renderWithProviders(<NoiseHintChip run={TEST_UNRESOLVED_PENDING} />);
 
-    expect(chip()).toHaveTextContent("analysing…");
+    expect(chip()).toHaveTextContent("Analysing…");
     expect(chip()).toHaveStyle({ borderStyle: "dashed" });
   });
 

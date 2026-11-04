@@ -88,7 +88,7 @@ test.describe("run list", () => {
       "Likely change",
     );
     await expect(testRunList.noiseChip(PENDING_SEARCH.id)).toHaveText(
-      "analysing…",
+      "Analysing…",
     );
     await expect(testRunList.noiseChips).toHaveCount(5);
     await expect(testRunList.noiseChip(TEST_RUN_APPROVED.id)).toHaveCount(0);
@@ -101,7 +101,7 @@ test.describe("run list", () => {
     await mockTestRunsWithDetails(page, build.id, withPending);
     const { testRunList } = await openProjectPage(project.id, build.id);
 
-    await expect(testRunList.analyseNoiseBtn).toHaveText("analysing 1 of 5…");
+    await expect(testRunList.analyseNoiseBtn).toHaveText("Analysing 1 of 5…");
     await expect(testRunList.analyseNoiseBtn).toBeDisabled();
   });
 
@@ -261,7 +261,7 @@ test.describe("details dialog", () => {
     ]);
 
     expect(postData<{ ids: string[] }>(request).ids).toEqual([NOT_ANALYSED.id]);
-    await expect(details.noisePanel).toContainText("analysing…");
+    await expect(details.noisePanel).toContainText("Analysing…");
   });
 
   test("shows both stages of the verdict", async ({

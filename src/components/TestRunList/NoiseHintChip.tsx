@@ -9,7 +9,7 @@ import type { NoiseAnalysisDto, TestRun } from "../../types";
 const LABELS = {
   noise: "Likely noise",
   change: "Likely change",
-  pending: "analysing…",
+  pending: "Analysing…",
 } as const;
 
 const tooltipFor = (analysis: NoiseAnalysisDto): string =>

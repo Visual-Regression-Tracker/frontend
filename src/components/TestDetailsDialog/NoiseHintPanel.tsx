@@ -93,7 +93,7 @@ export const NoiseHintPanel = ({
 
   let body;
   if (analysing) {
-    body = <Typography variant="body2">analysing…</Typography>;
+    body = <Typography variant="body2">Analysing…</Typography>;
   } else if (!result) {
     body = (
       <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
