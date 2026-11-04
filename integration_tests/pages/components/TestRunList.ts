@@ -1,3 +1,4 @@
+import type { TestRunSortField } from "~client/types/testRunSort";
 import { Table } from "./Table";
 
 export class TestRunList extends Table {
@@ -46,7 +47,7 @@ export class TestRunList extends Table {
     return this.getColumn(rowId, "noise").getByTestId("noise-hint-chip");
   }
 
-  sortBy(field: "status" | "name" | "tags") {
+  sortBy(field: TestRunSortField) {
     return this.page.getByTestId(`gridSort-${field}`).click();
   }
 

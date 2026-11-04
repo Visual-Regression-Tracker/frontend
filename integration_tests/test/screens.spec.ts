@@ -17,7 +17,7 @@ import {
   TEST_VARIATION_TWO,
 } from "~client/_test/test.data.helper";
 import { ImageComparison } from "~client/types/imageComparison";
-import type { NoiseSummary, TestRun } from "~client/types";
+import type { TestRun } from "~client/types";
 import {
   API_URL,
   mockApiError,
@@ -37,6 +37,7 @@ import {
   mockOllamaModels,
   mockRegistrationEnabled,
   mockTestRun,
+  mockTestRunsWithDetails,
   mockUpdateTestRun,
 } from "utils/mocks";
 import { defined } from "utils/defined";
@@ -171,18 +172,6 @@ const PARTLY_ANALYSED_RUNS = [
   TEST_RUN_APPROVED,
   TEST_RUN_NEW,
 ];
-
-const mockHintedRuns = async (
-  page: Page,
-  runs: TestRun[],
-  summary: NoiseSummary,
-) => {
-  await mockGetTestRuns(page, build.id, runs);
-  for (const run of runs) {
-    await mockTestRun(page, run);
-  }
-  await mockNoiseSummary(page, build.id, summary);
-};
 
 const mockImages = async (page: Page) => {
   for (const image of [
@@ -415,7 +404,8 @@ const VIEWS: [name: string, body: Body][] = [
   [
     "project page with noise hints",
     async ({ openProjectPage, page, shot }) => {
-      await mockHintedRuns(page, ALL_ANALYSED_RUNS, RENDERER_CHANGE_SUMMARY);
+      await mockTestRunsWithDetails(page, build.id, ALL_ANALYSED_RUNS);
+      await mockNoiseSummary(page, build.id, RENDERER_CHANGE_SUMMARY);
       const projectPage = await openProjectPage(project.id, build.id);
 
       await expect(projectPage.testRunList.noiseChips).toHaveCount(5);
@@ -429,7 +419,8 @@ const VIEWS: [name: string, body: Body][] = [
   [
     "project page with the noise hint filter open",
     async ({ openProjectPage, page, shot }) => {
-      await mockHintedRuns(page, PARTLY_ANALYSED_RUNS, PARTLY_ANALYSED_SUMMARY);
+      await mockTestRunsWithDetails(page, build.id, PARTLY_ANALYSED_RUNS);
+      await mockNoiseSummary(page, build.id, PARTLY_ANALYSED_SUMMARY);
       const projectPage = await openProjectPage(project.id, build.id);
       await expect(projectPage.testRunList.noiseChips).toHaveCount(5);
       await expect(
