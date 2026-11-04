@@ -2,60 +2,55 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import type { EnqueueSnackbar } from "notistack";
 import { testRunService } from "../services";
 import type { NoiseAnalysisSkip, TestRun } from "../types";
+import { isNoisePending, isNoiseResult } from "../_helpers/noiseHint.helper";
 import { useTestRunState } from "./testRun.context";
 
 const PENDING_EVENT_WAIT_MS = 3000;
 
 const QUEUE_FULL = "queue full";
 
-type Snapshot = Map<string, TestRun["noiseAnalysis"]>;
+type Snapshot = Map<string, string>;
 
 const skipMessage = ({ reason }: NoiseAnalysisSkip) =>
   reason === QUEUE_FULL
     ? "Queue is full, try again in a minute"
     : `Not analysed: ${reason}`;
 
-const snapshotOf = (
-  ids: string[],
+const signatureOf = (analysis: TestRun["noiseAnalysis"]) => {
+  if (isNoisePending(analysis)) {
+    return `pending:${analysis.requestedAt}`;
+  }
+  return isNoiseResult(analysis) ? `result:${analysis.computedAt}` : "none";
+};
+
+const analysisById = (
+  wanted: { has(id: string): boolean },
   testRuns: TestRun[],
   selectedTestRun?: TestRun,
 ): Snapshot => {
-  const wanted = new Set(ids);
-  const snapshot = new Map<string, TestRun["noiseAnalysis"]>();
+  const signatures: Snapshot = new Map();
   for (const run of testRuns) {
     if (wanted.has(run.id)) {
-      snapshot.set(run.id, run.noiseAnalysis);
+      signatures.set(run.id, signatureOf(run.noiseAnalysis));
     }
   }
   if (selectedTestRun && wanted.has(selectedTestRun.id)) {
-    snapshot.set(selectedTestRun.id, selectedTestRun.noiseAnalysis);
+    signatures.set(
+      selectedTestRun.id,
+      signatureOf(selectedTestRun.noiseAnalysis),
+    );
   }
-  return snapshot;
+  return signatures;
 };
 
 const allChanged = (
   awaiting: Snapshot,
   testRuns: TestRun[],
   selectedTestRun?: TestRun,
-): boolean => {
-  let seen = false;
-  if (selectedTestRun && awaiting.has(selectedTestRun.id)) {
-    if (selectedTestRun.noiseAnalysis === awaiting.get(selectedTestRun.id)) {
-      return false;
-    }
-    seen = true;
-  }
-  for (const run of testRuns) {
-    if (run.id === selectedTestRun?.id || !awaiting.has(run.id)) {
-      continue;
-    }
-    if (run.noiseAnalysis === awaiting.get(run.id)) {
-      return false;
-    }
-    seen = true;
-  }
-  return seen;
-};
+): boolean =>
+  [...analysisById(awaiting, testRuns, selectedTestRun)].every(
+    ([id, signature]) => signature !== awaiting.get(id),
+  );
 
 export const useAnalyseNoise = (enqueue: EnqueueSnackbar) => {
   const { testRuns, selectedTestRun } = useTestRunState();
@@ -84,14 +79,12 @@ export const useAnalyseNoise = (enqueue: EnqueueSnackbar) => {
 
   const analyse = useCallback(
     async (ids: string[]) => {
-      const before = snapshotOf(ids, testRuns, selectedTestRun);
+      const before = analysisById(new Set(ids), testRuns, selectedTestRun);
       setPosting(true);
       try {
         const { queued, skipped } = await testRunService.analyseNoise(ids);
-        const warning =
-          queued > 0
-            ? skipped.find(({ reason }) => reason === QUEUE_FULL)
-            : skipped[0];
+        const queueFull = skipped.find(({ reason }) => reason === QUEUE_FULL);
+        const warning = queued > 0 ? queueFull : (queueFull ?? skipped[0]);
         if (warning) {
           enqueue(skipMessage(warning), { variant: "warning" });
         }

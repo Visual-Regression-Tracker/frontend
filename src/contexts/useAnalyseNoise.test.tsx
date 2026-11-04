@@ -62,6 +62,26 @@ describe("useAnalyseNoise", () => {
       );
     });
 
+    it("says the queue is full, not the first reason, when nothing was queued and the queue was full", async () => {
+      vi.spyOn(testRunService, "analyseNoise").mockResolvedValue({
+        queued: 0,
+        skipped: [
+          { id: "a", reason: "not unresolved" },
+          { id: "b", reason: "queue full" },
+        ],
+      });
+      const { enqueue, result } = setup();
+
+      await act(async () => {
+        await result.current.analyse(["a", "b"]);
+      });
+
+      expect(enqueue).toHaveBeenCalledExactlyOnceWith(
+        "Queue is full, try again in a minute",
+        { variant: "warning" },
+      );
+    });
+
     it("gives the reason of the first skip when nothing was queued", async () => {
       vi.spyOn(testRunService, "analyseNoise").mockResolvedValue({
         queued: 0,
@@ -177,6 +197,66 @@ describe("useAnalyseNoise", () => {
       expect(result.current.requesting).toBe(true);
 
       show(result.current.dispatch, "a", null);
+      expect(result.current.requesting).toBe(false);
+    });
+
+    it("keeps waiting when the run is replaced by a copy with the same analysis", async () => {
+      const { result } = withRuns({
+        ...unresolved("a"),
+        noiseAnalysis: NOISE_ANALYSIS_NOISE,
+      });
+      vi.spyOn(testRunService, "analyseNoise").mockResolvedValue({
+        queued: 1,
+        skipped: [],
+      });
+
+      await act(async () => {
+        await result.current.analyse(["a"]);
+      });
+      show(result.current.dispatch, "a", { ...NOISE_ANALYSIS_NOISE });
+
+      expect(result.current.requesting).toBe(true);
+
+      show(result.current.dispatch, "a", NOISE_ANALYSIS_PENDING);
+      expect(result.current.requesting).toBe(false);
+    });
+
+    it("keeps waiting when the run is opened and its copy carries the same result", async () => {
+      const analysed = {
+        ...unresolved("a"),
+        noiseAnalysis: NOISE_ANALYSIS_NOISE,
+      };
+      const { result } = withRuns(analysed);
+      vi.spyOn(testRunService, "analyseNoise").mockResolvedValue({
+        queued: 1,
+        skipped: [],
+      });
+
+      await act(async () => {
+        await result.current.analyse(["a"]);
+      });
+      act(() => {
+        result.current.dispatch({
+          type: "select",
+          payload: { ...analysed, noiseAnalysis: { ...NOISE_ANALYSIS_NOISE } },
+        });
+      });
+
+      expect(result.current.requesting).toBe(true);
+    });
+
+    it("is off at once when the awaited runs are no longer in the list", async () => {
+      const { result } = withRuns(unresolved("a"), unresolved("b"));
+
+      await act(async () => {
+        await result.current.analyse(["a", "b"]);
+      });
+      expect(result.current.requesting).toBe(true);
+
+      act(() => {
+        result.current.dispatch({ type: "get", payload: [unresolved("c")] });
+      });
+
       expect(result.current.requesting).toBe(false);
     });
 
