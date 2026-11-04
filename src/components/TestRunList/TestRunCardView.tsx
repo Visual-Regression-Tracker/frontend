@@ -20,7 +20,7 @@ import { hotkeyMatching } from "../../_helpers/hotkeys.helper";
 import { pluralize } from "../../_helpers/format.helper";
 import { TestRunGroup } from "../../_helpers/testRunGroup.helper";
 import { TEST_RUN_SHOW_DIFF_KEY } from "../../constants";
-import { TestRun } from "../../types";
+import { TagField } from "../../types";
 import type { TestRunSort } from "../../types/testRunSort";
 import { TestRunGrid } from "./TestRunGrid";
 import { TestRunGridHeader } from "./TestRunGridHeader";
@@ -53,7 +53,7 @@ export const TestRunCardView = ({
   paginationModel: GridPaginationModel;
   onPaginationModelChange: Dispatch<SetStateAction<GridPaginationModel>>;
   activeTags: string[];
-  tagFieldsFor: (runCount: number) => Array<keyof TestRun>;
+  tagFieldsFor: (runCount: number) => TagField[];
   hotkeysEnabled: boolean;
   onToggleAll: (ids: string[]) => void;
   onToggleGroup: (ids: string[]) => void;

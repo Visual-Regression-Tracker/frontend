@@ -29,3 +29,8 @@ export interface TestRun {
   vlmDescription?: string;
   noiseAnalysis?: NoiseAnalysisDto | NoiseAnalysisPending | null;
 }
+
+export type TagField = Extract<
+  keyof TestRun,
+  "os" | "device" | "browser" | "viewport" | "customTags"
+>;

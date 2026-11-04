@@ -1,6 +1,6 @@
 import { run } from "./testRun.fixture";
 import { TAG_FIELDS } from "./testRunTags.helper";
-import { TestRun, TestStatus } from "../types";
+import { TagField, TestRun, TestStatus } from "../types";
 import { comparatorFor, sortOfModel } from "./testRunSort.helper";
 
 const ids = (runs: TestRun[]) => runs.map((item) => item.id);
@@ -48,7 +48,7 @@ describe("comparatorFor", () => {
     const de = run({ id: "de", name: "B", customTags: "de", os: "" });
     const en = run({ id: "en", name: "A", customTags: "en", os: "" });
     const enToo = run({ id: "en-too", name: "0", customTags: "en", os: "" });
-    const tagFieldsOf = vi.fn((): Array<keyof TestRun> => ["os", "customTags"]);
+    const tagFieldsOf = vi.fn((): TagField[] => ["os", "customTags"]);
 
     const sorted = [en, de, enToo].sort(
       comparatorFor({ field: "tags", direction: "asc" }, tagFieldsOf),

@@ -17,7 +17,7 @@ import TestRunFilters from "./TestRunFilters";
 import { TestRunTable } from "./TestRunTable";
 import { useTestRunFilters } from "./useTestRunFilters";
 import { useTestRunSelection } from "./useTestRunSelection";
-import { TestRun } from "../../types";
+import { TagField } from "../../types";
 import type { TestRunSort } from "../../types/testRunSort";
 import { comparatorFor, sortOfModel } from "../../_helpers/testRunSort.helper";
 import { testRunService } from "../../services";
@@ -81,7 +81,7 @@ const TestRunList = () => {
 
   // the grouped axis varies within a group, so it tags only a group of one
   const tagFieldsFor = useCallback(
-    (runCount: number): Array<keyof TestRun> =>
+    (runCount: number): TagField[] =>
       groupVariations && runCount > 1
         ? TAG_FIELDS.filter((field) => field !== groupByAxis)
         : TAG_FIELDS,

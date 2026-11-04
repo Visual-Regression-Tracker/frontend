@@ -17,7 +17,7 @@ import {
 } from "../../_helpers/testRunGroup.helper";
 import { thumbnailFor } from "../../_helpers/testRunImage.helper";
 import { tagValuesOf } from "../../_helpers/testRunTags.helper";
-import { TestRun } from "../../types";
+import { TagField } from "../../types";
 
 const clampToLines = (lines: number) => ({
   display: "-webkit-box",
@@ -74,7 +74,7 @@ export const TestRunGrid = ({
   density: TestRunDensity;
   showDiff: boolean;
   activeTags: string[];
-  tagFieldsFor: (runCount: number) => Array<keyof TestRun>;
+  tagFieldsFor: (runCount: number) => TagField[];
   onToggleGroup: (ids: string[]) => void;
   onToggleTag: (tag: string) => void;
   onOpen: (id: string) => void;

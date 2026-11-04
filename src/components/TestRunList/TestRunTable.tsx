@@ -20,7 +20,7 @@ import {
   groupStatusSummary,
   TestRunGroup,
 } from "../../_helpers/testRunGroup.helper";
-import { TestRun } from "../../types";
+import { TagField, TestRun } from "../../types";
 
 const HIDDEN_COLUMNS = { id: false };
 
@@ -36,7 +36,7 @@ const SORTING_ORDER: GridSortDirection[] = ["asc", "desc"];
 
 const buildColumns = (
   runsFor: (id: string) => TestRun[],
-  tagFieldsFor: (runCount: number) => Array<keyof TestRun>,
+  tagFieldsFor: (runCount: number) => TagField[],
 ): GridColDef<TestRun>[] => [
   {
     field: "id",
@@ -132,7 +132,7 @@ export const TestRunTable = ({
 }: {
   groups: TestRunGroup[];
   grouped: boolean;
-  tagFieldsFor: (runCount: number) => Array<keyof TestRun>;
+  tagFieldsFor: (runCount: number) => TagField[];
   selectedIds: string[];
   onSelectionChange: (ids: string[]) => void;
   loading: boolean;

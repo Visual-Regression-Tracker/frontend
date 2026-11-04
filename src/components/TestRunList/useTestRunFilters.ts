@@ -1,12 +1,12 @@
 import { useCallback, useMemo, useState } from "react";
-import { TestRun, TestStatus } from "../../types";
+import { TagField, TestRun, TestStatus } from "../../types";
 import { statusesByAttention } from "../../_helpers/testRunStatus.helper";
 import { TAG_FIELDS, tagValuesOf } from "../../_helpers/testRunTags.helper";
 
 interface TagGroups {
   picked: Set<string>;
   // per picked tag, the fields it occurs in: a value of another picked tag there counts too
-  fieldsPerTag: Array<Array<keyof TestRun>>;
+  fieldsPerTag: TagField[][];
 }
 
 const matchesNameQuery = (run: TestRun, query: string): boolean =>
@@ -45,7 +45,7 @@ export const useTestRunFilters = (testRuns: TestRun[]) => {
   }, []);
 
   const tagFieldsByValue = useMemo(() => {
-    const map = new Map<string, Array<keyof TestRun>>();
+    const map = new Map<string, TagField[]>();
     TAG_FIELDS.forEach((field) => {
       testRuns.forEach((run) => {
         const value = run[field];
