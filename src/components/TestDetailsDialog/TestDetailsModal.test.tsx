@@ -7,7 +7,12 @@ import { TestRun } from "../../types";
 import { IgnoreArea } from "../../types/ignoreArea";
 import { TestStatus } from "../../types/testStatus";
 import { GO_TO_NEXT_KEY } from "../../constants";
-import { TEST_USER, testRunMock } from "../../_test/test.data.helper";
+import {
+  NOISE_ANALYSIS_CHANGE,
+  TEST_USER,
+  testRunMock,
+} from "../../_test/test.data.helper";
+import { withRegions } from "../../_test/noiseRegions";
 import TestDetailsModal from "./TestDetailsModal";
 import { NO_FAILURES } from "../../_test/bulkResult";
 
@@ -368,6 +373,91 @@ describe("TestDetailsModal", () => {
 
       expect(goToNextCheckbox()).toBeChecked();
       expect(localStorage.getItem(GO_TO_NEXT_KEY)).toBe("true");
+    });
+  });
+
+  describe("rendering-noise hint", () => {
+    const BLUR_REGION = { x: 1, y: 2, width: 3, height: 4, weight: 0.9 };
+    const DINOV2_REGION = { x: 10, y: 20, width: 30, height: 40, weight: 0.7 };
+    const FULL = withRegions(
+      NOISE_ANALYSIS_CHANGE,
+      [BLUR_REGION],
+      [DINOV2_REGION],
+    );
+    const analysed = (id = "analysed") => ({
+      ...UNRESOLVED_RUN,
+      id,
+      noiseAnalysis: FULL,
+    });
+    const hintAreas = (): unknown =>
+      JSON.parse(screen.getByTestId("hintAreas").textContent ?? "null");
+    const toggle = (stage: "blur" | "dinov2") =>
+      screen.getByTestId(`hint-areas-${stage}`);
+
+    it("shows the panel for an unresolved run and not for an approved one", () => {
+      const { unmount } = renderModal({ ...UNRESOLVED_RUN });
+      expect(screen.getByTestId("noise-hint-panel")).toBeVisible();
+      unmount();
+
+      renderModal({ ...UNRESOLVED_RUN, status: TestStatus.approved });
+
+      expect(screen.queryByTestId("noise-hint-panel")).not.toBeInTheDocument();
+    });
+
+    it("draws the regions of the toggled stage and removes them when toggled off", async () => {
+      const { user } = renderModal(analysed());
+      expect(hintAreas()).toEqual([]);
+
+      await user.click(toggle("blur"));
+      expect(hintAreas()).toEqual([BLUR_REGION]);
+
+      await user.click(toggle("dinov2"));
+      expect(hintAreas()).toEqual([DINOV2_REGION]);
+
+      await user.click(toggle("dinov2"));
+      expect(hintAreas()).toEqual([]);
+    });
+
+    it("loads the regions of a result that arrived without them", async () => {
+      vi.spyOn(testRunService, "getDetails").mockResolvedValue(analysed());
+      const { user } = renderModal({
+        ...UNRESOLVED_RUN,
+        id: "analysed",
+        noiseAnalysis: NOISE_ANALYSIS_CHANGE,
+      });
+      expect(toggle("blur")).toBeDisabled();
+
+      await waitFor(() => expect(toggle("blur")).toBeEnabled());
+      await user.click(toggle("blur"));
+
+      expect(hintAreas()).toEqual([BLUR_REGION]);
+      expect(testRunService.getDetails).toHaveBeenCalledExactlyOnceWith(
+        "analysed",
+      );
+    });
+
+    it("clears the regions when another run is shown", async () => {
+      const { user, showTestRun } = renderModal(analysed("first"));
+      await user.click(toggle("blur"));
+
+      showTestRun(analysed("second"));
+
+      expect(hintAreas()).toEqual([]);
+      expect(toggle("blur")).toHaveAttribute("aria-pressed", "false");
+    });
+
+    it("leaves Approve and the go-to-next choice working with the regions shown", async () => {
+      vi.spyOn(testRunService, "approveBulk").mockResolvedValue(NO_FAILURES);
+      const { user } = renderModal(analysed());
+      await user.click(toggle("blur"));
+
+      await user.click(approveButton());
+
+      await screen.findByText("Approved");
+      expect(testRunService.approveBulk).toHaveBeenCalledWith(
+        ["analysed"],
+        false,
+      );
     });
   });
 });

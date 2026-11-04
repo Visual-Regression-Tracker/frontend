@@ -9,7 +9,7 @@ import {
 } from "@mui/material";
 import { useHotkeys } from "react-hotkeys-hook";
 import { hotkeyOptions } from "../../_helpers/hotkeys.helper";
-import { TestRun } from "../../types";
+import { TestRun, TestStatus } from "../../types";
 import { staticService } from "../../services";
 import { OpenInNew } from "@mui/icons-material";
 import useImage from "use-image";
@@ -33,6 +33,8 @@ import { TestRunInfoBar } from "./TestRunInfoBar";
 import { useIgnoreAreas } from "./useIgnoreAreas";
 import { useDialogSnackbar } from "./useDialogSnackbar";
 import { useStageView } from "./useStageView";
+import { useNoiseHint } from "./useNoiseHint";
+import { NoiseHintPanel } from "./NoiseHintPanel";
 
 const drawAreaContainerSx = { width: "100%", height: "100%" } as const;
 const drawAreaItemSx = { padding: "0 4px", height: "100%" } as const;
@@ -86,6 +88,7 @@ const TestDetailsModal = ({
   // one instance, so a toast replaces the last one whichever part of the dialog raised it
   const { enqueueSnackbar } = useDialogSnackbar();
   const areas = useIgnoreAreas(testRun, currentImage, enqueueSnackbar);
+  const noiseHint = useNoiseHint(testRun);
   const stage = useStageView(
     [currentImage, currentImageStatus],
     [baselineImage, baselineImageStatus],
@@ -212,6 +215,7 @@ const TestDetailsModal = ({
         blendDifference={blendDifference && !isDiffShown}
         ignoreAreas={areas.ignoreAreas}
         tempIgnoreAreas={areas.tempIgnoreAreas}
+        hintAreas={noiseHint.hintAreas}
         setIgnoreAreas={areas.changeIgnoreAreas}
         selectedRectId={areas.selectedRectId}
         deleteIgnoreArea={areas.deleteIgnoreArea}
@@ -236,6 +240,11 @@ const TestDetailsModal = ({
       <TestRunInfoBar
         testRun={testRun}
         sizeMismatch={imageSizesDiffer(testRun, currentImage, baselineImage)}
+        noiseHint={
+          testRun.status === TestStatus.unresolved && (
+            <NoiseHintPanel key={testRun.id} {...noiseHint.panelProps} />
+          )
+        }
         enqueueSnackbar={enqueueSnackbar}
         ignoreAreasToolbar={
           <IgnoreAreasToolbar
