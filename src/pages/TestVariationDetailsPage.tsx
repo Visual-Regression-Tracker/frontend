@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { TestVariation } from "../types";
 import { testVariationService, staticService } from "../services";
@@ -31,8 +31,10 @@ const TestVariationDetailsPage = () => {
   const { testVariationId } = useParams<{ testVariationId: string }>();
   const [testVariation, setTestVariation] = useState<TestVariation>();
   const { projectList } = useProjectState();
-  const noiseAvailable = noiseAnalysisAvailable(
-    projectList.find((project) => project.id === testVariation?.projectId),
+  const project = projectList.find(({ id }) => id === testVariation?.projectId);
+  const noiseAvailable = useMemo(
+    () => noiseAnalysisAvailable(project),
+    [project],
   );
 
   useEffect(() => {

@@ -745,7 +745,10 @@ describe("TestRunList noise hint filter", () => {
   });
 
   describe("after switching to a project without the Noise sort", () => {
-    const sortedByNoiseThenSwitched = async (view: "table" | "grid") => {
+    const firstName = () =>
+      screen.queryAllByText(/^Screen [NC]$/)[0]?.textContent;
+
+    const renderReady = async () => {
       vi.spyOn(projectsService, "getAll").mockResolvedValue([
         TEST_PROJECT,
         VLM_PROJECT,
@@ -770,15 +773,13 @@ describe("TestRunList noise hint filter", () => {
         TEST_USER,
       );
       await screen.findByTestId("project-ready");
-      if (view === "grid") {
-        await user.click(
-          await screen.findByRole("button", { name: "Grid view" }),
-        );
-      }
-      const sortByNoise =
-        view === "grid"
-          ? await screen.findByTestId("gridSort-noise")
-          : await screen.findByRole("columnheader", { name: /Noise/ });
+      return user;
+    };
+
+    const sortDescendingThenSwitch = async (
+      user: Awaited<ReturnType<typeof renderReady>>,
+      sortByNoise: HTMLElement,
+    ) => {
       await user.click(sortByNoise);
       await user.click(sortByNoise);
       await waitFor(() => expect(firstName()).toBe("Screen N"));
@@ -787,11 +788,13 @@ describe("TestRunList noise hint filter", () => {
       await waitFor(() => expect(sortByNoise).not.toBeInTheDocument());
     };
 
-    const firstName = () =>
-      screen.queryAllByText(/^Screen [NC]$/)[0]?.textContent;
-
     it("shows the table in the default order with its sort indicator", async () => {
-      await sortedByNoiseThenSwitched("table");
+      const user = await renderReady();
+
+      await sortDescendingThenSwitch(
+        user,
+        await screen.findByRole("columnheader", { name: /Noise/ }),
+      );
 
       expect(firstName()).toBe("Screen C");
       expect(
@@ -800,7 +803,15 @@ describe("TestRunList noise hint filter", () => {
     });
 
     it("shows the cards in the default order with the default sort active", async () => {
-      await sortedByNoiseThenSwitched("grid");
+      const user = await renderReady();
+      await user.click(
+        await screen.findByRole("button", { name: "Grid view" }),
+      );
+
+      await sortDescendingThenSwitch(
+        user,
+        await screen.findByTestId("gridSort-noise"),
+      );
 
       expect(firstName()).toBe("Screen C");
       expect(

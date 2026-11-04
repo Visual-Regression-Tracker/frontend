@@ -32,7 +32,9 @@ import {
 } from "../../_helpers/testRunGroup.helper";
 import { TAG_FIELDS } from "../../_helpers/testRunTags.helper";
 
-const DEFAULT_SORT_MODEL: GridSortModel = [{ field: "status", sort: "desc" }];
+const DEFAULT_SORT_MODEL: GridSortModel = [
+  { field: DEFAULT_SORT.field, sort: DEFAULT_SORT.direction },
+];
 
 const TestRunList = () => {
   const { enqueueSnackbar } = useSnackbar();

@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor, within } from "@testing-library/react";
+import { fireEvent, screen, within } from "@testing-library/react";
 import { Route, Routes } from "react-router-dom";
 import { renderWithProviders } from "../_test/render";
 import {
@@ -14,6 +14,7 @@ import {
   staticService,
   testVariationService,
 } from "../services";
+import { useProjectState } from "../contexts";
 import { ImageComparison } from "../types/imageComparison";
 import { TestStatus } from "../types/testStatus";
 import TestVariationDetailsPage from "./TestVariationDetailsPage";
@@ -61,6 +62,11 @@ const VARIATION = {
   ],
 };
 
+const ProjectsLoaded = () => {
+  const { projectList } = useProjectState();
+  return projectList.length > 0 ? <span data-testid="projects-loaded" /> : null;
+};
+
 const renderPage = (route = `/variations/details/${VARIATION.id}`) =>
   renderWithProviders(
     <>
@@ -71,6 +77,7 @@ const renderPage = (route = `/variations/details/${VARIATION.id}`) =>
         />
       </Routes>
       <CurrentSearch />
+      <ProjectsLoaded />
     </>,
     { user: TEST_USER, route },
   );
@@ -154,16 +161,14 @@ describe("TestVariationDetailsPage", () => {
         },
       ],
     });
-    const projects = vi
-      .spyOn(projectsService, "getAll")
-      .mockResolvedValue([
-        { ...TEST_PROJECT, imageComparison: ImageComparison.vlm },
-      ]);
+    vi.spyOn(projectsService, "getAll").mockResolvedValue([
+      { ...TEST_PROJECT, imageComparison: ImageComparison.vlm },
+    ]);
 
     renderPage();
 
     await screen.findByRole("heading", { level: 2, name: /Baseline history/ });
-    await waitFor(() => expect(projects).toHaveBeenCalled());
+    await screen.findByTestId("projects-loaded");
     expect(screen.queryByTestId("noise-hint-chip")).not.toBeInTheDocument();
   });
 
