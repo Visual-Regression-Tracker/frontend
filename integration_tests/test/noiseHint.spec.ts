@@ -105,7 +105,7 @@ test.describe("run list", () => {
     await expect(testRunList.analyseNoiseBtn).toBeDisabled();
   });
 
-  test("sends the unresolved runs to the analysis", async ({
+  test("sends the unresolved runs to the analysis and re-enables the button after the fallback wait", async ({
     openProjectPage,
     page,
   }) => {
