@@ -79,15 +79,3 @@ describe("hintColor", () => {
     expect(hintColor(hint)).toBe(color);
   });
 });
-
-describe("infoWash", () => {
-  it.each([
-    ["light", "rgba(29, 78, 216, 0.12)"],
-    ["dark", "rgba(114, 180, 242, 0.12)"],
-  ] as const)(
-    "is the soft tint of the info colour in %s mode",
-    (scheme, wash) => {
-      expect(colorSchemes[scheme].palette.infoWash).toBe(wash);
-    },
-  );
-});

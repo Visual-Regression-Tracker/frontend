@@ -12,7 +12,6 @@ import {
   darkAccent,
   fontFamily,
   hint,
-  infoWash,
   radius,
   slate,
   status,
@@ -23,11 +22,9 @@ import {
 declare module "@mui/material/styles" {
   interface Palette {
     hint: PaletteColor;
-    infoWash: string;
   }
   interface PaletteOptions {
     hint?: PaletteColorOptions;
-    infoWash?: string;
   }
 }
 
@@ -59,7 +56,6 @@ export const theme = createTheme({
         error: { main: status.light.error },
         info: { main: status.light.info },
         hint: { main: hint.light.neutral },
-        infoWash: infoWash.light,
         background: {
           default: surface.light.default,
           paper: surface.light.paper,
@@ -80,7 +76,6 @@ export const theme = createTheme({
         error: { main: status.dark.error },
         info: { main: status.dark.info },
         hint: { main: hint.dark.neutral },
-        infoWash: infoWash.dark,
         background: {
           default: surface.dark.default,
           paper: surface.dark.paper,

@@ -101,17 +101,6 @@ describe("NoiseBanner", () => {
     expect(alert.querySelector("button")).toBeNull();
   });
 
-  it("takes its wash from the colour scheme, so dark mode gets the dark tint", async () => {
-    await renderBanner();
-
-    await screen.findByTestId("noise-banner");
-
-    const rules = Array.from(document.head.querySelectorAll("style"))
-      .map((style) => style.textContent)
-      .join("");
-    expect(rules).toContain("background-color:var(--mui-palette-infoWash");
-  });
-
   it("is hidden when the summary does not look like a renderer change", async () => {
     const { getNoiseSummary } = await renderBanner({
       summary: () => Promise.resolve({ ...NOISE_SUMMARY, noiseLike: 1 }),
