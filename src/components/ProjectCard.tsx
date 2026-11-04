@@ -19,7 +19,7 @@ import {
 import { Tooltip } from "./Tooltip";
 import { LOCATOR_PROJECT_LIST_PAGE_PROJECT_LIST, routes } from "../constants";
 import { buildProjectPageUrl } from "../_helpers/route.helpers";
-import { formatDateTime } from "../_helpers/format.helper";
+import { DateLabel } from "./DateLabel";
 import { Project } from "../types";
 
 export const ProjectCard = ({
@@ -108,7 +108,7 @@ export const ProjectCard = ({
             Created
           </Typography>
           <Typography component="dd" variant="caption">
-            {formatDateTime(project.createdAt)}
+            <DateLabel date={project.createdAt} />
           </Typography>
         </Box>
       </CardContent>

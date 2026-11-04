@@ -13,7 +13,7 @@ import {
   GridSortModel,
   type ToolbarPropsOverrides,
 } from "@mui/x-data-grid";
-import TestStatusChip from "../TestStatusChip";
+import { StatusChip } from "../StatusChip";
 import { NoiseHintChip } from "./NoiseHintChip";
 import { TestRunListToolbar } from "./TestRunListToolbar";
 import { PAGE_SIZE_OPTIONS } from "./TestRunListControls";
@@ -128,7 +128,7 @@ const buildColumns = (
         component="span"
         title={groupStatusSummary(runsFor(params.row.id)) || undefined}
       >
-        <TestStatusChip status={params.row.status?.toString()} />
+        <StatusChip status={params.row.status?.toString()} />
       </Box>
     ),
   },

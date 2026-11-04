@@ -1,0 +1,114 @@
+import { useState } from "react";
+import {
+  Button,
+  Checkbox,
+  Chip,
+  ListItemText,
+  Menu,
+  MenuItem,
+  Stack,
+} from "@mui/material";
+import { DebouncedTextField } from "./DebouncedTextField";
+
+interface FilterDef {
+  id: string;
+  label: string;
+  options: string[];
+  value: string[];
+  onChange: (value: string[]) => void;
+}
+
+interface IProps {
+  search: string;
+  onSearchChange: (value: string) => void;
+  searchLabel?: string;
+  filters: FilterDef[];
+  onClear: () => void;
+}
+
+const FilterChip = ({ filter }: { filter: FilterDef }) => {
+  const [anchor, setAnchor] = useState<HTMLElement | null>(null);
+  const active = filter.value.length > 0;
+  const toggle = (option: string) =>
+    filter.onChange(
+      filter.value.includes(option)
+        ? filter.value.filter((value) => value !== option)
+        : [...filter.value, option],
+    );
+
+  return (
+    <>
+      <Chip
+        id={`filter-chip-${filter.id}`}
+        label={
+          active ? `${filter.label}: ${filter.value.length}` : filter.label
+        }
+        color={active ? "primary" : "default"}
+        variant={active ? "filled" : "outlined"}
+        onClick={(event) => setAnchor(event.currentTarget)}
+        aria-haspopup="menu"
+        aria-expanded={!!anchor}
+      />
+      <Menu
+        anchorEl={anchor}
+        open={!!anchor}
+        onClose={() => setAnchor(null)}
+        slotProps={{ list: { "aria-labelledby": `filter-chip-${filter.id}` } }}
+      >
+        {filter.options.map((option) => (
+          <MenuItem
+            key={option}
+            dense
+            role="menuitemcheckbox"
+            aria-checked={filter.value.includes(option)}
+            onClick={() => toggle(option)}
+          >
+            <Checkbox
+              size="small"
+              edge="start"
+              checked={filter.value.includes(option)}
+              tabIndex={-1}
+              disableRipple
+            />
+            <ListItemText primary={option} />
+          </MenuItem>
+        ))}
+      </Menu>
+    </>
+  );
+};
+
+export const FilterBar = ({
+  search,
+  onSearchChange,
+  searchLabel = "Search",
+  filters,
+  onClear,
+}: IProps) => {
+  const visible = filters.filter((filter) => filter.options.length > 0);
+  const filtering =
+    search !== "" || filters.some((filter) => filter.value.length > 0);
+
+  return (
+    <Stack
+      direction="row"
+      sx={{ flexWrap: "wrap", alignItems: "center", gap: 1 }}
+    >
+      <DebouncedTextField
+        size="small"
+        label={searchLabel}
+        value={search}
+        debounceTimeout={300}
+        onChange={onSearchChange}
+      />
+      {visible.map((filter) => (
+        <FilterChip key={filter.id} filter={filter} />
+      ))}
+      {filtering && (
+        <Button size="small" onClick={onClear}>
+          Clear filters
+        </Button>
+      )}
+    </Stack>
+  );
+};

@@ -18,8 +18,8 @@ import {
 } from "../_helpers/route.helpers";
 import { TestVariationDetails } from "../components/TestVariationDetails";
 import { useSnackbar } from "notistack";
-import { formatDateTime } from "../_helpers/format.helper";
-import TestStatusChip from "../components/TestStatusChip";
+import { StatusChip } from "../components/StatusChip";
+import { DateLabel } from "../components/DateLabel";
 import { NoiseHintChip } from "../components/TestRunList/NoiseHintChip";
 import { Baseline } from "../types/baseline";
 import { useNoiseAnalysisAvailable } from "../contexts";
@@ -98,7 +98,7 @@ const TestVariationDetailsPage = () => {
                   </Button>
                   {baseline.testRun && (
                     <>
-                      <TestStatusChip status={baseline.testRun.status} />
+                      <StatusChip status={baseline.testRun.status} />
                       {noiseAvailable && (
                         <NoiseHintChip run={baseline.testRun} />
                       )}
@@ -111,7 +111,7 @@ const TestVariationDetailsPage = () => {
                   )}
                   <Box sx={{ flex: 1 }} />
                   <Typography variant="body2" sx={{ color: "text.secondary" }}>
-                    {formatDateTime(baseline.createdAt)}
+                    <DateLabel date={baseline.createdAt} />
                   </Typography>
                 </Stack>
                 <CardMedia

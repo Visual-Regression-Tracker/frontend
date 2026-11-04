@@ -28,3 +28,29 @@ export const partialFailureText = (
       : shown.message;
   return `${verb} ${result.succeeded.length} of ${what}. ${result.failed.length} failed: ${message}`;
 };
+
+const MINUTE = 60_000;
+const HOUR = 60 * MINUTE;
+const DAY = 24 * HOUR;
+
+export const formatShortDate = (date: string, now = new Date()): string => {
+  const then = new Date(date);
+  if (Number.isNaN(then.getTime())) {
+    return "Invalid Date";
+  }
+  const age = now.getTime() - then.getTime();
+  if (age < MINUTE) {
+    return "just now";
+  }
+  if (age < HOUR) {
+    return `${Math.floor(age / MINUTE)} min ago`;
+  }
+  if (age < DAY) {
+    return `${Math.floor(age / HOUR)} h ago`;
+  }
+  return then.toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: then.getFullYear() === now.getFullYear() ? undefined : "numeric",
+  });
+};

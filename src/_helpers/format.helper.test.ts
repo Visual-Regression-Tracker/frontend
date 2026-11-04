@@ -1,6 +1,7 @@
 import {
   failureVariant,
   formatDateTime,
+  formatShortDate,
   partialFailureText,
   pluralize,
 } from "./format.helper";
@@ -111,5 +112,32 @@ describe("failureVariant", () => {
         { message: "Internal error" },
       ]),
     ).toBe("error");
+  });
+});
+
+describe("formatShortDate", () => {
+  const now = new Date("2026-11-05T12:00:00Z");
+
+  it.each([
+    ["2026-11-05T11:59:40Z", "just now"],
+    ["2026-11-05T11:55:00Z", "5 min ago"],
+    ["2026-11-05T10:00:00Z", "2 h ago"],
+    ["2026-11-04T12:00:01Z", "23 h ago"],
+    ["2026-11-06T12:00:00Z", "just now"],
+  ])("shows %s as %s", (date, expected) => {
+    expect(formatShortDate(date, now)).toBe(expected);
+  });
+
+  it("shows a day or more ago this year as month and day", () => {
+    expect(formatShortDate("2026-11-03T08:00:00Z", now)).toBe("Nov 3");
+    expect(formatShortDate("2026-02-14T12:00:00Z", now)).toBe("Feb 14");
+  });
+
+  it("adds the year for another year", () => {
+    expect(formatShortDate("2025-12-31T12:00:00Z", now)).toBe("Dec 31, 2025");
+  });
+
+  it("shows Invalid Date for something that is not a date", () => {
+    expect(formatShortDate("not a date", now)).toBe("Invalid Date");
   });
 });
