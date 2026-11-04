@@ -23,6 +23,7 @@ import { ImageComparison } from "../../types/imageComparison";
 import {
   NOISE_ANALYSIS_CHANGE,
   NOISE_ANALYSIS_NOISE,
+  NOISE_ANALYSIS_PENDING,
   TEST_PROJECT,
   TEST_USER,
 } from "../../_test/test.data.helper";
@@ -650,16 +651,16 @@ describe("TestRunList status filter", () => {
   });
 });
 
-describe("TestRunList noise hint filter", () => {
-  const SelectProject = () => {
-    const dispatch = useProjectDispatch();
-    const { projectList, selectedProjectId } = useProjectState();
-    useEffect(() => selectProject(dispatch, TEST_PROJECT.id), [dispatch]);
-    return projectList.length > 0 && selectedProjectId === TEST_PROJECT.id ? (
-      <div data-testid="project-ready" />
-    ) : null;
-  };
+const SelectProject = () => {
+  const dispatch = useProjectDispatch();
+  const { projectList, selectedProjectId } = useProjectState();
+  useEffect(() => selectProject(dispatch, TEST_PROJECT.id), [dispatch]);
+  return projectList.length > 0 && selectedProjectId === TEST_PROJECT.id ? (
+    <div data-testid="project-ready" />
+  ) : null;
+};
 
+describe("TestRunList noise hint filter", () => {
   const renderWith = async (project: Partial<typeof TEST_PROJECT>) => {
     vi.spyOn(projectsService, "getAll").mockResolvedValue([
       { ...TEST_PROJECT, ...project },
@@ -700,6 +701,76 @@ describe("TestRunList noise hint filter", () => {
 
     expect(
       screen.queryByRole("combobox", { name: "Noise hint" }),
+    ).not.toBeInTheDocument();
+  });
+});
+
+describe("TestRunList analyse unresolved button", () => {
+  const Deliver = ({ updated }: { updated: TestRun }) => {
+    const dispatch = useTestRunDispatch();
+    return (
+      <button onClick={() => updateTestRun(dispatch, [updated])}>
+        Deliver result
+      </button>
+    );
+  };
+
+  const RUNS = [
+    run({ id: "p", name: "Screen P", noiseAnalysis: NOISE_ANALYSIS_PENDING }),
+    run({ id: "n", name: "Screen N", noiseAnalysis: NOISE_ANALYSIS_NOISE }),
+    run({ id: "o", name: "Screen O", status: TestStatus.approved }),
+  ];
+
+  const renderWith = async (project: Partial<typeof TEST_PROJECT>) => {
+    vi.spyOn(projectsService, "getAll").mockResolvedValue([
+      { ...TEST_PROJECT, ...project },
+    ]);
+    const rendered = renderList(
+      RUNS,
+      <>
+        <SelectProject />
+        <Deliver
+          updated={{ ...RUNS[0], noiseAnalysis: NOISE_ANALYSIS_NOISE }}
+        />
+      </>,
+      TEST_USER,
+    );
+    await screen.findByTestId("project-ready");
+    await screen.findByText("Screen N");
+    return rendered;
+  };
+
+  it("follows the pending runs of the list as results arrive", async () => {
+    const { user } = await renderWith({});
+    const button = screen.getByTestId("analyse-noise-button");
+    expect(button).toHaveTextContent("analysing 1 of 2…");
+    expect(button).toBeDisabled();
+
+    await user.click(screen.getByRole("button", { name: "Deliver result" }));
+
+    expect(button).toHaveTextContent("Analyse unresolved (2)");
+    expect(button).toBeEnabled();
+  });
+
+  it("counts the runs left after filtering", async () => {
+    const { user } = await renderWith({});
+    await user.click(screen.getByRole("combobox", { name: "Noise hint" }));
+    await user.click(
+      await screen.findByRole("option", { name: "Likely noise" }),
+    );
+
+    await waitFor(() =>
+      expect(screen.getByTestId("analyse-noise-button")).toHaveTextContent(
+        "Analyse unresolved (1)",
+      ),
+    );
+  });
+
+  it("is not offered for a VLM project", async () => {
+    await renderWith({ imageComparison: ImageComparison.vlm });
+
+    expect(
+      screen.queryByTestId("analyse-noise-button"),
     ).not.toBeInTheDocument();
   });
 });
