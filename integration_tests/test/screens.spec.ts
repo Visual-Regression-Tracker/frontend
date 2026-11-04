@@ -17,7 +17,7 @@ import {
   TEST_VARIATION_TWO,
 } from "~client/_test/test.data.helper";
 import { ImageComparison } from "~client/types/imageComparison";
-import type { TestRun } from "~client/types";
+import type { NoiseSummary, TestRun } from "~client/types";
 import {
   API_URL,
   mockApiError,
@@ -42,6 +42,9 @@ import {
 import { defined } from "utils/defined";
 import {
   ANALYSED_RUNS,
+  BLUR_REGIONS,
+  NOISE_SETTINGS,
+  PARTLY_ANALYSED_SUMMARY,
   NOISE_CART,
   PENDING_SEARCH,
   RENDERER_CHANGE_SUMMARY,
@@ -155,19 +158,30 @@ const WITHOUT_AREAS: TestRun = {
   tempIgnoreAreas: "[]",
 };
 
-const HINTED_RUNS = [
+const ALL_ANALYSED_RUNS = [
+  ...ANALYSED_RUNS,
+  NOISE_SETTINGS,
+  TEST_RUN_APPROVED,
+  TEST_RUN_NEW,
+];
+
+const PARTLY_ANALYSED_RUNS = [
   ...ANALYSED_RUNS,
   PENDING_SEARCH,
   TEST_RUN_APPROVED,
   TEST_RUN_NEW,
 ];
 
-const mockHintedRuns = async (page: Page) => {
-  await mockGetTestRuns(page, build.id, HINTED_RUNS);
-  for (const run of HINTED_RUNS) {
+const mockHintedRuns = async (
+  page: Page,
+  runs: TestRun[],
+  summary: NoiseSummary,
+) => {
+  await mockGetTestRuns(page, build.id, runs);
+  for (const run of runs) {
     await mockTestRun(page, run);
   }
-  await mockNoiseSummary(page, build.id, RENDERER_CHANGE_SUMMARY);
+  await mockNoiseSummary(page, build.id, summary);
 };
 
 const mockImages = async (page: Page) => {
@@ -401,9 +415,7 @@ const VIEWS: [name: string, body: Body][] = [
   [
     "project page with noise hints",
     async ({ openProjectPage, page, shot }) => {
-      await mockHintedRuns(page);
-      // taller: the pending run is the fifth row
-      await page.setViewportSize({ width: 1280, height: 1000 });
+      await mockHintedRuns(page, ALL_ANALYSED_RUNS, RENDERER_CHANGE_SUMMARY);
       const projectPage = await openProjectPage(project.id, build.id);
 
       await expect(projectPage.testRunList.noiseChips).toHaveCount(5);
@@ -417,9 +429,15 @@ const VIEWS: [name: string, body: Body][] = [
   [
     "project page with the noise hint filter open",
     async ({ openProjectPage, page, shot }) => {
-      await mockHintedRuns(page);
+      await mockHintedRuns(page, PARTLY_ANALYSED_RUNS, PARTLY_ANALYSED_SUMMARY);
       const projectPage = await openProjectPage(project.id, build.id);
       await expect(projectPage.testRunList.noiseChips).toHaveCount(5);
+      await expect(
+        projectPage.testRunList.noiseChip(PENDING_SEARCH.id),
+      ).toHaveText("analysing…");
+      await expect(projectPage.testRunList.analyseNoiseBtn).toHaveText(
+        "analysing 1 of 5…",
+      );
 
       await projectPage.testRunFilters.noiseHint.click();
 
@@ -537,7 +555,9 @@ const VIEWS: [name: string, body: Body][] = [
       await details.hintBlur.click();
 
       await expect(details.hintBlur).toHaveAttribute("aria-pressed", "true");
-      await expect.poll(() => details.lockedRects()).toHaveLength(2);
+      await expect
+        .poll(() => details.lockedRects())
+        .toHaveLength(BLUR_REGIONS.length);
       await shot("test-run-noise-hint");
     },
   ],

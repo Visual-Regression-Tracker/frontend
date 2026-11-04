@@ -40,6 +40,11 @@ export const CHANGE_CHECKOUT = unresolved(
   "Checkout",
   NOISE_ANALYSIS_CHANGE,
 );
+export const NOISE_SETTINGS = unresolved(
+  "noise-settings",
+  "Settings",
+  NOISE_ANALYSIS_NOISE,
+);
 export const PENDING_SEARCH = unresolved(
   "pending-search",
   "Search",
@@ -57,9 +62,18 @@ export const ANALYSED_RUNS = [
 export const RENDERER_CHANGE_SUMMARY: NoiseSummary = {
   unresolved: 5,
   analysed: 5,
-  noiseLike: 5,
+  noiseLike: 4,
   byEnvironment: [
-    { browser: "chrome", os: "Linux", device: "", unresolved: 5, noiseLike: 5 },
+    { browser: "chrome", os: "Linux", device: "", unresolved: 5, noiseLike: 4 },
+  ],
+};
+
+export const PARTLY_ANALYSED_SUMMARY: NoiseSummary = {
+  unresolved: 5,
+  analysed: 4,
+  noiseLike: 3,
+  byEnvironment: [
+    { browser: "chrome", os: "Linux", device: "", unresolved: 5, noiseLike: 3 },
   ],
 };
 

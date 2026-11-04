@@ -25,6 +25,7 @@ export const B_EN = run({ id: "b-en", name: "Screen B", customTags: "en" });
 export const toolbarProps = (view: TestRunView): ToolbarPropsOverrides => ({
   selectedIds: [],
   rows: [],
+  noiseHintAvailable: false,
   view,
   onViewChange: vi.fn(),
   density: "standard",

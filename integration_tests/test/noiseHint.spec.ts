@@ -44,6 +44,9 @@ const sentIds = (request: Request) =>
 const NOT_RENDERER_CHANGE: NoiseSummary = {
   ...RENDERER_CHANGE_SUMMARY,
   noiseLike: 1,
+  byEnvironment: [
+    { ...RENDERER_CHANGE_SUMMARY.byEnvironment[0], noiseLike: 1 },
+  ],
 };
 
 test.beforeEach(async ({ page }) => {
@@ -230,7 +233,7 @@ test.describe("build details", () => {
     const projectPage = await openProjectPage(project.id, build.id);
 
     await expect(projectPage.noiseBanner).toHaveText(
-      "Chrome runs look like a renderer change: 5 of 5 diffs are rendering noise. Filter likely noise and review them in one pass",
+      "Chrome runs look like a renderer change: 4 of 5 diffs are rendering noise. Filter likely noise and review them in one pass",
     );
   });
 });
@@ -294,7 +297,7 @@ test.describe("details dialog", () => {
     );
     await expect(details.drawAreas).toHaveCount(2);
     await expect(details.hintBlur).toBeEnabled();
-    expect(await details.lockedRects()).toEqual([]);
+    await expect.poll(() => details.lockedRects()).toEqual([]);
 
     await details.hintBlur.click();
     await expect

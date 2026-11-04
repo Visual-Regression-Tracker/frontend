@@ -46,9 +46,6 @@ const UNRESOLVED_IN_TABLE_ORDER = UNRESOLVED.map((run) => run.id).sort((a, b) =>
   a.localeCompare(b),
 );
 
-// the Analyse row above the table takes its height: ten rows no longer fit the default viewport
-test.use({ viewport: { width: 1280, height: 800 } });
-
 test.beforeEach(async ({ page }) => {
   await mockGetProjects(page, [project]);
   await mockGetBuilds(page, project.id, [build]);
