@@ -51,6 +51,20 @@ describe("buildNoiseCaption", () => {
     );
   });
 
+  it("counts an unknown verdict as analysed", () => {
+    const runs = [
+      unresolved(NOISE_ANALYSIS_NOISE),
+      unresolved(NOISE_ANALYSIS_NOISE),
+      unresolved(NOISE_ANALYSIS_CHANGE),
+      unresolved({ ...NOISE_ANALYSIS_NOISE, verdict: "unknown" }),
+      unresolved(NOISE_ANALYSIS_PENDING),
+    ];
+
+    expect(buildNoiseCaption(runs)).toBe(
+      "2 of 5 unresolved look like rendering noise · analysed 4 of 5",
+    );
+  });
+
   it("is null when nothing is unresolved", () => {
     expect(
       buildNoiseCaption([run({ status: TestStatus.approved })]),

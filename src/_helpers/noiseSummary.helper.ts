@@ -1,7 +1,7 @@
 import type { TestRun } from "../types";
 import type { NoiseSummary } from "../types/noiseAnalysis";
 import { TestStatus } from "../types/testStatus";
-import { noiseHintOf } from "./noiseHint.helper";
+import { isNoiseAnalysed, noiseHintOf } from "./noiseHint.helper";
 
 const MIN_UNRESOLVED = 5;
 const MIN_SHARE_WITH_HISTORY = 0.5;
@@ -17,9 +17,7 @@ export function buildNoiseCaption(
   }
   const hints = unresolved.map(noiseHintOf);
   const noise = hints.filter((hint) => hint === "noise").length;
-  const analysed = hints.filter(
-    (hint) => hint === "noise" || hint === "change",
-  ).length;
+  const analysed = unresolved.filter(isNoiseAnalysed).length;
   return `${noise} of ${unresolved.length} unresolved look like rendering noise · analysed ${analysed} of ${unresolved.length}`;
 }
 

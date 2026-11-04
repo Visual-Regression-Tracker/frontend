@@ -16,6 +16,21 @@ export type NoiseHintFilter = (typeof NOISE_HINT_FILTERS)[number];
 
 const NOISE_ANALYSIS_VERSION = 1;
 
+const NOISE_VERDICTS = ["noise", "change", "unknown"];
+
+export function isNoiseAnalysed(
+  run: Pick<TestRun, "status" | "noiseAnalysis">,
+): boolean {
+  const analysis = run.noiseAnalysis;
+  return (
+    run.status === TestStatus.unresolved &&
+    !!analysis &&
+    !("pending" in analysis) &&
+    analysis.version === NOISE_ANALYSIS_VERSION &&
+    NOISE_VERDICTS.includes(analysis.verdict)
+  );
+}
+
 export function noiseHintOf(
   run: Pick<TestRun, "status" | "noiseAnalysis">,
 ): NoiseHint | null {
