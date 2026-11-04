@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+import { useEffect, type ReactNode } from "react";
 import {
   act,
   fireEvent,
@@ -10,12 +10,22 @@ import { useNavigate } from "react-router-dom";
 import { renderWithProviders } from "../../_test/render";
 import { run } from "../../_helpers/testRun.fixture";
 import {
+  selectProject,
   updateTestRun,
+  useProjectDispatch,
+  useProjectState,
   useTestRunDispatch,
   useTestRunState,
 } from "../../contexts";
-import { buildsService, testRunService } from "../../services";
+import { buildsService, projectsService, testRunService } from "../../services";
 import { Build, TestRun, TestStatus } from "../../types";
+import { ImageComparison } from "../../types/imageComparison";
+import {
+  NOISE_ANALYSIS_CHANGE,
+  NOISE_ANALYSIS_NOISE,
+  TEST_PROJECT,
+  TEST_USER,
+} from "../../_test/test.data.helper";
 import { TEST_RUN_SHOW_DIFF_KEY } from "../../constants";
 import { TestDetailsDialog } from "../TestDetailsDialog";
 import TestRunList from "./index";
@@ -137,7 +147,11 @@ describe("TestRunList", () => {
 
 type User = ReturnType<typeof renderWithProviders>["user"];
 
-const renderList = (runs: TestRun[], extra: ReactNode = null) => {
+const renderList = (
+  runs: TestRun[],
+  extra: ReactNode = null,
+  user: typeof TEST_USER | null = null,
+) => {
   vi.spyOn(buildsService, "getDetails").mockImplementation((id) =>
     Promise.resolve(build(id)),
   );
@@ -148,7 +162,7 @@ const renderList = (runs: TestRun[], extra: ReactNode = null) => {
       {extra}
       <TestRunList />
     </>,
-    { route: "/?buildId=build-a" },
+    { route: "/?buildId=build-a", user },
   );
 };
 
@@ -633,5 +647,59 @@ describe("TestRunList status filter", () => {
       expect(within(rowOf("Screen A")).getByText("approved")).toBeVisible(),
     );
     expect(filterChip("unresolved")).toBeInTheDocument();
+  });
+});
+
+describe("TestRunList noise hint filter", () => {
+  const SelectProject = () => {
+    const dispatch = useProjectDispatch();
+    const { projectList, selectedProjectId } = useProjectState();
+    useEffect(() => selectProject(dispatch, TEST_PROJECT.id), [dispatch]);
+    return projectList.length > 0 && selectedProjectId === TEST_PROJECT.id ? (
+      <div data-testid="project-ready" />
+    ) : null;
+  };
+
+  const renderWith = async (project: Partial<typeof TEST_PROJECT>) => {
+    vi.spyOn(projectsService, "getAll").mockResolvedValue([
+      { ...TEST_PROJECT, ...project },
+    ]);
+    const rendered = renderList(
+      [
+        run({ id: "n", name: "Screen N", noiseAnalysis: NOISE_ANALYSIS_NOISE }),
+        run({
+          id: "c",
+          name: "Screen C",
+          noiseAnalysis: NOISE_ANALYSIS_CHANGE,
+        }),
+      ],
+      <SelectProject />,
+      TEST_USER,
+    );
+    await screen.findByTestId("project-ready");
+    await screen.findByText("Screen N");
+    return rendered;
+  };
+
+  it("filters the runs for a project with the analysis on", async () => {
+    const { user } = await renderWith({});
+
+    await user.click(screen.getByRole("combobox", { name: "Noise hint" }));
+    await user.click(
+      await screen.findByRole("option", { name: "Likely noise" }),
+    );
+
+    await waitFor(() =>
+      expect(screen.queryByText("Screen C")).not.toBeInTheDocument(),
+    );
+    expect(screen.getByText("Screen N")).toBeInTheDocument();
+  });
+
+  it("is not offered for a VLM project", async () => {
+    await renderWith({ imageComparison: ImageComparison.vlm });
+
+    expect(
+      screen.queryByRole("combobox", { name: "Noise hint" }),
+    ).not.toBeInTheDocument();
   });
 });

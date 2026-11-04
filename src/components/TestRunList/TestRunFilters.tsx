@@ -9,6 +9,10 @@ import {
 } from "@mui/material";
 import { DebouncedTextField } from "../DebouncedTextField";
 import { TestStatus } from "../../types";
+import {
+  NOISE_HINT_FILTERS,
+  NoiseHintFilter,
+} from "../../_helpers/noiseHint.helper";
 
 interface IProps {
   tagOptions: string[];
@@ -16,9 +20,12 @@ interface IProps {
   name: string;
   statuses: TestStatus[];
   tags: string[];
+  noiseHints: NoiseHintFilter[];
+  showNoiseHint: boolean;
   onNameChange: (value: string) => void;
   onStatusesChange: (value: TestStatus[]) => void;
   onTagsChange: (value: string[]) => void;
+  onNoiseHintsChange: (value: NoiseHintFilter[]) => void;
   onReset: () => void;
 }
 
@@ -41,13 +48,19 @@ const TestRunFilters = ({
   name,
   statuses,
   tags,
+  noiseHints,
+  showNoiseHint,
   onNameChange,
   onStatusesChange,
   onTagsChange,
+  onNoiseHintsChange,
   onReset,
 }: IProps) => {
   const hasActiveFilters =
-    name.length > 0 || statuses.length > 0 || tags.length > 0;
+    name.length > 0 ||
+    statuses.length > 0 ||
+    tags.length > 0 ||
+    noiseHints.length > 0;
 
   return (
     <Paper variant="outlined" sx={{ p: 2, borderRadius: 2 }}>
@@ -107,6 +120,28 @@ const TestRunFilters = ({
             )}
           />
         </Grid>
+        {showNoiseHint && (
+          <Grid size="grow">
+            <Autocomplete
+              multiple
+              size="small"
+              disableCloseOnSelect
+              limitTags={3}
+              options={NOISE_HINT_FILTERS}
+              value={noiseHints}
+              onChange={(_event, value) => onNoiseHintsChange(value)}
+              renderValue={renderChips}
+              renderInput={(params) => (
+                <TextField
+                  {...params}
+                  variant="outlined"
+                  label="Noise hint"
+                  placeholder={noiseHints.length === 0 ? "Any" : undefined}
+                />
+              )}
+            />
+          </Grid>
+        )}
         <Grid>
           <Button
             variant="outlined"

@@ -121,7 +121,7 @@ const buildColumns = (
     display: "flex",
     flex: 0.3,
     filterable: false,
-    sortable: false,
+    sortingOrder: ["desc", "asc"],
     renderCell: (params: GridRenderCellParams<TestRun>) => (
       <NoiseHintChip run={params.row} />
     ),

@@ -1,5 +1,12 @@
 import { run } from "./testRun.fixture";
+import {
+  noiseAnalysisAvailable,
+  noiseScoreOf,
+  parseNoiseAnalysisConfig,
+} from "./noiseHint.helper";
 import { noiseHintOf } from "./noiseHint.helper";
+import { ImageComparison } from "../types/imageComparison";
+import { DEFAULT_NOISE_ANALYSIS_CONFIG } from "../constants";
 import { TestStatus } from "../types/testStatus";
 import {
   NOISE_ANALYSIS_CHANGE,
@@ -48,4 +55,81 @@ describe("noiseHintOf", () => {
       ).toBeNull();
     },
   );
+});
+
+describe("noiseScoreOf", () => {
+  it("gives the score of a result", () => {
+    expect(noiseScoreOf(unresolved(NOISE_ANALYSIS_CHANGE))).toBeCloseTo(0.77);
+  });
+
+  it.each([
+    ["a pending run", NOISE_ANALYSIS_PENDING],
+    ["no result", null],
+    ["an unknown verdict", { ...NOISE_ANALYSIS_NOISE, verdict: "unknown" }],
+    ["a result without a score", { ...NOISE_ANALYSIS_NOISE, score: null }],
+  ])("gives nothing for %s", (_, analysis) => {
+    expect(noiseScoreOf(unresolved(analysis))).toBeNull();
+  });
+});
+
+describe("parseNoiseAnalysisConfig", () => {
+  it("fills what the saved config lacks from the defaults", () => {
+    expect(parseNoiseAnalysisConfig('{"blur":{"enabled":false}}')).toEqual({
+      blur: { ...DEFAULT_NOISE_ANALYSIS_CONFIG.blur, enabled: false },
+      dinov2: DEFAULT_NOISE_ANALYSIS_CONFIG.dinov2,
+    });
+  });
+
+  it.each([undefined, "", "not json", "null"])(
+    "falls back to the defaults for %j",
+    (json) => {
+      expect(parseNoiseAnalysisConfig(json)).toEqual(
+        DEFAULT_NOISE_ANALYSIS_CONFIG,
+      );
+    },
+  );
+});
+
+describe("noiseAnalysisAvailable", () => {
+  const project = (
+    imageComparison: ImageComparison,
+    noiseAnalysisConfig: string,
+  ) => ({ imageComparison, noiseAnalysisConfig });
+
+  it("is on for a pixel comparator with the blur stage enabled", () => {
+    expect(
+      noiseAnalysisAvailable(
+        project(ImageComparison.pixelmatch, '{"blur":{"enabled":true}}'),
+      ),
+    ).toBe(true);
+  });
+
+  it("is on for a project saved before the config existed", () => {
+    expect(noiseAnalysisAvailable(project(ImageComparison.odiff, ""))).toBe(
+      true,
+    );
+  });
+
+  it("is off when the blur stage is disabled, whatever dinov2 says", () => {
+    expect(
+      noiseAnalysisAvailable(
+        project(
+          ImageComparison.pixelmatch,
+          '{"blur":{"enabled":false},"dinov2":{"enabled":true}}',
+        ),
+      ),
+    ).toBe(false);
+  });
+
+  it("is off for the VLM comparator", () => {
+    expect(
+      noiseAnalysisAvailable(
+        project(ImageComparison.vlm, '{"blur":{"enabled":true}}'),
+      ),
+    ).toBe(false);
+  });
+
+  it("is off with no project", () => {
+    expect(noiseAnalysisAvailable(undefined)).toBe(false);
+  });
 });

@@ -190,6 +190,18 @@ describe("TestRunCardView", () => {
     });
   });
 
+  it("sorts by noise, changes first, from the header", async () => {
+    const props = propsFor([A_EN]);
+    const { user } = renderCards(props);
+
+    await user.click(screen.getByTestId("gridSort-noise"));
+
+    expect(props.onSortChange).toHaveBeenCalledWith({
+      field: "noise",
+      direction: "desc",
+    });
+  });
+
   it("pages the cards and starts over on the first page when the page size changes", async () => {
     const { user } = renderWithProviders(<Paged {...propsFor(TWELVE)} />);
     expect(cardNames()).toHaveLength(10);

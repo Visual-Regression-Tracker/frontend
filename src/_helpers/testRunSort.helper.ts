@@ -1,6 +1,7 @@
 import type { GridSortModel } from "@mui/x-data-grid";
 import { TagField, TestRun } from "../types";
 import { SORT_FIELDS, TestRunSort } from "../types/testRunSort";
+import { noiseScoreOf } from "./noiseHint.helper";
 import { byAttention } from "./testRunStatus.helper";
 import { tagsOf } from "./testRunTags.helper";
 
@@ -8,6 +9,20 @@ const byName = (a: TestRun, b: TestRun): number => a.name.localeCompare(b.name);
 
 // ascending runs ok to new: descending puts needs-attention first in both views
 const bySettled = (a: TestRun, b: TestRun): number => -byAttention(a, b);
+
+// runs without a score go last in both directions, so only the scored ones flip
+const byNoise = (
+  a: TestRun,
+  b: TestRun,
+  direction: TestRunSort["direction"],
+): number => {
+  const scoreA = noiseScoreOf(a);
+  const scoreB = noiseScoreOf(b);
+  if (scoreA === null || scoreB === null) {
+    return Number(scoreA === null) - Number(scoreB === null);
+  }
+  return direction === "asc" ? scoreA - scoreB : scoreB - scoreA;
+};
 
 // flip only the chosen field: negating the tie-break too would reverse names
 export const comparatorFor = (
@@ -34,6 +49,9 @@ export const comparatorFor = (
   };
 
   return (a: TestRun, b: TestRun): number => {
+    if (sort.field === "noise") {
+      return byNoise(a, b, sort.direction) || byName(a, b);
+    }
     const ascending = ascendingBy(a, b);
     const primary = sort.direction === "asc" ? ascending : -ascending;
     const tieBreak = sort.field === "name" ? byAttention(a, b) : byName(a, b);

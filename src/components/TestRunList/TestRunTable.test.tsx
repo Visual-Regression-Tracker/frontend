@@ -165,6 +165,19 @@ describe("TestRunTable", () => {
     );
   });
 
+  it("reports a click on the Noise header as a descending sort", async () => {
+    const props = propsFor([A_EN, B_EN]);
+    const { user } = renderTable(props);
+    await waitFor(() => expect(dataRows()).toHaveLength(2));
+
+    await user.click(screen.getByRole("columnheader", { name: /Noise/ }));
+
+    expect(props.onSortModelChange).toHaveBeenCalledWith(
+      [{ field: "noise", sort: "desc" }],
+      expect.anything(),
+    );
+  });
+
   it("follows a change of density after it first rendered", async () => {
     const densityClass = () =>
       document.querySelector(".MuiDataGrid-root")?.className ?? "";
