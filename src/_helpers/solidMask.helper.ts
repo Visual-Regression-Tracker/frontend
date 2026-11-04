@@ -1,3 +1,5 @@
+import type { IgnoreArea } from "../types/ignoreArea";
+
 // Port of backend src/compare/libs/pixelmatch/blur-amplitude.core.ts (solidMask); the parity test keeps the two identical.
 
 export interface RawImage {
@@ -31,6 +33,30 @@ export function isOpaque({ data }: RawImage): boolean {
     if (data[i] !== 255) return false;
   }
   return true;
+}
+
+// The backend's readPair zeroes ignore areas in both images before the blur stage.
+export function applyIgnoreAreas(
+  image: RawImage,
+  ignoreAreas: Pick<IgnoreArea, "x" | "y" | "width" | "height">[],
+): RawImage {
+  for (const area of ignoreAreas) {
+    const x0 = Math.max(0, Math.floor(area.x));
+    const y0 = Math.max(0, Math.floor(area.y));
+    const x1 = Math.min(image.width, Math.ceil(area.x + area.width));
+    const y1 = Math.min(image.height, Math.ceil(area.y + area.height));
+    if (!(x1 > x0 && y1 > y0)) {
+      continue;
+    }
+    for (let y = y0; y < y1; y++) {
+      image.data.fill(
+        0,
+        4 * (image.width * y + x0),
+        4 * (image.width * y + x1),
+      );
+    }
+  }
+  return image;
 }
 
 function gaussianKernel(sigma: number): Float32Array {

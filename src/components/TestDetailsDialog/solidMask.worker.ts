@@ -1,10 +1,15 @@
-import { isOpaque, solidMask } from "../../_helpers/solidMask.helper";
+import {
+  applyIgnoreAreas,
+  isOpaque,
+  solidMask,
+} from "../../_helpers/solidMask.helper";
 import { decodeImage } from "../../services/imageDecode.service";
 import type { SolidMaskRequest, SolidMaskResult } from "./solidMask.client";
 
 async function compute({
   baselineUrl,
   imageUrl,
+  ignoreAreas = [],
 }: SolidMaskRequest): Promise<SolidMaskResult> {
   const [baseline, image] = await Promise.all([
     decodeImage(baselineUrl),
@@ -16,7 +21,10 @@ async function compute({
   if (baseline.width !== image.width || baseline.height !== image.height) {
     return { unavailable: "size mismatch" };
   }
-  const result = solidMask(baseline, image);
+  const result = solidMask(
+    applyIgnoreAreas(baseline, ignoreAreas),
+    applyIgnoreAreas(image, ignoreAreas),
+  );
   return result
     ? { mask: result.mask, solidPixels: result.measure.solidPixels }
     : { unavailable: "too large" };

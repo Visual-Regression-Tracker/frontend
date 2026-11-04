@@ -1,4 +1,5 @@
 import {
+  applyIgnoreAreas,
   isOpaque,
   MAX_MEASURED_PIXELS,
   RawImage,
@@ -129,5 +130,32 @@ describe("isOpaque", () => {
     image.data[4 * 8 + 3] = 254;
 
     expect(isOpaque(image)).toBe(false);
+  });
+});
+
+describe("applyIgnoreAreas", () => {
+  const alphaRow = (image: RawImage, y: number) =>
+    Array.from(
+      { length: image.width },
+      (_, x) => image.data[(y * 4 + x) * 4 + 3],
+    );
+
+  it("zeroes the covered pixels, widened to whole pixels and clipped to the image", () => {
+    const image = applyIgnoreAreas(blank(4, 4), [
+      { x: 2.5, y: -1, width: 9, height: 1.2 },
+    ]);
+
+    expect(alphaRow(image, 0)).toEqual([255, 255, 0, 0]);
+    expect(alphaRow(image, 1)).toEqual([255, 255, 255, 255]);
+    expect(Array.from(image.data.subarray(8, 12))).toEqual([0, 0, 0, 0]);
+  });
+
+  it("skips areas outside the image or without size", () => {
+    const image = applyIgnoreAreas(blank(4, 4), [
+      { x: 5, y: 0, width: 2, height: 2 },
+      { x: 1, y: 1, width: 0, height: 2 },
+    ]);
+
+    expect(isOpaque(image)).toBe(true);
   });
 });

@@ -1,35 +1,51 @@
 import type { RawImage } from "../../_helpers/solidMask.helper";
 import { decodeImage } from "../../services/imageDecode.service";
+import type { SolidMaskRequest } from "./solidMask.client";
 import "./solidMask.worker";
 
 vi.mock("../../services/imageDecode.service", () => ({
   decodeImage: vi.fn(),
 }));
 
-const image = (width: number, grey: number, alpha = 255): RawImage => {
-  const data = new Uint8ClampedArray(width * 4).fill(grey);
+const grey = (
+  width: number,
+  height: number,
+  level: number,
+  alpha = 255,
+): RawImage => {
+  const data = new Uint8ClampedArray(width * height * 4).fill(level);
   for (let i = 3; i < data.length; i += 4) data[i] = alpha;
-  return { data, width, height: 1 };
+  return { data, width, height };
 };
 
-async function answerTo(baseline: RawImage, checkpoint: RawImage) {
+const image = (width: number, level: number, alpha = 255) =>
+  grey(width, 1, level, alpha);
+
+async function answerTo(
+  baseline: RawImage,
+  checkpoint: RawImage,
+  ignoreAreas?: SolidMaskRequest["ignoreAreas"],
+) {
   vi.mocked(decodeImage)
     .mockResolvedValueOnce(baseline)
     .mockResolvedValueOnce(checkpoint);
-  return dispatch();
+  return dispatch(ignoreAreas);
 }
 
-async function dispatch() {
+async function dispatch(ignoreAreas?: SolidMaskRequest["ignoreAreas"]) {
   const postMessage = vi
     .spyOn(self, "postMessage")
     .mockImplementation(() => {});
+  const before = postMessage.mock.calls.length;
   self.onmessage?.(
     new MessageEvent("message", {
-      data: { baselineUrl: "/b.png", imageUrl: "/i.png" },
+      data: { baselineUrl: "/b.png", imageUrl: "/i.png", ignoreAreas },
     }),
   );
-  await vi.waitFor(() => expect(postMessage).toHaveBeenCalled());
-  return postMessage.mock.calls[0] as [unknown, unknown];
+  await vi.waitFor(() =>
+    expect(postMessage.mock.calls.length).toBeGreaterThan(before),
+  );
+  return postMessage.mock.calls[before] as [unknown, unknown];
 }
 
 describe("solidMask worker", () => {
@@ -61,5 +77,23 @@ describe("solidMask worker", () => {
     const [result] = await dispatch();
 
     expect(result).toEqual({ error: "Cannot load /b.png: 404" });
+  });
+
+  it("leaves out changes inside ignore areas", async () => {
+    const [all] = await answerTo(grey(20, 20, 200), grey(20, 20, 100));
+    const [ignored] = await answerTo(grey(20, 20, 200), grey(20, 20, 100), [
+      { x: 0, y: 0, width: 20, height: 20 },
+    ]);
+
+    expect(all).toMatchObject({ solidPixels: 400 });
+    expect(ignored).toMatchObject({ solidPixels: 0 });
+  });
+
+  it("posts a non-Error failure as text", async () => {
+    vi.mocked(decodeImage).mockRejectedValue("offline");
+
+    const [result] = await dispatch();
+
+    expect(result).toEqual({ error: "offline" });
   });
 });

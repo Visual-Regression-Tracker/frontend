@@ -2,6 +2,7 @@ import { expect, test, type Page } from "@playwright/test";
 import { mkdtempSync, readFileSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
+import { crc32 } from "node:zlib";
 import { build } from "vite";
 import type { SolidMaskRequest } from "~client/components/TestDetailsDialog/solidMask.client";
 import { unpackMask } from "~client/_test/maskFixture";
@@ -16,6 +17,31 @@ const CLIENT = resolve(
   "../../src/components/TestDetailsDialog/solidMask.client.ts",
 );
 const BUNDLE_URL = "/solid-mask.js";
+
+const referenceMask = (name: string) => {
+  const { width, height } = JSON.parse(
+    readFileSync(join(FIXTURES, `${name}.mask.json`), "utf8"),
+  ) as { width: number; height: number };
+  return unpackMask(
+    readFileSync(join(FIXTURES, `${name}.mask.bin`)),
+    width * height,
+  );
+};
+
+const withGamma = (png: Buffer): Buffer => {
+  const IHDR_END = 8 + 25;
+  const body = Buffer.concat([Buffer.from("gAMA"), Buffer.alloc(4)]);
+  body.writeUInt32BE(100_000, 4);
+  const chunk = Buffer.alloc(body.length + 8);
+  chunk.writeUInt32BE(4, 0);
+  body.copy(chunk, 4);
+  chunk.writeUInt32BE(crc32(body), body.length + 4);
+  return Buffer.concat([
+    png.subarray(0, IHDR_END),
+    chunk,
+    png.subarray(IHDR_END),
+  ]);
+};
 
 // The app does not use the worker yet, so the production bundle has no copy of it.
 let bundle: string;
@@ -43,11 +69,14 @@ test.beforeEach(async ({ context, page }) => {
         body: "<!doctype html>",
       });
     }
-    const [dir, file] = path.startsWith("/fixtures/")
-      ? [FIXTURES, path.slice("/fixtures/".length)]
-      : [bundle, path.slice(1)];
+    const gamma = path.startsWith("/gamma/");
+    const [dir, file] =
+      path.startsWith("/fixtures/") || gamma
+        ? [FIXTURES, path.slice(path.indexOf("/", 1) + 1)]
+        : [bundle, path.slice(1)];
+    const body = readFileSync(join(dir, file));
     return route.fulfill({
-      body: readFileSync(join(dir, file)),
+      body: gamma ? withGamma(body) : body,
       contentType: file.endsWith(".png") ? "image/png" : "text/javascript",
     });
   });
@@ -68,23 +97,23 @@ const compute = (page: Page, request: SolidMaskRequest) =>
     { bundleUrl: BUNDLE_URL, request },
   );
 
-test("the worker gives the backend's mask for a real screenshot pair", async ({
-  page,
-}) => {
-  const result = await compute(page, {
-    baselineUrl: "/fixtures/login-base.png",
-    imageUrl: "/fixtures/login-image.png",
-  });
+for (const [title, folder] of [
+  ["a real screenshot pair", "fixtures"],
+  ["a pair tagged with a gamma chunk", "gamma"],
+]) {
+  test(`the worker gives the backend's mask for ${title}`, async ({ page }) => {
+    const result = await compute(page, {
+      baselineUrl: `/${folder}/login-base.png`,
+      imageUrl: `/${folder}/login-image.png`,
+    });
 
-  const expected = unpackMask(
-    readFileSync(join(FIXTURES, "login.mask.bin")),
-    1280 * 800,
-  );
-  expect("mask" in result && result.solidPixels).toBe(107);
-  expect(
-    "mask" in result && Buffer.from(result.mask).equals(Buffer.from(expected)),
-  ).toBe(true);
-});
+    expect("mask" in result && result.solidPixels).toBe(107);
+    expect(
+      "mask" in result &&
+        Buffer.from(result.mask).equals(Buffer.from(referenceMask("login"))),
+    ).toBe(true);
+  });
+}
 
 test("the worker reports a semi-transparent image as unavailable", async ({
   page,

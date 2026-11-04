@@ -8,6 +8,7 @@ const latest = () => workers[workers.length - 1];
 class FakeWorker {
   onmessage: ((event: { data: unknown }) => void) | null = null;
   onerror: ((event: { message: string }) => void) | null = null;
+  onmessageerror: (() => void) | null = null;
   postMessage = vi.fn();
   terminate = vi.fn();
   constructor(
@@ -50,5 +51,25 @@ describe("computeSolidMask", () => {
     worker.onerror?.({ message: "boom" });
 
     await expect(result).rejects.toThrow("boom");
+  });
+
+  it("rejects when the worker's answer cannot be read", async () => {
+    const result = computeSolidMask(request);
+    latest().onmessageerror?.();
+
+    await expect(result).rejects.toThrow("Cannot read the worker's answer");
+  });
+
+  it("rejects when the worker cannot be created", async () => {
+    vi.stubGlobal(
+      "Worker",
+      class {
+        constructor() {
+          throw new Error("blocked by CSP");
+        }
+      },
+    );
+
+    await expect(computeSolidMask(request)).rejects.toThrow("blocked by CSP");
   });
 });
