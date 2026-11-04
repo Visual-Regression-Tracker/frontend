@@ -50,7 +50,18 @@ describe("NoiseHintChip", () => {
     expect(chip()).toHaveStyle({ borderStyle: "dashed" });
   });
 
-  it("says blur only when the second stage was skipped", () => {
+  it.each([
+    [
+      "the second stage was skipped",
+      { skipped: "blur sees a change" },
+      "Blur: likely change (0.91) · DINOv2: not needed, blur already sees a change",
+    ],
+    [
+      "the result has no second stage",
+      undefined,
+      "Blur only: likely change (0.91)",
+    ],
+  ])("says what blur found when %s", (_, dinov2, stages) => {
     renderWithProviders(
       <NoiseHintChip
         run={withAnalysis({
@@ -60,27 +71,14 @@ describe("NoiseHintChip", () => {
             verdict: "change",
             score: 0.91,
           },
-          dinov2: { skipped: "blur sees a change" },
+          dinov2,
         })}
       />,
     );
 
     expect(chip()).toHaveAttribute(
       "aria-label",
-      `Rendering-noise check. Blur only: likely change (0.91). ${LIMITATION}`,
-    );
-  });
-
-  it("says blur only when the result has no second stage", () => {
-    renderWithProviders(
-      <NoiseHintChip
-        run={withAnalysis({ ...NOISE_ANALYSIS_NOISE, dinov2: undefined })}
-      />,
-    );
-
-    expect(chip()).toHaveAttribute(
-      "aria-label",
-      `Rendering-noise check. Blur only: likely noise (0.39). ${LIMITATION}`,
+      `Rendering-noise check. ${stages}. ${LIMITATION}`,
     );
   });
 

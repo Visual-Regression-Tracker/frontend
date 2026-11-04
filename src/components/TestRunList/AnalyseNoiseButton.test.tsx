@@ -1,4 +1,4 @@
-import { screen, waitFor } from "@testing-library/react";
+import { screen } from "@testing-library/react";
 import { renderWithProviders } from "../../_test/render";
 import { run } from "../../_helpers/testRun.fixture";
 import { testRunService } from "../../services";
@@ -123,8 +123,8 @@ describe("AnalyseNoiseButton", () => {
     ).toBeInTheDocument();
   });
 
-  it("stays quiet when nothing was queued for another reason", async () => {
-    const analyse = vi.spyOn(testRunService, "analyseNoise").mockResolvedValue({
+  it("says why when nothing was queued", async () => {
+    vi.spyOn(testRunService, "analyseNoise").mockResolvedValue({
       queued: 0,
       skipped: [{ id: "a", reason: "not unresolved" }],
     });
@@ -134,8 +134,9 @@ describe("AnalyseNoiseButton", () => {
 
     await user.click(button());
 
-    await waitFor(() => expect(analyse).toHaveBeenCalled());
-    expect(screen.queryByRole("alert")).not.toBeInTheDocument();
+    expect(
+      await screen.findByText("Not analysed: not unresolved"),
+    ).toBeInTheDocument();
   });
 
   it("shows the error when the request fails", async () => {

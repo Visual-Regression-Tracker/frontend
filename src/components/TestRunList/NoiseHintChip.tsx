@@ -1,8 +1,10 @@
-import { Chip, Tooltip } from "@mui/material";
+import { Chip } from "@mui/material";
 import BlurOnIcon from "@mui/icons-material/BlurOn";
 import { noiseHintOf } from "../../_helpers/noiseHint.helper";
+import { stagesText } from "../../_helpers/noiseText.helper";
 import { hintColor } from "../../theme";
-import type { NoiseAnalysisDto, NoiseVerdict, TestRun } from "../../types";
+import { Tooltip } from "../Tooltip";
+import type { NoiseAnalysisDto, TestRun } from "../../types";
 
 const LABELS = {
   noise: "Likely noise",
@@ -10,28 +12,11 @@ const LABELS = {
   pending: "analysing…",
 } as const;
 
-const LIMITATION =
+const TOOLTIP_LIMITATION =
   "A hint, not a decision — it can call a one-digit or faint-border change noise";
 
-const VERDICT_TEXT: Record<NoiseVerdict, string> = {
-  noise: "likely noise",
-  change: "likely change",
-  unknown: "no verdict",
-};
-
-const stage = (verdict: NoiseVerdict, score: number) =>
-  `${VERDICT_TEXT[verdict]} (${score.toFixed(2)})`;
-
-function tooltipFor({ blur, dinov2 }: NoiseAnalysisDto): string {
-  const blurText = blur ? stage(blur.verdict, blur.score) : "no verdict";
-  let stages = `Blur only: ${blurText}`;
-  if (dinov2 && "error" in dinov2) {
-    stages = `Blur: ${blurText} · DINOv2: did not answer`;
-  } else if (dinov2 && "verdict" in dinov2) {
-    stages = `Blur: ${blurText} · DINOv2: ${stage(dinov2.verdict, dinov2.score)}`;
-  }
-  return `Rendering-noise check. ${stages}. ${LIMITATION}`;
-}
+const tooltipFor = (analysis: NoiseAnalysisDto): string =>
+  `Rendering-noise check. ${stagesText(analysis)}. ${TOOLTIP_LIMITATION}`;
 
 export const NoiseHintChip = ({
   run,

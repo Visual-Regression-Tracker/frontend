@@ -14,12 +14,13 @@ import {
   type NoiseAnalysisValue,
 } from "../../_helpers/noiseHint.helper";
 import { type HintStage, regionsOf } from "../../_helpers/noiseRegions.helper";
-import { testRunService } from "../../services";
-import type {
-  NoiseAnalysisDto,
-  NoiseAnalysisSkip,
-  NoiseVerdict,
-} from "../../types";
+import {
+  LIMITATION,
+  stagesText,
+  VERDICT_TEXT,
+} from "../../_helpers/noiseText.helper";
+import type { NoiseAnalysisDto } from "../../types";
+import { useAnalyseNoise } from "../TestRunList/useAnalyseNoise";
 import { useDialogSnackbar } from "./useDialogSnackbar";
 
 interface NoiseHintPanelProps {
@@ -29,40 +30,9 @@ interface NoiseHintPanelProps {
   onStageChange: (stage: HintStage | null) => void;
 }
 
-const VERDICT_TEXT: Record<NoiseVerdict, string> = {
-  noise: "likely noise",
-  change: "likely change",
-  unknown: "no verdict",
-};
-
-const LIMITATION =
-  "A hint, not a decision. It can call a small real change noise — a single digit, a dot, a faint border. Look at the highlighted areas before approving.";
-
 const UNKNOWN_REASON: Record<string, string> = {
   "sizes differ": "images differ in size",
 };
-
-const stageText = (verdict: NoiseVerdict, score: number) =>
-  `${VERDICT_TEXT[verdict]} (${score.toFixed(2)})`;
-
-function stagesText({ blur, dinov2 }: NoiseAnalysisDto): string {
-  const blurText = blur ? stageText(blur.verdict, blur.score) : "no verdict";
-  if (!dinov2) {
-    return `Blur only: ${blurText}`;
-  }
-  let dinov2Text: string;
-  if ("error" in dinov2) {
-    dinov2Text = "did not answer";
-  } else if ("skipped" in dinov2) {
-    dinov2Text =
-      dinov2.skipped === "off"
-        ? "off in this project"
-        : "not needed, blur already sees a change";
-  } else {
-    dinov2Text = stageText(dinov2.verdict, dinov2.score);
-  }
-  return `Blur: ${blurText} · DINOv2: ${dinov2Text}`;
-}
 
 function headline({ verdict, reason }: NoiseAnalysisDto): string {
   if (verdict !== "unknown") {
@@ -71,11 +41,6 @@ function headline({ verdict, reason }: NoiseAnalysisDto): string {
   const why = reason ? ` (${UNKNOWN_REASON[reason] ?? reason})` : "";
   return `Rendering-noise check: not available${why}`;
 }
-
-const skipMessage = ({ reason }: NoiseAnalysisSkip) =>
-  reason === "queue full"
-    ? "Queue is full, try again in a minute"
-    : `Not analysed: ${reason}`;
 
 const computedAtOf = (analysis: NoiseHintPanelProps["analysis"]) =>
   analysis && "computedAt" in analysis ? analysis.computedAt : null;
@@ -87,6 +52,7 @@ export const NoiseHintPanel = ({
   onStageChange,
 }: NoiseHintPanelProps) => {
   const { enqueueSnackbar } = useDialogSnackbar();
+  const { analyse: analyseRuns } = useAnalyseNoise(enqueueSnackbar);
   const [waitingFor, setWaitingFor] = useState<{ computedAt: string | null }>();
 
   const result = isNoiseResult(analysis) ? analysis : null;
@@ -96,18 +62,11 @@ export const NoiseHintPanel = ({
 
   const analyse = () => {
     setWaitingFor({ computedAt: computedAtOf(analysis) });
-    testRunService
-      .analyseNoise([runId])
-      .then(({ skipped }) => {
-        if (skipped.length > 0) {
-          setWaitingFor(undefined);
-          enqueueSnackbar(skipMessage(skipped[0]), { variant: "warning" });
-        }
-      })
-      .catch((err: string) => {
+    void analyseRuns([runId]).then((queued) => {
+      if (!queued) {
         setWaitingFor(undefined);
-        enqueueSnackbar(err, { variant: "error" });
-      });
+      }
+    });
   };
 
   const analyseButton = (label: string) => (
