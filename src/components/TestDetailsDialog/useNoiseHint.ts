@@ -3,8 +3,11 @@ import { type HintStage, regionsOf } from "../../_helpers/noiseRegions.helper";
 import type { TestRun } from "../../types";
 import { useNoiseAnalysis } from "./useNoiseAnalysis";
 
-export function useNoiseHint(testRun: Pick<TestRun, "id" | "noiseAnalysis">) {
-  const analysis = useNoiseAnalysis(testRun);
+export function useNoiseHint(
+  testRun: Pick<TestRun, "id" | "noiseAnalysis">,
+  enabled: boolean,
+) {
+  const analysis = useNoiseAnalysis(testRun, enabled);
   const [chosen, setChosen] = useState<{
     runId: string;
     stage: HintStage | null;
@@ -19,6 +22,6 @@ export function useNoiseHint(testRun: Pick<TestRun, "id" | "noiseAnalysis">) {
       onStageChange: (next: HintStage | null) =>
         setChosen({ runId: testRun.id, stage: next }),
     },
-    hintAreas: stage ? regionsOf(analysis, stage) : [],
+    hintAreas: enabled && stage ? regionsOf(analysis, stage) : [],
   };
 }

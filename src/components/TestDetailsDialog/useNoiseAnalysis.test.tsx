@@ -13,8 +13,8 @@ import { useNoiseAnalysis } from "./useNoiseAnalysis";
 const runWith = (noiseAnalysis: TestRun["noiseAnalysis"]) =>
   run({ id: "r1", noiseAnalysis });
 
-const renderAnalysis = (initial: TestRun) =>
-  renderHook(({ testRun }) => useNoiseAnalysis(testRun), {
+const renderAnalysis = (initial: TestRun, enabled = true) =>
+  renderHook(({ testRun }) => useNoiseAnalysis(testRun, enabled), {
     initialProps: { testRun: initial },
   });
 
@@ -61,6 +61,15 @@ describe("useNoiseAnalysis", () => {
     const { result } = renderAnalysis(runWith(analysis));
 
     expect(result.current).toBe(analysis);
+    expect(getDetails).not.toHaveBeenCalled();
+  });
+
+  it("does not fetch when it is switched off", () => {
+    const getDetails = vi.spyOn(testRunService, "getDetails");
+
+    const { result } = renderAnalysis(runWith(NOISE_ANALYSIS_CHANGE), false);
+
+    expect(result.current).toBe(NOISE_ANALYSIS_CHANGE);
     expect(getDetails).not.toHaveBeenCalled();
   });
 

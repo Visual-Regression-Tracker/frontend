@@ -33,6 +33,7 @@ import { TestRunInfoBar } from "./TestRunInfoBar";
 import { useIgnoreAreas } from "./useIgnoreAreas";
 import { useDialogSnackbar } from "./useDialogSnackbar";
 import { useStageView } from "./useStageView";
+import { noiseAnalysisAvailable } from "../../_helpers/noiseHint.helper";
 import { useNoiseHint } from "./useNoiseHint";
 import { NoiseHintPanel } from "./NoiseHintPanel";
 
@@ -88,7 +89,9 @@ const TestDetailsModal = ({
   // one instance, so a toast replaces the last one whichever part of the dialog raised it
   const { enqueueSnackbar } = useDialogSnackbar();
   const areas = useIgnoreAreas(testRun, currentImage, enqueueSnackbar);
-  const noiseHint = useNoiseHint(testRun);
+  const showNoiseHint =
+    testRun.status === TestStatus.unresolved && noiseAnalysisAvailable(project);
+  const noiseHint = useNoiseHint(testRun, showNoiseHint);
   const stage = useStageView(
     [currentImage, currentImageStatus],
     [baselineImage, baselineImageStatus],
@@ -241,7 +244,7 @@ const TestDetailsModal = ({
         testRun={testRun}
         sizeMismatch={imageSizesDiffer(testRun, currentImage, baselineImage)}
         noiseHint={
-          testRun.status === TestStatus.unresolved && (
+          showNoiseHint && (
             <NoiseHintPanel key={testRun.id} {...noiseHint.panelProps} />
           )
         }

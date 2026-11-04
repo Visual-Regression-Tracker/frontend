@@ -1,14 +1,22 @@
+import { useEffect, type ReactNode } from "react";
 import { screen, waitFor } from "@testing-library/react";
 import { renderWithProviders } from "../../_test/render";
 import { buttonAroundIcon } from "../../_test/buttonAroundIcon";
-import { testRunService } from "../../services";
-import { useTestRunState } from "../../contexts";
-import { TestRun } from "../../types";
+import { projectsService, testRunService } from "../../services";
+import {
+  selectProject,
+  useProjectDispatch,
+  useProjectState,
+  useTestRunState,
+} from "../../contexts";
+import { Project, TestRun } from "../../types";
+import { ImageComparison } from "../../types/imageComparison";
 import { IgnoreArea } from "../../types/ignoreArea";
 import { TestStatus } from "../../types/testStatus";
 import { GO_TO_NEXT_KEY } from "../../constants";
 import {
   NOISE_ANALYSIS_CHANGE,
+  TEST_PROJECT,
   TEST_USER,
   testRunMock,
 } from "../../_test/test.data.helper";
@@ -18,6 +26,15 @@ import { NO_FAILURES } from "../../_test/bulkResult";
 
 // Konva needs native canvas under Node; a stand-in lets tests draw and delete areas
 vi.mock("./DrawArea", () => import("../../_test/FakeDrawArea"));
+
+const SelectProject = () => {
+  const dispatch = useProjectDispatch();
+  const { projectList, selectedProjectId } = useProjectState();
+  useEffect(() => selectProject(dispatch, TEST_PROJECT.id), [dispatch]);
+  return projectList.length > 0 && selectedProjectId === TEST_PROJECT.id ? (
+    <div data-testid="project-ready" />
+  ) : null;
+};
 
 const SAVED_AREA: IgnoreArea = {
   id: "saved",
@@ -60,10 +77,14 @@ const Modal = ({
 const renderModal = (
   testRun: TestRun = RUN,
   position: Position = { currentRunIndex: 0, totalTestRunCount: 1 },
+  sibling?: ReactNode,
 ) => {
   const handlers = { close: vi.fn(), previous: vi.fn(), next: vi.fn() };
   const result = renderWithProviders(
-    <Modal testRun={testRun} position={position} handlers={handlers} />,
+    <>
+      {sibling}
+      <Modal testRun={testRun} position={position} handlers={handlers} />
+    </>,
     { user: TEST_USER },
   );
   return {
@@ -71,7 +92,10 @@ const renderModal = (
     handlers,
     showTestRun: (run: TestRun) =>
       result.rerender(
-        <Modal testRun={run} position={position} handlers={handlers} />,
+        <>
+          {sibling}
+          <Modal testRun={run} position={position} handlers={handlers} />
+        </>,
       ),
   };
 };
@@ -389,23 +413,72 @@ describe("TestDetailsModal", () => {
       id,
       noiseAnalysis: FULL,
     });
+    const renderWithProject = async (
+      testRun: TestRun,
+      project: Partial<Project> = {},
+    ) => {
+      vi.spyOn(projectsService, "getAll").mockResolvedValue([
+        { ...TEST_PROJECT, ...project },
+      ]);
+      const rendered = renderModal(testRun, undefined, <SelectProject />);
+      await screen.findByTestId("project-ready");
+      return rendered;
+    };
     const hintAreas = (): unknown =>
       JSON.parse(screen.getByTestId("hintAreas").textContent ?? "null");
     const toggle = (stage: "blur" | "dinov2") =>
       screen.getByTestId(`hint-areas-${stage}`);
 
-    it("shows the panel for an unresolved run and not for an approved one", () => {
-      const { unmount } = renderModal({ ...UNRESOLVED_RUN });
-      expect(screen.getByTestId("noise-hint-panel")).toBeVisible();
-      unmount();
+    it("shows the panel for an unresolved run", async () => {
+      await renderWithProject({ ...UNRESOLVED_RUN });
 
-      renderModal({ ...UNRESOLVED_RUN, status: TestStatus.approved });
+      expect(screen.getByTestId("noise-hint-panel")).toBeVisible();
+    });
+
+    it("shows no panel and fetches nothing for an approved run", async () => {
+      const getDetails = vi.spyOn(testRunService, "getDetails");
+
+      await renderWithProject({
+        ...UNRESOLVED_RUN,
+        status: TestStatus.approved,
+        noiseAnalysis: NOISE_ANALYSIS_CHANGE,
+      });
 
       expect(screen.queryByTestId("noise-hint-panel")).not.toBeInTheDocument();
+      expect(getDetails).not.toHaveBeenCalled();
+    });
+
+    it.each([
+      ["a VLM project", { imageComparison: ImageComparison.vlm }],
+      [
+        "a project with the blur stage off",
+        {
+          noiseAnalysisConfig: JSON.stringify({ blur: { enabled: false } }),
+        },
+      ],
+    ])("shows no panel, buttons or details fetch in %s", async (_, project) => {
+      const getDetails = vi.spyOn(testRunService, "getDetails");
+
+      await renderWithProject(
+        {
+          ...UNRESOLVED_RUN,
+          id: "analysed",
+          noiseAnalysis: NOISE_ANALYSIS_CHANGE,
+        },
+        project,
+      );
+
+      expect(screen.queryByTestId("noise-hint-panel")).not.toBeInTheDocument();
+      expect(
+        screen.queryByTestId("analyse-noise-run-button"),
+      ).not.toBeInTheDocument();
+      expect(screen.queryByTestId("hint-areas-blur")).not.toBeInTheDocument();
+      expect(hintAreas()).toEqual([]);
+      expect(getDetails).not.toHaveBeenCalled();
     });
 
     it("draws the regions of the toggled stage and removes them when toggled off", async () => {
-      const { user } = renderModal(analysed());
+      const { user } = await renderWithProject(analysed());
       expect(hintAreas()).toEqual([]);
 
       await user.click(toggle("blur"));
@@ -419,14 +492,20 @@ describe("TestDetailsModal", () => {
     });
 
     it("loads the regions of a result that arrived without them", async () => {
-      vi.spyOn(testRunService, "getDetails").mockResolvedValue(analysed());
-      const { user } = renderModal({
+      const pending: { deliver?: (run: TestRun) => void } = {};
+      vi.spyOn(testRunService, "getDetails").mockReturnValue(
+        new Promise((resolve) => {
+          pending.deliver = resolve;
+        }),
+      );
+      const { user } = await renderWithProject({
         ...UNRESOLVED_RUN,
         id: "analysed",
         noiseAnalysis: NOISE_ANALYSIS_CHANGE,
       });
       expect(toggle("blur")).toBeDisabled();
 
+      pending.deliver?.(analysed());
       await waitFor(() => expect(toggle("blur")).toBeEnabled());
       await user.click(toggle("blur"));
 
@@ -437,7 +516,7 @@ describe("TestDetailsModal", () => {
     });
 
     it("clears the regions when another run is shown", async () => {
-      const { user, showTestRun } = renderModal(analysed("first"));
+      const { user, showTestRun } = await renderWithProject(analysed("first"));
       await user.click(toggle("blur"));
 
       showTestRun(analysed("second"));
@@ -448,7 +527,7 @@ describe("TestDetailsModal", () => {
 
     it("leaves Approve and the go-to-next choice working with the regions shown", async () => {
       vi.spyOn(testRunService, "approveBulk").mockResolvedValue(NO_FAILURES);
-      const { user } = renderModal(analysed());
+      const { user } = await renderWithProject(analysed());
       await user.click(toggle("blur"));
 
       await user.click(approveButton());

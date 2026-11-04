@@ -11,6 +11,7 @@ interface Loaded {
 // the run in the context is a Dto without regions once a socket event replaces it; the full result comes from GET /test-runs/:id
 export function useNoiseAnalysis(
   testRun: Pick<TestRun, "id" | "noiseAnalysis">,
+  enabled = true,
 ): TestRun["noiseAnalysis"] | NoiseAnalysis {
   const { id, noiseAnalysis: current } = testRun;
   const [loaded, setLoaded] = useState<Loaded>();
@@ -18,6 +19,7 @@ export function useNoiseAnalysis(
   const result = isNoiseResult(current) ? current : null;
   const computedAt = result?.computedAt;
   const needsRegions =
+    enabled &&
     !!result &&
     !hasRegions(result) &&
     (!!result.blur || (!!result.dinov2 && "verdict" in result.dinov2));
