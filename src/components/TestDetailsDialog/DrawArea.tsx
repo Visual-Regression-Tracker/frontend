@@ -10,7 +10,8 @@ import {
 import { Stage, Layer, Image } from "react-konva";
 import Rectangle, { MIN_RECT_SIDE_PIXEL } from "../Rectangle";
 import { IgnoreArea } from "../../types/ignoreArea";
-import { Box, CircularProgress, Stack } from "@mui/material";
+import type { NoiseRegion } from "../../types";
+import { Box, CircularProgress, Stack, useTheme } from "@mui/material";
 import { NoImagePlaceholder } from "./NoImageAvailable";
 import Konva from "konva";
 import { clampScale } from "../../_helpers/scale.helper";
@@ -47,6 +48,7 @@ interface IDrawArea {
   overlayOpacity?: number;
   blendDifference?: boolean;
   tempIgnoreAreas: IgnoreArea[];
+  hintAreas?: NoiseRegion[];
   ignoreAreas: IgnoreArea[];
   setIgnoreAreas: (ignoreAreas: IgnoreArea[]) => void;
   selectedRectId: string | undefined;
@@ -69,6 +71,7 @@ export const DrawArea = ({
   blendDifference,
   ignoreAreas,
   tempIgnoreAreas,
+  hintAreas = [],
   setIgnoreAreas,
   selectedRectId,
   setSelectedRectId,
@@ -81,6 +84,7 @@ export const DrawArea = ({
   stageScrollPosState,
   drawModeState,
 }: IDrawArea) => {
+  const hintFill = useTheme().palette.hint.main;
   const [stageInitPos, setStageInitPos] = stageInitPosState;
   const [stageOffset, setStageOffset] = stageOffsetState;
   const [stagePos, setStagePos] = stagePosState;
@@ -408,6 +412,22 @@ export const DrawArea = ({
                     width: rect.width,
                     height: rect.height,
                     // shown only: over the areas being edited, so they must not take the pointer
+                    listening: false,
+                  }}
+                />
+              ))}
+              {hintAreas.map((rect, i) => (
+                <Rectangle
+                  key={i}
+                  shapeProps={{
+                    x: rect.x,
+                    y: rect.y,
+                    width: rect.width,
+                    height: rect.height,
+                    fill: hintFill,
+                    stroke: hintFill,
+                    strokeWidth: 2,
+                    strokeScaleEnabled: false,
                     listening: false,
                   }}
                 />

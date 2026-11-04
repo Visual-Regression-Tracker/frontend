@@ -18,8 +18,16 @@ export class ProjectListPage extends BasePage {
     name: "Image comparison library",
   });
 
-  noiseFilter = this.dialog.getByLabel("Ignore rendering noise");
-  noiseStatus = this.dialog.locator("#renderingNoiseStatus");
+  blurSwitch = this.dialog.getByLabel(/^Blurred difference and change density/);
+  dinov2Switch = this.dialog.getByLabel(
+    /^Asks the DINOv2 service about patches/,
+  );
+  amplitudeThreshold = this.dialog.getByLabel("Amplitude threshold");
+  solidShareMax = this.dialog.getByLabel("Solid share, max");
+  distanceThreshold = this.dialog.getByLabel("Distance threshold");
+  needsStageOne = this.dialog.getByText("Needs stage 1");
+  vlmNote = this.dialog.locator("#postAnalysisVlm");
+  dinov2Status = this.dialog.locator("#dinov2Status");
 
   vlmProvider = this.dialog.getByRole("combobox", { name: "VLM Provider" });
   ollamaModel = this.dialog.getByRole("combobox", { name: "Model" });

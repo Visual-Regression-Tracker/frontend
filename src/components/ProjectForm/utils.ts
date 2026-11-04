@@ -4,11 +4,7 @@ import {
   PIXELMATCH_DEFAULT_CONFIG,
   VLM_DEFAULT_CONFIG,
 } from "../../constants";
-import {
-  RenderingNoiseConfig,
-  ImageComparison,
-} from "../../types/imageComparison";
-import { parseJson } from "../../_helpers/parseJson";
+import { ImageComparison } from "../../types/imageComparison";
 
 export const getDefaultConfig = (imageComparison: ImageComparison): string => {
   switch (imageComparison) {
@@ -23,16 +19,4 @@ export const getDefaultConfig = (imageComparison: ImageComparison): string => {
     default:
       return PIXELMATCH_DEFAULT_CONFIG;
   }
-};
-
-/** The filter is no library's own option; swapped defaults must not switch it off. */
-export const withRenderingNoiseOf = (
-  config: string,
-  previousConfig: string,
-): string => {
-  const { ignoreRenderingNoise } = parseJson<RenderingNoiseConfig>(
-    previousConfig,
-    {},
-  );
-  return JSON.stringify({ ...JSON.parse(config), ignoreRenderingNoise });
 };

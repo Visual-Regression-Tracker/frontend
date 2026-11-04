@@ -1,12 +1,14 @@
 import { useCallback, useMemo, useState } from "react";
-import { TestRun, TestStatus } from "../../types";
+import { TagField, TestRun, TestStatus } from "../../types";
+import type { NoiseHint } from "../../types/noiseAnalysis";
+import { NoiseHintFilter, noiseHintOf } from "../../_helpers/noiseHint.helper";
 import { statusesByAttention } from "../../_helpers/testRunStatus.helper";
 import { TAG_FIELDS, tagValuesOf } from "../../_helpers/testRunTags.helper";
 
 interface TagGroups {
   picked: Set<string>;
   // per picked tag, the fields it occurs in: a value of another picked tag there counts too
-  fieldsPerTag: Array<Array<keyof TestRun>>;
+  fieldsPerTag: TagField[][];
 }
 
 const matchesNameQuery = (run: TestRun, query: string): boolean =>
@@ -14,6 +16,28 @@ const matchesNameQuery = (run: TestRun, query: string): boolean =>
 
 const matchesStatuses = (run: TestRun, statuses: TestStatus[]): boolean =>
   statuses.length === 0 || statuses.includes(run.status);
+
+const NO_HINTS: NoiseHintFilter[] = [];
+
+const HINT_OF_FILTER: Record<
+  NoiseHintFilter,
+  (hint: NoiseHint | null) => boolean
+> = {
+  "Likely noise": (hint) => hint === "noise",
+  "Likely change": (hint) => hint === "change",
+  "Not analysed": (hint) => hint === null || hint === "pending",
+};
+
+const matchesNoiseHints = (
+  run: TestRun,
+  picked: NoiseHintFilter[],
+): boolean => {
+  if (picked.length === 0) {
+    return true;
+  }
+  const hint = noiseHintOf(run);
+  return picked.some((filter) => HINT_OF_FILTER[filter](hint));
+};
 
 const matchesTagGroups = (
   run: TestRun,
@@ -23,10 +47,15 @@ const matchesTagGroups = (
     fields.some((field) => picked.has(String(run[field] ?? ""))),
   );
 
-export const useTestRunFilters = (testRuns: TestRun[]) => {
+export const useTestRunFilters = (
+  testRuns: TestRun[],
+  noiseHintAvailable = true,
+) => {
   const [name, setName] = useState("");
   const [statuses, setStatuses] = useState<TestStatus[]>([]);
   const [tags, setTags] = useState<string[]>([]);
+  const [pickedNoiseHints, setNoiseHints] = useState<NoiseHintFilter[]>([]);
+  const noiseHints = noiseHintAvailable ? pickedNoiseHints : NO_HINTS;
 
   const toggleTag = useCallback(
     (tag: string) =>
@@ -42,10 +71,11 @@ export const useTestRunFilters = (testRuns: TestRun[]) => {
     setName("");
     setStatuses([]);
     setTags([]);
+    setNoiseHints([]);
   }, []);
 
   const tagFieldsByValue = useMemo(() => {
-    const map = new Map<string, Array<keyof TestRun>>();
+    const map = new Map<string, TagField[]>();
     TAG_FIELDS.forEach((field) => {
       testRuns.forEach((run) => {
         const value = run[field];
@@ -81,26 +111,35 @@ export const useTestRunFilters = (testRuns: TestRun[]) => {
         (run) =>
           matchesNameQuery(run, query) &&
           matchesStatuses(run, statuses) &&
-          matchesTagGroups(run, tagGroups),
+          matchesTagGroups(run, tagGroups) &&
+          matchesNoiseHints(run, noiseHints),
       ),
-    [testRuns, query, statuses, tagGroups],
+    [testRuns, query, statuses, tagGroups, noiseHints],
   );
 
   // options come from rows matching the OTHER filters: each one returns results
   const statusOptions = useMemo(() => {
     const present = new Set<TestStatus>(statuses);
     testRuns.forEach((run) => {
-      if (matchesNameQuery(run, query) && matchesTagGroups(run, tagGroups)) {
+      if (
+        matchesNameQuery(run, query) &&
+        matchesTagGroups(run, tagGroups) &&
+        matchesNoiseHints(run, noiseHints)
+      ) {
         present.add(run.status);
       }
     });
     return statusesByAttention(Array.from(present));
-  }, [testRuns, query, tagGroups, statuses]);
+  }, [testRuns, query, tagGroups, noiseHints, statuses]);
 
   const tagOptions = useMemo(() => {
     const present = new Set<string>(tags);
     testRuns.forEach((run) => {
-      if (matchesNameQuery(run, query) && matchesStatuses(run, statuses)) {
+      if (
+        matchesNameQuery(run, query) &&
+        matchesStatuses(run, statuses) &&
+        matchesNoiseHints(run, noiseHints)
+      ) {
         // read fields off the run: an array per run allocates on every keystroke
         TAG_FIELDS.forEach((field) => {
           const value = run[field];
@@ -117,7 +156,7 @@ export const useTestRunFilters = (testRuns: TestRun[]) => {
     return Array.from(present).sort(
       (a, b) => fieldIndex(a) - fieldIndex(b) || a.localeCompare(b),
     );
-  }, [testRuns, query, statuses, tags, tagFieldsByValue]);
+  }, [testRuns, query, statuses, noiseHints, tags, tagFieldsByValue]);
 
   // a tag or status no longer in the runs stops filtering them
   const [prunedFor, setPrunedFor] = useState(testRuns);
@@ -150,11 +189,13 @@ export const useTestRunFilters = (testRuns: TestRun[]) => {
     name,
     statuses,
     tags,
+    noiseHints,
     statusOptions,
     tagOptions,
     onNameChange: setName,
     onStatusesChange: setStatuses,
     onTagsChange: setTags,
+    onNoiseHintsChange: noiseHintAvailable ? setNoiseHints : undefined,
     onReset,
   };
 };

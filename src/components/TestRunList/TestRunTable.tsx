@@ -14,13 +14,14 @@ import {
   type ToolbarPropsOverrides,
 } from "@mui/x-data-grid";
 import TestStatusChip from "../TestStatusChip";
+import { NoiseHintChip } from "./NoiseHintChip";
 import { TestRunListToolbar } from "./TestRunListToolbar";
 import { PAGE_SIZE_OPTIONS } from "./TestRunListControls";
 import {
   groupStatusSummary,
   TestRunGroup,
 } from "../../_helpers/testRunGroup.helper";
-import { TestRun } from "../../types";
+import { TagField, TestRun } from "../../types";
 
 const HIDDEN_COLUMNS = { id: false };
 
@@ -31,12 +32,29 @@ const NAME_CELL_SX = {
   minWidth: 0,
 } as const;
 
+// fits the "Likely change" chip and its padding
+const NOISE_COLUMN_MIN_WIDTH = 136;
+
 // the rows always follow some sort, so the header cannot offer "unsorted"
 const SORTING_ORDER: GridSortDirection[] = ["asc", "desc"];
 
+const NOISE_COLUMN: GridColDef<TestRun> = {
+  field: "noise",
+  headerName: "Noise",
+  display: "flex",
+  flex: 0.3,
+  minWidth: NOISE_COLUMN_MIN_WIDTH,
+  filterable: false,
+  sortingOrder: ["desc", "asc"],
+  renderCell: (params: GridRenderCellParams<TestRun>) => (
+    <NoiseHintChip run={params.row} />
+  ),
+};
+
 const buildColumns = (
   runsFor: (id: string) => TestRun[],
-  tagFieldsFor: (runCount: number) => Array<keyof TestRun>,
+  tagFieldsFor: (runCount: number) => TagField[],
+  noiseAvailable: boolean,
 ): GridColDef<TestRun>[] => [
   {
     field: "id",
@@ -114,12 +132,14 @@ const buildColumns = (
       </Box>
     ),
   },
+  ...(noiseAvailable ? [NOISE_COLUMN] : []),
 ];
 
 export const TestRunTable = ({
   groups,
   grouped,
   tagFieldsFor,
+  noiseAvailable,
   selectedIds,
   onSelectionChange,
   loading,
@@ -132,7 +152,8 @@ export const TestRunTable = ({
 }: {
   groups: TestRunGroup[];
   grouped: boolean;
-  tagFieldsFor: (runCount: number) => Array<keyof TestRun>;
+  tagFieldsFor: (runCount: number) => TagField[];
+  noiseAvailable: boolean;
   selectedIds: string[];
   onSelectionChange: (ids: string[]) => void;
   loading: boolean;
@@ -166,8 +187,8 @@ export const TestRunTable = ({
   }, [apiRef, density]);
 
   const columns = useMemo(
-    () => buildColumns(runsFor, tagFieldsFor),
-    [runsFor, tagFieldsFor],
+    () => buildColumns(runsFor, tagFieldsFor, noiseAvailable),
+    [runsFor, tagFieldsFor, noiseAvailable],
   );
 
   const tableSelectionModel = useMemo(

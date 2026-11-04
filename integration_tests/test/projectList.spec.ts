@@ -2,13 +2,12 @@ import { expect, Page, Request } from "@playwright/test";
 import { test } from "fixtures";
 import { TEST_PROJECT } from "~client/_test/test.data.helper";
 import {
-  LOOKSSAME_DEFAULT_CONFIG,
+  DEFAULT_NOISE_ANALYSIS_CONFIG,
   ODIFF_DEFAULT_CONFIG,
-  PIXELMATCH_DEFAULT_CONFIG,
 } from "~client/constants/project";
 import { ImageComparison } from "~client/types/imageComparison";
 import { ProjectListPage } from "pages";
-import type { Project, ProjectDto } from "~client/types";
+import type { NoiseAnalysisConfig, Project, ProjectDto } from "~client/types";
 import {
   API_URL,
   mockDeleteProject,
@@ -26,6 +25,7 @@ const project = TEST_PROJECT;
 
 test.beforeEach(async ({ page }) => {
   await mockGetProjects(page, [project]);
+  await mockDinov2Status(page, { configured: true, available: true });
 });
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -309,8 +309,10 @@ test.describe("favourites and search", () => {
   });
 });
 
-const savedConfig = (request: Request): unknown =>
-  JSON.parse(postData<ProjectDto>(request).imageComparisonConfig);
+const savedNoiseConfig = (request: Request): NoiseAnalysisConfig =>
+  JSON.parse(
+    postData<ProjectDto>(request).noiseAnalysisConfig,
+  ) as NoiseAnalysisConfig;
 
 const waitForSave = (page: Page, method: "POST" | "PUT") =>
   page.waitForRequest(
@@ -318,111 +320,122 @@ const waitForSave = (page: Page, method: "POST" | "PUT") =>
       request.url() === `${API_URL}/projects` && request.method() === method,
   );
 
-test.describe("rendering-noise filter", () => {
-  test.beforeEach(async ({ page }) => {
-    await mockDinov2Status(page, { configured: true, available: true });
-  });
+const withNoiseConfig = (config: NoiseAnalysisConfig): Project => ({
+  ...project,
+  noiseAnalysisConfig: JSON.stringify(config),
+});
 
-  test("creates a project with the filter on", async ({
+test.describe("post-analysis settings", () => {
+  test("creates a project with the default settings", async ({
     projectListPage,
     page,
   }) => {
     await mockSaveProject(page);
 
     await projectListPage.addBtn.click();
+    await expect(projectListPage.blurSwitch).toBeChecked();
+    await expect(projectListPage.dinov2Switch).toBeChecked();
+    await expect(projectListPage.amplitudeThreshold).toHaveValue("80");
+    await expect(projectListPage.solidShareMax).toHaveValue("0.01");
+    await expect(projectListPage.distanceThreshold).toHaveValue("0.15");
     await projectListPage.name.fill("New project");
     await projectListPage.mainBranch.fill("main");
-    await projectListPage.selectImageComparison(ImageComparison.lookSame);
-    await projectListPage.noiseFilter.check();
 
     const [request] = await Promise.all([
       waitForSave(page, "POST"),
       projectListPage.modal.confirmBtn.click(),
     ]);
 
-    expect(savedConfig(request)).toEqual({
-      ...JSON.parse(LOOKSSAME_DEFAULT_CONFIG),
-      ignoreRenderingNoise: true,
-    });
+    expect(savedNoiseConfig(request)).toEqual(DEFAULT_NOISE_ANALYSIS_CONFIG);
   });
 
-  test("keeps the filter when the library changes", async ({
-    projectListPage,
-    page,
-  }) => {
-    await mockSaveProject(page);
-
-    await projectListPage.addBtn.click();
-    await projectListPage.name.fill("New project");
-    await projectListPage.mainBranch.fill("main");
-    await projectListPage.noiseFilter.check();
-    await projectListPage.selectImageComparison(ImageComparison.odiff);
-
-    await expect(projectListPage.noiseFilter).toBeChecked();
-    const [request] = await Promise.all([
-      waitForSave(page, "POST"),
-      projectListPage.modal.confirmBtn.click(),
-    ]);
-    expect(savedConfig(request)).toEqual({
-      ...JSON.parse(ODIFF_DEFAULT_CONFIG),
-      ignoreRenderingNoise: true,
-    });
-  });
-
-  test("keeps the filter when the VLM provider changes", async ({
-    projectListPage,
-  }) => {
-    await projectListPage.addBtn.click();
-    await projectListPage.selectImageComparison(ImageComparison.vlm);
-    await projectListPage.noiseFilter.check();
-
-    await projectListPage.selectVlmProvider("Google Gemini");
-
-    await expect(projectListPage.noiseFilter).toBeChecked();
-  });
-
-  test("turns the filter on for an existing project", async ({
+  test("saves the switches and thresholds of an existing project", async ({
     projectListPage,
     page,
   }) => {
     await mockSaveProject(page);
 
     await projectListPage.editBtn.click();
-    await expect(projectListPage.noiseFilter).not.toBeChecked();
-    await projectListPage.noiseFilter.check();
+    await projectListPage.amplitudeThreshold.fill("60");
+    await projectListPage.solidShareMax.fill("0.02");
+    await projectListPage.distanceThreshold.fill("0.3");
+    await projectListPage.dinov2Switch.uncheck();
 
     const [request] = await Promise.all([
       waitForSave(page, "PUT"),
       projectListPage.modal.confirmBtn.click(),
     ]);
 
-    expect(savedConfig(request)).toEqual({
-      ...JSON.parse(PIXELMATCH_DEFAULT_CONFIG),
-      ignoreRenderingNoise: true,
+    expect(savedNoiseConfig(request)).toEqual({
+      blur: { enabled: true, amplitudeThreshold: 60, solidShareMax: 0.02 },
+      dinov2: { enabled: false, distanceThreshold: 0.3 },
     });
   });
 
-  test("opens a project with the filter on as it was saved", async ({
+  test("opens a project with the settings it was saved with", async ({
     projectListPage,
     page,
   }) => {
     await mockGetProjects(page, [
-      {
-        ...project,
-        imageComparisonConfig: JSON.stringify({
-          ...JSON.parse(PIXELMATCH_DEFAULT_CONFIG),
-          ignoreRenderingNoise: true,
-        }),
-      },
+      withNoiseConfig({
+        blur: { enabled: false, amplitudeThreshold: 55, solidShareMax: 0.05 },
+        dinov2: { enabled: true, distanceThreshold: 0.2 },
+      }),
     ]);
     await page.reload();
 
     await projectListPage.editBtn.click();
 
-    await expect(projectListPage.noiseFilter).toBeChecked();
+    await expect(projectListPage.blurSwitch).not.toBeChecked();
+    await expect(projectListPage.dinov2Switch).toBeChecked();
+    await expect(projectListPage.amplitudeThreshold).toHaveValue("55");
+    await expect(projectListPage.solidShareMax).toHaveValue("0.05");
+    await expect(projectListPage.distanceThreshold).toHaveValue("0.2");
   });
 
-  test("cannot be turned on where the server has no DINOv2 service", async ({
+  test("locks the second stage while the first is off", async ({
+    projectListPage,
+  }) => {
+    await projectListPage.editBtn.click();
+    await expect(projectListPage.dinov2Switch).toBeEnabled();
+
+    await projectListPage.blurSwitch.uncheck();
+
+    await expect(projectListPage.dinov2Switch).toBeDisabled();
+    await expect(projectListPage.needsStageOne).toBeVisible();
+    await expect(projectListPage.amplitudeThreshold).toBeDisabled();
+    await expect(projectListPage.distanceThreshold).toBeDisabled();
+
+    await projectListPage.blurSwitch.check();
+
+    await expect(projectListPage.dinov2Switch).toBeEnabled();
+    await expect(projectListPage.needsStageOne).toBeHidden();
+  });
+
+  test("is not available with the VLM comparator", async ({
+    projectListPage,
+  }) => {
+    await projectListPage.editBtn.click();
+    await expect(projectListPage.vlmNote).toBeHidden();
+
+    await projectListPage.selectImageComparison(ImageComparison.vlm);
+
+    await expect(projectListPage.vlmNote).toHaveText(
+      "Not available with the VLM comparator",
+    );
+    await expect(projectListPage.blurSwitch).toBeDisabled();
+    await expect(projectListPage.dinov2Switch).toBeDisabled();
+    await expect(projectListPage.amplitudeThreshold).toBeDisabled();
+    await expect(projectListPage.solidShareMax).toBeDisabled();
+    await expect(projectListPage.distanceThreshold).toBeDisabled();
+
+    await projectListPage.selectImageComparison(ImageComparison.odiff);
+
+    await expect(projectListPage.vlmNote).toBeHidden();
+    await expect(projectListPage.blurSwitch).toBeEnabled();
+  });
+
+  test("says so where the server has no DINOv2 service", async ({
     projectListPage,
     page,
   }) => {
@@ -430,9 +443,8 @@ test.describe("rendering-noise filter", () => {
 
     await projectListPage.editBtn.click();
 
-    await expect(projectListPage.noiseFilter).toBeDisabled();
-    await expect(projectListPage.noiseStatus).toHaveText(
-      "Not available: this server has no DINOv2 service (DINOV2_URL).",
+    await expect(projectListPage.dinov2Status).toHaveText(
+      "Not available: this server has no DINOv2 service (DINOV2_URL). Runs are judged by the blur stage alone.",
     );
   });
 
@@ -444,9 +456,17 @@ test.describe("rendering-noise filter", () => {
 
     await projectListPage.editBtn.click();
 
-    await expect(projectListPage.noiseFilter).toBeEnabled();
-    await expect(projectListPage.noiseStatus).toContainText(
+    await expect(projectListPage.dinov2Status).toContainText(
       "The DINOv2 service is not answering right now",
     );
+  });
+
+  test("shows no DINOv2 note while the service answers", async ({
+    projectListPage,
+  }) => {
+    await projectListPage.editBtn.click();
+    await expect(projectListPage.dinov2Switch).toBeVisible();
+
+    await expect(projectListPage.dinov2Status).toHaveCount(0);
   });
 });

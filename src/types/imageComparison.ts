@@ -8,18 +8,13 @@ export enum ImageComparison {
   vlm = "vlm",
 }
 
-/** Rendering-noise filter key; the backend strips it before the library sees its options. */
-export interface RenderingNoiseConfig {
-  ignoreRenderingNoise?: boolean;
-}
-
-export interface PixelmatchConfig extends RenderingNoiseConfig {
+export interface PixelmatchConfig {
   allowDiffDimensions?: boolean;
   ignoreAntialiasing: boolean;
   threshold: number;
 }
 
-export interface LooksSameConfig extends RenderingNoiseConfig {
+export interface LooksSameConfig {
   strict?: boolean;
   /** ΔE value treated as error in non-strict mode. */
   tolerance?: number;
@@ -29,7 +24,7 @@ export interface LooksSameConfig extends RenderingNoiseConfig {
   allowDiffDimensions?: boolean;
 }
 
-export interface OdiffConfig extends RenderingNoiseConfig {
+export interface OdiffConfig {
   outputDiffMask: boolean;
   failOnLayoutDiff: boolean;
   /** Color difference threshold, 0 to 1; lower is more precise. */
@@ -37,7 +32,7 @@ export interface OdiffConfig extends RenderingNoiseConfig {
   antialiasing: boolean;
 }
 
-interface BaseVlmConfig extends RenderingNoiseConfig {
+interface BaseVlmConfig {
   prompt: string;
 
   /** Response randomness, 0.0-1.0; lower is more consistent. @default 0.1 */

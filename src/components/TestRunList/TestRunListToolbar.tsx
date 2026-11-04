@@ -35,7 +35,14 @@ export const TestRunListToolbar = ({
 }: ToolbarPropsOverrides) => (
   <Toolbar variant="dense">
     <TestRunListControls {...controls} />
-    <Box sx={{ marginLeft: "auto" }}>
+    <Box
+      sx={{
+        marginLeft: "auto",
+        display: "flex",
+        alignItems: "center",
+        gap: 1,
+      }}
+    >
       <BulkOperation
         selectedIds={selectedIds}
         rows={rows}

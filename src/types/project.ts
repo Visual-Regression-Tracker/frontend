@@ -11,6 +11,7 @@ export interface Project {
   autoApproveFeature: boolean;
   imageComparison: ImageComparison;
   imageComparisonConfig: string;
+  noiseAnalysisConfig: string;
   maxBuildAllowed: number;
   maxBranchLifetime: number;
   bulkApproveVariations: boolean;

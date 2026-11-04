@@ -1,13 +1,14 @@
-import { Fragment } from "react";
+import { Fragment, type ReactNode } from "react";
 import { Chip, Grid, Typography, Paper } from "@mui/material";
 import { TestRun } from "../../types";
 import { Tooltip } from "../Tooltip";
 
 interface IProps {
   testRun: TestRun;
+  noiseHint?: ReactNode;
 }
 
-export const TestRunDetails = ({ testRun }: IProps) => {
+export const TestRunDetails = ({ testRun, noiseHint }: IProps) => {
   const attributes = [
     { name: "OS", value: testRun.os },
     { name: "Device", value: testRun.device },
@@ -43,6 +44,7 @@ export const TestRunDetails = ({ testRun }: IProps) => {
           </Typography>
         </Tooltip>
       </Grid>
+      {noiseHint}
       {testRun.vlmDescription && (
         <Grid size={12}>
           <Tooltip title="AI-generated description of the differences found by the Vision Language Model (VLM).">

@@ -93,6 +93,32 @@ describe("buildsService", () => {
     });
   });
 
+  it("getNoiseSummary fetches the noise summary of a build", async () => {
+    const summary = {
+      unresolved: 4,
+      analysed: 3,
+      noiseLike: 2,
+      byEnvironment: [
+        {
+          browser: "chrome",
+          os: "Linux",
+          device: "",
+          unresolved: 4,
+          noiseLike: 2,
+        },
+      ],
+    };
+    const fetchMock = stubFetch(summary);
+
+    const result = await buildsService.getNoiseSummary("b1");
+
+    expect(result).toEqual(summary);
+    expect(fetchMock).toHaveBeenCalledWith(`${API}/builds/b1/noise-summary`, {
+      method: "GET",
+      headers: AUTH,
+    });
+  });
+
   it("remove deletes a build by id", async () => {
     const fetchMock = stubFetch({ id: "b1" });
 

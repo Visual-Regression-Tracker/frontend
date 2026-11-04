@@ -8,3 +8,4 @@ export * from "./paginatedData";
 export * from "./imageComparison";
 export * from "./ollama";
 export * from "./dinov2";
+export * from "./noiseAnalysis";

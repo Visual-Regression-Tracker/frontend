@@ -70,6 +70,11 @@ export class TestDetailsDialog extends PageObject {
   variationsCancel = this.variations.getByRole("button", { name: "Cancel" });
   variationThumbnails = this.variations.locator("img");
 
+  noisePanel = this.page.getByTestId("noise-hint-panel");
+  analyseRun = this.page.getByTestId("analyse-noise-run-button");
+  hintBlur = this.page.getByTestId("hint-areas-blur");
+  hintDinov2 = this.page.getByTestId("hint-areas-dinov2");
+
   discardPrompt = this.page.getByText("You have not saved ignore areas");
 
   variation(label: string): Locator {

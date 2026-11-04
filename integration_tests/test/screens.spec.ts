@@ -33,12 +33,24 @@ import {
   mockImage,
   mockMatchingVariations,
   mockDinov2Status,
+  mockNoiseSummary,
   mockOllamaModels,
   mockRegistrationEnabled,
   mockTestRun,
+  mockTestRunsWithDetails,
   mockUpdateTestRun,
 } from "utils/mocks";
 import { defined } from "utils/defined";
+import {
+  ANALYSED_RUNS,
+  BLUR_REGIONS,
+  NOISE_SETTINGS,
+  PARTLY_ANALYSED_SUMMARY,
+  NOISE_CART,
+  PENDING_SEARCH,
+  RENDERER_CHANGE_SUMMARY,
+  withNoiseRegions,
+} from "utils/noiseRuns";
 
 // "renders <view>" tests write <view>-<scheme>.png: `-g renders` updates the baselines
 
@@ -146,6 +158,20 @@ const WITHOUT_AREAS: TestRun = {
   ignoreAreas: "[]",
   tempIgnoreAreas: "[]",
 };
+
+const ALL_ANALYSED_RUNS = [
+  ...ANALYSED_RUNS,
+  NOISE_SETTINGS,
+  TEST_RUN_APPROVED,
+  TEST_RUN_NEW,
+];
+
+const PARTLY_ANALYSED_RUNS = [
+  ...ANALYSED_RUNS,
+  PENDING_SEARCH,
+  TEST_RUN_APPROVED,
+  TEST_RUN_NEW,
+];
 
 const mockImages = async (page: Page) => {
   for (const image of [
@@ -309,33 +335,31 @@ const VIEWS: [name: string, body: Body][] = [
   ],
 
   [
-    "edit project dialog with the rendering-noise filter on",
+    "edit project dialog with post-analysis",
     async ({ projectListPage, shot }) => {
       await projectListPage.editBtn.click();
-      await projectListPage.noiseFilter.check();
-      // blur: the focused switch keeps its tooltip open
-      await projectListPage.dialog.getByRole("heading").first().click();
-      await projectListPage.noiseFilter.scrollIntoViewIfNeeded();
+      await projectListPage.distanceThreshold.scrollIntoViewIfNeeded();
 
-      await expect(projectListPage.noiseFilter).toBeChecked();
+      await expect(projectListPage.blurSwitch).toBeChecked();
+      await expect(projectListPage.dinov2Status).toHaveCount(0);
       await expect(projectListPage.page.getByRole("tooltip")).toHaveCount(0);
-      await shot("edit-project-noise-filter");
+      await shot("edit-project-post-analysis");
     },
   ],
 
   [
-    "edit project dialog on a server without DINOv2",
+    "edit project dialog with post-analysis on a server without DINOv2",
     async ({ projectListPage, shot }) => {
       await mockDinov2Status(projectListPage.page, {
         configured: false,
         available: false,
       });
       await projectListPage.editBtn.click();
-      await projectListPage.noiseStatus.scrollIntoViewIfNeeded();
+      await projectListPage.dinov2Status.scrollIntoViewIfNeeded();
 
-      await expect(projectListPage.noiseFilter).toBeDisabled();
+      await expect(projectListPage.dinov2Status).toBeVisible();
       await expect(projectListPage.page.getByRole("tooltip")).toHaveCount(0);
-      await shot("edit-project-no-dinov2");
+      await shot("edit-project-post-analysis-no-dinov2");
     },
   ],
 
@@ -374,6 +398,42 @@ const VIEWS: [name: string, body: Body][] = [
 
       await expect(projectPage.testRunList.rows).toHaveCount(4);
       await shot("project-page-table");
+    },
+  ],
+
+  [
+    "project page with noise hints",
+    async ({ openProjectPage, page, shot }) => {
+      await mockTestRunsWithDetails(page, build.id, ALL_ANALYSED_RUNS);
+      await mockNoiseSummary(page, build.id, RENDERER_CHANGE_SUMMARY);
+      const projectPage = await openProjectPage(project.id, build.id);
+
+      await expect(projectPage.testRunList.noiseChips).toHaveCount(5);
+      await expect(projectPage.testRunList.analyseNoiseBtn).toBeVisible();
+      await expect(projectPage.noiseCaption).toBeVisible();
+      await expect(projectPage.noiseBanner).toBeVisible();
+      await shot("project-page-noise-hints");
+    },
+  ],
+
+  [
+    "project page with the noise hint filter open",
+    async ({ openProjectPage, page, shot }) => {
+      await mockTestRunsWithDetails(page, build.id, PARTLY_ANALYSED_RUNS);
+      await mockNoiseSummary(page, build.id, PARTLY_ANALYSED_SUMMARY);
+      const projectPage = await openProjectPage(project.id, build.id);
+      await expect(projectPage.testRunList.noiseChips).toHaveCount(5);
+      await expect(
+        projectPage.testRunList.noiseChip(PENDING_SEARCH.id),
+      ).toHaveText("Analysing…");
+      await expect(projectPage.testRunList.analyseNoiseBtn).toHaveText(
+        "Analysing 1 of 5…",
+      );
+
+      await projectPage.testRunFilters.noiseHint.click();
+
+      await expect(projectPage.testRunFilters.noiseHintOptions).toHaveCount(3);
+      await shot("project-page-noise-filter");
     },
   ],
 
@@ -467,6 +527,29 @@ const VIEWS: [name: string, body: Body][] = [
       await expect(details.drawAreas).toHaveCount(2);
       await expect(details.toggleDiff).toBeChecked();
       await shot("test-run-details");
+    },
+  ],
+
+  [
+    "test run details with a noise hint",
+    async ({ openProjectPage, page, shot }) => {
+      await mockGetTestRuns(page, build.id, [NOISE_CART, TEST_RUN_NEW]);
+      await mockTestRun(page, withNoiseRegions(NOISE_CART));
+      const { details } = await openProjectPage(
+        project.id,
+        build.id,
+        NOISE_CART.id,
+      );
+      await expect(details.drawAreas).toHaveCount(2);
+      await expect(details.noisePanel).toContainText("DINOv2: likely noise");
+
+      await details.hintBlur.click();
+
+      await expect(details.hintBlur).toHaveAttribute("aria-pressed", "true");
+      await expect
+        .poll(() => details.lockedRects())
+        .toHaveLength(BLUR_REGIONS.length);
+      await shot("test-run-noise-hint");
     },
   ],
 

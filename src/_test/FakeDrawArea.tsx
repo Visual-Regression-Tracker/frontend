@@ -9,11 +9,13 @@ export const DrawArea = ({
   selectedRectId,
   setSelectedRectId,
   deleteIgnoreArea,
+  hintAreas,
 }: ComponentProps<typeof RealDrawArea>) =>
   // only the image pane edits areas; the baseline pane is left out
   deleteIgnoreArea ? (
     <div>
       <span data-testid="ignoreAreaCount">{ignoreAreas.length}</span>
+      <span data-testid="hintAreas">{JSON.stringify(hintAreas ?? [])}</span>
       <button
         onClick={() => {
           const area: IgnoreArea = {

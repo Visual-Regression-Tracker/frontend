@@ -9,12 +9,24 @@ import {
 } from "@mui/material";
 import { BuildStatusChip } from "./BuildStatusChip";
 import { formatDateTime } from "../_helpers/format.helper";
-import { useBuildState } from "../contexts";
+import {
+  useBuildState,
+  useNoiseAnalysisAvailable,
+  useTestRunState,
+} from "../contexts";
+import { buildNoiseCaption } from "../_helpers/noiseSummary.helper";
+import { NoiseBanner } from "./NoiseBanner";
 import { LOCATOR_BUILD_DETAILS } from "../constants/help";
 import { Tooltip } from "./Tooltip";
 
 const BuildDetails = () => {
   const { selectedBuild } = useBuildState();
+  const { testRuns } = useTestRunState();
+  const available = useNoiseAnalysisAvailable();
+  const noiseCaption = useMemo(
+    () => (available ? buildNoiseCaption(testRuns) : null),
+    [available, testRuns],
+  );
   const buildNumber = useMemo(
     () => `#${selectedBuild?.number} ${selectedBuild?.ciBuildId || ""}`,
     [selectedBuild?.number, selectedBuild?.ciBuildId],
@@ -89,7 +101,13 @@ const BuildDetails = () => {
             <Typography variant="caption">{`${selectedBuild.passedCount} passed`}</Typography>
           </Grid>
         </Grid>
+        {noiseCaption && (
+          <Typography variant="caption" color="textSecondary">
+            {noiseCaption}
+          </Typography>
+        )}
       </Box>
+      {available && <NoiseBanner />}
       {loadingAnimation}
     </Stack>
   );

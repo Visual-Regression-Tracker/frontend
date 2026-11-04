@@ -4,6 +4,7 @@ import {
   useTestRunState,
   useTestRunDispatch,
   useBuildState,
+  useNoiseAnalysisAvailable,
   useSelectedProject,
 } from "../../contexts";
 import { useSnackbar } from "notistack";
@@ -13,11 +14,12 @@ import { ViewListOutlined } from "@mui/icons-material";
 import { TestRunCardView } from "./TestRunCardView";
 import { TestRunDensity, TestRunView } from "./TestRunListControls";
 import { DEFAULT_SORT } from "./TestRunGridHeader";
+import { AnalyseNoiseButton } from "./AnalyseNoiseButton";
 import TestRunFilters from "./TestRunFilters";
 import { TestRunTable } from "./TestRunTable";
 import { useTestRunFilters } from "./useTestRunFilters";
 import { useTestRunSelection } from "./useTestRunSelection";
-import { TestRun } from "../../types";
+import { TagField } from "../../types";
 import type { TestRunSort } from "../../types/testRunSort";
 import { comparatorFor, sortOfModel } from "../../_helpers/testRunSort.helper";
 import { testRunService } from "../../services";
@@ -29,6 +31,10 @@ import {
   singleRunGroups,
 } from "../../_helpers/testRunGroup.helper";
 import { TAG_FIELDS } from "../../_helpers/testRunTags.helper";
+
+const DEFAULT_SORT_MODEL: GridSortModel = [
+  { field: DEFAULT_SORT.field, sort: DEFAULT_SORT.direction },
+];
 
 const TestRunList = () => {
   const { enqueueSnackbar } = useSnackbar();
@@ -43,20 +49,30 @@ const TestRunList = () => {
     page: 0,
   });
 
-  const [sortModel, setSortModel] = useState<GridSortModel>([
-    {
-      field: "status",
-      sort: "desc",
-    },
-  ]);
+  const [storedSortModel, setSortModel] =
+    useState<GridSortModel>(DEFAULT_SORT_MODEL);
 
-  const { filteredRows, toggleTag, ...filters } = useTestRunFilters(testRuns);
+  const selectedProject = useSelectedProject();
+  const noiseHintAvailable = useNoiseAnalysisAvailable();
+  const { filteredRows, toggleTag, ...filters } = useTestRunFilters(
+    testRuns,
+    noiseHintAvailable,
+  );
   const { selectedIds, setSelectedIds, toggleAll, toggleGroup } =
     useTestRunSelection(selectedBuild?.id);
   const [view, setView] = useState<TestRunView>("table");
   const [density, setDensity] = useState<TestRunDensity>("standard");
   const [groupVariations, setGroupVariations] = useState(false);
-  const [gridSort, setGridSort] = useState<TestRunSort>(DEFAULT_SORT);
+  const [storedGridSort, setGridSort] = useState<TestRunSort>(DEFAULT_SORT);
+
+  const sortModel =
+    !noiseHintAvailable && storedSortModel[0]?.field === "noise"
+      ? DEFAULT_SORT_MODEL
+      : storedSortModel;
+  const gridSort =
+    !noiseHintAvailable && storedGridSort.field === "noise"
+      ? DEFAULT_SORT
+      : storedGridSort;
 
   const activeSort = useMemo(
     () => (view === "grid" ? gridSort : (sortOfModel(sortModel) ?? gridSort)),
@@ -68,7 +84,6 @@ const TestRunList = () => {
     [filteredRows, activeSort],
   );
 
-  const selectedProject = useSelectedProject();
   const groupByAxis = resolveGroupByAxis(selectedProject?.bulkApproveGroupBy);
 
   const sortedGroups = useMemo(
@@ -81,7 +96,7 @@ const TestRunList = () => {
 
   // the grouped axis varies within a group, so it tags only a group of one
   const tagFieldsFor = useCallback(
-    (runCount: number): Array<keyof TestRun> =>
+    (runCount: number): TagField[] =>
       groupVariations && runCount > 1
         ? TAG_FIELDS.filter((field) => field !== groupByAxis)
         : TAG_FIELDS,
@@ -104,14 +119,20 @@ const TestRunList = () => {
     );
   }, [groupVariations, view, sortedGroups, activeSort, tagFieldsFor]);
 
-  const { name, statuses, tags } = filters;
-  const [pagedFilters, setPagedFilters] = useState({ name, statuses, tags });
+  const { name, statuses, tags, noiseHints } = filters;
+  const [pagedFilters, setPagedFilters] = useState({
+    name,
+    statuses,
+    tags,
+    noiseHints,
+  });
   if (
     pagedFilters.name !== name ||
     pagedFilters.statuses !== statuses ||
-    pagedFilters.tags !== tags
+    pagedFilters.tags !== tags ||
+    pagedFilters.noiseHints !== noiseHints
   ) {
-    setPagedFilters({ name, statuses, tags });
+    setPagedFilters({ name, statuses, tags, noiseHints });
     setPaginationModel((prev) => ({ ...prev, page: 0 }));
   }
 
@@ -211,7 +232,12 @@ const TestRunList = () => {
     return (
       <Box sx={{ display: "flex", flexDirection: "column", height: "100%" }}>
         <Box sx={{ paddingX: 2, paddingTop: 1, paddingBottom: 1 }}>
-          <TestRunFilters {...filters} />
+          <TestRunFilters
+            {...filters}
+            action={
+              noiseHintAvailable && <AnalyseNoiseButton runs={filteredRows} />
+            }
+          />
         </Box>
         <Box sx={{ flex: 1, minHeight: 0 }}>
           {view === "table" ? (
@@ -219,6 +245,7 @@ const TestRunList = () => {
               groups={groups}
               grouped={groupVariations}
               tagFieldsFor={tagFieldsFor}
+              noiseAvailable={noiseHintAvailable}
               selectedIds={selectedIds}
               onSelectionChange={setSelectedIds}
               loading={loading}
@@ -241,6 +268,7 @@ const TestRunList = () => {
               onPaginationModelChange={setPaginationModel}
               activeTags={filters.tags}
               tagFieldsFor={tagFieldsFor}
+              noiseAvailable={noiseHintAvailable}
               hotkeysEnabled={!selectedTestRun}
               onToggleAll={toggleAll}
               onToggleGroup={toggleGroup}

@@ -3,7 +3,6 @@ import { type ChangeEvent, Fragment } from "react";
 import { ValidatedTextField } from "../ValidatedForm";
 import { LooksSameConfig } from "../../types/imageComparison";
 import { useConfigHook } from "./useConfigHook";
-import { RenderingNoiseField } from "./RenderingNoiseField";
 import { atLeast } from "./rules";
 
 const LOWEST_TOLERANCE = 0;
@@ -98,7 +97,6 @@ export const LooksSameConfigForm = () => {
           />
         }
       />
-      <RenderingNoiseField />
     </Fragment>
   );
 };

@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+import { useEffect, type ReactNode } from "react";
 import {
   act,
   fireEvent,
@@ -10,12 +10,23 @@ import { useNavigate } from "react-router-dom";
 import { renderWithProviders } from "../../_test/render";
 import { run } from "../../_helpers/testRun.fixture";
 import {
+  selectProject,
   updateTestRun,
+  useProjectDispatch,
+  useProjectState,
   useTestRunDispatch,
   useTestRunState,
 } from "../../contexts";
-import { buildsService, testRunService } from "../../services";
+import { buildsService, projectsService, testRunService } from "../../services";
 import { Build, TestRun, TestStatus } from "../../types";
+import { ImageComparison } from "../../types/imageComparison";
+import {
+  NOISE_ANALYSIS_CHANGE,
+  NOISE_ANALYSIS_NOISE,
+  NOISE_ANALYSIS_PENDING,
+  TEST_PROJECT,
+  TEST_USER,
+} from "../../_test/test.data.helper";
 import { TEST_RUN_SHOW_DIFF_KEY } from "../../constants";
 import { TestDetailsDialog } from "../TestDetailsDialog";
 import TestRunList from "./index";
@@ -137,7 +148,11 @@ describe("TestRunList", () => {
 
 type User = ReturnType<typeof renderWithProviders>["user"];
 
-const renderList = (runs: TestRun[], extra: ReactNode = null) => {
+const renderList = (
+  runs: TestRun[],
+  extra: ReactNode = null,
+  user: typeof TEST_USER | null = null,
+) => {
   vi.spyOn(buildsService, "getDetails").mockImplementation((id) =>
     Promise.resolve(build(id)),
   );
@@ -148,7 +163,7 @@ const renderList = (runs: TestRun[], extra: ReactNode = null) => {
       {extra}
       <TestRunList />
     </>,
-    { route: "/?buildId=build-a" },
+    { route: "/?buildId=build-a", user },
   );
 };
 
@@ -633,5 +648,255 @@ describe("TestRunList status filter", () => {
       expect(within(rowOf("Screen A")).getByText("approved")).toBeVisible(),
     );
     expect(filterChip("unresolved")).toBeInTheDocument();
+  });
+});
+
+const SelectProject = () => {
+  const dispatch = useProjectDispatch();
+  const { projectList, selectedProjectId } = useProjectState();
+  useEffect(() => selectProject(dispatch, TEST_PROJECT.id), [dispatch]);
+  return projectList.length > 0 && selectedProjectId === TEST_PROJECT.id ? (
+    <div data-testid="project-ready" />
+  ) : null;
+};
+
+const VLM_PROJECT = {
+  ...TEST_PROJECT,
+  id: "vlm-project",
+  imageComparison: ImageComparison.vlm,
+};
+
+const SwitchToVlm = () => {
+  const dispatch = useProjectDispatch();
+  return (
+    <button onClick={() => selectProject(dispatch, VLM_PROJECT.id)}>
+      Use VLM project
+    </button>
+  );
+};
+
+describe("TestRunList noise hint filter", () => {
+  const renderWith = async (project: Partial<typeof TEST_PROJECT>) => {
+    vi.spyOn(projectsService, "getAll").mockResolvedValue([
+      { ...TEST_PROJECT, ...project },
+    ]);
+    const rendered = renderList(
+      [
+        run({ id: "n", name: "Screen N", noiseAnalysis: NOISE_ANALYSIS_NOISE }),
+        run({
+          id: "c",
+          name: "Screen C",
+          noiseAnalysis: NOISE_ANALYSIS_CHANGE,
+        }),
+      ],
+      <SelectProject />,
+      TEST_USER,
+    );
+    await screen.findByTestId("project-ready");
+    await screen.findByText("Screen N");
+    return rendered;
+  };
+
+  it("filters the runs for a project with the analysis on", async () => {
+    const { user } = await renderWith({});
+
+    await user.click(screen.getByRole("combobox", { name: "Noise hint" }));
+    await user.click(
+      await screen.findByRole("option", { name: "Likely noise" }),
+    );
+
+    await waitFor(() =>
+      expect(screen.queryByText("Screen C")).not.toBeInTheDocument(),
+    );
+    expect(screen.getByText("Screen N")).toBeInTheDocument();
+  });
+
+  it("is not offered for a VLM project", async () => {
+    await renderWith({ imageComparison: ImageComparison.vlm });
+
+    expect(
+      screen.queryByRole("combobox", { name: "Noise hint" }),
+    ).not.toBeInTheDocument();
+  });
+
+  it("offers the Noise column and its sort for a project with the analysis on", async () => {
+    const { user } = await renderWith({});
+
+    expect(
+      screen.getByRole("columnheader", { name: /Noise/ }),
+    ).toBeInTheDocument();
+
+    await user.click(await screen.findByRole("button", { name: "Grid view" }));
+
+    expect(await screen.findByTestId("gridSort-noise")).toBeInTheDocument();
+  });
+
+  it("leaves the Noise column and its sort out for a VLM project", async () => {
+    const { user } = await renderWith({ imageComparison: ImageComparison.vlm });
+
+    expect(
+      screen.queryByRole("columnheader", { name: /Noise/ }),
+    ).not.toBeInTheDocument();
+
+    await user.click(await screen.findByRole("button", { name: "Grid view" }));
+
+    expect(await screen.findByTestId("gridSort-status")).toBeInTheDocument();
+    expect(screen.queryByTestId("gridSort-noise")).not.toBeInTheDocument();
+  });
+
+  describe("after switching to a project without the Noise sort", () => {
+    const firstName = () =>
+      screen.queryAllByText(/^Screen [NC]$/)[0]?.textContent;
+
+    const renderReady = async () => {
+      vi.spyOn(projectsService, "getAll").mockResolvedValue([
+        TEST_PROJECT,
+        VLM_PROJECT,
+      ]);
+      const { user } = renderList(
+        [
+          run({
+            id: "n",
+            name: "Screen N",
+            noiseAnalysis: NOISE_ANALYSIS_NOISE,
+          }),
+          run({
+            id: "c",
+            name: "Screen C",
+            noiseAnalysis: NOISE_ANALYSIS_CHANGE,
+          }),
+        ],
+        <>
+          <SelectProject />
+          <SwitchToVlm />
+        </>,
+        TEST_USER,
+      );
+      await screen.findByTestId("project-ready");
+      return user;
+    };
+
+    const sortDescendingThenSwitch = async (
+      user: Awaited<ReturnType<typeof renderReady>>,
+      sortByNoise: HTMLElement,
+    ) => {
+      await user.click(sortByNoise);
+      await user.click(sortByNoise);
+      await waitFor(() => expect(firstName()).toBe("Screen N"));
+
+      await user.click(screen.getByRole("button", { name: "Use VLM project" }));
+      await waitFor(() => expect(sortByNoise).not.toBeInTheDocument());
+    };
+
+    it("shows the table in the default order with its sort indicator", async () => {
+      const user = await renderReady();
+
+      await sortDescendingThenSwitch(
+        user,
+        await screen.findByRole("columnheader", { name: /Noise/ }),
+      );
+
+      expect(firstName()).toBe("Screen C");
+      expect(
+        screen.getByRole("columnheader", { name: /Status/ }),
+      ).toHaveAttribute("aria-sort", "descending");
+    });
+
+    it("shows the cards in the default order with the default sort active", async () => {
+      const user = await renderReady();
+      await user.click(
+        await screen.findByRole("button", { name: "Grid view" }),
+      );
+
+      await sortDescendingThenSwitch(
+        user,
+        await screen.findByTestId("gridSort-noise"),
+      );
+
+      expect(firstName()).toBe("Screen C");
+      expect(
+        screen
+          .getByTestId("gridSort-status")
+          .querySelector(".MuiButton-endIcon"),
+      ).toBeInTheDocument();
+    });
+  });
+
+  it("leaves the Noise column out when the blur stage is off", async () => {
+    await renderWith({ noiseAnalysisConfig: '{"blur":{"enabled":false}}' });
+
+    expect(
+      screen.queryByRole("columnheader", { name: /Noise/ }),
+    ).not.toBeInTheDocument();
+  });
+});
+
+describe("TestRunList analyse unresolved button", () => {
+  const Deliver = ({ updated }: { updated: TestRun }) => {
+    const dispatch = useTestRunDispatch();
+    return (
+      <button onClick={() => updateTestRun(dispatch, [updated])}>
+        Deliver result
+      </button>
+    );
+  };
+
+  const RUNS = [
+    run({ id: "p", name: "Screen P", noiseAnalysis: NOISE_ANALYSIS_PENDING }),
+    run({ id: "n", name: "Screen N", noiseAnalysis: NOISE_ANALYSIS_NOISE }),
+    run({ id: "o", name: "Screen O", status: TestStatus.approved }),
+  ];
+
+  const renderWith = async (project: Partial<typeof TEST_PROJECT>) => {
+    vi.spyOn(projectsService, "getAll").mockResolvedValue([
+      { ...TEST_PROJECT, ...project },
+    ]);
+    const rendered = renderList(
+      RUNS,
+      <>
+        <SelectProject />
+        <Deliver
+          updated={{ ...RUNS[0], noiseAnalysis: NOISE_ANALYSIS_NOISE }}
+        />
+      </>,
+      TEST_USER,
+    );
+    await screen.findByTestId("project-ready");
+    await screen.findByText("Screen N");
+    return rendered;
+  };
+
+  it("follows the pending runs of the list as results arrive", async () => {
+    const { user } = await renderWith({});
+    const button = screen.getByTestId("analyse-noise-button");
+    expect(button).toHaveTextContent("Analysing 1 of 2…");
+    expect(button).toBeDisabled();
+
+    await user.click(screen.getByRole("button", { name: "Deliver result" }));
+
+    expect(button).toHaveTextContent("Analyse unresolved (2)");
+    expect(button).toBeEnabled();
+  });
+
+  it("counts the runs left after filtering", async () => {
+    const { user } = await renderWith({});
+    await user.click(screen.getByRole("combobox", { name: "Noise hint" }));
+    await user.click(
+      await screen.findByRole("option", { name: "Likely noise" }),
+    );
+
+    await waitFor(() =>
+      expect(screen.getByTestId("analyse-noise-button")).toHaveTextContent(
+        "Analyse unresolved (1)",
+      ),
+    );
+  });
+
+  it("is not offered for a VLM project", async () => {
+    await renderWith({ imageComparison: ImageComparison.vlm });
+
+    expect(
+      screen.queryByTestId("analyse-noise-button"),
+    ).not.toBeInTheDocument();
   });
 });

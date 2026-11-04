@@ -3,6 +3,7 @@ import { act, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { renderWithProviders } from "../../_test/render";
 import { TestStatus } from "../../types";
+import type { NoiseHintFilter } from "../../_helpers/noiseHint.helper";
 import TestRunFilters from "./TestRunFilters";
 
 const Harness = ({
@@ -10,15 +11,20 @@ const Harness = ({
   initialName = "",
   onStatusesChange = vi.fn(),
   onTagsChange = vi.fn(),
+  onNoiseHintsChange = vi.fn(),
+  offersNoiseHint = true,
 }: {
   onNameChange: (value: string) => void;
   initialName?: string;
   onStatusesChange?: (value: TestStatus[]) => void;
   onTagsChange?: (value: string[]) => void;
+  onNoiseHintsChange?: (value: NoiseHintFilter[]) => void;
+  offersNoiseHint?: boolean;
 }) => {
   const [name, setName] = useState(initialName);
   const [statuses, setStatuses] = useState<TestStatus[]>([]);
   const [tags, setTags] = useState<string[]>([]);
+  const [noiseHints, setNoiseHints] = useState<NoiseHintFilter[]>([]);
 
   return (
     <TestRunFilters
@@ -27,6 +33,7 @@ const Harness = ({
       name={name}
       statuses={statuses}
       tags={tags}
+      noiseHints={noiseHints}
       onNameChange={(value) => {
         onNameChange(value);
         setName(value);
@@ -39,10 +46,19 @@ const Harness = ({
         onTagsChange(value);
         setTags(value);
       }}
+      onNoiseHintsChange={
+        offersNoiseHint
+          ? (value) => {
+              onNoiseHintsChange(value);
+              setNoiseHints(value);
+            }
+          : undefined
+      }
       onReset={() => {
         setName("");
         setStatuses([]);
         setTags([]);
+        setNoiseHints([]);
       }}
     />
   );
@@ -228,5 +244,49 @@ describe("TestRunFilters status and tag filters", () => {
     await user.click(resetButton());
 
     expect(resetButton()).toBeDisabled();
+  });
+});
+
+describe("TestRunFilters noise hint filter", () => {
+  const noiseHintBox = () =>
+    screen.queryByRole("combobox", { name: "Noise hint" });
+
+  it("offers the three hints and reports the chosen one", async () => {
+    const onNoiseHintsChange = vi.fn();
+    const { user } = renderWithProviders(
+      <Harness
+        onNameChange={vi.fn()}
+        onNoiseHintsChange={onNoiseHintsChange}
+      />,
+    );
+
+    await user.click(screen.getByRole("combobox", { name: "Noise hint" }));
+
+    expect(
+      screen.getAllByRole("option").map((option) => option.textContent),
+    ).toEqual(["Likely noise", "Likely change", "Not analysed"]);
+
+    await user.click(screen.getByRole("option", { name: "Likely change" }));
+
+    expect(onNoiseHintsChange).toHaveBeenCalledWith(["Likely change"]);
+  });
+
+  it("enables Reset once a hint is picked and clears it", async () => {
+    const { user } = renderWithProviders(<Harness onNameChange={vi.fn()} />);
+    await user.click(screen.getByRole("combobox", { name: "Noise hint" }));
+    await user.click(screen.getByRole("option", { name: "Likely noise" }));
+    expect(resetButton()).toBeEnabled();
+
+    await user.click(resetButton());
+
+    expect(resetButton()).toBeDisabled();
+  });
+
+  it("is hidden without a handler for it", () => {
+    renderWithProviders(
+      <Harness onNameChange={vi.fn()} offersNoiseHint={false} />,
+    );
+
+    expect(noiseHintBox()).not.toBeInTheDocument();
   });
 });

@@ -20,13 +20,16 @@ import { TestVariationDetails } from "../components/TestVariationDetails";
 import { useSnackbar } from "notistack";
 import { formatDateTime } from "../_helpers/format.helper";
 import TestStatusChip from "../components/TestStatusChip";
+import { NoiseHintChip } from "../components/TestRunList/NoiseHintChip";
 import { Baseline } from "../types/baseline";
+import { useNoiseAnalysisAvailable } from "../contexts";
 
 const TestVariationDetailsPage = () => {
   const navigate = useNavigate();
   const { enqueueSnackbar } = useSnackbar();
   const { testVariationId } = useParams<{ testVariationId: string }>();
   const [testVariation, setTestVariation] = useState<TestVariation>();
+  const noiseAvailable = useNoiseAnalysisAvailable(testVariation?.projectId);
 
   useEffect(() => {
     if (testVariationId) {
@@ -94,7 +97,12 @@ const TestVariationDetailsPage = () => {
                     Test Run
                   </Button>
                   {baseline.testRun && (
-                    <TestStatusChip status={baseline.testRun.status} />
+                    <>
+                      <TestStatusChip status={baseline.testRun.status} />
+                      {noiseAvailable && (
+                        <NoiseHintChip run={baseline.testRun} />
+                      )}
+                    </>
                   )}
                   {baseline.user && (
                     <Typography variant="body2">

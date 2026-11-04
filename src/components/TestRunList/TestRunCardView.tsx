@@ -20,7 +20,7 @@ import { hotkeyMatching } from "../../_helpers/hotkeys.helper";
 import { pluralize } from "../../_helpers/format.helper";
 import { TestRunGroup } from "../../_helpers/testRunGroup.helper";
 import { TEST_RUN_SHOW_DIFF_KEY } from "../../constants";
-import { TestRun } from "../../types";
+import { TagField } from "../../types";
 import type { TestRunSort } from "../../types/testRunSort";
 import { TestRunGrid } from "./TestRunGrid";
 import { TestRunGridHeader } from "./TestRunGridHeader";
@@ -38,6 +38,7 @@ export const TestRunCardView = ({
   onPaginationModelChange,
   activeTags,
   tagFieldsFor,
+  noiseAvailable,
   hotkeysEnabled,
   onToggleAll,
   onToggleGroup,
@@ -53,7 +54,8 @@ export const TestRunCardView = ({
   paginationModel: GridPaginationModel;
   onPaginationModelChange: Dispatch<SetStateAction<GridPaginationModel>>;
   activeTags: string[];
-  tagFieldsFor: (runCount: number) => Array<keyof TestRun>;
+  tagFieldsFor: (runCount: number) => TagField[];
+  noiseAvailable: boolean;
   hotkeysEnabled: boolean;
   onToggleAll: (ids: string[]) => void;
   onToggleGroup: (ids: string[]) => void;
@@ -119,6 +121,7 @@ export const TestRunCardView = ({
         sort={sort}
         onSortChange={onSortChange}
         density={density}
+        noiseAvailable={noiseAvailable}
         selectedCount={
           navigationIds.filter((id) => selectedIdSet.has(id)).length
         }
@@ -145,6 +148,7 @@ export const TestRunCardView = ({
             showDiff={showDiff}
             activeTags={activeTags}
             tagFieldsFor={tagFieldsFor}
+            noiseAvailable={noiseAvailable}
             onToggleGroup={onToggleGroup}
             onToggleTag={onToggleTag}
             onOpen={onOpen}

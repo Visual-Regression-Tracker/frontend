@@ -9,6 +9,7 @@ import {
   Typography,
 } from "@mui/material";
 import TestStatusChip from "../TestStatusChip";
+import { NoiseHintChip } from "./NoiseHintChip";
 import noImage from "../../static/no-image.png";
 import { CARD_SIZE_BY_DENSITY, TestRunDensity } from "./TestRunListControls";
 import {
@@ -17,7 +18,7 @@ import {
 } from "../../_helpers/testRunGroup.helper";
 import { thumbnailFor } from "../../_helpers/testRunImage.helper";
 import { tagValuesOf } from "../../_helpers/testRunTags.helper";
-import { TestRun } from "../../types";
+import { TagField } from "../../types";
 
 const clampToLines = (lines: number) => ({
   display: "-webkit-box",
@@ -65,6 +66,7 @@ export const TestRunGrid = ({
   showDiff,
   activeTags,
   tagFieldsFor,
+  noiseAvailable,
   onToggleGroup,
   onToggleTag,
   onOpen,
@@ -74,7 +76,8 @@ export const TestRunGrid = ({
   density: TestRunDensity;
   showDiff: boolean;
   activeTags: string[];
-  tagFieldsFor: (runCount: number) => Array<keyof TestRun>;
+  tagFieldsFor: (runCount: number) => TagField[];
+  noiseAvailable: boolean;
   onToggleGroup: (ids: string[]) => void;
   onToggleTag: (tag: string) => void;
   onOpen: (id: string) => void;
@@ -174,6 +177,7 @@ export const TestRunGrid = ({
             <Box component="span" title={groupStatusSummary(runs) || undefined}>
               <TestStatusChip status={representative.status} />
             </Box>
+            {noiseAvailable && <NoiseHintChip run={representative} />}
             {/* buttons so the keyboard reaches them */}
             <Typography
               variant="caption"

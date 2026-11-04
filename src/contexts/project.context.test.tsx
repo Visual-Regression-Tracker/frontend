@@ -1,11 +1,14 @@
 import { screen } from "@testing-library/react";
 import { renderWithProviders } from "../_test/render";
-import { TEST_USER } from "../_test/test.data.helper";
+import { TEST_PROJECT, TEST_USER } from "../_test/test.data.helper";
+import { ImageComparison } from "../types/imageComparison";
 import { projectsService } from "../services";
 import {
   selectProject,
+  useNoiseAnalysisAvailable,
   useProjectDispatch,
   useProjectState,
+  useSelectedProject,
 } from "./project.context";
 
 const Consumer = () => {
@@ -79,5 +82,97 @@ describe("ProjectProvider", () => {
       "p2",
       "p1",
     ]);
+  });
+});
+
+describe("useNoiseAnalysisAvailable", () => {
+  const Availability = () => {
+    const dispatch = useProjectDispatch();
+    const available = useNoiseAnalysisAvailable();
+    const selected = useSelectedProject();
+
+    return (
+      <>
+        <p data-testid="selected">{selected?.name}</p>
+        <p data-testid="available">{String(available)}</p>
+        <button onClick={() => selectProject(dispatch, TEST_PROJECT.id)}>
+          Open
+        </button>
+      </>
+    );
+  };
+
+  const open = async (project: Partial<typeof TEST_PROJECT>) => {
+    vi.spyOn(projectsService, "getFavorites").mockResolvedValue([]);
+    vi.spyOn(projectsService, "getAll").mockResolvedValue([
+      { ...TEST_PROJECT, ...project },
+    ]);
+    const { user } = renderWithProviders(<Availability />, {
+      user: TEST_USER,
+    });
+    await vi.waitFor(() => expect(projectsService.getAll).toHaveBeenCalled());
+    await user.click(await screen.findByRole("button", { name: "Open" }));
+    await screen.findByText(TEST_PROJECT.name);
+  };
+
+  afterEach(() => localStorage.clear());
+
+  it("is off before a project is selected", () => {
+    vi.spyOn(projectsService, "getAll").mockResolvedValue([]);
+
+    renderWithProviders(<Availability />, { user: TEST_USER });
+
+    expect(screen.getByTestId("available")).toHaveTextContent("false");
+  });
+
+  it("is on for the selected project with the blur stage enabled", async () => {
+    await open({});
+
+    expect(screen.getByTestId("available")).toHaveTextContent("true");
+  });
+
+  it.each([
+    ["the VLM comparator", { imageComparison: ImageComparison.vlm }],
+    [
+      "the blur stage disabled",
+      { noiseAnalysisConfig: '{"blur":{"enabled":false}}' },
+    ],
+  ])("is off for %s", async (_, project) => {
+    await open(project);
+
+    expect(screen.getByTestId("available")).toHaveTextContent("false");
+  });
+
+  it("looks up the given project instead of the selected one", async () => {
+    const other = { ...TEST_PROJECT, id: "other" };
+    vi.spyOn(projectsService, "getFavorites").mockResolvedValue([]);
+    vi.spyOn(projectsService, "getAll").mockResolvedValue([
+      { ...TEST_PROJECT, imageComparison: ImageComparison.vlm },
+      other,
+    ]);
+    const ForOther = () => {
+      const dispatch = useProjectDispatch();
+      return (
+        <>
+          <p data-testid="for-other">
+            {String(useNoiseAnalysisAvailable(other.id))}
+          </p>
+          <p data-testid="for-selected">
+            {String(useNoiseAnalysisAvailable())}
+          </p>
+          <button onClick={() => selectProject(dispatch, TEST_PROJECT.id)}>
+            Open
+          </button>
+        </>
+      );
+    };
+    const { user } = renderWithProviders(<ForOther />, { user: TEST_USER });
+    await vi.waitFor(() => expect(projectsService.getAll).toHaveBeenCalled());
+    await user.click(await screen.findByRole("button", { name: "Open" }));
+
+    await vi.waitFor(() =>
+      expect(screen.getByTestId("for-other")).toHaveTextContent("true"),
+    );
+    expect(screen.getByTestId("for-selected")).toHaveTextContent("false");
   });
 });

@@ -7,6 +7,7 @@ const SORT_LABELS: Record<TestRunSortField, string> = {
   name: "Name",
   tags: "Tags",
   status: "Status",
+  noise: "Noise",
 };
 
 const DEFAULT_SORT_DIRECTION: Record<
@@ -17,6 +18,7 @@ const DEFAULT_SORT_DIRECTION: Record<
   status: "desc",
   name: "asc",
   tags: "asc",
+  noise: "desc",
 };
 
 export const DEFAULT_SORT: TestRunSort = { field: "status", direction: "desc" };
@@ -40,6 +42,7 @@ export const TestRunGridHeader = ({
   sort,
   onSortChange,
   density,
+  noiseAvailable,
   selectedCount,
   totalCount,
   onToggleAll,
@@ -47,6 +50,7 @@ export const TestRunGridHeader = ({
   sort: TestRunSort;
   onSortChange: (sort: TestRunSort) => void;
   density: TestRunDensity;
+  noiseAvailable: boolean;
   selectedCount: number;
   totalCount: number;
   onToggleAll: () => void;
@@ -95,6 +99,7 @@ export const TestRunGridHeader = ({
       {label("name", 1)}
       {label("tags", 1)}
       {label("status", 0.3)}
+      {noiseAvailable && label("noise", 0.3)}
     </Box>
   );
 };

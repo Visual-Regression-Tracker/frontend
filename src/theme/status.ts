@@ -1,5 +1,6 @@
 import { TestStatus } from "../types/testStatus";
 import { BuildStatus } from "../types/buildStatus";
+import type { NoiseHint } from "../types/noiseAnalysis";
 
 export type StatusColor = "success" | "warning" | "error" | "info" | "default";
 
@@ -22,4 +23,8 @@ export function statusColor(status: string | undefined): StatusColor {
     default:
       return "default";
   }
+}
+
+export function hintColor(hint: NoiseHint): "hint" | "info" {
+  return hint === "change" ? "info" : "hint";
 }

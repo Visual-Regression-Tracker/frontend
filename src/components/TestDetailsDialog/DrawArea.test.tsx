@@ -2,6 +2,8 @@ import type { Dispatch, ReactNode, SetStateAction } from "react";
 import { fireEvent, screen } from "@testing-library/react";
 import { renderWithProviders } from "../../_test/render";
 import { IgnoreArea } from "../../types/ignoreArea";
+import type { NoiseRegion } from "../../types";
+import { theme } from "../../theme";
 import { DrawArea } from "./DrawArea";
 
 // Konva needs native canvas under Node, so the stage is a stand-in: only container() is used
@@ -20,7 +22,14 @@ vi.mock("react-konva", async () => {
     },
   );
   const Nothing = () => null;
-  return { Stage, Layer: Nothing, Image: Nothing, Rect: Nothing };
+  const Layer = ({ children }: { children?: ReactNode }) =>
+    createElement("div", null, children);
+  const Rect = (props: object) =>
+    createElement("div", {
+      "data-testid": "rect",
+      "data-props": JSON.stringify(props),
+    });
+  return { Stage, Layer, Image: Nothing, Rect, Transformer: Nothing };
 });
 
 const AREA: IgnoreArea = { id: "area", x: 1, y: 2, width: 30, height: 40 };
@@ -34,12 +43,16 @@ const stageState = () =>
     Dispatch<SetStateAction<{ x: number; y: number }>>,
   ];
 
-const drawArea = (deleteIgnoreArea: (id: string) => void) => (
+const drawArea = (
+  deleteIgnoreArea: (id: string) => void,
+  hintAreas?: NoiseRegion[],
+) => (
   <DrawArea
     imageName="image.png"
     imageState={[image, "loaded"]}
     ignoreAreas={[AREA]}
     tempIgnoreAreas={[]}
+    hintAreas={hintAreas}
     setIgnoreAreas={vi.fn()}
     selectedRectId={AREA.id}
     setSelectedRectId={vi.fn()}
@@ -97,5 +110,45 @@ describe("DrawArea", () => {
     });
 
     expect(deleteIgnoreArea).not.toHaveBeenCalled();
+  });
+
+  describe("hint areas", () => {
+    const REGIONS: NoiseRegion[] = [
+      { x: 10, y: 20, width: 30, height: 40, weight: 0.9 },
+      { x: 50, y: 5, width: 6, height: 7, weight: 0.2 },
+    ];
+    const rects = () =>
+      screen
+        .queryAllByTestId("rect")
+        .map(
+          (rect) =>
+            JSON.parse(rect.dataset.props ?? "{}") as Record<string, unknown>,
+        );
+    const hintRects = () =>
+      rects().filter((rect) => rect.stroke === theme.palette.hint.main);
+
+    it("draws each region in the hint colour without taking the pointer or editing", () => {
+      renderWithProviders(drawArea(vi.fn(), REGIONS));
+
+      expect(hintRects()).toEqual([
+        expect.objectContaining({
+          x: 10,
+          y: 20,
+          width: 30,
+          height: 40,
+          listening: false,
+          fill: theme.palette.hint.main,
+        }),
+        expect.objectContaining({ x: 50, y: 5, width: 6, height: 7 }),
+      ]);
+      expect(hintRects().some((rect) => rect.draggable)).toBe(false);
+    });
+
+    it("draws nothing extra without regions", () => {
+      renderWithProviders(drawArea(vi.fn()));
+
+      expect(hintRects()).toEqual([]);
+      expect(rects()).toHaveLength(1);
+    });
   });
 });

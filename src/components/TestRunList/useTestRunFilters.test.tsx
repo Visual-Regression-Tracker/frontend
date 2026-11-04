@@ -1,6 +1,11 @@
 import { act, renderHook } from "@testing-library/react";
 import { run } from "../../_helpers/testRun.fixture";
 import { TestRun, TestStatus } from "../../types";
+import {
+  NOISE_ANALYSIS_CHANGE,
+  NOISE_ANALYSIS_NOISE,
+  NOISE_ANALYSIS_PENDING,
+} from "../../_test/test.data.helper";
 import { useTestRunFilters } from "./useTestRunFilters";
 
 const ids = (runs: TestRun[]) => runs.map((item) => item.id);
@@ -224,5 +229,108 @@ describe("useTestRunFilters", () => {
 
     expect(result.current.statuses).toBe(statuses);
     expect(result.current.tags).toEqual(["iOS"]);
+  });
+});
+
+describe("useTestRunFilters by noise hint", () => {
+  const LIKELY_NOISE = run({
+    id: "noise",
+    noiseAnalysis: NOISE_ANALYSIS_NOISE,
+  });
+  const LIKELY_CHANGE = run({
+    id: "change",
+    noiseAnalysis: NOISE_ANALYSIS_CHANGE,
+  });
+  const PENDING = run({ id: "pending", noiseAnalysis: NOISE_ANALYSIS_PENDING });
+  const UNANALYSED = run({ id: "unanalysed", noiseAnalysis: null });
+  const UNKNOWN = run({
+    id: "unknown",
+    noiseAnalysis: { ...NOISE_ANALYSIS_NOISE, verdict: "unknown" },
+  });
+  const APPROVED = run({
+    id: "approved",
+    status: TestStatus.approved,
+    noiseAnalysis: NOISE_ANALYSIS_NOISE,
+  });
+  const HINTED = [
+    LIKELY_NOISE,
+    LIKELY_CHANGE,
+    PENDING,
+    UNANALYSED,
+    UNKNOWN,
+    APPROVED,
+  ];
+
+  it("keeps every run until a hint is picked", () => {
+    const { result } = renderFilters(HINTED);
+
+    expect(result.current.noiseHints).toEqual([]);
+    expect(result.current.filteredRows).toEqual(HINTED);
+  });
+
+  it.each([
+    ["Likely noise", ["noise"]],
+    ["Likely change", ["change"]],
+    ["Not analysed", ["pending", "unanalysed", "unknown", "approved"]],
+  ] as const)("keeps the runs matching %s", (hint, expected) => {
+    const { result } = renderFilters(HINTED);
+
+    act(() => result.current.onNoiseHintsChange?.([hint]));
+
+    expect(ids(result.current.filteredRows)).toEqual(expected);
+  });
+
+  it("keeps the runs matching any of several hints", () => {
+    const { result } = renderFilters(HINTED);
+
+    act(() =>
+      result.current.onNoiseHintsChange?.(["Likely noise", "Likely change"]),
+    );
+
+    expect(ids(result.current.filteredRows)).toEqual(["noise", "change"]);
+  });
+
+  it("combines with the status filter", () => {
+    const { result } = renderFilters(HINTED);
+
+    act(() => {
+      result.current.onNoiseHintsChange?.(["Likely noise"]);
+      result.current.onStatusesChange([TestStatus.approved]);
+    });
+
+    expect(result.current.filteredRows).toEqual([]);
+  });
+
+  it("clears the hint on reset", () => {
+    const { result } = renderFilters(HINTED);
+    act(() => result.current.onNoiseHintsChange?.(["Likely change"]));
+
+    act(() => result.current.onReset());
+
+    expect(result.current.noiseHints).toEqual([]);
+    expect(result.current.filteredRows).toEqual(HINTED);
+  });
+
+  it("ignores a picked hint while the analysis is unavailable", () => {
+    const { result, rerender } = renderHook(
+      ({ available }) => useTestRunFilters(HINTED, available),
+      { initialProps: { available: true } },
+    );
+    act(() => result.current.onNoiseHintsChange?.(["Likely change"]));
+
+    rerender({ available: false });
+
+    expect(result.current.noiseHints).toEqual([]);
+    expect(result.current.filteredRows).toEqual(HINTED);
+
+    rerender({ available: true });
+
+    expect(ids(result.current.filteredRows)).toEqual(["change"]);
+  });
+
+  it("offers no way to pick a hint while the analysis is unavailable", () => {
+    const { result } = renderHook(() => useTestRunFilters(HINTED, false));
+
+    expect(result.current.onNoiseHintsChange).toBeUndefined();
   });
 });

@@ -9,7 +9,10 @@ import {
   toolbarProps,
 } from "../../_test/testRunListFixture";
 import { TAG_FIELDS } from "../../_helpers/testRunTags.helper";
+import { NOISE_ANALYSIS_NOISE } from "../../_test/test.data.helper";
+import { run } from "../../_helpers/testRun.fixture";
 import { TestRun } from "../../types";
+import { TestStatus } from "../../types/testStatus";
 import { TestRunTable } from "./TestRunTable";
 
 type Props = ComponentProps<typeof TestRunTable>;
@@ -25,6 +28,7 @@ const propsFor = (
       grouped && count > 1
         ? TAG_FIELDS.filter((field) => field !== "customTags")
         : TAG_FIELDS,
+    noiseAvailable: true,
     selectedIds: [],
     onSelectionChange: vi.fn(),
     loading: false,
@@ -56,6 +60,33 @@ describe("TestRunTable", () => {
     expect(within(row).getByText("en")).toBeInTheDocument();
     expect(within(row).getByText("unresolved")).toBeInTheDocument();
     expect(screen.queryByTestId("groupCount")).not.toBeInTheDocument();
+  });
+
+  it("shows the noise hint of an unresolved run in a Noise column next to its status", async () => {
+    const noisy = run({
+      id: "noisy",
+      name: "Screen N",
+      noiseAnalysis: NOISE_ANALYSIS_NOISE,
+    });
+    const settled = run({
+      id: "settled",
+      name: "Screen S",
+      status: TestStatus.approved,
+      noiseAnalysis: NOISE_ANALYSIS_NOISE,
+    });
+    renderTable(propsFor([noisy, settled]));
+
+    await waitFor(() => expect(dataRows()).toHaveLength(2));
+    const headers = screen
+      .getAllByRole("columnheader")
+      .map((header) => header.textContent);
+    expect(headers.indexOf("Noise")).toBe(headers.indexOf("Status") + 1);
+    expect(
+      within(rowOf("Screen N")).getByText("Likely noise"),
+    ).toBeInTheDocument();
+    expect(
+      within(rowOf("Screen S")).queryByTestId("noise-hint-chip"),
+    ).not.toBeInTheDocument();
   });
 
   it("shows a group as one row with its run count, status mix and the tags it shares", async () => {
@@ -131,6 +162,19 @@ describe("TestRunTable", () => {
 
     expect(props.onSortModelChange).toHaveBeenCalledWith(
       [{ field: "name", sort: "asc" }],
+      expect.anything(),
+    );
+  });
+
+  it("reports a click on the Noise header as a descending sort", async () => {
+    const props = propsFor([A_EN, B_EN]);
+    const { user } = renderTable(props);
+    await waitFor(() => expect(dataRows()).toHaveLength(2));
+
+    await user.click(screen.getByRole("columnheader", { name: /Noise/ }));
+
+    expect(props.onSortModelChange).toHaveBeenCalledWith(
+      [{ field: "noise", sort: "desc" }],
       expect.anything(),
     );
   });

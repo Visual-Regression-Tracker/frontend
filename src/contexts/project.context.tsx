@@ -12,6 +12,7 @@ import { projectsService } from "../services";
 import { useSnackbar } from "notistack";
 import { useUserState } from "./user.context";
 import { DEFAULT_PROJECT_EDIT_STATE } from "../constants";
+import { noiseAnalysisAvailable } from "../_helpers/noiseHint.helper";
 import {
   readRecentProjectIds,
   rememberRecentProject,
@@ -151,6 +152,26 @@ function useSelectedProject(): Project | undefined {
   return useMemo(
     () => projectList.find((project) => project.id === selectedProjectId),
     [projectList, selectedProjectId],
+  );
+}
+
+function useNoiseAnalysisAvailable(projectId?: string): boolean {
+  const { projectList, selectedProjectId } = useProjectState();
+  const id = projectId ?? selectedProjectId;
+  const project = useMemo(
+    () => projectList.find((item) => item.id === id),
+    [projectList, id],
+  );
+  const imageComparison = project?.imageComparison;
+  const noiseAnalysisConfig = project?.noiseAnalysisConfig;
+  return useMemo(
+    () =>
+      !!imageComparison &&
+      noiseAnalysisAvailable({
+        imageComparison,
+        noiseAnalysisConfig: noiseAnalysisConfig ?? "",
+      }),
+    [imageComparison, noiseAnalysisConfig],
   );
 }
 
@@ -322,6 +343,7 @@ export {
   ProjectProvider,
   useProjectState,
   useSelectedProject,
+  useNoiseAnalysisAvailable,
   useProjectDispatch,
   createProject,
   updateProject,

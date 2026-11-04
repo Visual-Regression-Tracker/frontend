@@ -1,4 +1,4 @@
-import { ProjectDto } from "../types";
+import { NoiseAnalysisConfig, ProjectDto } from "../types";
 import { ImageComparison } from "../types/imageComparison";
 
 export const PIXELMATCH_DEFAULT_CONFIG =
@@ -22,6 +22,14 @@ Describe the difference in about 100 words.`,
   useThinking: false,
 });
 
+export const DEFAULT_NOISE_ANALYSIS_CONFIG: NoiseAnalysisConfig = {
+  blur: { enabled: true, amplitudeThreshold: 80, solidShareMax: 0.01 },
+  dinov2: { enabled: true, distanceThreshold: 0.15 },
+};
+export const DEFAULT_NOISE_ANALYSIS_CONFIG_JSON = JSON.stringify(
+  DEFAULT_NOISE_ANALYSIS_CONFIG,
+);
+
 export const DEFAULT_PROJECT_EDIT_STATE: ProjectDto = {
   id: "",
   name: "",
@@ -29,6 +37,7 @@ export const DEFAULT_PROJECT_EDIT_STATE: ProjectDto = {
   autoApproveFeature: true,
   imageComparison: ImageComparison.pixelmatch,
   imageComparisonConfig: PIXELMATCH_DEFAULT_CONFIG,
+  noiseAnalysisConfig: DEFAULT_NOISE_ANALYSIS_CONFIG_JSON,
   maxBuildAllowed: 100,
   maxBranchLifetime: 30,
   bulkApproveVariations: false,

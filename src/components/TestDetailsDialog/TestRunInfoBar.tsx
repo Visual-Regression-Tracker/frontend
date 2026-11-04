@@ -15,6 +15,7 @@ interface TestRunInfoBarProps {
   testRun: TestRun;
   sizeMismatch: boolean;
   ignoreAreasToolbar: ReactNode;
+  noiseHint?: ReactNode;
   enqueueSnackbar: DialogEnqueue;
 }
 
@@ -22,6 +23,7 @@ export const TestRunInfoBar = ({
   testRun,
   sizeMismatch,
   ignoreAreasToolbar,
+  noiseHint,
   enqueueSnackbar,
 }: TestRunInfoBarProps) => {
   const saveComment = (comment: string) =>
@@ -45,7 +47,7 @@ export const TestRunInfoBar = ({
   return (
     <Box sx={{ mx: 1 }}>
       <Grid container spacing={1} sx={testRunDetailsSx}>
-        <TestRunDetails testRun={testRun} />
+        <TestRunDetails testRun={testRun} noiseHint={noiseHint} />
         {sizeMismatch && (
           <Grid>
             <Tooltip

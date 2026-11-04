@@ -13,6 +13,8 @@ export class ProjectPage extends BasePage {
   details: TestDetailsDialog;
   selectProject = this.page.locator(`#${LOCATOR_PROJECT_PAGE_SELECT_PROJECT}`);
   projectField = this.page.getByRole("combobox", { name: "Project" });
+  noiseBanner = this.page.getByTestId("noise-banner");
+  noiseCaption = this.page.getByText(/unresolved look like rendering noise/);
   detailsDialog = this.modal.dialog;
 
   constructor(page: Page) {

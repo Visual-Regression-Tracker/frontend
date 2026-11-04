@@ -51,7 +51,8 @@ export const PROJECT_PAGE_STEPS: Step[] = [
   },
   {
     target: `#${LOCATOR_PROJECT_PAGE_TEST_RUN_LIST}`,
-    content: "TestRuns for selected build.",
+    content:
+      "TestRuns for selected build. When the rendering-noise check is on, the Noise column hints which unresolved runs look like noise.",
   },
 ];
 

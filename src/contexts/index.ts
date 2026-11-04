@@ -4,3 +4,4 @@ export * from "./project.context";
 export * from "./testRun.context";
 export * from "./socket.context";
 export * from "./help.context";
+export * from "./useAnalyseNoise";

@@ -1,6 +1,6 @@
-import { TestRun } from "../types";
+import { TagField, TestRun } from "../types";
 
-export const TAG_FIELDS: Array<keyof TestRun> = [
+export const TAG_FIELDS: TagField[] = [
   "os",
   "device",
   "browser",
@@ -8,15 +8,12 @@ export const TAG_FIELDS: Array<keyof TestRun> = [
   "customTags",
 ];
 
-export const tagValuesOf = (
-  run: TestRun,
-  fields: Array<keyof TestRun>,
-): string[] =>
+export const tagValuesOf = (run: TestRun, fields: TagField[]): string[] =>
   fields
     .map((field) => run[field])
     .filter((value): value is string => typeof value === "string" && !!value);
 
-export const tagsOf = (run: TestRun, fields: Array<keyof TestRun>): string =>
+export const tagsOf = (run: TestRun, fields: TagField[]): string =>
   tagValuesOf(run, fields).join(" · ");
 
 export const runLabel = (run: TestRun): string => {

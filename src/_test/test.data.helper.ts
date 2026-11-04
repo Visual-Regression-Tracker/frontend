@@ -1,5 +1,17 @@
-import { PIXELMATCH_DEFAULT_CONFIG } from "../constants";
-import { Build, Project, TestRun, TestVariation, User } from "../types";
+import {
+  DEFAULT_NOISE_ANALYSIS_CONFIG_JSON,
+  PIXELMATCH_DEFAULT_CONFIG,
+} from "../constants";
+import {
+  Build,
+  NoiseAnalysisDto,
+  NoiseAnalysisPending,
+  NoiseSummary,
+  Project,
+  TestRun,
+  TestVariation,
+  User,
+} from "../types";
 import { BuildStatus } from "../types/buildStatus";
 import { ImageComparison } from "../types/imageComparison";
 import { TestStatus } from "../types/testStatus";
@@ -14,6 +26,7 @@ export const TEST_PROJECT: Project = {
   autoApproveFeature: true,
   imageComparison: ImageComparison.pixelmatch,
   imageComparisonConfig: PIXELMATCH_DEFAULT_CONFIG,
+  noiseAnalysisConfig: DEFAULT_NOISE_ANALYSIS_CONFIG_JSON,
   maxBuildAllowed: 100,
   maxBranchLifetime: 30,
   bulkApproveVariations: false,
@@ -198,6 +211,61 @@ export const TEST_BUILD_UNRESOLVED: Build = {
   merge: true,
 };
 
+export const NOISE_ANALYSIS_NOISE: NoiseAnalysisDto = {
+  version: 1,
+  verdict: "noise",
+  score: 0.39,
+  reason: null,
+  config: {
+    blur: { amplitudeThreshold: 80, solidShareMax: 0.01 },
+    dinov2: { distanceThreshold: 0.15 },
+  },
+  blur: {
+    verdict: "noise",
+    score: 0.39,
+    signals: { amplitude: 31.4, solidShare: 0, density: 11 },
+  },
+  dinov2: {
+    verdict: "noise",
+    score: 0.39,
+    signals: { distance: 0.04, patches: 3 },
+  },
+  computedAt: "2026-11-04T10:12:00Z",
+};
+
+export const NOISE_ANALYSIS_CHANGE: NoiseAnalysisDto = {
+  ...NOISE_ANALYSIS_NOISE,
+  verdict: "change",
+  score: 0.77,
+  dinov2: {
+    verdict: "change",
+    score: 0.77,
+    signals: { distance: 0.23, patches: 8 },
+  },
+};
+
+export const NOISE_ANALYSIS_PENDING: NoiseAnalysisPending = {
+  pending: true,
+  requestedAt: "2026-11-04T10:11:00Z",
+};
+
+export const NOISE_SUMMARY: NoiseSummary = {
+  unresolved: 6,
+  analysed: 6,
+  noiseLike: 5,
+  byEnvironment: [
+    { browser: "chrome", os: "Linux", device: "", unresolved: 4, noiseLike: 4 },
+    {
+      browser: "safari",
+      os: "iOS",
+      device: "iPhone",
+      unresolved: 2,
+      noiseLike: 1,
+    },
+  ],
+  projectTypical: 0.1,
+};
+
 export const TEST_UNRESOLVED: TestRun = {
   id: "some_test_run_id",
   buildId: "some build id",
@@ -220,6 +288,21 @@ export const TEST_UNRESOLVED: TestRun = {
   branchName: "branch name",
   baselineBranchName: "baselineBranchName",
   merge: false,
+  noiseAnalysis: NOISE_ANALYSIS_NOISE,
+};
+
+export const TEST_UNRESOLVED_CHANGE: TestRun = {
+  ...TEST_UNRESOLVED,
+  id: "some_test_run_id_change",
+  name: "test run name unresolved change",
+  noiseAnalysis: NOISE_ANALYSIS_CHANGE,
+};
+
+export const TEST_UNRESOLVED_PENDING: TestRun = {
+  ...TEST_UNRESOLVED,
+  id: "some_test_run_id_pending",
+  name: "test run name unresolved pending",
+  noiseAnalysis: NOISE_ANALYSIS_PENDING,
 };
 
 export const TEST_RUN_APPROVED: TestRun = {

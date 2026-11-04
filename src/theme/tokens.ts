@@ -59,6 +59,12 @@ export const status = {
   },
 } as const;
 
+// the noise hint is advice, not a status, so its neutral is slate rather than a status hue
+export const hint = {
+  light: { neutral: slate[600] },
+  dark: { neutral: slate[400] },
+} as const;
+
 export const surface = {
   light: {
     default: "#f4f6f9",

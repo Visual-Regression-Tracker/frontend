@@ -1,4 +1,4 @@
-import { TestRun } from "../types";
+import { NoiseAnalysisQueued, TestRun } from "../types";
 import { handleResponse, authHeader } from "../_helpers/service.helpers";
 import { API_URL } from "../_config/env.config";
 import { UpdateIgnoreAreaDto } from "../types/ignoreArea";
@@ -75,6 +75,10 @@ function approveBulk(
   return postBulk(`/approve?merge=${merge}`, ids);
 }
 
+function analyseNoise(ids: string[]): Promise<NoiseAnalysisQueued> {
+  return sendJson("POST", "/noise-analysis", { ids });
+}
+
 export type ReviewDecision = "approve" | "reject";
 
 // all or nothing: one run that cannot be reverted fails the whole request
@@ -112,6 +116,7 @@ export const testRunService = {
   rejectBulk,
   approveBulk,
   revert,
+  analyseNoise,
   getMatchingVariations,
   updateIgnoreAreas,
   addIgnoreAreas,

@@ -12,6 +12,7 @@ import {
 import { run } from "../../_helpers/testRun.fixture";
 import { TAG_FIELDS } from "../../_helpers/testRunTags.helper";
 import { TEST_RUN_SHOW_DIFF_KEY } from "../../constants";
+import { NOISE_ANALYSIS_CHANGE } from "../../_test/test.data.helper";
 import { TestRun } from "../../types";
 import { DEFAULT_SORT } from "./TestRunGridHeader";
 import { TestRunCardView } from "./TestRunCardView";
@@ -36,6 +37,7 @@ const propsFor = (
     onPaginationModelChange: vi.fn(),
     activeTags: [],
     tagFieldsFor: () => TAG_FIELDS,
+    noiseAvailable: true,
     hotkeysEnabled: true,
     onToggleAll: vi.fn(),
     onToggleGroup: vi.fn(),
@@ -83,6 +85,41 @@ describe("TestRunCardView", () => {
 
     expect(cardNames()).toEqual(["Screen A", "Screen B"]);
     expect(screen.getByTestId("groupCount")).toHaveTextContent("2");
+  });
+
+  it("leaves the noise hint off the cards when the analysis is not available", () => {
+    renderCards(
+      propsFor(
+        [
+          run({
+            id: "u",
+            name: "Screen A",
+            noiseAnalysis: NOISE_ANALYSIS_CHANGE,
+          }),
+        ],
+        { noiseAvailable: false },
+      ),
+    );
+
+    expect(screen.queryByTestId("noise-hint-chip")).not.toBeInTheDocument();
+  });
+
+  it("shows the noise hint of an unresolved run on its card", () => {
+    renderCards(
+      propsFor([
+        run({
+          id: "hinted",
+          name: "Screen H",
+          noiseAnalysis: NOISE_ANALYSIS_CHANGE,
+        }),
+        B_EN,
+      ]),
+    );
+
+    expect(screen.getAllByTestId("noise-hint-chip")).toHaveLength(1);
+    expect(screen.getByTestId("noise-hint-chip")).toHaveTextContent(
+      "Likely change",
+    );
   });
 
   it("says so when the filters leave no run", () => {
@@ -168,6 +205,18 @@ describe("TestRunCardView", () => {
     expect(props.onSortChange).toHaveBeenCalledWith({
       field: "name",
       direction: "asc",
+    });
+  });
+
+  it("sorts by noise, changes first, from the header", async () => {
+    const props = propsFor([A_EN]);
+    const { user } = renderCards(props);
+
+    await user.click(screen.getByTestId("gridSort-noise"));
+
+    expect(props.onSortChange).toHaveBeenCalledWith({
+      field: "noise",
+      direction: "desc",
     });
   });
 

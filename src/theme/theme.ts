@@ -1,16 +1,38 @@
-import { alpha, createTheme, type Theme } from "@mui/material/styles";
+import {
+  alpha,
+  createTheme,
+  type PaletteColor,
+  type PaletteColorOptions,
+  type Theme,
+} from "@mui/material/styles";
 // adds the Data Grid to the theme's component overrides (types only)
 import "@mui/x-data-grid/themeAugmentation";
 import {
   brand,
   darkAccent,
   fontFamily,
+  hint,
   radius,
   slate,
   status,
   surface,
   violet,
 } from "./tokens";
+
+declare module "@mui/material/styles" {
+  interface Palette {
+    hint: PaletteColor;
+  }
+  interface PaletteOptions {
+    hint?: PaletteColorOptions;
+  }
+}
+
+declare module "@mui/material/Chip" {
+  interface ChipPropsColorOverrides {
+    hint: true;
+  }
+}
 
 const STATUS_COLORS = ["success", "warning", "error", "info"] as const;
 
@@ -33,6 +55,7 @@ export const theme = createTheme({
         warning: { main: status.light.warning },
         error: { main: status.light.error },
         info: { main: status.light.info },
+        hint: { main: hint.light.neutral },
         background: {
           default: surface.light.default,
           paper: surface.light.paper,
@@ -52,6 +75,7 @@ export const theme = createTheme({
         warning: { main: status.dark.warning },
         error: { main: status.dark.error },
         info: { main: status.dark.info },
+        hint: { main: hint.dark.neutral },
         background: {
           default: surface.dark.default,
           paper: surface.dark.paper,
