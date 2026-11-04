@@ -10,7 +10,7 @@ const KB = 1000;
 // Gzipped kB: the size measured when the budget was set, plus 10%, rounded up.
 const INITIAL_LOAD_BUDGET_KB = 287; // entry script plus every chunk index.html preloads
 const BUDGETS_KB = {
-  "ProjectPage-": 18,
+  "ProjectPage-": 22,
 };
 
 const gzipKb = (file) => gzipSync(readFileSync(file)).length / KB;

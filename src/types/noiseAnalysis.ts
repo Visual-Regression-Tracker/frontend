@@ -1,6 +1,6 @@
 export type NoiseVerdict = "noise" | "change" | "unknown";
 
-export type NoiseUnknownReason = "sizes differ" | "no diff" | "image too large";
+type NoiseUnknownReason = "sizes differ" | "no diff" | "image too large";
 
 export interface NoiseAnalysisConfig {
   blur: {
@@ -22,21 +22,21 @@ export interface NoiseRegion {
   weight: number;
 }
 
-export interface NoiseBlurResult {
+interface NoiseBlurResult {
   verdict: NoiseVerdict;
   score: number;
   signals: { amplitude: number; solidShare: number; density: number };
 }
 
-export interface NoiseDinov2Result {
+interface NoiseDinov2Result {
   verdict: NoiseVerdict;
   score: number;
   signals: { distance: number; patches: number };
 }
 
-export type NoiseDinov2Skipped = { skipped: "blur sees a change" | "off" };
+type NoiseDinov2Skipped = { skipped: "blur sees a change" | "off" };
 
-export type NoiseDinov2Error = { error: "dinov2 unavailable" };
+type NoiseDinov2Error = { error: "dinov2 unavailable" };
 
 export interface NoiseAnalysisDto {
   version: number;
