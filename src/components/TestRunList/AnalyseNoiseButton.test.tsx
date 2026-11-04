@@ -1,4 +1,4 @@
-import { act, screen } from "@testing-library/react";
+import { screen } from "@testing-library/react";
 import { renderWithProviders } from "../../_test/render";
 import { run } from "../../_helpers/testRun.fixture";
 import { testRunService } from "../../services";
@@ -7,45 +7,10 @@ import {
   NOISE_ANALYSIS_NOISE,
   NOISE_ANALYSIS_PENDING,
 } from "../../_test/test.data.helper";
-import {
-  updateTestRun,
-  useTestRunDispatch,
-  useTestRunState,
-} from "../../contexts";
 import { AnalyseNoiseButton } from "./AnalyseNoiseButton";
 
 const unresolved = (id: string) =>
   run({ id, name: id, status: TestStatus.unresolved });
-
-const Connected = () => {
-  const { testRuns } = useTestRunState();
-  const dispatch = useTestRunDispatch();
-  return (
-    <>
-      <AnalyseNoiseButton runs={testRuns} />
-      <button
-        onClick={() => {
-          dispatch({ type: "get", payload: ["a", "b"].map(unresolved) });
-        }}
-      >
-        Load
-      </button>
-      <button
-        onClick={() => {
-          updateTestRun(
-            dispatch,
-            ["a", "b"].map((id) => ({
-              ...unresolved(id),
-              noiseAnalysis: NOISE_ANALYSIS_PENDING,
-            })),
-          );
-        }}
-      >
-        Mark pending
-      </button>
-    </>
-  );
-};
 
 const button = () => screen.getByTestId("analyse-noise-button");
 
@@ -142,61 +107,17 @@ describe("AnalyseNoiseButton", () => {
     expect(button()).toBeEnabled();
   });
 
-  it("does not warn when some runs were queued and the others were not unresolved", async () => {
-    vi.spyOn(testRunService, "analyseNoise").mockResolvedValue({
-      queued: 1,
-      skipped: [{ id: "b", reason: "not unresolved" }],
-    });
+  it("is disabled while the request is on its way", async () => {
+    vi.spyOn(testRunService, "analyseNoise").mockReturnValue(
+      new Promise(() => {}),
+    );
     const { user } = renderWithProviders(
-      <AnalyseNoiseButton runs={[unresolved("a"), unresolved("b")]} />,
+      <AnalyseNoiseButton runs={[unresolved("a")]} />,
     );
 
     await user.click(button());
 
-    expect(screen.queryByRole("alert")).not.toBeInTheDocument();
-  });
-
-  describe("after the request", () => {
-    beforeEach(() => {
-      vi.useFakeTimers({ shouldAdvanceTime: true });
-      vi.spyOn(testRunService, "analyseNoise").mockResolvedValue({
-        queued: 2,
-        skipped: [],
-      });
-    });
-
-    afterEach(() => {
-      vi.useRealTimers();
-    });
-
-    const analyseLoaded = async () => {
-      const { user } = renderWithProviders(<Connected />);
-      await user.click(screen.getByText("Load"));
-      await user.click(button());
-      return user;
-    };
-
-    it("stays disabled until the runs show as pending, then shows the progress", async () => {
-      const user = await analyseLoaded();
-
-      expect(button()).toBeDisabled();
-      expect(button()).toHaveTextContent("Analyse unresolved (2)");
-
-      await user.click(screen.getByText("Mark pending"));
-
-      expect(button()).toHaveTextContent("Analysing 2 of 2…");
-      expect(button()).toBeDisabled();
-    });
-
-    it("is enabled again after three seconds without a pending event", async () => {
-      await analyseLoaded();
-
-      act(() => {
-        vi.advanceTimersByTime(3000);
-      });
-
-      expect(button()).toBeEnabled();
-    });
+    expect(button()).toBeDisabled();
   });
 
   it("warns when the queue is full", async () => {

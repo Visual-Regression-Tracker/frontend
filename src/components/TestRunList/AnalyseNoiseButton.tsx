@@ -3,6 +3,7 @@ import { Button } from "@mui/material";
 import { useSnackbar } from "notistack";
 import { TestRun, TestStatus } from "../../types";
 import { noiseHintOf } from "../../_helpers/noiseHint.helper";
+import { ANALYSING } from "../../_helpers/noiseText.helper";
 import { useAnalyseNoise } from "../../contexts/useAnalyseNoise";
 
 export const AnalyseNoiseButton = ({ runs }: { runs: TestRun[] }) => {
@@ -30,7 +31,7 @@ export const AnalyseNoiseButton = ({ runs }: { runs: TestRun[] }) => {
       onClick={() => void analyse(unresolvedIds)}
     >
       {pending > 0
-        ? `Analysing ${pending} of ${unresolvedIds.length}…`
+        ? `${ANALYSING} ${pending} of ${unresolvedIds.length}…`
         : `Analyse unresolved (${unresolvedIds.length})`}
     </Button>
   );

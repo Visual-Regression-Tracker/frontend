@@ -1,5 +1,13 @@
-import { screen, within } from "@testing-library/react";
+import { useEffect } from "react";
+import { act, screen, within } from "@testing-library/react";
 import { renderWithProviders } from "../../_test/render";
+import { run } from "../../_helpers/testRun.fixture";
+import {
+  updateTestRun,
+  useTestRunDispatch,
+  useTestRunState,
+} from "../../contexts";
+import { type TestRun, TestStatus } from "../../types";
 import {
   NOISE_ANALYSIS_CHANGE,
   NOISE_ANALYSIS_NOISE,
@@ -31,12 +39,71 @@ const renderPanel = (overrides: Partial<Props> = {}) => {
   };
 };
 
+type Dispatch = ReturnType<typeof useTestRunDispatch>;
+
+const ConnectedPanel = ({
+  onDispatch,
+}: {
+  onDispatch: (dispatch: Dispatch) => void;
+}) => {
+  const dispatch = useTestRunDispatch();
+  const { selectedTestRun } = useTestRunState();
+  useEffect(() => {
+    onDispatch(dispatch);
+  }, [dispatch, onDispatch]);
+  if (!selectedTestRun) {
+    return null;
+  }
+  return (
+    <NoiseHintPanel
+      runId={selectedTestRun.id}
+      analysis={selectedTestRun.noiseAnalysis ?? null}
+      stage={null}
+      onStageChange={vi.fn()}
+    />
+  );
+};
+
+const renderConnected = async (
+  id: string,
+  noiseAnalysis: TestRun["noiseAnalysis"],
+) => {
+  const initial = run({
+    id,
+    name: id,
+    status: TestStatus.unresolved,
+    noiseAnalysis,
+  });
+  vi.spyOn(testRunService, "getDetails").mockResolvedValue(initial);
+  let dispatch!: Dispatch;
+  const rendered = renderWithProviders(
+    <ConnectedPanel
+      onDispatch={(next) => {
+        dispatch = next;
+      }}
+    />,
+    { route: `/?testId=${id}` },
+  );
+  await screen.findByTestId("noise-hint-panel");
+  return {
+    ...rendered,
+    show: (next: TestRun["noiseAnalysis"]) =>
+      act(() => {
+        updateTestRun(dispatch, [{ ...initial, noiseAnalysis: next }]);
+      }),
+  };
+};
+
 const panel = () => screen.getByTestId("noise-hint-panel");
 const analyseButton = () => screen.getByTestId("analyse-noise-run-button");
 const blurToggle = () => screen.getByTestId("hint-areas-blur");
 const dinov2Toggle = () => screen.getByTestId("hint-areas-dinov2");
 
 describe("NoiseHintPanel", () => {
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
   describe("without a result", () => {
     it.each([
       ["no analysis", null],
@@ -58,7 +125,7 @@ describe("NoiseHintPanel", () => {
       const analyse = vi
         .spyOn(testRunService, "analyseNoise")
         .mockResolvedValue({ queued: 1, skipped: [] });
-      const { user, show } = renderPanel({ runId: "r1" });
+      const { user, show } = await renderConnected("r1", null);
 
       await user.click(analyseButton());
 
@@ -66,10 +133,10 @@ describe("NoiseHintPanel", () => {
       expect(within(panel()).getByText("Analysing…")).toBeVisible();
       expect(screen.queryByTestId("analyse-noise-run-button")).toBeNull();
 
-      show({ analysis: NOISE_ANALYSIS_PENDING });
+      show(NOISE_ANALYSIS_PENDING);
       expect(within(panel()).getByText("Analysing…")).toBeVisible();
 
-      show({ analysis: CHANGE });
+      show(NOISE_ANALYSIS_CHANGE);
       expect(within(panel()).queryByText("Analysing…")).toBeNull();
       expect(
         within(panel()).getByText("Rendering-noise check: likely change"),
@@ -81,13 +148,31 @@ describe("NoiseHintPanel", () => {
         queued: 1,
         skipped: [],
       });
-      const { user, show } = renderPanel();
+      const { user, show } = await renderConnected("r1", null);
 
       await user.click(analyseButton());
-      show({ analysis: NOISE_ANALYSIS_PENDING });
-      show({ analysis: null });
+      show(NOISE_ANALYSIS_PENDING);
+      show(null);
 
       expect(within(panel()).queryByText("Analysing…")).toBeNull();
+      expect(analyseButton()).toHaveTextContent("Analyse");
+    });
+
+    it("offers Analyse again after three seconds without a pending event", async () => {
+      vi.useFakeTimers({ shouldAdvanceTime: true });
+      vi.spyOn(testRunService, "analyseNoise").mockResolvedValue({
+        queued: 1,
+        skipped: [],
+      });
+      const { user } = await renderConnected("r1", null);
+
+      await user.click(analyseButton());
+      expect(within(panel()).getByText("Analysing…")).toBeVisible();
+
+      act(() => {
+        vi.advanceTimersByTime(3000);
+      });
+
       expect(analyseButton()).toHaveTextContent("Analyse");
     });
 
@@ -159,7 +244,7 @@ describe("NoiseHintPanel", () => {
       const analyse = vi
         .spyOn(testRunService, "analyseNoise")
         .mockResolvedValue({ queued: 1, skipped: [] });
-      const { user, show } = renderPanel({ runId: "r2", analysis: CHANGE });
+      const { user, show } = await renderConnected("r2", NOISE_ANALYSIS_CHANGE);
 
       await user.click(analyseButton());
 
@@ -170,7 +255,9 @@ describe("NoiseHintPanel", () => {
       ).toBeNull();
 
       show({
-        analysis: { ...CHANGE, computedAt: "2026-11-04T11:00:00Z", score: 0.5 },
+        ...NOISE_ANALYSIS_CHANGE,
+        computedAt: "2026-11-04T11:00:00Z",
+        score: 0.5,
       });
       expect(within(panel()).queryByText("Analysing…")).toBeNull();
       expect(within(panel()).getByText("· score 0.50")).toBeVisible();

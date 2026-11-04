@@ -6,6 +6,8 @@ export const VERDICT_TEXT: Record<NoiseVerdict, string> = {
   unknown: "no verdict",
 };
 
+export const ANALYSING = "Analysing";
+
 export const SHORT_LIMITATION =
   "A hint, not a decision. It can call a small real change noise — a single digit, a dot, a faint border.";
 

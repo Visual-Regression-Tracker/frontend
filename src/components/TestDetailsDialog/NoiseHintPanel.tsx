@@ -1,4 +1,3 @@
-import { useState } from "react";
 import {
   Box,
   Button,
@@ -15,6 +14,7 @@ import {
 } from "../../_helpers/noiseHint.helper";
 import { type HintStage, regionsOf } from "../../_helpers/noiseRegions.helper";
 import {
+  ANALYSING,
   LIMITATION,
   stagesText,
   VERDICT_TEXT,
@@ -42,14 +42,6 @@ function headline({ verdict, reason }: NoiseAnalysisDto): string {
   return `Rendering-noise check: not available${why}`;
 }
 
-interface Waiting {
-  computedAt: string | null;
-  seenPending: boolean;
-}
-
-const computedAtOf = (analysis: NoiseHintPanelProps["analysis"]) =>
-  analysis && "computedAt" in analysis ? analysis.computedAt : null;
-
 export const NoiseHintPanel = ({
   runId,
   analysis,
@@ -57,35 +49,18 @@ export const NoiseHintPanel = ({
   onStageChange,
 }: NoiseHintPanelProps) => {
   const { enqueueSnackbar } = useDialogSnackbar();
-  const { analyse: analyseRuns } = useAnalyseNoise(enqueueSnackbar);
-  const [waitingFor, setWaitingFor] = useState<Waiting>();
+  const { analyse, requesting } = useAnalyseNoise(enqueueSnackbar);
 
   const result = isNoiseResult(analysis) ? analysis : null;
   const pending = isNoisePending(analysis);
-  if (waitingFor && pending && !waitingFor.seenPending) {
-    setWaitingFor({ ...waitingFor, seenPending: true });
-  }
-  const analysing =
-    pending ||
-    (!!waitingFor &&
-      !waitingFor.seenPending &&
-      waitingFor.computedAt === computedAtOf(analysis));
-
-  const analyse = () => {
-    setWaitingFor({ computedAt: computedAtOf(analysis), seenPending: false });
-    void analyseRuns([runId]).then((queued) => {
-      if (!queued) {
-        setWaitingFor(undefined);
-      }
-    });
-  };
+  const analysing = pending || requesting;
 
   const analyseButton = (label: string) => (
     <Button
       size="small"
       variant="outlined"
       data-testid="analyse-noise-run-button"
-      onClick={analyse}
+      onClick={() => void analyse([runId])}
     >
       {label}
     </Button>
@@ -93,7 +68,7 @@ export const NoiseHintPanel = ({
 
   let body;
   if (analysing) {
-    body = <Typography variant="body2">Analysing…</Typography>;
+    body = <Typography variant="body2">{`${ANALYSING}…`}</Typography>;
   } else if (!result) {
     body = (
       <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>

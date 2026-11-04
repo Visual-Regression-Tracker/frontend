@@ -1,51 +1,90 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import type { EnqueueSnackbar } from "notistack";
 import { testRunService } from "../services";
-import { isNoisePending } from "../_helpers/noiseHint.helper";
-import type { NoiseAnalysisSkip } from "../types";
+import type { NoiseAnalysisSkip, TestRun } from "../types";
 import { useTestRunState } from "./testRun.context";
 
 const PENDING_EVENT_WAIT_MS = 3000;
 
 const QUEUE_FULL = "queue full";
 
+type Snapshot = Map<string, TestRun["noiseAnalysis"]>;
+
 const skipMessage = ({ reason }: NoiseAnalysisSkip) =>
   reason === QUEUE_FULL
     ? "Queue is full, try again in a minute"
     : `Not analysed: ${reason}`;
 
+const snapshotOf = (
+  ids: string[],
+  testRuns: TestRun[],
+  selectedTestRun?: TestRun,
+): Snapshot => {
+  const wanted = new Set(ids);
+  const snapshot = new Map<string, TestRun["noiseAnalysis"]>();
+  for (const run of testRuns) {
+    if (wanted.has(run.id)) {
+      snapshot.set(run.id, run.noiseAnalysis);
+    }
+  }
+  if (selectedTestRun && wanted.has(selectedTestRun.id)) {
+    snapshot.set(selectedTestRun.id, selectedTestRun.noiseAnalysis);
+  }
+  return snapshot;
+};
+
+const allChanged = (
+  awaiting: Snapshot,
+  testRuns: TestRun[],
+  selectedTestRun?: TestRun,
+): boolean => {
+  let seen = false;
+  if (selectedTestRun && awaiting.has(selectedTestRun.id)) {
+    if (selectedTestRun.noiseAnalysis === awaiting.get(selectedTestRun.id)) {
+      return false;
+    }
+    seen = true;
+  }
+  for (const run of testRuns) {
+    if (run.id === selectedTestRun?.id || !awaiting.has(run.id)) {
+      continue;
+    }
+    if (run.noiseAnalysis === awaiting.get(run.id)) {
+      return false;
+    }
+    seen = true;
+  }
+  return seen;
+};
+
 export const useAnalyseNoise = (enqueue: EnqueueSnackbar) => {
   const { testRuns, selectedTestRun } = useTestRunState();
   const [posting, setPosting] = useState(false);
-  const [awaiting, setAwaiting] = useState<string[]>([]);
+  const [awaiting, setAwaiting] = useState<Snapshot>();
 
-  const shownPending = useMemo(() => {
-    if (awaiting.length === 0) {
-      return false;
-    }
-    const wanted = new Set(awaiting);
-    const seen = (
-      selectedTestRun ? [...testRuns, selectedTestRun] : testRuns
-    ).filter((run) => wanted.has(run.id));
-    return (
-      seen.length > 0 && seen.every((run) => isNoisePending(run.noiseAnalysis))
-    );
-  }, [awaiting, testRuns, selectedTestRun]);
+  const settled = useMemo(
+    () => !!awaiting && allChanged(awaiting, testRuns, selectedTestRun),
+    [awaiting, testRuns, selectedTestRun],
+  );
 
-  if (shownPending) {
-    setAwaiting([]);
+  if (settled) {
+    setAwaiting(undefined);
   }
 
   useEffect(() => {
-    if (awaiting.length === 0) {
+    if (!awaiting) {
       return;
     }
-    const timer = setTimeout(() => setAwaiting([]), PENDING_EVENT_WAIT_MS);
+    const timer = setTimeout(
+      () => setAwaiting(undefined),
+      PENDING_EVENT_WAIT_MS,
+    );
     return () => clearTimeout(timer);
   }, [awaiting]);
 
   const analyse = useCallback(
-    async (ids: string[]): Promise<boolean> => {
+    async (ids: string[]) => {
+      const before = snapshotOf(ids, testRuns, selectedTestRun);
       setPosting(true);
       try {
         const { queued, skipped } = await testRunService.analyseNoise(ids);
@@ -57,19 +96,20 @@ export const useAnalyseNoise = (enqueue: EnqueueSnackbar) => {
           enqueue(skipMessage(warning), { variant: "warning" });
         }
         if (queued > 0) {
-          const notQueued = new Set(skipped.map(({ id }) => id));
-          setAwaiting(ids.filter((id) => !notQueued.has(id)));
+          for (const { id } of skipped) {
+            before.delete(id);
+          }
+          setAwaiting(before.size > 0 ? before : undefined);
         }
-        return queued > 0;
       } catch (err) {
         enqueue(String(err), { variant: "error" });
-        return false;
       } finally {
         setPosting(false);
       }
     },
-    [enqueue],
+    [enqueue, testRuns, selectedTestRun],
   );
 
-  return { analyse, requesting: posting || awaiting.length > 0 };
+  const requesting = posting || (!!awaiting && !settled);
+  return useMemo(() => ({ analyse, requesting }), [analyse, requesting]);
 };
