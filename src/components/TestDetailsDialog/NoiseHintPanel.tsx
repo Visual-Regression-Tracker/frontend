@@ -20,7 +20,7 @@ import {
   VERDICT_TEXT,
 } from "../../_helpers/noiseText.helper";
 import type { NoiseAnalysisDto } from "../../types";
-import { useAnalyseNoise } from "../TestRunList/useAnalyseNoise";
+import { useAnalyseNoise } from "../../contexts/useAnalyseNoise";
 import { useDialogSnackbar } from "./useDialogSnackbar";
 
 interface NoiseHintPanelProps {

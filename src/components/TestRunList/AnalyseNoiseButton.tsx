@@ -3,7 +3,7 @@ import { Button } from "@mui/material";
 import { useSnackbar } from "notistack";
 import { TestRun, TestStatus } from "../../types";
 import { noiseHintOf } from "../../_helpers/noiseHint.helper";
-import { useAnalyseNoise } from "./useAnalyseNoise";
+import { useAnalyseNoise } from "../../contexts/useAnalyseNoise";
 
 export const AnalyseNoiseButton = ({ runs }: { runs: TestRun[] }) => {
   const { enqueueSnackbar } = useSnackbar();
