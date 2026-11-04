@@ -19,7 +19,6 @@ import {
   useProjectState,
   useTestRunDispatch,
 } from "../contexts";
-import { ImageComparison } from "../types/imageComparison";
 import { TestRun, TestStatus } from "../types";
 import { NoiseBanner } from "./NoiseBanner";
 
@@ -48,12 +47,9 @@ const banner = () => screen.queryByTestId("noise-banner");
 const renderBanner = async ({
   summary = () => Promise.resolve(NOISE_SUMMARY),
   runs = [] as TestRun[],
-  project = {},
   buildId = TEST_BUILD_UNRESOLVED.id,
 } = {}) => {
-  vi.spyOn(projectsService, "getAll").mockResolvedValue([
-    { ...TEST_PROJECT, ...project },
-  ]);
+  vi.spyOn(projectsService, "getAll").mockResolvedValue([TEST_PROJECT]);
   vi.spyOn(buildsService, "getDetails").mockImplementation((id) =>
     Promise.resolve({ ...TEST_BUILD_UNRESOLVED, id }),
   );
@@ -126,29 +122,18 @@ describe("NoiseBanner", () => {
     expect(screen.queryAllByRole("alert")).toHaveLength(0);
   });
 
-  it("does not ask while the analysis is off in the project", async () => {
-    const { getNoiseSummary } = await renderBanner({
-      project: { imageComparison: ImageComparison.vlm },
-    });
-
-    await act(() => Promise.resolve());
-    expect(getNoiseSummary).not.toHaveBeenCalled();
-    expect(banner()).not.toBeInTheDocument();
-  });
-
-  it("asks again when the pending runs are done, not before", async () => {
+  it("waits for the pending runs to finish before it asks", async () => {
     const { user, getNoiseSummary } = await renderBanner({
       runs: [pendingRun],
     });
-    await screen.findByTestId("noise-banner");
-    expect(getNoiseSummary).toHaveBeenCalledTimes(1);
+    await act(() => Promise.resolve());
+    expect(getNoiseSummary).not.toHaveBeenCalled();
 
-    getNoiseSummary.mockResolvedValue({ ...NOISE_SUMMARY, noiseLike: 1 });
     await user.click(screen.getByRole("button", { name: "Deliver" }));
 
-    await waitFor(() => expect(getNoiseSummary).toHaveBeenCalledTimes(2));
+    await waitFor(() => expect(getNoiseSummary).toHaveBeenCalledTimes(1));
     expect(getNoiseSummary).toHaveBeenLastCalledWith(TEST_BUILD_UNRESOLVED.id);
-    await waitFor(() => expect(banner()).not.toBeInTheDocument());
+    expect(await screen.findByTestId("noise-banner")).toBeInTheDocument();
   });
 
   it("does not ask again on a run update that leaves nothing pending", async () => {

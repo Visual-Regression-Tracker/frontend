@@ -22,9 +22,11 @@ import {
 declare module "@mui/material/styles" {
   interface Palette {
     hint: PaletteColor;
+    infoWash: string;
   }
   interface PaletteOptions {
     hint?: PaletteColorOptions;
+    infoWash?: string;
   }
 }
 
@@ -35,6 +37,8 @@ declare module "@mui/material/Chip" {
 }
 
 const STATUS_COLORS = ["success", "warning", "error", "info"] as const;
+
+const INFO_WASH = alpha(status.light.info, 0.12);
 
 // in dark mode what floats sits one step lighter than the panels, as a shadow sets it apart in light
 const elevatedInDark = ({ theme }: { theme: Theme }) =>
@@ -56,6 +60,7 @@ export const theme = createTheme({
         error: { main: status.light.error },
         info: { main: status.light.info },
         hint: { main: hint.light.neutral },
+        infoWash: INFO_WASH,
         background: {
           default: surface.light.default,
           paper: surface.light.paper,
@@ -76,6 +81,7 @@ export const theme = createTheme({
         error: { main: status.dark.error },
         info: { main: status.dark.info },
         hint: { main: hint.dark.neutral },
+        infoWash: INFO_WASH,
         background: {
           default: surface.dark.default,
           paper: surface.dark.paper,

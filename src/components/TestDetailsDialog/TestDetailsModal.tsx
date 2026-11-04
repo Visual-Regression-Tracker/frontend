@@ -14,7 +14,7 @@ import { staticService } from "../../services";
 import { OpenInNew } from "@mui/icons-material";
 import useImage from "use-image";
 import { routes } from "../../constants";
-import { useSelectedProject } from "../../contexts";
+import { useNoiseAnalysisAvailable, useSelectedProject } from "../../contexts";
 import { imageSizesDiffer } from "../../_helpers/testRunImage.helper";
 import { DrawArea, ImageStateLoad } from "./DrawArea";
 import {
@@ -33,7 +33,6 @@ import { TestRunInfoBar } from "./TestRunInfoBar";
 import { useIgnoreAreas } from "./useIgnoreAreas";
 import { useDialogSnackbar } from "./useDialogSnackbar";
 import { useStageView } from "./useStageView";
-import { noiseAnalysisAvailable } from "../../_helpers/noiseHint.helper";
 import { useNoiseHint } from "./useNoiseHint";
 import { NoiseHintPanel } from "./NoiseHintPanel";
 
@@ -89,8 +88,9 @@ const TestDetailsModal = ({
   // one instance, so a toast replaces the last one whichever part of the dialog raised it
   const { enqueueSnackbar } = useDialogSnackbar();
   const areas = useIgnoreAreas(testRun, currentImage, enqueueSnackbar);
+  const noiseAvailable = useNoiseAnalysisAvailable();
   const showNoiseHint =
-    testRun.status === TestStatus.unresolved && noiseAnalysisAvailable(project);
+    testRun.status === TestStatus.unresolved && noiseAvailable;
   const noiseHint = useNoiseHint(testRun, showNoiseHint);
   const stage = useStageView(
     [currentImage, currentImageStatus],

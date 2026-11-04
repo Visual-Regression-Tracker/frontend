@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { screen } from "@testing-library/react";
+import { act, screen } from "@testing-library/react";
 import { renderWithProviders } from "../_test/render";
 import { SeedTestRuns } from "../_test/SeedTestRuns";
 import {
@@ -47,9 +47,9 @@ const renderDetails = async (runs: TestRun[], project = {}, extra = <></>) => {
   vi.spyOn(buildsService, "getDetails").mockResolvedValue(
     TEST_BUILD_UNRESOLVED,
   );
-  vi.spyOn(buildsService, "getNoiseSummary").mockRejectedValue(
-    new Error("no summary"),
-  );
+  const getNoiseSummary = vi
+    .spyOn(buildsService, "getNoiseSummary")
+    .mockRejectedValue(new Error("no summary"));
   const rendered = renderWithProviders(
     <>
       <SeedTestRuns testRuns={runs} />
@@ -61,7 +61,7 @@ const renderDetails = async (runs: TestRun[], project = {}, extra = <></>) => {
   );
   await screen.findByTestId("project-ready");
   await screen.findByText("#3");
-  return rendered;
+  return { ...rendered, getNoiseSummary };
 };
 
 const CAPTION = /unresolved look like rendering noise/;
@@ -117,5 +117,15 @@ describe("BuildDetails noise caption", () => {
     });
 
     expect(screen.queryByText(CAPTION)).not.toBeInTheDocument();
+  });
+
+  it("does not ask for the build summary when the analysis is off in the project", async () => {
+    const { getNoiseSummary } = await renderDetails(
+      [unresolved("a", NOISE_ANALYSIS_NOISE)],
+      { imageComparison: ImageComparison.vlm },
+    );
+
+    await act(() => Promise.resolve());
+    expect(getNoiseSummary).not.toHaveBeenCalled();
   });
 });

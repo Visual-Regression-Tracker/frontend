@@ -4,6 +4,7 @@ import {
   useTestRunState,
   useTestRunDispatch,
   useBuildState,
+  useNoiseAnalysisAvailable,
   useSelectedProject,
 } from "../../contexts";
 import { useSnackbar } from "notistack";
@@ -20,7 +21,6 @@ import { useTestRunFilters } from "./useTestRunFilters";
 import { useTestRunSelection } from "./useTestRunSelection";
 import { TagField } from "../../types";
 import type { TestRunSort } from "../../types/testRunSort";
-import { noiseAnalysisAvailable } from "../../_helpers/noiseHint.helper";
 import { comparatorFor, sortOfModel } from "../../_helpers/testRunSort.helper";
 import { testRunService } from "../../services";
 import { useNavigate } from "react-router-dom";
@@ -53,7 +53,7 @@ const TestRunList = () => {
   ]);
 
   const selectedProject = useSelectedProject();
-  const noiseHintAvailable = noiseAnalysisAvailable(selectedProject);
+  const noiseHintAvailable = useNoiseAnalysisAvailable();
   const { filteredRows, toggleTag, ...filters } = useTestRunFilters(
     testRuns,
     noiseHintAvailable,

@@ -1,40 +1,26 @@
-import { useEffect, useRef, useState } from "react";
-import { Alert, alpha } from "@mui/material";
+import { useEffect, useMemo, useState } from "react";
+import { Alert } from "@mui/material";
 import { buildsService } from "../services";
-import {
-  useBuildState,
-  useSelectedProject,
-  useTestRunState,
-} from "../contexts";
-import {
-  noiseAnalysisAvailable,
-  noiseHintOf,
-} from "../_helpers/noiseHint.helper";
+import { useBuildState, useTestRunState } from "../contexts";
+import { noiseHintOf } from "../_helpers/noiseHint.helper";
 import { rendererChangeText } from "../_helpers/noiseSummary.helper";
 import type { NoiseSummary } from "../types/noiseAnalysis";
 
 export const NoiseBanner = () => {
   const { selectedBuild } = useBuildState();
   const { testRuns } = useTestRunState();
-  const available = noiseAnalysisAvailable(useSelectedProject());
   const buildId = selectedBuild?.id;
-  const pending = testRuns.some((run) => noiseHintOf(run) === "pending");
+  const pending = useMemo(
+    () => testRuns.some((run) => noiseHintOf(run) === "pending"),
+    [testRuns],
+  );
   const [loaded, setLoaded] = useState<{
     buildId: string;
     summary: NoiseSummary;
   }>();
-  const [revision, setRevision] = useState(0);
-  const wasPending = useRef(false);
 
   useEffect(() => {
-    if (wasPending.current && !pending) {
-      setRevision((current) => current + 1);
-    }
-    wasPending.current = pending;
-  }, [pending]);
-
-  useEffect(() => {
-    if (!buildId || !available) {
+    if (!buildId || pending) {
       return;
     }
     let ignore = false;
@@ -49,9 +35,9 @@ export const NoiseBanner = () => {
     return () => {
       ignore = true;
     };
-  }, [buildId, available, revision]);
+  }, [buildId, pending]);
 
-  const current = available && loaded?.buildId === buildId ? loaded : undefined;
+  const current = loaded?.buildId === buildId ? loaded : undefined;
   const text = current ? rendererChangeText(current.summary) : null;
   if (!text) {
     return null;
@@ -61,9 +47,7 @@ export const NoiseBanner = () => {
     <Alert
       severity="info"
       data-testid="noise-banner"
-      sx={(theme) => ({
-        backgroundColor: alpha(theme.palette.info.main, 0.12),
-      })}
+      sx={(theme) => ({ backgroundColor: theme.palette.infoWash })}
     >
       {text}
     </Alert>
