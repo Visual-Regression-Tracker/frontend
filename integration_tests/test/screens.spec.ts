@@ -309,37 +309,6 @@ const VIEWS: [name: string, body: Body][] = [
   ],
 
   [
-    "edit project dialog with the rendering-noise filter on",
-    async ({ projectListPage, shot }) => {
-      await projectListPage.editBtn.click();
-      await projectListPage.noiseFilter.check();
-      // blur: the focused switch keeps its tooltip open
-      await projectListPage.dialog.getByRole("heading").first().click();
-      await projectListPage.noiseFilter.scrollIntoViewIfNeeded();
-
-      await expect(projectListPage.noiseFilter).toBeChecked();
-      await expect(projectListPage.page.getByRole("tooltip")).toHaveCount(0);
-      await shot("edit-project-noise-filter");
-    },
-  ],
-
-  [
-    "edit project dialog on a server without DINOv2",
-    async ({ projectListPage, shot }) => {
-      await mockDinov2Status(projectListPage.page, {
-        configured: false,
-        available: false,
-      });
-      await projectListPage.editBtn.click();
-      await projectListPage.noiseStatus.scrollIntoViewIfNeeded();
-
-      await expect(projectListPage.noiseFilter).toBeDisabled();
-      await expect(projectListPage.page.getByRole("tooltip")).toHaveCount(0);
-      await shot("edit-project-no-dinov2");
-    },
-  ],
-
-  [
     "delete project confirmation",
     async ({ projectListPage, shot }) => {
       await projectListPage.deleteBtn.click();

@@ -18,9 +18,6 @@ export class ProjectListPage extends BasePage {
     name: "Image comparison library",
   });
 
-  noiseFilter = this.dialog.getByLabel("Ignore rendering noise");
-  noiseStatus = this.dialog.locator("#renderingNoiseStatus");
-
   vlmProvider = this.dialog.getByRole("combobox", { name: "VLM Provider" });
   ollamaModel = this.dialog.getByRole("combobox", { name: "Model" });
   ollamaModelText = this.dialog.getByRole("textbox", {

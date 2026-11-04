@@ -4,7 +4,6 @@ import { ValidatedTextField } from "../ValidatedForm";
 import { PixelmatchConfig } from "../../types/imageComparison";
 import { Tooltip } from "../Tooltip";
 import { useConfigHook } from "./useConfigHook";
-import { RenderingNoiseField } from "./RenderingNoiseField";
 import { UNIT_RANGE, UNIT_RANGE_RULES } from "./rules";
 
 export const PixelmatchConfigForm = () => {
@@ -61,7 +60,6 @@ export const PixelmatchConfigForm = () => {
           updateConfig("threshold", parseFloat(value));
         }}
       />
-      <RenderingNoiseField />
     </Fragment>
   );
 };

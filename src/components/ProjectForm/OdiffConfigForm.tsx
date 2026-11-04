@@ -3,7 +3,6 @@ import { type ChangeEvent, Fragment } from "react";
 import { ValidatedTextField } from "../ValidatedForm";
 import { OdiffConfig } from "../../types/imageComparison";
 import { useConfigHook } from "./useConfigHook";
-import { RenderingNoiseField } from "./RenderingNoiseField";
 import { UNIT_RANGE, UNIT_RANGE_RULES } from "./rules";
 
 export const OdiffConfigForm = () => {
@@ -68,7 +67,6 @@ export const OdiffConfigForm = () => {
           updateConfig("threshold", parseFloat(value));
         }}
       />
-      <RenderingNoiseField />
     </Fragment>
   );
 };

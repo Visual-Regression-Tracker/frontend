@@ -1,25 +1,19 @@
-import { expect, Page, Request } from "@playwright/test";
+import { expect, Page } from "@playwright/test";
 import { test } from "fixtures";
 import { TEST_PROJECT } from "~client/_test/test.data.helper";
-import {
-  LOOKSSAME_DEFAULT_CONFIG,
-  ODIFF_DEFAULT_CONFIG,
-  PIXELMATCH_DEFAULT_CONFIG,
-} from "~client/constants/project";
+import { ODIFF_DEFAULT_CONFIG } from "~client/constants/project";
 import { ImageComparison } from "~client/types/imageComparison";
 import { ProjectListPage } from "pages";
-import type { Project, ProjectDto } from "~client/types";
+import type { Project } from "~client/types";
 import {
   API_URL,
   mockDeleteProject,
-  mockDinov2Status,
   mockGetBuilds,
   mockGetFavoriteProjects,
   mockGetProjects,
   mockSaveProject,
   mockToggleFavoriteProject,
 } from "utils/mocks";
-import { postData } from "utils/postData";
 import { waitForPage } from "utils/waitForPage";
 
 const project = TEST_PROJECT;
@@ -306,147 +300,5 @@ test.describe("favourites and search", () => {
     expect(
       await page.evaluate(() => (window as unknown as { kept?: boolean }).kept),
     ).toBe(true);
-  });
-});
-
-const savedConfig = (request: Request): unknown =>
-  JSON.parse(postData<ProjectDto>(request).imageComparisonConfig);
-
-const waitForSave = (page: Page, method: "POST" | "PUT") =>
-  page.waitForRequest(
-    (request) =>
-      request.url() === `${API_URL}/projects` && request.method() === method,
-  );
-
-test.describe("rendering-noise filter", () => {
-  test.beforeEach(async ({ page }) => {
-    await mockDinov2Status(page, { configured: true, available: true });
-  });
-
-  test("creates a project with the filter on", async ({
-    projectListPage,
-    page,
-  }) => {
-    await mockSaveProject(page);
-
-    await projectListPage.addBtn.click();
-    await projectListPage.name.fill("New project");
-    await projectListPage.mainBranch.fill("main");
-    await projectListPage.selectImageComparison(ImageComparison.lookSame);
-    await projectListPage.noiseFilter.check();
-
-    const [request] = await Promise.all([
-      waitForSave(page, "POST"),
-      projectListPage.modal.confirmBtn.click(),
-    ]);
-
-    expect(savedConfig(request)).toEqual({
-      ...JSON.parse(LOOKSSAME_DEFAULT_CONFIG),
-      ignoreRenderingNoise: true,
-    });
-  });
-
-  test("keeps the filter when the library changes", async ({
-    projectListPage,
-    page,
-  }) => {
-    await mockSaveProject(page);
-
-    await projectListPage.addBtn.click();
-    await projectListPage.name.fill("New project");
-    await projectListPage.mainBranch.fill("main");
-    await projectListPage.noiseFilter.check();
-    await projectListPage.selectImageComparison(ImageComparison.odiff);
-
-    await expect(projectListPage.noiseFilter).toBeChecked();
-    const [request] = await Promise.all([
-      waitForSave(page, "POST"),
-      projectListPage.modal.confirmBtn.click(),
-    ]);
-    expect(savedConfig(request)).toEqual({
-      ...JSON.parse(ODIFF_DEFAULT_CONFIG),
-      ignoreRenderingNoise: true,
-    });
-  });
-
-  test("keeps the filter when the VLM provider changes", async ({
-    projectListPage,
-  }) => {
-    await projectListPage.addBtn.click();
-    await projectListPage.selectImageComparison(ImageComparison.vlm);
-    await projectListPage.noiseFilter.check();
-
-    await projectListPage.selectVlmProvider("Google Gemini");
-
-    await expect(projectListPage.noiseFilter).toBeChecked();
-  });
-
-  test("turns the filter on for an existing project", async ({
-    projectListPage,
-    page,
-  }) => {
-    await mockSaveProject(page);
-
-    await projectListPage.editBtn.click();
-    await expect(projectListPage.noiseFilter).not.toBeChecked();
-    await projectListPage.noiseFilter.check();
-
-    const [request] = await Promise.all([
-      waitForSave(page, "PUT"),
-      projectListPage.modal.confirmBtn.click(),
-    ]);
-
-    expect(savedConfig(request)).toEqual({
-      ...JSON.parse(PIXELMATCH_DEFAULT_CONFIG),
-      ignoreRenderingNoise: true,
-    });
-  });
-
-  test("opens a project with the filter on as it was saved", async ({
-    projectListPage,
-    page,
-  }) => {
-    await mockGetProjects(page, [
-      {
-        ...project,
-        imageComparisonConfig: JSON.stringify({
-          ...JSON.parse(PIXELMATCH_DEFAULT_CONFIG),
-          ignoreRenderingNoise: true,
-        }),
-      },
-    ]);
-    await page.reload();
-
-    await projectListPage.editBtn.click();
-
-    await expect(projectListPage.noiseFilter).toBeChecked();
-  });
-
-  test("cannot be turned on where the server has no DINOv2 service", async ({
-    projectListPage,
-    page,
-  }) => {
-    await mockDinov2Status(page, { configured: false, available: false });
-
-    await projectListPage.editBtn.click();
-
-    await expect(projectListPage.noiseFilter).toBeDisabled();
-    await expect(projectListPage.noiseStatus).toHaveText(
-      "Not available: this server has no DINOv2 service (DINOV2_URL).",
-    );
-  });
-
-  test("warns when the DINOv2 service is set up but not answering", async ({
-    projectListPage,
-    page,
-  }) => {
-    await mockDinov2Status(page, { configured: true, available: false });
-
-    await projectListPage.editBtn.click();
-
-    await expect(projectListPage.noiseFilter).toBeEnabled();
-    await expect(projectListPage.noiseStatus).toContainText(
-      "The DINOv2 service is not answering right now",
-    );
   });
 });
