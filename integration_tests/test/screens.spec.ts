@@ -33,12 +33,20 @@ import {
   mockImage,
   mockMatchingVariations,
   mockDinov2Status,
+  mockNoiseSummary,
   mockOllamaModels,
   mockRegistrationEnabled,
   mockTestRun,
   mockUpdateTestRun,
 } from "utils/mocks";
 import { defined } from "utils/defined";
+import {
+  ANALYSED_RUNS,
+  NOISE_CART,
+  PENDING_SEARCH,
+  RENDERER_CHANGE_SUMMARY,
+  withNoiseRegions,
+} from "utils/noiseRuns";
 
 // "renders <view>" tests write <view>-<scheme>.png: `-g renders` updates the baselines
 
@@ -145,6 +153,21 @@ const WITHOUT_AREAS: TestRun = {
   ...TEST_UNRESOLVED,
   ignoreAreas: "[]",
   tempIgnoreAreas: "[]",
+};
+
+const HINTED_RUNS = [
+  ...ANALYSED_RUNS,
+  PENDING_SEARCH,
+  TEST_RUN_APPROVED,
+  TEST_RUN_NEW,
+];
+
+const mockHintedRuns = async (page: Page) => {
+  await mockGetTestRuns(page, build.id, HINTED_RUNS);
+  for (const run of HINTED_RUNS) {
+    await mockTestRun(page, run);
+  }
+  await mockNoiseSummary(page, build.id, RENDERER_CHANGE_SUMMARY);
 };
 
 const mockImages = async (page: Page) => {
@@ -376,6 +399,36 @@ const VIEWS: [name: string, body: Body][] = [
   ],
 
   [
+    "project page with noise hints",
+    async ({ openProjectPage, page, shot }) => {
+      await mockHintedRuns(page);
+      // taller: the pending run is the fifth row
+      await page.setViewportSize({ width: 1280, height: 1000 });
+      const projectPage = await openProjectPage(project.id, build.id);
+
+      await expect(projectPage.testRunList.noiseChips).toHaveCount(5);
+      await expect(projectPage.testRunList.analyseNoiseBtn).toBeVisible();
+      await expect(projectPage.noiseCaption).toBeVisible();
+      await expect(projectPage.noiseBanner).toBeVisible();
+      await shot("project-page-noise-hints");
+    },
+  ],
+
+  [
+    "project page with the noise hint filter open",
+    async ({ openProjectPage, page, shot }) => {
+      await mockHintedRuns(page);
+      const projectPage = await openProjectPage(project.id, build.id);
+      await expect(projectPage.testRunList.noiseChips).toHaveCount(5);
+
+      await projectPage.testRunFilters.noiseHint.click();
+
+      await expect(projectPage.testRunFilters.noiseHintOptions).toHaveCount(3);
+      await shot("project-page-noise-filter");
+    },
+  ],
+
+  [
     "project page as a grid",
     async ({ openProjectPage, shot }) => {
       const projectPage = await openProjectPage(project.id, build.id);
@@ -465,6 +518,27 @@ const VIEWS: [name: string, body: Body][] = [
       await expect(details.drawAreas).toHaveCount(2);
       await expect(details.toggleDiff).toBeChecked();
       await shot("test-run-details");
+    },
+  ],
+
+  [
+    "test run details with a noise hint",
+    async ({ openProjectPage, page, shot }) => {
+      await mockGetTestRuns(page, build.id, [NOISE_CART, TEST_RUN_NEW]);
+      await mockTestRun(page, withNoiseRegions(NOISE_CART));
+      const { details } = await openProjectPage(
+        project.id,
+        build.id,
+        NOISE_CART.id,
+      );
+      await expect(details.drawAreas).toHaveCount(2);
+      await expect(details.noisePanel).toContainText("DINOv2: likely noise");
+
+      await details.hintBlur.click();
+
+      await expect(details.hintBlur).toHaveAttribute("aria-pressed", "true");
+      await expect.poll(() => details.lockedRects()).toHaveLength(2);
+      await shot("test-run-noise-hint");
     },
   ],
 

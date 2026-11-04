@@ -343,6 +343,13 @@ export const mockAnalyseNoise = (
   );
 };
 
+export const analysesNoise = (request: {
+  url: () => string;
+  method: () => string;
+}) =>
+  request.url() === `${API_URL}/test-runs/noise-analysis` &&
+  request.method() === "POST";
+
 export const mockNoiseSummary = (
   page: Page,
   buildId: string,

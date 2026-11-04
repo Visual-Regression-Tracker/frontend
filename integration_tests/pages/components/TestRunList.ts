@@ -26,6 +26,9 @@ export class TestRunList extends Table {
   nextPage = this.pane.getByLabel("Go to next page");
   pageSize = this.pane.getByLabel("Cards per page:");
 
+  noiseChips = this.pane.getByTestId("noise-hint-chip");
+  analyseNoiseBtn = this.pane.getByTestId("analyse-noise-button");
+
   rows = this.page.locator(".MuiDataGrid-row");
   rowNames = this.rows.locator("[data-field='name']");
   selectAllRows = this.page.getByRole("checkbox", {
@@ -38,6 +41,10 @@ export class TestRunList extends Table {
     .getByRole("button", { name: "Go to next page" });
   selectAll = this.page.getByTestId("gridSelectAll");
   selectionCount = this.page.getByTestId("gridSelectionCount");
+
+  noiseChip(rowId: string) {
+    return this.getColumn(rowId, "noise").getByTestId("noise-hint-chip");
+  }
 
   sortBy(field: "status" | "name" | "tags") {
     return this.page.getByTestId(`gridSort-${field}`).click();
