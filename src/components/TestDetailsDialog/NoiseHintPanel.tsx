@@ -42,6 +42,11 @@ function headline({ verdict, reason }: NoiseAnalysisDto): string {
   return `Rendering-noise check: not available${why}`;
 }
 
+interface Waiting {
+  computedAt: string | null;
+  seenPending: boolean;
+}
+
 const computedAtOf = (analysis: NoiseHintPanelProps["analysis"]) =>
   analysis && "computedAt" in analysis ? analysis.computedAt : null;
 
@@ -53,15 +58,21 @@ export const NoiseHintPanel = ({
 }: NoiseHintPanelProps) => {
   const { enqueueSnackbar } = useDialogSnackbar();
   const { analyse: analyseRuns } = useAnalyseNoise(enqueueSnackbar);
-  const [waitingFor, setWaitingFor] = useState<{ computedAt: string | null }>();
+  const [waitingFor, setWaitingFor] = useState<Waiting>();
 
   const result = isNoiseResult(analysis) ? analysis : null;
+  const pending = isNoisePending(analysis);
+  if (waitingFor && pending && !waitingFor.seenPending) {
+    setWaitingFor({ ...waitingFor, seenPending: true });
+  }
   const analysing =
-    isNoisePending(analysis) ||
-    (!!waitingFor && waitingFor.computedAt === computedAtOf(analysis));
+    pending ||
+    (!!waitingFor &&
+      !waitingFor.seenPending &&
+      waitingFor.computedAt === computedAtOf(analysis));
 
   const analyse = () => {
-    setWaitingFor({ computedAt: computedAtOf(analysis) });
+    setWaitingFor({ computedAt: computedAtOf(analysis), seenPending: false });
     void analyseRuns([runId]).then((queued) => {
       if (!queued) {
         setWaitingFor(undefined);

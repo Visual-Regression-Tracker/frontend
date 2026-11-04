@@ -76,6 +76,21 @@ describe("NoiseHintPanel", () => {
       ).toBeVisible();
     });
 
+    it("offers Analyse again when the backend clears the pending marker", async () => {
+      vi.spyOn(testRunService, "analyseNoise").mockResolvedValue({
+        queued: 1,
+        skipped: [],
+      });
+      const { user, show } = renderPanel();
+
+      await user.click(analyseButton());
+      show({ analysis: NOISE_ANALYSIS_PENDING });
+      show({ analysis: null });
+
+      expect(within(panel()).queryByText("analysing…")).toBeNull();
+      expect(analyseButton()).toHaveTextContent("Analyse");
+    });
+
     it("shows analysing for a pending run without a click", () => {
       renderPanel({ analysis: NOISE_ANALYSIS_PENDING });
 
