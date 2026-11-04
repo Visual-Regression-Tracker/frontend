@@ -1,7 +1,7 @@
 import { Chip } from "@mui/material";
 import BlurOnIcon from "@mui/icons-material/BlurOn";
-import { noiseHintOf } from "../../_helpers/noiseHint.helper";
-import { stagesText } from "../../_helpers/noiseText.helper";
+import { isNoiseResult, noiseHintOf } from "../../_helpers/noiseHint.helper";
+import { SHORT_LIMITATION, stagesText } from "../../_helpers/noiseText.helper";
 import { hintColor } from "../../theme";
 import { Tooltip } from "../Tooltip";
 import type { NoiseAnalysisDto, TestRun } from "../../types";
@@ -12,11 +12,8 @@ const LABELS = {
   pending: "analysing…",
 } as const;
 
-const TOOLTIP_LIMITATION =
-  "A hint, not a decision — it can call a one-digit or faint-border change noise";
-
 const tooltipFor = (analysis: NoiseAnalysisDto): string =>
-  `Rendering-noise check. ${stagesText(analysis)}. ${TOOLTIP_LIMITATION}`;
+  `Rendering-noise check. ${stagesText(analysis)}. ${SHORT_LIMITATION}`;
 
 export const NoiseHintChip = ({
   run,
@@ -43,7 +40,7 @@ export const NoiseHintChip = ({
   );
 
   const analysis = run.noiseAnalysis;
-  if (!analysis || !("version" in analysis)) {
+  if (!isNoiseResult(analysis)) {
     return chip;
   }
   return <Tooltip title={tooltipFor(analysis)}>{chip}</Tooltip>;

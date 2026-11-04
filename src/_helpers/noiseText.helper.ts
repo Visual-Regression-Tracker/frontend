@@ -6,8 +6,10 @@ export const VERDICT_TEXT: Record<NoiseVerdict, string> = {
   unknown: "no verdict",
 };
 
-export const LIMITATION =
-  "A hint, not a decision. It can call a small real change noise — a single digit, a dot, a faint border. Look at the highlighted areas before approving.";
+export const SHORT_LIMITATION =
+  "A hint, not a decision. It can call a small real change noise — a single digit, a dot, a faint border.";
+
+export const LIMITATION = `${SHORT_LIMITATION} Look at the highlighted areas before approving.`;
 
 const stageText = (verdict: NoiseVerdict, score: number) =>
   `${VERDICT_TEXT[verdict]} (${score.toFixed(2)})`;

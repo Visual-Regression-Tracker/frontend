@@ -13,7 +13,7 @@ import { TestStatus } from "../../types/testStatus";
 import { NoiseHintChip } from "./NoiseHintChip";
 
 const LIMITATION =
-  "A hint, not a decision — it can call a one-digit or faint-border change noise";
+  "A hint, not a decision. It can call a small real change noise — a single digit, a dot, a faint border.";
 
 const withAnalysis = (noiseAnalysis: unknown, status = TestStatus.unresolved) =>
   ({ ...TEST_UNRESOLVED, status, noiseAnalysis }) as TestRun;
