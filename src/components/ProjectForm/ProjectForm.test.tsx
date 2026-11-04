@@ -3,6 +3,7 @@ import { fireEvent, screen, waitFor, within } from "@testing-library/react";
 import { renderWithProviders } from "../../_test/render";
 import { dinov2Service, ollamaService } from "../../services";
 import {
+  DEFAULT_NOISE_ANALYSIS_CONFIG_JSON,
   LOOKSSAME_DEFAULT_CONFIG,
   ODIFF_DEFAULT_CONFIG,
   PIXELMATCH_DEFAULT_CONFIG,
@@ -28,6 +29,7 @@ const PROJECT: ProjectDto = {
   autoApproveFeature: true,
   imageComparison: ImageComparison.pixelmatch,
   imageComparisonConfig: PIXELMATCH_DEFAULT_CONFIG,
+  noiseAnalysisConfig: DEFAULT_NOISE_ANALYSIS_CONFIG_JSON,
   maxBuildAllowed: 100,
   maxBranchLifetime: 30,
   bulkApproveVariations: false,

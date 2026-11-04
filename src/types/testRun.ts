@@ -1,3 +1,4 @@
+import { NoiseAnalysisDto, NoiseAnalysisPending } from "./noiseAnalysis";
 import { TestStatus } from "./testStatus";
 
 export interface TestRun {
@@ -26,4 +27,5 @@ export interface TestRun {
   baselineBranchName: string;
   merge: boolean;
   vlmDescription?: string;
+  noiseAnalysis?: NoiseAnalysisDto | NoiseAnalysisPending | null;
 }

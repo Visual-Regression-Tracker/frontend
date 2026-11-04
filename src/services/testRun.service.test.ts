@@ -73,6 +73,25 @@ describe("testRunService", () => {
     },
   );
 
+  it("analyseNoise posts the ids to the noise-analysis route", async () => {
+    const fetchMock = stubFetch({ queued: 1, skipped: [] });
+
+    const result = await testRunService.analyseNoise(["t1", "t2"]);
+
+    expect(result).toEqual({ queued: 1, skipped: [] });
+    expect(fetchMock).toHaveBeenCalledWith(`${API}/test-runs/noise-analysis`, {
+      method: "POST",
+      headers: JSON_AUTH,
+      body: JSON.stringify({ ids: ["t1", "t2"] }),
+    });
+  });
+
+  it("analyseNoise rejects with the API message when the request fails", async () => {
+    stubFetch({ message: "Forbidden" }, { status: 403 });
+
+    await expect(testRunService.analyseNoise(["t1"])).rejects.toBe("Forbidden");
+  });
+
   describe("bulk results", () => {
     const bulkCalls: [string, () => Promise<unknown>][] = [
       ["removeBulk", () => testRunService.removeBulk(["t1", "t2"])],

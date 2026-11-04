@@ -1,4 +1,4 @@
-import { Build, PaginatedData } from "../types";
+import { Build, NoiseSummary, PaginatedData } from "../types";
 import { handleResponse, authHeader } from "../_helpers/service.helpers";
 import { API_URL } from "../_config/env.config";
 import { BuildDto } from "../types/dto/build.dto";
@@ -42,6 +42,18 @@ function getDetails(id: string): Promise<Build> {
   );
 }
 
+function getNoiseSummary(id: string): Promise<NoiseSummary> {
+  const requestOptions = {
+    method: "GET",
+    headers: authHeader(),
+  };
+
+  return fetch(
+    `${API_URL}${ENDPOINT_URL}/${id}/noise-summary`,
+    requestOptions,
+  ).then(handleResponse<NoiseSummary>);
+}
+
 function remove(id: string): Promise<Build> {
   const requestOptions = {
     method: "DELETE",
@@ -71,6 +83,7 @@ function update(id: string, body: BuildDto): Promise<Build> {
 export const buildsService = {
   getDetails,
   getList,
+  getNoiseSummary,
   remove,
   update,
 };

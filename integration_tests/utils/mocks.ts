@@ -1,6 +1,8 @@
 import { Page, Route } from "@playwright/test";
 import type {
   Build,
+  NoiseAnalysisQueued,
+  NoiseSummary,
   Project,
   ProjectDto,
   TestRun,
@@ -331,6 +333,25 @@ export const reverts = (request: { url: () => string; method: () => string }) =>
 
 export const revertDecision = (request: { url: () => string }) =>
   new URL(request.url()).searchParams.get("decision");
+
+export const mockAnalyseNoise = (
+  page: Page,
+  result: NoiseAnalysisQueued = { queued: 0, skipped: [] },
+) => {
+  return page.route(`${API_URL}/test-runs/noise-analysis`, (route) =>
+    route.fulfill({ json: result }),
+  );
+};
+
+export const mockNoiseSummary = (
+  page: Page,
+  buildId: string,
+  summary: NoiseSummary,
+) => {
+  return page.route(`${API_URL}/builds/${buildId}/noise-summary`, (route) =>
+    route.fulfill({ json: summary }),
+  );
+};
 
 export const mockMatchingVariations = (
   page: Page,
