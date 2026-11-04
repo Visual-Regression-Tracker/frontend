@@ -12,6 +12,7 @@ import {
   darkAccent,
   fontFamily,
   hint,
+  infoWash,
   radius,
   slate,
   status,
@@ -38,8 +39,6 @@ declare module "@mui/material/Chip" {
 
 const STATUS_COLORS = ["success", "warning", "error", "info"] as const;
 
-const INFO_WASH = alpha(status.light.info, 0.12);
-
 // in dark mode what floats sits one step lighter than the panels, as a shadow sets it apart in light
 const elevatedInDark = ({ theme }: { theme: Theme }) =>
   theme.applyStyles("dark", {
@@ -60,7 +59,7 @@ export const theme = createTheme({
         error: { main: status.light.error },
         info: { main: status.light.info },
         hint: { main: hint.light.neutral },
-        infoWash: INFO_WASH,
+        infoWash: infoWash.light,
         background: {
           default: surface.light.default,
           paper: surface.light.paper,
@@ -81,7 +80,7 @@ export const theme = createTheme({
         error: { main: status.dark.error },
         info: { main: status.dark.info },
         hint: { main: hint.dark.neutral },
-        infoWash: INFO_WASH,
+        infoWash: infoWash.dark,
         background: {
           default: surface.dark.default,
           paper: surface.dark.paper,

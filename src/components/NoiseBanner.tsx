@@ -47,7 +47,9 @@ export const NoiseBanner = () => {
     <Alert
       severity="info"
       data-testid="noise-banner"
-      sx={(theme) => ({ backgroundColor: theme.palette.infoWash })}
+      sx={(theme) => ({
+        backgroundColor: (theme.vars ?? theme).palette.infoWash,
+      })}
     >
       {text}
     </Alert>

@@ -59,6 +59,12 @@ export const status = {
   },
 } as const;
 
+// the scheme's own info colour at 12 % opacity, for banners
+export const infoWash = {
+  light: "rgba(29, 78, 216, 0.12)",
+  dark: "rgba(114, 180, 242, 0.12)",
+} as const;
+
 // the noise hint is advice, not a status, so its neutral is slate rather than a status hue
 export const hint = {
   light: { neutral: slate[600] },
