@@ -195,7 +195,7 @@ export const useTestRunFilters = (
     onNameChange: setName,
     onStatusesChange: setStatuses,
     onTagsChange: setTags,
-    onNoiseHintsChange: setNoiseHints,
+    onNoiseHintsChange: noiseHintAvailable ? setNoiseHints : undefined,
     onReset,
   };
 };

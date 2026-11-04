@@ -275,7 +275,7 @@ describe("useTestRunFilters by noise hint", () => {
   ] as const)("keeps the runs matching %s", (hint, expected) => {
     const { result } = renderFilters(HINTED);
 
-    act(() => result.current.onNoiseHintsChange([hint]));
+    act(() => result.current.onNoiseHintsChange?.([hint]));
 
     expect(ids(result.current.filteredRows)).toEqual(expected);
   });
@@ -284,7 +284,7 @@ describe("useTestRunFilters by noise hint", () => {
     const { result } = renderFilters(HINTED);
 
     act(() =>
-      result.current.onNoiseHintsChange(["Likely noise", "Likely change"]),
+      result.current.onNoiseHintsChange?.(["Likely noise", "Likely change"]),
     );
 
     expect(ids(result.current.filteredRows)).toEqual(["noise", "change"]);
@@ -294,7 +294,7 @@ describe("useTestRunFilters by noise hint", () => {
     const { result } = renderFilters(HINTED);
 
     act(() => {
-      result.current.onNoiseHintsChange(["Likely noise"]);
+      result.current.onNoiseHintsChange?.(["Likely noise"]);
       result.current.onStatusesChange([TestStatus.approved]);
     });
 
@@ -303,7 +303,7 @@ describe("useTestRunFilters by noise hint", () => {
 
   it("clears the hint on reset", () => {
     const { result } = renderFilters(HINTED);
-    act(() => result.current.onNoiseHintsChange(["Likely change"]));
+    act(() => result.current.onNoiseHintsChange?.(["Likely change"]));
 
     act(() => result.current.onReset());
 
@@ -316,7 +316,7 @@ describe("useTestRunFilters by noise hint", () => {
       ({ available }) => useTestRunFilters(HINTED, available),
       { initialProps: { available: true } },
     );
-    act(() => result.current.onNoiseHintsChange(["Likely change"]));
+    act(() => result.current.onNoiseHintsChange?.(["Likely change"]));
 
     rerender({ available: false });
 
@@ -326,5 +326,11 @@ describe("useTestRunFilters by noise hint", () => {
     rerender({ available: true });
 
     expect(ids(result.current.filteredRows)).toEqual(["change"]);
+  });
+
+  it("offers no way to pick a hint while the analysis is unavailable", () => {
+    const { result } = renderHook(() => useTestRunFilters(HINTED, false));
+
+    expect(result.current.onNoiseHintsChange).toBeUndefined();
   });
 });

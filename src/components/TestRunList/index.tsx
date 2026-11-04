@@ -232,9 +232,6 @@ const TestRunList = () => {
         <Box sx={{ paddingX: 2, paddingTop: 1, paddingBottom: 1 }}>
           <TestRunFilters
             {...filters}
-            onNoiseHintsChange={
-              noiseHintAvailable ? filters.onNoiseHintsChange : undefined
-            }
             action={
               noiseHintAvailable && <AnalyseNoiseButton runs={filteredRows} />
             }
