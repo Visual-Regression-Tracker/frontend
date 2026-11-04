@@ -9,12 +9,21 @@ import {
 } from "@mui/material";
 import { BuildStatusChip } from "./BuildStatusChip";
 import { formatDateTime } from "../_helpers/format.helper";
-import { useBuildState } from "../contexts";
+import {
+  useBuildState,
+  useSelectedProject,
+  useTestRunState,
+} from "../contexts";
+import { noiseAnalysisAvailable } from "../_helpers/noiseHint.helper";
+import { buildNoiseCaption } from "../_helpers/noiseSummary.helper";
+import { NoiseBanner } from "./NoiseBanner";
 import { LOCATOR_BUILD_DETAILS } from "../constants/help";
 import { Tooltip } from "./Tooltip";
 
 const BuildDetails = () => {
   const { selectedBuild } = useBuildState();
+  const { testRuns } = useTestRunState();
+  const available = noiseAnalysisAvailable(useSelectedProject());
   const buildNumber = useMemo(
     () => `#${selectedBuild?.number} ${selectedBuild?.ciBuildId || ""}`,
     [selectedBuild?.number, selectedBuild?.ciBuildId],
@@ -24,6 +33,7 @@ const BuildDetails = () => {
     return null;
   }
 
+  const noiseCaption = available ? buildNoiseCaption(testRuns) : null;
   const loadingAnimation = selectedBuild.isRunning && <LinearProgress />;
 
   return (
@@ -89,7 +99,13 @@ const BuildDetails = () => {
             <Typography variant="caption">{`${selectedBuild.passedCount} passed`}</Typography>
           </Grid>
         </Grid>
+        {noiseCaption && (
+          <Typography variant="caption" color="textSecondary">
+            {noiseCaption}
+          </Typography>
+        )}
       </Box>
+      <NoiseBanner />
       {loadingAnimation}
     </Stack>
   );
