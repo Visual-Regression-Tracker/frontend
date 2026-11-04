@@ -40,7 +40,7 @@ interface NumberFieldProps {
   label: string;
   helperText?: string;
   value: number | null;
-  step: number;
+  step: number | "any";
   rules: readonly Rule[];
   min?: number;
   max?: number;
@@ -126,7 +126,7 @@ export const PostAnalysisForm = () => {
         label="Amplitude threshold"
         helperText="Noise on our benchmark stays below 51"
         value={config.blur.amplitudeThreshold}
-        step={1}
+        step="any"
         rules={POSITIVE_RULES}
         disabled={stageOneOff}
         onChange={(value) => updateConfig("blur", "amplitudeThreshold", value)}
@@ -166,7 +166,7 @@ export const PostAnalysisForm = () => {
         name="dinov2DistanceThreshold"
         label="Distance threshold"
         value={config.dinov2.distanceThreshold}
-        step={0.01}
+        step="any"
         rules={POSITIVE_RULES}
         disabled={stageTwoOff}
         onChange={(value) => updateConfig("dinov2", "distanceThreshold", value)}

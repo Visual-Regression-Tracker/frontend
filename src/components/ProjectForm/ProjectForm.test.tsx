@@ -715,6 +715,27 @@ describe("ProjectForm", () => {
       expect(noiseConfig()).toEqual(expected);
     });
 
+    it("accepts thresholds between the steps of the arrows", async () => {
+      const onSubmit = submitSpy();
+      const { user } = await renderForm(PROJECT, onSubmit);
+      const amplitude = screen.getByLabelText(/^Amplitude threshold/);
+      const distance = screen.getByLabelText(/^Distance threshold/);
+
+      await replaceNumber(user, amplitude, "80.5");
+      await replaceNumber(user, distance, "0.125");
+      await user.click(screen.getByTestId("submitButton"));
+
+      expect(amplitude).toHaveAttribute("step", "any");
+      expect(distance).toHaveAttribute("step", "any");
+      await waitFor(() => expect(onSubmit).toHaveBeenCalledTimes(1));
+      expect(
+        JSON.parse(onSubmit.mock.calls[0][0].noiseAnalysisConfig),
+      ).toMatchObject({
+        blur: { amplitudeThreshold: 80.5 },
+        dinov2: { distanceThreshold: 0.125 },
+      });
+    });
+
     it("keeps the saved keys that are not part of the form", async () => {
       const { user } = await renderForm(
         withNoiseConfig({ ...DEFAULT_NOISE_ANALYSIS_CONFIG, future: 1 }),
