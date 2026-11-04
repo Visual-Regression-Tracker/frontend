@@ -1,4 +1,4 @@
-import { fireEvent, screen, within } from "@testing-library/react";
+import { fireEvent, screen, waitFor, within } from "@testing-library/react";
 import { Route, Routes } from "react-router-dom";
 import { renderWithProviders } from "../_test/render";
 import {
@@ -9,7 +9,12 @@ import {
   testRunMock,
 } from "../_test/test.data.helper";
 import { formatDateTime } from "../_helpers/format.helper";
-import { staticService, testVariationService } from "../services";
+import {
+  projectsService,
+  staticService,
+  testVariationService,
+} from "../services";
+import { ImageComparison } from "../types/imageComparison";
 import { TestStatus } from "../types/testStatus";
 import TestVariationDetailsPage from "./TestVariationDetailsPage";
 import { CurrentSearch, currentLocation } from "../_test/location";
@@ -124,10 +129,12 @@ describe("TestVariationDetailsPage", () => {
       ],
     };
     vi.spyOn(testVariationService, "getDetails").mockResolvedValue(noisy);
+    vi.spyOn(projectsService, "getAll").mockResolvedValue([TEST_PROJECT]);
 
     renderPage();
 
     await screen.findByRole("heading", { level: 2, name: /Baseline history/ });
+    await screen.findByTestId("noise-hint-chip");
     const [latest, older] = baselineCards();
     expect(
       within(latest).queryByTestId("noise-hint-chip"),
@@ -135,6 +142,29 @@ describe("TestVariationDetailsPage", () => {
     expect(within(older).getByTestId("noise-hint-chip")).toHaveTextContent(
       "Likely noise",
     );
+  });
+
+  test("leaves the noise hint out of the history for a project without the analysis", async () => {
+    vi.spyOn(testVariationService, "getDetails").mockResolvedValue({
+      ...VARIATION,
+      baselines: [
+        {
+          ...VARIATION.baselines[1],
+          testRun: { ...OLDER_RUN, noiseAnalysis: NOISE_ANALYSIS_NOISE },
+        },
+      ],
+    });
+    const projects = vi
+      .spyOn(projectsService, "getAll")
+      .mockResolvedValue([
+        { ...TEST_PROJECT, imageComparison: ImageComparison.vlm },
+      ]);
+
+    renderPage();
+
+    await screen.findByRole("heading", { level: 2, name: /Baseline history/ });
+    await waitFor(() => expect(projects).toHaveBeenCalled());
+    expect(screen.queryByTestId("noise-hint-chip")).not.toBeInTheDocument();
   });
 
   test("lists the baselines in the order the API gives them, each with its image", async () => {

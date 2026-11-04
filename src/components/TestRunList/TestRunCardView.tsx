@@ -148,6 +148,7 @@ export const TestRunCardView = ({
             showDiff={showDiff}
             activeTags={activeTags}
             tagFieldsFor={tagFieldsFor}
+            noiseAvailable={noiseAvailable}
             onToggleGroup={onToggleGroup}
             onToggleTag={onToggleTag}
             onOpen={onOpen}

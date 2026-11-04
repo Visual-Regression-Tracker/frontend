@@ -22,12 +22,18 @@ import { formatDateTime } from "../_helpers/format.helper";
 import TestStatusChip from "../components/TestStatusChip";
 import { NoiseHintChip } from "../components/TestRunList/NoiseHintChip";
 import { Baseline } from "../types/baseline";
+import { useProjectState } from "../contexts";
+import { noiseAnalysisAvailable } from "../_helpers/noiseHint.helper";
 
 const TestVariationDetailsPage = () => {
   const navigate = useNavigate();
   const { enqueueSnackbar } = useSnackbar();
   const { testVariationId } = useParams<{ testVariationId: string }>();
   const [testVariation, setTestVariation] = useState<TestVariation>();
+  const { projectList } = useProjectState();
+  const noiseAvailable = noiseAnalysisAvailable(
+    projectList.find((project) => project.id === testVariation?.projectId),
+  );
 
   useEffect(() => {
     if (testVariationId) {
@@ -97,7 +103,9 @@ const TestVariationDetailsPage = () => {
                   {baseline.testRun && (
                     <>
                       <TestStatusChip status={baseline.testRun.status} />
-                      <NoiseHintChip run={baseline.testRun} />
+                      {noiseAvailable && (
+                        <NoiseHintChip run={baseline.testRun} />
+                      )}
                     </>
                   )}
                   {baseline.user && (

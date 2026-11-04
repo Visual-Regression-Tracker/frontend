@@ -66,6 +66,7 @@ export const TestRunGrid = ({
   showDiff,
   activeTags,
   tagFieldsFor,
+  noiseAvailable,
   onToggleGroup,
   onToggleTag,
   onOpen,
@@ -76,6 +77,7 @@ export const TestRunGrid = ({
   showDiff: boolean;
   activeTags: string[];
   tagFieldsFor: (runCount: number) => TagField[];
+  noiseAvailable: boolean;
   onToggleGroup: (ids: string[]) => void;
   onToggleTag: (tag: string) => void;
   onOpen: (id: string) => void;
@@ -175,7 +177,7 @@ export const TestRunGrid = ({
             <Box component="span" title={groupStatusSummary(runs) || undefined}>
               <TestStatusChip status={representative.status} />
             </Box>
-            <NoiseHintChip run={representative} />
+            {noiseAvailable && <NoiseHintChip run={representative} />}
             {/* buttons so the keyboard reaches them */}
             <Typography
               variant="caption"

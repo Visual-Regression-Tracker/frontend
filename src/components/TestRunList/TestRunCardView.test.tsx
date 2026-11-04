@@ -87,6 +87,23 @@ describe("TestRunCardView", () => {
     expect(screen.getByTestId("groupCount")).toHaveTextContent("2");
   });
 
+  it("leaves the noise hint off the cards when the analysis is not available", () => {
+    renderCards(
+      propsFor(
+        [
+          run({
+            id: "u",
+            name: "Screen A",
+            noiseAnalysis: NOISE_ANALYSIS_CHANGE,
+          }),
+        ],
+        { noiseAvailable: false },
+      ),
+    );
+
+    expect(screen.queryByTestId("noise-hint-chip")).not.toBeInTheDocument();
+  });
+
   it("shows the noise hint of an unresolved run on its card", () => {
     renderCards(
       propsFor([
