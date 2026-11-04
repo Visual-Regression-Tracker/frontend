@@ -13,8 +13,8 @@ import {
   TEST_PROJECT,
   TEST_USER,
 } from "../_test/test.data.helper";
-import { projectsService } from "../services";
-import { Project } from "../types";
+import { dinov2Service, projectsService } from "../services";
+import { NoiseAnalysisConfig, Project } from "../types";
 import ProjectsListPage from "./ProjectListPage";
 
 const project = (id: string, name: string, mainBranchName = "master") => ({
@@ -263,6 +263,72 @@ describe("ProjectListPage", () => {
     await act(() => new Promise((resolve) => setTimeout(resolve, 50)));
 
     expect(create).toHaveBeenCalledTimes(1);
+  });
+
+  describe("saving the post-analysis settings", () => {
+    const stored = JSON.parse(
+      TEST_PROJECT.noiseAnalysisConfig,
+    ) as NoiseAnalysisConfig;
+
+    test.each([
+      [
+        "blur.enabled",
+        () => screen.getByLabelText(/^Blurred difference/),
+        undefined,
+        { ...stored, blur: { ...stored.blur, enabled: false } },
+      ],
+      [
+        "blur.amplitudeThreshold",
+        () => screen.getByLabelText(/^Amplitude threshold/),
+        "60",
+        { ...stored, blur: { ...stored.blur, amplitudeThreshold: 60 } },
+      ],
+      [
+        "blur.solidShareMax",
+        () => screen.getByLabelText(/^Solid share, max/),
+        "0.02",
+        { ...stored, blur: { ...stored.blur, solidShareMax: 0.02 } },
+      ],
+      [
+        "dinov2.enabled",
+        () => screen.getByLabelText(/^Asks the DINOv2 service/),
+        undefined,
+        { ...stored, dinov2: { ...stored.dinov2, enabled: false } },
+      ],
+      [
+        "dinov2.distanceThreshold",
+        () => screen.getByLabelText(/^Distance threshold/),
+        "0.3",
+        { ...stored, dinov2: { ...stored.dinov2, distanceThreshold: 0.3 } },
+      ],
+    ])("sends only %s changed", async (_key, field, typed, expected) => {
+      vi.spyOn(dinov2Service, "getStatus").mockResolvedValue({
+        configured: true,
+        available: true,
+      });
+      const update = vi
+        .spyOn(projectsService, "update")
+        .mockResolvedValue(ALPHA);
+      const { user } = await renderPage({ projects: [ALPHA] });
+      await user.click(screen.getByTestId("EditIcon"));
+      const dialog = screen.getByRole("dialog", { name: "Update Project" });
+
+      if (typed === undefined) {
+        await user.click(field());
+      } else {
+        await user.type(field(), typed, {
+          initialSelectionStart: 0,
+          initialSelectionEnd: (field() as HTMLInputElement).value.length,
+        });
+      }
+      await user.click(within(dialog).getByRole("button", { name: "Update" }));
+
+      await waitFor(() => expect(update).toHaveBeenCalledTimes(1));
+      expect(update).toHaveBeenCalledWith({
+        ...ALPHA,
+        noiseAnalysisConfig: JSON.stringify(expected),
+      });
+    });
   });
 
   describe("when the API refuses a change", () => {

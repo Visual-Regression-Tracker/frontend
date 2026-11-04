@@ -3,6 +3,7 @@ import { fireEvent, screen, waitFor, within } from "@testing-library/react";
 import { renderWithProviders } from "../../_test/render";
 import { dinov2Service, ollamaService } from "../../services";
 import {
+  DEFAULT_NOISE_ANALYSIS_CONFIG,
   DEFAULT_NOISE_ANALYSIS_CONFIG_JSON,
   LOOKSSAME_DEFAULT_CONFIG,
   ODIFF_DEFAULT_CONFIG,
@@ -14,7 +15,7 @@ import {
   useProjectDispatch,
   useProjectState,
 } from "../../contexts";
-import { ProjectDto } from "../../types";
+import { NoiseAnalysisConfig, ProjectDto } from "../../types";
 import { ImageComparison, VlmConfig } from "../../types/imageComparison";
 import { Button } from "@mui/material";
 import { ValidatedForm } from "../ValidatedForm";
@@ -563,6 +564,330 @@ describe("ProjectForm", () => {
         expect(onSubmit).not.toHaveBeenCalled();
       },
     );
+  });
+
+  describe("post-analysis", () => {
+    const BLUR_SWITCH = /^Blurred difference and change density/;
+    const DINOV2_SWITCH = /^Asks the DINOv2 service about patches/;
+    const noiseConfig = () =>
+      JSON.parse(editState().noiseAnalysisConfig) as NoiseAnalysisConfig;
+    const withNoiseConfig = (config: object): ProjectDto => ({
+      ...PROJECT,
+      noiseAnalysisConfig: JSON.stringify(config),
+    });
+    const serverHas = (configured: boolean, available = configured) =>
+      vi
+        .spyOn(dinov2Service, "getStatus")
+        .mockResolvedValue({ configured, available });
+
+    it("shows the stages with their texts and the saved thresholds", async () => {
+      await renderForm(
+        withNoiseConfig({
+          blur: { enabled: true, amplitudeThreshold: 60, solidShareMax: 0.02 },
+          dinov2: { enabled: false, distanceThreshold: 0.2 },
+        }),
+      );
+
+      expect(
+        screen.getByRole("heading", { name: "Post-analysis" }),
+      ).toBeVisible();
+      expect(
+        screen.getByText(
+          "Rendering-noise check — on request, marks unresolved runs that look like rendering noise. A hint, it never approves anything",
+        ),
+      ).toBeVisible();
+      expect(screen.getByText("Stage 1 · Blur")).toBeVisible();
+      expect(screen.getByText("Stage 2 · DINOv2 second look")).toBeVisible();
+      expect(
+        screen.getByLabelText(
+          "Blurred difference and change density. Cheap, runs on this server. Catches 92 of 120 bugs on our benchmark with the default thresholds, 0 false alarms",
+        ),
+      ).toBeChecked();
+      expect(
+        screen.getByLabelText(
+          "Asks the DINOv2 service about patches the blur calls noise. Catches faint icons and borders, 102 of 120 together",
+        ),
+      ).not.toBeChecked();
+      expect(screen.getByLabelText(/^Amplitude threshold/)).toHaveValue(60);
+      expect(screen.getByLabelText(/^Solid share, max/)).toHaveValue(0.02);
+      expect(screen.getByLabelText(/^Distance threshold/)).toHaveValue(0.2);
+      expect(
+        screen.getByText("Noise on our benchmark stays below 51"),
+      ).toBeVisible();
+    });
+
+    it.each([
+      [
+        "a project without the field",
+        { ...PROJECT, noiseAnalysisConfig: undefined },
+      ],
+      ["an empty field", { ...PROJECT, noiseAnalysisConfig: "" }],
+      ["an empty object", withNoiseConfig({})],
+    ])("shows the defaults for %s", async (_name, project) => {
+      await renderForm(project as ProjectDto);
+
+      expect(screen.getByLabelText(BLUR_SWITCH)).toBeChecked();
+      expect(screen.getByLabelText(DINOV2_SWITCH)).toBeChecked();
+      expect(screen.getByLabelText(/^Amplitude threshold/)).toHaveValue(80);
+      expect(screen.getByLabelText(/^Solid share, max/)).toHaveValue(0.01);
+      expect(screen.getByLabelText(/^Distance threshold/)).toHaveValue(0.15);
+    });
+
+    it("fills the keys a saved config lacks from the defaults", async () => {
+      const { user } = await renderForm(
+        withNoiseConfig({ blur: { amplitudeThreshold: 60 } }),
+      );
+
+      expect(screen.getByLabelText(/^Amplitude threshold/)).toHaveValue(60);
+      expect(screen.getByLabelText(/^Solid share, max/)).toHaveValue(0.01);
+
+      await user.click(screen.getByLabelText(DINOV2_SWITCH));
+
+      expect(noiseConfig()).toEqual({
+        blur: { enabled: true, amplitudeThreshold: 60, solidShareMax: 0.01 },
+        dinov2: { enabled: false, distanceThreshold: 0.15 },
+      });
+    });
+
+    it("leaves the comparison config alone", async () => {
+      const { user } = await renderForm();
+
+      await user.click(screen.getByLabelText(BLUR_SWITCH));
+
+      expect(editState().imageComparisonConfig).toBe(PIXELMATCH_DEFAULT_CONFIG);
+    });
+
+    it.each([
+      [
+        "blur.enabled",
+        () => screen.getByLabelText(BLUR_SWITCH),
+        undefined,
+        {
+          blur: { enabled: false, amplitudeThreshold: 80, solidShareMax: 0.01 },
+          dinov2: { enabled: true, distanceThreshold: 0.15 },
+        },
+      ],
+      [
+        "blur.amplitudeThreshold",
+        () => screen.getByLabelText(/^Amplitude threshold/),
+        "55",
+        {
+          blur: { enabled: true, amplitudeThreshold: 55, solidShareMax: 0.01 },
+          dinov2: { enabled: true, distanceThreshold: 0.15 },
+        },
+      ],
+      [
+        "blur.solidShareMax",
+        () => screen.getByLabelText(/^Solid share, max/),
+        "0.05",
+        {
+          blur: { enabled: true, amplitudeThreshold: 80, solidShareMax: 0.05 },
+          dinov2: { enabled: true, distanceThreshold: 0.15 },
+        },
+      ],
+      [
+        "dinov2.enabled",
+        () => screen.getByLabelText(DINOV2_SWITCH),
+        undefined,
+        {
+          blur: { enabled: true, amplitudeThreshold: 80, solidShareMax: 0.01 },
+          dinov2: { enabled: false, distanceThreshold: 0.15 },
+        },
+      ],
+      [
+        "dinov2.distanceThreshold",
+        () => screen.getByLabelText(/^Distance threshold/),
+        "0.3",
+        {
+          blur: { enabled: true, amplitudeThreshold: 80, solidShareMax: 0.01 },
+          dinov2: { enabled: true, distanceThreshold: 0.3 },
+        },
+      ],
+    ])("changes only %s", async (_key, field, typed, expected) => {
+      const { user } = await renderForm();
+
+      if (typed === undefined) {
+        await user.click(field());
+      } else {
+        await replaceNumber(user, field(), typed);
+      }
+
+      expect(noiseConfig()).toEqual(expected);
+    });
+
+    it("keeps the saved keys that are not part of the form", async () => {
+      const { user } = await renderForm(
+        withNoiseConfig({ ...DEFAULT_NOISE_ANALYSIS_CONFIG, future: 1 }),
+      );
+
+      await user.click(screen.getByLabelText(BLUR_SWITCH));
+
+      expect(JSON.parse(editState().noiseAnalysisConfig)).toMatchObject({
+        future: 1,
+      });
+    });
+
+    it("keeps the settings when the comparison library changes", async () => {
+      const config = {
+        blur: { enabled: false, amplitudeThreshold: 60, solidShareMax: 0.02 },
+        dinov2: { enabled: true, distanceThreshold: 0.2 },
+      };
+      const { user } = await renderForm(withNoiseConfig(config));
+
+      await switchEngine(user, ImageComparison.odiff);
+
+      expect(noiseConfig()).toEqual(config);
+    });
+
+    it("turns the second stage off for the project when asked while the first is on", async () => {
+      const onSubmit = submitSpy();
+      const { user } = await renderForm(PROJECT, onSubmit);
+
+      await user.click(screen.getByLabelText(DINOV2_SWITCH));
+      await user.click(screen.getByTestId("submitButton"));
+
+      await waitFor(() => expect(onSubmit).toHaveBeenCalledTimes(1));
+      expect(onSubmit.mock.calls[0][0].noiseAnalysisConfig).toBe(
+        JSON.stringify({
+          blur: { enabled: true, amplitudeThreshold: 80, solidShareMax: 0.01 },
+          dinov2: { enabled: false, distanceThreshold: 0.15 },
+        }),
+      );
+    });
+
+    describe("with stage 1 off", () => {
+      const stageOneOff = withNoiseConfig({
+        ...DEFAULT_NOISE_ANALYSIS_CONFIG,
+        blur: { ...DEFAULT_NOISE_ANALYSIS_CONFIG.blur, enabled: false },
+      });
+
+      it("disables stage 2 and says it needs stage 1", async () => {
+        await renderForm(stageOneOff);
+
+        expect(screen.getByLabelText(DINOV2_SWITCH)).toBeDisabled();
+        expect(screen.getByLabelText(DINOV2_SWITCH)).toBeChecked();
+        expect(screen.getByText("Needs stage 1")).toBeVisible();
+        expect(screen.getByLabelText(/^Distance threshold/)).toBeDisabled();
+        expect(screen.getByLabelText(/^Amplitude threshold/)).toBeDisabled();
+        expect(screen.getByLabelText(/^Solid share, max/)).toBeDisabled();
+        expect(screen.getByLabelText(BLUR_SWITCH)).toBeEnabled();
+      });
+
+      it("enables stage 2 again once stage 1 is back on", async () => {
+        const { user } = await renderForm(stageOneOff);
+
+        await user.click(screen.getByLabelText(BLUR_SWITCH));
+
+        expect(screen.getByLabelText(DINOV2_SWITCH)).toBeEnabled();
+        expect(screen.queryByText("Needs stage 1")).toBeNull();
+        expect(noiseConfig()).toEqual(DEFAULT_NOISE_ANALYSIS_CONFIG);
+      });
+    });
+
+    it("has no hint about stage 1 while it is on", async () => {
+      await renderForm();
+
+      expect(screen.queryByText("Needs stage 1")).toBeNull();
+      expect(screen.getByLabelText(DINOV2_SWITCH)).toBeEnabled();
+    });
+
+    it("disables the whole section with the VLM comparator", async () => {
+      await renderForm({
+        ...PROJECT,
+        imageComparison: ImageComparison.vlm,
+        imageComparisonConfig: VLM_DEFAULT_CONFIG,
+      });
+
+      expect(
+        screen.getByText("Not available with the VLM comparator"),
+      ).toBeVisible();
+      for (const field of [
+        screen.getByLabelText(BLUR_SWITCH),
+        screen.getByLabelText(DINOV2_SWITCH),
+        screen.getByLabelText(/^Amplitude threshold/),
+        screen.getByLabelText(/^Solid share, max/),
+        screen.getByLabelText(/^Distance threshold/),
+      ]) {
+        expect(field).toBeDisabled();
+      }
+    });
+
+    it("does not mention the VLM comparator with the others", async () => {
+      await renderForm();
+
+      expect(
+        screen.queryByText("Not available with the VLM comparator"),
+      ).toBeNull();
+    });
+
+    it("enables the section again when the library changes from VLM", async () => {
+      const { user } = await renderForm({
+        ...PROJECT,
+        imageComparison: ImageComparison.vlm,
+        imageComparisonConfig: VLM_DEFAULT_CONFIG,
+      });
+
+      await switchEngine(user, ImageComparison.pixelmatch);
+
+      expect(screen.getByLabelText(BLUR_SWITCH)).toBeEnabled();
+    });
+
+    it("says nothing about DINOv2 while the service is available", async () => {
+      await renderForm();
+
+      await waitFor(() => expect(dinov2Service.getStatus).toHaveBeenCalled());
+      expect(screen.queryByText(/no DINOv2 service/)).toBeNull();
+      expect(screen.queryByText(/not answering/)).toBeNull();
+    });
+
+    it("says so when the server has no DINOv2 service", async () => {
+      serverHas(false);
+      await renderForm();
+
+      expect(
+        await screen.findByText(
+          "Not available: this server has no DINOv2 service (DINOV2_URL). Runs are judged by the blur stage alone.",
+        ),
+      ).toBeVisible();
+    });
+
+    it("warns when the service is set up but not answering", async () => {
+      serverHas(true, false);
+      await renderForm();
+
+      expect(
+        await screen.findByText(
+          "The DINOv2 service is not answering right now. Until it does, runs are judged by the blur stage alone.",
+        ),
+      ).toBeVisible();
+    });
+
+    it("says nothing when the server does not tell its DINOv2 status", async () => {
+      vi.spyOn(dinov2Service, "getStatus").mockRejectedValue("Not Found");
+      await renderForm();
+
+      await waitFor(() => expect(dinov2Service.getStatus).toHaveBeenCalled());
+      expect(screen.queryByText(/judged by the blur stage alone/)).toBeNull();
+    });
+
+    it.each([
+      ["Amplitude threshold", "0", "Enter greater than 0"],
+      ["Distance threshold", "0", "Enter greater than 0"],
+      ["Solid share, max", "2", "Enter less than or equal to 1"],
+    ])("does not save %s of %s", async (label, typed, message) => {
+      const onSubmit = submitSpy();
+      const { user } = await renderForm(PROJECT, onSubmit);
+
+      await replaceNumber(
+        user,
+        screen.getByLabelText(new RegExp(label)),
+        typed,
+      );
+      await user.click(screen.getByTestId("submitButton"));
+
+      expect(await screen.findByText(message)).toBeVisible();
+      expect(onSubmit).not.toHaveBeenCalled();
+    });
   });
 
   describe("vlm config", () => {

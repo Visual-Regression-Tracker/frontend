@@ -309,6 +309,35 @@ const VIEWS: [name: string, body: Body][] = [
   ],
 
   [
+    "edit project dialog with post-analysis",
+    async ({ projectListPage, shot }) => {
+      await projectListPage.editBtn.click();
+      await projectListPage.distanceThreshold.scrollIntoViewIfNeeded();
+
+      await expect(projectListPage.blurSwitch).toBeChecked();
+      await expect(projectListPage.dinov2Status).toHaveCount(0);
+      await expect(projectListPage.page.getByRole("tooltip")).toHaveCount(0);
+      await shot("edit-project-post-analysis");
+    },
+  ],
+
+  [
+    "edit project dialog with post-analysis on a server without DINOv2",
+    async ({ projectListPage, shot }) => {
+      await mockDinov2Status(projectListPage.page, {
+        configured: false,
+        available: false,
+      });
+      await projectListPage.editBtn.click();
+      await projectListPage.dinov2Status.scrollIntoViewIfNeeded();
+
+      await expect(projectListPage.dinov2Status).toBeVisible();
+      await expect(projectListPage.page.getByRole("tooltip")).toHaveCount(0);
+      await shot("edit-project-post-analysis-no-dinov2");
+    },
+  ],
+
+  [
     "delete project confirmation",
     async ({ projectListPage, shot }) => {
       await projectListPage.deleteBtn.click();

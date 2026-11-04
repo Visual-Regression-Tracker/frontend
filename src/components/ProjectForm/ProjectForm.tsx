@@ -20,6 +20,7 @@ import { Tooltip } from "../Tooltip";
 import { LooksSameConfigForm } from "./LooksSameConfigForm";
 import { OdiffConfigForm } from "./OdiffConfigForm";
 import { PixelmatchConfigForm } from "./PixelmatchConfigForm";
+import { PostAnalysisForm } from "./PostAnalysisForm";
 import { VlmConfigForm } from "./VlmConfigForm";
 import { getDefaultConfig } from "./utils";
 import { WholeNumberField } from "./WholeNumberField";
@@ -182,6 +183,7 @@ export const ProjectForm = () => {
         </Select>
       </FormControl>
       {configForm}
+      <PostAnalysisForm />
     </Fragment>
   );
 };
