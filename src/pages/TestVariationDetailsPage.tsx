@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { TestVariation } from "../types";
 import { testVariationService, staticService } from "../services";
@@ -22,20 +22,14 @@ import { formatDateTime } from "../_helpers/format.helper";
 import TestStatusChip from "../components/TestStatusChip";
 import { NoiseHintChip } from "../components/TestRunList/NoiseHintChip";
 import { Baseline } from "../types/baseline";
-import { useProjectState } from "../contexts";
-import { noiseAnalysisAvailable } from "../_helpers/noiseHint.helper";
+import { useNoiseAnalysisAvailable } from "../contexts";
 
 const TestVariationDetailsPage = () => {
   const navigate = useNavigate();
   const { enqueueSnackbar } = useSnackbar();
   const { testVariationId } = useParams<{ testVariationId: string }>();
   const [testVariation, setTestVariation] = useState<TestVariation>();
-  const { projectList } = useProjectState();
-  const project = projectList.find(({ id }) => id === testVariation?.projectId);
-  const noiseAvailable = useMemo(
-    () => noiseAnalysisAvailable(project),
-    [project],
-  );
+  const noiseAvailable = useNoiseAnalysisAvailable(testVariation?.projectId);
 
   useEffect(() => {
     if (testVariationId) {

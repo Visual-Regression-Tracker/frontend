@@ -142,4 +142,37 @@ describe("useNoiseAnalysisAvailable", () => {
 
     expect(screen.getByTestId("available")).toHaveTextContent("false");
   });
+
+  it("looks up the given project instead of the selected one", async () => {
+    const other = { ...TEST_PROJECT, id: "other" };
+    vi.spyOn(projectsService, "getFavorites").mockResolvedValue([]);
+    vi.spyOn(projectsService, "getAll").mockResolvedValue([
+      { ...TEST_PROJECT, imageComparison: ImageComparison.vlm },
+      other,
+    ]);
+    const ForOther = () => {
+      const dispatch = useProjectDispatch();
+      return (
+        <>
+          <p data-testid="for-other">
+            {String(useNoiseAnalysisAvailable(other.id))}
+          </p>
+          <p data-testid="for-selected">
+            {String(useNoiseAnalysisAvailable())}
+          </p>
+          <button onClick={() => selectProject(dispatch, TEST_PROJECT.id)}>
+            Open
+          </button>
+        </>
+      );
+    };
+    const { user } = renderWithProviders(<ForOther />, { user: TEST_USER });
+    await vi.waitFor(() => expect(projectsService.getAll).toHaveBeenCalled());
+    await user.click(await screen.findByRole("button", { name: "Open" }));
+
+    await vi.waitFor(() =>
+      expect(screen.getByTestId("for-other")).toHaveTextContent("true"),
+    );
+    expect(screen.getByTestId("for-selected")).toHaveTextContent("false");
+  });
 });

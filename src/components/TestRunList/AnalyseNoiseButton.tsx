@@ -4,7 +4,7 @@ import { useSnackbar } from "notistack";
 import { TestRun, TestStatus } from "../../types";
 import { noiseHintOf } from "../../_helpers/noiseHint.helper";
 import { ANALYSING } from "../../_helpers/noiseText.helper";
-import { useAnalyseNoise } from "../../contexts/useAnalyseNoise";
+import { useAnalyseNoise } from "../../contexts";
 
 export const AnalyseNoiseButton = ({ runs }: { runs: TestRun[] }) => {
   const { enqueueSnackbar } = useSnackbar();

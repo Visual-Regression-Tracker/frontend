@@ -155,8 +155,13 @@ function useSelectedProject(): Project | undefined {
   );
 }
 
-function useNoiseAnalysisAvailable(): boolean {
-  const project = useSelectedProject();
+function useNoiseAnalysisAvailable(projectId?: string): boolean {
+  const { projectList, selectedProjectId } = useProjectState();
+  const id = projectId ?? selectedProjectId;
+  const project = useMemo(
+    () => projectList.find((item) => item.id === id),
+    [projectList, id],
+  );
   const imageComparison = project?.imageComparison;
   const noiseAnalysisConfig = project?.noiseAnalysisConfig;
   return useMemo(
