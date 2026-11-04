@@ -9,24 +9,22 @@ import {
   Typography,
 } from "@mui/material";
 import {
-  type HintStage,
   isNoisePending,
   isNoiseResult,
-  regionsOf,
-} from "../../_helpers/noiseRegions.helper";
+  type NoiseAnalysisValue,
+} from "../../_helpers/noiseHint.helper";
+import { type HintStage, regionsOf } from "../../_helpers/noiseRegions.helper";
 import { testRunService } from "../../services";
 import type {
-  NoiseAnalysis,
   NoiseAnalysisDto,
   NoiseAnalysisSkip,
   NoiseVerdict,
-  TestRun,
 } from "../../types";
 import { useDialogSnackbar } from "./useDialogSnackbar";
 
 interface NoiseHintPanelProps {
   runId: string;
-  analysis: TestRun["noiseAnalysis"] | NoiseAnalysis;
+  analysis: NoiseAnalysisValue;
   stage: HintStage | null;
   onStageChange: (stage: HintStage | null) => void;
 }
@@ -134,14 +132,14 @@ export const NoiseHintPanel = ({
       </Box>
     );
   } else {
+    const known = result.verdict !== "unknown";
     body = (
       <>
         <Typography variant="body2">
           <strong>{headline(result)}</strong>
-          {result.verdict !== "unknown" &&
-            ` · score ${result.score.toFixed(2)}`}
+          {known && ` · score ${result.score.toFixed(2)}`}
         </Typography>
-        {result.verdict !== "unknown" && (
+        {known && (
           <Typography
             variant="caption"
             component="div"
@@ -172,7 +170,7 @@ export const NoiseHintPanel = ({
           </Typography>
         )}
         <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-          {result.verdict !== "unknown" && (
+          {known && (
             <Typography variant="caption" color="text.secondary">
               {LIMITATION}
             </Typography>

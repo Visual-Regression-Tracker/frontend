@@ -1,10 +1,7 @@
 import { useCallback, useMemo, useState } from "react";
 import { TagField, TestRun, TestStatus } from "../../types";
-import {
-  NoiseHint,
-  NoiseHintFilter,
-  noiseHintOf,
-} from "../../_helpers/noiseHint.helper";
+import type { NoiseHint } from "../../types/noiseAnalysis";
+import { NoiseHintFilter, noiseHintOf } from "../../_helpers/noiseHint.helper";
 import { statusesByAttention } from "../../_helpers/testRunStatus.helper";
 import { TAG_FIELDS, tagValuesOf } from "../../_helpers/testRunTags.helper";
 

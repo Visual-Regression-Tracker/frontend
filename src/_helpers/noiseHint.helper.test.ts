@@ -1,6 +1,8 @@
 import { run } from "./testRun.fixture";
 import {
   isNoiseAnalysed,
+  isNoisePending,
+  isNoiseResult,
   noiseAnalysisAvailable,
   noiseScoreOf,
   parseNoiseAnalysisConfig,
@@ -21,6 +23,26 @@ const unresolved = (noiseAnalysis: unknown) =>
     status: TestStatus.unresolved,
     noiseAnalysis: noiseAnalysis as NoiseAnalysisDto,
   });
+
+describe("isNoiseResult", () => {
+  it.each([
+    ["a result", NOISE_ANALYSIS_NOISE, true],
+    ["a foreign version", { ...NOISE_ANALYSIS_NOISE, version: 2 }, false],
+    ["a pending marker", NOISE_ANALYSIS_PENDING, false],
+    ["nothing", null, false],
+    ["undefined", undefined, false],
+  ])("is %s -> %s", (_, analysis, expected) => {
+    expect(isNoiseResult(analysis)).toBe(expected);
+  });
+});
+
+describe("isNoisePending", () => {
+  it("recognises only the pending marker", () => {
+    expect(isNoisePending(NOISE_ANALYSIS_PENDING)).toBe(true);
+    expect(isNoisePending(NOISE_ANALYSIS_NOISE)).toBe(false);
+    expect(isNoisePending(null)).toBe(false);
+  });
+});
 
 describe("isNoiseAnalysed", () => {
   it.each([

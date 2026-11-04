@@ -1,5 +1,7 @@
 export type NoiseVerdict = "noise" | "change" | "unknown";
 
+export type NoiseHint = "noise" | "change" | "pending";
+
 type NoiseUnknownReason = "sizes differ" | "no diff" | "image too large";
 
 export interface NoiseAnalysisConfig {

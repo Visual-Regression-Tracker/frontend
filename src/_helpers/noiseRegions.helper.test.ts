@@ -5,35 +5,10 @@ import {
 } from "../_test/test.data.helper";
 import { REGION, withRegions } from "../_test/noiseRegions";
 import type { NoiseAnalysis } from "../types";
-import {
-  hasRegions,
-  isNoisePending,
-  isNoiseResult,
-  regionsOf,
-} from "./noiseRegions.helper";
+import { hasRegions, regionsOf } from "./noiseRegions.helper";
 
 const full = (): NoiseAnalysis =>
   withRegions(NOISE_ANALYSIS_CHANGE, [REGION], [REGION, REGION]);
-
-describe("isNoiseResult", () => {
-  it.each([
-    ["a result", NOISE_ANALYSIS_NOISE, true],
-    ["a foreign version", { ...NOISE_ANALYSIS_NOISE, version: 2 }, false],
-    ["a pending marker", NOISE_ANALYSIS_PENDING, false],
-    ["nothing", null, false],
-    ["undefined", undefined, false],
-  ])("is %s -> %s", (_, analysis, expected) => {
-    expect(isNoiseResult(analysis)).toBe(expected);
-  });
-});
-
-describe("isNoisePending", () => {
-  it("recognises only the pending marker", () => {
-    expect(isNoisePending(NOISE_ANALYSIS_PENDING)).toBe(true);
-    expect(isNoisePending(NOISE_ANALYSIS_NOISE)).toBe(false);
-    expect(isNoisePending(null)).toBe(false);
-  });
-});
 
 describe("hasRegions", () => {
   it("is false for the Dto the list holds", () => {

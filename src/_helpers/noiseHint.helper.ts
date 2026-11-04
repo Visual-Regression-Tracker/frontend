@@ -1,10 +1,16 @@
-import type { Project, TestRun } from "../types";
+import type {
+  NoiseAnalysis,
+  NoiseAnalysisDto,
+  NoiseAnalysisPending,
+  NoiseVerdict,
+  Project,
+  TestRun,
+} from "../types";
 import { DEFAULT_NOISE_ANALYSIS_CONFIG } from "../constants";
 import { ImageComparison } from "../types/imageComparison";
-import type { NoiseAnalysisConfig } from "../types/noiseAnalysis";
+import type { NoiseAnalysisConfig, NoiseHint } from "../types/noiseAnalysis";
 import { TestStatus } from "../types/testStatus";
-
-export type NoiseHint = "noise" | "change" | "pending";
+import { parseJson } from "./parseJson";
 
 export const NOISE_HINT_FILTERS = [
   "Likely noise",
@@ -14,16 +20,16 @@ export const NOISE_HINT_FILTERS = [
 
 export type NoiseHintFilter = (typeof NOISE_HINT_FILTERS)[number];
 
+export type NoiseAnalysisValue = TestRun["noiseAnalysis"] | NoiseAnalysis;
+
 const NOISE_ANALYSIS_VERSION = 1;
 
-const NOISE_VERDICTS = ["noise", "change", "unknown"];
+const NOISE_VERDICTS: readonly NoiseVerdict[] = ["noise", "change", "unknown"];
 
-export function isNoiseAnalysed(
-  run: Pick<TestRun, "status" | "noiseAnalysis">,
-): boolean {
-  const analysis = run.noiseAnalysis;
+export function isNoiseResult(
+  analysis: NoiseAnalysisValue,
+): analysis is NoiseAnalysisDto | NoiseAnalysis {
   return (
-    run.status === TestStatus.unresolved &&
     !!analysis &&
     !("pending" in analysis) &&
     analysis.version === NOISE_ANALYSIS_VERSION &&
@@ -31,27 +37,35 @@ export function isNoiseAnalysed(
   );
 }
 
-export function noiseHintOf(
-  run: Pick<TestRun, "status" | "noiseAnalysis">,
-): NoiseHint | null {
+export function isNoisePending(
+  analysis: NoiseAnalysisValue,
+): analysis is NoiseAnalysisPending {
+  return !!analysis && "pending" in analysis && analysis.pending === true;
+}
+
+type DecidedRun = Pick<TestRun, "status" | "noiseAnalysis">;
+
+export function isNoiseAnalysed(run: DecidedRun): boolean {
+  return (
+    run.status === TestStatus.unresolved && isNoiseResult(run.noiseAnalysis)
+  );
+}
+
+export function noiseHintOf(run: DecidedRun): NoiseHint | null {
   const analysis = run.noiseAnalysis;
-  if (run.status !== TestStatus.unresolved || !analysis) {
+  if (run.status !== TestStatus.unresolved) {
     return null;
   }
-  if ("pending" in analysis) {
-    return analysis.pending === true ? "pending" : null;
+  if (isNoisePending(analysis)) {
+    return "pending";
   }
-  if (analysis.version !== NOISE_ANALYSIS_VERSION) {
-    return null;
-  }
-  return analysis.verdict === "noise" || analysis.verdict === "change"
+  return isNoiseResult(analysis) &&
+    (analysis.verdict === "noise" || analysis.verdict === "change")
     ? analysis.verdict
     : null;
 }
 
-export function noiseScoreOf(
-  run: Pick<TestRun, "status" | "noiseAnalysis">,
-): number | null {
+export function noiseScoreOf(run: DecidedRun): number | null {
   const analysis = run.noiseAnalysis;
   if (noiseHintOf(run) === null || !analysis || !("score" in analysis)) {
     return null;
@@ -62,12 +76,11 @@ export function noiseScoreOf(
 export function parseNoiseAnalysisConfig(
   json: string | undefined,
 ): NoiseAnalysisConfig {
-  let saved: Partial<Record<keyof NoiseAnalysisConfig, object>> = {};
-  try {
-    saved = (JSON.parse(json || "{}") as typeof saved | null) ?? {};
-  } catch {
-    saved = {};
-  }
+  const saved =
+    parseJson<Partial<Record<keyof NoiseAnalysisConfig, object>> | null>(
+      json || "{}",
+      {},
+    ) ?? {};
   return {
     ...saved,
     blur: { ...DEFAULT_NOISE_ANALYSIS_CONFIG.blur, ...saved.blur },

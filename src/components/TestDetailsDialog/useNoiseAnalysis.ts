@@ -1,5 +1,9 @@
 import { useEffect, useState } from "react";
-import { hasRegions, isNoiseResult } from "../../_helpers/noiseRegions.helper";
+import {
+  isNoiseResult,
+  type NoiseAnalysisValue,
+} from "../../_helpers/noiseHint.helper";
+import { hasRegions } from "../../_helpers/noiseRegions.helper";
 import { testRunService } from "../../services";
 import type { NoiseAnalysis, TestRun } from "../../types";
 
@@ -11,18 +15,14 @@ interface Loaded {
 // the run in the context is a Dto without regions once a socket event replaces it; the full result comes from GET /test-runs/:id
 export function useNoiseAnalysis(
   testRun: Pick<TestRun, "id" | "noiseAnalysis">,
-  enabled = true,
-): TestRun["noiseAnalysis"] | NoiseAnalysis {
+  enabled: boolean,
+): NoiseAnalysisValue {
   const { id, noiseAnalysis: current } = testRun;
   const [loaded, setLoaded] = useState<Loaded>();
 
   const result = isNoiseResult(current) ? current : null;
   const computedAt = result?.computedAt;
-  const needsRegions =
-    enabled &&
-    !!result &&
-    !hasRegions(result) &&
-    (!!result.blur || (!!result.dinov2 && "verdict" in result.dinov2));
+  const needsRegions = enabled && !!result && !hasRegions(result);
 
   useEffect(() => {
     if (!needsRegions) {

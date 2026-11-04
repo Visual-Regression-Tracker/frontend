@@ -1,26 +1,7 @@
-import type {
-  NoiseAnalysis,
-  NoiseAnalysisDto,
-  NoiseAnalysisPending,
-  NoiseRegion,
-  TestRun,
-} from "../types";
+import type { NoiseAnalysis, NoiseAnalysisDto, NoiseRegion } from "../types";
+import { isNoiseResult, type NoiseAnalysisValue } from "./noiseHint.helper";
 
 export type HintStage = "blur" | "dinov2";
-
-type Analysis = TestRun["noiseAnalysis"] | NoiseAnalysis;
-
-export function isNoiseResult(
-  analysis: Analysis,
-): analysis is NoiseAnalysisDto | NoiseAnalysis {
-  return !!analysis && !("pending" in analysis) && analysis.version === 1;
-}
-
-export function isNoisePending(
-  analysis: Analysis,
-): analysis is NoiseAnalysisPending {
-  return !!analysis && "pending" in analysis && analysis.pending === true;
-}
 
 const stageHasVerdict = (stage: object | undefined): boolean =>
   !!stage && "verdict" in stage;
@@ -33,7 +14,10 @@ export function hasRegions(
   );
 }
 
-export function regionsOf(analysis: Analysis, stage: HintStage): NoiseRegion[] {
+export function regionsOf(
+  analysis: NoiseAnalysisValue,
+  stage: HintStage,
+): NoiseRegion[] {
   if (!isNoiseResult(analysis) || !hasRegions(analysis)) {
     return [];
   }

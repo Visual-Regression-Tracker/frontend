@@ -84,7 +84,7 @@ export const DrawArea = ({
   stageScrollPosState,
   drawModeState,
 }: IDrawArea) => {
-  const hintColor = useTheme().palette.hint.main;
+  const hintFill = useTheme().palette.hint.main;
   const [stageInitPos, setStageInitPos] = stageInitPosState;
   const [stageOffset, setStageOffset] = stageOffsetState;
   const [stagePos, setStagePos] = stagePosState;
@@ -424,8 +424,8 @@ export const DrawArea = ({
                     y: rect.y,
                     width: rect.width,
                     height: rect.height,
-                    fill: hintColor,
-                    stroke: hintColor,
+                    fill: hintFill,
+                    stroke: hintFill,
                     strokeWidth: 2,
                     strokeScaleEnabled: false,
                     listening: false,
