@@ -1,2 +1,2 @@
 export { theme } from "./theme";
-export { statusColor } from "./status";
+export { statusColor, hintColor } from "./status";

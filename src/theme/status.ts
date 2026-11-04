@@ -23,3 +23,9 @@ export function statusColor(status: string | undefined): StatusColor {
       return "default";
   }
 }
+
+export function hintColor(
+  hint: "noise" | "change" | "pending",
+): "hint" | "info" {
+  return hint === "change" ? "info" : "hint";
+}

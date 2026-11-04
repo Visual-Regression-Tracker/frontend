@@ -14,6 +14,7 @@ import {
   type ToolbarPropsOverrides,
 } from "@mui/x-data-grid";
 import TestStatusChip from "../TestStatusChip";
+import { NoiseHintChip } from "./NoiseHintChip";
 import { TestRunListToolbar } from "./TestRunListToolbar";
 import { PAGE_SIZE_OPTIONS } from "./TestRunListControls";
 import {
@@ -112,6 +113,17 @@ const buildColumns = (
       >
         <TestStatusChip status={params.row.status?.toString()} />
       </Box>
+    ),
+  },
+  {
+    field: "noise",
+    headerName: "Noise",
+    display: "flex",
+    flex: 0.3,
+    filterable: false,
+    sortable: false,
+    renderCell: (params: GridRenderCellParams<TestRun>) => (
+      <NoiseHintChip run={params.row} />
     ),
   },
 ];

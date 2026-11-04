@@ -4,6 +4,7 @@ import { renderWithProviders } from "../_test/render";
 import {
   TEST_PROJECT,
   TEST_USER,
+  NOISE_ANALYSIS_NOISE,
   TEST_VARIATION_ONE,
   testRunMock,
 } from "../_test/test.data.helper";
@@ -106,6 +107,34 @@ describe("TestVariationDetailsPage", () => {
     expect(
       screen.getByText(`Custom Tags: ${VARIATION.customTags}`),
     ).toBeInTheDocument();
+  });
+
+  test("shows the noise hint beside the status of an unresolved baseline run only", async () => {
+    const noisy = {
+      ...VARIATION,
+      baselines: [
+        {
+          ...VARIATION.baselines[0],
+          testRun: { ...LATEST_RUN, noiseAnalysis: NOISE_ANALYSIS_NOISE },
+        },
+        {
+          ...VARIATION.baselines[1],
+          testRun: { ...OLDER_RUN, noiseAnalysis: NOISE_ANALYSIS_NOISE },
+        },
+      ],
+    };
+    vi.spyOn(testVariationService, "getDetails").mockResolvedValue(noisy);
+
+    renderPage();
+
+    await screen.findByRole("heading", { level: 2, name: /Baseline history/ });
+    const [latest, older] = baselineCards();
+    expect(
+      within(latest).queryByTestId("noise-hint-chip"),
+    ).not.toBeInTheDocument();
+    expect(within(older).getByTestId("noise-hint-chip")).toHaveTextContent(
+      "Likely noise",
+    );
   });
 
   test("lists the baselines in the order the API gives them, each with its image", async () => {

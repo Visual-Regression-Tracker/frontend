@@ -1,6 +1,6 @@
 import { getContrastRatio, type Palette } from "@mui/material/styles";
 import { theme } from "./theme";
-import { statusColor } from "./status";
+import { hintColor, statusColor } from "./status";
 import { TestStatus } from "../types/testStatus";
 import { BuildStatus } from "../types/buildStatus";
 
@@ -21,6 +21,16 @@ describe("theme", () => {
           getContrastRatio(palette[key].main, palette.background.paper),
         ).toBeGreaterThanOrEqual(4.5);
       }
+    },
+  );
+
+  it.each(schemes)(
+    "keeps the noise hint readable on paper in %s mode",
+    (scheme) => {
+      const palette = colorSchemes[scheme].palette;
+      expect(
+        getContrastRatio(palette.hint.main, palette.background.paper),
+      ).toBeGreaterThanOrEqual(4.5);
     },
   );
 
@@ -57,5 +67,15 @@ describe("statusColor", () => {
     ["running", "default"],
   ])("gives %s the %s colour", (status, color) => {
     expect(statusColor(status)).toBe(color);
+  });
+});
+
+describe("hintColor", () => {
+  it.each([
+    ["noise", "hint"],
+    ["pending", "hint"],
+    ["change", "info"],
+  ] as const)("gives %s the %s colour", (hint, color) => {
+    expect(hintColor(hint)).toBe(color);
   });
 });

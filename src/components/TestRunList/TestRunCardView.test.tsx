@@ -12,6 +12,7 @@ import {
 import { run } from "../../_helpers/testRun.fixture";
 import { TAG_FIELDS } from "../../_helpers/testRunTags.helper";
 import { TEST_RUN_SHOW_DIFF_KEY } from "../../constants";
+import { NOISE_ANALYSIS_CHANGE } from "../../_test/test.data.helper";
 import { TestRun } from "../../types";
 import { DEFAULT_SORT } from "./TestRunGridHeader";
 import { TestRunCardView } from "./TestRunCardView";
@@ -83,6 +84,24 @@ describe("TestRunCardView", () => {
 
     expect(cardNames()).toEqual(["Screen A", "Screen B"]);
     expect(screen.getByTestId("groupCount")).toHaveTextContent("2");
+  });
+
+  it("shows the noise hint of an unresolved run on its card", () => {
+    renderCards(
+      propsFor([
+        run({
+          id: "hinted",
+          name: "Screen H",
+          noiseAnalysis: NOISE_ANALYSIS_CHANGE,
+        }),
+        B_EN,
+      ]),
+    );
+
+    expect(screen.getAllByTestId("noise-hint-chip")).toHaveLength(1);
+    expect(screen.getByTestId("noise-hint-chip")).toHaveTextContent(
+      "Likely change",
+    );
   });
 
   it("says so when the filters leave no run", () => {

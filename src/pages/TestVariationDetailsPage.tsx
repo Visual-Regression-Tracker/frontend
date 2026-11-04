@@ -20,6 +20,7 @@ import { TestVariationDetails } from "../components/TestVariationDetails";
 import { useSnackbar } from "notistack";
 import { formatDateTime } from "../_helpers/format.helper";
 import TestStatusChip from "../components/TestStatusChip";
+import { NoiseHintChip } from "../components/TestRunList/NoiseHintChip";
 import { Baseline } from "../types/baseline";
 
 const TestVariationDetailsPage = () => {
@@ -94,7 +95,10 @@ const TestVariationDetailsPage = () => {
                     Test Run
                   </Button>
                   {baseline.testRun && (
-                    <TestStatusChip status={baseline.testRun.status} />
+                    <>
+                      <TestStatusChip status={baseline.testRun.status} />
+                      <NoiseHintChip run={baseline.testRun} />
+                    </>
                   )}
                   {baseline.user && (
                     <Typography variant="body2">
