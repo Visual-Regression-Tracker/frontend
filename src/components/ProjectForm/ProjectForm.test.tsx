@@ -872,6 +872,23 @@ describe("ProjectForm", () => {
       ).toBeVisible();
     });
 
+    it("disables the DINOv2 stage when the server has no DINOv2 service", async () => {
+      serverHas(false);
+      await renderForm(
+        withNoiseConfig({
+          blur: { enabled: true, amplitudeThreshold: 60, solidShareMax: 0.02 },
+          dinov2: { enabled: true, distanceThreshold: 0.2 },
+        }),
+      );
+
+      await waitFor(() =>
+        expect(screen.getByLabelText(DINOV2_SWITCH)).toBeDisabled(),
+      );
+      expect(screen.getByLabelText(/^Distance threshold/)).toBeDisabled();
+      expect(screen.getByLabelText(DINOV2_SWITCH)).toBeChecked();
+      expect(screen.getByLabelText(/^Distance threshold/)).toHaveValue(0.2);
+    });
+
     it("warns when the service is set up but not answering", async () => {
       serverHas(true, false);
       await renderForm();

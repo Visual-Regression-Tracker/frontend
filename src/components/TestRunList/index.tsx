@@ -13,6 +13,7 @@ import { ViewListOutlined } from "@mui/icons-material";
 import { TestRunCardView } from "./TestRunCardView";
 import { TestRunDensity, TestRunView } from "./TestRunListControls";
 import { DEFAULT_SORT } from "./TestRunGridHeader";
+import { AnalyseNoiseButton } from "./AnalyseNoiseButton";
 import TestRunFilters from "./TestRunFilters";
 import { TestRunTable } from "./TestRunTable";
 import { useTestRunFilters } from "./useTestRunFilters";
@@ -187,7 +188,6 @@ const TestRunList = () => {
       selectedIds,
       // the cards' bulk actions follow the order of the cards
       rows: view === "grid" ? sortedRows : filteredRows,
-      noiseHintAvailable,
       view,
       onViewChange: setView,
       density,
@@ -201,7 +201,6 @@ const TestRunList = () => {
       selectedIds,
       filteredRows,
       sortedRows,
-      noiseHintAvailable,
       view,
       density,
       groupVariations,
@@ -224,7 +223,13 @@ const TestRunList = () => {
     return (
       <Box sx={{ display: "flex", flexDirection: "column", height: "100%" }}>
         <Box sx={{ paddingX: 2, paddingTop: 1, paddingBottom: 1 }}>
-          <TestRunFilters {...filters} showNoiseHint={noiseHintAvailable} />
+          <TestRunFilters
+            {...filters}
+            showNoiseHint={noiseHintAvailable}
+            action={
+              noiseHintAvailable && <AnalyseNoiseButton runs={filteredRows} />
+            }
+          />
         </Box>
         <Box sx={{ flex: 1, minHeight: 0 }}>
           {view === "table" ? (

@@ -32,10 +32,13 @@ const NAME_CELL_SX = {
   minWidth: 0,
 } as const;
 
+// fits the "Likely change" chip and its padding
+const NOISE_COLUMN_MIN_WIDTH = 136;
+
 // the rows always follow some sort, so the header cannot offer "unsorted"
 const SORTING_ORDER: GridSortDirection[] = ["asc", "desc"];
 
-const buildColumns = (
+export const buildColumns = (
   runsFor: (id: string) => TestRun[],
   tagFieldsFor: (runCount: number) => TagField[],
 ): GridColDef<TestRun>[] => [
@@ -120,6 +123,7 @@ const buildColumns = (
     headerName: "Noise",
     display: "flex",
     flex: 0.3,
+    minWidth: NOISE_COLUMN_MIN_WIDTH,
     filterable: false,
     sortingOrder: ["desc", "asc"],
     renderCell: (params: GridRenderCellParams<TestRun>) => (

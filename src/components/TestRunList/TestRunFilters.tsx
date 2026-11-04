@@ -1,3 +1,4 @@
+import { ReactNode } from "react";
 import {
   Grid,
   TextField,
@@ -22,6 +23,7 @@ interface IProps {
   tags: string[];
   noiseHints: NoiseHintFilter[];
   showNoiseHint: boolean;
+  action?: ReactNode;
   onNameChange: (value: string) => void;
   onStatusesChange: (value: TestStatus[]) => void;
   onTagsChange: (value: string[]) => void;
@@ -50,6 +52,7 @@ const TestRunFilters = ({
   tags,
   noiseHints,
   showNoiseHint,
+  action,
   onNameChange,
   onStatusesChange,
   onTagsChange,
@@ -152,6 +155,7 @@ const TestRunFilters = ({
             Reset
           </Button>
         </Grid>
+        {action && <Grid>{action}</Grid>}
       </Grid>
     </Paper>
   );

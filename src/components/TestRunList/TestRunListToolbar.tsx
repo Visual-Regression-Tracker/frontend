@@ -1,6 +1,5 @@
 import { Toolbar, Box } from "@mui/material";
 import type { ToolbarPropsOverrides } from "@mui/x-data-grid";
-import { AnalyseNoiseButton } from "./AnalyseNoiseButton";
 import { BulkOperation } from "./BulkOperation";
 import {
   DiffToggle,
@@ -15,7 +14,6 @@ declare module "@mui/x-data-grid" {
   interface ToolbarPropsOverrides {
     selectedIds: string[];
     rows: TestRun[];
-    noiseHintAvailable: boolean;
     view: TestRunView;
     onViewChange: (view: TestRunView) => void;
     density: TestRunDensity;
@@ -32,7 +30,6 @@ declare module "@mui/x-data-grid" {
 export const TestRunListToolbar = ({
   selectedIds,
   rows,
-  noiseHintAvailable,
   onProcessed,
   ...controls
 }: ToolbarPropsOverrides) => (
@@ -46,7 +43,6 @@ export const TestRunListToolbar = ({
         gap: 1,
       }}
     >
-      {noiseHintAvailable && <AnalyseNoiseButton runs={rows} />}
       <BulkOperation
         selectedIds={selectedIds}
         rows={rows}

@@ -87,7 +87,8 @@ export const PostAnalysisForm = () => {
 
   const sectionOff = project.imageComparison === ImageComparison.vlm;
   const stageOneOff = sectionOff || !config.blur.enabled;
-  const stageTwoOff = stageOneOff || !config.dinov2.enabled;
+  const noService = status?.configured === false;
+  const stageTwoOff = stageOneOff || !config.dinov2.enabled || noService;
 
   return (
     <Stack component="section" aria-labelledby="postAnalysisTitle" spacing={1}>
@@ -147,7 +148,7 @@ export const PostAnalysisForm = () => {
       </Typography>
       <FormControlLabel
         label="Asks the DINOv2 service about patches the blur calls noise. Catches faint icons and borders, 102 of 120 together"
-        disabled={stageOneOff}
+        disabled={stageOneOff || noService}
         control={
           <Switch
             checked={config.dinov2.enabled}

@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { Alert } from "@mui/material";
+import { Alert, alpha } from "@mui/material";
 import { buildsService } from "../services";
 import {
   useBuildState,
@@ -58,7 +58,13 @@ export const NoiseBanner = () => {
   }
 
   return (
-    <Alert severity="info" data-testid="noise-banner">
+    <Alert
+      severity="info"
+      data-testid="noise-banner"
+      sx={(theme) => ({
+        backgroundColor: alpha(theme.palette.info.main, 0.12),
+      })}
+    >
       {text}
     </Alert>
   );
