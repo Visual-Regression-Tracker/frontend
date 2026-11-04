@@ -22,12 +22,11 @@ interface IProps {
   statuses: TestStatus[];
   tags: string[];
   noiseHints: NoiseHintFilter[];
-  showNoiseHint: boolean;
   action?: ReactNode;
   onNameChange: (value: string) => void;
   onStatusesChange: (value: TestStatus[]) => void;
   onTagsChange: (value: string[]) => void;
-  onNoiseHintsChange: (value: NoiseHintFilter[]) => void;
+  onNoiseHintsChange?: (value: NoiseHintFilter[]) => void;
   onReset: () => void;
 }
 
@@ -51,7 +50,6 @@ const TestRunFilters = ({
   statuses,
   tags,
   noiseHints,
-  showNoiseHint,
   action,
   onNameChange,
   onStatusesChange,
@@ -123,7 +121,7 @@ const TestRunFilters = ({
             )}
           />
         </Grid>
-        {showNoiseHint && (
+        {onNoiseHintsChange && (
           <Grid size="grow">
             <Autocomplete
               multiple

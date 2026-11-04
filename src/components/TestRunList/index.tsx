@@ -225,7 +225,9 @@ const TestRunList = () => {
         <Box sx={{ paddingX: 2, paddingTop: 1, paddingBottom: 1 }}>
           <TestRunFilters
             {...filters}
-            showNoiseHint={noiseHintAvailable}
+            onNoiseHintsChange={
+              noiseHintAvailable ? filters.onNoiseHintsChange : undefined
+            }
             action={
               noiseHintAvailable && <AnalyseNoiseButton runs={filteredRows} />
             }
@@ -237,6 +239,7 @@ const TestRunList = () => {
               groups={groups}
               grouped={groupVariations}
               tagFieldsFor={tagFieldsFor}
+              noiseAvailable={noiseHintAvailable}
               selectedIds={selectedIds}
               onSelectionChange={setSelectedIds}
               loading={loading}
@@ -259,6 +262,7 @@ const TestRunList = () => {
               onPaginationModelChange={setPaginationModel}
               activeTags={filters.tags}
               tagFieldsFor={tagFieldsFor}
+              noiseAvailable={noiseHintAvailable}
               hotkeysEnabled={!selectedTestRun}
               onToggleAll={toggleAll}
               onToggleGroup={toggleGroup}

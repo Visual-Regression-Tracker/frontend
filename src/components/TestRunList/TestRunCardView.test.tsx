@@ -37,6 +37,7 @@ const propsFor = (
     onPaginationModelChange: vi.fn(),
     activeTags: [],
     tagFieldsFor: () => TAG_FIELDS,
+    noiseAvailable: true,
     hotkeysEnabled: true,
     onToggleAll: vi.fn(),
     onToggleGroup: vi.fn(),

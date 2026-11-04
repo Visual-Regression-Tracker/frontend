@@ -11,13 +11,11 @@ const byName = (a: TestRun, b: TestRun): number => a.name.localeCompare(b.name);
 const bySettled = (a: TestRun, b: TestRun): number => -byAttention(a, b);
 
 // runs without a score go last in both directions, so only the scored ones flip
-const byNoise = (
-  a: TestRun,
-  b: TestRun,
+const byScore = (
+  scoreA: number | null,
+  scoreB: number | null,
   direction: TestRunSort["direction"],
 ): number => {
-  const scoreA = noiseScoreOf(a);
-  const scoreB = noiseScoreOf(b);
   if (scoreA === null || scoreB === null) {
     return Number(scoreA === null) - Number(scoreB === null);
   }
@@ -38,6 +36,15 @@ export const comparatorFor = (
     }
     return key;
   };
+  const noiseScores = new Map<TestRun, number | null>();
+  const noiseScore = (run: TestRun): number | null => {
+    let score = noiseScores.get(run);
+    if (score === undefined) {
+      score = noiseScoreOf(run);
+      noiseScores.set(run, score);
+    }
+    return score;
+  };
   const ascendingBy = (a: TestRun, b: TestRun): number => {
     if (sort.field === "status") {
       return bySettled(a, b);
@@ -50,7 +57,9 @@ export const comparatorFor = (
 
   return (a: TestRun, b: TestRun): number => {
     if (sort.field === "noise") {
-      return byNoise(a, b, sort.direction) || byName(a, b);
+      return (
+        byScore(noiseScore(a), noiseScore(b), sort.direction) || byName(a, b)
+      );
     }
     const ascending = ascendingBy(a, b);
     const primary = sort.direction === "asc" ? ascending : -ascending;

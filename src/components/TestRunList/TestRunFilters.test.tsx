@@ -12,14 +12,14 @@ const Harness = ({
   onStatusesChange = vi.fn(),
   onTagsChange = vi.fn(),
   onNoiseHintsChange = vi.fn(),
-  showNoiseHint = true,
+  offersNoiseHint = true,
 }: {
   onNameChange: (value: string) => void;
   initialName?: string;
   onStatusesChange?: (value: TestStatus[]) => void;
   onTagsChange?: (value: string[]) => void;
   onNoiseHintsChange?: (value: NoiseHintFilter[]) => void;
-  showNoiseHint?: boolean;
+  offersNoiseHint?: boolean;
 }) => {
   const [name, setName] = useState(initialName);
   const [statuses, setStatuses] = useState<TestStatus[]>([]);
@@ -34,7 +34,6 @@ const Harness = ({
       statuses={statuses}
       tags={tags}
       noiseHints={noiseHints}
-      showNoiseHint={showNoiseHint}
       onNameChange={(value) => {
         onNameChange(value);
         setName(value);
@@ -47,10 +46,14 @@ const Harness = ({
         onTagsChange(value);
         setTags(value);
       }}
-      onNoiseHintsChange={(value) => {
-        onNoiseHintsChange(value);
-        setNoiseHints(value);
-      }}
+      onNoiseHintsChange={
+        offersNoiseHint
+          ? (value) => {
+              onNoiseHintsChange(value);
+              setNoiseHints(value);
+            }
+          : undefined
+      }
       onReset={() => {
         setName("");
         setStatuses([]);
@@ -279,9 +282,9 @@ describe("TestRunFilters noise hint filter", () => {
     expect(resetButton()).toBeDisabled();
   });
 
-  it("is hidden while the analysis is unavailable", () => {
+  it("is hidden without a handler for it", () => {
     renderWithProviders(
-      <Harness onNameChange={vi.fn()} showNoiseHint={false} />,
+      <Harness onNameChange={vi.fn()} offersNoiseHint={false} />,
     );
 
     expect(noiseHintBox()).not.toBeInTheDocument();

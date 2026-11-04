@@ -703,6 +703,39 @@ describe("TestRunList noise hint filter", () => {
       screen.queryByRole("combobox", { name: "Noise hint" }),
     ).not.toBeInTheDocument();
   });
+
+  it("offers the Noise column and its sort for a project with the analysis on", async () => {
+    const { user } = await renderWith({});
+
+    expect(
+      screen.getByRole("columnheader", { name: /Noise/ }),
+    ).toBeInTheDocument();
+
+    await user.click(await screen.findByRole("button", { name: "Grid view" }));
+
+    expect(await screen.findByTestId("gridSort-noise")).toBeInTheDocument();
+  });
+
+  it("leaves the Noise column and its sort out for a VLM project", async () => {
+    const { user } = await renderWith({ imageComparison: ImageComparison.vlm });
+
+    expect(
+      screen.queryByRole("columnheader", { name: /Noise/ }),
+    ).not.toBeInTheDocument();
+
+    await user.click(await screen.findByRole("button", { name: "Grid view" }));
+
+    expect(await screen.findByTestId("gridSort-status")).toBeInTheDocument();
+    expect(screen.queryByTestId("gridSort-noise")).not.toBeInTheDocument();
+  });
+
+  it("leaves the Noise column out when the blur stage is off", async () => {
+    await renderWith({ noiseAnalysisConfig: '{"blur":{"enabled":false}}' });
+
+    expect(
+      screen.queryByRole("columnheader", { name: /Noise/ }),
+    ).not.toBeInTheDocument();
+  });
 });
 
 describe("TestRunList analyse unresolved button", () => {

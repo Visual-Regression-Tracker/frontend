@@ -38,6 +38,7 @@ export const TestRunCardView = ({
   onPaginationModelChange,
   activeTags,
   tagFieldsFor,
+  noiseAvailable,
   hotkeysEnabled,
   onToggleAll,
   onToggleGroup,
@@ -54,6 +55,7 @@ export const TestRunCardView = ({
   onPaginationModelChange: Dispatch<SetStateAction<GridPaginationModel>>;
   activeTags: string[];
   tagFieldsFor: (runCount: number) => TagField[];
+  noiseAvailable: boolean;
   hotkeysEnabled: boolean;
   onToggleAll: (ids: string[]) => void;
   onToggleGroup: (ids: string[]) => void;
@@ -119,6 +121,7 @@ export const TestRunCardView = ({
         sort={sort}
         onSortChange={onSortChange}
         density={density}
+        noiseAvailable={noiseAvailable}
         selectedCount={
           navigationIds.filter((id) => selectedIdSet.has(id)).length
         }

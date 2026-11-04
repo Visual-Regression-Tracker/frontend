@@ -17,6 +17,8 @@ const matchesNameQuery = (run: TestRun, query: string): boolean =>
 const matchesStatuses = (run: TestRun, statuses: TestStatus[]): boolean =>
   statuses.length === 0 || statuses.includes(run.status);
 
+const NO_HINTS: NoiseHintFilter[] = [];
+
 const HINT_OF_FILTER: Record<
   NoiseHintFilter,
   (hint: NoiseHint | null) => boolean
@@ -53,10 +55,7 @@ export const useTestRunFilters = (
   const [statuses, setStatuses] = useState<TestStatus[]>([]);
   const [tags, setTags] = useState<string[]>([]);
   const [pickedNoiseHints, setNoiseHints] = useState<NoiseHintFilter[]>([]);
-  const noiseHints = useMemo(
-    () => (noiseHintAvailable ? pickedNoiseHints : []),
-    [noiseHintAvailable, pickedNoiseHints],
-  );
+  const noiseHints = noiseHintAvailable ? pickedNoiseHints : NO_HINTS;
 
   const toggleTag = useCallback(
     (tag: string) =>

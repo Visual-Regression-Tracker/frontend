@@ -42,6 +42,7 @@ export const TestRunGridHeader = ({
   sort,
   onSortChange,
   density,
+  noiseAvailable,
   selectedCount,
   totalCount,
   onToggleAll,
@@ -49,6 +50,7 @@ export const TestRunGridHeader = ({
   sort: TestRunSort;
   onSortChange: (sort: TestRunSort) => void;
   density: TestRunDensity;
+  noiseAvailable: boolean;
   selectedCount: number;
   totalCount: number;
   onToggleAll: () => void;
@@ -97,7 +99,7 @@ export const TestRunGridHeader = ({
       {label("name", 1)}
       {label("tags", 1)}
       {label("status", 0.3)}
-      {label("noise", 0.3)}
+      {noiseAvailable && label("noise", 0.3)}
     </Box>
   );
 };

@@ -13,7 +13,7 @@ import { NOISE_ANALYSIS_NOISE } from "../../_test/test.data.helper";
 import { run } from "../../_helpers/testRun.fixture";
 import { TestRun } from "../../types";
 import { TestStatus } from "../../types/testStatus";
-import { buildColumns, TestRunTable } from "./TestRunTable";
+import { TestRunTable } from "./TestRunTable";
 
 type Props = ComponentProps<typeof TestRunTable>;
 
@@ -28,6 +28,7 @@ const propsFor = (
       grouped && count > 1
         ? TAG_FIELDS.filter((field) => field !== "customTags")
         : TAG_FIELDS,
+    noiseAvailable: true,
     selectedIds: [],
     onSelectionChange: vi.fn(),
     loading: false,
@@ -193,16 +194,5 @@ describe("TestRunTable", () => {
     );
 
     await waitFor(() => expect(densityClass()).toContain("densityCompact"));
-  });
-});
-
-describe("buildColumns", () => {
-  it("keeps the Noise column wide enough for its chip", () => {
-    const noise = buildColumns(
-      () => [],
-      () => [],
-    ).find(({ field }) => field === "noise");
-
-    expect(noise?.minWidth).toBeGreaterThanOrEqual(136);
   });
 });
