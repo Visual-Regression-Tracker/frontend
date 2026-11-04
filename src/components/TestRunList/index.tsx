@@ -32,6 +32,8 @@ import {
 } from "../../_helpers/testRunGroup.helper";
 import { TAG_FIELDS } from "../../_helpers/testRunTags.helper";
 
+const DEFAULT_SORT_MODEL: GridSortModel = [{ field: "status", sort: "desc" }];
+
 const TestRunList = () => {
   const { enqueueSnackbar } = useSnackbar();
   const navigate = useNavigate();
@@ -45,12 +47,8 @@ const TestRunList = () => {
     page: 0,
   });
 
-  const [sortModel, setSortModel] = useState<GridSortModel>([
-    {
-      field: "status",
-      sort: "desc",
-    },
-  ]);
+  const [storedSortModel, setSortModel] =
+    useState<GridSortModel>(DEFAULT_SORT_MODEL);
 
   const selectedProject = useSelectedProject();
   const noiseHintAvailable = useNoiseAnalysisAvailable();
@@ -63,7 +61,16 @@ const TestRunList = () => {
   const [view, setView] = useState<TestRunView>("table");
   const [density, setDensity] = useState<TestRunDensity>("standard");
   const [groupVariations, setGroupVariations] = useState(false);
-  const [gridSort, setGridSort] = useState<TestRunSort>(DEFAULT_SORT);
+  const [storedGridSort, setGridSort] = useState<TestRunSort>(DEFAULT_SORT);
+
+  const sortModel =
+    !noiseHintAvailable && storedSortModel[0]?.field === "noise"
+      ? DEFAULT_SORT_MODEL
+      : storedSortModel;
+  const gridSort =
+    !noiseHintAvailable && storedGridSort.field === "noise"
+      ? DEFAULT_SORT
+      : storedGridSort;
 
   const activeSort = useMemo(
     () => (view === "grid" ? gridSort : (sortOfModel(sortModel) ?? gridSort)),
