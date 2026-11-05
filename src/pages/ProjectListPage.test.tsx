@@ -70,11 +70,11 @@ describe("ProjectListPage", () => {
     expect(
       screen.getByRole("button", { name: /add project/i }),
     ).toBeInTheDocument();
-    expect(screen.getByTestId("EditIcon")).toBeInTheDocument();
+    expect(screen.getByTestId("SettingsIcon")).toBeInTheDocument();
     expect(screen.getByTestId("delete")).toBeInTheDocument();
   });
 
-  test("sends the edit button to the project's settings page", async () => {
+  test("sends the settings button to the project's settings page", async () => {
     vi.spyOn(projectsService, "getAll").mockResolvedValue([ALPHA]);
     vi.spyOn(projectsService, "getFavorites").mockResolvedValue([]);
     const { user } = renderWithProviders(
@@ -85,12 +85,51 @@ describe("ProjectListPage", () => {
       { user: TEST_USER, route: "/projects" },
     );
 
-    await user.click(await screen.findByTestId("EditIcon"));
+    await user.click(await screen.findByTestId("SettingsIcon"));
 
     expect(screen.getByTestId("location")).toHaveTextContent(
       `/settings/${ALPHA.id}`,
     );
     expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+  });
+
+  test("copies the project id from the card", async () => {
+    vi.spyOn(projectsService, "getAll").mockResolvedValue([ALPHA]);
+    vi.spyOn(projectsService, "getFavorites").mockResolvedValue([]);
+    const { user } = renderWithProviders(<ProjectsListPage />, {
+      user: TEST_USER,
+      route: "/projects",
+    });
+    const writeText = vi.spyOn(navigator.clipboard, "writeText");
+
+    await user.click(await screen.findByRole("button", { name: "Copy id" }));
+
+    expect(writeText).toHaveBeenCalledWith(ALPHA.id);
+    expect(await screen.findByText("Id copied")).toBeInTheDocument();
+  });
+
+  test("says so when the browser cannot copy to the clipboard", async () => {
+    vi.spyOn(projectsService, "getAll").mockResolvedValue([ALPHA]);
+    vi.spyOn(projectsService, "getFavorites").mockResolvedValue([]);
+    const { user } = renderWithProviders(<ProjectsListPage />, {
+      user: TEST_USER,
+      route: "/projects",
+    });
+    const copy = await screen.findByRole("button", { name: "Copy id" });
+    vi.stubGlobal("navigator", { ...navigator, clipboard: undefined });
+
+    await user.click(copy);
+
+    expect(
+      await screen.findByText("Could not copy the id"),
+    ).toBeInTheDocument();
+    vi.unstubAllGlobals();
+  });
+
+  test("hints the search shortcut in the search field", async () => {
+    await renderPage();
+
+    expect(screen.getByText("/")).toBeInTheDocument();
   });
 
   describe("while the projects load", () => {
@@ -141,7 +180,7 @@ describe("ProjectListPage", () => {
     expect(
       screen.queryByRole("button", { name: /add project/i }),
     ).not.toBeInTheDocument();
-    expect(screen.queryByTestId("EditIcon")).not.toBeInTheDocument();
+    expect(screen.queryByTestId("SettingsIcon")).not.toBeInTheDocument();
     expect(screen.queryByTestId("delete")).not.toBeInTheDocument();
   });
 
