@@ -185,6 +185,7 @@ const ProjectCrumb = ({
         id={LOCATOR_PROJECT_PAGE_SELECT_PROJECT}
         color="inherit"
         aria-haspopup="dialog"
+        aria-expanded={!!anchor}
         endIcon={<ArrowDropDown />}
         onClick={(event) => setAnchor(event.currentTarget)}
         sx={{ fontWeight: 600, minWidth: 0, textTransform: "none" }}
@@ -197,7 +198,13 @@ const ProjectCrumb = ({
         open={!!anchor}
         anchorEl={anchor}
         onClose={() => setAnchor(null)}
-        slotProps={{ paper: { sx: { width: 320, maxWidth: "90vw" } } }}
+        slotProps={{
+          paper: {
+            role: "dialog",
+            "aria-label": "Switch project",
+            sx: { width: 320, maxWidth: "90vw" },
+          },
+        }}
       >
         <ProjectMenuContent
           currentId={projectId}

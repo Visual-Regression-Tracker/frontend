@@ -451,6 +451,19 @@ describe("Header", () => {
         return screen.findByRole("searchbox", { name: "Find project" });
       };
 
+      it("announces the menu as a named dialog and the button as expanded", async () => {
+        const { user } = await renderShell(`/${TEST_PROJECT.id}`);
+        const trigger = screen.getByRole("button", { name: TEST_PROJECT.name });
+        expect(trigger).toHaveAttribute("aria-expanded", "false");
+
+        await openMenu(user);
+
+        expect(trigger).toHaveAttribute("aria-expanded", "true");
+        expect(
+          screen.getByRole("dialog", { name: "Switch project" }),
+        ).toBeVisible();
+      });
+
       it("goes to the same tab of the project picked", async () => {
         const { user } = await renderShell(`/variations/${TEST_PROJECT.id}`);
         await openMenu(user);
