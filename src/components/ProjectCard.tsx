@@ -12,10 +12,11 @@ import {
 import {
   AccountTree,
   Delete,
-  Edit,
+  Settings,
   Star,
   StarBorder,
 } from "@mui/icons-material";
+import { useSnackbar } from "notistack";
 import { Tooltip } from "./Tooltip";
 import { LOCATOR_PROJECT_LIST_PAGE_PROJECT_LIST } from "../constants";
 import {
@@ -38,6 +39,15 @@ export const ProjectCard = ({
   onEdit?: () => void;
   onDelete?: () => void;
 }) => {
+  const { enqueueSnackbar } = useSnackbar();
+  const copyId = () => {
+    Promise.resolve()
+      .then(() => navigator.clipboard.writeText(project.id))
+      .then(
+        () => enqueueSnackbar("Id copied", { variant: "success" }),
+        () => enqueueSnackbar("Could not copy the id", { variant: "error" }),
+      );
+  };
   const favoriteLabel = favorite
     ? "Remove from favourites"
     : "Add to favourites";
@@ -105,7 +115,20 @@ export const ProjectCard = ({
             Id
           </Typography>
           <Typography component="dd" variant="caption">
-            {project.id}
+            <Stack direction="row" spacing={1} sx={{ alignItems: "center" }}>
+              <Box
+                component="span"
+                title={project.id}
+                sx={{ fontFamily: "monospace" }}
+              >
+                {project.id.length > 8
+                  ? `${project.id.slice(0, 8)}…`
+                  : project.id}
+              </Box>
+              <Button size="small" sx={{ minWidth: 0, p: 0 }} onClick={copyId}>
+                Copy id
+              </Button>
+            </Stack>
           </Typography>
           <Typography component="dt" variant="caption">
             Created
@@ -134,9 +157,9 @@ export const ProjectCard = ({
         </Button>
         <Box sx={{ flex: 1 }} />
         {onEdit && (
-          <Tooltip title="Edit project">
-            <IconButton onClick={onEdit}>
-              <Edit data-testid="EditIcon" fontSize="small" />
+          <Tooltip title="Project settings">
+            <IconButton onClick={onEdit} aria-label="Project settings">
+              <Settings data-testid="SettingsIcon" fontSize="small" />
             </IconButton>
           </Tooltip>
         )}
