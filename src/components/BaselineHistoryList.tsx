@@ -83,7 +83,11 @@ export const BaselineHistoryList = ({
               <StatusChip status={testRun.status} />
               {noiseAvailable && <NoiseHintChip run={testRun} />}
               <Box sx={{ flex: 1 }} />
-              <Button size="small" onClick={() => onOpenTestRun(baseline)}>
+              <Button
+                size="small"
+                aria-label={`Test run of version ${version}`}
+                onClick={() => onOpenTestRun(baseline)}
+              >
                 Test run
               </Button>
             </Stack>
