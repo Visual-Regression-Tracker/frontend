@@ -184,6 +184,8 @@ export const theme = createTheme({
           theme.applyStyles("dark", { color: surface.dark.tooltip }),
       },
     },
+    MuiTextField: { defaultProps: { variant: "outlined" } },
+    MuiSelect: { defaultProps: { variant: "outlined" } },
     MuiOutlinedInput: {
       styleOverrides: { root: { borderRadius: radius - 2 } },
     },

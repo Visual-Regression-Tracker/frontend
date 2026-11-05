@@ -13,9 +13,10 @@ import {
 } from "@mui/material";
 import { MoreVert } from "@mui/icons-material";
 import { Build } from "../../types";
-import { BuildStatusChip } from "../BuildStatusChip";
+import { StatusChip } from "../StatusChip";
+import { DateLabel } from "../DateLabel";
 import { Tooltip } from "../Tooltip";
-import { formatDateTime } from "../../_helpers/format.helper";
+import { BuildStatus } from "../../types/buildStatus";
 
 const itemSx = {
   paddingRight: "48px",
@@ -74,13 +75,13 @@ export const BuildListItem = ({
           <Stack>
             <Box>
               <Typography variant="caption" color="textPrimary">
-                {formatDateTime(build.createdAt)}
+                <DateLabel date={build.createdAt} />
               </Typography>
             </Box>
             {build.updatedAt && (
               <Box>
                 <Typography variant="caption" color="textSecondary">
-                  Last run: {formatDateTime(build.updatedAt)}
+                  Last run: <DateLabel date={build.updatedAt} />
                 </Typography>
               </Box>
             )}
@@ -96,7 +97,14 @@ export const BuildListItem = ({
                   </Tooltip>
                 </Grid>
                 <Grid>
-                  <BuildStatusChip status={build.status} />
+                  <StatusChip
+                    status={build.status}
+                    variant={
+                      build.status === BuildStatus.unresolved
+                        ? "filled"
+                        : "outlined"
+                    }
+                  />
                 </Grid>
               </Grid>
             </Box>

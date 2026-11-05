@@ -30,6 +30,7 @@ export const ConfigurationExamples = () => {
       />
       <CardContent>
         <ProjectSelect
+          variant="outlined"
           onProjectSelect={(id) => selectProject(projectDispatch, id)}
         />
         <Tabs

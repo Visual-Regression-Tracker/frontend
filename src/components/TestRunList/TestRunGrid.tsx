@@ -8,7 +8,7 @@ import {
   Chip,
   Typography,
 } from "@mui/material";
-import TestStatusChip from "../TestStatusChip";
+import { StatusChip } from "../StatusChip";
 import { NoiseHintChip } from "./NoiseHintChip";
 import noImage from "../../static/no-image.png";
 import { CARD_SIZE_BY_DENSITY, TestRunDensity } from "./TestRunListControls";
@@ -175,7 +175,7 @@ export const TestRunGrid = ({
             </Typography>
             {/* the chip shows the representative only; the title gives the group's status */}
             <Box component="span" title={groupStatusSummary(runs) || undefined}>
-              <TestStatusChip status={representative.status} />
+              <StatusChip status={representative.status} />
             </Box>
             {noiseAvailable && <NoiseHintChip run={representative} />}
             {/* buttons so the keyboard reaches them */}

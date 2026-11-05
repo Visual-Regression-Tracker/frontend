@@ -23,7 +23,7 @@ import NameField from "../components/NameField";
 import EmailField from "../components/EmailField";
 import { useOidcEnabled } from "../_helpers/useOidcEnabled";
 
-const cardActionsSx = { justifyContent: "center" } as const;
+const cardActionsSx = { justifyContent: "flex-end" } as const;
 
 const ProfilePage = () => {
   const { enqueueSnackbar } = useSnackbar();
@@ -119,7 +119,6 @@ const ProfilePage = () => {
                       </Grid>
                       <Grid size={12}>
                         <Select
-                          variant="standard"
                           id="role"
                           labelId="role"
                           displayEmpty
