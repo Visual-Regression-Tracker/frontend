@@ -17,8 +17,11 @@ import {
   StarBorder,
 } from "@mui/icons-material";
 import { Tooltip } from "./Tooltip";
-import { LOCATOR_PROJECT_LIST_PAGE_PROJECT_LIST, routes } from "../constants";
-import { buildProjectPageUrl } from "../_helpers/route.helpers";
+import { LOCATOR_PROJECT_LIST_PAGE_PROJECT_LIST } from "../constants";
+import {
+  buildProjectPageUrl,
+  buildVariationListUrl,
+} from "../_helpers/route.helpers";
 import { DateLabel } from "./DateLabel";
 import { Project } from "../types";
 
@@ -125,7 +128,7 @@ export const ProjectCard = ({
           variant="outlined"
           size="small"
           component={RouterLink}
-          to={`${routes.VARIATION_LIST_PAGE}/${project.id}`}
+          to={buildVariationListUrl(project.id)}
         >
           Variations
         </Button>

@@ -46,6 +46,9 @@ const UNRESOLVED_IN_TABLE_ORDER = UNRESOLVED.map((run) => run.id).sort((a, b) =>
   a.localeCompare(b),
 );
 
+// the header and the project tabs leave the grid room for ten rows only on a taller screen
+test.use({ viewport: { width: 1280, height: 800 } });
+
 test.beforeEach(async ({ page }) => {
   await mockGetProjects(page, [project]);
   await mockGetBuilds(page, project.id, [build]);

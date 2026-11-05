@@ -166,7 +166,7 @@ test.describe("Guided Tour", () => {
     }) => {
       const variationListPage = await openTestVariationListPage(project.id);
       // the page loads as a lazy chunk and a click before its steps arrive is ignored
-      await expect(variationListPage.selectProject).toBeVisible();
+      await expect(variationListPage.cards.first()).toBeVisible();
       const tour = await variationListPage.header.startTour();
 
       await expect(tour.joyrideOverlay).toContainText(

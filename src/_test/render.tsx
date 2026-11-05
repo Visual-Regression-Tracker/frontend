@@ -10,6 +10,7 @@ import {
   BuildProvider,
   TestRunProvider,
   HelpProvider,
+  CrumbProvider,
 } from "../contexts";
 import { theme } from "../theme";
 import { User } from "../types";
@@ -86,7 +87,9 @@ const providers = (route: string) => {
             <ProjectProvider>
               <BuildProvider>
                 <TestRunProvider>
-                  <HelpProvider>{children}</HelpProvider>
+                  <HelpProvider>
+                    <CrumbProvider>{children}</CrumbProvider>
+                  </HelpProvider>
                 </TestRunProvider>
               </BuildProvider>
             </ProjectProvider>

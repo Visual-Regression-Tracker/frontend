@@ -1,7 +1,9 @@
 import {
   buildProjectPageUrl,
+  buildProjectTabUrl,
   buildTestRunLocation,
   getQueryParams,
+  matchShellRoute,
 } from "./route.helpers";
 
 describe("buildProjectPageUrl", () => {
@@ -68,5 +70,45 @@ describe("getQueryParams", () => {
     const { search } = buildTestRunLocation("b1", "t1");
 
     expect(getQueryParams(search)).toEqual({ buildId: "b1", testId: "t1" });
+  });
+});
+
+describe("matchShellRoute", () => {
+  test.each([
+    ["/some-id", { kind: "project", projectId: "some-id", tab: "builds" }],
+    [
+      "/variations/some-id",
+      { kind: "project", projectId: "some-id", tab: "variations" },
+    ],
+    [
+      "/statistics/some-id",
+      { kind: "project", projectId: "some-id", tab: "statistics" },
+    ],
+    [
+      "/settings/some-id",
+      { kind: "project", projectId: "some-id", tab: "settings" },
+    ],
+    ["/variations/details/variation-id", { kind: "variation" }],
+    ["/users", { kind: "users" }],
+  ])("reads %s", (pathname, expected) => {
+    expect(matchShellRoute(pathname)).toEqual(expected);
+  });
+
+  test.each(["/", "/projects", "/profile", "/login", "/register", "/settings"])(
+    "has no shell on %s",
+    (pathname) => {
+      expect(matchShellRoute(pathname)).toBeUndefined();
+    },
+  );
+});
+
+describe("buildProjectTabUrl", () => {
+  test.each([
+    ["builds", "/p1"],
+    ["variations", "/variations/p1"],
+    ["statistics", "/statistics/p1"],
+    ["settings", "/settings/p1"],
+  ] as const)("opens the %s tab", (tab, url) => {
+    expect(buildProjectTabUrl(tab, "p1")).toBe(url);
   });
 });

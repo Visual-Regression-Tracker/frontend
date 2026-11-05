@@ -320,46 +320,52 @@ const VIEWS: [name: string, body: Body][] = [
   ],
 
   [
-    "edit project dialog with VLM and Ollama",
-    async ({ projectListPage, shot }) => {
-      await projectListPage.editBtn.click();
-      await projectListPage.selectImageComparison(ImageComparison.vlm);
-      await projectListPage.selectOllamaModel("llava:13b");
+    "project settings with VLM and Ollama",
+    async ({ projectSettingsPage, shot }) => {
+      await projectSettingsPage.selectImageComparison(ImageComparison.vlm);
+      await projectSettingsPage.selectOllamaModel("llava:13b");
       // blur: the focused field keeps its tooltip open over the form
-      await projectListPage.dialog.getByRole("heading").first().click();
+      await projectSettingsPage.heading.click();
 
-      await expect(projectListPage.ollamaModel).toHaveText("llava:13b");
-      await expect(projectListPage.page.getByRole("tooltip")).toHaveCount(0);
-      await shot("edit-project-vlm-ollama");
+      await expect(projectSettingsPage.ollamaModel).toHaveText("llava:13b");
+      await expect(projectSettingsPage.page.getByRole("tooltip")).toHaveCount(
+        0,
+      );
+      await shot("project-settings-vlm-ollama", { fullPage: true });
     },
   ],
 
   [
-    "edit project dialog with post-analysis",
-    async ({ projectListPage, shot }) => {
-      await projectListPage.editBtn.click();
-      await projectListPage.distanceThreshold.scrollIntoViewIfNeeded();
+    "project settings with post-analysis",
+    async ({ projectSettingsPage, shot }) => {
+      await projectSettingsPage.distanceThreshold.scrollIntoViewIfNeeded();
 
-      await expect(projectListPage.blurSwitch).toBeChecked();
-      await expect(projectListPage.dinov2Status).toHaveCount(0);
-      await expect(projectListPage.page.getByRole("tooltip")).toHaveCount(0);
-      await shot("edit-project-post-analysis");
+      await expect(projectSettingsPage.blurSwitch).toBeChecked();
+      await expect(projectSettingsPage.dinov2Status).toHaveCount(0);
+      await expect(projectSettingsPage.page.getByRole("tooltip")).toHaveCount(
+        0,
+      );
+      await shot("project-settings-post-analysis", { fullPage: true });
     },
   ],
 
   [
-    "edit project dialog with post-analysis on a server without DINOv2",
-    async ({ projectListPage, shot }) => {
-      await mockDinov2Status(projectListPage.page, {
+    "project settings with post-analysis on a server without DINOv2",
+    async ({ projectSettingsPage, shot }) => {
+      await mockDinov2Status(projectSettingsPage.page, {
         configured: false,
         available: false,
       });
-      await projectListPage.editBtn.click();
-      await projectListPage.dinov2Status.scrollIntoViewIfNeeded();
+      await projectSettingsPage.page.reload();
+      await projectSettingsPage.dinov2Status.scrollIntoViewIfNeeded();
 
-      await expect(projectListPage.dinov2Status).toBeVisible();
-      await expect(projectListPage.page.getByRole("tooltip")).toHaveCount(0);
-      await shot("edit-project-post-analysis-no-dinov2");
+      await expect(projectSettingsPage.dinov2Status).toBeVisible();
+      await expect(projectSettingsPage.page.getByRole("tooltip")).toHaveCount(
+        0,
+      );
+      await shot("project-settings-post-analysis-no-dinov2", {
+        fullPage: true,
+      });
     },
   ],
 
@@ -384,9 +390,9 @@ const VIEWS: [name: string, body: Body][] = [
       const projectPage = await openProjectPage(project.id, build.id);
       await expect(projectPage.testRunList.rows).toHaveCount(4);
 
-      await projectPage.projectField.click();
+      await projectPage.header.projectCrumb.click();
 
-      await expect(page.getByRole("option")).toHaveCount(4);
+      await expect(page.getByRole("menuitem")).toHaveCount(4);
       await shot("project-switcher");
     },
   ],
@@ -735,6 +741,29 @@ const VIEWS: [name: string, body: Body][] = [
 
       await expect(tour.joyrideOverlay).toBeVisible();
       await shot("guided-tour");
+    },
+  ],
+
+  [
+    "project settings",
+    async ({ projectSettingsPage, shot }) => {
+      await expect(projectSettingsPage.name).toHaveValue(project.name);
+      await expect(projectSettingsPage.saveBtn).toBeVisible();
+
+      await shot("project-settings", { fullPage: true });
+    },
+  ],
+
+  [
+    "project statistics",
+    async ({ page, authUser, shot }) => {
+      void authUser;
+      await page.goto(`/statistics/${project.id}`);
+
+      await expect(
+        page.getByRole("heading", { name: "Statistics", exact: true }),
+      ).toBeVisible();
+      await shot("project-statistics");
     },
   ],
 

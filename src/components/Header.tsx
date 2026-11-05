@@ -14,13 +14,16 @@ import {
   Stack,
   ListSubheader,
 } from "@mui/material";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { useUserDispatch, useUserState, logout } from "../contexts";
 import { routes } from "../constants";
 import logo from "../static/logo.png";
 import GuidedTour from "./GuidedTour";
 import { Tooltip } from "./Tooltip";
 import { ColorModeToggle } from "./ColorModeToggle";
+import { ProjectBreadcrumb } from "./ProjectBreadcrumb";
+import { ProjectTabs } from "./ProjectTabs";
+import { matchShellRoute } from "../_helpers/route.helpers";
 import {
   HEADER_HELP_MENU_ID,
   HEADER_AVATAR_MENU_ID,
@@ -49,6 +52,8 @@ const Header = () => {
 
   const { loggedIn, user } = useUserState();
   const authDispatch = useUserDispatch();
+  const { pathname } = useLocation();
+  const shellRoute = loggedIn ? matchShellRoute(pathname) : undefined;
 
   const handleMenuClose = () => {
     setAvatarMenuRef(null);
@@ -176,7 +181,7 @@ const Header = () => {
   return (
     <Fragment>
       <AppBar position="static">
-        <Toolbar sx={{ gap: 1, minHeight: { xs: 64 } }}>
+        <Toolbar sx={{ gap: 1, minHeight: { xs: 56 } }}>
           <Box
             component={Link}
             to="/"
@@ -188,15 +193,20 @@ const Header = () => {
               textDecoration: "none",
             }}
           >
-            <img src={logo} width="44" height="44" alt="logo" />
+            <img src={logo} width="36" height="36" alt="logo" />
             <Typography
               variant="subtitle1"
               component="span"
-              sx={{ display: { xs: "none", sm: "inline" }, fontWeight: 700 }}
+              sx={{ fontWeight: 700 }}
             >
-              Visual Regression Tracker
+              VRT
             </Typography>
           </Box>
+          {shellRoute && (
+            <Box sx={{ ml: 1, minWidth: 0, display: "flex" }}>
+              <ProjectBreadcrumb route={shellRoute} />
+            </Box>
+          )}
           <Box sx={{ flex: 1 }} />
           <Stack direction="row" spacing={0.5} sx={{ alignItems: "center" }}>
             <ColorModeToggle />
@@ -233,6 +243,7 @@ const Header = () => {
           </Stack>
         </Toolbar>
       </AppBar>
+      {shellRoute && <ProjectTabs route={shellRoute} />}
       {renderAvatarMenu}
       {renderHelpMenu}
     </Fragment>

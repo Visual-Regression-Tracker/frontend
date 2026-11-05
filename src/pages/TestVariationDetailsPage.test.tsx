@@ -1,4 +1,4 @@
-import { fireEvent, screen, within } from "@testing-library/react";
+import { fireEvent, screen, waitFor, within } from "@testing-library/react";
 import { Route, Routes } from "react-router-dom";
 import { renderWithProviders } from "../_test/render";
 import {
@@ -17,6 +17,7 @@ import {
 import { useProjectState } from "../contexts";
 import { ImageComparison } from "../types/imageComparison";
 import { TestStatus } from "../types/testStatus";
+import { ProjectBreadcrumb } from "../components/ProjectBreadcrumb";
 import TestVariationDetailsPage from "./TestVariationDetailsPage";
 import { CurrentSearch, currentLocation } from "../_test/location";
 
@@ -86,6 +87,37 @@ const baselineCards = () =>
   document.querySelectorAll<HTMLElement>(".MuiCard-root");
 
 describe("TestVariationDetailsPage", () => {
+  test("continues the breadcrumb with the project, Variations and the variation", async () => {
+    vi.spyOn(projectsService, "getAll").mockResolvedValue([TEST_PROJECT]);
+    vi.spyOn(projectsService, "getFavorites").mockResolvedValue([]);
+    vi.spyOn(testVariationService, "getDetails").mockResolvedValue(VARIATION);
+    renderWithProviders(
+      <>
+        <ProjectBreadcrumb route={{ kind: "variation" }} />
+        <Routes>
+          <Route
+            path="/variations/details/:testVariationId"
+            element={<TestVariationDetailsPage />}
+          />
+        </Routes>
+      </>,
+      { user: TEST_USER, route: `/variations/details/${VARIATION.id}` },
+    );
+
+    const crumb = await screen.findByRole("navigation", {
+      name: "Breadcrumb",
+    });
+
+    await waitFor(() =>
+      expect(crumb).toHaveTextContent(
+        `Projects/${TEST_PROJECT.name}/Variations/${VARIATION.name}`,
+      ),
+    );
+    expect(
+      within(crumb).getByRole("link", { name: "Variations" }),
+    ).toHaveAttribute("href", `/variations/${VARIATION.projectId}`);
+  });
+
   test("loads the variation in the route", async () => {
     const getDetails = vi
       .spyOn(testVariationService, "getDetails")

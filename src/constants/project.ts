@@ -1,4 +1,4 @@
-import { NoiseAnalysisConfig, ProjectDto } from "../types";
+import { NoiseAnalysisConfig, ProjectDto, User } from "../types";
 import { ImageComparison } from "../types/imageComparison";
 
 export const PIXELMATCH_DEFAULT_CONFIG =
@@ -43,3 +43,9 @@ export const DEFAULT_PROJECT_EDIT_STATE: ProjectDto = {
   bulkApproveVariations: false,
   bulkApproveGroupBy: "customTags",
 };
+
+// the roles the API lets create, update and delete projects
+export const PROJECT_EDITOR_ROLES: readonly User["role"][] = [
+  "admin",
+  "editor",
+];

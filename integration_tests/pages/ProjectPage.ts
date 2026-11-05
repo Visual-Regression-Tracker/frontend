@@ -4,15 +4,12 @@ import { TestRunList } from "./components/TestRunList";
 import { TestRunFilters } from "./components/TestRunFilters";
 import { BuildList } from "./components/BuildList";
 import { TestDetailsDialog } from "./TestDetailsDialog";
-import { LOCATOR_PROJECT_PAGE_SELECT_PROJECT } from "~client/constants/help";
 
 export class ProjectPage extends BasePage {
   testRunList: TestRunList;
   testRunFilters: TestRunFilters;
   buildList: BuildList;
   details: TestDetailsDialog;
-  selectProject = this.page.locator(`#${LOCATOR_PROJECT_PAGE_SELECT_PROJECT}`);
-  projectField = this.page.getByRole("combobox", { name: "Project" });
   noiseBanner = this.page.getByTestId("noise-banner");
   noiseCaption = this.page.getByText(/unresolved look like rendering noise/);
   detailsDialog = this.modal.dialog;

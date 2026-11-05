@@ -400,25 +400,33 @@ test("switches to another project by typing its name", async ({
   await mockGetProjects(page, [project, other]);
   await mockGetBuilds(page, other.id, []);
   const projectPage = await openProjectPage(project.id);
-  await expect(projectPage.projectField).toHaveValue(project.name);
+  await expect(projectPage.header.projectCrumb).toHaveText(project.name);
 
-  await projectPage.projectField.fill("other");
-  await page.getByRole("option", { name: "Other project" }).click();
+  await projectPage.header.switchProject("other", "Other project");
 
   await expect(page).toHaveURL(new RegExp(`/${other.id}$`));
-  await expect(projectPage.projectField).toHaveValue("Other project");
+  await expect(projectPage.header.projectCrumb).toHaveText("Other project");
 });
 
-test("lines the Project label up with the select under it", async ({
+test("shows Projects and the project in the breadcrumb, with the project tabs", async ({
   openProjectPage,
-  page,
 }) => {
-  await openProjectPage(project.id);
+  const projectPage = await openProjectPage(project.id);
 
-  const label = await boxOf(page.locator("#project-select-label"));
-  const select = await boxOf(page.locator("#project-select"));
-
-  expect(label.x).toBe(select.x);
+  await expect(
+    projectPage.header.breadcrumb.getByRole("link", { name: "Projects" }),
+  ).toHaveAttribute("href", "/projects");
+  await expect(projectPage.header.projectCrumb).toHaveText(project.name);
+  await expect(projectPage.header.tabs.getByRole("tab")).toHaveText([
+    "Builds",
+    "Variations",
+    "Statistics",
+    "Settings",
+  ]);
+  await expect(projectPage.header.tab("Builds")).toHaveAttribute(
+    "aria-selected",
+    "true",
+  );
 });
 
 const openDialogWithoutDiff = async (

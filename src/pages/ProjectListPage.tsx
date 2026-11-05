@@ -1,12 +1,11 @@
 import { useMemo, useState } from "react";
-import { useSearchParams } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { Typography, Button, Box, Stack, Container } from "@mui/material";
 import {
   useProjectState,
   useProjectDispatch,
   deleteProject,
   createProject,
-  updateProject,
   setProjectEditState,
   toggleFavoriteProject,
   useHelpSteps,
@@ -18,7 +17,8 @@ import { SkeletonList } from "../components/SkeletonList";
 import { ProjectCard } from "../components/ProjectCard";
 import { ProjectGrid, ProjectSection } from "../components/ProjectGrid";
 import { ProjectSearchField } from "../components/ProjectSearchField";
-import { PROJECT_LIST_PAGE_STEPS } from "../constants";
+import { PROJECT_EDITOR_ROLES, PROJECT_LIST_PAGE_STEPS } from "../constants";
+import { buildProjectSettingsUrl } from "../_helpers/route.helpers";
 import {
   groupProjects,
   matchesProjectQuery,
@@ -26,18 +26,16 @@ import {
 import { ProjectForm } from "../components/ProjectForm";
 import { useSnackbar } from "notistack";
 import { BaseModal } from "../components/BaseModal";
-import { Project, User } from "../types";
+import { Project } from "../types";
 import { pluralize } from "../_helpers/format.helper";
-
-// the roles the API lets create, update and delete projects
-const PROJECT_EDITOR_ROLES = new Set<User["role"]>(["admin", "editor"]);
 
 const ProjectsListPage = () => {
   const { enqueueSnackbar } = useSnackbar();
+  const navigate = useNavigate();
   const projectState = useProjectState();
   const projectDispatch = useProjectDispatch();
   const { user } = useUserState();
-  const canEditProjects = !!user && PROJECT_EDITOR_ROLES.has(user.role);
+  const canEditProjects = !!user && PROJECT_EDITOR_ROLES.includes(user.role);
   const { projectList, favoriteProjectIds, recentProjectIds, loading } =
     projectState;
 
@@ -45,7 +43,6 @@ const ProjectsListPage = () => {
   const query = searchParams.get("q") ?? "";
 
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
-  const [updateDialogOpen, setUpdateDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
 
   useHelpSteps(PROJECT_LIST_PAGE_STEPS);
@@ -73,10 +70,6 @@ const ProjectsListPage = () => {
     setCreateDialogOpen(!createDialogOpen);
   };
 
-  const toggleUpdateDialogOpen = () => {
-    setUpdateDialogOpen(!updateDialogOpen);
-  };
-
   const toggleDeleteDialogOpen = () => {
     setDeleteDialogOpen(!deleteDialogOpen);
   };
@@ -97,8 +90,7 @@ const ProjectsListPage = () => {
         onEdit={
           canEditProjects
             ? () => {
-                toggleUpdateDialogOpen();
-                setProjectEditState(projectDispatch, project);
+                void navigate(buildProjectSettingsUrl(project.id));
               }
             : undefined
         }
@@ -247,21 +239,6 @@ const ProjectsListPage = () => {
                 createProject(projectDispatch, projectState.projectEditState),
                 "created",
                 toggleCreateDialogOpen,
-              )
-            }
-          />
-
-          <BaseModal
-            open={updateDialogOpen}
-            title={"Update Project"}
-            submitButtonText={"Update"}
-            onCancel={toggleUpdateDialogOpen}
-            content={<ProjectForm />}
-            onSubmit={() =>
-              submit(
-                updateProject(projectDispatch, projectState.projectEditState),
-                "updated",
-                toggleUpdateDialogOpen,
               )
             }
           />

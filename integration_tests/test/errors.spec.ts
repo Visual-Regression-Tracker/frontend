@@ -92,7 +92,7 @@ test.describe("a failing API", () => {
       "Could not load builds",
     );
     await expect(page).toHaveURL(new RegExp(`/${project.id}$`));
-    await expect(projectPage.selectProject).toBeVisible();
+    await expect(projectPage.header.projectCrumb).toBeVisible();
     await expect(projectPage.buildList.searchInput).toBeVisible();
     await expect(projectPage.buildList.errorMessage).toBeVisible();
     await expect(projectPage.buildList.emptyMessage).toBeHidden();
