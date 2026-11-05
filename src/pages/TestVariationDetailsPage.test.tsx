@@ -269,7 +269,9 @@ describe("TestVariationDetailsPage", () => {
     await loaded();
     const [, older] = historyRows();
 
-    await user.click(within(older).getByRole("button", { name: "Test run" }));
+    await user.click(
+      within(older).getByRole("button", { name: "Test run of version 2" }),
+    );
 
     expect(currentLocation()).toBe(
       `/${TEST_PROJECT.id}?buildId=${OLDER_RUN.buildId}&testId=${OLDER_RUN.id}`,
