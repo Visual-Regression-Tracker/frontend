@@ -165,15 +165,12 @@ for (const role of ["editor", "guest"] as const) {
       await expect(projectPage.testRunList.bulkRejectBtn).toBeEnabled();
     });
 
-    test("can delete and merge variations on the variation list", async ({
+    test("can delete variations on the variation list", async ({
       openTestVariationListPage,
     }) => {
       const listPage = await openTestVariationListPage(TEST_PROJECT.id);
 
       await expect(listPage.deleteBtn(TEST_VARIATION_ONE.name)).toBeVisible();
-      await expect(listPage.fromBranch).toBeVisible();
-      await expect(listPage.toBranch).toBeVisible();
-      await expect(listPage.mergeBtn).toBeVisible();
     });
   });
 }

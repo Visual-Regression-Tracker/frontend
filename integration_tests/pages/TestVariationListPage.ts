@@ -1,15 +1,9 @@
 import { BasePage } from "./BasePage";
-import { LOCATOR_TEST_VARIATION_SELECT_BRANCH } from "~client/constants/help";
 
 export class TestVariationListPage extends BasePage {
   cards = this.page.locator(".MuiCard-root");
-
-  mergeForm = this.page.locator("form").filter({
-    has: this.page.locator(`#${LOCATOR_TEST_VARIATION_SELECT_BRANCH}`),
-  });
-  fromBranch = this.mergeForm.getByRole("combobox").first();
-  toBranch = this.mergeForm.getByLabel("To branch");
-  mergeBtn = this.page.locator(`#${LOCATOR_TEST_VARIATION_SELECT_BRANCH}`);
+  nameFilter = this.page.getByRole("textbox", { name: "Name" });
+  clearFilters = this.page.getByRole("button", { name: "Clear filters" });
 
   // by the image title: one variation's name can be part of another's
   getCard(name: string) {
@@ -22,12 +16,9 @@ export class TestVariationListPage extends BasePage {
     return this.getCard(name).getByTestId("DeleteIcon");
   }
 
-  async merge(fromBranch: string, toBranch: string) {
-    await this.fromBranch.click();
-    await this.page
-      .getByRole("option", { name: fromBranch, exact: true })
-      .click();
-    await this.toBranch.fill(toBranch);
-    await this.mergeBtn.click();
+  async filterBy(field: string, option: string) {
+    await this.page.locator(`#filter-chip-${field}`).click();
+    await this.page.getByRole("menuitemcheckbox", { name: option }).click();
+    await this.page.keyboard.press("Escape");
   }
 }

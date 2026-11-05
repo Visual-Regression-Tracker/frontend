@@ -1,4 +1,4 @@
-import { fireEvent, screen, waitFor, within } from "@testing-library/react";
+import { screen, waitFor, within } from "@testing-library/react";
 import { Route, Routes } from "react-router-dom";
 import { renderWithProviders } from "../_test/render";
 import {
@@ -86,6 +86,11 @@ const renderPage = (route = `/variations/details/${VARIATION.id}`) =>
 const baselineCards = () =>
   document.querySelectorAll<HTMLElement>(".MuiCard-root");
 
+const historyRows = () => screen.getAllByRole("listitem");
+
+const loaded = () =>
+  screen.findByRole("heading", { level: 2, name: /Baseline history/ });
+
 describe("TestVariationDetailsPage", () => {
   test("continues the breadcrumb with the project, Variations and the variation", async () => {
     vi.spyOn(projectsService, "getAll").mockResolvedValue([TEST_PROJECT]);
@@ -140,17 +145,11 @@ describe("TestVariationDetailsPage", () => {
       await screen.findByRole("heading", { level: 1, name: VARIATION.name }),
     ).toBeInTheDocument();
     expect(screen.getByText(VARIATION.branchName)).toBeInTheDocument();
-    expect(screen.getByText(`OS: ${VARIATION.os}`)).toBeInTheDocument();
-    expect(screen.getByText(`Device: ${VARIATION.device}`)).toBeInTheDocument();
     expect(
-      screen.getByText(`Browser: ${VARIATION.browser}`),
-    ).toBeInTheDocument();
-    expect(
-      screen.getByText(`Viewport: ${VARIATION.viewport}`),
-    ).toBeInTheDocument();
-    expect(
-      screen.getByText(`Custom Tags: ${VARIATION.customTags}`),
-    ).toBeInTheDocument();
+      screen.getByRole("heading", { level: 1 }).parentElement,
+    ).toHaveTextContent(
+      `${VARIATION.branchName}${VARIATION.os} · ${VARIATION.device} · ${VARIATION.browser} · ${VARIATION.viewport} · ${VARIATION.customTags}`,
+    );
   });
 
   test("shows the noise hint beside the status of an unresolved baseline run only", async () => {
@@ -172,9 +171,9 @@ describe("TestVariationDetailsPage", () => {
 
     renderPage();
 
-    await screen.findByRole("heading", { level: 2, name: /Baseline history/ });
+    await loaded();
     await screen.findByTestId("noise-hint-chip");
-    const [latest, older] = baselineCards();
+    const [latest, older] = historyRows();
     expect(
       within(latest).queryByTestId("noise-hint-chip"),
     ).not.toBeInTheDocument();
@@ -199,7 +198,7 @@ describe("TestVariationDetailsPage", () => {
 
     renderPage();
 
-    await screen.findByRole("heading", { level: 2, name: /Baseline history/ });
+    await loaded();
     await screen.findByTestId("projects-loaded");
     expect(screen.queryByTestId("noise-hint-chip")).not.toBeInTheDocument();
   });
@@ -209,10 +208,7 @@ describe("TestVariationDetailsPage", () => {
 
     renderPage();
 
-    await screen.findByRole("heading", { level: 2, name: /Baseline history/ });
-    expect(
-      screen.getByRole("heading", { level: 2, name: /Baseline history/ }),
-    ).toHaveTextContent("Baseline history3");
+    expect(await loaded()).toHaveTextContent("Baseline history (3)");
     const cards = baselineCards();
     expect(cards).toHaveLength(3);
     expect(
@@ -226,53 +222,87 @@ describe("TestVariationDetailsPage", () => {
     ]);
   });
 
-  test("shows who approved a baseline, when, and the status of its run", async () => {
+  test("shows the version, who approved it, when, and the status of its run", async () => {
     vi.spyOn(testVariationService, "getDetails").mockResolvedValue(VARIATION);
 
     renderPage();
 
-    await screen.findByRole("heading", { level: 2, name: /Baseline history/ });
-    const [latest, older, manual] = [...baselineCards()];
+    await loaded();
+    const [latest, older, manual] = historyRows();
     expect(
       within(latest).getByText(
-        `${TEST_USER.firstName} ${TEST_USER.lastName} <${TEST_USER.email}>`,
+        `v3 · ${TEST_USER.firstName} ${TEST_USER.lastName}`,
       ),
     ).toBeInTheDocument();
     expect(
       within(latest).getByText(formatShortDate("2020-09-14T06:57:25.845Z")),
     ).toBeInTheDocument();
     expect(within(latest).getByText(TestStatus.approved)).toBeInTheDocument();
+    expect(within(older).getByText("v2")).toBeInTheDocument();
     expect(within(older).getByText(TestStatus.unresolved)).toBeInTheDocument();
-    expect(within(older).queryByText(/</)).not.toBeInTheDocument();
     expect(
       within(manual).queryByText(TestStatus.approved),
     ).not.toBeInTheDocument();
   });
 
-  test("Test Run opens the run of that baseline in its build", async () => {
+  test("the author's email is in the avatar tooltip, not on the row", async () => {
     vi.spyOn(testVariationService, "getDetails").mockResolvedValue(VARIATION);
     const { user } = renderPage();
-    await screen.findByRole("heading", { level: 2, name: /Baseline history/ });
-    const [, older] = [...baselineCards()];
+    await loaded();
+    const [latest] = historyRows();
 
-    await user.click(within(older).getByRole("button", { name: "Test Run" }));
+    expect(within(latest).queryByText(TEST_USER.email)).not.toBeInTheDocument();
+    await user.hover(
+      within(latest).getByText(
+        `${TEST_USER.firstName[0]}${TEST_USER.lastName[0]}`,
+      ),
+    );
+
+    expect(await screen.findByRole("tooltip")).toHaveTextContent(
+      TEST_USER.email,
+    );
+  });
+
+  test("Test run opens the run of that baseline in its build", async () => {
+    vi.spyOn(testVariationService, "getDetails").mockResolvedValue(VARIATION);
+    const { user } = renderPage();
+    await loaded();
+    const [, older] = historyRows();
+
+    await user.click(
+      within(older).getByRole("button", { name: "Test run of version 2" }),
+    );
 
     expect(currentLocation()).toBe(
       `/${TEST_PROJECT.id}?buildId=${OLDER_RUN.buildId}&testId=${OLDER_RUN.id}`,
     );
   });
 
-  test("Test Run is disabled for a baseline made without a run", async () => {
+  test("a baseline made without a run has no Test run button", async () => {
     vi.spyOn(testVariationService, "getDetails").mockResolvedValue(VARIATION);
     renderPage();
-    await screen.findByRole("heading", { level: 2, name: /Baseline history/ });
-    const [, , manual] = [...baselineCards()];
+    await loaded();
+    const [, , manual] = historyRows();
 
-    const button = within(manual).getByRole("button", { name: "Test Run" });
-    expect(button).toBeDisabled();
-    fireEvent.click(button);
+    expect(
+      within(manual).queryByRole("button", { name: "Test run" }),
+    ).not.toBeInTheDocument();
+  });
 
-    expect(currentLocation()).toBe(`/variations/details/${VARIATION.id}`);
+  test("a version in the list scrolls to its image", async () => {
+    vi.spyOn(testVariationService, "getDetails").mockResolvedValue(VARIATION);
+    const scrollIntoView = vi.fn();
+    Element.prototype.scrollIntoView = scrollIntoView;
+    const { user } = renderPage();
+    await loaded();
+    const [, older] = historyRows();
+
+    await user.click(
+      within(older).getByRole("button", { name: "Show version 2" }),
+    );
+
+    expect(scrollIntoView).toHaveBeenCalledOnce();
+    expect(scrollIntoView.mock.contexts[0]).toBe(baselineCards()[1]);
   });
 
   test("shows an empty history for a variation without baselines", async () => {
@@ -283,12 +313,7 @@ describe("TestVariationDetailsPage", () => {
 
     renderPage();
 
-    expect(
-      await screen.findByRole("heading", {
-        level: 2,
-        name: /Baseline history/,
-      }),
-    ).toHaveTextContent("Baseline history0");
+    expect(await loaded()).toHaveTextContent("Baseline history (0)");
     expect(baselineCards()).toHaveLength(0);
   });
 

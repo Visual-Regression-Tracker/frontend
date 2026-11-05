@@ -689,6 +689,35 @@ const VIEWS: [name: string, body: Body][] = [
   ],
 
   [
+    "test variation list filtered",
+    async ({ openTestVariationListPage, page, shot }) => {
+      await mockGetTestVariations(page, project.id, [
+        TEST_VARIATION_ONE,
+        { ...TEST_VARIATION_TWO, branchName: "develop" },
+      ]);
+      const listPage = await openTestVariationListPage(project.id);
+
+      await listPage.filterBy("branchName", "develop");
+
+      await expect(listPage.cards).toHaveCount(1);
+      await expect(listPage.clearFilters).toBeVisible();
+      await shot("test-variation-list-filtered");
+    },
+  ],
+
+  [
+    "test variation list empty",
+    async ({ openTestVariationListPage, page, shot }) => {
+      await mockGetTestVariations(page, project.id, []);
+      const listPage = await openTestVariationListPage(project.id);
+
+      await expect(page.getByText("No variations")).toBeVisible();
+      await expect(listPage.cards).toHaveCount(0);
+      await shot("test-variation-list-empty");
+    },
+  ],
+
+  [
     "profile",
     async ({ profilePage, shot }) => {
       await expect(profilePage.apiKeyCard).toBeVisible();

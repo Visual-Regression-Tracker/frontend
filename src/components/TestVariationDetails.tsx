@@ -1,41 +1,31 @@
-import { Box, Chip, Stack, Typography } from "@mui/material";
+import { Box, Stack, Typography } from "@mui/material";
 import { AccountTree } from "@mui/icons-material";
 import { TestVariation } from "../types";
+import { TagLine } from "./TagLine";
 
 interface IProps {
   testVariation: TestVariation;
 }
 
-export const TestVariationDetails = ({ testVariation }: IProps) => {
-  const tags: [string, string | undefined][] = [
-    ["OS", testVariation.os],
-    ["Device", testVariation.device],
-    ["Browser", testVariation.browser],
-    ["Viewport", testVariation.viewport],
-    ["Custom Tags", testVariation.customTags],
-  ];
-
-  return (
-    <Box>
-      <Typography variant="h4" component="h1" sx={{ overflowWrap: "anywhere" }}>
-        {testVariation.name}
-      </Typography>
+export const TestVariationDetails = ({ testVariation }: IProps) => (
+  <Box>
+    <Typography variant="h4" component="h1" sx={{ overflowWrap: "anywhere" }}>
+      {testVariation.name}
+    </Typography>
+    <Stack
+      direction="row"
+      spacing={1.5}
+      sx={{ flexWrap: "wrap", alignItems: "center", mt: 0.5 }}
+    >
       <Stack
         direction="row"
-        sx={{ flexWrap: "wrap", alignItems: "center", gap: 1, mt: 1 }}
+        spacing={0.5}
+        sx={{ alignItems: "center", color: "text.secondary" }}
       >
-        <Chip
-          size="small"
-          variant="outlined"
-          icon={<AccountTree />}
-          label={testVariation.branchName}
-        />
-        {tags
-          .filter(([, value]) => value)
-          .map(([label, value]) => (
-            <Chip key={label} size="small" label={`${label}: ${value}`} />
-          ))}
+        <AccountTree sx={{ fontSize: 16 }} />
+        <Typography variant="body2">{testVariation.branchName}</Typography>
       </Stack>
-    </Box>
-  );
-};
+      <TagLine tags={testVariation} />
+    </Stack>
+  </Box>
+);
