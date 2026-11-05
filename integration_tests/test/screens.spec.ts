@@ -26,6 +26,7 @@ import {
   mockGetBuilds,
   mockGetFavoriteProjects,
   mockGetProjects,
+  mockGetStatisticsResults,
   mockGetTestRuns,
   mockGetTestVariationDetails,
   mockGetTestVariations,
@@ -41,6 +42,7 @@ import {
   mockUpdateTestRun,
 } from "utils/mocks";
 import { defined } from "utils/defined";
+import { STATISTICS_BUILDS } from "utils/statistics";
 import {
   ANALYSED_RUNS,
   BLUR_REGIONS,
@@ -758,12 +760,42 @@ const VIEWS: [name: string, body: Body][] = [
     "project statistics",
     async ({ page, authUser, shot }) => {
       void authUser;
+      await mockGetStatisticsResults(page, project.id, STATISTICS_BUILDS);
       await page.goto(`/statistics/${project.id}`);
 
       await expect(
         page.getByRole("heading", { name: "Statistics", exact: true }),
       ).toBeVisible();
+      await expect(page.getByRole("link", { name: /Build #/ })).toHaveCount(12);
       await shot("project-statistics");
+    },
+  ],
+
+  [
+    "project statistics with few builds",
+    async ({ page, authUser, shot }) => {
+      void authUser;
+      await mockGetStatisticsResults(
+        page,
+        project.id,
+        STATISTICS_BUILDS.slice(0, 2),
+      );
+      await page.goto(`/statistics/${project.id}`);
+
+      await expect(page.getByText("Only a few builds so far")).toBeVisible();
+      await shot("project-statistics-few");
+    },
+  ],
+
+  [
+    "project statistics without builds",
+    async ({ page, authUser, shot }) => {
+      void authUser;
+      await mockGetStatisticsResults(page, project.id, []);
+      await page.goto(`/statistics/${project.id}`);
+
+      await expect(page.getByText("No builds yet")).toBeVisible();
+      await shot("project-statistics-empty");
     },
   ],
 
