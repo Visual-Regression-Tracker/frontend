@@ -33,8 +33,8 @@ import {
   buildVariationListUrl,
 } from "../_helpers/route.helpers";
 import {
-  groupProjects,
   matchesProjectQuery,
+  projectSections,
 } from "../_helpers/projectList.helper";
 import { useShellProject } from "./useShellProject";
 import type { Project } from "../types";
@@ -62,22 +62,22 @@ const ProjectMenuContent = ({
     searchRef.current?.focus();
   }, []);
 
-  const { sections: groups, showTitles } = useMemo(() => {
-    const { favorites, recent, others } = groupProjects(
+  const { groups, showTitles } = useMemo(() => {
+    const { sections, titled } = projectSections(
       projectList,
       favoriteProjectIds,
       recentProjectIds,
     );
-    const match = (projects: Project[]) =>
-      projects.filter((project) => matchesProjectQuery(project, query));
-    const sections = [
-      { title: "Favourites", projects: match(favorites) },
-      { title: "Recently opened", projects: match(recent) },
-      { title: "Other projects", projects: match(others) },
-    ];
     return {
-      sections: sections.filter((section) => section.projects.length > 0),
-      showTitles: favorites.length + recent.length > 0,
+      groups: sections
+        .map(({ title, projects }) => ({
+          title,
+          projects: projects.filter((project) =>
+            matchesProjectQuery(project, query),
+          ),
+        }))
+        .filter(({ projects }) => projects.length > 0),
+      showTitles: titled,
     };
   }, [projectList, favoriteProjectIds, recentProjectIds, query]);
 

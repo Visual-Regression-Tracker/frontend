@@ -7,8 +7,8 @@ import {
   selectProject,
 } from "../contexts";
 import {
-  groupProjects,
   matchesProjectQuery,
+  projectSections,
 } from "../_helpers/projectList.helper";
 import { Project } from "../types";
 
@@ -36,20 +36,19 @@ const ProjectSelect = ({
   }, [projectId, selectedProjectId, projectDispatch]);
 
   const { options, groupOf } = useMemo(() => {
-    const groups = groupProjects(
+    const { sections, titled } = projectSections(
       projectList,
       favoriteProjectIds,
       recentProjectIds,
     );
-    const groupOf = new Map<string, string>([
-      ...groups.favorites.map((p) => [p.id, "Favourites"] as const),
-      ...groups.recent.map((p) => [p.id, "Recently opened"] as const),
-      ...groups.others.map((p) => [p.id, "Other projects"] as const),
-    ]);
-    const options = [...groups.favorites, ...groups.recent, ...groups.others];
-    if (groups.favorites.length + groups.recent.length === 0) {
-      groupOf.clear();
-    }
+    const groupOf = new Map<string, string>(
+      titled
+        ? sections.flatMap(({ title, projects }) =>
+            projects.map((p) => [p.id, title] as const),
+          )
+        : [],
+    );
+    const options = sections.flatMap(({ projects }) => projects);
 
     return { options, groupOf };
   }, [projectList, favoriteProjectIds, recentProjectIds]);

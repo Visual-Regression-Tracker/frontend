@@ -3,6 +3,7 @@ import {
   RECENT_PROJECTS_LIMIT,
   groupProjects,
   matchesProjectQuery,
+  projectSections,
   readRecentProjectIds,
   rememberRecentProject,
 } from "./projectList.helper";
@@ -65,6 +66,27 @@ describe("groupProjects", () => {
       recent: [],
       others: [ALPHA],
     });
+  });
+});
+
+describe("projectSections", () => {
+  it("titles the three groups in order", () => {
+    const { sections, titled } = projectSections(
+      [ALPHA, BETA, GAMMA],
+      [BETA.id],
+      [GAMMA.id],
+    );
+
+    expect(sections).toEqual([
+      { title: "Favourites", projects: [BETA] },
+      { title: "Recently opened", projects: [GAMMA] },
+      { title: "Other projects", projects: [ALPHA] },
+    ]);
+    expect(titled).toBe(true);
+  });
+
+  it("is not titled when everything is in Other projects", () => {
+    expect(projectSections([ALPHA, BETA], [], []).titled).toBe(false);
   });
 });
 

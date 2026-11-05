@@ -46,6 +46,33 @@ export const groupProjects = (
   return { favorites, recent, others };
 };
 
+interface ProjectSection {
+  title: string;
+  projects: Project[];
+}
+
+/** The groups as titled sections; `titled` is false when only "Other projects" would show. */
+export const projectSections = (
+  projects: Project[],
+  favoriteIds: string[],
+  recentIds: string[],
+): { sections: ProjectSection[]; titled: boolean } => {
+  const { favorites, recent, others } = groupProjects(
+    projects,
+    favoriteIds,
+    recentIds,
+  );
+
+  return {
+    sections: [
+      { title: "Favourites", projects: favorites },
+      { title: "Recently opened", projects: recent },
+      { title: "Other projects", projects: others },
+    ],
+    titled: favorites.length + recent.length > 0,
+  };
+};
+
 const storageKey = (userId: string) => `${RECENT_PROJECTS_KEY}:${userId}`;
 
 // storage can be blocked or full (private windows); the list is a convenience, so it degrades to empty
