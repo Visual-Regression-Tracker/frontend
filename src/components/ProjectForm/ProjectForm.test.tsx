@@ -459,6 +459,14 @@ describe("ProjectForm", () => {
       ).toBeVisible();
     });
 
+    it("marks the required fields in their titles", async () => {
+      await renderForm();
+
+      expect(screen.getByText("Project name *")).toBeVisible();
+      expect(screen.getByText("Pixel diff threshold *")).toBeVisible();
+      expect(screen.getByText("Variation axis")).toBeVisible();
+    });
+
     it("explains the variation axis and the auto approve switch", async () => {
       await renderForm();
 

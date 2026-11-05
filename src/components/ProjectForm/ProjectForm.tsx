@@ -63,7 +63,7 @@ export const ProjectForm = () => {
   return (
     <Stack spacing={2}>
       <SettingsSection id="general" title="General">
-        <FieldRow id="name" title="Project name" stacked>
+        <FieldRow id="name" title="Project name" stacked required>
           <ValidatedTextField
             name="projectName"
             rules={AT_LEAST_TWO_CHARACTERS}
@@ -78,7 +78,7 @@ export const ProjectForm = () => {
             }
           />
         </FieldRow>
-        <FieldRow id="branchName" title="Main branch" stacked>
+        <FieldRow id="branchName" title="Main branch" stacked required>
           <ValidatedTextField
             name="mainBranchName"
             rules={AT_LEAST_TWO_CHARACTERS}
@@ -93,14 +93,18 @@ export const ProjectForm = () => {
             }
           />
         </FieldRow>
-        <FieldRow id="buildCount" title="Builds to keep">
+        <FieldRow id="buildCount" title="Builds to keep" required>
           <WholeNumberField
             name="buildCount"
             value={project.maxBuildAllowed}
             onChange={(maxBuildAllowed) => update({ maxBuildAllowed })}
           />
         </FieldRow>
-        <FieldRow id="maxBranchLifetime" title="Max branch lifetime, days">
+        <FieldRow
+          id="maxBranchLifetime"
+          title="Max branch lifetime, days"
+          required
+        >
           <WholeNumberField
             name="maxBranchLifetime"
             value={project.maxBranchLifetime}

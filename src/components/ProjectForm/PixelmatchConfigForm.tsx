@@ -27,6 +27,7 @@ export const PixelmatchConfigForm = () => {
       <FieldRow
         id="threshold"
         title="Pixel diff threshold"
+        required
         description="The threshold of how much a pixel can deviate until it is detected as change (0-1)."
         width={120}
       >

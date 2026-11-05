@@ -124,6 +124,7 @@ export const OllamaConfigForm = () => {
       <FieldRow
         id={usesSelect ? "model-select" : "model"}
         title="Model"
+        required
         description="The Ollama model name to use for image comparison. Models are fetched from the Ollama service."
         stacked
       >

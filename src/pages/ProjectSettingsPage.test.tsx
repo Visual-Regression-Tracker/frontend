@@ -132,6 +132,9 @@ describe("ProjectSettingsPage", () => {
   test("links to the four sections and marks the one picked", async () => {
     const scrollIntoView = vi.fn();
     Element.prototype.scrollIntoView = scrollIntoView;
+    onTestFinished(() => {
+      Reflect.deleteProperty(Element.prototype, "scrollIntoView");
+    });
     const { user } = renderPage();
     await screen.findByRole("textbox", { name: /project name/i });
     const nav = screen.getByRole("navigation", { name: "Settings sections" });

@@ -28,8 +28,7 @@ export class ProjectFormPage extends BasePage {
   vlmProvider = this.root.getByRole("combobox", { name: "VLM Provider" });
   ollamaModel = this.root.getByRole("combobox", { name: "Model" });
   ollamaModelText = this.root.getByRole("textbox", {
-    name: "Model",
-    exact: true,
+    name: /^Model/,
   });
   geminiModel = this.root.getByRole("textbox", { name: "Gemini Model" });
   // a password field has no role to find it by

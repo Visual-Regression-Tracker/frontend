@@ -133,6 +133,7 @@ interface FieldRowProps {
   title: string;
   description?: ReactNode;
   stacked?: boolean;
+  required?: boolean;
   width?: number;
   children: ReactNode;
 }
@@ -144,6 +145,7 @@ export const FieldRow = ({
   title,
   description,
   stacked,
+  required,
   width = 160,
   children,
 }: FieldRowProps) => (
@@ -160,6 +162,7 @@ export const FieldRow = ({
         sx={{ display: "block" }}
       >
         {title}
+        {required && " *"}
       </Typography>
       {description && (
         <Describe id={`${id}-description`}>{description}</Describe>

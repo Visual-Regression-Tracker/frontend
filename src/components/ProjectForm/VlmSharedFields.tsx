@@ -18,6 +18,7 @@ const VlmPromptField = ({
   <FieldRow
     id="prompt"
     title="Prompt"
+    required
     description="The prompt text that will be sent to the VLM to analyze image differences."
     stacked
   >
@@ -49,6 +50,7 @@ const VlmTemperatureField = ({
   <FieldRow
     id="temperature"
     title="Temperature"
+    required
     description="Controls the randomness of the VLM response (0-1). Lower values (0-0.3) produce more consistent results, higher values (0.7-1) produce more creative responses."
     width={120}
   >

@@ -22,6 +22,7 @@ export const GeminiConfigForm = () => {
       <FieldRow
         id="model"
         title="Gemini Model"
+        required
         description="The Google Gemini model to use for image comparison."
         stacked
       >
@@ -55,6 +56,7 @@ export const GeminiConfigForm = () => {
       <FieldRow
         id="apiKey"
         title="Gemini API Key"
+        required
         description="Your Google Gemini API key. Get one from https://makersuite.google.com/app/apikey"
         stacked
       >

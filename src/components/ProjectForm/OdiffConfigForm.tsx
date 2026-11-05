@@ -28,7 +28,12 @@ export const OdiffConfigForm = () => {
         checked={config.antialiasing}
         onChange={(checked) => updateConfig("antialiasing", checked)}
       />
-      <FieldRow id="threshold" title="Pixel diff threshold" width={120}>
+      <FieldRow
+        id="threshold"
+        title="Pixel diff threshold"
+        required
+        width={120}
+      >
         <ValidatedTextField
           name="threshold"
           rules={UNIT_RANGE_RULES}
