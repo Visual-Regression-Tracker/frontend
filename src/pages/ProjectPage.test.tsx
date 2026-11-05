@@ -11,6 +11,7 @@ import {
 } from "../_test/test.data.helper";
 import { Build, TestRun, TestStatus } from "../types";
 import { BuildStatus } from "../types/buildStatus";
+import { ProjectBreadcrumb } from "../components/ProjectBreadcrumb";
 import ProjectPage from "./ProjectPage";
 import { CurrentSearch, currentSearch } from "../_test/location";
 import { detailsFrom } from "../_test/detailsFrom";
@@ -114,6 +115,13 @@ const renderProjectPage = async ({
   const result = renderWithProviders(
     <SocketProvider>
       <CurrentSearch />
+      <ProjectBreadcrumb
+        route={{
+          kind: "project",
+          projectId: TEST_PROJECT.id,
+          tab: "builds",
+        }}
+      />
       <Routes>
         <Route path="/:projectId" element={<ProjectPage />} />
       </Routes>

@@ -10,6 +10,7 @@ import {
   TestRunProvider,
   SocketProvider,
   HelpProvider,
+  CrumbProvider,
 } from "./contexts";
 import Router from "./Router";
 import { theme } from "./theme";
@@ -36,21 +37,23 @@ function App() {
                 <TestRunProvider>
                   <SocketProvider>
                     <HelpProvider>
-                      <Box
-                        sx={{
-                          height: "100%",
-                          display: "flex",
-                          flexDirection: "column",
-                        }}
-                      >
-                        <Header />
+                      <CrumbProvider>
                         <Box
-                          component="main"
-                          sx={{ flex: 1, minHeight: 0, overflow: "auto" }}
+                          sx={{
+                            height: "100%",
+                            display: "flex",
+                            flexDirection: "column",
+                          }}
                         >
-                          <Router />
+                          <Header />
+                          <Box
+                            component="main"
+                            sx={{ flex: 1, minHeight: 0, overflow: "auto" }}
+                          >
+                            <Router />
+                          </Box>
                         </Box>
-                      </Box>
+                      </CrumbProvider>
                     </HelpProvider>
                   </SocketProvider>
                 </TestRunProvider>

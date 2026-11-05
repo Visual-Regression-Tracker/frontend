@@ -2,7 +2,7 @@ import { lazy, Suspense } from "react";
 import { Route, Routes, Navigate } from "react-router-dom";
 import LoginPage from "./pages/LoginPage";
 import PrivateRoute from "./components/PrivateRoute";
-import { routes } from "./constants";
+import { PROJECT_EDITOR_ROLES, routes } from "./constants";
 
 const ProjectsListPage = lazy(() => import("./pages/ProjectListPage"));
 const ProjectPage = lazy(() => import("./pages/ProjectPage"));
@@ -10,6 +10,10 @@ const RegisterPage = lazy(() => import("./pages/RegisterPage"));
 const ProfilePage = lazy(() => import("./pages/ProfilePage"));
 const TestVariationListPage = lazy(
   () => import("./pages/TestVariationListPage"),
+);
+const ProjectSettingsPage = lazy(() => import("./pages/ProjectSettingsPage"));
+const ProjectStatisticsPage = lazy(
+  () => import("./pages/ProjectStatisticsPage"),
 );
 const UserListPage = lazy(() => import("./pages/UserListPage"));
 const TestVariationDetailsPage = lazy(
@@ -43,6 +47,19 @@ function Router() {
         <Route
           path={routes.USER_LIST_PAGE}
           element={<PrivateRoute component={UserListPage} roles={["admin"]} />}
+        />
+        <Route
+          path={`${routes.PROJECT_SETTINGS_PAGE}/:projectId`}
+          element={
+            <PrivateRoute
+              component={ProjectSettingsPage}
+              roles={[...PROJECT_EDITOR_ROLES]}
+            />
+          }
+        />
+        <Route
+          path={`${routes.PROJECT_STATISTICS_PAGE}/:projectId`}
+          element={<PrivateRoute component={ProjectStatisticsPage} />}
         />
         <Route
           path={`${routes.HOME}:projectId`}

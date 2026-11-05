@@ -1,10 +1,12 @@
 import { Page, test as base } from "@playwright/test";
 import { LoginPage, ProfilePage, ProjectListPage, ProjectPage } from "pages";
+import { ProjectSettingsPage } from "pages/ProjectSettingsPage";
 import { RegisterPage } from "pages/RegisterPage";
 import { TestVariationDetailsPage } from "pages/TestVariationDetailsPage";
 import { TestVariationListPage } from "pages/TestVariationListPage";
 import { UserListPage } from "pages/UserListPage";
 import type { User } from "~client/types";
+import { TEST_PROJECT } from "~client/_test/test.data.helper";
 import { mockGetFavoriteProjects } from "utils/mocks";
 
 type Options = {
@@ -26,6 +28,7 @@ type Fixtures = {
     id: string,
   ) => Promise<TestVariationDetailsPage>;
   projectListPage: ProjectListPage;
+  projectSettingsPage: ProjectSettingsPage;
   profilePage: ProfilePage;
   userListPage: UserListPage;
   authUser: void;
@@ -65,6 +68,12 @@ export const test = base.extend<Fixtures & Options>({
     await page.goto("/projects");
 
     await use(new ProjectListPage(page));
+  },
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  projectSettingsPage: async ({ page, authUser }, use) => {
+    await page.goto(`/settings/${TEST_PROJECT.id}`);
+
+    await use(new ProjectSettingsPage(page));
   },
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   profilePage: async ({ page, authUser }, use) => {

@@ -1,13 +1,7 @@
 import { BasePage } from "./BasePage";
-import {
-  LOCATOR_TEST_VARIATION_LIST_PAGE_SELECT_PROJECT,
-  LOCATOR_TEST_VARIATION_SELECT_BRANCH,
-} from "~client/constants/help";
+import { LOCATOR_TEST_VARIATION_SELECT_BRANCH } from "~client/constants/help";
 
 export class TestVariationListPage extends BasePage {
-  selectProject = this.page.locator(
-    `#${LOCATOR_TEST_VARIATION_LIST_PAGE_SELECT_PROJECT}`,
-  );
   cards = this.page.locator(".MuiCard-root");
 
   mergeForm = this.page.locator("form").filter({

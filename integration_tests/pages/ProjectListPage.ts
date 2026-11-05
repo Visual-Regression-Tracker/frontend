@@ -1,51 +1,17 @@
-import { BasePage } from "./BasePage";
+import { Locator } from "@playwright/test";
+import { ProjectFormPage } from "./ProjectFormPage";
 
-export class ProjectListPage extends BasePage {
+export class ProjectListPage extends ProjectFormPage {
   projects = this.page.locator("#projectlist-1");
   // exact: the cards' "Add to favourites" also matches
   addBtn = this.page.getByRole("button", { name: "Add project", exact: true });
   deleteBtn = this.page.getByTestId("delete");
   editBtn = this.page.getByTestId("EditIcon");
   search = this.page.getByRole("searchbox", { name: "Search projects" });
-
   dialog = this.modal.dialog;
-  name = this.dialog.locator("#name");
-  mainBranch = this.dialog.locator("#branchName");
-  buildCount = this.dialog.locator("#buildCount");
-  maxBranchLifetime = this.dialog.locator("#maxBranchLifetime");
-  autoApprove = this.dialog.getByLabel("Auto approve feature");
-  imageComparison = this.dialog.getByRole("combobox", {
-    name: "Image comparison library",
-  });
 
-  blurSwitch = this.dialog.getByLabel(/^Blurred difference and change density/);
-  dinov2Switch = this.dialog.getByLabel(
-    /^Asks the DINOv2 service about patches/,
-  );
-  amplitudeThreshold = this.dialog.getByLabel("Amplitude threshold");
-  solidShareMax = this.dialog.getByLabel("Solid share, max");
-  distanceThreshold = this.dialog.getByLabel("Distance threshold");
-  needsStageOne = this.dialog.getByText("Needs stage 1");
-  vlmNote = this.dialog.locator("#postAnalysisVlm");
-  dinov2Status = this.dialog.locator("#dinov2Status");
-
-  vlmProvider = this.dialog.getByRole("combobox", { name: "VLM Provider" });
-  ollamaModel = this.dialog.getByRole("combobox", { name: "Model" });
-  ollamaModelText = this.dialog.getByRole("textbox", {
-    name: "Model",
-    exact: true,
-  });
-  geminiModel = this.dialog.getByRole("textbox", { name: "Gemini Model" });
-  // a password field has no role to find it by
-  geminiApiKey = this.dialog.locator("#apiKey");
-  prompt = this.dialog.getByRole("textbox", { name: "Prompt" });
-  temperature = this.dialog.getByLabel("Temperature");
-  threshold = this.dialog.getByLabel("Pixel diff threshold");
-  tolerance = this.dialog.getByLabel("Tolerance", { exact: true });
-
-  switchLabelled(label: string) {
-    // by label, not role name: a tooltip's title becomes the label's name
-    return this.dialog.getByLabel(label, { exact: true });
+  protected get root(): Locator {
+    return this.modal.dialog;
   }
 
   project(name: string) {
@@ -64,23 +30,5 @@ export class ProjectListPage extends BasePage {
 
   buildsLink(name: string) {
     return this.project(name).getByRole("link", { name: "Builds" });
-  }
-
-  async selectImageComparison(value: string) {
-    await this.imageComparison.click();
-    await this.page.getByRole("option", { name: value, exact: true }).click();
-  }
-
-  async selectOllamaModel(value: string) {
-    await this.ollamaModel.click();
-    // keyboard: the field's tooltip covers the list on focus and takes the pointer
-    await this.page
-      .getByRole("option", { name: value, exact: true })
-      .press("Enter");
-  }
-
-  async selectVlmProvider(value: string) {
-    await this.vlmProvider.click();
-    await this.page.getByRole("option", { name: value, exact: true }).click();
   }
 }

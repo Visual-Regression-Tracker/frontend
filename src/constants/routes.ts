@@ -9,6 +9,8 @@ export const routes = {
   PROJECT_LIST_PAGE: "/projects",
   VARIATION_LIST_PAGE: "/variations",
   VARIATION_DETAILS_PAGE: "/variations/details",
+  PROJECT_STATISTICS_PAGE: "/statistics",
+  PROJECT_SETTINGS_PAGE: "/settings",
 
   // admin
   USER_LIST_PAGE: "/users",

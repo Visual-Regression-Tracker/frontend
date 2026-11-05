@@ -50,30 +50,27 @@ const savedProject = async (
 };
 
 test("opens on the engine the project uses", async ({
-  projectListPage,
+  projectSettingsPage,
   page,
 }) => {
-  await projectListPage.editBtn.click();
-
-  await expect(projectListPage.imageComparison).toHaveText(
+  await expect(projectSettingsPage.imageComparison).toHaveText(
     ImageComparison.pixelmatch,
   );
-  await expect(projectListPage.threshold).toHaveValue("0.1");
+  await expect(projectSettingsPage.threshold).toHaveValue("0.1");
   await expect(
-    projectListPage.switchLabelled("Allow diff dimensions"),
+    projectSettingsPage.switchLabelled("Allow diff dimensions"),
   ).not.toBeChecked();
   await expect(
-    projectListPage.switchLabelled("Ignore anti-aliasing"),
+    projectSettingsPage.switchLabelled("Ignore anti-aliasing"),
   ).toBeChecked();
-  expect(page.url()).toContain("/projects");
+  expect(page.url()).toContain(`/settings/${project.id}`);
 });
 
 test("offers the four image comparison libraries", async ({
-  projectListPage,
+  projectSettingsPage,
   page,
 }) => {
-  await projectListPage.editBtn.click();
-  await projectListPage.imageComparison.click();
+  await projectSettingsPage.imageComparison.click();
 
   // Ollama and Gemini live under "vlm", behind a second "VLM Provider" select
   await expect(page.getByRole("option")).toHaveText([
@@ -84,92 +81,87 @@ test("offers the four image comparison libraries", async ({
   ]);
 });
 
-test("shows the pixelmatch fields", async ({ projectListPage }) => {
-  await projectListPage.editBtn.click();
-  await projectListPage.selectImageComparison(ImageComparison.odiff);
-  await projectListPage.selectImageComparison(ImageComparison.pixelmatch);
+test("shows the pixelmatch fields", async ({ projectSettingsPage }) => {
+  await projectSettingsPage.selectImageComparison(ImageComparison.odiff);
+  await projectSettingsPage.selectImageComparison(ImageComparison.pixelmatch);
 
   await expect(
-    projectListPage.switchLabelled("Allow diff dimensions"),
+    projectSettingsPage.switchLabelled("Allow diff dimensions"),
   ).toBeVisible();
   await expect(
-    projectListPage.switchLabelled("Ignore anti-aliasing"),
+    projectSettingsPage.switchLabelled("Ignore anti-aliasing"),
   ).toBeVisible();
-  await expect(projectListPage.threshold).toBeVisible();
-  await expect(projectListPage.switchLabelled("Strict")).toHaveCount(0);
-  await expect(projectListPage.switchLabelled("Output diff mask")).toHaveCount(
-    0,
-  );
-  await expect(projectListPage.vlmProvider).toHaveCount(0);
+  await expect(projectSettingsPage.threshold).toBeVisible();
+  await expect(projectSettingsPage.switchLabelled("Strict")).toHaveCount(0);
+  await expect(
+    projectSettingsPage.switchLabelled("Output diff mask"),
+  ).toHaveCount(0);
+  await expect(projectSettingsPage.vlmProvider).toHaveCount(0);
 });
 
-test("shows the looksSame fields", async ({ projectListPage }) => {
-  await projectListPage.editBtn.click();
+test("shows the looksSame fields", async ({ projectSettingsPage }) => {
+  await projectSettingsPage.selectImageComparison(ImageComparison.lookSame);
 
-  await projectListPage.selectImageComparison(ImageComparison.lookSame);
-
-  await expect(projectListPage.switchLabelled("Strict")).toBeVisible();
-  await expect(projectListPage.tolerance).toBeVisible();
+  await expect(projectSettingsPage.switchLabelled("Strict")).toBeVisible();
+  await expect(projectSettingsPage.tolerance).toBeVisible();
   // the app spells the labels "anti-alliasing" and "carret"
   await expect(
-    projectListPage.switchLabelled("Ignore anti-alliasing"),
+    projectSettingsPage.switchLabelled("Ignore anti-alliasing"),
   ).toBeVisible();
   await expect(
-    projectListPage.dialog.getByLabel("Antialiasing tolerance"),
+    projectSettingsPage.page.getByLabel("Antialiasing tolerance"),
   ).toBeVisible();
-  await expect(projectListPage.switchLabelled("Ignore carret")).toBeVisible();
   await expect(
-    projectListPage.switchLabelled("Allow diff dimensions"),
+    projectSettingsPage.switchLabelled("Ignore carret"),
   ).toBeVisible();
-  await expect(projectListPage.threshold).toHaveCount(0);
-  await expect(projectListPage.vlmProvider).toHaveCount(0);
+  await expect(
+    projectSettingsPage.switchLabelled("Allow diff dimensions"),
+  ).toBeVisible();
+  await expect(projectSettingsPage.threshold).toHaveCount(0);
+  await expect(projectSettingsPage.vlmProvider).toHaveCount(0);
 });
 
-test("shows the odiff fields", async ({ projectListPage }) => {
-  await projectListPage.editBtn.click();
-
-  await projectListPage.selectImageComparison(ImageComparison.odiff);
+test("shows the odiff fields", async ({ projectSettingsPage }) => {
+  await projectSettingsPage.selectImageComparison(ImageComparison.odiff);
 
   await expect(
-    projectListPage.switchLabelled("Output diff mask"),
+    projectSettingsPage.switchLabelled("Output diff mask"),
   ).toBeVisible();
   await expect(
-    projectListPage.switchLabelled("Fail on layout diff"),
+    projectSettingsPage.switchLabelled("Fail on layout diff"),
   ).toBeVisible();
   // spelled "anti-alliasing" here too
   await expect(
-    projectListPage.switchLabelled("Ignore anti-alliasing"),
+    projectSettingsPage.switchLabelled("Ignore anti-alliasing"),
   ).toBeVisible();
-  await expect(projectListPage.threshold).toBeVisible();
+  await expect(projectSettingsPage.threshold).toBeVisible();
   await expect(
-    projectListPage.switchLabelled("Allow diff dimensions"),
+    projectSettingsPage.switchLabelled("Allow diff dimensions"),
   ).toHaveCount(0);
-  await expect(projectListPage.switchLabelled("Strict")).toHaveCount(0);
+  await expect(projectSettingsPage.switchLabelled("Strict")).toHaveCount(0);
 });
 
 test("shows the vlm fields, on Ollama to begin with", async ({
-  projectListPage,
+  projectSettingsPage,
 }) => {
-  await projectListPage.editBtn.click();
+  await projectSettingsPage.selectImageComparison(ImageComparison.vlm);
 
-  await projectListPage.selectImageComparison(ImageComparison.vlm);
-
-  await expect(projectListPage.vlmProvider).toHaveText("Ollama");
-  await expect(projectListPage.prompt).toBeVisible();
-  await expect(projectListPage.temperature).toBeVisible();
-  await expect(projectListPage.switchLabelled("Use Thinking")).toBeVisible();
-  await expect(projectListPage.geminiModel).toHaveCount(0);
-  await expect(projectListPage.threshold).toHaveCount(0);
+  await expect(projectSettingsPage.vlmProvider).toHaveText("Ollama");
+  await expect(projectSettingsPage.prompt).toBeVisible();
+  await expect(projectSettingsPage.temperature).toBeVisible();
+  await expect(
+    projectSettingsPage.switchLabelled("Use Thinking"),
+  ).toBeVisible();
+  await expect(projectSettingsPage.geminiModel).toHaveCount(0);
+  await expect(projectSettingsPage.threshold).toHaveCount(0);
 });
 
 test("lists the models Ollama has, once they are fetched", async ({
-  projectListPage,
+  projectSettingsPage,
   page,
 }) => {
-  await projectListPage.editBtn.click();
-
-  await projectListPage.selectImageComparison(ImageComparison.vlm);
-  await projectListPage.ollamaModel.click();
+  await projectSettingsPage.selectImageComparison(ImageComparison.vlm);
+  await projectSettingsPage.ollamaModel.click();
 
   await expect(page.getByRole("option")).toHaveText([
     "gemma3:12b",
@@ -178,89 +170,85 @@ test("lists the models Ollama has, once they are fetched", async ({
 });
 
 test("asks for the Ollama model by hand when it has none", async ({
-  projectListPage,
+  projectSettingsPage,
   page,
 }) => {
   await mockOllamaModels(page, []);
-  await projectListPage.editBtn.click();
 
-  await projectListPage.selectImageComparison(ImageComparison.vlm);
+  await projectSettingsPage.selectImageComparison(ImageComparison.vlm);
 
   await expect(
-    projectListPage.dialog.getByText(
+    projectSettingsPage.page.getByText(
       "No models available. Enter model name manually.",
     ),
   ).toBeVisible();
-  await expect(projectListPage.ollamaModelText).toBeVisible();
+  await expect(projectSettingsPage.ollamaModelText).toBeVisible();
 });
 
 test("shows the Gemini fields after switching the VLM provider", async ({
-  projectListPage,
+  projectSettingsPage,
 }) => {
-  await projectListPage.editBtn.click();
-  await projectListPage.selectImageComparison(ImageComparison.vlm);
+  await projectSettingsPage.selectImageComparison(ImageComparison.vlm);
 
-  await projectListPage.selectVlmProvider("Google Gemini");
+  await projectSettingsPage.selectVlmProvider("Google Gemini");
 
-  await expect(projectListPage.vlmProvider).toHaveText("Google Gemini");
-  await expect(projectListPage.geminiModel).toHaveValue("gemini-1.5-pro");
-  await expect(projectListPage.geminiApiKey).toHaveValue("");
-  await expect(projectListPage.geminiApiKey).toHaveAttribute(
+  await expect(projectSettingsPage.vlmProvider).toHaveText("Google Gemini");
+  await expect(projectSettingsPage.geminiModel).toHaveValue("gemini-1.5-pro");
+  await expect(projectSettingsPage.geminiApiKey).toHaveValue("");
+  await expect(projectSettingsPage.geminiApiKey).toHaveAttribute(
     "type",
     "password",
   );
-  await expect(projectListPage.prompt).toBeVisible();
-  await expect(projectListPage.temperature).toBeVisible();
-  await expect(projectListPage.switchLabelled("Use Thinking")).toBeVisible();
-  await expect(projectListPage.ollamaModel).toHaveCount(0);
+  await expect(projectSettingsPage.prompt).toBeVisible();
+  await expect(projectSettingsPage.temperature).toBeVisible();
+  await expect(
+    projectSettingsPage.switchLabelled("Use Thinking"),
+  ).toBeVisible();
+  await expect(projectSettingsPage.ollamaModel).toHaveCount(0);
 });
 
 test("keeps the prompt and temperature across a VLM provider switch", async ({
-  projectListPage,
+  projectSettingsPage,
 }) => {
-  await projectListPage.editBtn.click();
-  await projectListPage.selectImageComparison(ImageComparison.vlm);
-  await projectListPage.temperature.fill("0.7");
+  await projectSettingsPage.selectImageComparison(ImageComparison.vlm);
+  await projectSettingsPage.temperature.fill("0.7");
 
-  await projectListPage.selectVlmProvider("Google Gemini");
+  await projectSettingsPage.selectVlmProvider("Google Gemini");
 
-  await expect(projectListPage.temperature).toHaveValue("0.7");
+  await expect(projectSettingsPage.temperature).toHaveValue("0.7");
 });
 
 test("brings the defaults back when the engine is switched away and back", async ({
-  projectListPage,
+  projectSettingsPage,
 }) => {
-  await projectListPage.editBtn.click();
-  await projectListPage.threshold.fill("0.5");
-  await expect(projectListPage.threshold).toHaveValue("0.5");
+  await projectSettingsPage.threshold.fill("0.5");
+  await expect(projectSettingsPage.threshold).toHaveValue("0.5");
 
-  await projectListPage.selectImageComparison(ImageComparison.odiff);
-  await projectListPage.selectImageComparison(ImageComparison.pixelmatch);
+  await projectSettingsPage.selectImageComparison(ImageComparison.odiff);
+  await projectSettingsPage.selectImageComparison(ImageComparison.pixelmatch);
 
-  await expect(projectListPage.threshold).toHaveValue("0.1");
+  await expect(projectSettingsPage.threshold).toHaveValue("0.1");
 });
 
 test("keeps the config when the same engine is picked again", async ({
-  projectListPage,
+  projectSettingsPage,
 }) => {
-  await projectListPage.editBtn.click();
-  await projectListPage.threshold.fill("0.5");
+  await projectSettingsPage.threshold.fill("0.5");
 
-  await projectListPage.selectImageComparison(ImageComparison.pixelmatch);
+  await projectSettingsPage.selectImageComparison(ImageComparison.pixelmatch);
 
-  await expect(projectListPage.threshold).toHaveValue("0.5");
+  await expect(projectSettingsPage.threshold).toHaveValue("0.5");
 });
 
 test("saves a changed pixelmatch threshold", async ({
-  projectListPage,
+  projectSettingsPage,
   page,
 }) => {
-  await projectListPage.editBtn.click();
-  await projectListPage.threshold.fill("0.5");
-  await projectListPage.switchLabelled("Allow diff dimensions").check();
+  await projectSettingsPage.threshold.fill("0.5");
+  await projectSettingsPage.switchLabelled("Allow diff dimensions").check();
 
   const saved = await savedProject(page, () =>
-    projectListPage.modal.confirmBtn.click(),
+    projectSettingsPage.saveBtn.click(),
   );
 
   expect(saved.imageComparison).toBe(ImageComparison.pixelmatch);
@@ -270,17 +258,21 @@ test("saves a changed pixelmatch threshold", async ({
     allowDiffDimensions: true,
   });
   expect(saved.body.id).toBe(project.id);
-  await expect(projectListPage.modal.dialog).toBeHidden();
+  await expect(projectSettingsPage.notification.message).toHaveText(
+    `${project.name} updated`,
+  );
 });
 
-test("saves a changed looksSame config", async ({ projectListPage, page }) => {
-  await projectListPage.editBtn.click();
-  await projectListPage.selectImageComparison(ImageComparison.lookSame);
-  await projectListPage.switchLabelled("Strict").check();
-  await projectListPage.switchLabelled("Ignore carret").uncheck();
+test("saves a changed looksSame config", async ({
+  projectSettingsPage,
+  page,
+}) => {
+  await projectSettingsPage.selectImageComparison(ImageComparison.lookSame);
+  await projectSettingsPage.switchLabelled("Strict").check();
+  await projectSettingsPage.switchLabelled("Ignore carret").uncheck();
 
   const saved = await savedProject(page, () =>
-    projectListPage.modal.confirmBtn.click(),
+    projectSettingsPage.saveBtn.click(),
   );
 
   expect(saved.imageComparison).toBe(ImageComparison.lookSame);
@@ -291,14 +283,13 @@ test("saves a changed looksSame config", async ({ projectListPage, page }) => {
   });
 });
 
-test("saves a changed odiff config", async ({ projectListPage, page }) => {
-  await projectListPage.editBtn.click();
-  await projectListPage.selectImageComparison(ImageComparison.odiff);
-  await projectListPage.threshold.fill("0.25");
-  await projectListPage.switchLabelled("Output diff mask").uncheck();
+test("saves a changed odiff config", async ({ projectSettingsPage, page }) => {
+  await projectSettingsPage.selectImageComparison(ImageComparison.odiff);
+  await projectSettingsPage.threshold.fill("0.25");
+  await projectSettingsPage.switchLabelled("Output diff mask").uncheck();
 
   const saved = await savedProject(page, () =>
-    projectListPage.modal.confirmBtn.click(),
+    projectSettingsPage.saveBtn.click(),
   );
 
   expect(saved.imageComparison).toBe(ImageComparison.odiff);
@@ -309,16 +300,15 @@ test("saves a changed odiff config", async ({ projectListPage, page }) => {
   });
 });
 
-test("saves a chosen Ollama model", async ({ projectListPage, page }) => {
-  await projectListPage.editBtn.click();
-  await projectListPage.selectImageComparison(ImageComparison.vlm);
-  await projectListPage.selectOllamaModel("llava:13b");
+test("saves a chosen Ollama model", async ({ projectSettingsPage, page }) => {
+  await projectSettingsPage.selectImageComparison(ImageComparison.vlm);
+  await projectSettingsPage.selectOllamaModel("llava:13b");
   // switch first: a focused field keeps its tooltip open over it
-  await projectListPage.switchLabelled("Use Thinking").check();
-  await projectListPage.temperature.fill("0.4");
+  await projectSettingsPage.switchLabelled("Use Thinking").check();
+  await projectSettingsPage.temperature.fill("0.4");
 
   const saved = await savedProject(page, () =>
-    projectListPage.modal.confirmBtn.click(),
+    projectSettingsPage.saveBtn.click(),
   );
 
   expect(saved.imageComparison).toBe(ImageComparison.vlm);
@@ -331,15 +321,14 @@ test("saves a chosen Ollama model", async ({ projectListPage, page }) => {
   });
 });
 
-test("saves a Gemini model and key", async ({ projectListPage, page }) => {
-  await projectListPage.editBtn.click();
-  await projectListPage.selectImageComparison(ImageComparison.vlm);
-  await projectListPage.selectVlmProvider("Google Gemini");
-  await projectListPage.geminiModel.fill("gemini-1.5-flash");
-  await projectListPage.geminiApiKey.fill("test-key");
+test("saves a Gemini model and key", async ({ projectSettingsPage, page }) => {
+  await projectSettingsPage.selectImageComparison(ImageComparison.vlm);
+  await projectSettingsPage.selectVlmProvider("Google Gemini");
+  await projectSettingsPage.geminiModel.fill("gemini-1.5-flash");
+  await projectSettingsPage.geminiApiKey.fill("test-key");
 
   const saved = await savedProject(page, () =>
-    projectListPage.modal.confirmBtn.click(),
+    projectSettingsPage.saveBtn.click(),
   );
 
   expect(saved.imageComparison).toBe(ImageComparison.vlm);
@@ -353,7 +342,7 @@ test("saves a Gemini model and key", async ({ projectListPage, page }) => {
 });
 
 test("does not save a Gemini project without its key", async ({
-  projectListPage,
+  projectSettingsPage,
   page,
 }) => {
   const saves: string[] = [];
@@ -362,20 +351,18 @@ test("does not save a Gemini project without its key", async ({
       saves.push(request.url());
     }
   });
-  await projectListPage.editBtn.click();
-  await projectListPage.selectImageComparison(ImageComparison.vlm);
-  await projectListPage.selectVlmProvider("Google Gemini");
+  await projectSettingsPage.selectImageComparison(ImageComparison.vlm);
+  await projectSettingsPage.selectVlmProvider("Google Gemini");
 
-  await projectListPage.modal.confirmBtn.click();
+  await projectSettingsPage.saveBtn.click();
 
   // the browser's required-field check stops the form before the validator's message
   await expect
     .poll(() =>
-      projectListPage.geminiApiKey.evaluate(
+      projectSettingsPage.geminiApiKey.evaluate(
         (input: HTMLInputElement) => input.validity.valueMissing,
       ),
     )
     .toBe(true);
-  await expect(projectListPage.modal.dialog).toBeVisible();
   expect(saves).toEqual([]);
 });

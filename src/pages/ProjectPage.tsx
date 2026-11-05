@@ -1,18 +1,16 @@
 import { Suspense, useEffect, lazy } from "react";
 import { Grid, Box } from "@mui/material";
-import { useParams, useNavigate, useLocation } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 import BuildList from "../components/BuildList";
-import ProjectSelect from "../components/ProjectSelect";
 import TestRunList from "../components/TestRunList";
 import BuildDetails from "../components/BuildDetails";
 import { useHelpSteps } from "../contexts";
 import {
   PROJECT_PAGE_STEPS,
   LOCATOR_PROJECT_PAGE_BUILD_LIST,
-  LOCATOR_PROJECT_PAGE_SELECT_PROJECT,
   LOCATOR_PROJECT_PAGE_TEST_RUN_LIST,
 } from "../constants";
-import { buildProjectPageUrl, getQueryParams } from "../_helpers/route.helpers";
+import { getQueryParams } from "../_helpers/route.helpers";
 
 const loadTestDetailsDialog = () => import("../components/TestDetailsDialog");
 const TestDetailsDialog = lazy(() =>
@@ -20,8 +18,6 @@ const TestDetailsDialog = lazy(() =>
 );
 
 const ProjectPage = () => {
-  const { projectId } = useParams<{ projectId: string }>();
-  const navigate = useNavigate();
   const { buildId, testId: openedRunId } = getQueryParams(useLocation().search);
 
   // the dialog's chunk loads in the background once a build is open, so the first run opens at once
@@ -47,14 +43,6 @@ const ProjectPage = () => {
             borderColor: "divider",
           }}
         >
-          <Box id={LOCATOR_PROJECT_PAGE_SELECT_PROJECT}>
-            <ProjectSelect
-              projectId={projectId}
-              onProjectSelect={(id) => {
-                navigate(buildProjectPageUrl(id));
-              }}
-            />
-          </Box>
           <Box
             id={LOCATOR_PROJECT_PAGE_BUILD_LIST}
             sx={{ flex: 1, minHeight: 0 }}

@@ -8,7 +8,6 @@ export const LOCATOR_PROJECT_LIST_PAGE_PROJECT_LIST = "projectlist-1";
 export const LOCATOR_PROJECT_PAGE_SELECT_PROJECT = "select-project";
 export const LOCATOR_PROJECT_PAGE_BUILD_LIST = "build-list";
 export const LOCATOR_PROJECT_PAGE_TEST_RUN_LIST = "test-run-list";
-export const LOCATOR_TEST_VARIATION_LIST_PAGE_SELECT_PROJECT = "select-project";
 
 export const LOGIN_PAGE_STEPS: Step[] = [
   {
@@ -34,7 +33,8 @@ export const PROJECT_LIST_PAGE_STEPS: Step[] = [
 export const PROJECT_PAGE_STEPS: Step[] = [
   {
     target: `#${LOCATOR_PROJECT_PAGE_SELECT_PROJECT}`,
-    content: "Select the project for which you want to view details.",
+    content:
+      "Switch to another project here. The tabs below open its builds, variations, statistics and settings.",
   },
   {
     target: `#${LOCATOR_PROJECT_PAGE_BUILD_LIST}`,
@@ -58,10 +58,10 @@ export const PROJECT_PAGE_STEPS: Step[] = [
 
 export const TEST_VARIATION_LIST_PAGE = [
   {
-    target: `#${LOCATOR_TEST_VARIATION_LIST_PAGE_SELECT_PROJECT}`,
+    target: `#${LOCATOR_PROJECT_PAGE_SELECT_PROJECT}`,
     title:
       "Shows all the historical record of baselines by Name + Branch + OS + Browser + Viewport + Device",
-    content: "Select the project you want to act on.",
+    content: "Switch to another project here.",
   },
   {
     target: `#${LOCATOR_TEST_VARIATION_SELECT_BRANCH}`,

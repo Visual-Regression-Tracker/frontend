@@ -7,6 +7,7 @@ import {
 } from "~client/constants/project";
 import { ImageComparison } from "~client/types/imageComparison";
 import { ProjectListPage } from "pages";
+import { ProjectSettingsPage } from "pages/ProjectSettingsPage";
 import type { NoiseAnalysisConfig, Project, ProjectDto } from "~client/types";
 import {
   API_URL,
@@ -64,12 +65,11 @@ test("can dismiss a notification without waiting it out", async ({
 });
 
 test("offers the group by axis with bulk approve off", async ({
-  projectListPage,
-  page,
+  projectSettingsPage,
 }) => {
-  await projectListPage.editBtn.click();
-
-  await expect(page.getByLabel("Group variations by")).toBeVisible();
+  await expect(
+    projectSettingsPage.page.getByLabel("Group variations by"),
+  ).toBeVisible();
 });
 
 test("creates a project", async ({ projectListPage, page }) => {
@@ -133,20 +133,20 @@ test("does not create a project with too short a name", async ({
   expect(creates).toEqual([]);
 });
 
-test("edits a project", async ({ projectListPage, page }) => {
+test("edits a project", async ({ projectSettingsPage, page }) => {
   await mockSaveProject(page);
-
-  await projectListPage.editBtn.click();
-  await expect(projectListPage.name).toHaveValue(project.name);
-  await expect(projectListPage.mainBranch).toHaveValue(project.mainBranchName);
-  await projectListPage.name.fill("Renamed project");
+  await expect(projectSettingsPage.name).toHaveValue(project.name);
+  await expect(projectSettingsPage.mainBranch).toHaveValue(
+    project.mainBranchName,
+  );
+  await projectSettingsPage.name.fill("Renamed project");
 
   const [request] = await Promise.all([
     page.waitForRequest(
       (request) =>
         request.url() === `${API_URL}/projects` && request.method() === "PUT",
     ),
-    projectListPage.modal.confirmBtn.click(),
+    projectSettingsPage.saveBtn.click(),
   ]);
 
   expect(request.postDataJSON()).toMatchObject({
@@ -155,11 +155,22 @@ test("edits a project", async ({ projectListPage, page }) => {
     mainBranchName: project.mainBranchName,
     maxBuildAllowed: project.maxBuildAllowed,
   });
-  await expect(projectListPage.notification.message).toHaveText(
+  await expect(projectSettingsPage.notification.message).toHaveText(
     "Renamed project updated",
   );
-  await expect(projectListPage.project("Renamed project")).toBeVisible();
-  await expect(projectListPage.project(project.name)).toHaveCount(0);
+  await expect(projectSettingsPage.header.projectCrumb).toHaveText(
+    "Renamed project",
+  );
+});
+
+test("opens the project's settings from the edit button", async ({
+  projectListPage,
+  page,
+}) => {
+  await projectListPage.editBtn.click();
+
+  await expect(page).toHaveURL(new RegExp(`/settings/${project.id}$`));
+  await expect(new ProjectSettingsPage(page).name).toHaveValue(project.name);
 });
 
 const named = (
@@ -350,20 +361,18 @@ test.describe("post-analysis settings", () => {
   });
 
   test("saves the switches and thresholds of an existing project", async ({
-    projectListPage,
+    projectSettingsPage,
     page,
   }) => {
     await mockSaveProject(page);
-
-    await projectListPage.editBtn.click();
-    await projectListPage.amplitudeThreshold.fill("60");
-    await projectListPage.solidShareMax.fill("0.02");
-    await projectListPage.distanceThreshold.fill("0.3");
-    await projectListPage.dinov2Switch.uncheck();
+    await projectSettingsPage.amplitudeThreshold.fill("60");
+    await projectSettingsPage.solidShareMax.fill("0.02");
+    await projectSettingsPage.distanceThreshold.fill("0.3");
+    await projectSettingsPage.dinov2Switch.uncheck();
 
     const [request] = await Promise.all([
       waitForSave(page, "PUT"),
-      projectListPage.modal.confirmBtn.click(),
+      projectSettingsPage.saveBtn.click(),
     ]);
 
     expect(savedNoiseConfig(request)).toEqual({
@@ -373,7 +382,7 @@ test.describe("post-analysis settings", () => {
   });
 
   test("opens a project with the settings it was saved with", async ({
-    projectListPage,
+    projectSettingsPage,
     page,
   }) => {
     await mockGetProjects(page, [
@@ -384,89 +393,80 @@ test.describe("post-analysis settings", () => {
     ]);
     await page.reload();
 
-    await projectListPage.editBtn.click();
-
-    await expect(projectListPage.blurSwitch).not.toBeChecked();
-    await expect(projectListPage.dinov2Switch).toBeChecked();
-    await expect(projectListPage.amplitudeThreshold).toHaveValue("55");
-    await expect(projectListPage.solidShareMax).toHaveValue("0.05");
-    await expect(projectListPage.distanceThreshold).toHaveValue("0.2");
+    await expect(projectSettingsPage.blurSwitch).not.toBeChecked();
+    await expect(projectSettingsPage.dinov2Switch).toBeChecked();
+    await expect(projectSettingsPage.amplitudeThreshold).toHaveValue("55");
+    await expect(projectSettingsPage.solidShareMax).toHaveValue("0.05");
+    await expect(projectSettingsPage.distanceThreshold).toHaveValue("0.2");
   });
 
   test("locks the second stage while the first is off", async ({
-    projectListPage,
+    projectSettingsPage,
   }) => {
-    await projectListPage.editBtn.click();
-    await expect(projectListPage.dinov2Switch).toBeEnabled();
+    await expect(projectSettingsPage.dinov2Switch).toBeEnabled();
 
-    await projectListPage.blurSwitch.uncheck();
+    await projectSettingsPage.blurSwitch.uncheck();
 
-    await expect(projectListPage.dinov2Switch).toBeDisabled();
-    await expect(projectListPage.needsStageOne).toBeVisible();
-    await expect(projectListPage.amplitudeThreshold).toBeDisabled();
-    await expect(projectListPage.distanceThreshold).toBeDisabled();
+    await expect(projectSettingsPage.dinov2Switch).toBeDisabled();
+    await expect(projectSettingsPage.needsStageOne).toBeVisible();
+    await expect(projectSettingsPage.amplitudeThreshold).toBeDisabled();
+    await expect(projectSettingsPage.distanceThreshold).toBeDisabled();
 
-    await projectListPage.blurSwitch.check();
+    await projectSettingsPage.blurSwitch.check();
 
-    await expect(projectListPage.dinov2Switch).toBeEnabled();
-    await expect(projectListPage.needsStageOne).toBeHidden();
+    await expect(projectSettingsPage.dinov2Switch).toBeEnabled();
+    await expect(projectSettingsPage.needsStageOne).toBeHidden();
   });
 
   test("is not available with the VLM comparator", async ({
-    projectListPage,
+    projectSettingsPage,
   }) => {
-    await projectListPage.editBtn.click();
-    await expect(projectListPage.vlmNote).toBeHidden();
+    await expect(projectSettingsPage.vlmNote).toBeHidden();
 
-    await projectListPage.selectImageComparison(ImageComparison.vlm);
+    await projectSettingsPage.selectImageComparison(ImageComparison.vlm);
 
-    await expect(projectListPage.vlmNote).toHaveText(
+    await expect(projectSettingsPage.vlmNote).toHaveText(
       "Not available with the VLM comparator",
     );
-    await expect(projectListPage.blurSwitch).toBeDisabled();
-    await expect(projectListPage.dinov2Switch).toBeDisabled();
-    await expect(projectListPage.amplitudeThreshold).toBeDisabled();
-    await expect(projectListPage.solidShareMax).toBeDisabled();
-    await expect(projectListPage.distanceThreshold).toBeDisabled();
+    await expect(projectSettingsPage.blurSwitch).toBeDisabled();
+    await expect(projectSettingsPage.dinov2Switch).toBeDisabled();
+    await expect(projectSettingsPage.amplitudeThreshold).toBeDisabled();
+    await expect(projectSettingsPage.solidShareMax).toBeDisabled();
+    await expect(projectSettingsPage.distanceThreshold).toBeDisabled();
 
-    await projectListPage.selectImageComparison(ImageComparison.odiff);
+    await projectSettingsPage.selectImageComparison(ImageComparison.odiff);
 
-    await expect(projectListPage.vlmNote).toBeHidden();
-    await expect(projectListPage.blurSwitch).toBeEnabled();
+    await expect(projectSettingsPage.vlmNote).toBeHidden();
+    await expect(projectSettingsPage.blurSwitch).toBeEnabled();
   });
 
   test("says so where the server has no DINOv2 service", async ({
-    projectListPage,
+    projectSettingsPage,
     page,
   }) => {
     await mockDinov2Status(page, { configured: false, available: false });
 
-    await projectListPage.editBtn.click();
-
-    await expect(projectListPage.dinov2Status).toHaveText(
+    await expect(projectSettingsPage.dinov2Status).toHaveText(
       "Not available: this server has no DINOv2 service (DINOV2_URL). Runs are judged by the blur stage alone.",
     );
   });
 
   test("warns when the DINOv2 service is set up but not answering", async ({
-    projectListPage,
+    projectSettingsPage,
     page,
   }) => {
     await mockDinov2Status(page, { configured: true, available: false });
 
-    await projectListPage.editBtn.click();
-
-    await expect(projectListPage.dinov2Status).toContainText(
+    await expect(projectSettingsPage.dinov2Status).toContainText(
       "The DINOv2 service is not answering right now",
     );
   });
 
   test("shows no DINOv2 note while the service answers", async ({
-    projectListPage,
+    projectSettingsPage,
   }) => {
-    await projectListPage.editBtn.click();
-    await expect(projectListPage.dinov2Switch).toBeVisible();
+    await expect(projectSettingsPage.dinov2Switch).toBeVisible();
 
-    await expect(projectListPage.dinov2Status).toHaveCount(0);
+    await expect(projectSettingsPage.dinov2Status).toHaveCount(0);
   });
 });

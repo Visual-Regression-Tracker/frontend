@@ -1,10 +1,9 @@
 import { useEffect, useMemo, useState } from "react";
 import TestVariationList from "../components/TestVariationList";
-import { useNavigate, useParams } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import { TestVariation } from "../types";
 import { testVariationService } from "../services";
 import {
-  Box,
   Container,
   Pagination,
   Paper,
@@ -14,21 +13,15 @@ import {
   Typography,
 } from "@mui/material";
 import { PageHeader } from "../components/PageHeader";
-import ProjectSelect from "../components/ProjectSelect";
 import Filters from "../components/Filters";
 import { TestVariationMergeForm } from "../components/TestVariationMergeForm";
 import { useSnackbar } from "notistack";
 import { useHelpSteps } from "../contexts/help.context";
-import {
-  LOCATOR_TEST_VARIATION_LIST_PAGE_SELECT_PROJECT,
-  routes,
-  TEST_VARIATION_LIST_PAGE,
-} from "../constants";
+import { TEST_VARIATION_LIST_PAGE } from "../constants";
 
 const PAGE_SIZE_OPTIONS = [12, 24, 48, 96];
 
 const TestVariationListPage = () => {
-  const navigate = useNavigate();
   const { enqueueSnackbar } = useSnackbar();
   const { projectId = "" } = useParams<{ projectId: string }>();
   const [testVariations, setTestVariations] = useState<TestVariation[]>([]);
@@ -131,19 +124,6 @@ const TestVariationListPage = () => {
           filteredItems.length === testVariations.length
             ? `${testVariations.length} baselines`
             : `${filteredItems.length} of ${testVariations.length} baselines`
-        }
-        actions={
-          <Box
-            id={LOCATOR_TEST_VARIATION_LIST_PAGE_SELECT_PROJECT}
-            sx={{ width: { xs: "100%", sm: 280 } }}
-          >
-            <ProjectSelect
-              projectId={projectId}
-              onProjectSelect={(id) => {
-                navigate(`${routes.VARIATION_LIST_PAGE}/${id}`);
-              }}
-            />
-          </Box>
         }
       />
       <Stack spacing={2} sx={{ mb: 3 }}>

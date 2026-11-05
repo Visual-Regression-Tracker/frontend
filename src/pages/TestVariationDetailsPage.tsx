@@ -22,7 +22,7 @@ import { StatusChip } from "../components/StatusChip";
 import { DateLabel } from "../components/DateLabel";
 import { NoiseHintChip } from "../components/TestRunList/NoiseHintChip";
 import { Baseline } from "../types/baseline";
-import { useNoiseAnalysisAvailable } from "../contexts";
+import { useNoiseAnalysisAvailable, useSetVariationCrumb } from "../contexts";
 
 const TestVariationDetailsPage = () => {
   const navigate = useNavigate();
@@ -30,6 +30,12 @@ const TestVariationDetailsPage = () => {
   const { testVariationId } = useParams<{ testVariationId: string }>();
   const [testVariation, setTestVariation] = useState<TestVariation>();
   const noiseAvailable = useNoiseAnalysisAvailable(testVariation?.projectId);
+  useSetVariationCrumb(
+    testVariation && {
+      projectId: testVariation.projectId,
+      name: testVariation.name,
+    },
+  );
 
   useEffect(() => {
     if (testVariationId) {

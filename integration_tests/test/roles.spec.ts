@@ -1,6 +1,7 @@
 import { expect, Page } from "@playwright/test";
 import { test } from "fixtures";
 import { ProjectListPage } from "pages";
+import { ProjectSettingsPage } from "pages/ProjectSettingsPage";
 import { UserListPage } from "pages/UserListPage";
 import {
   TEST_BUILD_FAILED,
@@ -205,5 +206,53 @@ test.describe("as guest refused by the API", () => {
     const toast = projectPage.notification.toast("Guests cannot approve runs");
     await expect(toast).toBeVisible();
     await expect(toast).toHaveClass(/notistack-MuiContent-error/);
+  });
+});
+
+test.describe("project settings by role", () => {
+  test.beforeEach(async ({ page }) => {
+    await mockGetBuilds(page, TEST_PROJECT.id, []);
+  });
+
+  for (const role of ["admin", "editor"] as const) {
+    test.describe(`as ${role}`, () => {
+      test.use({ userRole: role });
+
+      test("sees the Settings tab and opens it", async ({
+        openProjectPage,
+        page,
+      }) => {
+        const projectPage = await openProjectPage(TEST_PROJECT.id);
+
+        await projectPage.header.tab("Settings").click();
+
+        await expect(page).toHaveURL(
+          new RegExp(`/settings/${TEST_PROJECT.id}$`),
+        );
+        await expect(new ProjectSettingsPage(page).heading).toBeVisible();
+      });
+    });
+  }
+
+  test.describe("as guest", () => {
+    test.use({ userRole: "guest" });
+
+    test("does not see the Settings tab", async ({ openProjectPage }) => {
+      const projectPage = await openProjectPage(TEST_PROJECT.id);
+
+      await expect(projectPage.header.tab("Builds")).toBeVisible();
+      await expect(projectPage.header.tab("Statistics")).toBeVisible();
+      await expect(projectPage.header.tab("Settings")).toHaveCount(0);
+    });
+
+    test("is sent from the settings link to the projects", async ({
+      projectListPage,
+      page,
+    }) => {
+      await page.goto(`/settings/${TEST_PROJECT.id}`);
+
+      await expect(page).toHaveURL(/\/projects$/);
+      await expect(projectListPage.projects).toBeVisible();
+    });
   });
 });
