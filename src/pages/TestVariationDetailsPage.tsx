@@ -20,6 +20,7 @@ import { useSnackbar } from "notistack";
 import {
   BaselineHistoryList,
   baselineElementId,
+  versionNumber,
 } from "../components/BaselineHistoryList";
 import { Baseline } from "../types/baseline";
 import { useNoiseAnalysisAvailable, useSetVariationCrumb } from "../contexts";
@@ -105,7 +106,7 @@ const TestVariationDetailsPage = () => {
                     variant="body2"
                     sx={{ px: 2, py: 1, color: "text.secondary" }}
                   >
-                    {`v${testVariation.baselines.length - index}`}
+                    {`v${versionNumber(testVariation.baselines.length, index)}`}
                   </Typography>
                   <CardMedia
                     component="img"

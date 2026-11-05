@@ -12,6 +12,8 @@ interface IProps {
   onOpenTestRun: (baseline: Baseline) => void;
 }
 
+export const versionNumber = (total: number, index: number) => total - index;
+
 export const baselineElementId = (baseline: Baseline) =>
   `baseline-${baseline.id}`;
 
@@ -24,6 +26,7 @@ export const BaselineHistoryList = ({
   <Stack component="ul" spacing={1} sx={{ listStyle: "none", m: 0, p: 0 }}>
     {baselines.map((baseline, index) => {
       const { user, testRun } = baseline;
+      const version = versionNumber(baselines.length, index);
       return (
         <Box
           component="li"
@@ -40,7 +43,7 @@ export const BaselineHistoryList = ({
             component="button"
             type="button"
             onClick={() => onSelect(baseline)}
-            aria-label={`Show version ${baselines.length - index}`}
+            aria-label={`Show version ${version}`}
             spacing={1.5}
             sx={{
               all: "unset",
@@ -62,7 +65,7 @@ export const BaselineHistoryList = ({
             )}
             <Box sx={{ minWidth: 0, flex: 1 }}>
               <Typography variant="body2" noWrap>
-                {`v${baselines.length - index}`}
+                {`v${version}`}
                 {user && ` · ${user.firstName} ${user.lastName}`}
               </Typography>
               <Typography variant="caption" sx={{ color: "text.secondary" }}>
