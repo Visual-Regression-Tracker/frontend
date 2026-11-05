@@ -17,6 +17,7 @@ export const BuildNoiseLine = ({ testRuns, onShowNoise }: IProps) => {
   );
   const pending = unresolved.filter((run) => noiseHintOf(run) === "pending");
   const caption = buildNoiseCaption(testRuns);
+  const anyNoise = unresolved.some((run) => noiseHintOf(run) === "noise");
   if (!caption) {
     return null;
   }
@@ -35,9 +36,11 @@ export const BuildNoiseLine = ({ testRuns, onShowNoise }: IProps) => {
       ) : (
         <>
           <Typography variant="caption">{caption}</Typography>
-          <Button size="small" onClick={onShowNoise}>
-            Show them
-          </Button>
+          {anyNoise && (
+            <Button size="small" onClick={onShowNoise}>
+              Show them
+            </Button>
+          )}
         </>
       )}
     </Stack>

@@ -41,8 +41,16 @@ import { Tooltip } from "../Tooltip";
 const BuildList = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { buildList, selectedBuild, loading, error, total, take, refreshes } =
-    useBuildState();
+  const {
+    buildList,
+    selectedBuild,
+    loading,
+    error,
+    total,
+    take,
+    refreshes,
+    lastDeletedId,
+  } = useBuildState();
   const buildDispatch = useBuildDispatch();
   const { enqueueSnackbar } = useSnackbar();
   const { selectedProjectId } = useProjectState();
@@ -78,6 +86,12 @@ const BuildList = () => {
     }
     setPaginationPage(1);
     setListedFor({ selectedProjectId, searchQuery, take });
+  }
+
+  const [seenRefresh, setSeenRefresh] = useState(refreshes);
+  if (seenRefresh !== refreshes) {
+    setSeenRefresh(refreshes);
+    setSelectedIds((prev) => prev.filter((id) => id !== lastDeletedId));
   }
 
   const allSelected = total > 0 && selectedIds.length === total;

@@ -361,6 +361,34 @@ describe("ProjectPage deleting the open build", () => {
     await vi.waitFor(() => expect(getList).toHaveBeenCalled());
   });
 
+  it("drops a build deleted from its header out of the ticked ones", async () => {
+    const { user } = await renderProjectPage({
+      builds: [OPEN_BUILD, build(2)],
+    });
+    vi.spyOn(buildsService, "remove").mockResolvedValue(OPEN_BUILD);
+    await user.click(
+      buildListArea().getByRole("checkbox", {
+        name: `Select build #${OPEN_BUILD.number}`,
+      }),
+    );
+    expect(screen.getByRole("toolbar", { name: "Selection" })).toBeVisible();
+
+    await user.click(
+      area("build-details").getByRole("button", { name: "Build menu" }),
+    );
+    await user.click(
+      await screen.findByRole("menuitem", { name: "Delete build…" }),
+    );
+    const dialog = await screen.findByRole("dialog", { name: "Delete build" });
+    await user.click(within(dialog).getByTestId("submitButton"));
+
+    await vi.waitFor(() =>
+      expect(
+        screen.queryByRole("toolbar", { name: "Selection" }),
+      ).not.toBeInTheDocument(),
+    );
+  });
+
   it("says the build was deleted once when this client deleted it", async () => {
     const { socket, user } = await renderProjectPage({
       builds: [OPEN_BUILD, build(2)],

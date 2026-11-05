@@ -16,7 +16,7 @@ type IAction =
   | { type: "failure"; payload: string }
   | { type: "get"; payload: PaginatedData<Build>; search?: string }
   | { type: "delete"; payload: string }
-  | { type: "refresh" }
+  | { type: "refresh"; payload: string }
   | { type: "add"; payload: Build }
   | { type: "update"; payload: Build[] }
   | { type: "select"; payload?: Build };
@@ -31,6 +31,7 @@ type State = {
   loading: boolean;
   error?: string;
   refreshes: number;
+  lastDeletedId?: string;
 };
 type BuildProviderProps = {
   children: ReactNode;
@@ -106,7 +107,11 @@ export function buildReducer(state: State, action: IAction): State {
       };
 
     case "refresh":
-      return { ...state, refreshes: state.refreshes + 1 };
+      return {
+        ...state,
+        refreshes: state.refreshes + 1,
+        lastDeletedId: action.payload,
+      };
 
     // a new build belongs on the first page of an unfiltered list only; the total counts it anywhere
     case "add":

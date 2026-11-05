@@ -153,6 +153,15 @@ describe("BuildDetails noise line", () => {
     expect(screen.queryByText(CAPTION)).not.toBeInTheDocument();
   });
 
+  it("offers no Show them when no unresolved run looks like noise", async () => {
+    await renderDetails([unresolved("a", NOISE_ANALYSIS_CHANGE)]);
+
+    await screen.findByText(CAPTION);
+    expect(
+      screen.queryByRole("button", { name: "Show them" }),
+    ).not.toBeInTheDocument();
+  });
+
   it("sets the noise filter to likely noise from Show them", async () => {
     const { user } = await renderDetails(
       [

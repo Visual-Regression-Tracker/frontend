@@ -129,8 +129,8 @@ const BuildDetails = () => {
           anchorEl={menuAnchor}
           analysis={analysis}
           onClose={() => setMenuAnchor(null)}
-          onDeleted={() => {
-            buildDispatch({ type: "refresh" });
+          onDeleted={(deleted) => {
+            buildDispatch({ type: "refresh", payload: deleted.id });
             void navigate(buildTestRunLocation());
           }}
         />
