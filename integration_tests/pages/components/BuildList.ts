@@ -7,7 +7,13 @@ export class BuildList extends PageObject {
   errorMessage = this.page.getByTestId("buildListError");
   scrollContainer = this.page.getByTestId("buildListScroll");
   selectAll = this.page.getByTestId("buildSelectAll");
-  deleteSelectedBtn = this.page.getByTestId("buildDeleteSelected");
+  selectionBar = this.buildList.getByRole("toolbar", { name: "Selection" });
+  deleteSelectedBtn = this.selectionBar.getByRole("button", {
+    name: "Delete…",
+  });
+  selectAllMatchingBtn = this.selectionBar.getByRole("button", {
+    name: /^Select all \d+$/,
+  });
   currentPage = this.buildList.locator('[aria-current="page"]');
 
   menu = this.page.getByRole("menu");
@@ -24,10 +30,10 @@ export class BuildList extends PageObject {
   async openMenu(number: number) {
     const item = this.getBuildItem(number);
     await item.hover();
-    await item.getByTestId("MoreVertIcon").click();
+    await item.getByRole("button", { name: "Build menu" }).click();
   }
 
-  menuItem(name: "Stop" | "Edit CI Build" | "Delete") {
+  menuItem(name: "Stop build" | "Edit CI build id…" | "Delete build…") {
     return this.menu.getByRole("menuitem", { name, exact: true });
   }
 

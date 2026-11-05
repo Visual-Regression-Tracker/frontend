@@ -1,122 +1,140 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import {
-  Typography,
   Chip,
-  Grid,
-  Box,
-  LinearProgress,
+  IconButton,
   Stack,
+  Typography,
+  LinearProgress,
 } from "@mui/material";
+import { MoreHoriz } from "@mui/icons-material";
+import { useSnackbar } from "notistack";
+import { useNavigate } from "react-router-dom";
 import { StatusChip } from "./StatusChip";
 import { DateLabel } from "./DateLabel";
+import { BuildMenu } from "./BuildMenu";
+import { BuildNoiseLine } from "./BuildNoiseLine";
+import { BuildStatusCounters } from "./BuildStatusCounters";
+import { NoiseBanner } from "./NoiseBanner";
+import { Tooltip } from "./Tooltip";
+import { useSharedTestRunFilters } from "./TestRunList/TestRunFiltersContext";
 import { BuildStatus } from "../types/buildStatus";
+import { TestStatus } from "../types/testStatus";
 import {
+  useAnalyseNoise,
+  useBuildDispatch,
   useBuildState,
   useNoiseAnalysisAvailable,
   useTestRunState,
 } from "../contexts";
-import { buildNoiseCaption } from "../_helpers/noiseSummary.helper";
-import { NoiseBanner } from "./NoiseBanner";
 import { LOCATOR_BUILD_DETAILS } from "../constants/help";
-import { Tooltip } from "./Tooltip";
+import { buildTestRunLocation } from "../_helpers/route.helpers";
+import { hasLaterRun } from "../_helpers/build.helper";
+import { noiseHintOf } from "../_helpers/noiseHint.helper";
 
 const BuildDetails = () => {
   const { selectedBuild } = useBuildState();
+  const buildDispatch = useBuildDispatch();
   const { testRuns } = useTestRunState();
+  const { filteredRows, statuses, onStatusesChange, onNoiseHintsChange } =
+    useSharedTestRunFilters();
   const available = useNoiseAnalysisAvailable();
-  const noiseCaption = useMemo(
-    () => (available ? buildNoiseCaption(testRuns) : null),
-    [available, testRuns],
+  const { enqueueSnackbar } = useSnackbar();
+  const { analyse, requesting } = useAnalyseNoise(enqueueSnackbar);
+  const navigate = useNavigate();
+  const [menuAnchor, setMenuAnchor] = useState<HTMLElement | null>(null);
+
+  const unresolvedIds = useMemo(
+    () =>
+      filteredRows
+        .filter((run) => run.status === TestStatus.unresolved)
+        .map((run) => run.id),
+    [filteredRows],
   );
-  const buildNumber = useMemo(
-    () => `#${selectedBuild?.number} ${selectedBuild?.ciBuildId || ""}`,
-    [selectedBuild?.number, selectedBuild?.ciBuildId],
+  const analysing = useMemo(
+    () => filteredRows.some((run) => noiseHintOf(run) === "pending"),
+    [filteredRows],
   );
 
   if (!selectedBuild) {
     return null;
   }
 
-  const loadingAnimation = selectedBuild.isRunning && <LinearProgress />;
+  const analysis = available
+    ? {
+        label: `Analyse rendering noise (${unresolvedIds.length})`,
+        disabled: requesting || analysing || unresolvedIds.length === 0,
+        onClick: () => void analyse(unresolvedIds),
+      }
+    : undefined;
+  const buildNumber = `#${selectedBuild.number} ${selectedBuild.ciBuildId || ""}`;
 
   return (
-    <Stack id={LOCATOR_BUILD_DETAILS}>
-      <Box sx={{ m: 0.5 }}>
-        <Grid container spacing={1} sx={{ alignItems: "center" }}>
-          <Grid style={{ maxWidth: "20%", whiteSpace: "nowrap" }}>
-            <Tooltip title={buildNumber}>
-              <Typography
-                variant="subtitle2"
-                style={{ overflow: "hidden", textOverflow: "ellipsis" }}
-              >
-                {buildNumber}
-              </Typography>
-            </Tooltip>
-          </Grid>
-          <Grid style={{ maxWidth: "70%" }}>
-            <Tooltip title={selectedBuild.branchName}>
-              <Chip
-                size="small"
-                style={{ maxWidth: "100%" }}
-                label={selectedBuild.branchName}
-              />
-            </Tooltip>
-          </Grid>
-          <Grid>
-            <StatusChip
-              status={selectedBuild.status}
-              variant={
-                selectedBuild.status === BuildStatus.unresolved
-                  ? "filled"
-                  : "outlined"
-              }
-            />
-          </Grid>
-        </Grid>
-      </Box>
-      <Box sx={{ m: 0.5 }}>
-        <Grid container spacing={1}>
-          <Grid>
-            <Typography variant="caption">
-              <DateLabel date={selectedBuild.createdAt} />
-            </Typography>
-          </Grid>
-          {selectedBuild.updatedAt && (
-            <Grid>
-              <Typography variant="caption" color="textSecondary">
-                Last run: <DateLabel date={selectedBuild.updatedAt} />
-              </Typography>
-            </Grid>
-          )}
-        </Grid>
-      </Box>
-      <Box sx={{ m: 0.5 }}>
-        <Grid container spacing={1}>
-          <Grid>
-            <Typography variant="caption">{`${
-              selectedBuild.unresolvedCount +
-              selectedBuild.failedCount +
-              selectedBuild.passedCount
-            } total`}</Typography>
-          </Grid>
-          <Grid>
-            <Typography variant="caption">{`${selectedBuild.unresolvedCount} unresolved`}</Typography>
-          </Grid>
-          <Grid>
-            <Typography variant="caption">{`${selectedBuild.failedCount} failed`}</Typography>
-          </Grid>
-          <Grid>
-            <Typography variant="caption">{`${selectedBuild.passedCount} passed`}</Typography>
-          </Grid>
-        </Grid>
-        {noiseCaption && (
-          <Typography variant="caption" color="textSecondary">
-            {noiseCaption}
+    <Stack id={LOCATOR_BUILD_DETAILS} sx={{ gap: 1, px: 2, pt: 1.5 }}>
+      <Stack direction="row" sx={{ alignItems: "center", gap: 1 }}>
+        <Tooltip title={buildNumber}>
+          <Typography variant="h6" noWrap sx={{ minWidth: 0 }}>
+            {buildNumber}
           </Typography>
+        </Tooltip>
+        <Tooltip title={selectedBuild.branchName}>
+          <Chip
+            size="small"
+            sx={{ maxWidth: "40%" }}
+            label={selectedBuild.branchName}
+          />
+        </Tooltip>
+        <StatusChip
+          status={selectedBuild.status}
+          variant={
+            selectedBuild.status === BuildStatus.unresolved
+              ? "filled"
+              : "outlined"
+          }
+        />
+        <IconButton
+          size="small"
+          aria-label="Build menu"
+          onClick={(event) => setMenuAnchor(event.currentTarget)}
+        >
+          <MoreHoriz />
+        </IconButton>
+      </Stack>
+      <Typography variant="caption" sx={{ color: "text.secondary" }}>
+        <DateLabel date={selectedBuild.createdAt} />
+        {hasLaterRun(selectedBuild) && selectedBuild.updatedAt && (
+          <>
+            {" · Last run: "}
+            <DateLabel date={selectedBuild.updatedAt} />
+          </>
         )}
-      </Box>
-      {available && <NoiseBanner />}
-      {loadingAnimation}
+      </Typography>
+      <BuildStatusCounters
+        testRuns={testRuns}
+        statuses={statuses}
+        onStatusesChange={onStatusesChange}
+      />
+      {available && (
+        <>
+          <BuildNoiseLine
+            testRuns={testRuns}
+            onShowNoise={() => onNoiseHintsChange?.(["Likely noise"])}
+          />
+          <NoiseBanner />
+        </>
+      )}
+      {selectedBuild.isRunning && <LinearProgress />}
+      {menuAnchor && (
+        <BuildMenu
+          build={selectedBuild}
+          anchorEl={menuAnchor}
+          analysis={analysis}
+          onClose={() => setMenuAnchor(null)}
+          onDeleted={() => {
+            buildDispatch({ type: "refresh" });
+            void navigate(buildTestRunLocation());
+          }}
+        />
+      )}
     </Stack>
   );
 };

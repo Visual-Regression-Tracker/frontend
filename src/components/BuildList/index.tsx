@@ -1,5 +1,4 @@
 import {
-  Fragment,
   type MouseEvent,
   memo,
   useCallback,
@@ -10,15 +9,11 @@ import {
 } from "react";
 import {
   List,
-  IconButton,
   Checkbox,
   Typography,
-  Grid,
   Pagination,
-  Menu,
-  MenuItem,
   Box,
-  Fade,
+  Stack,
 } from "@mui/material";
 import { DeleteOutlineOutlined } from "@mui/icons-material";
 import { BuildListPlaceholder } from "./BuildListPlaceholder";
@@ -31,8 +26,8 @@ import {
   useProjectState,
 } from "../../contexts";
 import { useSnackbar } from "notistack";
-import { ValidatedTextField } from "../ValidatedForm";
-import { AT_LEAST_TWO_CHARACTERS } from "../../_helpers/validation";
+import { BuildMenu } from "../BuildMenu";
+import { SelectionBar } from "../SelectionBar";
 import { Build } from "../../types";
 import { BaseModal } from "../BaseModal";
 import { buildsService } from "../../services";
@@ -46,16 +41,15 @@ import { Tooltip } from "../Tooltip";
 const BuildList = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { buildList, selectedBuild, loading, error, total, take } =
+  const { buildList, selectedBuild, loading, error, total, take, refreshes } =
     useBuildState();
   const buildDispatch = useBuildDispatch();
   const { enqueueSnackbar } = useSnackbar();
   const { selectedProjectId } = useProjectState();
-  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [editDialogOpen, setEditDialogOpen] = useState(false);
-  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
-  const [menuBuild, setMenuBuild] = useState<Build | null>();
-  const [newCiBuildId, setNewCiBuildId] = useState("");
+  const [menu, setMenu] = useState<{
+    build: Build;
+    anchorEl: HTMLElement;
+  } | null>(null);
   const [paginationPage, setPaginationPage] = useState(1);
   // the opened build, read once: picking a build later must not move the list
   const linkedBuildId = useRef(getQueryParams(location.search).buildId);
@@ -126,20 +120,15 @@ const BuildList = () => {
 
   const handleMenuClick = (event: MouseEvent<HTMLElement>, build: Build) => {
     event.stopPropagation();
-    setAnchorEl(event.currentTarget);
-    setMenuBuild(build);
+    setMenu({ build, anchorEl: event.currentTarget });
   };
 
-  const handleMenuClose = () => {
-    setMenuBuild(null);
-  };
-
-  const toggleDeleteDialogOpen = () => {
-    setDeleteDialogOpen(!deleteDialogOpen);
-  };
-
-  const toggleEditDialogOpen = () => {
-    setEditDialogOpen(!editDialogOpen);
+  const handleDeleted = (build: Build) => {
+    setSelectedIds((prev) => prev.filter((id) => id !== build.id));
+    reloadAfterDeleting(1);
+    if (build.id === selectedBuild?.id) {
+      selectBuildCalback();
+    }
   };
 
   const selectBuildCalback = useCallback(
@@ -204,6 +193,14 @@ const BuildList = () => {
     loadPage(1, linkedBuildId.current);
   }, [loadPage]);
 
+  const seenRefreshes = useRef(refreshes);
+  useEffect(() => {
+    if (seenRefreshes.current !== refreshes) {
+      seenRefreshes.current = refreshes;
+      reloadAfterDeleting(0);
+    }
+  });
+
   // in the commit that cleared the selection, so an in-flight select all cannot land on another search
   useLayoutEffect(() => {
     selectAllRequest.current += 1;
@@ -252,9 +249,11 @@ const BuildList = () => {
     });
   };
 
+  const pageCount = Math.ceil(total / take);
+
   return (
     <>
-      <Box sx={{ height: "91%", display: "flex", flexDirection: "column" }}>
+      <Stack sx={{ height: "100%" }}>
         <Box sx={{ padding: 1, display: "flex", alignItems: "center" }}>
           {/* kept mounted so an empty search does not shift the search field */}
           <Tooltip title={selectAllLabel}>
@@ -277,7 +276,7 @@ const BuildList = () => {
               size="small"
               variant="outlined"
               fullWidth
-              label="Search build"
+              label="CI build id"
               placeholder="Search by CI build id"
               value={searchQuery}
               debounceTimeout={300}
@@ -290,33 +289,38 @@ const BuildList = () => {
               }}
             />
           </Box>
-          {/* fades in place so picking a build does not resize the search field */}
-          <Fade in={selectedIds.length > 0}>
-            <span>
-              <Tooltip title={`Delete ${selectedIds.length} selected`}>
-                <IconButton
-                  color="error"
-                  disabled={bulkDeleting}
-                  onClick={() => setBulkDeleteDialogOpen(true)}
-                  data-testid="buildDeleteSelected"
-                >
-                  <DeleteOutlineOutlined />
-                </IconButton>
-              </Tooltip>
-            </span>
-          </Fade>
         </Box>
+        {selectedIds.length > 0 && (
+          <Box sx={{ px: 1, pb: 1 }}>
+            <SelectionBar
+              selected={selectedIds.length}
+              total={total}
+              actions={[
+                {
+                  label: "Delete…",
+                  icon: <DeleteOutlineOutlined />,
+                  color: "error",
+                  disabled: bulkDeleting,
+                  onClick: () => setBulkDeleteDialogOpen(true),
+                },
+              ]}
+              onSelectAll={selectAllMatching}
+              onClose={clearSelection}
+            />
+          </Box>
+        )}
         <Box
           ref={listRef}
           data-testid="buildListScroll"
-          sx={{ flex: 1, overflow: "auto" }}
+          sx={{ flex: 1, minHeight: 0, overflow: "auto" }}
         >
-          <List>
+          <List disablePadding>
             {buildList.length === 0 ? (
               <BuildListPlaceholder
                 loading={loading}
                 error={error}
                 searchQuery={searchQuery}
+                onRetry={() => loadPage(paginationPage)}
               />
             ) : (
               buildList.map((build) => (
@@ -325,6 +329,7 @@ const BuildList = () => {
                   build={build}
                   selected={selectedBuild?.id === build.id}
                   checked={selectedIds.includes(build.id)}
+                  selecting={selectedIds.length > 0}
                   onOpen={() => selectBuildCalback(build.id)}
                   onToggleChecked={() => toggleSelect(build.id)}
                   onMenuClick={(event) => handleMenuClick(event, build)}
@@ -333,134 +338,29 @@ const BuildList = () => {
             )}
           </List>
         </Box>
-      </Box>
-      <Box sx={{ height: "9%" }}>
-        <Grid container sx={{ justifyContent: "center" }}>
-          <Grid>
+        {pageCount > 1 && (
+          <Box sx={{ display: "flex", justifyContent: "center", py: 1 }}>
             <Pagination
               size="small"
-              defaultPage={1}
               page={paginationPage}
-              count={Math.ceil(total / take)}
+              count={pageCount}
               onChange={(_event, page) => showPage(page)}
             />
-          </Grid>
-        </Grid>
-      </Box>
+          </Box>
+        )}
+      </Stack>
 
-      {menuBuild && (
-        <Menu anchorEl={anchorEl} open={!!menuBuild} onClose={handleMenuClose}>
-          {menuBuild.isRunning && (
-            <MenuItem
-              onClick={() => {
-                buildsService
-                  .update(menuBuild.id, { isRunning: false })
-                  .then(() =>
-                    enqueueSnackbar(`${menuBuild.id} finished`, {
-                      variant: "success",
-                    }),
-                  )
-                  .catch((err: string) =>
-                    enqueueSnackbar(err, {
-                      variant: "error",
-                    }),
-                  );
-                handleMenuClose();
-              }}
-            >
-              Stop
-            </MenuItem>
-          )}
-          <MenuItem onClick={toggleEditDialogOpen}>Edit CI Build</MenuItem>
-          <MenuItem onClick={toggleDeleteDialogOpen}>Delete</MenuItem>
-        </Menu>
-      )}
-      {menuBuild && (
-        <BaseModal
-          open={editDialogOpen}
-          title={"Edit CI Build ID"}
-          submitButtonText={"Edit"}
-          onCancel={toggleEditDialogOpen}
-          content={
-            <Fragment>
-              <Typography>{`Edit the ci build id for build: #${
-                menuBuild.number || menuBuild.id
-              }`}</Typography>
-              <ValidatedTextField
-                name="newCiBuildId"
-                rules={AT_LEAST_TWO_CHARACTERS}
-                margin="dense"
-                id="name"
-                label="New CI Build Id"
-                type="text"
-                fullWidth
-                required
-                value={newCiBuildId}
-                onChange={(event) => setNewCiBuildId(event.target.value)}
-                slotProps={{ htmlInput: { "data-testid": "newCiBuildId" } }}
-              />
-            </Fragment>
-          }
-          onSubmit={() => {
-            buildsService
-              .update(menuBuild.id, {
-                ciBuildId: newCiBuildId,
-              })
-              .catch((err: string) =>
-                enqueueSnackbar(err, {
-                  variant: "error",
-                }),
-              );
-            // closed now, even on failure: left open, it would reopen with this build's input
-            setEditDialogOpen(false);
-            setNewCiBuildId("");
-            handleMenuClose();
-          }}
-        />
-      )}
-      {menuBuild && (
-        <BaseModal
-          open={deleteDialogOpen}
-          title={"Delete Build"}
-          submitButtonText={"Delete"}
-          onCancel={toggleDeleteDialogOpen}
-          content={
-            <Typography>{`Are you sure you want to delete build: #${
-              menuBuild.number || menuBuild.id
-            }?`}</Typography>
-          }
-          onSubmit={() => {
-            deleteBuild(buildDispatch, menuBuild.id)
-              .then(() => {
-                setSelectedIds((prev) =>
-                  prev.filter((id) => id !== menuBuild.id),
-                );
-                enqueueSnackbar(
-                  `Build #${menuBuild.number || menuBuild.id} deleted`,
-                  {
-                    variant: "success",
-                  },
-                );
-              })
-              .then(() => reloadAfterDeleting(1))
-              .then(() => {
-                if (menuBuild.id === selectedBuild?.id) {
-                  selectBuildCalback();
-                }
-              })
-              .catch((err: string) =>
-                enqueueSnackbar(err, {
-                  variant: "error",
-                }),
-              );
-            setDeleteDialogOpen(false);
-            handleMenuClose();
-          }}
+      {menu && (
+        <BuildMenu
+          build={menu.build}
+          anchorEl={menu.anchorEl}
+          onClose={() => setMenu(null)}
+          onDeleted={handleDeleted}
         />
       )}
       <BaseModal
         open={bulkDeleteDialogOpen}
-        title={"Delete Builds"}
+        title={"Delete builds"}
         submitButtonText={"Delete"}
         onCancel={() => setBulkDeleteDialogOpen(false)}
         content={

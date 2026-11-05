@@ -19,9 +19,14 @@ const initial: State = {
   skip: 0,
   total: 0,
   loading: false,
+  refreshes: 0,
 };
 
 describe("buildReducer", () => {
+  it("refresh counts the request for the list to reload", () => {
+    expect(buildReducer(initial, { type: "refresh" }).refreshes).toBe(1);
+  });
+
   it("select keeps the chosen build", () => {
     const state = buildReducer(initial, {
       type: "select",
