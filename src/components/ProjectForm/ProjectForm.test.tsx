@@ -134,16 +134,14 @@ describe("ProjectForm", () => {
 
       expect(screen.getByLabelText(/^Project name/)).toHaveValue("Web shop");
       expect(screen.getByLabelText(/^Main branch/)).toHaveValue("main");
-      expect(screen.getByLabelText(/^Number of builds to keep/)).toHaveValue(
-        100,
-      );
+      expect(screen.getByLabelText(/^Builds to keep/)).toHaveValue(100);
       expect(screen.getByLabelText(/^Max branch lifetime/)).toHaveValue(30);
-      expect(screen.getByLabelText("Auto approve feature")).toBeChecked();
+      expect(screen.getByLabelText("Auto approve")).toBeChecked();
       expect(
         screen.getByLabelText("Bulk approve/reject variations"),
       ).not.toBeChecked();
       expect(
-        screen.getByRole("combobox", { name: /Group variations by/ }),
+        screen.getByRole("combobox", { name: /Variation axis/ }),
       ).toHaveTextContent("customTags");
       expect(
         screen.getByRole("combobox", { name: /Image comparison library/ }),
@@ -186,11 +184,7 @@ describe("ProjectForm", () => {
     it("keeps the typed build count and branch lifetime as numbers", async () => {
       const { user } = await renderForm();
 
-      await replaceNumber(
-        user,
-        screen.getByLabelText(/^Number of builds/),
-        "7",
-      );
+      await replaceNumber(user, screen.getByLabelText(/^Builds to keep/), "7");
       await replaceNumber(
         user,
         screen.getByLabelText(/^Max branch lifetime/),
@@ -206,14 +200,14 @@ describe("ProjectForm", () => {
     it("switches auto approve and bulk approve on and off", async () => {
       const { user } = await renderForm();
 
-      await user.click(screen.getByLabelText("Auto approve feature"));
+      await user.click(screen.getByLabelText("Auto approve"));
       await user.click(screen.getByLabelText("Bulk approve/reject variations"));
 
       expect(editState()).toMatchObject({
         autoApproveFeature: false,
         bulkApproveVariations: true,
       });
-      expect(screen.getByLabelText("Auto approve feature")).not.toBeChecked();
+      expect(screen.getByLabelText("Auto approve")).not.toBeChecked();
       expect(
         screen.getByLabelText("Bulk approve/reject variations"),
       ).toBeChecked();
@@ -222,7 +216,7 @@ describe("ProjectForm", () => {
     it("groups variations by the axis chosen", async () => {
       const { user } = await renderForm();
 
-      await choose(user, /Group variations by/, "viewport");
+      await choose(user, /Variation axis/, "viewport");
 
       expect(editState().bulkApproveGroupBy).toBe("viewport");
     });
@@ -231,7 +225,7 @@ describe("ProjectForm", () => {
       const { user } = await renderForm();
 
       await user.click(
-        screen.getByRole("combobox", { name: /Group variations by/ }),
+        screen.getByRole("combobox", { name: /Variation axis/ }),
       );
 
       expect(
@@ -276,7 +270,7 @@ describe("ProjectForm", () => {
     );
 
     it.each([
-      ["number of builds to keep", /^Number of builds/],
+      ["number of builds to keep", /^Builds to keep/],
       ["max branch lifetime", /^Max branch lifetime/],
     ])("does not submit a zero for the %s", async (_label, field) => {
       const onSubmit = submitSpy();
@@ -400,7 +394,7 @@ describe("ProjectForm", () => {
       });
 
       expect(screen.getByLabelText(/^Pixel diff threshold/)).toHaveValue(0.25);
-      expect(screen.getByLabelText("Ignore anti-alliasing")).not.toBeChecked();
+      expect(screen.getByLabelText("Ignore anti-aliasing")).not.toBeChecked();
       expect(screen.getByLabelText("Fail on layout diff")).not.toBeChecked();
       expect(screen.getByLabelText("Output diff mask")).toBeChecked();
     });
@@ -453,6 +447,30 @@ describe("ProjectForm", () => {
     });
   });
 
+  describe("sections", () => {
+    it("groups the settings under four headings", async () => {
+      await renderForm();
+
+      expect(
+        screen.getAllByRole("heading", { level: 3 }).map((h) => h.textContent),
+      ).toEqual(["General", "Review", "Comparison", "Post-analysis"]);
+      expect(
+        screen.getByText("Changing the library resets its settings."),
+      ).toBeVisible();
+    });
+
+    it("explains the variation axis and the auto approve switch", async () => {
+      await renderForm();
+
+      expect(screen.getByLabelText("Auto approve")).toHaveAccessibleDescription(
+        /^Approve a run automatically/,
+      );
+      expect(
+        screen.getByRole("combobox", { name: /Variation axis/ }),
+      ).toHaveAccessibleDescription(/^Which test-variation axis differs/);
+    });
+  });
+
   describe("odiff config", () => {
     const odiff: ProjectDto = {
       ...PROJECT,
@@ -460,12 +478,21 @@ describe("ProjectForm", () => {
       imageComparisonConfig: ODIFF_DEFAULT_CONFIG,
     };
 
+    it("names its switches apart", async () => {
+      const { container } = await renderForm(odiff);
+
+      const names = Array.from(
+        container.querySelectorAll<HTMLInputElement>('input[type="checkbox"]'),
+      ).map((input) => input.name);
+      expect(new Set(names).size).toBe(names.length);
+    });
+
     it("shows the config of the project", async () => {
       await renderForm(odiff);
 
       expect(screen.getByLabelText("Output diff mask")).toBeChecked();
       expect(screen.getByLabelText("Fail on layout diff")).toBeChecked();
-      expect(screen.getByLabelText("Ignore anti-alliasing")).toBeChecked();
+      expect(screen.getByLabelText("Ignore anti-aliasing")).toBeChecked();
       expect(screen.getByLabelText(/^Pixel diff threshold/)).toHaveValue(0);
     });
 
@@ -474,7 +501,7 @@ describe("ProjectForm", () => {
 
       await user.click(screen.getByLabelText("Output diff mask"));
       await user.click(screen.getByLabelText("Fail on layout diff"));
-      await user.click(screen.getByLabelText("Ignore anti-alliasing"));
+      await user.click(screen.getByLabelText("Ignore anti-aliasing"));
       await replaceNumber(
         user,
         screen.getByLabelText(/^Pixel diff threshold/),
@@ -519,9 +546,9 @@ describe("ProjectForm", () => {
 
       expect(screen.getByLabelText("Strict")).not.toBeChecked();
       expect(screen.getByLabelText("Tolerance")).toHaveValue(2.3);
-      expect(screen.getByLabelText("Ignore anti-alliasing")).toBeChecked();
+      expect(screen.getByLabelText("Ignore anti-aliasing")).toBeChecked();
       expect(screen.getByLabelText("Antialiasing tolerance")).toHaveValue(0);
-      expect(screen.getByLabelText("Ignore carret")).toBeChecked();
+      expect(screen.getByLabelText("Ignore caret")).toBeChecked();
       expect(screen.getByLabelText("Allow diff dimensions")).not.toBeChecked();
     });
 
@@ -530,13 +557,13 @@ describe("ProjectForm", () => {
 
       await user.click(screen.getByLabelText("Strict"));
       await replaceNumber(user, screen.getByLabelText("Tolerance"), "4.5");
-      await user.click(screen.getByLabelText("Ignore anti-alliasing"));
+      await user.click(screen.getByLabelText("Ignore anti-aliasing"));
       await replaceNumber(
         user,
         screen.getByLabelText("Antialiasing tolerance"),
         "1.5",
       );
-      await user.click(screen.getByLabelText("Ignore carret"));
+      await user.click(screen.getByLabelText("Ignore caret"));
       await user.click(screen.getByLabelText("Allow diff dimensions"));
 
       expect(editConfig()).toEqual({
@@ -567,8 +594,8 @@ describe("ProjectForm", () => {
   });
 
   describe("post-analysis", () => {
-    const BLUR_SWITCH = /^Blurred difference and change density/;
-    const DINOV2_SWITCH = /^Asks the DINOv2 service about patches/;
+    const BLUR_SWITCH = "Stage 1 · Blur";
+    const DINOV2_SWITCH = "Stage 2 · DINOv2 second look";
     const noiseConfig = () =>
       JSON.parse(editState().noiseAnalysisConfig) as NoiseAnalysisConfig;
     const withNoiseConfig = (config: object): ProjectDto => ({
@@ -599,15 +626,17 @@ describe("ProjectForm", () => {
       expect(screen.getByText("Stage 1 · Blur")).toBeVisible();
       expect(screen.getByText("Stage 2 · DINOv2 second look")).toBeVisible();
       expect(
-        screen.getByLabelText(
-          "Blurred difference and change density. Cheap, runs on this server. Catches 92 of 120 bugs on our benchmark with the default thresholds, 0 false alarms",
-        ),
-      ).toBeChecked();
+        screen.getByRole("switch", { name: "Stage 1 · Blur" }),
+      ).toHaveAccessibleDescription(
+        "Blurred difference and change density. Cheap, runs on this server. Catches 92 of 120 bugs on our benchmark with the default thresholds, 0 false alarms",
+      );
+      expect(screen.getByLabelText(BLUR_SWITCH)).toBeChecked();
       expect(
-        screen.getByLabelText(
-          "Asks the DINOv2 service about patches the blur calls noise. Catches faint icons and borders, 102 of 120 together",
-        ),
-      ).not.toBeChecked();
+        screen.getByRole("switch", { name: DINOV2_SWITCH }),
+      ).toHaveAccessibleDescription(
+        "Asks the DINOv2 service about patches the blur calls noise. Catches faint icons and borders, 102 of 120 together",
+      );
+      expect(screen.getByLabelText(DINOV2_SWITCH)).not.toBeChecked();
       expect(screen.getByLabelText(/^Amplitude threshold/)).toHaveValue(60);
       expect(screen.getByLabelText(/^Solid share, max/)).toHaveValue(0.02);
       expect(screen.getByLabelText(/^Distance threshold/)).toHaveValue(0.2);
@@ -1445,7 +1474,7 @@ describe("ProjectForm", () => {
         {
           name: "number of builds to keep",
           initial: PROJECT,
-          label: /^Number of builds/,
+          label: /^Builds to keep/,
           inRange: "7",
           expected: 7,
           sent: (project) => project.maxBuildAllowed,

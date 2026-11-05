@@ -1,5 +1,5 @@
 import { Route, Routes } from "react-router-dom";
-import { screen, waitFor } from "@testing-library/react";
+import { screen, waitFor, within } from "@testing-library/react";
 import { renderWithProviders } from "../_test/render";
 import { TEST_PROJECT, TEST_USER } from "../_test/test.data.helper";
 import { dinov2Service, projectsService } from "../services";
@@ -113,6 +113,47 @@ describe("ProjectSettingsPage", () => {
     ).toBeVisible();
   });
 
+  test("discards the unsaved edits", async () => {
+    const { user } = renderPage();
+    const name = await screen.findByRole("textbox", { name: /project name/i });
+    expect(
+      screen.getByRole("button", { name: "Discard changes" }),
+    ).toBeDisabled();
+
+    await user.type(name, "x");
+    await user.click(screen.getByRole("button", { name: "Discard changes" }));
+
+    expect(name).toHaveValue("Alpha");
+    expect(
+      screen.getByRole("button", { name: "Discard changes" }),
+    ).toBeDisabled();
+  });
+
+  test("links to the four sections and marks the one picked", async () => {
+    const scrollIntoView = vi.fn();
+    Element.prototype.scrollIntoView = scrollIntoView;
+    const { user } = renderPage();
+    await screen.findByRole("textbox", { name: /project name/i });
+    const nav = screen.getByRole("navigation", { name: "Settings sections" });
+
+    expect(
+      within(nav)
+        .getAllByRole("link")
+        .map((link) => link.textContent),
+    ).toEqual(["General", "Review", "Comparison", "Post-analysis"]);
+
+    await user.click(within(nav).getByRole("link", { name: "Comparison" }));
+
+    expect(scrollIntoView).toHaveBeenCalledTimes(1);
+    expect(
+      within(nav).getByRole("link", { name: "Comparison" }),
+    ).toHaveAttribute("aria-current", "location");
+    expect(screen.getByRole("region", { name: "Comparison" })).toHaveAttribute(
+      "id",
+      "settings-comparison",
+    );
+  });
+
   test("starts from the saved project when it is opened again", async () => {
     const { user, unmount } = renderPage();
     const name = await screen.findByRole("textbox", { name: /project name/i });
@@ -135,7 +176,7 @@ describe("ProjectSettingsPage", () => {
     test.each([
       [
         "blur.enabled",
-        () => screen.getByLabelText(/^Blurred difference/),
+        () => screen.getByLabelText("Stage 1 · Blur"),
         undefined,
         { ...stored, blur: { ...stored.blur, enabled: false } },
       ],
@@ -153,7 +194,7 @@ describe("ProjectSettingsPage", () => {
       ],
       [
         "dinov2.enabled",
-        () => screen.getByLabelText(/^Asks the DINOv2 service/),
+        () => screen.getByLabelText("Stage 2 · DINOv2 second look"),
         undefined,
         { ...stored, dinov2: { ...stored.dinov2, enabled: false } },
       ],

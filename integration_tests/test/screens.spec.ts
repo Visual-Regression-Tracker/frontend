@@ -782,6 +782,29 @@ const VIEWS: [name: string, body: Body][] = [
       await shot("error-toast");
     },
   ],
+
+  [
+    "project settings with looksSame",
+    async ({ projectSettingsPage, shot }) => {
+      await projectSettingsPage.selectImageComparison(ImageComparison.lookSame);
+      await projectSettingsPage.heading.click();
+
+      await expect(projectSettingsPage.tolerance).toBeVisible();
+      await shot("project-settings-looks-same", { fullPage: true });
+    },
+  ],
+
+  [
+    "project settings with VLM and Gemini",
+    async ({ projectSettingsPage, shot }) => {
+      await projectSettingsPage.selectImageComparison(ImageComparison.vlm);
+      await projectSettingsPage.selectVlmProvider("Google Gemini");
+      await projectSettingsPage.heading.click();
+
+      await expect(projectSettingsPage.geminiModel).toBeVisible();
+      await shot("project-settings-vlm-gemini", { fullPage: true });
+    },
+  ],
 ];
 
 for (const scheme of SCHEMES) {

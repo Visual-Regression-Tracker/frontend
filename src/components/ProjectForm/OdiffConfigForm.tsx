@@ -1,7 +1,7 @@
-import { FormControlLabel, Switch } from "@mui/material";
 import { type ChangeEvent, Fragment } from "react";
 import { ValidatedTextField } from "../ValidatedForm";
 import { OdiffConfig } from "../../types/imageComparison";
+import { FieldRow, ToggleRow } from "./SettingsRow";
 import { useConfigHook } from "./useConfigHook";
 import { UNIT_RANGE, UNIT_RANGE_RULES } from "./rules";
 
@@ -10,63 +10,43 @@ export const OdiffConfigForm = () => {
 
   return (
     <Fragment>
-      <FormControlLabel
-        label="Output diff mask"
-        control={
-          <Switch
-            checked={config.outputDiffMask}
-            onChange={(_event, checked) =>
-              updateConfig("outputDiffMask", checked)
-            }
-            color="primary"
-            name="strict"
-          />
-        }
+      <ToggleRow
+        title="Output diff mask"
+        name="outputDiffMask"
+        checked={config.outputDiffMask}
+        onChange={(checked) => updateConfig("outputDiffMask", checked)}
       />
-      <FormControlLabel
-        label="Fail on layout diff"
-        control={
-          <Switch
-            checked={config.failOnLayoutDiff}
-            onChange={(_event, checked) =>
-              updateConfig("failOnLayoutDiff", checked)
-            }
-            color="primary"
-            name="strict"
-          />
-        }
+      <ToggleRow
+        title="Fail on layout diff"
+        name="failOnLayoutDiff"
+        checked={config.failOnLayoutDiff}
+        onChange={(checked) => updateConfig("failOnLayoutDiff", checked)}
       />
-      <FormControlLabel
-        label="Ignore anti-alliasing"
-        control={
-          <Switch
-            checked={config.antialiasing}
-            onChange={(_event, checked) =>
-              updateConfig("antialiasing", checked)
-            }
-            color="primary"
-            name="antialiasing"
-          />
-        }
+      <ToggleRow
+        title="Ignore anti-aliasing"
+        name="antialiasing"
+        checked={config.antialiasing}
+        onChange={(checked) => updateConfig("antialiasing", checked)}
       />
-      <ValidatedTextField
-        name="threshold"
-        rules={UNIT_RANGE_RULES}
-        slotProps={{
-          htmlInput: { ...UNIT_RANGE, step: 0.001 },
-        }}
-        margin="dense"
-        id="threshold"
-        label="Pixel diff threshold"
-        type="number"
-        fullWidth
-        required
-        value={config.threshold}
-        onChange={(event: ChangeEvent<HTMLInputElement>) => {
-          const { value } = event.target;
-          updateConfig("threshold", parseFloat(value));
-        }}
-      />
+      <FieldRow id="threshold" title="Pixel diff threshold" width={120}>
+        <ValidatedTextField
+          name="threshold"
+          rules={UNIT_RANGE_RULES}
+          slotProps={{
+            htmlInput: { ...UNIT_RANGE, step: 0.001 },
+          }}
+          size="small"
+          id="threshold"
+          type="number"
+          fullWidth
+          required
+          value={config.threshold}
+          onChange={(event: ChangeEvent<HTMLInputElement>) => {
+            const { value } = event.target;
+            updateConfig("threshold", parseFloat(value));
+          }}
+        />
+      </FieldRow>
     </Fragment>
   );
 };

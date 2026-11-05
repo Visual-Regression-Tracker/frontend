@@ -68,7 +68,7 @@ test("offers the group by axis with bulk approve off", async ({
   projectSettingsPage,
 }) => {
   await expect(
-    projectSettingsPage.page.getByLabel("Group variations by"),
+    projectSettingsPage.page.getByRole("combobox", { name: "Variation axis" }),
   ).toBeVisible();
 });
 
