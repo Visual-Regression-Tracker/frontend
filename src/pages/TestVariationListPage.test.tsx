@@ -77,12 +77,13 @@ const shownNames = () =>
   screen.queryAllByRole("heading", { level: 2 }).map((h) => h.textContent);
 
 const pick = async (user: UserEvent, filter: string, option: string) => {
-  const select = (await screen.findAllByRole("combobox")).find(
-    (el) => el.id === `filter_${filter}`,
+  await user.click(
+    document.getElementById(`filter-chip-${filter}`) as HTMLElement,
   );
-  if (!select) throw new Error(`no ${filter} filter`);
-  await user.click(select);
-  await user.click(await screen.findByRole("option", { name: option }));
+  await user.click(
+    await screen.findByRole("menuitemcheckbox", { name: option }),
+  );
+  await user.keyboard("{Escape}");
 };
 
 // MUI names the current page "page N" and the others "Go to page N"
@@ -103,14 +104,20 @@ describe("TestVariationListPage", () => {
     const card = screen
       .getByRole("heading", { name: "checkout" })
       .closest(".MuiCard-root") as HTMLElement;
-    for (const tag of ["macOS", "iPhone", "safari", "375x812", "regression"]) {
-      expect(within(card).getByText(tag)).toBeInTheDocument();
-    }
+    expect(card).toHaveTextContent(
+      "macOS · iPhone · safari · 375x812 · regression",
+    );
     expect(within(card).getByText("develop")).toBeInTheDocument();
     expect(within(card).getByRole("link", { name: "History" })).toHaveAttribute(
       "href",
       "/variations/details/checkout",
     );
+  });
+
+  test("has no Merge branches panel", async () => {
+    await renderPage(THREE);
+
+    expect(screen.queryByText("Merge branches")).not.toBeInTheDocument();
   });
 
   test("tells that there are no variations", async () => {
@@ -174,31 +181,34 @@ describe("TestVariationListPage", () => {
       expect(screen.getByText("No variations")).toBeInTheDocument();
     });
 
-    test("Reset brings back the name and select filters", async () => {
+    test("selecting several options of one filter shows variations matching any", async () => {
+      const { user } = await renderPage(THREE);
+
+      await pick(user, "os", "macOS");
+      await pick(user, "os", "Windows");
+
+      expect(await screen.findByText("3 baselines")).toBeInTheDocument();
+      expect(screen.getByText("OS: 2")).toBeInTheDocument();
+    });
+
+    test("Clear filters brings back the name and the chip filters, branch included", async () => {
       const { user } = await renderPage(THREE);
       await pick(user, "os", "macOS");
+      await pick(user, "branchName", "develop");
       await user.type(
         screen.getByRole("textbox", { name: "Name" }),
         "check{Enter}",
       );
       expect(shownNames()).toEqual(["checkout"]);
 
-      await user.click(screen.getByRole("button", { name: "Reset" }));
+      await user.click(screen.getByRole("button", { name: "Clear filters" }));
 
       expect(await screen.findByText("3 baselines")).toBeInTheDocument();
       expect(shownNames()).toEqual(["login", "checkout", "login mobile"]);
       expect(screen.getByRole("textbox", { name: "Name" })).toHaveValue("");
-    });
-
-    test("Reset also clears the branch", async () => {
-      const { user } = await renderPage(THREE);
-      await pick(user, "branchName", "develop");
-      expect(await screen.findByText("1 of 3 baselines")).toBeInTheDocument();
-
-      await user.click(screen.getByRole("button", { name: "Reset" }));
-
-      expect(await screen.findByText("3 baselines")).toBeInTheDocument();
-      expect(shownNames()).toEqual(["login", "checkout", "login mobile"]);
+      expect(
+        screen.queryByRole("button", { name: "Clear filters" }),
+      ).not.toBeInTheDocument();
     });
 
     test("by name, ignoring case", async () => {

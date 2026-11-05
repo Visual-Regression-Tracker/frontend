@@ -7,7 +7,6 @@ import {
   Box,
   Card,
   CardMedia,
-  Button,
   Stack,
   Typography,
 } from "@mui/material";
@@ -18,9 +17,10 @@ import {
 } from "../_helpers/route.helpers";
 import { TestVariationDetails } from "../components/TestVariationDetails";
 import { useSnackbar } from "notistack";
-import { StatusChip } from "../components/StatusChip";
-import { DateLabel } from "../components/DateLabel";
-import { NoiseHintChip } from "../components/TestRunList/NoiseHintChip";
+import {
+  BaselineHistoryList,
+  baselineElementId,
+} from "../components/BaselineHistoryList";
 import { Baseline } from "../types/baseline";
 import { useNoiseAnalysisAvailable, useSetVariationCrumb } from "../contexts";
 
@@ -52,88 +52,76 @@ const TestVariationDetailsPage = () => {
     }
   }, [testVariationId, enqueueSnackbar]);
 
+  const openTestRun = ({ testRun }: Baseline) => {
+    if (testVariation && testRun) {
+      navigate({
+        pathname: buildProjectPageUrl(testVariation.projectId),
+        ...buildTestRunLocation(testRun.buildId, testRun.id),
+      });
+    }
+  };
+
+  const showBaseline = (baseline: Baseline) =>
+    document
+      .getElementById(baselineElementId(baseline))
+      ?.scrollIntoView({ behavior: "smooth", block: "start" });
+
   return (
     <Container maxWidth="lg" sx={{ py: 4 }}>
       {testVariation && (
         <>
           <TestVariationDetails testVariation={testVariation} />
-          <Typography
-            variant="subtitle1"
-            component="h2"
-            sx={{ mt: 4, mb: 1.5 }}
+          <Box
+            sx={{
+              display: "grid",
+              gap: 3,
+              mt: 3,
+              gridTemplateColumns: { xs: "1fr", md: "320px 1fr" },
+              alignItems: "start",
+            }}
           >
-            Baseline history
-            <Typography
-              component="span"
-              variant="body2"
-              sx={{ color: "text.secondary", ml: 1 }}
+            <Box
+              component="section"
+              sx={{ position: { md: "sticky" }, top: { md: 16 } }}
             >
-              {testVariation.baselines.length}
-            </Typography>
-          </Typography>
-          <Stack spacing={2}>
-            {testVariation.baselines.map((baseline: Baseline) => (
-              <Card key={baseline.id}>
-                <Stack
-                  direction="row"
-                  sx={{
-                    alignItems: "center",
-                    flexWrap: "wrap",
-                    gap: 1.5,
-                    px: 2,
-                    py: 1.5,
-                  }}
+              <Typography variant="subtitle1" component="h2" sx={{ mb: 1.5 }}>
+                {`Baseline history (${testVariation.baselines.length})`}
+              </Typography>
+              <BaselineHistoryList
+                baselines={testVariation.baselines}
+                noiseAvailable={noiseAvailable}
+                onSelect={showBaseline}
+                onOpenTestRun={openTestRun}
+              />
+            </Box>
+            <Stack spacing={2}>
+              {testVariation.baselines.map((baseline, index) => (
+                <Card
+                  key={baseline.id}
+                  id={baselineElementId(baseline)}
+                  sx={{ scrollMarginTop: 16 }}
                 >
-                  <Button
-                    variant="outlined"
-                    size="small"
-                    disabled={!baseline.testRun}
-                    onClick={() => {
-                      const { testRun } = baseline;
-                      if (testRun) {
-                        navigate({
-                          pathname: buildProjectPageUrl(
-                            testVariation.projectId,
-                          ),
-                          ...buildTestRunLocation(testRun.buildId, testRun.id),
-                        });
-                      }
-                    }}
+                  <Typography
+                    variant="body2"
+                    sx={{ px: 2, py: 1, color: "text.secondary" }}
                   >
-                    Test Run
-                  </Button>
-                  {baseline.testRun && (
-                    <>
-                      <StatusChip status={baseline.testRun.status} />
-                      {noiseAvailable && (
-                        <NoiseHintChip run={baseline.testRun} />
-                      )}
-                    </>
-                  )}
-                  {baseline.user && (
-                    <Typography variant="body2">
-                      {`${baseline.user.firstName} ${baseline.user.lastName} <${baseline.user.email}>`}
-                    </Typography>
-                  )}
-                  <Box sx={{ flex: 1 }} />
-                  <Typography variant="body2" sx={{ color: "text.secondary" }}>
-                    <DateLabel date={baseline.createdAt} />
+                    {`v${testVariation.baselines.length - index}`}
                   </Typography>
-                </Stack>
-                <CardMedia
-                  component="img"
-                  sx={{
-                    height: 480,
-                    objectFit: "contain",
-                    bgcolor: imageSurface.canvas,
-                    borderTop: 1,
-                    borderColor: "divider",
-                  }}
-                  image={staticService.getImage(baseline.baselineName)}
-                />
-              </Card>
-            ))}
-          </Stack>
+                  <CardMedia
+                    component="img"
+                    sx={{
+                      height: 480,
+                      objectFit: "contain",
+                      bgcolor: imageSurface.canvas,
+                      borderTop: 1,
+                      borderColor: "divider",
+                    }}
+                    image={staticService.getImage(baseline.baselineName)}
+                  />
+                </Card>
+              ))}
+            </Stack>
+          </Box>
         </>
       )}
     </Container>

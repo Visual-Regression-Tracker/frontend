@@ -177,11 +177,6 @@ test.describe("Guided Tour", () => {
       await expect(tour.joyrideOverlay).toContainText(
         TEST_VARIATION_LIST_PAGE[1].content,
       );
-      await tour.clickNext();
-
-      await expect(tour.joyrideOverlay).toContainText(
-        TEST_VARIATION_LIST_PAGE[2].content,
-      );
       await tour.clickLast();
 
       await expect(tour.joyrideOverlay).not.toBeVisible();
