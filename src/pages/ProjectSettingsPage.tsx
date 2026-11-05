@@ -9,6 +9,7 @@ import {
   useProjectDispatch,
   useProjectState,
 } from "../contexts";
+import type { ProjectDto } from "../types";
 import { EmptyState } from "../components/EmptyState";
 import { PageHeader } from "../components/PageHeader";
 import { ProjectForm, SETTINGS_SECTIONS } from "../components/ProjectForm";
@@ -63,6 +64,7 @@ const ProjectSettingsPage = () => {
   const { projectList, projectEditState, loading } = useProjectState();
   const projectDispatch = useProjectDispatch();
   const [saving, setSaving] = useState(false);
+  const [saved, setSaved] = useState<ProjectDto>();
 
   const project = projectList.find((item) => item.id === projectId);
 
@@ -77,15 +79,18 @@ const ProjectSettingsPage = () => {
     [projectDispatch],
   );
 
+  const clean = saved?.id === project?.id ? saved : project;
   const dirty =
-    !!project && JSON.stringify(projectEditState) !== JSON.stringify(project);
+    !!clean && JSON.stringify(projectEditState) !== JSON.stringify(clean);
 
   const save = () => {
     setSaving(true);
-    updateProject(projectDispatch, projectEditState)
-      .then((saved) =>
-        enqueueSnackbar(`${saved.name} updated`, { variant: "success" }),
-      )
+    const sent = projectEditState;
+    updateProject(projectDispatch, sent)
+      .then((updated) => {
+        setSaved(sent);
+        enqueueSnackbar(`${updated.name} updated`, { variant: "success" });
+      })
       .catch((err: string) => enqueueSnackbar(err, { variant: "error" }))
       .finally(() => setSaving(false));
   };
@@ -130,7 +135,7 @@ const ProjectSettingsPage = () => {
               >
                 <Button
                   disabled={!dirty || saving}
-                  onClick={() => setProjectEditState(projectDispatch, project)}
+                  onClick={() => setProjectEditState(projectDispatch, clean)}
                 >
                   Discard changes
                 </Button>

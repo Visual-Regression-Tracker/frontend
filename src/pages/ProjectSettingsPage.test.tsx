@@ -129,6 +129,28 @@ describe("ProjectSettingsPage", () => {
     ).toBeDisabled();
   });
 
+  test("counts what was saved as the clean state, whatever shape the server returns", async () => {
+    vi.spyOn(projectsService, "update").mockResolvedValue({
+      ...ALPHA,
+      name: "Renamed",
+      imageComparisonConfig: JSON.stringify({
+        ...JSON.parse(ALPHA.imageComparisonConfig),
+        apiKey: "••••masked",
+      }),
+    });
+    const { user } = renderPage();
+    const name = await screen.findByRole("textbox", { name: /project name/i });
+
+    await user.clear(name);
+    await user.type(name, "Renamed");
+    await user.click(screen.getByRole("button", { name: "Save" }));
+
+    expect(await screen.findByText("Renamed updated")).toBeVisible();
+    expect(
+      screen.getByRole("button", { name: "Discard changes" }),
+    ).toBeDisabled();
+  });
+
   test("links to the four sections and marks the one picked", async () => {
     const scrollIntoView = vi.fn();
     Element.prototype.scrollIntoView = scrollIntoView;
