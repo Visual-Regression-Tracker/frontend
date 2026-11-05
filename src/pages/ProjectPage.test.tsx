@@ -238,14 +238,14 @@ describe("ProjectPage live updates", () => {
       const { socket } = await renderProjectPage({
         builds: [OPEN_BUILD, build(2)],
       });
-      expect(buildItem("#2 ci-2").getByText("failed")).toBeVisible();
+      expect(buildItem("#2 ci-2").getByText(/failed/)).toBeVisible();
 
       socket.receive("build_updated", [
         build(2, { status: BuildStatus.passed }),
       ]);
 
-      expect(buildItem("#2 ci-2").getByText("passed")).toBeVisible();
-      expect(buildItem("#1 ci-1").getByText("failed")).toBeVisible();
+      expect(buildItem("#2 ci-2").getByText(/passed/)).toBeVisible();
+      expect(buildItem("#1 ci-1").getByText(/failed/)).toBeVisible();
     });
   });
 
@@ -341,6 +341,54 @@ describe("ProjectPage deleting the open build", () => {
     Element.prototype.scrollTo = () => undefined;
   });
 
+  it("refetches the build list when the open build is deleted from its header", async () => {
+    const { user } = await renderProjectPage({
+      builds: [OPEN_BUILD, build(2)],
+    });
+    vi.spyOn(buildsService, "remove").mockResolvedValue(OPEN_BUILD);
+    const getList = vi.mocked(buildsService.getList);
+    getList.mockClear();
+
+    await user.click(
+      area("build-details").getByRole("button", { name: "Build menu" }),
+    );
+    await user.click(
+      await screen.findByRole("menuitem", { name: "Delete build…" }),
+    );
+    const dialog = await screen.findByRole("dialog", { name: "Delete build" });
+    await user.click(within(dialog).getByTestId("submitButton"));
+
+    await vi.waitFor(() => expect(getList).toHaveBeenCalled());
+  });
+
+  it("drops a build deleted from its header out of the ticked ones", async () => {
+    const { user } = await renderProjectPage({
+      builds: [OPEN_BUILD, build(2)],
+    });
+    vi.spyOn(buildsService, "remove").mockResolvedValue(OPEN_BUILD);
+    await user.click(
+      buildListArea().getByRole("checkbox", {
+        name: `Select build #${OPEN_BUILD.number}`,
+      }),
+    );
+    expect(screen.getByRole("toolbar", { name: "Selection" })).toBeVisible();
+
+    await user.click(
+      area("build-details").getByRole("button", { name: "Build menu" }),
+    );
+    await user.click(
+      await screen.findByRole("menuitem", { name: "Delete build…" }),
+    );
+    const dialog = await screen.findByRole("dialog", { name: "Delete build" });
+    await user.click(within(dialog).getByTestId("submitButton"));
+
+    await vi.waitFor(() =>
+      expect(
+        screen.queryByRole("toolbar", { name: "Selection" }),
+      ).not.toBeInTheDocument(),
+    );
+  });
+
   it("says the build was deleted once when this client deleted it", async () => {
     const { socket, user } = await renderProjectPage({
       builds: [OPEN_BUILD, build(2)],
@@ -353,9 +401,13 @@ describe("ProjectPage deleting the open build", () => {
       }),
     );
 
-    await user.click(buildListArea().getAllByTestId("MoreVertIcon")[0]);
-    await user.click(await screen.findByRole("menuitem", { name: "Delete" }));
-    const dialog = await screen.findByRole("dialog", { name: "Delete Build" });
+    await user.click(
+      buildListArea().getAllByRole("button", { name: "Build menu" })[0],
+    );
+    await user.click(
+      await screen.findByRole("menuitem", { name: "Delete build…" }),
+    );
+    const dialog = await screen.findByRole("dialog", { name: "Delete build" });
     await user.click(within(dialog).getByTestId("submitButton"));
 
     socket.receive("build_deleted", OPEN_BUILD);

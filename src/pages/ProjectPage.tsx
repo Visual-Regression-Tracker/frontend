@@ -3,6 +3,7 @@ import { Grid, Box } from "@mui/material";
 import { useLocation } from "react-router-dom";
 import BuildList from "../components/BuildList";
 import TestRunList from "../components/TestRunList";
+import { TestRunFiltersProvider } from "../components/TestRunList/TestRunFiltersContext";
 import BuildDetails from "../components/BuildDetails";
 import { useHelpSteps } from "../contexts";
 import {
@@ -30,7 +31,7 @@ const ProjectPage = () => {
   useHelpSteps(PROJECT_PAGE_STEPS);
 
   return (
-    <>
+    <TestRunFiltersProvider>
       <Grid container sx={{ height: "100%" }}>
         <Grid
           size={3}
@@ -68,7 +69,7 @@ const ProjectPage = () => {
           <TestDetailsDialog />
         </Suspense>
       )}
-    </>
+    </TestRunFiltersProvider>
   );
 };
 
