@@ -38,6 +38,9 @@ import { NoiseHintPanel } from "./NoiseHintPanel";
 
 const drawAreaContainerSx = { width: "100%", height: "100%" } as const;
 const drawAreaItemSx = { padding: "0 4px", height: "100%" } as const;
+const sizeLabel = (image: HTMLImageElement | undefined) =>
+  image ? `${image.width}×${image.height}` : undefined;
+
 const imageToolbarSx = {
   alignItems: "center",
   paddingLeft: "5px",
@@ -236,19 +239,28 @@ const TestDetailsModal = ({
         testRun={testRun}
         currentRunIndex={currentRunIndex}
         totalTestRunCount={totalTestRunCount}
-        onClose={handleClose}
-      />
-      <Divider />
-      {areas.processing && <LinearProgress />}
-      <TestRunInfoBar
-        testRun={testRun}
-        sizeMismatch={imageSizesDiffer(testRun, currentImage, baselineImage)}
         noiseHint={
           showNoiseHint && (
             <NoiseHintPanel key={testRun.id} {...noiseHint.panelProps} />
           )
         }
         enqueueSnackbar={enqueueSnackbar}
+        onPrevious={handlePrevious}
+        onNext={handleNext}
+        onClose={handleClose}
+      />
+      <Divider />
+      {areas.processing && <LinearProgress />}
+      <TestRunInfoBar
+        testRun={testRun}
+        sizes={
+          imageSizesDiffer(testRun, currentImage, baselineImage)
+            ? {
+                baseline: sizeLabel(baselineImage),
+                checkpoint: sizeLabel(currentImage),
+              }
+            : null
+        }
         ignoreAreasToolbar={
           <IgnoreAreasToolbar
             areaKind={areas.areaKind}
@@ -286,8 +298,6 @@ const TestDetailsModal = ({
       </Box>
       <TestDetailsFooter
         testRun={testRun}
-        currentRunIndex={currentRunIndex}
-        totalTestRunCount={totalTestRunCount}
         zoomControls={
           <ZoomControls
             scale={stageScale}
@@ -296,7 +306,6 @@ const TestDetailsModal = ({
             onFit={stage.fitImagesToStage}
           />
         }
-        onPrevious={handlePrevious}
         onNext={handleNext}
         onOpenVariations={setVariationsMode}
       />

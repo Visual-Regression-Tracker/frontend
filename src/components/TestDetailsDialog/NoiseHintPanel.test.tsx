@@ -15,6 +15,7 @@ import {
 } from "../../_test/test.data.helper";
 import { testRunService } from "../../services";
 import { withRegions } from "../../_test/noiseRegions";
+import { isNoisePending } from "../../_helpers/noiseHint.helper";
 import type { HintStage } from "../../_helpers/noiseRegions.helper";
 import { NoiseHintPanel } from "./NoiseHintPanel";
 
@@ -22,7 +23,7 @@ type Props = Parameters<typeof NoiseHintPanel>[0];
 
 const CHANGE = withRegions(NOISE_ANALYSIS_CHANGE);
 
-const renderPanel = (overrides: Partial<Props> = {}) => {
+const renderPanel = async (overrides: Partial<Props> = {}) => {
   const props: Props = {
     runId: "run",
     analysis: null,
@@ -31,6 +32,9 @@ const renderPanel = (overrides: Partial<Props> = {}) => {
     ...overrides,
   };
   const rendered = renderWithProviders(<NoiseHintPanel {...props} />);
+  if (!isNoisePending(props.analysis)) {
+    await rendered.user.click(chip());
+  }
   return {
     ...rendered,
     props,
@@ -84,6 +88,9 @@ const renderConnected = async (
     />,
     { route: `/?testId=${id}` },
   );
+  await rendered.user.click(
+    await screen.findByTestId("noise-hint-popover-chip"),
+  );
   await screen.findByTestId("noise-hint-panel");
   return {
     ...rendered,
@@ -94,6 +101,7 @@ const renderConnected = async (
   };
 };
 
+const chip = () => screen.getByTestId("noise-hint-popover-chip");
 const panel = () => screen.getByTestId("noise-hint-panel");
 const analyseButton = () => screen.getByTestId("analyse-noise-run-button");
 const blurToggle = () => screen.getByTestId("hint-areas-blur");
@@ -104,6 +112,35 @@ describe("NoiseHintPanel", () => {
     vi.useRealTimers();
   });
 
+  describe("chip", () => {
+    const UNKNOWN = {
+      ...NOISE_ANALYSIS_NOISE,
+      verdict: "unknown" as const,
+      score: 0,
+      reason: "sizes differ" as const,
+    };
+
+    it.each([
+      ["no analysis", null, "≋ Not analysed ▾"],
+      ["a noise verdict", NOISE_ANALYSIS_NOISE, "≋ Likely noise · 0.39 ▾"],
+      ["a change verdict", NOISE_ANALYSIS_CHANGE, "≋ Likely change · 0.77 ▾"],
+      ["an unknown verdict", UNKNOWN, "≋ Can't tell ▾"],
+      ["a pending run", NOISE_ANALYSIS_PENDING, "≋ Analysing…"],
+    ])("reads %s", async (_, analysis, label) => {
+      await renderPanel({ analysis });
+
+      expect(chip()).toHaveTextContent(label);
+    });
+
+    it("does not open the panel for a pending run", async () => {
+      const { user } = await renderPanel({ analysis: NOISE_ANALYSIS_PENDING });
+
+      await user.click(chip());
+
+      expect(screen.queryByTestId("noise-hint-panel")).toBeNull();
+    });
+  });
+
   describe("without a result", () => {
     it.each([
       ["no analysis", null],
@@ -111,8 +148,8 @@ describe("NoiseHintPanel", () => {
         "an analysis of a foreign version",
         { ...NOISE_ANALYSIS_NOISE, version: 2 },
       ],
-    ])("says the check was not run for %s", (_, analysis) => {
-      renderPanel({ analysis });
+    ])("says the check was not run for %s", async (_, analysis) => {
+      await renderPanel({ analysis });
 
       expect(
         within(panel()).getByText("Rendering-noise check: not run"),
@@ -130,14 +167,15 @@ describe("NoiseHintPanel", () => {
       await user.click(analyseButton());
 
       expect(analyse).toHaveBeenCalledExactlyOnceWith(["r1"]);
-      expect(within(panel()).getByText("Analysing…")).toBeVisible();
+      expect(chip()).toHaveTextContent("Analysing…");
       expect(screen.queryByTestId("analyse-noise-run-button")).toBeNull();
 
       show(NOISE_ANALYSIS_PENDING);
-      expect(within(panel()).getByText("Analysing…")).toBeVisible();
+      expect(chip()).toHaveTextContent("Analysing…");
 
       show(NOISE_ANALYSIS_CHANGE);
-      expect(within(panel()).queryByText("Analysing…")).toBeNull();
+      expect(chip()).not.toHaveTextContent("Analysing…");
+      await user.click(chip());
       expect(
         within(panel()).getByText("Rendering-noise check: likely change"),
       ).toBeVisible();
@@ -154,7 +192,8 @@ describe("NoiseHintPanel", () => {
       show(NOISE_ANALYSIS_PENDING);
       show(null);
 
-      expect(within(panel()).queryByText("Analysing…")).toBeNull();
+      expect(chip()).toHaveTextContent("Not analysed");
+      await user.click(chip());
       expect(analyseButton()).toHaveTextContent("Analyse");
     });
 
@@ -167,20 +206,21 @@ describe("NoiseHintPanel", () => {
       const { user } = await renderConnected("r1", null);
 
       await user.click(analyseButton());
-      expect(within(panel()).getByText("Analysing…")).toBeVisible();
+      expect(chip()).toHaveTextContent("Analysing…");
 
       act(() => {
         vi.advanceTimersByTime(3000);
       });
 
+      await user.click(chip());
       expect(analyseButton()).toHaveTextContent("Analyse");
     });
 
-    it("shows analysing for a pending run without a click", () => {
-      renderPanel({ analysis: NOISE_ANALYSIS_PENDING });
+    it("shows analysing for a pending run without a click", async () => {
+      await renderPanel({ analysis: NOISE_ANALYSIS_PENDING });
 
-      expect(within(panel()).getByText("Analysing…")).toBeVisible();
-      expect(screen.queryByTestId("analyse-noise-run-button")).toBeNull();
+      expect(chip()).toHaveTextContent("Analysing…");
+      expect(screen.queryByTestId("noise-hint-panel")).toBeNull();
     });
 
     it("explains why nothing was queued and lets the user try again", async () => {
@@ -188,30 +228,32 @@ describe("NoiseHintPanel", () => {
         queued: 0,
         skipped: [{ id: "run", reason: "queue full" }],
       });
-      const { user } = renderPanel();
+      const { user } = await renderPanel();
 
       await user.click(analyseButton());
 
       expect(
         await screen.findByText("Queue is full, try again in a minute"),
       ).toBeVisible();
+      await user.click(chip());
       expect(analyseButton()).toBeEnabled();
     });
 
     it("shows the error and lets the user try again when the request fails", async () => {
       vi.spyOn(testRunService, "analyseNoise").mockRejectedValue("No access");
-      const { user } = renderPanel();
+      const { user } = await renderPanel();
 
       await user.click(analyseButton());
 
       expect(await screen.findByText("No access")).toBeVisible();
+      await user.click(chip());
       expect(analyseButton()).toBeEnabled();
     });
   });
 
   describe("with a result", () => {
-    it("shows the verdict, both stages and the limitation", () => {
-      renderPanel({ analysis: CHANGE });
+    it("shows the verdict, both stages and the limitation", async () => {
+      await renderPanel({ analysis: CHANGE });
 
       const view = within(panel());
       expect(
@@ -231,8 +273,8 @@ describe("NoiseHintPanel", () => {
       expect(analyseButton()).toHaveTextContent("Analyse again");
     });
 
-    it("says likely noise for a noise verdict", () => {
-      renderPanel({ analysis: withRegions(NOISE_ANALYSIS_NOISE) });
+    it("says likely noise for a noise verdict", async () => {
+      await renderPanel({ analysis: withRegions(NOISE_ANALYSIS_NOISE) });
 
       expect(
         within(panel()).getByText("Rendering-noise check: likely noise"),
@@ -249,22 +291,20 @@ describe("NoiseHintPanel", () => {
       await user.click(analyseButton());
 
       expect(analyse).toHaveBeenCalledExactlyOnceWith(["r2"]);
-      expect(within(panel()).getByText("Analysing…")).toBeVisible();
-      expect(
-        within(panel()).queryByText("Rendering-noise check: likely change"),
-      ).toBeNull();
+      expect(chip()).toHaveTextContent("Analysing…");
+      expect(screen.queryByTestId("noise-hint-panel")).toBeNull();
 
       show({
         ...NOISE_ANALYSIS_CHANGE,
         computedAt: "2026-11-04T11:00:00Z",
         score: 0.5,
       });
-      expect(within(panel()).queryByText("Analysing…")).toBeNull();
+      await user.click(chip());
       expect(within(panel()).getByText("· score 0.50")).toBeVisible();
     });
 
-    it("shows the second stage as off in the project", () => {
-      renderPanel({
+    it("shows the second stage as off in the project", async () => {
+      await renderPanel({
         analysis: withRegions({
           ...NOISE_ANALYSIS_NOISE,
           dinov2: { skipped: "off" },
@@ -278,8 +318,8 @@ describe("NoiseHintPanel", () => {
       ).toBeVisible();
     });
 
-    it("shows the second stage as not needed when blur already sees a change", () => {
-      renderPanel({
+    it("shows the second stage as not needed when blur already sees a change", async () => {
+      await renderPanel({
         analysis: withRegions({
           ...NOISE_ANALYSIS_CHANGE,
           dinov2: { skipped: "blur sees a change" },
@@ -293,8 +333,8 @@ describe("NoiseHintPanel", () => {
       ).toBeVisible();
     });
 
-    it("shows that the second stage did not answer", () => {
-      renderPanel({
+    it("shows that the second stage did not answer", async () => {
+      await renderPanel({
         analysis: withRegions({
           ...NOISE_ANALYSIS_CHANGE,
           dinov2: { error: "dinov2 unavailable" },
@@ -309,8 +349,8 @@ describe("NoiseHintPanel", () => {
       expect(analyseButton()).toHaveTextContent("Analyse again");
     });
 
-    it("says blur only when there is no second stage", () => {
-      renderPanel({
+    it("says blur only when there is no second stage", async () => {
+      await renderPanel({
         analysis: withRegions({ ...NOISE_ANALYSIS_NOISE, dinov2: undefined }),
       });
 
@@ -325,8 +365,8 @@ describe("NoiseHintPanel", () => {
       ["image too large", "not available (image too large)"],
     ] as const)(
       "shows the reason for an unknown verdict: %s",
-      (reason, text) => {
-        renderPanel({
+      async (reason, text) => {
+        await renderPanel({
           analysis: {
             ...NOISE_ANALYSIS_NOISE,
             verdict: "unknown",
@@ -348,7 +388,7 @@ describe("NoiseHintPanel", () => {
 
   describe("area toggles", () => {
     it("pick the stage to show", async () => {
-      const { user, props } = renderPanel({ analysis: CHANGE });
+      const { user, props } = await renderPanel({ analysis: CHANGE });
 
       await user.click(blurToggle());
       await user.click(dinov2Toggle());
@@ -358,7 +398,7 @@ describe("NoiseHintPanel", () => {
     });
 
     it("show the chosen stage as pressed and clear it when pressed again", async () => {
-      const { user, props } = renderPanel({
+      const { user, props } = await renderPanel({
         analysis: CHANGE,
         stage: "dinov2" as HintStage,
       });
@@ -374,8 +414,8 @@ describe("NoiseHintPanel", () => {
     it.each([
       ["a skipped stage", { skipped: "off" as const }],
       ["a stage that failed", { error: "dinov2 unavailable" as const }],
-    ])("are disabled for %s", (_, dinov2) => {
-      renderPanel({
+    ])("are disabled for %s", async (_, dinov2) => {
+      await renderPanel({
         analysis: withRegions({ ...NOISE_ANALYSIS_NOISE, dinov2 }),
       });
 
@@ -383,8 +423,8 @@ describe("NoiseHintPanel", () => {
       expect(dinov2Toggle()).toBeDisabled();
     });
 
-    it("are disabled while the regions are not loaded", () => {
-      renderPanel({ analysis: NOISE_ANALYSIS_CHANGE });
+    it("are disabled while the regions are not loaded", async () => {
+      await renderPanel({ analysis: NOISE_ANALYSIS_CHANGE });
 
       expect(blurToggle()).toBeDisabled();
       expect(dinov2Toggle()).toBeDisabled();
