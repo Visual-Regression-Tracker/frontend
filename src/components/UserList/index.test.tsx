@@ -306,6 +306,14 @@ describe("UserList", () => {
       expect(within(rowOf(ADMIN)).getByRole("checkbox")).not.toBeChecked();
     });
 
+    it("shows the selected count once, in the selection bar", async () => {
+      const { user } = await renderUserList();
+
+      await selectRow(user, GUEST);
+
+      expect(screen.getAllByText(/1 (row )?selected/)).toHaveLength(1);
+    });
+
     it("clears the selection from the close button", async () => {
       const { user } = await renderUserList();
       await selectRow(user, GUEST);

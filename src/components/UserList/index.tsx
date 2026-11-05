@@ -191,6 +191,7 @@ const UserList = () => {
             checkboxSelection
             disableColumnMenu
             disableRowSelectionOnClick
+            hideFooterSelectedRowCount
             isRowSelectable={({ id }) => String(id) !== currentUser?.id}
             rowSelectionModel={{ type: "include", ids: new Set(selectedIds) }}
             onRowSelectionModelChange={onSelectionChange}
