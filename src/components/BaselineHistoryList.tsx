@@ -47,6 +47,7 @@ export const BaselineHistoryList = ({
             spacing={1.5}
             sx={{
               all: "unset",
+              display: "flex",
               boxSizing: "border-box",
               width: "100%",
               cursor: "pointer",
