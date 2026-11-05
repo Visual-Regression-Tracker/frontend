@@ -782,6 +782,17 @@ const VIEWS: [name: string, body: Body][] = [
       await shot("error-toast");
     },
   ],
+
+  [
+    "user list with selection",
+    async ({ userListPage, shot }) => {
+      await userListPage.table.checkRow(GUEST_USER.id);
+      await userListPage.table.checkRow(EDITOR_USER.id);
+      await expect(userListPage.selectionBar).toBeVisible();
+
+      await shot("user-list-selection");
+    },
+  ],
 ];
 
 for (const scheme of SCHEMES) {

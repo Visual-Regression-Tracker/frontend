@@ -189,7 +189,10 @@ async function getAll(): Promise<User[]> {
   return handleResponse(response);
 }
 
-function assignRole(id: string | number, role: Role): Promise<User> {
+function assignRole(
+  id: string | number,
+  role: keyof typeof Role,
+): Promise<User> {
   const requestOptions = {
     method: "PATCH",
     headers: {
