@@ -15,7 +15,7 @@ export const thumbnailFor = (run: TestRun, showDiff: boolean): string => {
     : imageFor(run, showDiff);
 };
 
-/** Both images are known to exist for the run, yet they are not the same size. */
+/** Both images have loaded, and they are not the same size. */
 export const imageSizesDiffer = (
   testRun: Pick<TestRun, "baselineName" | "imageName">,
   currentImage: HTMLImageElement | undefined,
@@ -24,6 +24,8 @@ export const imageSizesDiffer = (
   !!(
     testRun.baselineName &&
     testRun.imageName &&
-    (currentImage?.height !== baselineImage?.height ||
-      currentImage?.width !== baselineImage?.width)
+    currentImage &&
+    baselineImage &&
+    (currentImage.height !== baselineImage.height ||
+      currentImage.width !== baselineImage.width)
   );

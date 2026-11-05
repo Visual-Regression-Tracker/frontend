@@ -1,19 +1,9 @@
 import { type ReactNode, useEffect, useState } from "react";
-import {
-  Checkbox,
-  FormControlLabel,
-  Grid,
-  IconButton,
-  Typography,
-} from "@mui/material";
-import { NavigateBefore, NavigateNext } from "@mui/icons-material";
-import { useHotkeys } from "react-hotkeys-hook";
-import { hotkeyOptions } from "../../_helpers/hotkeys.helper";
+import { Checkbox, FormControlLabel, Grid, Typography } from "@mui/material";
 import { isAwaitingReview } from "../../_helpers/testRunStatus.helper";
 import { GO_TO_NEXT_KEY } from "../../constants";
 import { parseJson } from "../../_helpers/parseJson";
 import { TestRun } from "../../types";
-import { Tooltip } from "../Tooltip";
 import { ApproveRejectButtons } from "./ApproveRejectButtons";
 import { MatchingVariationsMode } from "./MatchingVariationsDialog";
 
@@ -35,20 +25,14 @@ const centerActionsSx = {
 
 interface TestDetailsFooterProps {
   testRun: TestRun;
-  currentRunIndex: number;
-  totalTestRunCount: number;
   zoomControls: ReactNode;
-  onPrevious: () => void;
   onNext: () => void;
   onOpenVariations: (mode: MatchingVariationsMode) => void;
 }
 
 export const TestDetailsFooter = ({
   testRun,
-  currentRunIndex,
-  totalTestRunCount,
   zoomControls,
-  onPrevious,
   onNext,
   onOpenVariations,
 }: TestDetailsFooterProps) => {
@@ -66,27 +50,12 @@ export const TestDetailsFooter = ({
     }
   };
 
-  useHotkeys("right", onNext, hotkeyOptions, [currentRunIndex, onNext]);
-  useHotkeys("left", onPrevious, hotkeyOptions, [currentRunIndex, onPrevious]);
-
   return (
     <Grid container sx={footerSx}>
       <Grid size={3} sx={scaleActionsSx}>
         {zoomControls}
       </Grid>
       <Grid size={6} sx={centerActionsSx}>
-        <Tooltip title={"Hotkey: ArrowLeft"}>
-          <IconButton
-            color="secondary"
-            style={{
-              visibility: currentRunIndex > 0 ? "visible" : "hidden",
-            }}
-            onClick={onPrevious}
-            size="large"
-          >
-            <NavigateBefore />
-          </IconButton>
-        </Tooltip>
         {isAwaitingReview(testRun.status) && (
           <ApproveRejectButtons
             testRun={testRun}
@@ -95,19 +64,6 @@ export const TestDetailsFooter = ({
             onOpenVariations={onOpenVariations}
           />
         )}
-        <Tooltip title={"Hotkey: ArrowRight"}>
-          <IconButton
-            color="secondary"
-            style={{
-              visibility:
-                totalTestRunCount > currentRunIndex + 1 ? "visible" : "hidden",
-            }}
-            onClick={onNext}
-            size="large"
-          >
-            <NavigateNext />
-          </IconButton>
-        </Tooltip>
       </Grid>
       <Grid size={3} sx={testRunActionsSx}>
         <FormControlLabel

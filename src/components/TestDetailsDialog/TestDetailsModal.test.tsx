@@ -426,11 +426,18 @@ describe("TestDetailsModal", () => {
     };
     const hintAreas = (): unknown =>
       JSON.parse(screen.getByTestId("hintAreas").textContent ?? "null");
+    const openNoise = (
+      user: Awaited<ReturnType<typeof renderWithProject>>["user"],
+    ) => user.click(screen.getByTestId("noise-hint-popover-chip"));
     const toggle = (stage: "blur" | "dinov2") =>
       screen.getByTestId(`hint-areas-${stage}`);
 
-    it("shows the panel for an unresolved run", async () => {
-      await renderWithProject({ ...UNRESOLVED_RUN });
+    it("shows the chip, with the panel behind it, for an unresolved run", async () => {
+      const { user } = await renderWithProject({ ...UNRESOLVED_RUN });
+      expect(screen.getByTestId("noise-hint-popover-chip")).toBeVisible();
+      expect(screen.queryByTestId("noise-hint-panel")).not.toBeInTheDocument();
+
+      await openNoise(user);
 
       expect(screen.getByTestId("noise-hint-panel")).toBeVisible();
     });
@@ -444,7 +451,9 @@ describe("TestDetailsModal", () => {
         noiseAnalysis: NOISE_ANALYSIS_CHANGE,
       });
 
-      expect(screen.queryByTestId("noise-hint-panel")).not.toBeInTheDocument();
+      expect(
+        screen.queryByTestId("noise-hint-popover-chip"),
+      ).not.toBeInTheDocument();
       expect(getDetails).not.toHaveBeenCalled();
     });
 
@@ -468,11 +477,9 @@ describe("TestDetailsModal", () => {
         project,
       );
 
-      expect(screen.queryByTestId("noise-hint-panel")).not.toBeInTheDocument();
       expect(
-        screen.queryByTestId("analyse-noise-run-button"),
+        screen.queryByTestId("noise-hint-popover-chip"),
       ).not.toBeInTheDocument();
-      expect(screen.queryByTestId("hint-areas-blur")).not.toBeInTheDocument();
       expect(hintAreas()).toEqual([]);
       expect(getDetails).not.toHaveBeenCalled();
     });
@@ -481,6 +488,7 @@ describe("TestDetailsModal", () => {
       const { user } = await renderWithProject(analysed());
       expect(hintAreas()).toEqual([]);
 
+      await openNoise(user);
       await user.click(toggle("blur"));
       expect(hintAreas()).toEqual([BLUR_REGION]);
 
@@ -503,6 +511,7 @@ describe("TestDetailsModal", () => {
         id: "analysed",
         noiseAnalysis: NOISE_ANALYSIS_CHANGE,
       });
+      await openNoise(user);
       expect(toggle("blur")).toBeDisabled();
 
       pending.deliver?.(analysed());
@@ -517,18 +526,23 @@ describe("TestDetailsModal", () => {
 
     it("clears the regions when another run is shown", async () => {
       const { user, showTestRun } = await renderWithProject(analysed("first"));
+      await openNoise(user);
       await user.click(toggle("blur"));
+      await user.keyboard("{Escape}");
 
       showTestRun(analysed("second"));
 
       expect(hintAreas()).toEqual([]);
+      await openNoise(user);
       expect(toggle("blur")).toHaveAttribute("aria-pressed", "false");
     });
 
     it("leaves Approve and the go-to-next choice working with the regions shown", async () => {
       vi.spyOn(testRunService, "approveBulk").mockResolvedValue(NO_FAILURES);
       const { user } = await renderWithProject(analysed());
+      await openNoise(user);
       await user.click(toggle("blur"));
+      await user.keyboard("{Escape}");
 
       await user.click(approveButton());
 

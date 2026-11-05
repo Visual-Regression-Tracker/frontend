@@ -547,6 +547,7 @@ const VIEWS: [name: string, body: Body][] = [
         NOISE_CART.id,
       );
       await expect(details.drawAreas).toHaveCount(2);
+      await details.noiseChip.click();
       await expect(details.noisePanel).toContainText("DINOv2: likely noise");
 
       await details.hintBlur.click();
@@ -780,6 +781,56 @@ const VIEWS: [name: string, body: Body][] = [
       );
       await expect(projectListPage.addBtn).toBeVisible();
       await shot("error-toast");
+    },
+  ],
+
+  [
+    "test run details with a VLM analysis and differing image sizes",
+    async ({ openProjectPage, page, shot }) => {
+      const described = {
+        ...TEST_UNRESOLVED,
+        id: "vlm-run",
+        name: "Cart",
+        noiseAnalysis: null,
+        vlmDescription:
+          "The cart badge moved 4px left; prices are unchanged.\nThe checkout button is a shade darker.",
+      };
+      await mockGetTestRuns(page, build.id, [described, TEST_RUN_NEW]);
+      await mockTestRun(page, described);
+      await mockImage(page, "image.png", "narrow.png");
+      const { details } = await openProjectPage(
+        project.id,
+        build.id,
+        described.id,
+      );
+      await expect(details.drawAreas).toHaveCount(2);
+      await expect(details.vlmAnalysis).toContainText("The cart badge moved");
+
+      await details.vlmAnalysis.getByRole("button", { name: "More" }).click();
+
+      await expect(details.vlmAnalysis).toContainText("a shade darker");
+      await expect(page.getByText(/Image sizes differ/)).toBeVisible();
+      await shot("test-run-vlm-and-size-mismatch");
+    },
+  ],
+
+  [
+    "test run details with a run that was not analysed",
+    async ({ openProjectPage, page, shot }) => {
+      const fresh = {
+        ...TEST_UNRESOLVED,
+        id: "fresh-run",
+        noiseAnalysis: null,
+      };
+      await mockGetTestRuns(page, build.id, [TEST_RUN_NEW, fresh]);
+      await mockTestRun(page, fresh);
+      const { details } = await openProjectPage(project.id, build.id, fresh.id);
+      await expect(details.drawAreas).toHaveCount(2);
+
+      await details.noiseChip.click();
+
+      await expect(details.analyseRun).toBeVisible();
+      await shot("test-run-noise-not-analysed");
     },
   ],
 ];

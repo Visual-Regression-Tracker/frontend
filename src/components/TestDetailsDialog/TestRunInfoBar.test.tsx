@@ -2,81 +2,81 @@ import { type ComponentProps } from "react";
 import { screen } from "@testing-library/react";
 import { renderWithProviders } from "../../_test/render";
 import { run } from "../../_helpers/testRun.fixture";
-import { testRunService } from "../../services";
 import { TestRunInfoBar } from "./TestRunInfoBar";
-import { useDialogSnackbar } from "./useDialogSnackbar";
 
-type Props = Omit<ComponentProps<typeof TestRunInfoBar>, "enqueueSnackbar">;
-
-const Bar = (props: Props) => {
-  const { enqueueSnackbar } = useDialogSnackbar();
-  return <TestRunInfoBar {...props} enqueueSnackbar={enqueueSnackbar} />;
-};
-
-const RUN = run({ comment: "" });
+type Props = ComponentProps<typeof TestRunInfoBar>;
 
 const renderBar = (overrides: Partial<Props> = {}) => {
   const props: Props = {
-    testRun: RUN,
-    sizeMismatch: false,
+    testRun: run(),
+    sizes: null,
     ignoreAreasToolbar: <button>Toolbar slot</button>,
     ...overrides,
   };
-  return { ...renderWithProviders(<Bar {...props} />), props };
-};
-
-const sizeWarning = () => screen.queryByTestId("WarningRoundedIcon");
-const writeComment = async (
-  user: ReturnType<typeof renderBar>["user"],
-  text: string,
-) => {
-  await user.click(screen.getByRole("button", { name: "Comments" }));
-  await user.type(await screen.findByTestId("comment"), text);
-  await user.click(screen.getByRole("button", { name: "Save" }));
+  return renderWithProviders(<TestRunInfoBar {...props} />);
 };
 
 describe("TestRunInfoBar", () => {
-  it("shows the run's attributes and the toolbar it is given", () => {
+  it("shows the toolbar it is given", () => {
     renderBar();
 
-    expect(screen.getByText(RUN.os)).toBeVisible();
-    expect(screen.getByText(RUN.viewport)).toBeVisible();
     expect(screen.getByRole("button", { name: "Toolbar slot" })).toBeVisible();
   });
 
   describe("image size warning", () => {
-    it("warns when the image and the baseline differ in size", () => {
-      renderBar({ sizeMismatch: true });
+    it("names both sizes when the image and the baseline differ", () => {
+      renderBar({ sizes: { baseline: "1280×800", checkpoint: "1280×812" } });
 
-      expect(sizeWarning()).toBeInTheDocument();
+      expect(
+        screen.getByText(
+          "Image sizes differ: baseline 1280×800, checkpoint 1280×812. Cannot calculate diff.",
+        ),
+      ).toBeVisible();
     });
 
     it("is quiet when they are the same size", () => {
       renderBar();
 
-      expect(sizeWarning()).not.toBeInTheDocument();
+      expect(screen.queryByText(/Image sizes differ/)).not.toBeInTheDocument();
     });
   });
 
-  describe("comment", () => {
-    it("saves the comment and confirms it", async () => {
-      const update = vi.spyOn(testRunService, "update").mockResolvedValue(RUN);
-      const { user } = renderBar();
+  describe("VLM analysis", () => {
+    it("is absent without a description", () => {
+      renderBar();
 
-      await writeComment(user, "looks fine");
-
-      expect(update).toHaveBeenCalledWith(RUN.id, { comment: "looks fine" });
-      expect(await screen.findByText("Comment updated")).toBeVisible();
+      expect(screen.queryByText("✦ VLM analysis")).not.toBeInTheDocument();
     });
 
-    it("shows the error and keeps the comment open when saving fails", async () => {
-      vi.spyOn(testRunService, "update").mockRejectedValue("Cannot comment");
-      const { user } = renderBar();
+    it("shows the description, which More and Less fold", async () => {
+      const { user } = renderBar({
+        testRun: run({ vlmDescription: "The cart badge moved 4px left." }),
+      });
+      expect(screen.getByText("✦ VLM analysis")).toBeVisible();
+      const text = screen.getByText("The cart badge moved 4px left.");
+      expect(text).not.toHaveStyle({ whiteSpace: "pre-wrap" });
 
-      await writeComment(user, "looks fine");
+      await user.click(screen.getByRole("button", { name: "More" }));
+      expect(text).toHaveStyle({ whiteSpace: "pre-wrap" });
 
-      expect(await screen.findByText("Cannot comment")).toBeVisible();
-      expect(screen.getByTestId("comment")).toBeVisible();
+      await user.click(screen.getByRole("button", { name: "Less" }));
+      expect(text).not.toHaveStyle({ whiteSpace: "pre-wrap" });
+    });
+
+    it("folds again for the next run", async () => {
+      const first = run({ id: "a", vlmDescription: "First run text." });
+      const { user, rerender } = renderBar({ testRun: first });
+      await user.click(screen.getByRole("button", { name: "More" }));
+
+      rerender(
+        <TestRunInfoBar
+          testRun={run({ id: "b", vlmDescription: "Second run text." })}
+          sizes={null}
+          ignoreAreasToolbar={null}
+        />,
+      );
+
+      expect(screen.getByRole("button", { name: "More" })).toBeVisible();
     });
   });
 });

@@ -1,7 +1,6 @@
 import { type ComponentProps } from "react";
 import { screen, waitFor } from "@testing-library/react";
 import { renderWithProviders } from "../../_test/render";
-import { buttonAroundIcon } from "../../_test/buttonAroundIcon";
 import { run } from "../../_helpers/testRun.fixture";
 import { NO_FAILURES } from "../../_test/bulkResult";
 import { GO_TO_NEXT_KEY } from "../../constants";
@@ -14,10 +13,7 @@ type Props = ComponentProps<typeof TestDetailsFooter>;
 const renderFooter = (overrides: Partial<Props> = {}) => {
   const props: Props = {
     testRun: run({ status: TestStatus.unresolved }),
-    currentRunIndex: 1,
-    totalTestRunCount: 3,
     zoomControls: <button>Zoom slot</button>,
-    onPrevious: vi.fn(),
     onNext: vi.fn(),
     onOpenVariations: vi.fn(),
     ...overrides,
@@ -25,8 +21,6 @@ const renderFooter = (overrides: Partial<Props> = {}) => {
   return { ...renderWithProviders(<TestDetailsFooter {...props} />), props };
 };
 
-const previous = () => buttonAroundIcon("NavigateBeforeIcon");
-const next = () => buttonAroundIcon("NavigateNextIcon");
 // a tooltip names these after their hotkey, so they are found by text
 const approve = () => screen.getByText("Approve", { selector: "button" });
 const reject = () => screen.getByText("Reject", { selector: "button" });
@@ -68,32 +62,6 @@ describe("TestDetailsFooter", () => {
         ).not.toBeInTheDocument();
       },
     );
-  });
-
-  describe("moving between runs", () => {
-    it("asks for the next and previous run by button and arrow key", async () => {
-      const { user, props } = renderFooter();
-
-      await user.click(next());
-      await user.keyboard("{ArrowRight}");
-      await user.click(previous());
-      await user.keyboard("{ArrowLeft}");
-
-      expect(props.onNext).toHaveBeenCalledTimes(2);
-      expect(props.onPrevious).toHaveBeenCalledTimes(2);
-    });
-
-    it("hides previous on the first run and next on the last", () => {
-      const first = renderFooter({ currentRunIndex: 0 });
-      expect(previous()).not.toBeVisible();
-      expect(next()).toBeVisible();
-      first.unmount();
-
-      renderFooter({ currentRunIndex: 2 });
-
-      expect(previous()).toBeVisible();
-      expect(next()).not.toBeVisible();
-    });
   });
 
   describe("go to the next after Approve/Reject", () => {
