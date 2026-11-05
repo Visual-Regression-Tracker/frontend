@@ -98,7 +98,6 @@ export const OllamaConfigForm = () => {
 
     return (
       <FormControl
-        variant="standard"
         fullWidth
         margin="dense"
         error={selectHelp !== undefined}
@@ -107,6 +106,7 @@ export const OllamaConfigForm = () => {
         <InputLabel id="model-select-label">Model</InputLabel>
         <Select
           labelId="model-select-label"
+          label="Model"
           id="model-select"
           value={config.model || ""}
           onChange={(event: SelectChangeEvent<string>) =>

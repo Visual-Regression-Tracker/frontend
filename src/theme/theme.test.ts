@@ -79,3 +79,12 @@ describe("hintColor", () => {
     expect(hintColor(hint)).toBe(color);
   });
 });
+
+describe("form fields", () => {
+  it("default to the outlined variant", () => {
+    expect(theme.components?.MuiTextField?.defaultProps?.variant).toBe(
+      "outlined",
+    );
+    expect(theme.components?.MuiSelect?.defaultProps?.variant).toBe("outlined");
+  });
+});

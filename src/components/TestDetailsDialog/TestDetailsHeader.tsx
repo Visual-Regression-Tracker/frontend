@@ -1,7 +1,7 @@
 import { Grid, IconButton, Typography } from "@mui/material";
 import { Close } from "@mui/icons-material";
 import { TestRun } from "../../types";
-import TestStatusChip from "../TestStatusChip";
+import { StatusChip } from "../StatusChip";
 
 const headerSx = {
   alignItems: "center",
@@ -39,7 +39,7 @@ export const TestDetailsHeader = ({
       </Typography>
     </Grid>
     <Grid>
-      <TestStatusChip status={testRun.status} />
+      <StatusChip status={testRun.status} />
     </Grid>
     <Grid sx={closeIconSx}>
       <IconButton color="inherit" onClick={onClose} size="large">

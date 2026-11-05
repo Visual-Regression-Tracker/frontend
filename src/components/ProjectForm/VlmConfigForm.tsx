@@ -40,10 +40,11 @@ export const VlmConfigForm = () => {
 
   return (
     <Fragment>
-      <FormControl variant="standard" fullWidth margin="dense" required>
+      <FormControl fullWidth margin="dense" required>
         <InputLabel id="provider-select-label">VLM Provider</InputLabel>
         <Select
           labelId="provider-select-label"
+          label="VLM Provider"
           id="provider-select"
           value={currentProvider}
           onChange={handleProviderChange}

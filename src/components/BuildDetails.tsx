@@ -7,8 +7,9 @@ import {
   LinearProgress,
   Stack,
 } from "@mui/material";
-import { BuildStatusChip } from "./BuildStatusChip";
-import { formatDateTime } from "../_helpers/format.helper";
+import { StatusChip } from "./StatusChip";
+import { DateLabel } from "./DateLabel";
+import { BuildStatus } from "../types/buildStatus";
 import {
   useBuildState,
   useNoiseAnalysisAvailable,
@@ -62,7 +63,14 @@ const BuildDetails = () => {
             </Tooltip>
           </Grid>
           <Grid>
-            <BuildStatusChip status={selectedBuild.status} />
+            <StatusChip
+              status={selectedBuild.status}
+              variant={
+                selectedBuild.status === BuildStatus.unresolved
+                  ? "filled"
+                  : "outlined"
+              }
+            />
           </Grid>
         </Grid>
       </Box>
@@ -70,13 +78,13 @@ const BuildDetails = () => {
         <Grid container spacing={1}>
           <Grid>
             <Typography variant="caption">
-              {formatDateTime(selectedBuild.createdAt)}
+              <DateLabel date={selectedBuild.createdAt} />
             </Typography>
           </Grid>
           {selectedBuild.updatedAt && (
             <Grid>
               <Typography variant="caption" color="textSecondary">
-                Last run: {formatDateTime(selectedBuild.updatedAt)}
+                Last run: <DateLabel date={selectedBuild.updatedAt} />
               </Typography>
             </Grid>
           )}

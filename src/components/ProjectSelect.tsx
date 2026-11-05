@@ -15,9 +15,11 @@ import { Project } from "../types";
 const ProjectSelect = ({
   projectId,
   onProjectSelect,
+  variant = "standard",
 }: {
   projectId?: string;
   onProjectSelect: (id: string) => void;
+  variant?: "standard" | "outlined";
 }) => {
   const {
     projectList,
@@ -91,7 +93,7 @@ const ProjectSelect = ({
       renderInput={(params) => (
         <TextField
           {...params}
-          variant="standard"
+          variant={variant}
           label="Project"
           placeholder="Select project"
           slotProps={{

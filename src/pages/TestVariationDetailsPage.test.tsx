@@ -8,7 +8,7 @@ import {
   TEST_VARIATION_ONE,
   testRunMock,
 } from "../_test/test.data.helper";
-import { formatDateTime } from "../_helpers/format.helper";
+import { formatShortDate } from "../_helpers/format.helper";
 import {
   projectsService,
   staticService,
@@ -207,7 +207,7 @@ describe("TestVariationDetailsPage", () => {
       ),
     ).toBeInTheDocument();
     expect(
-      within(latest).getByText(formatDateTime("2020-09-14T06:57:25.845Z")),
+      within(latest).getByText(formatShortDate("2020-09-14T06:57:25.845Z")),
     ).toBeInTheDocument();
     expect(within(latest).getByText(TestStatus.approved)).toBeInTheDocument();
     expect(within(older).getByText(TestStatus.unresolved)).toBeInTheDocument();

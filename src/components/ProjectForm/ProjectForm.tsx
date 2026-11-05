@@ -128,14 +128,14 @@ export const ProjectForm = () => {
       </Tooltip>
       {/* Not tied to the switch: the axis groups runs in the list either way */}
       <Tooltip title="Which test-variation axis differs within a group. Screens that match on everything except this axis are grouped in the test run list and reviewed together — e.g. customTags for per-locale screenshots.">
-        <FormControl variant="standard" fullWidth>
+        <FormControl fullWidth margin="dense">
           <InputLabel id="bulkApproveGroupBySelect">
             Group variations by
           </InputLabel>
           <Select
-            variant="standard"
             id="bulkApproveGroupBySelect"
             labelId="bulkApproveGroupBySelect"
+            label="Group variations by"
             value={project.bulkApproveGroupBy}
             onChange={(event: SelectChangeEvent<string>) =>
               update({ bulkApproveGroupBy: event.target.value })
@@ -149,14 +149,14 @@ export const ProjectForm = () => {
           </Select>
         </FormControl>
       </Tooltip>
-      <FormControl variant="standard" fullWidth>
+      <FormControl fullWidth margin="dense">
         <InputLabel id="imageComparisonSelect">
           Image comparison library
         </InputLabel>
         <Select
-          variant="standard"
           id="imageComparisonSelect"
           labelId="imageComparisonSelect"
+          label="Image comparison library"
           value={project.imageComparison}
           onChange={(event: SelectChangeEvent<string>) => {
             const imageComparison = event.target.value as ImageComparison;
