@@ -102,10 +102,7 @@ test("selects every build the search matched and deletes them", async ({
 
   await projectPage.buildList.selectAll.click();
 
-  await expect(projectPage.buildList.deleteSelectedBtn).toHaveAttribute(
-    "aria-label",
-    "Delete 15 selected",
-  );
+  await expect(projectPage.buildList.selectionBar).toContainText("15 selected");
 
   await projectPage.buildList.deleteSelectedBtn.click();
   await projectPage.modal.confirmBtn.click();

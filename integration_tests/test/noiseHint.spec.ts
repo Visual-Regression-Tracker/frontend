@@ -94,35 +94,38 @@ test.describe("run list", () => {
     await expect(testRunList.noiseChip(TEST_RUN_APPROVED.id)).toHaveCount(0);
   });
 
-  test("counts the runs that are still being analysed on the button", async ({
+  test("counts the runs that are still being analysed in the build header", async ({
     openProjectPage,
     page,
   }) => {
     await mockTestRunsWithDetails(page, build.id, withPending);
-    const { testRunList } = await openProjectPage(project.id, build.id);
+    const { buildDetails } = await openProjectPage(project.id, build.id);
 
-    await expect(testRunList.analyseNoiseBtn).toHaveText("Analysing 1 of 5…");
-    await expect(testRunList.analyseNoiseBtn).toBeDisabled();
+    await expect(buildDetails.noiseLine).toHaveText("Analysing 1 of 5…");
+    await buildDetails.openMenu();
+    await expect(buildDetails.analyseNoiseItem).toBeDisabled();
   });
 
-  test("sends the unresolved runs to the analysis and re-enables the button after the fallback wait", async ({
+  test("sends the unresolved runs to the analysis and offers it again after the fallback wait", async ({
     openProjectPage,
     page,
   }) => {
     await mockTestRunsWithDetails(page, build.id, withUnanalysed);
     await mockAnalyseNoise(page, { queued: 5, skipped: [] });
-    const { testRunList } = await openProjectPage(project.id, build.id);
-    await expect(testRunList.analyseNoiseBtn).toHaveText(
-      "Analyse unresolved (5)",
+    const { buildDetails } = await openProjectPage(project.id, build.id);
+    await buildDetails.openMenu();
+    await expect(buildDetails.analyseNoiseItem).toHaveText(
+      "Analyse rendering noise (5)",
     );
 
     const [request] = await Promise.all([
       page.waitForRequest(analysesNoise),
-      testRunList.analyseNoiseBtn.click(),
+      buildDetails.analyseNoiseItem.click(),
     ]);
 
     expect(sentIds(request)).toEqual(idsOf([...ANALYSED_RUNS, NOT_ANALYSED]));
-    await expect(testRunList.analyseNoiseBtn).toBeEnabled();
+    await buildDetails.openMenu();
+    await expect(buildDetails.analyseNoiseItem).toBeEnabled();
   });
 
   test("warns when the analysis queue is full", async ({
@@ -136,7 +139,8 @@ test.describe("run list", () => {
     });
     const projectPage = await openProjectPage(project.id, build.id);
 
-    await projectPage.testRunList.analyseNoiseBtn.click();
+    await projectPage.buildDetails.openMenu();
+    await projectPage.buildDetails.analyseNoiseItem.click();
 
     await expect(
       projectPage.notification.toast("Queue is full, try again in a minute"),
@@ -186,18 +190,19 @@ test.describe("run list", () => {
   }) => {
     await mockTestRunsWithDetails(page, build.id, withUnanalysed);
     await mockAnalyseNoise(page, { queued: 3, skipped: [] });
-    const { testRunList, testRunFilters } = await openProjectPage(
+    const { buildDetails, testRunFilters } = await openProjectPage(
       project.id,
       build.id,
     );
     await testRunFilters.selectNoiseHint("Likely noise");
-    await expect(testRunList.analyseNoiseBtn).toHaveText(
-      "Analyse unresolved (3)",
+    await buildDetails.openMenu();
+    await expect(buildDetails.analyseNoiseItem).toHaveText(
+      "Analyse rendering noise (3)",
     );
 
     const [request] = await Promise.all([
       page.waitForRequest(analysesNoise),
-      testRunList.analyseNoiseBtn.click(),
+      buildDetails.analyseNoiseItem.click(),
     ]);
 
     expect(sentIds(request)).toEqual(
@@ -213,7 +218,7 @@ test.describe("build details", () => {
   }) => {
     await mockTestRunsWithDetails(page, build.id, [
       ...ANALYSED_RUNS,
-      PENDING_SEARCH,
+      NOT_ANALYSED,
       TEST_RUN_APPROVED,
     ]);
     const projectPage = await openProjectPage(project.id, build.id);
@@ -222,6 +227,51 @@ test.describe("build details", () => {
       "3 of 5 unresolved look like rendering noise · analysed 4 of 5",
     );
     await expect(projectPage.noiseBanner).toHaveCount(0);
+  });
+
+  test("shows the likely noise from the summary line", async ({
+    openProjectPage,
+    page,
+  }) => {
+    await mockTestRunsWithDetails(page, build.id, [
+      ...ANALYSED_RUNS,
+      TEST_RUN_APPROVED,
+    ]);
+    const { buildDetails, testRunList } = await openProjectPage(
+      project.id,
+      build.id,
+    );
+    await expect(testRunList.rows).toHaveCount(ANALYSED_RUNS.length + 1);
+
+    await buildDetails.showNoise.click();
+
+    await expect(testRunList.rows).toHaveCount(3);
+  });
+
+  test("filters the list by the status counters", async ({
+    openProjectPage,
+    page,
+  }) => {
+    await mockTestRunsWithDetails(page, build.id, [
+      ...ANALYSED_RUNS,
+      TEST_RUN_APPROVED,
+      TEST_RUN_NEW,
+    ]);
+    const { buildDetails, testRunList } = await openProjectPage(
+      project.id,
+      build.id,
+    );
+    await expect(testRunList.rows).toHaveCount(ANALYSED_RUNS.length + 2);
+    await expect(buildDetails.statusCounter("Failed")).toBeDisabled();
+
+    await buildDetails.statusCounter("Unresolved").click();
+    await expect(testRunList.rows).toHaveCount(ANALYSED_RUNS.length);
+
+    await buildDetails.statusCounter("New").click();
+    await expect(testRunList.rows).toHaveCount(ANALYSED_RUNS.length + 1);
+
+    await buildDetails.statusCounter("All").click();
+    await expect(testRunList.rows).toHaveCount(ANALYSED_RUNS.length + 2);
   });
 
   test("points out a renderer change when nearly every diff is noise", async ({
@@ -251,6 +301,7 @@ test.describe("details dialog", () => {
       build.id,
       NOT_ANALYSED.id,
     );
+    await details.noiseChip.click();
     await expect(details.noisePanel).toContainText(
       "Rendering-noise check: not run",
     );
@@ -276,6 +327,8 @@ test.describe("details dialog", () => {
       NOISE_CART.id,
     );
 
+    await details.noiseChip.click();
+
     await expect(details.noisePanel).toContainText(
       "Rendering-noise check: likely noise · score 0.39",
     );
@@ -296,6 +349,7 @@ test.describe("details dialog", () => {
       NOISE_CART.id,
     );
     await expect(details.drawAreas).toHaveCount(2);
+    await details.noiseChip.click();
     await expect(details.hintBlur).toBeEnabled();
     await expect.poll(() => details.lockedRects()).toEqual([]);
 

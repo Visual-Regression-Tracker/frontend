@@ -14,10 +14,9 @@ import { ViewListOutlined } from "@mui/icons-material";
 import { TestRunCardView } from "./TestRunCardView";
 import { TestRunDensity, TestRunView } from "./TestRunListControls";
 import { DEFAULT_SORT } from "./TestRunGridHeader";
-import { AnalyseNoiseButton } from "./AnalyseNoiseButton";
 import TestRunFilters from "./TestRunFilters";
 import { TestRunTable } from "./TestRunTable";
-import { useTestRunFilters } from "./useTestRunFilters";
+import { useSharedTestRunFilters } from "./TestRunFiltersContext";
 import { useTestRunSelection } from "./useTestRunSelection";
 import { TagField } from "../../types";
 import type { TestRunSort } from "../../types/testRunSort";
@@ -39,7 +38,7 @@ const DEFAULT_SORT_MODEL: GridSortModel = [
 const TestRunList = () => {
   const { enqueueSnackbar } = useSnackbar();
   const navigate = useNavigate();
-  const { selectedTestRun, filteredSortedTestRunIds, testRuns, loading } =
+  const { selectedTestRun, filteredSortedTestRunIds, loading } =
     useTestRunState();
   const { selectedBuild } = useBuildState();
   const testRunDispatch = useTestRunDispatch();
@@ -54,10 +53,7 @@ const TestRunList = () => {
 
   const selectedProject = useSelectedProject();
   const noiseHintAvailable = useNoiseAnalysisAvailable();
-  const { filteredRows, toggleTag, ...filters } = useTestRunFilters(
-    testRuns,
-    noiseHintAvailable,
-  );
+  const { filteredRows, toggleTag, ...filters } = useSharedTestRunFilters();
   const { selectedIds, setSelectedIds, toggleAll, toggleGroup } =
     useTestRunSelection(selectedBuild?.id);
   const [view, setView] = useState<TestRunView>("table");
@@ -232,12 +228,7 @@ const TestRunList = () => {
     return (
       <Box sx={{ display: "flex", flexDirection: "column", height: "100%" }}>
         <Box sx={{ paddingX: 2, paddingTop: 1, paddingBottom: 1 }}>
-          <TestRunFilters
-            {...filters}
-            action={
-              noiseHintAvailable && <AnalyseNoiseButton runs={filteredRows} />
-            }
-          />
+          <TestRunFilters {...filters} />
         </Box>
         <Box sx={{ flex: 1, minHeight: 0 }}>
           {view === "table" ? (
