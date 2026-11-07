@@ -1,4 +1,10 @@
-import { login, logout, update, UserReducer } from "./user.context";
+import {
+  login,
+  logout,
+  regenerateApiKey,
+  update,
+  UserReducer,
+} from "./user.context";
 import { usersService } from "../services";
 import { TEST_USER, GUEST_USER } from "../_test/test.data.helper";
 
@@ -38,6 +44,22 @@ describe("UserReducer", () => {
     });
 
     expect(state).toEqual({ loggedIn: true, user: TEST_USER, userList: [] });
+  });
+
+  it("apiKeyChanged sets the key of the logged in user only", () => {
+    const state = UserReducer(
+      { loggedIn: true, user: TEST_USER, userList: [GUEST_USER] },
+      { type: "apiKeyChanged", payload: "NEW" },
+    );
+
+    expect(state.user).toEqual({ ...TEST_USER, apiKey: "NEW" });
+    expect(state.userList).toEqual([GUEST_USER]);
+  });
+
+  it("apiKeyChanged leaves a logged out state alone", () => {
+    expect(
+      UserReducer(loggedOut, { type: "apiKeyChanged", payload: "NEW" }),
+    ).toEqual(loggedOut);
   });
 
   it("success replaces the user who was logged in", () => {
@@ -133,6 +155,28 @@ describe("user action creators", () => {
         type: "success",
         payload: TEST_USER,
       });
+    });
+  });
+
+  describe("regenerateApiKey", () => {
+    it("dispatches apiKeyChanged with the new key", async () => {
+      const dispatch = vi.fn();
+      vi.spyOn(usersService, "newApiKey").mockResolvedValue("NEW");
+
+      await regenerateApiKey(dispatch);
+
+      expect(dispatch).toHaveBeenCalledWith({
+        type: "apiKeyChanged",
+        payload: "NEW",
+      });
+    });
+
+    it("does not dispatch when the service fails", async () => {
+      const dispatch = vi.fn();
+      vi.spyOn(usersService, "newApiKey").mockRejectedValue("nope");
+
+      await expect(regenerateApiKey(dispatch)).rejects.toBe("nope");
+      expect(dispatch).not.toHaveBeenCalled();
     });
   });
 

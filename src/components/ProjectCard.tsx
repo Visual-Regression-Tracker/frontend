@@ -16,7 +16,7 @@ import {
   Star,
   StarBorder,
 } from "@mui/icons-material";
-import { useSnackbar } from "notistack";
+import { useCopyToClipboard } from "../_helpers/useCopyToClipboard";
 import { Tooltip } from "./Tooltip";
 import { LOCATOR_PROJECT_LIST_PAGE_PROJECT_LIST } from "../constants";
 import {
@@ -39,15 +39,8 @@ export const ProjectCard = ({
   onEdit?: () => void;
   onDelete?: () => void;
 }) => {
-  const { enqueueSnackbar } = useSnackbar();
-  const copyId = () => {
-    Promise.resolve()
-      .then(() => navigator.clipboard.writeText(project.id))
-      .then(
-        () => enqueueSnackbar("Id copied", { variant: "success" }),
-        () => enqueueSnackbar("Could not copy the id", { variant: "error" }),
-      );
-  };
+  const copy = useCopyToClipboard();
+  const copyId = () => copy(project.id, "Id copied", "Could not copy the id");
   const favoriteLabel = favorite
     ? "Remove from favourites"
     : "Add to favourites";

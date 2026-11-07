@@ -394,7 +394,17 @@ describe("Header", () => {
       expect(tabNames()).toEqual(["Builds", "Variations", "Statistics"]);
     });
 
-    it("has no crumb or tabs on the project list and the profile", async () => {
+    it("shows just Profile as the crumb on the profile, without tabs", async () => {
+      await renderShell(routes.PROFILE_PAGE);
+
+      const crumb = screen.getByRole("navigation", { name: "Breadcrumb" });
+      expect(crumb).toHaveTextContent(/^Profile$/);
+      expect(
+        screen.queryByRole("navigation", { name: "Project" }),
+      ).not.toBeInTheDocument();
+    });
+
+    it("has no crumb or tabs on the project list", async () => {
       await renderShell(routes.PROJECT_LIST_PAGE);
 
       expect(

@@ -153,6 +153,50 @@ describe("usersService", () => {
     });
   });
 
+  describe("newApiKey", () => {
+    const stubText = (body: string, init?: ResponseInit) => {
+      const fetchMock = vi
+        .fn()
+        .mockImplementation(() => Promise.resolve(new Response(body, init)));
+      vi.stubGlobal("fetch", fetchMock);
+      return fetchMock;
+    };
+
+    it("asks with the token and answers the bare key", async () => {
+      const fetchMock = stubText("NEW-KEY");
+
+      await expect(usersService.newApiKey()).resolves.toBe("NEW-KEY");
+      expect(fetchMock).toHaveBeenCalledWith(`${API}/users/newApiKey`, {
+        method: "GET",
+        headers: AUTH,
+      });
+    });
+
+    it("keeps the new key in the stored user", async () => {
+      stubText("NEW-KEY");
+
+      await usersService.newApiKey();
+
+      expect(storedUser()).toEqual({ token: "token-1", apiKey: "NEW-KEY" });
+    });
+
+    it("rejects with the API message and keeps the stored user", async () => {
+      stubFetch({ message: "Forbidden" }, { status: 403 });
+
+      await expect(usersService.newApiKey()).rejects.toBe("Forbidden");
+      expect(storedUser()).toEqual({ token: "token-1" });
+    });
+
+    it("rejects an empty answer", async () => {
+      stubText("");
+
+      await expect(usersService.newApiKey()).rejects.toBe(
+        "Unexpected response from the server",
+      );
+      expect(storedUser()).toEqual({ token: "token-1" });
+    });
+  });
+
   it("remove deletes the users whose ids are in the body", async () => {
     const fetchMock = stubFetch(true);
 

@@ -5,6 +5,7 @@ import { usersService } from "../services";
 type IAction =
   | { type: "success"; payload: User }
   | { type: "logout" }
+  | { type: "apiKeyChanged"; payload: string }
   | { type: "getAll"; payload: User[] }
   | {
       type: "rolesChanged";
@@ -38,6 +39,12 @@ export function UserReducer(state: State, action: IAction): State {
         ...state,
         loggedIn: false,
         user: undefined,
+      };
+
+    case "apiKeyChanged":
+      return {
+        ...state,
+        user: state.user && { ...state.user, apiKey: action.payload },
       };
 
     case "getAll":
@@ -139,6 +146,12 @@ function update(
     });
 }
 
+function regenerateApiKey(dispatch: Dispatch) {
+  return usersService.newApiKey().then((apiKey) => {
+    dispatch({ type: "apiKeyChanged", payload: apiKey });
+  });
+}
+
 function logout(dispatch: Dispatch) {
   usersService.logout();
   usersService.markOidcLoggedOut();
@@ -147,4 +160,12 @@ function logout(dispatch: Dispatch) {
   });
 }
 
-export { UserProvider, useUserState, useUserDispatch, login, logout, update };
+export {
+  UserProvider,
+  useUserState,
+  useUserDispatch,
+  login,
+  logout,
+  update,
+  regenerateApiKey,
+};

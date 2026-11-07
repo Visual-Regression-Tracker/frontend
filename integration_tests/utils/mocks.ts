@@ -459,3 +459,9 @@ export const mockGetStatisticsResults = (
     (route) => route.fulfill({ body: JSON.stringify(results) }),
   );
 };
+
+export const mockNewApiKey = (page: Page, apiKey: string) => {
+  return page.route(`${API_URL}/users/newApiKey`, (route) =>
+    route.fulfill({ contentType: "text/html; charset=utf-8", body: apiKey }),
+  );
+};

@@ -1,5 +1,5 @@
 import { expect, Page } from "@playwright/test";
-import { test } from "fixtures";
+import { AUTH_USER, test } from "fixtures";
 import { ProjectListPage } from "pages";
 import { ProjectSettingsPage } from "pages/ProjectSettingsPage";
 import { UserListPage } from "pages/UserListPage";
@@ -21,6 +21,8 @@ import {
   mockGetTestVariations,
   mockGetUsers,
   mockImage,
+  mockNewApiKey,
+  mockUpdateUser,
   mockTestRunsWithDetails,
 } from "utils/mocks";
 
@@ -252,4 +254,30 @@ test.describe("project settings by role", () => {
       await expect(projectListPage.projects).toBeVisible();
     });
   });
+});
+
+test.describe("own profile by role", () => {
+  for (const role of ["admin", "editor", "guest"] as const) {
+    test.describe(`as ${role}`, () => {
+      test.use({ userRole: role });
+
+      test("updates the details and regenerates the API key", async ({
+        profilePage,
+        page,
+      }) => {
+        await mockUpdateUser(page, { ...AUTH_USER, role });
+        await mockNewApiKey(page, "ROLE-KEY");
+
+        await profilePage.firstName.fill("Jane");
+        await profilePage.updateUserBtn.click();
+        await expect(profilePage.notification.message).toHaveText(
+          "User updated",
+        );
+
+        await profilePage.regenerateBtn.click();
+        await profilePage.modal.confirmBtn.click();
+        await expect(profilePage.apiKey).toHaveValue("ROLE-KEY");
+      });
+    });
+  }
 });
