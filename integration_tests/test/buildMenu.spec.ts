@@ -37,7 +37,7 @@ test("renders the build menu", async ({ openProjectPage, page }) => {
   const { buildList } = await openProjectPage(project.id);
 
   await buildList.openMenu(runningBuild.number);
-  await expect(buildList.menuItem("Stop")).toBeVisible();
+  await expect(buildList.menuItem("Stop build")).toBeVisible();
 
   await expect(page).toHaveScreenshot("build-menu.png");
 });
@@ -46,7 +46,7 @@ test("renders the CI build id dialog", async ({ openProjectPage, page }) => {
   const { buildList, modal } = await openProjectPage(project.id);
 
   await buildList.openMenu(finishedBuild.number);
-  await buildList.menuItem("Edit CI Build").click();
+  await buildList.menuItem("Edit CI build id…").click();
   await expect(modal.dialog).toBeVisible();
 
   await expect(page).toHaveScreenshot("build-edit-dialog.png");
@@ -59,7 +59,7 @@ test("stops a running build", async ({ openProjectPage, page }) => {
   await buildList.openMenu(runningBuild.number);
   const [request] = await Promise.all([
     page.waitForRequest(isPatchOf(runningBuild.id)),
-    buildList.menuItem("Stop").click(),
+    buildList.menuItem("Stop build").click(),
   ]);
 
   expect(request.postDataJSON()).toEqual({ isRunning: false });
@@ -76,9 +76,9 @@ test("offers no stop for a finished build", async ({ openProjectPage }) => {
 
   await buildList.openMenu(finishedBuild.number);
 
-  await expect(buildList.menuItem("Edit CI Build")).toBeVisible();
-  await expect(buildList.menuItem("Delete")).toBeVisible();
-  await expect(buildList.menuItem("Stop")).toHaveCount(0);
+  await expect(buildList.menuItem("Edit CI build id…")).toBeVisible();
+  await expect(buildList.menuItem("Delete build…")).toBeVisible();
+  await expect(buildList.menuItem("Stop build")).toHaveCount(0);
 });
 
 test("changes the CI build id", async ({ openProjectPage, page }) => {
@@ -87,7 +87,7 @@ test("changes the CI build id", async ({ openProjectPage, page }) => {
   const { buildList, modal } = projectPage;
 
   await buildList.openMenu(finishedBuild.number);
-  await buildList.menuItem("Edit CI Build").click();
+  await buildList.menuItem("Edit CI build id…").click();
   await expect(modal.dialog).toContainText(
     `Edit the ci build id for build: #${finishedBuild.number}`,
   );
@@ -114,7 +114,7 @@ test("does not save a CI build id that is too short", async ({
   const { buildList, modal } = await openProjectPage(project.id);
 
   await buildList.openMenu(finishedBuild.number);
-  await buildList.menuItem("Edit CI Build").click();
+  await buildList.menuItem("Edit CI build id…").click();
   await buildList.ciBuildIdInput.fill("r");
   await modal.confirmBtn.click();
 
@@ -137,7 +137,7 @@ test("opens nothing by itself after a failed CI build id change", async ({
   const { buildList, modal, notification } = await openProjectPage(project.id);
 
   await buildList.openMenu(finishedBuild.number);
-  await buildList.menuItem("Edit CI Build").click();
+  await buildList.menuItem("Edit CI build id…").click();
   await buildList.ciBuildIdInput.fill("release-42");
   await modal.confirmBtn.click();
   await expect(notification.message).toHaveText("Could not save");
@@ -152,7 +152,7 @@ test("deletes a build", async ({ openProjectPage, page }) => {
   const { buildList, modal } = await openProjectPage(project.id);
 
   await buildList.openMenu(finishedBuild.number);
-  await buildList.menuItem("Delete").click();
+  await buildList.menuItem("Delete build…").click();
   await expect(modal.dialog).toContainText(
     `Are you sure you want to delete build: #${finishedBuild.number}?`,
   );
@@ -184,7 +184,7 @@ test("lets go of a build once it is deleted", async ({
   );
 
   await buildList.openMenu(finishedBuild.number);
-  await buildList.menuItem("Delete").click();
+  await buildList.menuItem("Delete build…").click();
   await modal.confirmBtn.click();
 
   await expect(page).toHaveURL(
@@ -206,7 +206,7 @@ test("opens nothing by itself after a failed delete", async ({
   const { buildList, modal, notification } = await openProjectPage(project.id);
 
   await buildList.openMenu(finishedBuild.number);
-  await buildList.menuItem("Delete").click();
+  await buildList.menuItem("Delete build…").click();
   await modal.confirmBtn.click();
   await expect(notification.message).toHaveText("Could not delete");
 

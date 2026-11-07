@@ -1,42 +1,30 @@
-import { Fragment, type MouseEvent } from "react";
+import type { MouseEvent } from "react";
 import {
   Box,
   Checkbox,
   Chip,
-  Grid,
   IconButton,
   LinearProgress,
   ListItemButton,
-  ListItemText,
-  Stack,
   Typography,
 } from "@mui/material";
-import { MoreVert } from "@mui/icons-material";
+import { MoreHoriz } from "@mui/icons-material";
 import { Build } from "../../types";
-import { StatusChip } from "../StatusChip";
 import { DateLabel } from "../DateLabel";
 import { Tooltip } from "../Tooltip";
-import { BuildStatus } from "../../types/buildStatus";
+import { statusColor } from "../../theme";
+import { buildSummary, hasLaterRun } from "../../_helpers/build.helper";
 
-const itemSx = {
-  paddingRight: "48px",
-  "&:hover .build-secondary-action": {
-    visibility: "inherit",
-  },
-} as const;
+const ROW_ACTIVE =
+  ".MuiListItemButton-root:hover &, .MuiListItemButton-root:focus-within &";
 
-const secondaryActionSx = {
-  position: "absolute",
-  right: 16,
-  top: "50%",
-  transform: "translateY(-50%)",
-  visibility: "hidden",
-} as const;
+const showOnHover = { opacity: 0, [ROW_ACTIVE]: { opacity: 1 } } as const;
 
 interface BuildListItemProps {
   build: Build;
   selected: boolean;
   checked: boolean;
+  selecting: boolean;
   onOpen: () => void;
   onToggleChecked: () => void;
   onMenuClick: (event: MouseEvent<HTMLElement>) => void;
@@ -46,78 +34,87 @@ export const BuildListItem = ({
   build,
   selected,
   checked,
+  selecting,
   onOpen,
   onToggleChecked,
   onMenuClick,
-}: BuildListItemProps) => (
-  <Fragment>
-    <ListItemButton selected={selected} onClick={onOpen} sx={itemSx}>
-      <Checkbox
-        edge="start"
-        size="small"
-        checked={checked}
-        onClick={(event) => event.stopPropagation()}
-        onChange={onToggleChecked}
-      />
-      <ListItemText
-        disableTypography
-        primary={
-          <Typography
-            variant="subtitle2"
-            style={{
-              wordWrap: "break-word",
+}: BuildListItemProps) => {
+  const color = statusColor(build.status);
+  return (
+    <>
+      <ListItemButton
+        selected={selected}
+        onClick={onOpen}
+        sx={{
+          display: "grid",
+          gridTemplateColumns: "auto minmax(0, 1fr) auto auto",
+          columnGap: 1,
+          alignItems: "center",
+          py: 0.75,
+          pl: 1,
+          pr: 1,
+        }}
+      >
+        <Box sx={{ display: "grid", placeItems: "center", width: 28 }}>
+          <Box
+            data-testid="build-status-dot"
+            sx={{
+              gridArea: "1 / 1",
+              width: 8,
+              height: 8,
+              borderRadius: "50%",
+              bgcolor: color === "default" ? "text.disabled" : `${color}.main`,
+              ...(selecting
+                ? { opacity: 0 }
+                : { [ROW_ACTIVE]: { opacity: 0 } }),
             }}
-          >
-            {`#${build.number} ${build.ciBuildId || ""}`}
-          </Typography>
-        }
-        secondary={
-          <Stack>
-            <Box>
-              <Typography variant="caption" color="textPrimary">
-                <DateLabel date={build.createdAt} />
-              </Typography>
-            </Box>
-            {build.updatedAt && (
-              <Box>
-                <Typography variant="caption" color="textSecondary">
-                  Last run: <DateLabel date={build.updatedAt} />
-                </Typography>
-              </Box>
-            )}
-            <Box>
-              <Grid container sx={{ justifyContent: "space-between" }}>
-                <Grid>
-                  <Tooltip title={build.branchName}>
-                    <Chip
-                      size="small"
-                      label={build.branchName}
-                      style={{ maxWidth: 180 }}
-                    />
-                  </Tooltip>
-                </Grid>
-                <Grid>
-                  <StatusChip
-                    status={build.status}
-                    variant={
-                      build.status === BuildStatus.unresolved
-                        ? "filled"
-                        : "outlined"
-                    }
-                  />
-                </Grid>
-              </Grid>
-            </Box>
-          </Stack>
-        }
-      />
-
-      <Box className="build-secondary-action" sx={secondaryActionSx}>
-        <IconButton onClick={onMenuClick} size="large">
-          <MoreVert data-testid="MoreVertIcon" />
+          />
+          <Checkbox
+            size="small"
+            checked={checked}
+            onClick={(event) => event.stopPropagation()}
+            onChange={onToggleChecked}
+            sx={{
+              gridArea: "1 / 1",
+              p: 0.5,
+              ...(selecting ? { opacity: 1 } : showOnHover),
+            }}
+            slotProps={{
+              input: { "aria-label": `Select build #${build.number}` },
+            }}
+          />
+        </Box>
+        <Typography
+          variant="subtitle2"
+          noWrap
+        >{`#${build.number} ${build.ciBuildId || ""}`}</Typography>
+        <Tooltip title={build.branchName}>
+          <Chip size="small" label={build.branchName} sx={{ maxWidth: 120 }} />
+        </Tooltip>
+        <IconButton
+          size="small"
+          aria-label="Build menu"
+          onClick={onMenuClick}
+          sx={showOnHover}
+        >
+          <MoreHoriz fontSize="small" />
         </IconButton>
-      </Box>
-    </ListItemButton>
-    {build.isRunning && <LinearProgress />}
-  </Fragment>
-);
+        <Typography
+          variant="caption"
+          noWrap
+          sx={{ gridColumn: "2 / -1", color: "text.secondary" }}
+        >
+          <DateLabel date={build.createdAt} />
+          {` · ${buildSummary(build)}`}
+          {hasLaterRun(build) && build.updatedAt && (
+            <>
+              {" · Last run: "}
+              <DateLabel date={build.updatedAt} />
+            </>
+          )}
+        </Typography>
+      </ListItemButton>
+      {build.isRunning && <LinearProgress sx={{ height: 2 }} />}
+    </>
+  );
+};
