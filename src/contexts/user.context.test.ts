@@ -7,6 +7,30 @@ type State = Parameters<typeof UserReducer>[0];
 const loggedOut: State = { loggedIn: false, userList: [] };
 
 describe("UserReducer", () => {
+  it("rolesChanged sets the role of the listed users only", () => {
+    const state = UserReducer(
+      { ...loggedOut, userList: [TEST_USER, GUEST_USER] },
+      {
+        type: "rolesChanged",
+        payload: { ids: [GUEST_USER.id], role: "editor" },
+      },
+    );
+
+    expect(state.userList).toEqual([
+      TEST_USER,
+      { ...GUEST_USER, role: "editor" },
+    ]);
+  });
+
+  it("removed drops the listed users", () => {
+    const state = UserReducer(
+      { ...loggedOut, userList: [TEST_USER, GUEST_USER] },
+      { type: "removed", payload: [GUEST_USER.id] },
+    );
+
+    expect(state.userList).toEqual([TEST_USER]);
+  });
+
   it("success logs the user in", () => {
     const state = UserReducer(loggedOut, {
       type: "success",
