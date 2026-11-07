@@ -440,7 +440,7 @@ describe("TestRunList and the details dialog", () => {
       </>,
     );
     await user.click(await screen.findByText("U1"));
-    expect(await screen.findByText(/Step 1\/4:/)).toBeInTheDocument();
+    expect(await screen.findByText("1/4")).toBeInTheDocument();
 
     await user.click(screen.getByText("Approve u1"));
     await user.keyboard("{ArrowRight}");
@@ -448,7 +448,7 @@ describe("TestRunList and the details dialog", () => {
     await waitFor(() =>
       expect(screen.getByTestId("search")).toHaveTextContent(/testId=u2$/),
     );
-    expect(await screen.findByText(/Step 2\/4:/)).toBeInTheDocument();
+    expect(await screen.findByText("2/4")).toBeInTheDocument();
   });
 
   it("walks the table's order when the run was opened by a link", async () => {
@@ -466,7 +466,7 @@ describe("TestRunList and the details dialog", () => {
       </>,
       { route: "/?buildId=build-a&testId=u1" },
     );
-    expect(await screen.findByText(/Step 1\/3:/)).toBeInTheDocument();
+    expect(await screen.findByText("1/3")).toBeInTheDocument();
 
     await user.keyboard("{ArrowRight}");
 

@@ -1,8 +1,11 @@
+import { type KeyboardEvent, useState } from "react";
 import {
   Box,
   Button,
-  Grid,
+  Chip,
+  ClickAwayListener,
   Paper,
+  Popper,
   ToggleButton,
   ToggleButtonGroup,
   Typography,
@@ -21,6 +24,7 @@ import {
 } from "../../_helpers/noiseText.helper";
 import type { NoiseAnalysisDto } from "../../types";
 import { useAnalyseNoise } from "../../contexts";
+import { hintColor } from "../../theme";
 import { useDialogSnackbar } from "./useDialogSnackbar";
 
 interface NoiseHintPanelProps {
@@ -42,6 +46,23 @@ function headline({ verdict, reason }: NoiseAnalysisDto): string {
   return `Rendering-noise check: not available${why}`;
 }
 
+function chipView(result: NoiseAnalysisDto | null, analysing: boolean) {
+  if (analysing) {
+    return { color: hintColor("pending"), label: `${ANALYSING}…` };
+  }
+  if (!result) {
+    return { color: "default", label: "Not analysed ▾" } as const;
+  }
+  if (result.verdict === "unknown") {
+    return { color: "default", label: "Can't tell ▾" } as const;
+  }
+  const verdict = result.verdict === "noise" ? "Likely noise" : "Likely change";
+  return {
+    color: hintColor(result.verdict),
+    label: `${verdict} · ${result.score.toFixed(2)} ▾`,
+  };
+}
+
 export const NoiseHintPanel = ({
   runId,
   analysis,
@@ -50,26 +71,38 @@ export const NoiseHintPanel = ({
 }: NoiseHintPanelProps) => {
   const { enqueueSnackbar } = useDialogSnackbar();
   const { analyse, requesting } = useAnalyseNoise(enqueueSnackbar);
+  const [anchor, setAnchor] = useState<HTMLElement | null>(null);
 
   const result = isNoiseResult(analysis) ? analysis : null;
   const pending = isNoisePending(analysis);
   const analysing = pending || requesting;
+  if (analysing && anchor) {
+    setAnchor(null);
+  }
+
+  const closeOnEscape = (event: KeyboardEvent) => {
+    if (event.key === "Escape" && anchor) {
+      event.stopPropagation();
+      setAnchor(null);
+    }
+  };
 
   const analyseButton = (label: string) => (
     <Button
       size="small"
       variant="outlined"
       data-testid="analyse-noise-run-button"
-      onClick={() => void analyse([runId])}
+      onClick={() => {
+        setAnchor(null);
+        void analyse([runId]);
+      }}
     >
       {label}
     </Button>
   );
 
   let body;
-  if (analysing) {
-    body = <Typography variant="body2">{`${ANALYSING}…`}</Typography>;
-  } else if (!result) {
+  if (!result) {
     body = (
       <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
         <Typography variant="body2">Rendering-noise check: not run</Typography>
@@ -126,21 +159,50 @@ export const NoiseHintPanel = ({
     );
   }
 
+  const view = chipView(result, analysing);
+
   return (
-    <Grid size={12}>
-      <Paper
-        elevation={0}
-        data-testid="noise-hint-panel"
-        sx={{
-          padding: 1.5,
-          marginTop: 1,
-          backgroundColor: "action.hover",
-          borderLeft: "3px solid",
-          borderColor: "hint.main",
-        }}
+    <>
+      <Chip
+        size="small"
+        variant="outlined"
+        color={view.color}
+        data-testid="noise-hint-popover-chip"
+        label={`≋ ${view.label}`}
+        onClick={
+          analysing
+            ? undefined
+            : (event) => setAnchor(anchor ? null : event.currentTarget)
+        }
+        onKeyDown={closeOnEscape}
+      />
+      <Popper
+        open={!!anchor}
+        anchorEl={anchor}
+        placement="bottom-start"
+        role="dialog"
+        aria-label="Rendering-noise check"
+        sx={{ zIndex: "modal" }}
       >
-        {body}
-      </Paper>
-    </Grid>
+        <ClickAwayListener
+          onClickAway={(event) => {
+            if (!anchor?.contains(event.target as Node)) {
+              setAnchor(null);
+            }
+          }}
+        >
+          <Paper
+            elevation={8}
+            tabIndex={-1}
+            ref={(node: HTMLElement | null) => node?.focus()}
+            onKeyDown={closeOnEscape}
+          >
+            <Box data-testid="noise-hint-panel" sx={{ p: 2, maxWidth: 520 }}>
+              {body}
+            </Box>
+          </Paper>
+        </ClickAwayListener>
+      </Popper>
+    </>
   );
 };

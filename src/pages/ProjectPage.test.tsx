@@ -141,7 +141,7 @@ const renderProjectPage = async ({
   // the handlers close over the open build and project, so they re-register
   await vi.waitFor(() => expect(socket.listening()).toContain("build_created"));
   if (openRun) {
-    await screen.findByRole("heading", { name: /^Step \d+\/\d+:/ });
+    await screen.findByTestId("step-position");
   }
 
   return { socket, ...result };
@@ -250,8 +250,7 @@ describe("ProjectPage live updates", () => {
   });
 
   describe("something deleted elsewhere while it is open", () => {
-    const stepHeading = () =>
-      screen.queryByRole("heading", { name: /^Step \d+\/\d+:/ });
+    const stepHeading = () => screen.queryByTestId("step-position");
 
     it("closes the dialog of a deleted test run and says so", async () => {
       const open = testRun("Screen A");
