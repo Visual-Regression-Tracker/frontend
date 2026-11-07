@@ -24,7 +24,7 @@ export type TestRunView = "table" | "grid";
 // the data grid's own density values, so it can take this straight as a prop
 export type TestRunDensity = "compact" | "standard" | "comfortable";
 
-export interface DiffToggle {
+interface DiffToggle {
   checked: boolean;
   onChange: (checked: boolean) => void;
 }
