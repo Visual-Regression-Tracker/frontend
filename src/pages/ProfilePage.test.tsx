@@ -318,10 +318,7 @@ describe("ProfilePage", () => {
     it("shows the api key of the user in a read-only field", async () => {
       await renderPage();
 
-      const field = screen.getByRole("textbox", {
-        name: "API key",
-        hidden: true,
-      });
+      const field = screen.getByRole("textbox", { name: "API key" });
       expect(field).toHaveValue(TEST_USER.apiKey);
       expect(field).toHaveAttribute("readonly");
     });
@@ -369,9 +366,19 @@ describe("ProfilePage", () => {
         expect(screen.queryByRole("dialog")).not.toBeInTheDocument(),
       );
       expect(newApiKey).not.toHaveBeenCalled();
+      expect(screen.getByTestId("apiKey")).toHaveValue(TEST_USER.apiKey);
+    });
+
+    it("shows the confirm button in the error colour", async () => {
+      const { user } = await renderPage();
+
+      await user.click(screen.getByRole("button", { name: "Regenerate…" }));
+
       expect(
-        screen.getByRole("textbox", { name: "API key", hidden: true }),
-      ).toHaveValue(TEST_USER.apiKey);
+        within(await screen.findByRole("dialog")).getByRole("button", {
+          name: "Regenerate",
+        }),
+      ).toHaveClass("MuiButton-colorError");
     });
 
     it("puts the regenerated key in the field and the examples", async () => {
@@ -386,9 +393,7 @@ describe("ProfilePage", () => {
       );
 
       expect(await screen.findByText("API key regenerated")).toBeVisible();
-      expect(
-        screen.getByRole("textbox", { name: "API key", hidden: true }),
-      ).toHaveValue("NEW-KEY");
+      expect(screen.getByTestId("apiKey")).toHaveValue("NEW-KEY");
       expect(
         screen.getByDisplayValue<HTMLTextAreaElement>(/"apiKey"/).value,
       ).toContain('"apiKey": "NEW-KEY"');
@@ -409,9 +414,7 @@ describe("ProfilePage", () => {
       );
 
       expect(await screen.findByText("Not allowed")).toBeVisible();
-      expect(
-        screen.getByRole("textbox", { name: "API key", hidden: true }),
-      ).toHaveValue(TEST_USER.apiKey);
+      expect(screen.getByTestId("apiKey")).toHaveValue(TEST_USER.apiKey);
     });
   });
 

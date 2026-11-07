@@ -11,6 +11,7 @@ import {
 import { useSnackbar } from "notistack";
 import { regenerateApiKey, useUserDispatch, useUserState } from "../contexts";
 import { useCopyToClipboard } from "../_helpers/useCopyToClipboard";
+import { monoFontFamily } from "../theme/tokens";
 import { BaseModal } from "./BaseModal";
 
 export const ApiKeyCard = () => {
@@ -47,8 +48,7 @@ export const ApiKeyCard = () => {
                 },
                 input: {
                   sx: {
-                    fontFamily:
-                      "ui-monospace, SFMono-Regular, Menlo, monospace",
+                    fontFamily: monoFontFamily,
                   },
                 },
               }}
@@ -85,6 +85,7 @@ export const ApiKeyCard = () => {
         title="Regenerate API key"
         content="CI jobs that use the current key stop working until you give them the new one."
         submitButtonText="Regenerate"
+        submitColor="error"
         onSubmit={handleRegenerate}
         onCancel={() => setConfirming(false)}
       />

@@ -187,6 +187,18 @@ describe("usersService", () => {
       expect(storedUser()).toEqual({ token: "token-1" });
     });
 
+    it.each([
+      ["a proxy page", "<html><body>Bad gateway</body></html>"],
+      ["a message with spaces", "Service restarting"],
+    ])("rejects %s with a successful status", async (_name, body) => {
+      stubText(body);
+
+      await expect(usersService.newApiKey()).rejects.toBe(
+        "Unexpected response from the server",
+      );
+      expect(storedUser()).toEqual({ token: "token-1" });
+    });
+
     it("rejects an empty answer", async () => {
       stubText("");
 

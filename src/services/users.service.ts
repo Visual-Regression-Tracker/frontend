@@ -105,6 +105,8 @@ function changePassword(password: string): Promise<boolean> {
   );
 }
 
+const API_KEY_SHAPE = /^[A-Za-z0-9_-]+$/;
+
 async function newApiKey(): Promise<string> {
   const response = await fetch(`${API_URL}${ENDPOINT_URL}/newApiKey`, {
     method: "GET",
@@ -116,7 +118,7 @@ async function newApiKey(): Promise<string> {
 
   // the backend answers with the bare key, not JSON
   const apiKey = (await response.text()).trim();
-  if (!apiKey) {
+  if (!API_KEY_SHAPE.test(apiKey)) {
     return rejectWithMessage("Unexpected response from the server");
   }
   const stored = localStorage.getItem("user");

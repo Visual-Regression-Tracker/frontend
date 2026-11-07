@@ -16,10 +16,12 @@ const ProjectSelect = ({
   projectId,
   onProjectSelect,
   variant = "standard",
+  flush = false,
 }: {
   projectId?: string;
   onProjectSelect: (id: string) => void;
   variant?: "standard" | "outlined";
+  flush?: boolean;
 }) => {
   const {
     projectList,
@@ -88,7 +90,7 @@ const ProjectSelect = ({
       }
       noOptionsText="No projects match"
       slotProps={{ popper: { sx: { minWidth: 280 } } }}
-      sx={{ mx: 1, mb: 1 }}
+      sx={flush ? undefined : { mx: 1, mb: 1 }}
       renderInput={(params) => (
         <TextField
           {...params}

@@ -13,6 +13,7 @@ interface IProps {
   title: string;
   content: ReactNode;
   submitButtonText: string;
+  submitColor?: "primary" | "error";
   onSubmit: () => void | Promise<unknown>;
   onCancel: () => void;
 }
@@ -21,6 +22,7 @@ export const BaseModal = ({
   open,
   title,
   submitButtonText,
+  submitColor = "primary",
   content,
   onSubmit,
   onCancel,
@@ -61,7 +63,7 @@ export const BaseModal = ({
           </Button>
           <Button
             type="submit"
-            color="primary"
+            color={submitColor}
             data-testid="submitButton"
             disabled={submitting}
           >

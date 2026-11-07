@@ -1,6 +1,5 @@
 import { useState } from "react";
 import {
-  Box,
   Button,
   Card,
   CardContent,
@@ -70,14 +69,13 @@ export const ConfigurationExamples = () => {
       />
       <CardContent>
         <Stack spacing={2}>
-          <Box sx={{ mx: -1 }}>
-            <ProjectSelect
-              variant="outlined"
-              onProjectSelect={(projectId) =>
-                selectProject(projectDispatch, projectId)
-              }
-            />
-          </Box>
+          <ProjectSelect
+            variant="outlined"
+            flush
+            onProjectSelect={(projectId) =>
+              selectProject(projectDispatch, projectId)
+            }
+          />
           <Stack
             direction="row"
             sx={{ alignItems: "center", justifyContent: "space-between" }}
