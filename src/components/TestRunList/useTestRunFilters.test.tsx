@@ -154,6 +154,18 @@ describe("useTestRunFilters", () => {
     expect(result.current.tagOptions).toEqual(["Android", "en"]);
   });
 
+  it("narrows the statuses by the picked tags but not the tags by each other", () => {
+    const { result } = renderFilters();
+
+    act(() => result.current.onTagsChange(["Android"]));
+
+    expect(result.current.statusOptions).toEqual([
+      TestStatus.approved,
+      TestStatus.ok,
+    ]);
+    expect(result.current.tagOptions).toEqual(["Android", "iOS", "de", "en"]);
+  });
+
   it("keeps a picked status and tag on offer though no run left matches it", () => {
     const { result } = renderFilters();
 
