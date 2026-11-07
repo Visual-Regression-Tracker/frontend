@@ -21,7 +21,6 @@ export class TestRunList extends Table {
     name: "Approve",
     exact: true,
   });
-  bulkApproveBtn = this.approveBtn;
   bulkRejectBtn = this.selectionBar.getByRole("button", {
     name: "Reject",
     exact: true,
@@ -37,7 +36,7 @@ export class TestRunList extends Table {
   selectAllRows = this.page.getByRole("checkbox", {
     name: /^(un)?select all rows$/i,
   });
-  tableSelectionCount = this.page.locator(".MuiDataGrid-selectedRowCount");
+  tableSelectionCount = this.selectionBar;
   // scoped to the table: the build list above has a pager of its own
   tableNextPage = this.page
     .locator(".MuiDataGrid-root")

@@ -467,7 +467,25 @@ describe("TestRunList show diff", () => {
     await openViewMenu(user);
     await screen.findByRole("menuitemradio", { name: "Compact" });
 
-    fireEvent.keyDown(document.body, { key: "d", code: "KeyD" });
+    fireEvent.keyDown(screen.getByRole("menuitemradio", { name: "Compact" }), {
+      key: "d",
+      code: "KeyD",
+    });
+
+    expect(showDiffSwitch()).toBeChecked();
+  });
+
+  it("leaves d alone while a confirmation is open", async () => {
+    vi.spyOn(testRunService, "removeBulk").mockResolvedValue(NO_FAILURES);
+    const { user } = renderList([A_EN]);
+    await user.click(await screen.findByRole("button", { name: "Grid view" }));
+    await user.click(
+      await screen.findByRole("checkbox", { name: "Select Screen A" }),
+    );
+    await user.click(actionButton("Delete…"));
+    await screen.findByRole("dialog");
+
+    fireEvent.keyDown(screen.getByRole("dialog"), { key: "d", code: "KeyD" });
 
     expect(showDiffSwitch()).toBeChecked();
   });

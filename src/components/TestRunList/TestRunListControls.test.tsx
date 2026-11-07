@@ -39,7 +39,7 @@ describe("TestRunListControls", () => {
 
     await openMenu(user);
     await user.click(
-      screen.getByRole("menuitemradio", { name: "Variation (customTags)" }),
+      screen.getByRole("menuitemradio", { name: /^Variation \(customTags\)/ }),
     );
 
     expect(props.onGroupedChange).toHaveBeenCalledWith(true);
@@ -81,5 +81,30 @@ describe("TestRunListControls", () => {
     await user.click(screen.getByRole("button", { name: "Grid view" }));
 
     expect(props.onViewChange).toHaveBeenCalledWith("grid");
+  });
+
+  it("draws a check beside the current density and a set Show diff", async () => {
+    const { user } = renderControls({ density: "compact" });
+
+    await openMenu(user);
+
+    const checked = (name: string | RegExp) =>
+      screen
+        .getByRole(name === "Compact" ? "menuitemradio" : "menuitemcheckbox", {
+          name,
+        })
+        .querySelector("svg[data-testid=CheckIcon]");
+    expect(checked("Compact")).not.toBeNull();
+    expect(checked(/Show diff in grid/)).not.toBeNull();
+  });
+
+  it("shows the grouping hint with the item, not only on hover", async () => {
+    const { user } = renderControls();
+
+    await openMenu(user);
+
+    expect(
+      screen.getByText("One row per screen. The axis is set in Settings."),
+    ).toBeVisible();
   });
 });

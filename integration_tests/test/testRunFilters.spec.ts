@@ -137,3 +137,23 @@ test("keeps Show diff in step between the View menu and the grid toolbar", async
 
   await expect(testRunList.diffToggle).not.toBeChecked();
 });
+
+test("keeps the view controls on the filter row at 1280px", async ({
+  openProjectPage,
+}) => {
+  const { testRunFilters, testRunList } = await openProjectPage(
+    project.id,
+    build.id,
+  );
+  await testRunFilters.pick("os", "mac");
+  await testRunList.gridViewToggle.click();
+
+  const nameBox = await testRunFilters.name.boundingBox();
+  const viewBox = await testRunList.viewMenuButton.boundingBox();
+  const diffBox = await testRunList.diffToggle.boundingBox();
+  const centre = (box: { y: number; height: number } | null) =>
+    (box?.y ?? 0) + (box?.height ?? 0) / 2;
+
+  expect(Math.abs(centre(viewBox) - centre(nameBox))).toBeLessThan(20);
+  expect(Math.abs(centre(diffBox) - centre(nameBox))).toBeLessThan(20);
+});

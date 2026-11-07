@@ -65,6 +65,21 @@ describe("TestRunTable", () => {
     expect(within(rowOf("Screen D")).getByText("8.16%")).toBeInTheDocument();
   });
 
+  it("shows a dash when a run has no diff percent", async () => {
+    renderTable(
+      propsFor([
+        run({
+          id: "n",
+          name: "Screen N",
+          diffPercent: null as unknown as number,
+        }),
+      ]),
+    );
+
+    await waitFor(() => expect(dataRows()).toHaveLength(1));
+    expect(within(rowOf("Screen N")).getByText("—")).toBeInTheDocument();
+  });
+
   it("shows the noise hint of an unresolved run in a Noise column next to its status", async () => {
     const noisy = run({
       id: "noisy",

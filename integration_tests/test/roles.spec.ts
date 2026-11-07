@@ -161,7 +161,7 @@ for (const role of ["editor", "guest"] as const) {
       await projectPage.testRunList.gridViewToggle.click();
       await projectPage.testRunList.checkCard(TEST_UNRESOLVED.name);
 
-      await expect(projectPage.testRunList.bulkApproveBtn).toBeEnabled();
+      await expect(projectPage.testRunList.approveBtn).toBeEnabled();
       await expect(projectPage.testRunList.bulkRejectBtn).toBeEnabled();
     });
 

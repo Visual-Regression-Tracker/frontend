@@ -1,9 +1,10 @@
-import { Fragment, type ReactNode, useState } from "react";
+import { type ReactNode, useState } from "react";
 import {
   Box,
   Button,
   Divider,
   FormControlLabel,
+  ListItemIcon,
   ListItemText,
   ListSubheader,
   Menu,
@@ -15,7 +16,12 @@ import {
   TooltipProps,
   Typography,
 } from "@mui/material";
-import { ArrowDropDown, ViewList, ViewModule } from "@mui/icons-material";
+import {
+  ArrowDropDown,
+  Check,
+  ViewList,
+  ViewModule,
+} from "@mui/icons-material";
 import { Tooltip } from "../Tooltip";
 import { GroupByAxis } from "../../_helpers/testRunGroup.helper";
 
@@ -81,13 +87,13 @@ const DENSITIES: { value: TestRunDensity; label: string }[] = [
   { value: "comfortable", label: "Comfortable" },
 ];
 
-const ShowDiffSwitch = ({
-  diffToggle,
-  testId,
-}: {
-  diffToggle: DiffToggle;
-  testId: string;
-}) => (
+const CheckMark = ({ shown }: { shown: boolean }) => (
+  <ListItemIcon sx={{ minWidth: 28 }}>
+    {shown && <Check fontSize="small" />}
+  </ListItemIcon>
+);
+
+const ShowDiffSwitch = ({ diffToggle }: { diffToggle: DiffToggle }) => (
   <Tooltip title="Toggle diff. Hotkey: D">
     <FormControlLabel
       control={
@@ -96,7 +102,7 @@ const ShowDiffSwitch = ({
           checked={diffToggle.checked}
           onChange={(event) => diffToggle.onChange(event.target.checked)}
           slotProps={{ input: { "aria-label": "Show diff" } }}
-          data-testid={testId}
+          data-testid="showDiffToggle"
         />
       }
       label={switchLabel("Show diff")}
@@ -125,16 +131,7 @@ const ViewMenu = ({
 >) => {
   const [anchor, setAnchor] = useState<HTMLElement | null>(null);
   const close = () => setAnchor(null);
-  const groupHint = (
-    <Fragment>
-      Collapses a screen&apos;s variations into one{" "}
-      {view === "grid" ? "card" : "row"} by group.
-      <br />
-      Set the axis in Settings → &quot;Group variations by&quot;.
-      <br />
-      Current axis: {groupByAxis}.
-    </Fragment>
-  );
+  const groupHint = `One ${view === "grid" ? "card" : "row"} per screen. The axis is set in Settings.`;
 
   return (
     <>
@@ -164,23 +161,23 @@ const ViewMenu = ({
               close();
             }}
           >
+            <CheckMark shown={density === value} />
             <ListItemText primary={label} />
           </MenuItem>
         ))}
         <Divider />
-        <MuiTooltip
-          placement="right"
-          arrow
-          disableInteractive
-          title={groupHint}
-        >
-          <ListSubheader>Group by</ListSubheader>
-        </MuiTooltip>
+        <ListSubheader>Group by</ListSubheader>
         {[
-          { grouped: false, label: "None", testId: "groupByNone" },
+          {
+            grouped: false,
+            label: "None",
+            hint: undefined,
+            testId: "groupByNone",
+          },
           {
             grouped: true,
             label: `Variation (${groupByAxis})`,
+            hint: groupHint,
             testId: "groupByVariation",
           },
         ].map((option) => (
@@ -196,7 +193,8 @@ const ViewMenu = ({
               close();
             }}
           >
-            <ListItemText primary={option.label} />
+            <CheckMark shown={grouped === option.grouped} />
+            <ListItemText primary={option.label} secondary={option.hint} />
           </MenuItem>
         ))}
         <Divider />
@@ -210,6 +208,7 @@ const ViewMenu = ({
             close();
           }}
         >
+          <CheckMark shown={diffToggle.checked} />
           <ListItemText primary="Show diff in grid" secondary="Hotkey: D" />
         </MenuItem>
       </Menu>
@@ -230,9 +229,7 @@ interface Props {
 
 export const TestRunListControls = ({ onViewChange, ...menu }: Props) => (
   <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-    {menu.view === "grid" && (
-      <ShowDiffSwitch diffToggle={menu.diffToggle} testId="showDiffToggle" />
-    )}
+    {menu.view === "grid" && <ShowDiffSwitch diffToggle={menu.diffToggle} />}
     <ToggleButtonGroup
       exclusive
       size="small"

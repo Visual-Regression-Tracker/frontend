@@ -6,7 +6,7 @@ type FilterChip =
 export class TestRunFilters extends PageObject {
   name = this.page.getByTestId("testRunNameFilter");
   noiseHint = this.chip("noise");
-  noiseHintOptions = this.page.getByRole("menuitemcheckbox");
+  chipOptions = this.page.getByRole("menuitemcheckbox");
   clearFilters = this.page.getByRole("button", { name: "Clear filters" });
   statusFilter = this.page.getByRole("group", { name: "Filter by status" });
 

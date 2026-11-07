@@ -84,24 +84,33 @@ describe("BulkOperation", () => {
     );
   });
 
-  it("counts every selected run and offers to select all under the filter", async () => {
+  it("counts only the selected runs that are shown and offers to select all under the filter", async () => {
     const onSelectAll = vi.fn();
     const { user } = renderBulkOperation({
       selectedIds: SELECTED_WITH_HIDDEN,
       onSelectAll,
     });
 
-    expect(screen.getByText("2 selected")).toBeVisible();
+    expect(screen.getByText("1 selected")).toBeVisible();
     await user.click(screen.getByRole("button", { name: "Select all 4" }));
 
     expect(onSelectAll).toHaveBeenCalledTimes(1);
   });
 
-  it("keeps the bar, with its actions off, while a filter hides every selected run", () => {
-    renderBulkOperation({ selectedIds: [HIDDEN_RUN.id] });
+  it("still offers Select all when the hidden ticks outnumber the shown rows", () => {
+    renderBulkOperation({
+      selectedIds: [NEW_RUN.id, "hidden-1", "hidden-2", "hidden-3", "hidden-4"],
+      rows: [NEW_RUN, UNRESOLVED_RUN],
+    });
 
     expect(screen.getByText("1 selected")).toBeVisible();
-    expect(actionButton(DELETE)).toBeDisabled();
+    expect(screen.getByRole("button", { name: "Select all 2" })).toBeVisible();
+  });
+
+  it("shows no bar while a filter hides every selected run", () => {
+    renderBulkOperation({ selectedIds: [HIDDEN_RUN.id] });
+
+    expect(screen.queryByRole("toolbar")).toBeNull();
   });
 
   it("clears the selection from the close button", async () => {

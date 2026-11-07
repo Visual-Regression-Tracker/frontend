@@ -442,7 +442,7 @@ const VIEWS: [name: string, body: Body][] = [
 
       await projectPage.testRunFilters.noiseHint.click();
 
-      await expect(projectPage.testRunFilters.noiseHintOptions).toHaveCount(3);
+      await expect(projectPage.testRunFilters.chipOptions).toHaveCount(3);
       await shot("project-page-noise-filter");
     },
   ],
@@ -936,7 +936,7 @@ const VIEWS: [name: string, body: Body][] = [
 
       await projectPage.testRunFilters.chip("browser").click();
 
-      await expect(projectPage.testRunFilters.noiseHintOptions).toHaveCount(1);
+      await expect(projectPage.testRunFilters.chipOptions).toHaveCount(1);
       await shot("project-page-filter-chip-open");
     },
   ],

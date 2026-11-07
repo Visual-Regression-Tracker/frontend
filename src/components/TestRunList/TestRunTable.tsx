@@ -30,6 +30,9 @@ const NAME_CELL_SX = {
   minWidth: 0,
 } as const;
 
+const STATUS_COLUMN_MIN_WIDTH = 130;
+const DIFF_COLUMN_WIDTH = 90;
+
 // fits the "Likely change" chip and its padding
 const NOISE_COLUMN_MIN_WIDTH = 136;
 
@@ -102,6 +105,7 @@ const buildColumns = (
     headerName: "Status",
     display: "flex",
     flex: 0.3,
+    minWidth: STATUS_COLUMN_MIN_WIDTH,
     filterable: false,
     // the chip shows the representative only, so the title gives the whole group
     renderCell: (params: GridRenderCellParams<TestRun>) => (
@@ -118,10 +122,11 @@ const buildColumns = (
     field: "diff",
     headerName: "Diff %",
     display: "flex",
-    flex: 0.2,
+    width: DIFF_COLUMN_WIDTH,
     filterable: false,
     sortable: false,
-    valueGetter: (_value, row) => `${(row.diffPercent ?? 0).toFixed(2)}%`,
+    valueGetter: (_value, row) =>
+      row.diffPercent == null ? "—" : `${row.diffPercent.toFixed(2)}%`,
   },
 ];
 
@@ -229,6 +234,7 @@ export const TestRunTable = ({
       paginationModel={paginationModel}
       onPaginationModelChange={onPaginationModelChange}
       pagination
+      hideFooterSelectedRowCount
       loading={loading}
       density={density}
       rowSelectionModel={rowSelectionModel}

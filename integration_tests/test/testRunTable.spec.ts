@@ -200,8 +200,8 @@ test("ticks every filtered run across the pages with the header checkbox", async
 
   await testRunList.selectAllRows.click();
 
-  await expect(testRunList.tableSelectionCount).toHaveText(
-    `${UNRESOLVED.length} rows selected`,
+  await expect(testRunList.tableSelectionCount).toContainText(
+    `${UNRESOLVED.length} selected`,
   );
   await testRunList.approveBtn.click();
   await expect(modal.dialog).toContainText(

@@ -777,7 +777,7 @@ test("opens no dialog when a tag is clicked", async ({
   await expect(page.getByTestId("drawArea")).toBeHidden();
 });
 
-test("names the axis the runs are grouped by in the tooltip", async ({
+test("names the axis the runs are grouped by in the View menu", async ({
   openProjectPage,
   page,
 }) => {
@@ -785,9 +785,10 @@ test("names the axis the runs are grouped by in the tooltip", async ({
   const projectPage = await openProjectPage(project.id, build.id);
 
   await projectPage.testRunList.viewMenuButton.click();
-  await page.getByText("Group by", { exact: true }).hover();
 
-  await expect(page.getByRole("tooltip")).toContainText("viewport");
+  await expect(
+    projectPage.testRunList.page.getByTestId("groupByVariation"),
+  ).toContainText("viewport");
 });
 
 test("groups runs of one screen whose reviews are half done", async ({

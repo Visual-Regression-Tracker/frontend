@@ -100,35 +100,44 @@ export const FilterBar = ({
     filters.some((filter) => filter.value.length > 0);
 
   return (
-    <Stack
-      direction="row"
-      sx={{ flexWrap: "wrap", alignItems: "center", gap: 1 }}
-    >
-      <DebouncedTextField
-        size="small"
-        label={searchLabel}
-        value={search}
-        debounceTimeout={300}
-        minLength={searchMinLength}
-        onChange={onSearchChange}
-        slotProps={
-          searchTestId
-            ? { htmlInput: { "data-testid": searchTestId } }
-            : undefined
-        }
-      />
-      {visible.map((filter) => (
-        <FilterChip key={filter.id} filter={filter} />
-      ))}
-      {filtering && (
-        <Button size="small" onClick={onClear}>
-          Clear filters
-        </Button>
-      )}
+    <Stack direction="row" sx={{ alignItems: "flex-start", gap: 1 }}>
+      <Stack
+        direction="row"
+        sx={{
+          flex: 1,
+          minWidth: 0,
+          flexWrap: "wrap",
+          alignItems: "center",
+          gap: 1,
+        }}
+      >
+        <DebouncedTextField
+          size="small"
+          label={searchLabel}
+          value={search}
+          debounceTimeout={300}
+          minLength={searchMinLength}
+          onChange={onSearchChange}
+          sx={{ width: 180 }}
+          slotProps={
+            searchTestId
+              ? { htmlInput: { "data-testid": searchTestId } }
+              : undefined
+          }
+        />
+        {visible.map((filter) => (
+          <FilterChip key={filter.id} filter={filter} />
+        ))}
+        {filtering && (
+          <Button size="small" onClick={onClear}>
+            Clear filters
+          </Button>
+        )}
+      </Stack>
       {actions && (
         <Stack
           direction="row"
-          sx={{ alignItems: "center", gap: 1, ml: "auto" }}
+          sx={{ alignItems: "center", gap: 1, flexShrink: 0, minHeight: 40 }}
         >
           {actions}
         </Stack>
