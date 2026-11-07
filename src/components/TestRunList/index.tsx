@@ -8,11 +8,19 @@ import {
   useSelectedProject,
 } from "../../contexts";
 import { useSnackbar } from "notistack";
-import { GridSortModel, type ToolbarPropsOverrides } from "@mui/x-data-grid";
+import { GridSortModel } from "@mui/x-data-grid";
+import { useHotkeys } from "react-hotkeys-hook";
 import { EmptyState } from "../EmptyState";
 import { ViewListOutlined } from "@mui/icons-material";
 import { TestRunCardView } from "./TestRunCardView";
-import { TestRunDensity, TestRunView } from "./TestRunListControls";
+import {
+  TestRunDensity,
+  TestRunListControls,
+  TestRunView,
+} from "./TestRunListControls";
+import { BulkOperation } from "./BulkOperation";
+import { useShowDiff } from "./useShowDiff";
+import { hotkeyMatching } from "../../_helpers/hotkeys.helper";
 import { DEFAULT_SORT } from "./TestRunGridHeader";
 import TestRunFilters from "./TestRunFilters";
 import { TestRunTable } from "./TestRunTable";
@@ -59,7 +67,13 @@ const TestRunList = () => {
   const [view, setView] = useState<TestRunView>("table");
   const [density, setDensity] = useState<TestRunDensity>("standard");
   const [groupVariations, setGroupVariations] = useState(false);
+  const [showDiff, setShowDiff] = useShowDiff();
   const [storedGridSort, setGridSort] = useState<TestRunSort>(DEFAULT_SORT);
+
+  useHotkeys("d", () => setShowDiff((prev) => !prev), {
+    ...hotkeyMatching,
+    enabled: view === "grid" && !selectedTestRun,
+  });
 
   const sortModel =
     !noiseHintAvailable && storedSortModel[0]?.field === "noise"
@@ -115,20 +129,20 @@ const TestRunList = () => {
     );
   }, [groupVariations, view, sortedGroups, activeSort, tagFieldsFor]);
 
-  const { name, statuses, tags, noiseHints } = filters;
+  const { name, statuses, tagFilters, noiseHints } = filters;
   const [pagedFilters, setPagedFilters] = useState({
     name,
     statuses,
-    tags,
+    tagFilters,
     noiseHints,
   });
   if (
     pagedFilters.name !== name ||
     pagedFilters.statuses !== statuses ||
-    pagedFilters.tags !== tags ||
+    pagedFilters.tagFilters !== tagFilters ||
     pagedFilters.noiseHints !== noiseHints
   ) {
-    setPagedFilters({ name, statuses, tags, noiseHints });
+    setPagedFilters({ name, statuses, tagFilters, noiseHints });
     setPaginationModel((prev) => ({ ...prev, page: 0 }));
   }
 
@@ -188,32 +202,6 @@ const TestRunList = () => {
     testRunDispatch,
   ]);
 
-  const toolbarProps = useMemo<ToolbarPropsOverrides>(
-    () => ({
-      selectedIds,
-      // the cards' bulk actions follow the order of the cards
-      rows: view === "grid" ? sortedRows : filteredRows,
-      view,
-      onViewChange: setView,
-      density,
-      onDensityChange: setDensity,
-      grouped: groupVariations,
-      onGroupedChange: setGroupVariations,
-      groupByAxis,
-      onProcessed: setSelectedIds,
-    }),
-    [
-      selectedIds,
-      filteredRows,
-      sortedRows,
-      view,
-      density,
-      groupVariations,
-      groupByAxis,
-      setSelectedIds,
-    ],
-  );
-
   const selectedBuildId = selectedBuild?.id;
   const openRun = useCallback(
     (id: string) => {
@@ -228,8 +216,29 @@ const TestRunList = () => {
     return (
       <Box sx={{ display: "flex", flexDirection: "column", height: "100%" }}>
         <Box sx={{ paddingX: 2, paddingTop: 1, paddingBottom: 1 }}>
-          <TestRunFilters {...filters} />
+          <TestRunFilters
+            {...filters}
+            actions={
+              <TestRunListControls
+                view={view}
+                onViewChange={setView}
+                density={density}
+                onDensityChange={setDensity}
+                grouped={groupVariations}
+                onGroupedChange={setGroupVariations}
+                groupByAxis={groupByAxis}
+                diffToggle={{ checked: showDiff, onChange: setShowDiff }}
+              />
+            }
+          />
         </Box>
+        <BulkOperation
+          selectedIds={selectedIds}
+          rows={filteredRows}
+          onSelectAll={() => setSelectedIds(filteredRows.map((row) => row.id))}
+          onClear={() => setSelectedIds([])}
+          onProcessed={setSelectedIds}
+        />
         <Box sx={{ flex: 1, minHeight: 0 }}>
           {view === "table" ? (
             <TestRunTable
@@ -244,12 +253,13 @@ const TestRunList = () => {
               onPaginationModelChange={setPaginationModel}
               sortModel={sortModel}
               onSortModelChange={setSortModel}
-              toolbarProps={toolbarProps}
+              density={density}
               onOpen={openRun}
             />
           ) : (
             <TestRunCardView
-              toolbarProps={toolbarProps}
+              density={density}
+              showDiff={showDiff}
               groups={groups}
               selectedIds={selectedIds}
               loading={loading}
@@ -257,10 +267,9 @@ const TestRunList = () => {
               onSortChange={setGridSort}
               paginationModel={paginationModel}
               onPaginationModelChange={setPaginationModel}
-              activeTags={filters.tags}
+              activeTags={tagFilters}
               tagFieldsFor={tagFieldsFor}
               noiseAvailable={noiseHintAvailable}
-              hotkeysEnabled={!selectedTestRun}
               onToggleAll={toggleAll}
               onToggleGroup={toggleGroup}
               onToggleTag={toggleTag}

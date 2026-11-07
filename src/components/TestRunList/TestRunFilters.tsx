@@ -1,162 +1,78 @@
-import { ReactNode } from "react";
-import {
-  Grid,
-  TextField,
-  Button,
-  Autocomplete,
-  Chip,
-  Paper,
-  AutocompleteRenderValueGetItemProps,
-} from "@mui/material";
-import { DebouncedTextField } from "../DebouncedTextField";
-import { TestStatus } from "../../types";
+import type { ReactNode } from "react";
+import { FilterBar } from "../FilterBar";
+import { TagField } from "../../types";
 import {
   NOISE_HINT_FILTERS,
   NoiseHintFilter,
 } from "../../_helpers/noiseHint.helper";
+import type { TagFilters } from "./useTestRunFilters";
+
+const CHIP_FIELDS: { field: TagField; label: string }[] = [
+  { field: "os", label: "OS" },
+  { field: "browser", label: "Browser" },
+  { field: "viewport", label: "Viewport" },
+  { field: "device", label: "Device" },
+  { field: "customTags", label: "Tags" },
+];
 
 interface IProps {
-  tagOptions: string[];
-  statusOptions: TestStatus[];
   name: string;
-  statuses: TestStatus[];
-  tags: string[];
+  tagFilters: TagFilters;
+  tagOptions: Record<TagField, string[]>;
   noiseHints: NoiseHintFilter[];
-  action?: ReactNode;
+  hasActiveFilters: boolean;
+  actions?: ReactNode;
   onNameChange: (value: string) => void;
-  onStatusesChange: (value: TestStatus[]) => void;
-  onTagsChange: (value: string[]) => void;
+  onTagFilterChange: (field: TagField, values: string[]) => void;
   onNoiseHintsChange?: (value: NoiseHintFilter[]) => void;
   onReset: () => void;
 }
 
-const renderChips = <T extends string>(
-  value: T[],
-  getItemProps: AutocompleteRenderValueGetItemProps<true>,
-) =>
-  value.map((option, index) => (
-    <Chip
-      {...getItemProps({ index })}
-      key={option}
-      size="small"
-      label={option}
-    />
-  ));
-
 const TestRunFilters = ({
-  tagOptions,
-  statusOptions,
   name,
-  statuses,
-  tags,
+  tagFilters,
+  tagOptions,
   noiseHints,
-  action,
+  hasActiveFilters,
+  actions,
   onNameChange,
-  onStatusesChange,
-  onTagsChange,
+  onTagFilterChange,
   onNoiseHintsChange,
   onReset,
-}: IProps) => {
-  const hasActiveFilters =
-    name.length > 0 ||
-    statuses.length > 0 ||
-    tags.length > 0 ||
-    noiseHints.length > 0;
-
-  return (
-    <Paper variant="outlined" sx={{ p: 2, borderRadius: 2 }}>
-      <Grid container spacing={2} wrap="nowrap" sx={{ alignItems: "center" }}>
-        <Grid size={3}>
-          <DebouncedTextField
-            size="small"
-            variant="outlined"
-            fullWidth
-            label="Name"
-            placeholder="Search by name"
-            value={name}
-            minLength={2}
-            debounceTimeout={300}
-            onChange={onNameChange}
-            slotProps={{ htmlInput: { "data-testid": "testRunNameFilter" } }}
-          />
-        </Grid>
-        <Grid size="grow">
-          <Autocomplete
-            multiple
-            size="small"
-            disableCloseOnSelect
-            limitTags={3}
-            data-testid="testRunTagFilter"
-            options={tagOptions}
-            value={tags}
-            onChange={(_event, value) => onTagsChange(value)}
-            renderValue={renderChips}
-            renderInput={(params) => (
-              <TextField
-                {...params}
-                variant="outlined"
-                label="Tag"
-                placeholder={tags.length === 0 ? "Any tag" : undefined}
-              />
-            )}
-          />
-        </Grid>
-        <Grid size="grow">
-          <Autocomplete
-            multiple
-            size="small"
-            disableCloseOnSelect
-            limitTags={3}
-            options={statusOptions}
-            value={statuses}
-            onChange={(_event, value) => onStatusesChange(value)}
-            renderValue={renderChips}
-            renderInput={(params) => (
-              <TextField
-                {...params}
-                variant="outlined"
-                label="Status"
-                placeholder={statuses.length === 0 ? "Any status" : undefined}
-              />
-            )}
-          />
-        </Grid>
-        {onNoiseHintsChange && (
-          <Grid size="grow">
-            <Autocomplete
-              multiple
-              size="small"
-              disableCloseOnSelect
-              limitTags={3}
-              options={NOISE_HINT_FILTERS}
-              value={noiseHints}
-              onChange={(_event, value) => onNoiseHintsChange(value)}
-              renderValue={renderChips}
-              renderInput={(params) => (
-                <TextField
-                  {...params}
-                  variant="outlined"
-                  label="Noise hint"
-                  placeholder={noiseHints.length === 0 ? "Any" : undefined}
-                />
-              )}
-            />
-          </Grid>
-        )}
-        <Grid>
-          <Button
-            variant="outlined"
-            color="primary"
-            onClick={onReset}
-            disabled={!hasActiveFilters}
-          >
-            Reset
-          </Button>
-        </Grid>
-        {action && <Grid>{action}</Grid>}
-      </Grid>
-    </Paper>
-  );
-};
+}: IProps) => (
+  <FilterBar
+    search={name}
+    onSearchChange={onNameChange}
+    searchLabel="Name"
+    searchMinLength={2}
+    searchTestId="testRunNameFilter"
+    active={hasActiveFilters}
+    actions={actions}
+    filters={[
+      ...CHIP_FIELDS.map(({ field, label }) => ({
+        id: field,
+        label,
+        options: tagOptions[field],
+        value: tagFilters[field],
+        onChange: (values: string[]) => onTagFilterChange(field, values),
+      })),
+      ...(onNoiseHintsChange
+        ? [
+            {
+              id: "noise",
+              label: "Noise",
+              options: [...NOISE_HINT_FILTERS],
+              value: noiseHints,
+              onChange: (values: string[]) =>
+                onNoiseHintsChange(
+                  NOISE_HINT_FILTERS.filter((hint) => values.includes(hint)),
+                ),
+            },
+          ]
+        : []),
+    ]}
+    onClear={onReset}
+  />
+);
 
 export default TestRunFilters;

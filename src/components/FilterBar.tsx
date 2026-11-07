@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import {
   Button,
   Checkbox,
@@ -22,6 +22,10 @@ interface IProps {
   search: string;
   onSearchChange: (value: string) => void;
   searchLabel?: string;
+  searchMinLength?: number;
+  searchTestId?: string;
+  active?: boolean;
+  actions?: ReactNode;
   filters: FilterDef[];
   onClear: () => void;
 }
@@ -82,12 +86,18 @@ export const FilterBar = ({
   search,
   onSearchChange,
   searchLabel = "Search",
+  searchMinLength,
+  searchTestId,
+  active = false,
+  actions,
   filters,
   onClear,
 }: IProps) => {
   const visible = filters.filter((filter) => filter.options.length > 0);
   const filtering =
-    search !== "" || filters.some((filter) => filter.value.length > 0);
+    active ||
+    search !== "" ||
+    filters.some((filter) => filter.value.length > 0);
 
   return (
     <Stack
@@ -99,7 +109,13 @@ export const FilterBar = ({
         label={searchLabel}
         value={search}
         debounceTimeout={300}
+        minLength={searchMinLength}
         onChange={onSearchChange}
+        slotProps={
+          searchTestId
+            ? { htmlInput: { "data-testid": searchTestId } }
+            : undefined
+        }
       />
       {visible.map((filter) => (
         <FilterChip key={filter.id} filter={filter} />
@@ -108,6 +124,14 @@ export const FilterBar = ({
         <Button size="small" onClick={onClear}>
           Clear filters
         </Button>
+      )}
+      {actions && (
+        <Stack
+          direction="row"
+          sx={{ alignItems: "center", gap: 1, ml: "auto" }}
+        >
+          {actions}
+        </Stack>
       )}
     </Stack>
   );

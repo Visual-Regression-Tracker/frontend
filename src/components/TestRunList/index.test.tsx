@@ -26,9 +26,10 @@ import {
   TEST_PROJECT,
   TEST_USER,
 } from "../../_test/test.data.helper";
-import { TEST_RUN_SHOW_DIFF_KEY } from "../../constants";
 import { TestDetailsDialog } from "../TestDetailsDialog";
+import { TEST_RUN_SHOW_DIFF_KEY } from "../../constants";
 import TestRunList from "./index";
+import { useSharedTestRunFilters } from "./TestRunFiltersContext";
 import { NO_FAILURES } from "../../_test/bulkResult";
 import { CurrentSearch } from "../../_test/location";
 import { detailsFrom } from "../../_test/detailsFrom";
@@ -67,13 +68,21 @@ const OpenBuildB = () => {
   );
 };
 
-// the tooltip's label sits on a span around the (possibly disabled) button
-const actionButton = (label: string): HTMLButtonElement => {
-  const button = screen.getByLabelText(label).querySelector("button");
-  if (!button) {
-    throw new Error(`no button in "${label}"`);
-  }
-  return button;
+const actionButton = (name: string): HTMLElement =>
+  screen.getByRole("button", { name });
+const selectionBar = () => screen.queryByRole("toolbar", { name: "Selection" });
+
+const openViewMenu = (user: User) =>
+  user.click(screen.getByRole("button", { name: "View" }));
+const groupByVariation = async (user: User) => {
+  await openViewMenu(user);
+  await user.click(
+    await screen.findByRole("menuitemradio", { name: /^Variation/ }),
+  );
+};
+const setDensity = async (user: User, name: string) => {
+  await openViewMenu(user);
+  await user.click(await screen.findByRole("menuitemradio", { name }));
 };
 
 describe("TestRunList", () => {
@@ -100,14 +109,14 @@ describe("TestRunList", () => {
     await user.click(
       await screen.findByRole("checkbox", { name: "Select Screen A" }),
     );
-    expect(actionButton("Delete selected cards.")).toBeEnabled();
+    expect(actionButton("Delete…")).toBeEnabled();
 
     await user.click(screen.getByRole("button", { name: "Open B" }));
 
     expect(
       await screen.findByRole("checkbox", { name: "Select Screen B" }),
     ).not.toBeChecked();
-    expect(actionButton("Delete selected cards.")).toBeDisabled();
+    expect(selectionBar()).toBeNull();
   });
 
   it("shows only the opened build's runs when an older answer arrives last", async () => {
@@ -193,7 +202,29 @@ const ApproveButtons = ({ runs }: { runs: TestRun[] }) => {
   );
 };
 
-const groupSwitch = () => screen.getByLabelText("Group variations");
+const StatusFilterButtons = () => {
+  const { statuses, onStatusesChange } = useSharedTestRunFilters();
+  return (
+    <>
+      {[TestStatus.unresolved, TestStatus.approved].map((status) => (
+        <button
+          key={status}
+          onClick={() =>
+            onStatusesChange(
+              statuses.includes(status)
+                ? statuses.filter((item) => item !== status)
+                : [...statuses, status],
+            )
+          }
+        >
+          {`Filter ${status}`}
+        </button>
+      ))}
+      <output data-testid="statusFilter">{statuses.join(",")}</output>
+    </>
+  );
+};
+
 const navigationOrder = () => screen.getByTestId("navigationOrder").textContent;
 const dataRows = () => screen.getAllByRole("row").slice(1);
 const rowOf = (name: string) =>
@@ -211,10 +242,14 @@ describe("TestRunList grouping", () => {
     const { user } = renderList([A_EN, A_DE, B_EN]);
 
     await waitFor(() => expect(dataRows()).toHaveLength(3));
-    expect(groupSwitch()).not.toBeChecked();
+    await openViewMenu(user);
+    expect(
+      await screen.findByRole("menuitemradio", { name: "None" }),
+    ).toHaveAttribute("aria-checked", "true");
+    await user.keyboard("{Escape}");
     expect(screen.queryByTestId("groupCount")).not.toBeInTheDocument();
 
-    await user.click(groupSwitch());
+    await groupByVariation(user);
 
     await waitFor(() => expect(dataRows()).toHaveLength(2));
     expect(screen.getByTestId("groupCount")).toHaveTextContent("2");
@@ -224,15 +259,15 @@ describe("TestRunList grouping", () => {
     vi.spyOn(testRunService, "removeBulk").mockResolvedValue(NO_FAILURES);
     const { user } = renderList([A_EN, B_EN, A_DE]);
     await screen.findByText("Screen B");
-    await user.click(groupSwitch());
+    await groupByVariation(user);
     await waitFor(() => expect(dataRows()).toHaveLength(2));
-    expect(actionButton("Delete selected rows.")).toBeDisabled();
+    expect(selectionBar()).toBeNull();
 
     await user.click(tickRow("Screen A"));
 
     expect(tickRow("Screen A")).toBeChecked();
     expect(tickRow("Screen B")).not.toBeChecked();
-    await user.click(actionButton("Delete selected rows."));
+    await user.click(actionButton("Delete…"));
     expect(
       screen.getByText("Are you sure you want to delete 2 items?"),
     ).toBeInTheDocument();
@@ -250,7 +285,7 @@ describe("TestRunList grouping", () => {
     await user.click(tickRow("Screen A"));
     await user.click(tickRow("Screen B"));
 
-    await user.click(actionButton("Delete selected rows."));
+    await user.click(actionButton("Delete…"));
     await user.click(screen.getByRole("button", { name: "Delete" }));
 
     expect(
@@ -269,7 +304,7 @@ describe("TestRunList grouping", () => {
   it("selects every run of a group when its card is ticked", async () => {
     const { user } = renderList([A_EN, B_EN, A_DE]);
     await user.click(await screen.findByRole("button", { name: "Grid view" }));
-    await user.click(groupSwitch());
+    await groupByVariation(user);
     await screen.findByTestId("groupCount");
 
     await user.click(screen.getByRole("checkbox", { name: "Select Screen A" }));
@@ -277,7 +312,7 @@ describe("TestRunList grouping", () => {
     expect(screen.getByTestId("gridSelectionCount")).toHaveTextContent(
       "1 card selected",
     );
-    await user.click(actionButton("Delete selected cards."));
+    await user.click(actionButton("Delete…"));
     expect(
       screen.getByText("Are you sure you want to delete 2 items?"),
     ).toBeInTheDocument();
@@ -298,7 +333,7 @@ describe("TestRunList grouping", () => {
 
     await waitFor(() => expect(navigationOrder()).toBe("a-en,b-en,b-de,a-de"));
 
-    await user.click(groupSwitch());
+    await groupByVariation(user);
 
     await waitFor(() => expect(navigationOrder()).toBe("a-en,a-de,b-de,b-en"));
   });
@@ -326,7 +361,7 @@ describe("TestRunList grouping", () => {
     ];
     const { user } = renderList(runs);
     await waitFor(() => expect(dataRows()).toHaveLength(4));
-    await user.click(groupSwitch());
+    await groupByVariation(user);
     await waitFor(() => expect(dataRows()).toHaveLength(2));
 
     await user.click(screen.getByRole("columnheader", { name: /Tags/ }));
@@ -355,7 +390,7 @@ describe("TestRunList grouping", () => {
     });
     const { user } = renderList([aEn, aDe, B_EN], <NavigationOrder />);
     await waitFor(() => expect(dataRows()).toHaveLength(3));
-    await user.click(groupSwitch());
+    await groupByVariation(user);
     await waitFor(() => expect(navigationOrder()?.split(",")[0]).toBe("b-en"));
 
     await user.click(screen.getByRole("columnheader", { name: /Name/ }));
@@ -380,7 +415,7 @@ describe("TestRunList grouping", () => {
     });
     const { user } = renderList([approved, B_EN, A_EN], <NavigationOrder />);
     await user.click(await screen.findByRole("button", { name: "Grid view" }));
-    await user.click(groupSwitch());
+    await groupByVariation(user);
 
     await waitFor(() => expect(navigationOrder()).toBe("a-en,a-de,b-en"));
   });
@@ -409,6 +444,28 @@ describe("TestRunList show diff", () => {
       await screen.findByRole("button", { name: "Grid view" }),
     );
     expect(showDiffSwitch()).not.toBeChecked();
+  });
+
+  it("shares the switch in the toolbar with the one in the View menu", async () => {
+    const { user } = renderList([A_EN]);
+    await user.click(await screen.findByRole("button", { name: "Grid view" }));
+
+    await openViewMenu(user);
+    await user.click(
+      await screen.findByRole("menuitemcheckbox", {
+        name: /Show diff in grid/,
+      }),
+    );
+    await user.keyboard("{Escape}");
+
+    await waitFor(() => expect(showDiffSwitch()).not.toBeChecked());
+  });
+
+  it("offers the toolbar switch only in the grid", async () => {
+    renderList([A_EN]);
+    await screen.findByText("Screen A");
+
+    expect(screen.queryByLabelText("Show diff")).not.toBeInTheDocument();
   });
 
   it("toggles the diff with d wherever the layout puts it, as Dvorak does", async () => {
@@ -486,12 +543,10 @@ describe("TestRunList density", () => {
     const { user } = renderList([A_EN]);
     await waitFor(() => expect(densityClass()).toContain("densityStandard"));
 
-    await user.click(screen.getByRole("button", { name: "Compact density" }));
+    await setDensity(user, "Compact");
     await waitFor(() => expect(densityClass()).toContain("densityCompact"));
 
-    await user.click(
-      screen.getByRole("button", { name: "Comfortable density" }),
-    );
+    await setDensity(user, "Comfortable");
     await waitFor(() => expect(densityClass()).toContain("densityComfortable"));
   });
 
@@ -501,12 +556,10 @@ describe("TestRunList density", () => {
     await screen.findByTestId("testRunCard");
     expect(cardImageHeight()).toBe("160px");
 
-    await user.click(screen.getByRole("button", { name: "Compact density" }));
+    await setDensity(user, "Compact");
     expect(cardImageHeight()).toBe("110px");
 
-    await user.click(
-      screen.getByRole("button", { name: "Comfortable density" }),
-    );
+    await setDensity(user, "Comfortable");
     expect(cardImageHeight()).toBe("240px");
 
     await user.click(screen.getByRole("button", { name: "Table view" }));
@@ -522,9 +575,14 @@ describe("TestRunList filters and pages", () => {
     }),
   );
 
-  const pick = async (user: User, field: string, option: string) => {
-    await user.click(screen.getByRole("combobox", { name: field }));
-    await user.click(await screen.findByRole("option", { name: option }));
+  const pickTag = async (user: User, field: string, option: string) => {
+    await user.click(
+      document.getElementById(`filter-chip-${field}`) as HTMLElement,
+    );
+    await user.click(
+      await screen.findByRole("menuitemcheckbox", { name: option }),
+    );
+    await user.keyboard("{Escape}");
   };
 
   // each still matches every run, so only the reset brings the first page back
@@ -536,8 +594,12 @@ describe("TestRunList filters and pages", () => {
           await user.type(screen.getByTestId("testRunNameFilter"), "Screen");
         },
       },
-      { name: "status", apply: (user) => pick(user, "Status", "unresolved") },
-      { name: "tags", apply: (user) => pick(user, "Tag", "en_US") },
+      {
+        name: "status",
+        apply: (user) =>
+          user.click(screen.getByRole("button", { name: "Filter unresolved" })),
+      },
+      { name: "tags", apply: (user) => pickTag(user, "customTags", "en_US") },
     ];
 
   const onSecondPage = async (user: User) => {
@@ -550,7 +612,7 @@ describe("TestRunList filters and pages", () => {
   it.each(FILTERS)(
     "goes back to the first page of the table when the $name filter changes",
     async ({ apply }) => {
-      const { user } = renderList(TWELVE);
+      const { user } = renderList(TWELVE, <StatusFilterButtons />);
       await onSecondPage(user);
 
       await apply(user);
@@ -563,7 +625,7 @@ describe("TestRunList filters and pages", () => {
   it.each(FILTERS)(
     "goes back to the first page of the cards when the $name filter changes",
     async ({ apply }) => {
-      const { user } = renderList(TWELVE);
+      const { user } = renderList(TWELVE, <StatusFilterButtons />);
       await user.click(
         await screen.findByRole("button", { name: "Grid view" }),
       );
@@ -586,23 +648,27 @@ describe("TestRunList status filter", () => {
     status: TestStatus.approved,
   });
 
-  // the list stays open between picks, so it is opened once
-  const pick = async (user: User, ...options: string[]) => {
-    await user.click(screen.getByRole("combobox", { name: "Status" }));
-    for (const option of options) {
-      await user.click(await screen.findByRole("option", { name: option }));
-    }
-    await user.keyboard("{Escape}");
-  };
+  const pick = (user: User, ...statuses: string[]) =>
+    statuses.reduce(
+      (done, status) =>
+        done.then(() =>
+          user.click(screen.getByRole("button", { name: `Filter ${status}` })),
+        ),
+      Promise.resolve(),
+    );
 
-  // the chip a selected status leaves in the filter, not the one in a row
   const filterChip = (status: string) =>
-    screen.queryByRole("button", { name: status });
+    screen.queryByText(new RegExp(`(^|,)${status}(,|$)`), {
+      selector: "[data-testid=statusFilter]",
+    });
 
   it("drops unresolved from the filter once its last run is approved", async () => {
     const { user } = renderList(
       [OPEN_A, DONE],
-      <ApproveButtons runs={[OPEN_A]} />,
+      <>
+        <ApproveButtons runs={[OPEN_A]} />
+        <StatusFilterButtons />
+      </>,
     );
     await screen.findByText("Screen A");
     await pick(user, "unresolved", "approved");
@@ -618,7 +684,10 @@ describe("TestRunList status filter", () => {
   it("shows every run again when the dropped status was the only filter", async () => {
     const { user } = renderList(
       [OPEN_A, DONE],
-      <ApproveButtons runs={[OPEN_A]} />,
+      <>
+        <ApproveButtons runs={[OPEN_A]} />
+        <StatusFilterButtons />
+      </>,
     );
     await screen.findByText("Screen C");
     await pick(user, "unresolved");
@@ -630,13 +699,16 @@ describe("TestRunList status filter", () => {
 
     expect(await screen.findByText("Screen C")).toBeInTheDocument();
     expect(screen.getByText("Screen A")).toBeInTheDocument();
-    expect(screen.getByPlaceholderText("Any status")).toBeInTheDocument();
+    expect(screen.getByTestId("statusFilter")).toBeEmptyDOMElement();
   });
 
   it("keeps unresolved in the filter while another run is unresolved", async () => {
     const { user } = renderList(
       [OPEN_A, OPEN_B, DONE],
-      <ApproveButtons runs={[OPEN_A]} />,
+      <>
+        <ApproveButtons runs={[OPEN_A]} />
+        <StatusFilterButtons />
+      </>,
     );
     await screen.findByText("Screen A");
     await pick(user, "unresolved", "approved");
@@ -699,9 +771,9 @@ describe("TestRunList noise hint filter", () => {
   it("filters the runs for a project with the analysis on", async () => {
     const { user } = await renderWith({});
 
-    await user.click(screen.getByRole("combobox", { name: "Noise hint" }));
+    await user.click(screen.getByRole("button", { name: "Noise" }));
     await user.click(
-      await screen.findByRole("option", { name: "Likely noise" }),
+      await screen.findByRole("menuitemcheckbox", { name: "Likely noise" }),
     );
 
     await waitFor(() =>
@@ -714,7 +786,7 @@ describe("TestRunList noise hint filter", () => {
     await renderWith({ imageComparison: ImageComparison.vlm });
 
     expect(
-      screen.queryByRole("combobox", { name: "Noise hint" }),
+      screen.queryByRole("button", { name: /^Noise/ }),
     ).not.toBeInTheDocument();
   });
 

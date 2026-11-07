@@ -1,34 +1,23 @@
-import {
-  type Dispatch,
-  type SetStateAction,
-  useEffect,
-  useMemo,
-  useState,
-} from "react";
+import { type Dispatch, type SetStateAction, useMemo } from "react";
 import {
   Box,
   LinearProgress,
   TablePagination,
   Typography,
 } from "@mui/material";
-import type {
-  GridPaginationModel,
-  ToolbarPropsOverrides,
-} from "@mui/x-data-grid";
-import { useHotkeys } from "react-hotkeys-hook";
-import { hotkeyMatching } from "../../_helpers/hotkeys.helper";
+import type { GridPaginationModel } from "@mui/x-data-grid";
 import { pluralize } from "../../_helpers/format.helper";
 import { TestRunGroup } from "../../_helpers/testRunGroup.helper";
-import { TEST_RUN_SHOW_DIFF_KEY } from "../../constants";
 import { TagField } from "../../types";
 import type { TestRunSort } from "../../types/testRunSort";
 import { TestRunGrid } from "./TestRunGrid";
 import { TestRunGridHeader } from "./TestRunGridHeader";
-import { TestRunListToolbar } from "./TestRunListToolbar";
-import { PAGE_SIZE_OPTIONS } from "./TestRunListControls";
+import { PAGE_SIZE_OPTIONS, TestRunDensity } from "./TestRunListControls";
+import type { TagFilters } from "./useTestRunFilters";
 
 export const TestRunCardView = ({
-  toolbarProps,
+  density,
+  showDiff,
   groups,
   selectedIds,
   loading,
@@ -39,13 +28,13 @@ export const TestRunCardView = ({
   activeTags,
   tagFieldsFor,
   noiseAvailable,
-  hotkeysEnabled,
   onToggleAll,
   onToggleGroup,
   onToggleTag,
   onOpen,
 }: {
-  toolbarProps: ToolbarPropsOverrides;
+  density: TestRunDensity;
+  showDiff: boolean;
   groups: TestRunGroup[];
   selectedIds: string[];
   loading: boolean;
@@ -53,28 +42,14 @@ export const TestRunCardView = ({
   onSortChange: (sort: TestRunSort) => void;
   paginationModel: GridPaginationModel;
   onPaginationModelChange: Dispatch<SetStateAction<GridPaginationModel>>;
-  activeTags: string[];
+  activeTags: TagFilters;
   tagFieldsFor: (runCount: number) => TagField[];
   noiseAvailable: boolean;
-  hotkeysEnabled: boolean;
   onToggleAll: (ids: string[]) => void;
   onToggleGroup: (ids: string[]) => void;
-  onToggleTag: (tag: string) => void;
+  onToggleTag: (field: TagField, tag: string) => void;
   onOpen: (id: string) => void;
 }) => {
-  const { density } = toolbarProps;
-  const [showDiff, setShowDiff] = useState(
-    () => localStorage.getItem(TEST_RUN_SHOW_DIFF_KEY) !== "false",
-  );
-  useEffect(() => {
-    localStorage.setItem(TEST_RUN_SHOW_DIFF_KEY, String(showDiff));
-  }, [showDiff]);
-
-  useHotkeys("d", () => setShowDiff((prev) => !prev), {
-    ...hotkeyMatching,
-    enabled: hotkeysEnabled,
-  });
-
   const selectedIdSet = useMemo(() => new Set(selectedIds), [selectedIds]);
   const navigationIds = useMemo(
     () => groups.flatMap((group) => group.runs.map((run) => run.id)),
@@ -113,10 +88,6 @@ export const TestRunCardView = ({
         color: "text.primary",
       }}
     >
-      <TestRunListToolbar
-        {...toolbarProps}
-        diffToggle={{ checked: showDiff, onChange: setShowDiff }}
-      />
       <TestRunGridHeader
         sort={sort}
         onSortChange={onSortChange}

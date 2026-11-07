@@ -48,7 +48,7 @@ describe("useTestRunFilters", () => {
     expect(result.current.filteredRows).toEqual(RUNS);
     expect(result.current.name).toBe("");
     expect(result.current.statuses).toEqual([]);
-    expect(result.current.tags).toEqual([]);
+    expect(result.current.tagFilters.os).toEqual([]);
   });
 
   it("matches the name ignoring case and surrounding spaces", () => {
@@ -72,69 +72,29 @@ describe("useTestRunFilters", () => {
   it("keeps a run with any picked tag of a field and one of every picked field", () => {
     const { result } = renderFilters();
 
-    act(() => result.current.onTagsChange(["en", "de"]));
+    act(() => result.current.onTagFilterChange("customTags", ["en", "de"]));
     expect(ids(result.current.filteredRows)).toEqual([
       "home-en",
       "home-de",
       "login-en",
     ]);
 
-    act(() => result.current.onTagsChange(["en", "Android"]));
+    act(() => {
+      result.current.onTagFilterChange("customTags", ["en"]);
+      result.current.onTagFilterChange("os", ["Android"]);
+    });
     expect(ids(result.current.filteredRows)).toEqual(["login-en"]);
   });
 
-  describe("a tag value that several fields share", () => {
-    const ON_DEVICE = tagged({
-      id: "on-device",
-      os: "iOS",
-      device: "chrome",
-      customTags: "",
-    });
-    const IN_BROWSER = tagged({
-      id: "in-browser",
-      os: "Android",
-      browser: "chrome",
-      customTags: "",
-    });
-    const ELSEWHERE = tagged({
-      id: "elsewhere",
-      os: "iOS",
-      device: "pixel",
-      browser: "firefox",
-      customTags: "",
-    });
-    const SHARED = [ON_DEVICE, IN_BROWSER, ELSEWHERE];
+  it("filters a value only in the field it was picked for", () => {
+    const onDevice = tagged({ id: "on-device", device: "chrome" });
+    const inBrowser = tagged({ id: "in-browser", browser: "chrome" });
+    const { result } = renderFilters([onDevice, inBrowser]);
 
-    it("keeps a run that has it in any of those fields", () => {
-      const { result } = renderFilters(SHARED);
+    act(() => result.current.onTagFilterChange("browser", ["chrome"]));
 
-      act(() => result.current.onTagsChange(["chrome"]));
-
-      expect(ids(result.current.filteredRows)).toEqual([
-        "on-device",
-        "in-browser",
-      ]);
-    });
-
-    it("still needs one of every other picked field", () => {
-      const { result } = renderFilters(SHARED);
-
-      act(() => result.current.onTagsChange(["chrome", "iOS"]));
-
-      expect(ids(result.current.filteredRows)).toEqual(["on-device"]);
-    });
-
-    it("is offered among the tags of the first field that has it", () => {
-      const { result } = renderFilters(SHARED);
-
-      expect(result.current.tagOptions).toEqual([
-        "Android",
-        "iOS",
-        "chrome",
-        "pixel",
-        "firefox",
-      ]);
-    });
+    expect(ids(result.current.filteredRows)).toEqual(["in-browser"]);
+    expect(result.current.tagOptions.device).toEqual(["chrome"]);
   });
 
   it("offers the statuses and tags that still return runs under the other filters", () => {
@@ -145,25 +105,26 @@ describe("useTestRunFilters", () => {
       TestStatus.approved,
       TestStatus.ok,
     ]);
-    // by field (os before custom tags), then alphabetically
-    expect(result.current.tagOptions).toEqual(["Android", "iOS", "de", "en"]);
+    expect(result.current.tagOptions.os).toEqual(["Android", "iOS"]);
+    expect(result.current.tagOptions.customTags).toEqual(["de", "en"]);
 
     act(() => result.current.onNameChange("login"));
 
     expect(result.current.statusOptions).toEqual([TestStatus.ok]);
-    expect(result.current.tagOptions).toEqual(["Android", "en"]);
+    expect(result.current.tagOptions.os).toEqual(["Android"]);
+    expect(result.current.tagOptions.customTags).toEqual(["en"]);
   });
 
   it("narrows the statuses by the picked tags but not the tags by each other", () => {
     const { result } = renderFilters();
 
-    act(() => result.current.onTagsChange(["Android"]));
+    act(() => result.current.onTagFilterChange("os", ["Android"]));
 
     expect(result.current.statusOptions).toEqual([
       TestStatus.approved,
       TestStatus.ok,
     ]);
-    expect(result.current.tagOptions).toEqual(["Android", "iOS", "de", "en"]);
+    expect(result.current.tagOptions.os).toEqual(["Android", "iOS"]);
   });
 
   it("keeps a picked status and tag on offer though no run left matches it", () => {
@@ -172,22 +133,22 @@ describe("useTestRunFilters", () => {
     act(() => {
       result.current.onNameChange("login");
       result.current.onStatusesChange([TestStatus.unresolved]);
-      result.current.onTagsChange(["de"]);
+      result.current.onTagFilterChange("customTags", ["de"]);
     });
 
     expect(result.current.statusOptions).toContain(TestStatus.unresolved);
-    expect(result.current.tagOptions).toContain("de");
+    expect(result.current.tagOptions.customTags).toContain("de");
   });
 
   it("adds a tag on its first toggle and removes it on the second", () => {
     const { result } = renderFilters();
 
-    act(() => result.current.toggleTag("en"));
-    act(() => result.current.toggleTag("iOS"));
-    expect(result.current.tags).toEqual(["en", "iOS"]);
+    act(() => result.current.toggleTag("customTags", "en"));
+    act(() => result.current.toggleTag("customTags", "de"));
+    expect(result.current.tagFilters.customTags).toEqual(["en", "de"]);
 
-    act(() => result.current.toggleTag("en"));
-    expect(result.current.tags).toEqual(["iOS"]);
+    act(() => result.current.toggleTag("customTags", "en"));
+    expect(result.current.tagFilters.customTags).toEqual(["de"]);
   });
 
   it("clears every filter on reset", () => {
@@ -195,14 +156,15 @@ describe("useTestRunFilters", () => {
     act(() => {
       result.current.onNameChange("home");
       result.current.onStatusesChange([TestStatus.approved]);
-      result.current.onTagsChange(["de"]);
+      result.current.onTagFilterChange("customTags", ["de"]);
     });
 
     act(() => result.current.onReset());
 
     expect(result.current.name).toBe("");
     expect(result.current.statuses).toEqual([]);
-    expect(result.current.tags).toEqual([]);
+    expect(result.current.tagFilters.customTags).toEqual([]);
+    expect(result.current.hasActiveFilters).toBe(false);
     expect(result.current.filteredRows).toEqual(RUNS);
   });
 
@@ -213,7 +175,8 @@ describe("useTestRunFilters", () => {
         TestStatus.unresolved,
         TestStatus.approved,
       ]);
-      result.current.onTagsChange(["iOS", "de"]);
+      result.current.onTagFilterChange("os", ["iOS"]);
+      result.current.onTagFilterChange("customTags", ["de"]);
     });
 
     rerender({
@@ -225,14 +188,15 @@ describe("useTestRunFilters", () => {
     });
 
     expect(result.current.statuses).toEqual([TestStatus.approved]);
-    expect(result.current.tags).toEqual(["de"]);
+    expect(result.current.tagFilters.os).toEqual([]);
+    expect(result.current.tagFilters.customTags).toEqual(["de"]);
   });
 
   it("keeps the picks while the build has no runs, as while it loads", () => {
     const { result, rerender } = renderFilters();
     act(() => {
       result.current.onStatusesChange([TestStatus.unresolved]);
-      result.current.onTagsChange(["iOS"]);
+      result.current.onTagFilterChange("os", ["iOS"]);
     });
     const statuses = result.current.statuses;
 
@@ -240,7 +204,7 @@ describe("useTestRunFilters", () => {
     rerender({ testRuns: RUNS });
 
     expect(result.current.statuses).toBe(statuses);
-    expect(result.current.tags).toEqual(["iOS"]);
+    expect(result.current.tagFilters.os).toEqual(["iOS"]);
   });
 });
 

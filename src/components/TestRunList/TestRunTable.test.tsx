@@ -1,13 +1,7 @@
 import type { ComponentProps } from "react";
 import { screen, waitFor, within } from "@testing-library/react";
 import { renderWithProviders } from "../../_test/render";
-import {
-  A_DE,
-  A_EN,
-  B_EN,
-  groupsFor,
-  toolbarProps,
-} from "../../_test/testRunListFixture";
+import { A_DE, A_EN, B_EN, groupsFor } from "../../_test/testRunListFixture";
 import { TAG_FIELDS } from "../../_helpers/testRunTags.helper";
 import { NOISE_ANALYSIS_NOISE } from "../../_test/test.data.helper";
 import { run } from "../../_helpers/testRun.fixture";
@@ -36,7 +30,7 @@ const propsFor = (
     onPaginationModelChange: vi.fn(),
     sortModel: [{ field: "status", sort: "desc" }],
     onSortModelChange: vi.fn(),
-    toolbarProps: toolbarProps("table"),
+    density: "standard",
     onOpen: vi.fn(),
     ...overrides,
   };
@@ -60,6 +54,15 @@ describe("TestRunTable", () => {
     expect(within(row).getByText("en")).toBeInTheDocument();
     expect(within(row).getByText("unresolved")).toBeInTheDocument();
     expect(screen.queryByTestId("groupCount")).not.toBeInTheDocument();
+  });
+
+  it("shows the diff percent of a run", async () => {
+    renderTable(
+      propsFor([run({ id: "d", name: "Screen D", diffPercent: 8.159 })]),
+    );
+
+    await waitFor(() => expect(dataRows()).toHaveLength(1));
+    expect(within(rowOf("Screen D")).getByText("8.16%")).toBeInTheDocument();
   });
 
   it("shows the noise hint of an unresolved run in a Noise column next to its status", async () => {
@@ -188,7 +191,7 @@ describe("TestRunTable", () => {
     rerender(
       <TestRunTable
         {...propsFor([A_EN], {
-          toolbarProps: { ...toolbarProps("table"), density: "compact" },
+          density: "compact",
         })}
       />,
     );

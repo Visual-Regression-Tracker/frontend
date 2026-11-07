@@ -1,8 +1,7 @@
-import { Fragment, useCallback, useEffect, useMemo } from "react";
+import { useCallback, useEffect, useMemo } from "react";
 import { Box, Chip, Typography } from "@mui/material";
 import {
   DataGrid,
-  DataGridProps,
   useGridApiRef,
   GridColDef,
   GridPaginationModel,
@@ -11,12 +10,11 @@ import {
   GridRowSelectionModel,
   GridSortDirection,
   GridSortModel,
-  type ToolbarPropsOverrides,
 } from "@mui/x-data-grid";
 import { StatusChip } from "../StatusChip";
 import { NoiseHintChip } from "./NoiseHintChip";
-import { TestRunListToolbar } from "./TestRunListToolbar";
-import { PAGE_SIZE_OPTIONS } from "./TestRunListControls";
+import { TagLine } from "../TagLine";
+import { PAGE_SIZE_OPTIONS, TestRunDensity } from "./TestRunListControls";
 import {
   groupStatusSummary,
   TestRunGroup,
@@ -88,32 +86,15 @@ const buildColumns = (
     display: "flex",
     flex: 1,
     filterable: false,
-    valueGetter: (_value, row) =>
-      tagFieldsFor(runsFor(row.id).length)
-        .map((field) => row[field])
-        .reduce<string>(
-          (prev, curr) => prev.concat(curr ? `${String(curr)};` : ""),
-          "",
-        ),
-    renderCell: (params: GridRenderCellParams<TestRun, string, string>) => (
-      <Fragment>
-        {params.formattedValue
-          ?.toString()
-          .split(";")
-          .map(
-            (tag: string | null) =>
-              tag && (
-                <Chip
-                  key={tag}
-                  size="small"
-                  label={tag}
-                  style={{
-                    margin: "1px",
-                  }}
-                />
-              ),
-          )}
-      </Fragment>
+    renderCell: (params: GridRenderCellParams<TestRun>) => (
+      <TagLine
+        tags={Object.fromEntries(
+          tagFieldsFor(runsFor(params.row.id).length).map((field) => [
+            field,
+            params.row[field],
+          ]),
+        )}
+      />
     ),
   },
   {
@@ -133,6 +114,15 @@ const buildColumns = (
     ),
   },
   ...(noiseAvailable ? [NOISE_COLUMN] : []),
+  {
+    field: "diff",
+    headerName: "Diff %",
+    display: "flex",
+    flex: 0.2,
+    filterable: false,
+    sortable: false,
+    valueGetter: (_value, row) => `${row.diffPercent.toFixed(2)}%`,
+  },
 ];
 
 export const TestRunTable = ({
@@ -147,7 +137,7 @@ export const TestRunTable = ({
   onPaginationModelChange,
   sortModel,
   onSortModelChange,
-  toolbarProps,
+  density,
   onOpen,
 }: {
   groups: TestRunGroup[];
@@ -161,11 +151,10 @@ export const TestRunTable = ({
   onPaginationModelChange: (model: GridPaginationModel) => void;
   sortModel: GridSortModel;
   onSortModelChange: (model: GridSortModel) => void;
-  toolbarProps: ToolbarPropsOverrides;
+  density: TestRunDensity;
   onOpen: (id: string) => void;
 }) => {
   const apiRef = useGridApiRef();
-  const { density } = toolbarProps;
 
   const rows = useMemo(
     () => groups.map((group) => group.representative),
@@ -225,11 +214,6 @@ export const TestRunTable = ({
     [rows, grouped, runsFor, onSelectionChange],
   );
 
-  const slotProps = useMemo<DataGridProps["slotProps"]>(
-    () => ({ toolbar: { ...toolbarProps } }),
-    [toolbarProps],
-  );
-
   const onRowClick = useCallback(
     (param: GridRowParams<TestRun>) => onOpen(String(param.row.id)),
     [onOpen],
@@ -246,12 +230,7 @@ export const TestRunTable = ({
       onPaginationModelChange={onPaginationModelChange}
       pagination
       loading={loading}
-      slots={{
-        toolbar: TestRunListToolbar,
-      }}
-      showToolbar
       density={density}
-      slotProps={slotProps}
       rowSelectionModel={rowSelectionModel}
       onRowSelectionModelChange={onRowSelectionModelChange}
       checkboxSelection

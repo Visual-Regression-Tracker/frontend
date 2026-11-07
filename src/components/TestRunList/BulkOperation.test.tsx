@@ -27,31 +27,29 @@ const SELECTED = [NEW_RUN.id, UNRESOLVED_RUN.id, APPROVED_RUN.id];
 const HIDDEN_RUN = run("hidden-run", TestStatus.new);
 const SELECTED_WITH_HIDDEN = [NEW_RUN.id, HIDDEN_RUN.id];
 
-// the tooltip's label sits on a span around the (possibly disabled) button
-const actionButton = (label: string): HTMLButtonElement => {
-  const button = screen.getByLabelText(label).querySelector("button");
-  if (!button) {
-    throw new Error(`no button in "${label}"`);
-  }
-  return button;
-};
+const actionButton = (name: string): HTMLElement =>
+  screen.getByRole("button", { name });
 
-const APPROVE = "Approve unresolved in selected rows.";
-const REJECT = "Reject unresolved in selected rows.";
-const DOWNLOAD = "Download images for selected rows.";
-const DELETE = "Delete selected rows.";
-const CLEAR_IGNORE = "Clear ignore areas for selected rows.";
+const APPROVE = "Approve";
+const REJECT = "Reject";
+const DOWNLOAD = "Download zip";
+const DELETE = "Delete…";
+const CLEAR_IGNORE = "Clear ignore areas…";
 
 const renderBulkOperation = ({
   selectedIds = SELECTED,
   rows = ROWS,
   testRuns = rows,
   onProcessed = vi.fn(),
+  onSelectAll = vi.fn(),
+  onClear = vi.fn(),
 }: {
   selectedIds?: string[];
   rows?: TestRun[];
   testRuns?: TestRun[];
   onProcessed?: () => void;
+  onSelectAll?: () => void;
+  onClear?: () => void;
 } = {}) => ({
   onProcessed,
   ...renderWithProviders(
@@ -60,7 +58,8 @@ const renderBulkOperation = ({
       <BulkOperation
         selectedIds={selectedIds}
         rows={rows}
-        selectionNoun="rows"
+        onSelectAll={onSelectAll}
+        onClear={onClear}
         onProcessed={onProcessed}
       />
     </>,
@@ -71,15 +70,13 @@ const confirm = async (user: ReturnType<typeof renderBulkOperation>["user"]) =>
   user.click(await screen.findByTestId("submitButton"));
 
 describe("BulkOperation", () => {
-  it("disables every action while nothing is selected", () => {
+  it("shows no selection bar while nothing is selected", () => {
     renderBulkOperation({ selectedIds: [] });
 
-    [APPROVE, REJECT, DOWNLOAD, DELETE, CLEAR_IGNORE].forEach((label) =>
-      expect(actionButton(label)).toBeDisabled(),
-    );
+    expect(screen.queryByRole("toolbar")).toBeNull();
   });
 
-  it("enables every action when something is selected", () => {
+  it("offers every action when something is selected", () => {
     renderBulkOperation();
 
     [APPROVE, REJECT, DOWNLOAD, DELETE, CLEAR_IGNORE].forEach((label) =>
@@ -87,31 +84,26 @@ describe("BulkOperation", () => {
     );
   });
 
-  it("names the selection by the noun it is given", () => {
-    renderWithProviders(
-      <BulkOperation
-        selectedIds={SELECTED}
-        rows={ROWS}
-        selectionNoun="cards"
-        onProcessed={vi.fn()}
-      />,
-    );
+  it("counts the selected runs that are shown and offers to select all under the filter", async () => {
+    const onSelectAll = vi.fn();
+    const { user } = renderBulkOperation({
+      selectedIds: SELECTED_WITH_HIDDEN,
+      onSelectAll,
+    });
 
-    expect(screen.getByLabelText("Delete selected cards.")).toBeInTheDocument();
+    expect(screen.getByText("1 selected")).toBeVisible();
+    await user.click(screen.getByRole("button", { name: "Select all 4" }));
+
+    expect(onSelectAll).toHaveBeenCalledTimes(1);
   });
 
-  it("names every button for its action on the selection", () => {
-    renderBulkOperation();
+  it("clears the selection from the close button", async () => {
+    const onClear = vi.fn();
+    const { user } = renderBulkOperation({ onClear });
 
-    for (const name of [
-      "Approve unresolved in selected rows",
-      "Reject unresolved in selected rows",
-      "Download images for selected rows",
-      "Delete selected rows",
-      "Clear ignore areas for selected rows",
-    ]) {
-      expect(screen.getByRole("button", { name })).toBeEnabled();
-    }
+    await user.click(screen.getByRole("button", { name: "Clear selection" }));
+
+    expect(onClear).toHaveBeenCalledTimes(1);
   });
 
   describe("approve", () => {
