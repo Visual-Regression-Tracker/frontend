@@ -234,7 +234,7 @@ const TestRunList = () => {
         </Box>
         <BulkOperation
           selectedIds={selectedIds}
-          rows={filteredRows}
+          rows={view === "grid" ? sortedRows : filteredRows}
           onSelectAll={() => setSelectedIds(filteredRows.map((row) => row.id))}
           onClear={() => setSelectedIds([])}
           onProcessed={setSelectedIds}
