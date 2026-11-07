@@ -6,6 +6,7 @@ export interface User {
   token: string;
   apiKey: string;
   role: keyof typeof Role;
+  createdAt?: string;
 }
 
 export enum Role {

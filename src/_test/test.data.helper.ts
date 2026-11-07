@@ -41,6 +41,7 @@ export const TEST_USER: User = {
   firstName: "First name",
   lastName: "Last name",
   role: "admin",
+  createdAt: "2020-01-02T00:00:00.000Z",
 };
 
 export const GUEST_USER: User = {
@@ -51,6 +52,7 @@ export const GUEST_USER: User = {
   firstName: "Guest name",
   lastName: "Guest name",
   role: "guest",
+  createdAt: new Date(Date.now() - 150 * 60 * 1000).toISOString(),
 };
 
 export const EDITOR_USER: User = {
@@ -61,6 +63,7 @@ export const EDITOR_USER: User = {
   firstName: "Editor name",
   lastName: "Editor name",
   role: "editor",
+  createdAt: "2020-03-04T00:00:00.000Z",
 };
 
 export const testRunMock: TestRun = {

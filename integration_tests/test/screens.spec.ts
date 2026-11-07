@@ -876,6 +876,17 @@ const VIEWS: [name: string, body: Body][] = [
   ],
 
   [
+    "user list with selection",
+    async ({ userListPage, shot }) => {
+      await userListPage.table.checkRow(GUEST_USER.id);
+      await userListPage.table.checkRow(EDITOR_USER.id);
+      await expect(userListPage.selectionBar).toBeVisible();
+
+      await shot("user-list-selection");
+    },
+  ],
+
+  [
     "project page with builds selected",
     async ({ openProjectPage, shot }) => {
       const projectPage = await openProjectPage(project.id, build.id);

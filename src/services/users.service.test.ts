@@ -1,7 +1,6 @@
 import { usersService } from "./users.service";
 import { API, AUTH, stubFetch } from "../_test/fetch.helper";
 import { TEST_USER } from "../_test/test.data.helper";
-import { Role } from "../types/user";
 
 vi.mock("../_config/env.config", () => ({ API_URL: "http://api.test" }));
 
@@ -145,12 +144,12 @@ describe("usersService", () => {
   it("assignRole patches the user id and role", async () => {
     const fetchMock = stubFetch(TEST_USER);
 
-    await usersService.assignRole("u1", Role.editor);
+    await usersService.assignRole("u1", "editor");
 
     expect(fetchMock).toHaveBeenCalledWith(`${API}/users/assignRole`, {
       method: "PATCH",
       headers: { ...JSON_HEADERS, ...AUTH },
-      body: JSON.stringify({ id: "u1", role: "Editor" }),
+      body: JSON.stringify({ id: "u1", role: "editor" }),
     });
   });
 

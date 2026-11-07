@@ -1,109 +1,205 @@
-import { useCallback, useEffect } from "react";
-import { DataGrid, GridColDef, GridRenderCellParams } from "@mui/x-data-grid";
-import { UserListToolbar } from "./UserListToolbar";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { Box, Menu, MenuItem, Paper, Stack } from "@mui/material";
+import { Delete } from "@mui/icons-material";
+import { DataGrid, GridRowSelectionModel } from "@mui/x-data-grid";
+import { useSnackbar } from "notistack";
 import { usersService } from "../../services";
 import { Role, User } from "../../types";
-import { useSnackbar } from "notistack";
 import { useUserDispatch, useUserState } from "../../contexts";
+import {
+  ROLE_KEYS,
+  filterUsers,
+  recentGuests,
+} from "../../_helpers/userList.helper";
+import { FilterBar } from "../FilterBar";
+import { SelectionBar } from "../SelectionBar";
+import { GuestBanner } from "./GuestBanner";
+import { RolesCard } from "./RolesCard";
+import { buildColumns } from "./columns";
 
-const columnsDef: GridColDef[] = [
-  {
-    field: "id",
-    filterable: false,
-  },
-  {
-    field: "email",
-    headerName: "Email",
-    flex: 2,
-  },
-  {
-    field: "firstName",
-    headerName: "First name",
-    flex: 1,
-  },
-  {
-    field: "lastName",
-    headerName: "Last name",
-    flex: 1,
-  },
-  {
-    field: "role",
-    headerName: "Role",
-    type: "singleSelect",
-    editable: true,
-    valueOptions: Object.entries(Role).map(([key, value]) => ({
-      value: key,
-      label: value,
-    })),
-    renderCell: (params: GridRenderCellParams) => {
-      const role = params.value as keyof typeof Role;
-      return Role[role];
-    },
-    flex: 1,
-  },
-];
+const ROLE_LABELS = Object.values(Role);
+const GUEST_LABEL = Role.guest;
 
 const UserList = () => {
   const { enqueueSnackbar } = useSnackbar();
   const userDispatch = useUserDispatch();
-  const { userList } = useUserState();
+  const { userList, user: currentUser } = useUserState();
+  const [search, setSearch] = useState("");
+  const [roles, setRoles] = useState<string[]>([]);
+  const [selection, setSelection] = useState<Set<string>>(new Set());
+  const [roleMenu, setRoleMenu] = useState<HTMLElement | null>(null);
+
+  const showError = useCallback(
+    (err: string) => enqueueSnackbar(err, { variant: "error" }),
+    [enqueueSnackbar],
+  );
 
   useEffect(() => {
     usersService
       .getAll()
-      .then((users) =>
-        userDispatch({
-          type: "getAll",
-          payload: users,
-        }),
-      )
-      .catch((err: string) =>
-        enqueueSnackbar(err, {
-          variant: "error",
-        }),
-      );
-  }, [userDispatch, enqueueSnackbar]);
+      .then((users) => userDispatch({ type: "getAll", payload: users }))
+      .catch(showError);
+  }, [userDispatch, showError]);
 
-  // the grid shows the row this resolves to, so a rejected role reverts
-  const processRowUpdate = useCallback(
-    (newState: User, oldState: User) => {
-      if (newState.role === oldState.role) {
-        return newState;
+  const visible = useMemo(
+    () => filterUsers(userList, search, roles),
+    [userList, search, roles],
+  );
+  const selectable = useMemo(
+    () => visible.filter((user) => user.id !== currentUser?.id),
+    [visible, currentUser?.id],
+  );
+  const selectedUsers = useMemo(
+    () => selectable.filter((user) => selection.has(user.id)),
+    [selectable, selection],
+  );
+  const selectedIds = useMemo(
+    () => selectedUsers.map(({ id }) => id),
+    [selectedUsers],
+  );
+  const newGuests = useMemo(() => recentGuests(userList).length, [userList]);
+
+  const changeRoles = useCallback(
+    async (targets: User[], role: keyof typeof Role) => {
+      const changing = targets.filter((target) => target.role !== role);
+      const results = await Promise.allSettled(
+        changing.map((target) => usersService.assignRole(target.id, role)),
+      );
+      userDispatch({
+        type: "rolesChanged",
+        payload: {
+          ids: changing
+            .filter((_, i) => results[i].status === "fulfilled")
+            .map((target) => target.id),
+          role,
+        },
+      });
+      const failure = results.find((result) => result.status === "rejected");
+      if (failure) {
+        showError(failure.reason as string);
+      } else if (changing.length > 0) {
+        enqueueSnackbar("Updated", { variant: "success" });
       }
-      return usersService
-        .assignRole(oldState.id, newState.role as Role)
-        .then(() => {
-          enqueueSnackbar("Updated", {
-            variant: "success",
-          });
-          return newState;
-        })
-        .catch((err: string) => {
-          enqueueSnackbar(err, {
-            variant: "error",
-          });
-          return oldState;
-        });
     },
-    [enqueueSnackbar],
+    [userDispatch, enqueueSnackbar, showError],
   );
 
+  const removeSelected = () =>
+    usersService
+      .remove(selectedIds)
+      .then(() => {
+        enqueueSnackbar("Removed", { variant: "success" });
+        userDispatch({ type: "removed", payload: selectedIds });
+        setSelection(new Set());
+      })
+      .catch(showError);
+
+  const columns = useMemo(
+    () =>
+      buildColumns(currentUser?.id, (target, role) => {
+        void changeRoles([target], role);
+      }),
+    [currentUser?.id, changeRoles],
+  );
+
+  const onSelectionChange = (model: GridRowSelectionModel) =>
+    setSelection(
+      new Set(
+        model.type === "include"
+          ? [...model.ids].map(String)
+          : selectable.map(({ id }) => id).filter((id) => !model.ids.has(id)),
+      ),
+    );
+
   return (
-    <DataGrid
-      rows={userList}
-      columns={columnsDef}
-      columnVisibilityModel={{
-        id: false,
-      }}
-      checkboxSelection
-      disableColumnMenu
-      disableRowSelectionOnClick
-      showToolbar
-      slots={{
-        toolbar: UserListToolbar,
-      }}
-      processRowUpdate={processRowUpdate}
-    />
+    <Stack sx={{ flex: 1, minHeight: 0, gap: 2 }}>
+      <FilterBar
+        search={search}
+        onSearchChange={setSearch}
+        searchLabel="Search by name or email"
+        filters={[
+          {
+            id: "role",
+            label: "Role",
+            options: ROLE_LABELS,
+            value: roles,
+            onChange: setRoles,
+          },
+        ]}
+        onClear={() => {
+          setSearch("");
+          setRoles([]);
+        }}
+      />
+      {newGuests > 0 && (
+        <GuestBanner count={newGuests} onShow={() => setRoles([GUEST_LABEL])} />
+      )}
+      {selectedIds.length > 0 && (
+        <SelectionBar
+          selected={selectedIds.length}
+          total={selectable.length}
+          onSelectAll={() =>
+            setSelection(new Set(selectable.map(({ id }) => id)))
+          }
+          onClose={() => setSelection(new Set())}
+          actions={[
+            {
+              label: "Change role",
+              onClick: (e) => setRoleMenu(e.currentTarget),
+            },
+            {
+              label: "Delete",
+              color: "error",
+              icon: <Delete />,
+              onClick: () => {
+                void removeSelected();
+              },
+            },
+          ]}
+        />
+      )}
+      <Menu
+        anchorEl={roleMenu}
+        open={!!roleMenu}
+        onClose={() => setRoleMenu(null)}
+      >
+        {ROLE_KEYS.map((key) => (
+          <MenuItem
+            key={key}
+            onClick={() => {
+              setRoleMenu(null);
+              void changeRoles(selectedUsers, key);
+            }}
+          >
+            {Role[key]}
+          </MenuItem>
+        ))}
+      </Menu>
+      <Box
+        sx={{
+          flex: 1,
+          minHeight: 0,
+          display: "grid",
+          gap: 2,
+          gridTemplateColumns: { xs: "1fr", md: "1fr 250px" },
+        }}
+      >
+        <Paper variant="outlined" sx={{ minHeight: 360, overflow: "hidden" }}>
+          <DataGrid
+            rows={visible}
+            columns={columns}
+            checkboxSelection
+            disableColumnMenu
+            disableRowSelectionOnClick
+            hideFooterSelectedRowCount
+            isRowSelectable={({ id }) => String(id) !== currentUser?.id}
+            rowSelectionModel={{ type: "include", ids: new Set(selectedIds) }}
+            onRowSelectionModelChange={onSelectionChange}
+          />
+        </Paper>
+        <RolesCard />
+      </Box>
+    </Stack>
   );
 };
 
