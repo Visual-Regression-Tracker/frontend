@@ -1,7 +1,7 @@
-import { FormControlLabel, Switch } from "@mui/material";
 import { type ChangeEvent, Fragment } from "react";
 import { ValidatedTextField } from "../ValidatedForm";
 import { LooksSameConfig } from "../../types/imageComparison";
+import { FieldRow, ToggleRow } from "./SettingsRow";
 import { useConfigHook } from "./useConfigHook";
 import { atLeast } from "./rules";
 
@@ -13,89 +13,75 @@ export const LooksSameConfigForm = () => {
 
   return (
     <Fragment>
-      <FormControlLabel
-        label="Strict"
-        control={
-          <Switch
-            checked={config.strict}
-            onChange={(_event, checked) => updateConfig("strict", checked)}
-            color="primary"
-            name="strict"
-          />
-        }
+      <ToggleRow
+        title="Strict"
+        name="strict"
+        checked={config.strict}
+        onChange={(checked) => updateConfig("strict", checked)}
       />
-      <ValidatedTextField
-        name="tolerance"
-        rules={TOLERANCE_RULES}
-        slotProps={{
-          htmlInput: { min: LOWEST_TOLERANCE, step: 0.001 },
-        }}
-        margin="dense"
+      <FieldRow
         id="tolerance"
-        label="Tolerance"
-        type="number"
-        fullWidth
-        helperText="Default tolerance in non-strict mode is 2.3 which is enough for the most cases. Setting tolerance to 0 will produce the same result as strict: true, but strict mode is faster. Attempt to set tolerance in strict mode will produce an error."
-        value={config.tolerance}
-        onChange={(event: ChangeEvent<HTMLInputElement>) => {
-          const { value } = event.target;
-          updateConfig("tolerance", parseFloat(value));
-        }}
+        title="Tolerance"
+        description="Default tolerance in non-strict mode is 2.3 which is enough for the most cases. Setting tolerance to 0 will produce the same result as strict: true, but strict mode is faster. Attempt to set tolerance in strict mode will produce an error."
+        width={120}
+      >
+        <ValidatedTextField
+          name="tolerance"
+          rules={TOLERANCE_RULES}
+          slotProps={{
+            htmlInput: { min: LOWEST_TOLERANCE, step: 0.001 },
+          }}
+          size="small"
+          id="tolerance"
+          type="number"
+          fullWidth
+          value={config.tolerance}
+          onChange={(event: ChangeEvent<HTMLInputElement>) => {
+            const { value } = event.target;
+            updateConfig("tolerance", parseFloat(value));
+          }}
+        />
+      </FieldRow>
+      <ToggleRow
+        title="Ignore anti-aliasing"
+        name="ignoreAntialiasing"
+        checked={config.ignoreAntialiasing}
+        onChange={(checked) => updateConfig("ignoreAntialiasing", checked)}
       />
-      <FormControlLabel
-        label="Ignore anti-alliasing"
-        control={
-          <Switch
-            checked={config.ignoreAntialiasing}
-            onChange={(_event, checked) =>
-              updateConfig("ignoreAntialiasing", checked)
-            }
-            color="primary"
-            name="ignoreAntialiasing"
-          />
-        }
-      />
-      <ValidatedTextField
-        name="antialiasingTolerance"
-        rules={TOLERANCE_RULES}
-        slotProps={{
-          htmlInput: { min: LOWEST_TOLERANCE, step: 0.001 },
-        }}
-        margin="dense"
+      <FieldRow
         id="antialiasingTolerance"
-        label="Antialiasing tolerance"
-        type="number"
-        fullWidth
-        helperText="Minimum difference in brightness (zero by default) between the darkest/lightest pixel (which is adjacent to the antialiasing pixel) and theirs adjacent pixels."
-        value={config.antialiasingTolerance}
-        onChange={(event: ChangeEvent<HTMLInputElement>) => {
-          const { value } = event.target;
-          updateConfig("antialiasingTolerance", parseFloat(value));
-        }}
+        title="Antialiasing tolerance"
+        description="Minimum difference in brightness (zero by default) between the darkest/lightest pixel (which is adjacent to the antialiasing pixel) and theirs adjacent pixels."
+        width={120}
+      >
+        <ValidatedTextField
+          name="antialiasingTolerance"
+          rules={TOLERANCE_RULES}
+          slotProps={{
+            htmlInput: { min: LOWEST_TOLERANCE, step: 0.001 },
+          }}
+          size="small"
+          id="antialiasingTolerance"
+          type="number"
+          fullWidth
+          value={config.antialiasingTolerance}
+          onChange={(event: ChangeEvent<HTMLInputElement>) => {
+            const { value } = event.target;
+            updateConfig("antialiasingTolerance", parseFloat(value));
+          }}
+        />
+      </FieldRow>
+      <ToggleRow
+        title="Ignore caret"
+        name="ignoreCaret"
+        checked={config.ignoreCaret}
+        onChange={(checked) => updateConfig("ignoreCaret", checked)}
       />
-      <FormControlLabel
-        label="Ignore carret"
-        control={
-          <Switch
-            checked={config.ignoreCaret}
-            onChange={(_event, checked) => updateConfig("ignoreCaret", checked)}
-            color="primary"
-            name="ignoreCaret"
-          />
-        }
-      />
-      <FormControlLabel
-        label="Allow diff dimensions"
-        control={
-          <Switch
-            checked={config.allowDiffDimensions}
-            onChange={(_event, checked) =>
-              updateConfig("allowDiffDimensions", checked)
-            }
-            color="primary"
-            name="diffDimensionsFeature"
-          />
-        }
+      <ToggleRow
+        title="Allow diff dimensions"
+        name="diffDimensionsFeature"
+        checked={config.allowDiffDimensions}
+        onChange={(checked) => updateConfig("allowDiffDimensions", checked)}
       />
     </Fragment>
   );

@@ -3,7 +3,7 @@ import { Link } from "@mui/material";
 import { ValidatedTextField } from "../ValidatedForm";
 import { required } from "../../_helpers/validation";
 import { GeminiVlmConfig } from "../../types/imageComparison";
-import { Tooltip } from "../Tooltip";
+import { FieldRow } from "./SettingsRow";
 import { useConfigHook } from "./useConfigHook";
 import { VlmSharedFields } from "./VlmSharedFields";
 import { MODEL_RULES } from "./rules";
@@ -19,60 +19,66 @@ export const GeminiConfigForm = () => {
 
   return (
     <Fragment>
-      <Tooltip title="The Google Gemini model to use for image comparison.">
-        <div>
-          <ValidatedTextField
-            name="model"
-            rules={MODEL_RULES}
-            margin="dense"
-            id="model"
-            label="Gemini Model"
-            type="text"
-            fullWidth
-            required
-            value={config.model || ""}
-            onChange={(event: ChangeEvent<HTMLInputElement>) => {
-              updateConfig("model", event.target.value);
-            }}
-            helperText={
-              <span>
-                Gemini model name.{" "}
-                <Link
-                  href="https://ai.google.dev/models/gemini"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  onClick={(e) => e.stopPropagation()}
-                >
-                  View all available models
-                </Link>
-              </span>
-            }
-          />
-        </div>
-      </Tooltip>
-      <Tooltip title="Your Google Gemini API key. Get one from https://makersuite.google.com/app/apikey">
-        <div>
-          <ValidatedTextField
-            name="apiKey"
-            rules={API_KEY_RULES}
-            margin="dense"
-            id="apiKey"
-            label="Gemini API Key"
-            type="password"
-            fullWidth
-            required
-            value={config.apiKey || ""}
-            onChange={(event: ChangeEvent<HTMLInputElement>) => {
-              updateConfig("apiKey", event.target.value);
-            }}
-            helperText={
-              keyIsMasked
-                ? "Leave as is to keep the saved key."
-                : "Enter your Google Gemini API key"
-            }
-          />
-        </div>
-      </Tooltip>
+      <FieldRow
+        id="model"
+        title="Gemini Model"
+        required
+        description="The Google Gemini model to use for image comparison."
+        stacked
+      >
+        <ValidatedTextField
+          name="model"
+          rules={MODEL_RULES}
+          id="model"
+          size="small"
+          type="text"
+          fullWidth
+          required
+          value={config.model || ""}
+          onChange={(event: ChangeEvent<HTMLInputElement>) => {
+            updateConfig("model", event.target.value);
+          }}
+          helperText={
+            <span>
+              Gemini model name.{" "}
+              <Link
+                href="https://ai.google.dev/models/gemini"
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={(e) => e.stopPropagation()}
+              >
+                View all available models
+              </Link>
+            </span>
+          }
+        />
+      </FieldRow>
+      <FieldRow
+        id="apiKey"
+        title="Gemini API Key"
+        required
+        description="Your Google Gemini API key. Get one from https://makersuite.google.com/app/apikey"
+        stacked
+      >
+        <ValidatedTextField
+          name="apiKey"
+          rules={API_KEY_RULES}
+          id="apiKey"
+          size="small"
+          type="password"
+          fullWidth
+          required
+          value={config.apiKey || ""}
+          onChange={(event: ChangeEvent<HTMLInputElement>) => {
+            updateConfig("apiKey", event.target.value);
+          }}
+          helperText={
+            keyIsMasked
+              ? "Leave as is to keep the saved key."
+              : "Enter your Google Gemini API key"
+          }
+        />
+      </FieldRow>
       <VlmSharedFields />
     </Fragment>
   );

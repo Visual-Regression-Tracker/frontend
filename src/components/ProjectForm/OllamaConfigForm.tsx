@@ -8,7 +8,6 @@ import {
 import {
   LinearProgress,
   FormControl,
-  InputLabel,
   Select,
   MenuItem,
   FormHelperText,
@@ -18,7 +17,7 @@ import {
 import { useFieldValidation } from "../ValidatedForm";
 import { useSnackbar } from "notistack";
 import { OllamaVlmConfig } from "../../types/imageComparison";
-import { Tooltip } from "../Tooltip";
+import { FieldRow, fieldLabelId } from "./SettingsRow";
 import { useConfigHook } from "./useConfigHook";
 import { ollamaService } from "../../services";
 import { OllamaModel } from "../../types";
@@ -69,14 +68,15 @@ export const OllamaConfigForm = () => {
     modelError ??
     (notListed ? "Selected model is not in the available list." : undefined);
 
+  const usesSelect = !loading && models.length > 0;
+
   const renderModelField = () => {
-    if (loading || models.length === 0) {
+    if (!usesSelect) {
       return (
         <TextField
           name="model"
-          margin="dense"
+          size="small"
           id="model"
-          label="Model"
           type="text"
           fullWidth
           required
@@ -97,17 +97,11 @@ export const OllamaConfigForm = () => {
     }
 
     return (
-      <FormControl
-        fullWidth
-        margin="dense"
-        error={selectHelp !== undefined}
-        required
-      >
-        <InputLabel id="model-select-label">Model</InputLabel>
+      <FormControl fullWidth error={selectHelp !== undefined} required>
         <Select
-          labelId="model-select-label"
-          label="Model"
+          labelId={fieldLabelId("model-select")}
           id="model-select"
+          size="small"
           value={config.model || ""}
           onChange={(event: SelectChangeEvent<string>) =>
             updateConfig("model", event.target.value)
@@ -127,9 +121,15 @@ export const OllamaConfigForm = () => {
 
   return (
     <Fragment>
-      <Tooltip title="The Ollama model name to use for image comparison. Models are fetched from the Ollama service.">
-        <div>{renderModelField()}</div>
-      </Tooltip>
+      <FieldRow
+        id={usesSelect ? "model-select" : "model"}
+        title="Model"
+        required
+        description="The Ollama model name to use for image comparison. Models are fetched from the Ollama service."
+        stacked
+      >
+        {renderModelField()}
+      </FieldRow>
       {loading && <LinearProgress />}
       <VlmSharedFields />
     </Fragment>
