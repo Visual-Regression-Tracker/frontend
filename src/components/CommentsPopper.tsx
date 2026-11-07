@@ -4,12 +4,22 @@ import {
   type KeyboardEvent,
   useState,
 } from "react";
-import { Button, Popper, Fade, Paper, TextField, Badge } from "@mui/material";
+import {
+  Button,
+  Popper,
+  Fade,
+  IconButton,
+  Paper,
+  TextField,
+  Badge,
+} from "@mui/material";
+import { ChatBubbleOutlined } from "@mui/icons-material";
 import {
   usePopupState,
   bindToggle,
   bindPopper,
 } from "material-ui-popup-state/hooks";
+import { Tooltip } from "./Tooltip";
 
 interface IProps {
   text: string | undefined;
@@ -44,18 +54,21 @@ export const CommentsPopper = ({ text, onSave }: IProps) => {
         variant="dot"
         badgeContent=" "
         anchorOrigin={{
-          vertical: "bottom",
+          vertical: "top",
           horizontal: "right",
         }}
         invisible={!comment || comment === ""}
       >
-        <Button
-          {...bindToggle(popupState)}
-          color="primary"
-          onKeyDown={closeOnEscape}
-        >
-          Comments
-        </Button>
+        <Tooltip title="Comments">
+          <IconButton
+            {...bindToggle(popupState)}
+            aria-label="Comments"
+            color="primary"
+            onKeyDown={closeOnEscape}
+          >
+            <ChatBubbleOutlined />
+          </IconButton>
+        </Tooltip>
       </Badge>
       <Popper
         {...bindPopper(popupState)}

@@ -301,6 +301,7 @@ test.describe("details dialog", () => {
       build.id,
       NOT_ANALYSED.id,
     );
+    await details.noiseChip.click();
     await expect(details.noisePanel).toContainText(
       "Rendering-noise check: not run",
     );
@@ -311,7 +312,7 @@ test.describe("details dialog", () => {
     ]);
 
     expect(postData<{ ids: string[] }>(request).ids).toEqual([NOT_ANALYSED.id]);
-    await expect(details.noisePanel).toContainText("Analysing…");
+    await expect(details.noiseChip).toContainText("Analysing…");
   });
 
   test("shows both stages of the verdict", async ({
@@ -325,6 +326,8 @@ test.describe("details dialog", () => {
       build.id,
       NOISE_CART.id,
     );
+
+    await details.noiseChip.click();
 
     await expect(details.noisePanel).toContainText(
       "Rendering-noise check: likely noise · score 0.39",
@@ -346,6 +349,7 @@ test.describe("details dialog", () => {
       NOISE_CART.id,
     );
     await expect(details.drawAreas).toHaveCount(2);
+    await details.noiseChip.click();
     await expect(details.hintBlur).toBeEnabled();
     await expect.poll(() => details.lockedRects()).toEqual([]);
 

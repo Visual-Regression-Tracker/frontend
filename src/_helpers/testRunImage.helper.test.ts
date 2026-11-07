@@ -68,9 +68,9 @@ describe("imageSizesDiffer", () => {
     ).toBe(true);
   });
 
-  it("is true while only one of the two has loaded", () => {
+  it("is false while only one of the two has loaded", () => {
     expect(imageSizesDiffer(withBoth, fakeImage(100, 50), undefined)).toBe(
-      true,
+      false,
     );
   });
 
