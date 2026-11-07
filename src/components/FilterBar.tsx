@@ -23,6 +23,7 @@ interface IProps {
   onSearchChange: (value: string) => void;
   searchLabel?: string;
   searchMinLength?: number;
+  searchWidth?: number;
   searchTestId?: string;
   active?: boolean;
   actions?: ReactNode;
@@ -87,6 +88,7 @@ export const FilterBar = ({
   onSearchChange,
   searchLabel = "Search",
   searchMinLength,
+  searchWidth,
   searchTestId,
   active = false,
   actions,
@@ -99,49 +101,53 @@ export const FilterBar = ({
     search !== "" ||
     filters.some((filter) => filter.value.length > 0);
 
+  const bar = (
+    <Stack
+      direction="row"
+      sx={{
+        flexWrap: "wrap",
+        alignItems: "center",
+        gap: 1,
+        ...(actions && { flex: 1, minWidth: 0 }),
+      }}
+    >
+      <DebouncedTextField
+        size="small"
+        label={searchLabel}
+        value={search}
+        debounceTimeout={300}
+        minLength={searchMinLength}
+        onChange={onSearchChange}
+        sx={searchWidth ? { width: searchWidth } : undefined}
+        slotProps={
+          searchTestId
+            ? { htmlInput: { "data-testid": searchTestId } }
+            : undefined
+        }
+      />
+      {visible.map((filter) => (
+        <FilterChip key={filter.id} filter={filter} />
+      ))}
+      {filtering && (
+        <Button size="small" onClick={onClear}>
+          Clear filters
+        </Button>
+      )}
+    </Stack>
+  );
+
+  if (!actions) {
+    return bar;
+  }
   return (
     <Stack direction="row" sx={{ alignItems: "flex-start", gap: 1 }}>
+      {bar}
       <Stack
         direction="row"
-        sx={{
-          flex: 1,
-          minWidth: 0,
-          flexWrap: "wrap",
-          alignItems: "center",
-          gap: 1,
-        }}
+        sx={{ alignItems: "center", gap: 1, flexShrink: 0, minHeight: 40 }}
       >
-        <DebouncedTextField
-          size="small"
-          label={searchLabel}
-          value={search}
-          debounceTimeout={300}
-          minLength={searchMinLength}
-          onChange={onSearchChange}
-          sx={{ width: 180 }}
-          slotProps={
-            searchTestId
-              ? { htmlInput: { "data-testid": searchTestId } }
-              : undefined
-          }
-        />
-        {visible.map((filter) => (
-          <FilterChip key={filter.id} filter={filter} />
-        ))}
-        {filtering && (
-          <Button size="small" onClick={onClear}>
-            Clear filters
-          </Button>
-        )}
+        {actions}
       </Stack>
-      {actions && (
-        <Stack
-          direction="row"
-          sx={{ alignItems: "center", gap: 1, flexShrink: 0, minHeight: 40 }}
-        >
-          {actions}
-        </Stack>
-      )}
     </Stack>
   );
 };

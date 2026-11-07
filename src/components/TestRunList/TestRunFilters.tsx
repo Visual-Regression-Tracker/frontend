@@ -45,6 +45,7 @@ const TestRunFilters = ({
     onSearchChange={onNameChange}
     searchLabel="Name"
     searchMinLength={2}
+    searchWidth={180}
     searchTestId="testRunNameFilter"
     active={hasActiveFilters}
     actions={actions}
