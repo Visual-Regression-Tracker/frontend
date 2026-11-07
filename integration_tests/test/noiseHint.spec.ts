@@ -312,7 +312,7 @@ test.describe("details dialog", () => {
     ]);
 
     expect(postData<{ ids: string[] }>(request).ids).toEqual([NOT_ANALYSED.id]);
-    await expect(details.noisePanel).toContainText("Analysing…");
+    await expect(details.noiseChip).toContainText("Analysing…");
   });
 
   test("shows both stages of the verdict", async ({
