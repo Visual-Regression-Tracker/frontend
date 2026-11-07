@@ -1,9 +1,11 @@
-import { useState } from "react";
+import { type KeyboardEvent, useState } from "react";
 import {
   Box,
   Button,
   Chip,
-  Popover,
+  ClickAwayListener,
+  Paper,
+  Popper,
   ToggleButton,
   ToggleButtonGroup,
   Typography,
@@ -77,6 +79,13 @@ export const NoiseHintPanel = ({
   if (analysing && anchor) {
     setAnchor(null);
   }
+
+  const closeOnEscape = (event: KeyboardEvent) => {
+    if (event.key === "Escape" && anchor) {
+      event.stopPropagation();
+      setAnchor(null);
+    }
+  };
 
   const analyseButton = (label: string) => (
     <Button
@@ -161,19 +170,39 @@ export const NoiseHintPanel = ({
         data-testid="noise-hint-popover-chip"
         label={`≋ ${view.label}`}
         onClick={
-          analysing ? undefined : (event) => setAnchor(event.currentTarget)
+          analysing
+            ? undefined
+            : (event) => setAnchor(anchor ? null : event.currentTarget)
         }
+        onKeyDown={closeOnEscape}
       />
-      <Popover
+      <Popper
         open={!!anchor}
         anchorEl={anchor}
-        onClose={() => setAnchor(null)}
-        anchorOrigin={{ vertical: "bottom", horizontal: "left" }}
+        placement="bottom-start"
+        role="dialog"
+        aria-label="Rendering-noise check"
+        sx={{ zIndex: "modal" }}
       >
-        <Box data-testid="noise-hint-panel" sx={{ p: 2, maxWidth: 520 }}>
-          {body}
-        </Box>
-      </Popover>
+        <ClickAwayListener
+          onClickAway={(event) => {
+            if (!anchor?.contains(event.target as Node)) {
+              setAnchor(null);
+            }
+          }}
+        >
+          <Paper
+            elevation={8}
+            tabIndex={-1}
+            ref={(node: HTMLElement | null) => node?.focus()}
+            onKeyDown={closeOnEscape}
+          >
+            <Box data-testid="noise-hint-panel" sx={{ p: 2, maxWidth: 520 }}>
+              {body}
+            </Box>
+          </Paper>
+        </ClickAwayListener>
+      </Popper>
     </>
   );
 };

@@ -442,6 +442,18 @@ describe("TestDetailsModal", () => {
       expect(screen.getByTestId("noise-hint-panel")).toBeVisible();
     });
 
+    it("keeps the review hotkeys from acting while the popover is open", async () => {
+      const approveBulk = vi
+        .spyOn(testRunService, "approveBulk")
+        .mockResolvedValue(NO_FAILURES);
+      const { user } = await renderWithProject(analysed());
+
+      await openNoise(user);
+      await user.keyboard("a");
+
+      expect(approveBulk).not.toHaveBeenCalled();
+    });
+
     it("shows no panel and fetches nothing for an approved run", async () => {
       const getDetails = vi.spyOn(testRunService, "getDetails");
 

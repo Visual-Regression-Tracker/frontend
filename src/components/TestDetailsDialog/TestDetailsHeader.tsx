@@ -107,15 +107,17 @@ export const TestDetailsHeader = ({
             icon={<NavigateNext />}
           />
         </Stack>
-        <Typography variant="h6" noWrap sx={testRunNameSx}>
-          {testRun.name}
-        </Typography>
+        <Tooltip title={testRun.name}>
+          <Typography variant="h6" noWrap sx={testRunNameSx}>
+            {testRun.name}
+          </Typography>
+        </Tooltip>
         <StatusChip status={testRun.status} />
         <Tooltip
           title={`${diff}% of pixels differ; the allowed tolerance is ${testRun.diffTollerancePercent}%, set with diffTollerancePercent in the track method.`}
         >
           <Typography variant="caption" sx={{ fontWeight: "bold" }}>
-            {`Diff ${diff}% · tol ${testRun.diffTollerancePercent}%`}
+            {`Diff ${diff}% · tolerance ${testRun.diffTollerancePercent}%`}
           </Typography>
         </Tooltip>
         {noiseHint}

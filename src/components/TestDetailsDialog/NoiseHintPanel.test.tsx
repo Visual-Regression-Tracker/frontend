@@ -141,6 +141,41 @@ describe("NoiseHintPanel", () => {
     });
   });
 
+  describe("popover", () => {
+    it("is not modal, so the canvas behind it stays usable", async () => {
+      await renderPanel({ analysis: null });
+
+      expect(document.querySelector(".MuiBackdrop-root")).toBeNull();
+      expect(
+        screen.getByRole("dialog", { name: "Rendering-noise check" }),
+      ).toContainElement(panel());
+    });
+
+    it("closes on Escape", async () => {
+      const { user } = await renderPanel({ analysis: null });
+
+      await user.keyboard("{Escape}");
+
+      expect(screen.queryByTestId("noise-hint-panel")).toBeNull();
+    });
+
+    it("closes on a click outside", async () => {
+      const { user } = await renderPanel({ analysis: null });
+
+      await user.click(document.body);
+
+      expect(screen.queryByTestId("noise-hint-panel")).toBeNull();
+    });
+
+    it("closes when the chip is clicked again", async () => {
+      const { user } = await renderPanel({ analysis: null });
+
+      await user.click(chip());
+
+      expect(screen.queryByTestId("noise-hint-panel")).toBeNull();
+    });
+  });
+
   describe("without a result", () => {
     it.each([
       ["no analysis", null],

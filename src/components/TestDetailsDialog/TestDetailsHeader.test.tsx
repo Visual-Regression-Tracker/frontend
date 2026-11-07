@@ -53,7 +53,15 @@ describe("TestDetailsHeader", () => {
     expect(screen.getByTestId("step-position")).toHaveTextContent("2/3");
     expect(screen.getByRole("heading", { name: "Cart" })).toBeVisible();
     expect(screen.getByText(TestStatus.unresolved)).toBeVisible();
-    expect(screen.getByText("Diff 8.12% · tol 2%")).toBeVisible();
+    expect(screen.getByText("Diff 8.12% · tolerance 2%")).toBeVisible();
+  });
+
+  it("shows the full run name in a tooltip", async () => {
+    const { user } = renderHeader();
+
+    await user.hover(screen.getByRole("heading", { name: "Cart" }));
+
+    expect(await screen.findByRole("tooltip")).toHaveTextContent("Cart");
   });
 
   it("shows the tags in one line", () => {
