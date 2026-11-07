@@ -25,7 +25,7 @@ const OpenProject = () => {
   return <BuildList />;
 };
 
-const searchInput = () => screen.getByRole("textbox", { name: "Search build" });
+const searchInput = () => screen.getByRole("textbox", { name: "CI build id" });
 
 describe("BuildList", () => {
   let getList: MockInstance<typeof buildsService.getList>;
@@ -291,7 +291,9 @@ describe("BuildList", () => {
     const rowCheckboxes = () =>
       screen
         .getAllByRole("checkbox")
-        .filter((box) => !box.getAttribute("aria-label"))
+        .filter((box) =>
+          box.getAttribute("aria-label")?.startsWith("Select build"),
+        )
         .map((box) => box as HTMLInputElement);
     const confirm = async (user: User, title: string) => {
       const dialog = await screen.findByRole("dialog", { name: title });
@@ -299,7 +301,9 @@ describe("BuildList", () => {
     };
     // the row's menu button only shows on hover in a browser; a click does not care
     const openRowMenu = async (user: User, row: number, item: string) => {
-      await user.click(screen.getAllByTestId("MoreVertIcon")[row]);
+      await user.click(
+        screen.getAllByRole("button", { name: "Build menu" })[row],
+      );
       await user.click(await screen.findByRole("menuitem", { name: item }));
     };
 
@@ -320,7 +324,7 @@ describe("BuildList", () => {
           screen.getByRole("checkbox", { name: "Select all (3)" }),
         );
         expect(rowCheckboxes().every((box) => box.checked)).toBe(true);
-        await user.click(screen.getByTestId("buildDeleteSelected"));
+        await user.click(screen.getByRole("button", { name: "Delete…" }));
         expect(
           await screen.findByText(
             "Are you sure you want to delete 3 build(s)?",
@@ -329,7 +333,7 @@ describe("BuildList", () => {
 
         getList.mockClear();
         getList.mockResolvedValue(pageOf([makeBuild(2)], 1));
-        await confirm(user, "Delete Builds");
+        await confirm(user, "Delete builds");
 
         expect(await screen.findByText("2 build(s) deleted")).toBeVisible();
         expect(screen.getByText("Failed to delete 1 build(s)")).toBeVisible();
@@ -381,8 +385,8 @@ describe("BuildList", () => {
         );
 
         getList.mockClear();
-        await openRowMenu(user, 0, "Delete");
-        await confirm(user, "Delete Build");
+        await openRowMenu(user, 0, "Delete build…");
+        await confirm(user, "Delete build");
 
         expect(await screen.findByText("Build #11 deleted")).toBeVisible();
         expect(remove).toHaveBeenCalledWith("build-11");
@@ -417,8 +421,8 @@ describe("BuildList", () => {
         await screen.findByText(label(11));
 
         getList.mockClear();
-        await openRowMenu(user, 0, "Delete");
-        await confirm(user, "Delete Build");
+        await openRowMenu(user, 0, "Delete build…");
+        await confirm(user, "Delete build");
 
         await waitFor(() =>
           expect(getList).toHaveBeenCalledWith(
@@ -445,8 +449,8 @@ describe("BuildList", () => {
           `?buildId=${TEST_BUILD_PASSED.id}`,
         );
 
-        await openRowMenu(user, 0, "Delete");
-        await confirm(user, "Delete Build");
+        await openRowMenu(user, 0, "Delete build…");
+        await confirm(user, "Delete build");
 
         await waitFor(() =>
           expect(screen.getByTestId("search")).toBeEmptyDOMElement(),
@@ -463,14 +467,14 @@ describe("BuildList", () => {
         await user.click(rowCheckboxes()[1]);
 
         getList.mockResolvedValue(pageOf([makeBuild(1), makeBuild(3)], 2));
-        await openRowMenu(user, 1, "Delete");
-        await confirm(user, "Delete Build");
+        await openRowMenu(user, 1, "Delete build…");
+        await confirm(user, "Delete build");
         expect(await screen.findByText("Build #2 deleted")).toBeVisible();
         await waitFor(() =>
           expect(screen.queryByText(label(2))).not.toBeInTheDocument(),
         );
 
-        await user.click(screen.getByTestId("buildDeleteSelected"));
+        await user.click(screen.getByRole("button", { name: "Delete…" }));
         expect(
           await screen.findByText(
             "Are you sure you want to delete 1 build(s)?",
@@ -487,8 +491,8 @@ describe("BuildList", () => {
         });
         await screen.findByText(label(2));
 
-        await openRowMenu(user, 1, "Delete");
-        await confirm(user, "Delete Build");
+        await openRowMenu(user, 1, "Delete build…");
+        await confirm(user, "Delete build");
 
         expect(await screen.findByText("Build #2 deleted")).toBeVisible();
         expect(screen.getByTestId("search")).toHaveTextContent(
@@ -568,7 +572,7 @@ describe("BuildList", () => {
         expect(getList).toHaveBeenCalledWith(PROJECT_ID, 25, 0, "");
         expect(rowCheckboxes()).toHaveLength(10);
         expect(rowCheckboxes().every((box) => box.checked)).toBe(true);
-        await user.click(screen.getByTestId("buildDeleteSelected"));
+        await user.click(screen.getByRole("button", { name: "Delete…" }));
         expect(
           await screen.findByText(
             "Are you sure you want to delete 25 build(s)?",
@@ -646,9 +650,9 @@ describe("BuildList", () => {
 
     describe("editing the CI build id", () => {
       const editCiBuildId = async (user: User, value: string) => {
-        await openRowMenu(user, 0, "Edit CI Build");
+        await openRowMenu(user, 0, "Edit CI build id…");
         const dialog = await screen.findByRole("dialog", {
-          name: "Edit CI Build ID",
+          name: "Edit CI build id",
         });
         await user.type(within(dialog).getByTestId("newCiBuildId"), value);
         await user.click(within(dialog).getByTestId("submitButton"));
@@ -668,5 +672,110 @@ describe("BuildList", () => {
         expect(update).toHaveBeenCalledWith("build-1", { ciBuildId: "ci-new" });
       });
     });
+  });
+});
+
+describe("BuildList rows and chrome", () => {
+  const page = (data: Build[], total = data.length) => ({
+    data,
+    total,
+    skip: 0,
+    take: 10,
+  });
+  const listed = (data: Build[], total?: number) =>
+    vi.spyOn(buildsService, "getList").mockResolvedValue(page(data, total));
+
+  beforeAll(() => {
+    Element.prototype.scrollTo = () => undefined;
+  });
+
+  it("sums a build up on a second line with its runs and outcome", async () => {
+    listed([
+      {
+        ...TEST_BUILD_FAILED,
+        ciBuildId: "ci-9",
+        failedCount: 2,
+        passedCount: 1,
+        unresolvedCount: 0,
+      },
+    ]);
+    renderWithProviders(<OpenProject />);
+
+    expect(await screen.findByText(/3 runs · 2 failed/)).toBeVisible();
+  });
+
+  it("shows when a build is running instead of its counts", async () => {
+    listed([{ ...TEST_BUILD_PASSED, isRunning: true }]);
+    renderWithProviders(<OpenProject />);
+
+    expect(await screen.findByText(/· running/)).toBeVisible();
+    expect(screen.getByRole("progressbar")).toBeVisible();
+  });
+
+  it("names the last run only when it is over a minute after the start", async () => {
+    listed([
+      {
+        ...TEST_BUILD_PASSED,
+        createdAt: "2026-11-04T10:00:00Z",
+        updatedAt: "2026-11-04T10:30:00Z",
+      },
+      {
+        ...TEST_BUILD_FAILED,
+        createdAt: "2026-11-04T10:00:00Z",
+        updatedAt: "2026-11-04T10:00:30Z",
+      },
+    ]);
+    renderWithProviders(<OpenProject />);
+
+    await screen.findByText(/passed/);
+    expect(screen.getAllByText(/Last run/)).toHaveLength(1);
+  });
+
+  it("hides the pager when everything fits on one page", async () => {
+    listed([TEST_BUILD_PASSED]);
+    renderWithProviders(<OpenProject />);
+
+    await screen.findByText("#2");
+    expect(screen.queryByRole("navigation")).not.toBeInTheDocument();
+  });
+
+  it("shows the pager when there are more pages", async () => {
+    listed([TEST_BUILD_PASSED], 25);
+    renderWithProviders(<OpenProject />);
+
+    expect(await screen.findByRole("navigation")).toBeVisible();
+  });
+
+  it("asks again from the error state when Retry is pressed", async () => {
+    const getList = vi
+      .spyOn(buildsService, "getList")
+      .mockRejectedValueOnce("boom")
+      .mockResolvedValue(page([TEST_BUILD_PASSED]));
+    const { user } = renderWithProviders(<OpenProject />);
+
+    await user.click(await screen.findByRole("button", { name: "Retry" }));
+
+    expect(await screen.findByText("#2")).toBeVisible();
+    expect(getList).toHaveBeenCalledTimes(2);
+  });
+
+  it("shows the selection bar with the count and selects every match from it", async () => {
+    const all = [TEST_BUILD_PASSED, TEST_BUILD_FAILED];
+    listed(all, 12);
+    const { user } = renderWithProviders(<OpenProject />);
+    await screen.findByText("#2");
+
+    await user.click(screen.getByRole("checkbox", { name: "Select build #2" }));
+
+    const bar = screen.getByRole("toolbar", { name: "Selection" });
+    expect(within(bar).getByText("1 selected")).toBeVisible();
+    expect(
+      within(bar).getByRole("button", { name: "Select all 12" }),
+    ).toBeVisible();
+
+    await user.click(screen.getByRole("button", { name: "Clear selection" }));
+    expect(
+      screen.queryByRole("toolbar", { name: "Selection" }),
+    ).not.toBeInTheDocument();
   });
 });

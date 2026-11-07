@@ -1,4 +1,4 @@
-import { Typography } from "@mui/material";
+import { Button, Stack, Typography } from "@mui/material";
 import { Inbox, SearchOff } from "@mui/icons-material";
 import { SkeletonList } from "../SkeletonList";
 import { EmptyState } from "../EmptyState";
@@ -7,25 +7,34 @@ export const BuildListPlaceholder = ({
   loading,
   error,
   searchQuery,
+  onRetry,
 }: {
   loading: boolean;
   error: unknown;
   searchQuery: string;
+  onRetry: () => void;
 }) => {
   if (loading) {
     return <SkeletonList />;
   }
   if (error) {
     return (
-      <Typography
-        variant="subtitle1"
-        align="center"
-        color="error"
-        sx={{ padding: 2, overflowWrap: "anywhere" }}
+      <Stack
         data-testid="buildListError"
+        sx={{ alignItems: "center", gap: 1, padding: 2 }}
       >
-        Builds could not be loaded
-      </Typography>
+        <Typography
+          variant="subtitle1"
+          align="center"
+          color="error"
+          sx={{ overflowWrap: "anywhere" }}
+        >
+          Builds could not be loaded
+        </Typography>
+        <Button size="small" onClick={onRetry}>
+          Retry
+        </Button>
+      </Stack>
     );
   }
   return (

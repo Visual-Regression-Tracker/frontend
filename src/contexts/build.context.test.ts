@@ -19,9 +19,17 @@ const initial: State = {
   skip: 0,
   total: 0,
   loading: false,
+  refreshes: 0,
 };
 
 describe("buildReducer", () => {
+  it("refresh counts the request for the list to reload and names the deleted build", () => {
+    const state = buildReducer(initial, { type: "refresh", payload: "b1" });
+
+    expect(state.refreshes).toBe(1);
+    expect(state.lastDeletedId).toBe("b1");
+  });
+
   it("select keeps the chosen build", () => {
     const state = buildReducer(initial, {
       type: "select",

@@ -163,11 +163,11 @@ test("edits a project", async ({ projectSettingsPage, page }) => {
   );
 });
 
-test("opens the project's settings from the edit button", async ({
+test("opens the project's settings from the settings button", async ({
   projectListPage,
   page,
 }) => {
-  await projectListPage.editBtn.click();
+  await projectListPage.settingsBtn.click();
 
   await expect(page).toHaveURL(new RegExp(`/settings/${project.id}$`));
   await expect(new ProjectSettingsPage(page).name).toHaveValue(project.name);
