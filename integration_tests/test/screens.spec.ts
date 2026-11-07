@@ -726,6 +726,7 @@ const VIEWS: [name: string, body: Body][] = [
     "profile",
     async ({ profilePage, shot }) => {
       await expect(profilePage.apiKeyCard).toBeVisible();
+      await expect(profilePage.role).toBeVisible();
       await expect(profilePage.configFile).toBeVisible();
 
       await shot("profile", { fullPage: true });
@@ -976,6 +977,16 @@ const VIEWS: [name: string, body: Body][] = [
 
       await expect(projectPage.buildList.errorMessage).toBeVisible();
       await shot("project-page-builds-failed");
+    },
+  ],
+
+  [
+    "profile asking before regenerating the API key",
+    async ({ profilePage, shot }) => {
+      await profilePage.regenerateBtn.click();
+
+      await expect(profilePage.modal.dialog).toBeVisible();
+      await shot("profile-regenerate-api-key");
     },
   ],
 ];

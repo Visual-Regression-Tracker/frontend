@@ -75,6 +75,7 @@ describe("getQueryParams", () => {
 
 describe("matchShellRoute", () => {
   test.each([
+    ["/profile", { kind: "profile" }],
     ["/some-id", { kind: "project", projectId: "some-id", tab: "builds" }],
     [
       "/variations/some-id",
@@ -94,7 +95,7 @@ describe("matchShellRoute", () => {
     expect(matchShellRoute(pathname)).toEqual(expected);
   });
 
-  test.each(["/", "/projects", "/profile", "/login", "/register", "/settings"])(
+  test.each(["/", "/projects", "/login", "/register", "/settings"])(
     "has no shell on %s",
     (pathname) => {
       expect(matchShellRoute(pathname)).toBeUndefined();

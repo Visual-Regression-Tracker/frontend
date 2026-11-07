@@ -42,7 +42,8 @@ export type ProjectTab = "builds" | "variations" | "statistics" | "settings";
 export type ShellRoute =
   | { kind: "project"; projectId: string; tab: ProjectTab }
   | { kind: "variation" }
-  | { kind: "users" };
+  | { kind: "users" }
+  | { kind: "profile" };
 
 const FIRST_SEGMENTS_OF_OTHER_PAGES = new Set(
   Object.values(routes)
@@ -53,6 +54,9 @@ const FIRST_SEGMENTS_OF_OTHER_PAGES = new Set(
 export const matchShellRoute = (pathname: string): ShellRoute | undefined => {
   if (matchPath(routes.USER_LIST_PAGE, pathname)) {
     return { kind: "users" };
+  }
+  if (matchPath(routes.PROFILE_PAGE, pathname)) {
+    return { kind: "profile" };
   }
   if (
     matchPath(`${routes.VARIATION_DETAILS_PAGE}/:testVariationId`, pathname)

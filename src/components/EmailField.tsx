@@ -7,9 +7,15 @@ interface EmailFieldProps {
   value: string | undefined;
   onChange: (value: string) => void;
   disabled?: boolean;
+  helperText?: string;
 }
 
-const EmailField = ({ value, onChange, disabled }: EmailFieldProps) => (
+const EmailField = ({
+  value,
+  onChange,
+  disabled,
+  helperText,
+}: EmailFieldProps) => (
   <ValidatedTextField
     rules={EMAIL_RULES}
     id="email"
@@ -21,6 +27,7 @@ const EmailField = ({ value, onChange, disabled }: EmailFieldProps) => (
     required
     fullWidth
     disabled={disabled}
+    helperText={helperText}
     onChange={(event) => onChange(event.target.value)}
     slotProps={{ htmlInput: { "data-testid": "email" } }}
   />

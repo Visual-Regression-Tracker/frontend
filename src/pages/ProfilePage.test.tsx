@@ -45,12 +45,40 @@ describe("ProfilePage", () => {
       expect(screen.getByTestId("email")).toHaveValue(TEST_USER.email);
     });
 
-    it("shows the role of the user, which cannot be changed here", async () => {
+    it("shows the role as a chip with a note on who changes it", async () => {
       await renderPage();
 
-      const role = screen.getAllByRole("combobox")[0];
-      expect(role).toHaveTextContent("Admin");
-      expect(role).toHaveAttribute("aria-disabled", "true");
+      expect(screen.getByTestId("role")).toHaveTextContent("Admin");
+      expect(screen.getByText("changed by an admin on Users")).toBeVisible();
+      expect(
+        screen.queryByRole("combobox", { name: "Role" }),
+      ).not.toBeInTheDocument();
+    });
+
+    it("has the page title but no subtitle", async () => {
+      await renderPage();
+
+      expect(
+        screen.getByRole("heading", { level: 1, name: "Profile" }),
+      ).toBeVisible();
+      expect(
+        screen.queryByText(/the key your test runs use/),
+      ).not.toBeInTheDocument();
+    });
+
+    it("titles the cards Your details, Password, API key and Configuration examples", async () => {
+      await renderPage();
+
+      for (const title of [
+        "Your details",
+        "Password",
+        "API key",
+        "Configuration examples",
+      ]) {
+        expect(screen.getByText(title)).toBeVisible();
+      }
+      expect(screen.queryByText("User details")).not.toBeInTheDocument();
+      expect(screen.queryByText("Change password")).not.toBeInTheDocument();
     });
 
     it("sends the edited names and email to update the user", async () => {
@@ -150,7 +178,15 @@ describe("ProfilePage", () => {
     });
   });
 
-  describe("change password", () => {
+  describe("password", () => {
+    it("labels the button Update password", async () => {
+      await renderPage();
+
+      expect(
+        screen.getByRole("button", { name: "Update password" }),
+      ).toBeVisible();
+    });
+
     it("sends the new password and empties the field", async () => {
       const changePassword = vi
         .spyOn(usersService, "changePassword")
@@ -231,12 +267,18 @@ describe("ProfilePage", () => {
   });
 
   describe("with single sign-on", () => {
-    it("offers no password change and locks the email", async () => {
+    it("offers no password change and locks the email with a hint", async () => {
       vi.mocked(useOidcEnabled).mockReturnValue(true);
       await renderPage();
 
-      expect(screen.queryByText("Change password")).not.toBeInTheDocument();
+      expect(screen.queryByText("Password")).not.toBeInTheDocument();
+      expect(
+        screen.queryByRole("button", { name: "Update password" }),
+      ).not.toBeInTheDocument();
       expect(screen.getByTestId("email")).toBeDisabled();
+      expect(
+        screen.getByText("Locked when you sign in with SSO"),
+      ).toBeVisible();
       expect(screen.getByTestId("firstName")).toBeEnabled();
     });
 
@@ -244,8 +286,11 @@ describe("ProfilePage", () => {
       vi.mocked(useOidcEnabled).mockReturnValue(undefined);
       await renderPage();
 
-      expect(screen.queryByText("Change password")).not.toBeInTheDocument();
+      expect(screen.queryByText("Password")).not.toBeInTheDocument();
       expect(screen.getByTestId("email")).toBeDisabled();
+      expect(
+        screen.queryByText("Locked when you sign in with SSO"),
+      ).not.toBeInTheDocument();
     });
 
     it("still updates the names", async () => {
@@ -269,17 +314,111 @@ describe("ProfilePage", () => {
     });
   });
 
-  describe("api key and configuration examples", () => {
-    it("shows the api key of the user", async () => {
+  describe("api key", () => {
+    it("shows the api key of the user in a read-only field", async () => {
       await renderPage();
 
-      const card = screen.getByText("Api key").closest(".MuiCard-root");
-      expect(card).not.toBeNull();
+      const field = screen.getByRole("textbox", { name: "API key" });
+      expect(field).toHaveValue(TEST_USER.apiKey);
+      expect(field).toHaveAttribute("readonly");
+    });
+
+    it("copies the api key", async () => {
+      const { user } = await renderPage();
+      const writeText = vi.spyOn(navigator.clipboard, "writeText");
+      const card = screen.getByText("API key").closest(".MuiCard-root");
+
+      await user.click(
+        within(card as HTMLElement).getByRole("button", { name: "Copy" }),
+      );
+
+      expect(writeText).toHaveBeenCalledWith(TEST_USER.apiKey);
+      expect(await screen.findByText("API key copied")).toBeVisible();
+    });
+
+    it("says so when the browser cannot copy", async () => {
+      const { user } = await renderPage();
+      vi.spyOn(navigator.clipboard, "writeText").mockRejectedValue(
+        new Error("denied"),
+      );
+      const card = screen.getByText("API key").closest(".MuiCard-root");
+
+      await user.click(
+        within(card as HTMLElement).getByRole("button", { name: "Copy" }),
+      );
+
       expect(
-        within(card as HTMLElement).getByText(TEST_USER.apiKey),
+        await screen.findByText("Could not copy the API key"),
       ).toBeVisible();
     });
 
+    it("asks before regenerating and does nothing when cancelled", async () => {
+      const newApiKey = vi.spyOn(usersService, "newApiKey");
+      const { user } = await renderPage();
+
+      await user.click(screen.getByRole("button", { name: "Regenerate…" }));
+      const dialog = await screen.findByRole("dialog", {
+        name: "Regenerate API key",
+      });
+      await user.click(within(dialog).getByRole("button", { name: "Cancel" }));
+
+      await waitFor(() =>
+        expect(screen.queryByRole("dialog")).not.toBeInTheDocument(),
+      );
+      expect(newApiKey).not.toHaveBeenCalled();
+      expect(screen.getByTestId("apiKey")).toHaveValue(TEST_USER.apiKey);
+    });
+
+    it("shows the confirm button in the error colour", async () => {
+      const { user } = await renderPage();
+
+      await user.click(screen.getByRole("button", { name: "Regenerate…" }));
+
+      expect(
+        within(await screen.findByRole("dialog")).getByRole("button", {
+          name: "Regenerate",
+        }),
+      ).toHaveClass("MuiButton-colorError");
+    });
+
+    it("puts the regenerated key in the field and the examples", async () => {
+      vi.spyOn(usersService, "newApiKey").mockResolvedValue("NEW-KEY");
+      const { user } = await renderPage();
+
+      await user.click(screen.getByRole("button", { name: "Regenerate…" }));
+      await user.click(
+        within(await screen.findByRole("dialog")).getByRole("button", {
+          name: "Regenerate",
+        }),
+      );
+
+      expect(await screen.findByText("API key regenerated")).toBeVisible();
+      expect(screen.getByTestId("apiKey")).toHaveValue("NEW-KEY");
+      expect(
+        screen.getByDisplayValue<HTMLTextAreaElement>(/"apiKey"/).value,
+      ).toContain('"apiKey": "NEW-KEY"');
+      await waitFor(() =>
+        expect(screen.queryByRole("dialog")).not.toBeInTheDocument(),
+      );
+    });
+
+    it("keeps the old key and says why when regenerating fails", async () => {
+      vi.spyOn(usersService, "newApiKey").mockRejectedValue("Not allowed");
+      const { user } = await renderPage();
+
+      await user.click(screen.getByRole("button", { name: "Regenerate…" }));
+      await user.click(
+        within(await screen.findByRole("dialog")).getByRole("button", {
+          name: "Regenerate",
+        }),
+      );
+
+      expect(await screen.findByText("Not allowed")).toBeVisible();
+      expect(screen.getByTestId("apiKey")).toHaveValue(TEST_USER.apiKey);
+    });
+  });
+
+  describe("configuration examples", () => {
     it("shows a config file with the api url, key and the default project", async () => {
       await renderPage();
 
@@ -290,10 +429,10 @@ describe("ProfilePage", () => {
       expect(config).toContain('"project": "Default project"');
     });
 
-    it("shows environment variables on the second tab", async () => {
+    it("shows environment variables when switched to ENV variables", async () => {
       const { user } = await renderPage();
 
-      await user.click(screen.getByRole("tab", { name: "ENV variables" }));
+      await user.click(screen.getByRole("button", { name: "ENV variables" }));
 
       const env =
         screen.getByDisplayValue<HTMLTextAreaElement>(/VRT_APIKEY/).value;
@@ -301,6 +440,33 @@ describe("ProfilePage", () => {
       expect(env).toContain(`VRT_APIKEY="${TEST_USER.apiKey}"`);
       expect(env).toContain('VRT_PROJECT="Default project"\n');
       expect(screen.queryByDisplayValue(/"apiKey"/)).not.toBeInTheDocument();
+    });
+
+    it("keeps one format selected when the active one is clicked again", async () => {
+      const { user } = await renderPage();
+
+      await user.click(screen.getByRole("button", { name: "Config file" }));
+
+      expect(screen.getByDisplayValue(/"apiKey"/)).toBeVisible();
+    });
+
+    it("copies the shown format", async () => {
+      const { user } = await renderPage();
+      const writeText = vi.spyOn(navigator.clipboard, "writeText");
+      const card = screen
+        .getByText("Configuration examples")
+        .closest(".MuiCard-root");
+
+      await user.click(screen.getByRole("button", { name: "ENV variables" }));
+      await user.click(
+        within(card as HTMLElement).getByRole("button", { name: "Copy" }),
+      );
+
+      expect(writeText).toHaveBeenCalledTimes(1);
+      expect(writeText.mock.calls[0][0]).toMatch(
+        /^VRT_APIURL="http:\/\/api.test"/,
+      );
+      expect(await screen.findByText("Configuration copied")).toBeVisible();
     });
 
     it("puts the selected project into the examples", async () => {

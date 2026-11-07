@@ -95,3 +95,5 @@ export const radius = 10;
 
 export const fontFamily =
   '"Inter Variable", "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif';
+
+export const monoFontFamily = "ui-monospace, SFMono-Regular, Menlo, monospace";

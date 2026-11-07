@@ -1,4 +1,8 @@
-import { handleResponse, authHeader } from "../_helpers/service.helpers";
+import {
+  handleResponse,
+  authHeader,
+  rejectWithMessage,
+} from "../_helpers/service.helpers";
 import { Role, User } from "../types/user";
 import { API_URL } from "../_config/env.config";
 
@@ -99,6 +103,29 @@ function changePassword(password: string): Promise<boolean> {
   return fetch(`${API_URL}${ENDPOINT_URL}/password`, requestOptions).then(
     handleResponse<boolean>,
   );
+}
+
+const API_KEY_SHAPE = /^[A-Za-z0-9_-]+$/;
+
+async function newApiKey(): Promise<string> {
+  const response = await fetch(`${API_URL}${ENDPOINT_URL}/newApiKey`, {
+    method: "GET",
+    headers: authHeader(),
+  });
+  if (!response.ok) {
+    return handleResponse<string>(response);
+  }
+
+  // the backend answers with the bare key, not JSON
+  const apiKey = (await response.text()).trim();
+  if (!API_KEY_SHAPE.test(apiKey)) {
+    return rejectWithMessage("Unexpected response from the server");
+  }
+  const stored = localStorage.getItem("user");
+  if (stored) {
+    setUserInLocalStorage({ ...(JSON.parse(stored) as User), apiKey });
+  }
+  return apiKey;
 }
 
 function logout() {
@@ -231,6 +258,7 @@ export const usersService = {
   register,
   update,
   changePassword,
+  newApiKey,
   getAll,
   assignRole,
   remove,
