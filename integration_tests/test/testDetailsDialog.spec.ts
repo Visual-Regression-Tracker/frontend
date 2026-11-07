@@ -67,14 +67,18 @@ test("replaces its confirmation rather than stacking them up", async ({
   openProjectPage,
   page,
 }) => {
-  await openProjectPage(project.id, build.id, TEST_UNRESOLVED.id);
+  const { notification } = await openProjectPage(
+    project.id,
+    build.id,
+    TEST_UNRESOLVED.id,
+  );
   const approve = page.locator("button").filter({ hasText: /^Approve$/ });
 
   await approve.click();
   await approve.click();
   await approve.click();
 
-  await expect(page.getByText("Approved")).toHaveCount(1);
+  await expect(notification.toast("Approved")).toHaveCount(1);
 });
 
 test("keeps the confirmation up long enough to undo it, then lets it go", async ({
@@ -82,18 +86,22 @@ test("keeps the confirmation up long enough to undo it, then lets it go", async 
   page,
 }) => {
   await page.clock.install();
-  await openProjectPage(project.id, build.id, TEST_UNRESOLVED.id);
+  const { notification } = await openProjectPage(
+    project.id,
+    build.id,
+    TEST_UNRESOLVED.id,
+  );
 
   await page
     .locator("button")
     .filter({ hasText: /^Approve$/ })
     .click();
-  await expect(page.getByText("Approved")).toBeVisible();
+  await expect(notification.toast("Approved")).toBeVisible();
 
   await page.clock.runFor(5500);
-  await expect(page.getByText("Approved")).toBeVisible();
+  await expect(notification.toast("Approved")).toBeVisible();
   await page.clock.runFor(1500);
-  await expect(page.getByText("Approved")).toBeHidden();
+  await expect(notification.toast("Approved")).toBeHidden();
 });
 
 test("undoes an approval from its toast", async ({ openProjectPage, page }) => {
@@ -151,7 +159,11 @@ test("lets an error outlive the confirmation that follows it", async ({
   await page.route(`${API_URL}/test-runs/reject`, (route) =>
     route.fulfill({ status: 500, body: JSON.stringify({ message: "nope" }) }),
   );
-  await openProjectPage(project.id, build.id, TEST_UNRESOLVED.id);
+  const { notification } = await openProjectPage(
+    project.id,
+    build.id,
+    TEST_UNRESOLVED.id,
+  );
 
   await page
     .locator("button")
@@ -164,7 +176,7 @@ test("lets an error outlive the confirmation that follows it", async ({
     .click();
 
   await expect(page.getByText("nope")).toBeVisible();
-  await expect(page.getByText("Approved")).toBeVisible();
+  await expect(notification.toast("Approved")).toBeVisible();
 });
 
 test("leaves draw mode behind when moving to another run", async ({

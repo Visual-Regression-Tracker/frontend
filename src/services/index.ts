@@ -6,3 +6,4 @@ export * from "./testVariation.service";
 export * from "./testRun.service";
 export * from "./ollama.service";
 export * from "./dinov2.service";
+export * from "./statistics.service";

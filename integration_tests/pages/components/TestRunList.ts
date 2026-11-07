@@ -28,7 +28,6 @@ export class TestRunList extends Table {
   pageSize = this.pane.getByLabel("Cards per page:");
 
   noiseChips = this.pane.getByTestId("noise-hint-chip");
-  analyseNoiseBtn = this.pane.getByTestId("analyse-noise-button");
 
   rows = this.page.locator(".MuiDataGrid-row");
   rowNames = this.rows.locator("[data-field='name']");
