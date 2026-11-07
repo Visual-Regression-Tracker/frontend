@@ -26,6 +26,7 @@ import {
   mockGetBuilds,
   mockGetFavoriteProjects,
   mockGetProjects,
+  mockGetStatisticsResults,
   mockGetTestRuns,
   mockGetTestVariationDetails,
   mockGetTestVariations,
@@ -41,6 +42,7 @@ import {
   mockUpdateTestRun,
 } from "utils/mocks";
 import { defined } from "utils/defined";
+import { STATISTICS_BUILDS } from "utils/statistics";
 import {
   ANALYSED_RUNS,
   BLUR_REGIONS,
@@ -690,6 +692,35 @@ const VIEWS: [name: string, body: Body][] = [
   ],
 
   [
+    "test variation list filtered",
+    async ({ openTestVariationListPage, page, shot }) => {
+      await mockGetTestVariations(page, project.id, [
+        TEST_VARIATION_ONE,
+        { ...TEST_VARIATION_TWO, branchName: "develop" },
+      ]);
+      const listPage = await openTestVariationListPage(project.id);
+
+      await listPage.filterBy("branchName", "develop");
+
+      await expect(listPage.cards).toHaveCount(1);
+      await expect(listPage.clearFilters).toBeVisible();
+      await shot("test-variation-list-filtered");
+    },
+  ],
+
+  [
+    "test variation list empty",
+    async ({ openTestVariationListPage, page, shot }) => {
+      await mockGetTestVariations(page, project.id, []);
+      const listPage = await openTestVariationListPage(project.id);
+
+      await expect(page.getByText("No variations")).toBeVisible();
+      await expect(listPage.cards).toHaveCount(0);
+      await shot("test-variation-list-empty");
+    },
+  ],
+
+  [
     "profile",
     async ({ profilePage, shot }) => {
       await expect(profilePage.apiKeyCard).toBeVisible();
@@ -759,12 +790,42 @@ const VIEWS: [name: string, body: Body][] = [
     "project statistics",
     async ({ page, authUser, shot }) => {
       void authUser;
+      await mockGetStatisticsResults(page, project.id, STATISTICS_BUILDS);
       await page.goto(`/statistics/${project.id}`);
 
       await expect(
         page.getByRole("heading", { name: "Statistics", exact: true }),
       ).toBeVisible();
+      await expect(page.getByRole("link", { name: /Build #/ })).toHaveCount(12);
       await shot("project-statistics");
+    },
+  ],
+
+  [
+    "project statistics with few builds",
+    async ({ page, authUser, shot }) => {
+      void authUser;
+      await mockGetStatisticsResults(
+        page,
+        project.id,
+        STATISTICS_BUILDS.slice(0, 2),
+      );
+      await page.goto(`/statistics/${project.id}`);
+
+      await expect(page.getByText("Only a few builds so far")).toBeVisible();
+      await shot("project-statistics-few");
+    },
+  ],
+
+  [
+    "project statistics without builds",
+    async ({ page, authUser, shot }) => {
+      void authUser;
+      await mockGetStatisticsResults(page, project.id, []);
+      await page.goto(`/statistics/${project.id}`);
+
+      await expect(page.getByText("No builds yet")).toBeVisible();
+      await shot("project-statistics-empty");
     },
   ],
 

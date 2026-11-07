@@ -1,6 +1,7 @@
 import { Page, Route } from "@playwright/test";
 import type {
   Build,
+  BuildResult,
   NoiseAnalysisQueued,
   NoiseSummary,
   Project,
@@ -445,5 +446,16 @@ export const mockUpdateBuild = (page: Page, build: Build) => {
           body: JSON.stringify({ ...build, ...request.postDataJSON() }),
         })
       : route.fallback(),
+  );
+};
+
+export const mockGetStatisticsResults = (
+  page: Page,
+  projectId: string,
+  results: BuildResult[],
+) => {
+  return page.route(
+    `${API_URL}/statistics/results?projectId=${projectId}`,
+    (route) => route.fulfill({ body: JSON.stringify(results) }),
   );
 };
