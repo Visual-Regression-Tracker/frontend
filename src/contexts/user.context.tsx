@@ -1,11 +1,16 @@
 import { type ReactNode, createContext, useContext, useReducer } from "react";
-import { User } from "../types";
+import { Role, User } from "../types";
 import { usersService } from "../services";
 
 type IAction =
   | { type: "success"; payload: User }
   | { type: "logout" }
-  | { type: "getAll"; payload: User[] };
+  | { type: "getAll"; payload: User[] }
+  | {
+      type: "rolesChanged";
+      payload: { ids: string[]; role: keyof typeof Role };
+    }
+  | { type: "removed"; payload: string[] };
 type Dispatch = (action: IAction) => void;
 type State = {
   loggedIn: boolean;
@@ -39,6 +44,24 @@ export function UserReducer(state: State, action: IAction): State {
       return {
         ...state,
         userList: action.payload,
+      };
+
+    case "rolesChanged":
+      return {
+        ...state,
+        userList: state.userList.map((user) =>
+          action.payload.ids.includes(user.id)
+            ? { ...user, role: action.payload.role }
+            : user,
+        ),
+      };
+
+    case "removed":
+      return {
+        ...state,
+        userList: state.userList.filter(
+          (user) => !action.payload.includes(user.id),
+        ),
       };
 
     default:

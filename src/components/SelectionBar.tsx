@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+import type { MouseEvent, ReactNode } from "react";
 import { Button, IconButton, Stack, Typography } from "@mui/material";
 import { Close } from "@mui/icons-material";
 
@@ -7,7 +7,7 @@ interface SelectionAction {
   icon?: ReactNode;
   color?: "primary" | "error";
   disabled?: boolean;
-  onClick: () => void;
+  onClick: (event: MouseEvent<HTMLButtonElement>) => void;
 }
 
 interface IProps {

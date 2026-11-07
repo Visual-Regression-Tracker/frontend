@@ -5,6 +5,7 @@ import { staticService } from "../services";
 import { routes } from "../constants";
 import { BaseModal } from "./BaseModal";
 import { EmptyState } from "./EmptyState";
+import { TagLine } from "./TagLine";
 import { Tooltip } from "./Tooltip";
 import { imageSurface } from "../theme/tokens";
 import { AccountTree, CollectionsOutlined, Delete } from "@mui/icons-material";
@@ -15,7 +16,6 @@ import {
   CardContent,
   CardActions,
   Button,
-  Chip,
   IconButton,
   Stack,
   Typography,
@@ -26,12 +26,6 @@ interface IProps {
   onDeleteClick: (id: string) => void;
 }
 
-const tagsOf = (t: TestVariation) =>
-  [t.os, t.device, t.browser, t.viewport, t.customTags].filter(
-    (tag): tag is string => !!tag,
-  );
-
-const tagsSx = { flexWrap: "wrap", gap: 0.5, mt: 1 } as const;
 const branchSx = {
   alignItems: "center",
   color: "text.secondary",
@@ -90,13 +84,9 @@ const TestVariationList = ({ items, onDeleteClick }: IProps) => {
               >
                 {t.name}
               </Typography>
-              {tagsOf(t).length > 0 && (
-                <Stack direction="row" sx={tagsSx}>
-                  {tagsOf(t).map((tag) => (
-                    <Chip key={tag} size="small" label={tag} />
-                  ))}
-                </Stack>
-              )}
+              <Box sx={{ mt: 0.5 }}>
+                <TagLine tags={t} />
+              </Box>
               <Stack direction="row" spacing={0.75} sx={branchSx}>
                 <AccountTree sx={{ fontSize: 16 }} />
                 <Typography variant="caption" noWrap>

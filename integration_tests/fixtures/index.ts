@@ -6,7 +6,7 @@ import { TestVariationDetailsPage } from "pages/TestVariationDetailsPage";
 import { TestVariationListPage } from "pages/TestVariationListPage";
 import { UserListPage } from "pages/UserListPage";
 import type { User } from "~client/types";
-import { TEST_PROJECT } from "~client/_test/test.data.helper";
+import { TEST_PROJECT, TEST_USER } from "~client/_test/test.data.helper";
 import { mockGetFavoriteProjects } from "utils/mocks";
 
 type Options = {
@@ -37,7 +37,7 @@ type Fixtures = {
 export type OpenProjectPage = Fixtures["openProjectPage"];
 
 export const AUTH_USER = {
-  id: "00b428bf-9b4d-487f-9883-0dc5ec9403d3",
+  id: TEST_USER.id,
   email: "visual-regression-tracker@example.com",
   firstName: "fname",
   lastName: "lname",

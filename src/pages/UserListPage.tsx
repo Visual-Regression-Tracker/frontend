@@ -1,4 +1,4 @@
-import { Container, Paper } from "@mui/material";
+import { Container } from "@mui/material";
 import UserList from "../components/UserList";
 import { PageHeader } from "../components/PageHeader";
 import { useUserState } from "../contexts";
@@ -14,14 +14,9 @@ const UserListPage = () => {
     >
       <PageHeader
         title="Users"
-        subtitle={`${userList.length} ${pluralize(userList.length, "user")} · double-click a role to change it`}
+        subtitle={`${userList.length} ${pluralize(userList.length, "person", "people")}`}
       />
-      <Paper
-        variant="outlined"
-        sx={{ flex: 1, minHeight: 360, overflow: "hidden" }}
-      >
-        <UserList />
-      </Paper>
+      <UserList />
     </Container>
   );
 };
