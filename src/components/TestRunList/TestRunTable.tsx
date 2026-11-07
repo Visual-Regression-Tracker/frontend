@@ -121,7 +121,7 @@ const buildColumns = (
     flex: 0.2,
     filterable: false,
     sortable: false,
-    valueGetter: (_value, row) => `${row.diffPercent.toFixed(2)}%`,
+    valueGetter: (_value, row) => `${(row.diffPercent ?? 0).toFixed(2)}%`,
   },
 ];
 

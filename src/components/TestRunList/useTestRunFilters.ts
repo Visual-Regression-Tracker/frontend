@@ -2,7 +2,6 @@ import { useCallback, useMemo, useState } from "react";
 import { TagField, TestRun, TestStatus } from "../../types";
 import type { NoiseHint } from "../../types/noiseAnalysis";
 import { NoiseHintFilter, noiseHintOf } from "../../_helpers/noiseHint.helper";
-import { statusesByAttention } from "../../_helpers/testRunStatus.helper";
 import { TAG_FIELDS } from "../../_helpers/testRunTags.helper";
 
 export type TagFilters = Record<TagField, string[]>;
@@ -100,21 +99,6 @@ export const useTestRunFilters = (
     [testRuns, query, statuses, tagFilters, noiseHints],
   );
 
-  // options come from rows matching the OTHER filters: each one returns results
-  const statusOptions = useMemo(() => {
-    const present = new Set<TestStatus>(statuses);
-    testRuns.forEach((run) => {
-      if (
-        matchesNameQuery(run, query) &&
-        matchesTagFilters(run, tagFilters) &&
-        matchesNoiseHints(run, noiseHints)
-      ) {
-        present.add(run.status);
-      }
-    });
-    return statusesByAttention(Array.from(present));
-  }, [testRuns, query, tagFilters, noiseHints, statuses]);
-
   const tagOptions = useMemo(() => {
     const present = TAG_FIELDS.reduce(
       (acc, field) => ({ ...acc, [field]: new Set<string>(tagFilters[field]) }),
@@ -196,7 +180,6 @@ export const useTestRunFilters = (
     statuses,
     tagFilters,
     noiseHints,
-    statusOptions,
     tagOptions,
     onNameChange: setName,
     onStatusesChange: setStatuses,

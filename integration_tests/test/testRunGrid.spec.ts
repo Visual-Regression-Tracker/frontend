@@ -785,7 +785,7 @@ test("names the axis the runs are grouped by in the tooltip", async ({
   const projectPage = await openProjectPage(project.id, build.id);
 
   await projectPage.testRunList.viewMenuButton.click();
-  await page.getByTestId("groupByVariation").hover();
+  await page.getByText("Group by", { exact: true }).hover();
 
   await expect(page.getByRole("tooltip")).toContainText("viewport");
 });

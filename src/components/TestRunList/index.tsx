@@ -70,10 +70,18 @@ const TestRunList = () => {
   const [showDiff, setShowDiff] = useShowDiff();
   const [storedGridSort, setGridSort] = useState<TestRunSort>(DEFAULT_SORT);
 
-  useHotkeys("d", () => setShowDiff((prev) => !prev), {
-    ...hotkeyMatching,
-    enabled: view === "grid" && !selectedTestRun,
-  });
+  useHotkeys(
+    "d",
+    () => {
+      if (!document.querySelector(".MuiPopover-root:not(.MuiModal-hidden)")) {
+        setShowDiff((prev) => !prev);
+      }
+    },
+    {
+      ...hotkeyMatching,
+      enabled: view === "grid" && !selectedTestRun,
+    },
+  );
 
   const sortModel =
     !noiseHintAvailable && storedSortModel[0]?.field === "noise"

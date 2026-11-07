@@ -221,14 +221,15 @@ export const BulkOperation = ({
 
   return (
     <Fragment>
-      {shownSelectedIds.length > 0 && (
+      {selectedIds.length > 0 && (
         <Box sx={{ paddingX: 2, paddingBottom: 1 }}>
           <SelectionBar
-            selected={shownSelectedIds.length}
+            selected={selectedIds.length}
             total={rows.length}
             actions={ACTION_BUTTONS.map(
               ({ action: buttonAction, ...rest }) => ({
                 ...rest,
+                disabled: shownSelectedIds.length === 0,
                 onClick: () => setAction(buttonAction),
               }),
             )}

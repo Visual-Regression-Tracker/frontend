@@ -461,6 +461,17 @@ describe("TestRunList show diff", () => {
     await waitFor(() => expect(showDiffSwitch()).not.toBeChecked());
   });
 
+  it("leaves d alone while a menu is open", async () => {
+    const { user } = renderList([A_EN]);
+    await user.click(await screen.findByRole("button", { name: "Grid view" }));
+    await openViewMenu(user);
+    await screen.findByRole("menuitemradio", { name: "Compact" });
+
+    fireEvent.keyDown(document.body, { key: "d", code: "KeyD" });
+
+    expect(showDiffSwitch()).toBeChecked();
+  });
+
   it("offers the toolbar switch only in the grid", async () => {
     renderList([A_EN]);
     await screen.findByText("Screen A");

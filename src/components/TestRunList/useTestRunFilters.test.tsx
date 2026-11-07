@@ -97,37 +97,28 @@ describe("useTestRunFilters", () => {
     expect(result.current.tagOptions.device).toEqual(["chrome"]);
   });
 
-  it("offers the statuses and tags that still return runs under the other filters", () => {
+  it("offers the tags that still return runs under the other filters", () => {
     const { result } = renderFilters();
 
-    expect(result.current.statusOptions).toEqual([
-      TestStatus.unresolved,
-      TestStatus.approved,
-      TestStatus.ok,
-    ]);
     expect(result.current.tagOptions.os).toEqual(["Android", "iOS"]);
     expect(result.current.tagOptions.customTags).toEqual(["de", "en"]);
 
     act(() => result.current.onNameChange("login"));
 
-    expect(result.current.statusOptions).toEqual([TestStatus.ok]);
     expect(result.current.tagOptions.os).toEqual(["Android"]);
     expect(result.current.tagOptions.customTags).toEqual(["en"]);
   });
 
-  it("narrows the statuses by the picked tags but not the tags by each other", () => {
+  it("does not narrow the tags of a field by the picks of the others", () => {
     const { result } = renderFilters();
 
     act(() => result.current.onTagFilterChange("os", ["Android"]));
 
-    expect(result.current.statusOptions).toEqual([
-      TestStatus.approved,
-      TestStatus.ok,
-    ]);
     expect(result.current.tagOptions.os).toEqual(["Android", "iOS"]);
+    expect(result.current.tagOptions.customTags).toEqual(["de", "en"]);
   });
 
-  it("keeps a picked status and tag on offer though no run left matches it", () => {
+  it("keeps a picked tag on offer though no run left matches it", () => {
     const { result } = renderFilters();
 
     act(() => {
@@ -136,7 +127,6 @@ describe("useTestRunFilters", () => {
       result.current.onTagFilterChange("customTags", ["de"]);
     });
 
-    expect(result.current.statusOptions).toContain(TestStatus.unresolved);
     expect(result.current.tagOptions.customTags).toContain("de");
   });
 

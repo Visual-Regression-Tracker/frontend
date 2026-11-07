@@ -168,7 +168,14 @@ const ViewMenu = ({
           </MenuItem>
         ))}
         <Divider />
-        <ListSubheader>Group by</ListSubheader>
+        <MuiTooltip
+          placement="right"
+          arrow
+          disableInteractive
+          title={groupHint}
+        >
+          <ListSubheader>Group by</ListSubheader>
+        </MuiTooltip>
         {[
           { grouped: false, label: "None", testId: "groupByNone" },
           {
@@ -177,27 +184,20 @@ const ViewMenu = ({
             testId: "groupByVariation",
           },
         ].map((option) => (
-          <MuiTooltip
+          <MenuItem
             key={option.testId}
-            placement="right"
-            arrow
-            disableInteractive
-            title={groupHint}
+            dense
+            role="menuitemradio"
+            aria-checked={grouped === option.grouped}
+            selected={grouped === option.grouped}
+            data-testid={option.testId}
+            onClick={() => {
+              onGroupedChange(option.grouped);
+              close();
+            }}
           >
-            <MenuItem
-              dense
-              role="menuitemradio"
-              aria-checked={grouped === option.grouped}
-              selected={grouped === option.grouped}
-              data-testid={option.testId}
-              onClick={() => {
-                onGroupedChange(option.grouped);
-                close();
-              }}
-            >
-              <ListItemText primary={option.label} />
-            </MenuItem>
-          </MuiTooltip>
+            <ListItemText primary={option.label} />
+          </MenuItem>
         ))}
         <Divider />
         <MenuItem
@@ -205,7 +205,10 @@ const ViewMenu = ({
           role="menuitemcheckbox"
           aria-checked={diffToggle.checked}
           data-testid="viewMenuShowDiff"
-          onClick={() => diffToggle.onChange(!diffToggle.checked)}
+          onClick={() => {
+            diffToggle.onChange(!diffToggle.checked);
+            close();
+          }}
         >
           <ListItemText primary="Show diff in grid" secondary="Hotkey: D" />
         </MenuItem>
