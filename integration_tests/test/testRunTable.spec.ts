@@ -105,16 +105,14 @@ test("walks only the filtered runs with the right arrow, in table order", async 
   await testRunList.rowNames.first().click();
 
   const last = UNRESOLVED_IN_TABLE_ORDER.length;
-  await expect(details.step).toHaveText(new RegExp(`^Step 1/${last}:`));
+  await expect(details.step).toHaveText(`1/${last}`);
   await expect(page).toHaveURL(
     new RegExp(`testId=${UNRESOLVED_IN_TABLE_ORDER[0]}$`),
   );
   for (let index = 1; index < last; index++) {
     await page.keyboard.press("ArrowRight");
 
-    await expect(details.step).toHaveText(
-      new RegExp(`^Step ${index + 1}/${last}:`),
-    );
+    await expect(details.step).toHaveText(`${index + 1}/${last}`);
     await expect(page).toHaveURL(
       new RegExp(`testId=${UNRESOLVED_IN_TABLE_ORDER[index]}$`),
     );
@@ -135,19 +133,17 @@ test("stays on the last filtered run when the right arrow is pressed again", asy
   await expect(testRunList.rows).toHaveCount(2);
   await testRunList.rowNames.last().click();
   const last = UNRESOLVED_IN_TABLE_ORDER.length;
-  await expect(details.step).toHaveText(new RegExp(`^Step ${last}/${last}:`));
+  await expect(details.step).toHaveText(`${last}/${last}`);
   const lastUrl = page.url();
 
   await page.keyboard.press("ArrowRight");
   // two frames on: a handled arrow would have moved on by now
   await afterTwoFrames(page);
 
-  await expect(details.step).toHaveText(new RegExp(`^Step ${last}/${last}:`));
+  await expect(details.step).toHaveText(`${last}/${last}`);
   expect(page.url()).toBe(lastUrl);
   await page.keyboard.press("ArrowLeft");
-  await expect(details.step).toHaveText(
-    new RegExp(`^Step ${last - 1}/${last}:`),
-  );
+  await expect(details.step).toHaveText(`${last - 1}/${last}`);
 });
 
 test("narrows the table to the runs whose name holds the text", async ({
@@ -178,14 +174,10 @@ test("walks only the runs with the filtered name", async ({
   await expect(testRunList.rows).toHaveCount(APPROVED.length);
 
   await testRunList.rowNames.first().click();
-  await expect(details.step).toHaveText(
-    new RegExp(`^Step 1/${APPROVED.length}:`),
-  );
+  await expect(details.step).toHaveText(`1/${APPROVED.length}`);
   await page.keyboard.press("ArrowRight");
 
-  await expect(details.step).toHaveText(
-    new RegExp(`^Step 2/${APPROVED.length}:`),
-  );
+  await expect(details.step).toHaveText(`2/${APPROVED.length}`);
   await expect(page).toHaveURL(new RegExp(`testId=${APPROVED[1].id}$`));
 });
 

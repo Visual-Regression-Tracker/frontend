@@ -226,16 +226,16 @@ test("steps between runs with the arrow keys", async ({
     build.id,
     TEST_UNRESOLVED.id,
   );
-  await expect(details.step).toHaveText(/^Step 2\/3:/);
+  await expect(details.step).toHaveText("2/3");
   const first = page.url();
 
   await page.keyboard.press("ArrowRight");
-  await expect(details.step).toHaveText(/^Step 3\/3:/);
+  await expect(details.step).toHaveText("3/3");
   expect(page.url()).not.toBe(first);
 
   // the keys act on the run on screen: wait for it before the next
   await page.keyboard.press("ArrowLeft");
-  await expect(details.step).toHaveText(/^Step 2\/3:/);
+  await expect(details.step).toHaveText("2/3");
   await expect(page).toHaveURL(first);
 });
 
@@ -297,7 +297,7 @@ test("keeps D and the arrow keys working after a click on the diff switch", asyn
 
   await page.keyboard.press("ArrowRight");
 
-  await expect(details.step).toHaveText(/^Step 3\/3:/);
+  await expect(details.step).toHaveText("3/3");
   await expect(page).toHaveURL(new RegExp(`testId=${TEST_RUN_APPROVED.id}$`));
 });
 

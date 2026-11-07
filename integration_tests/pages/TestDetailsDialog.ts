@@ -23,7 +23,9 @@ export class TestDetailsDialog extends PageObject {
   drawAreas = this.page.getByTestId("drawArea");
   checkpointPane = this.drawAreas.nth(1);
 
-  step = this.page.getByRole("heading", { name: /^Step \d+\/\d+:/ });
+  step = this.page.getByTestId("step-position");
+  previousRun = this.page.getByLabel("Previous run");
+  nextRun = this.page.getByLabel("Next run");
   closeBtn = this.iconButton("CloseIcon");
 
   drawMode = this.iconButton("AddIcon");
@@ -50,6 +52,7 @@ export class TestDetailsDialog extends PageObject {
   toggleDiff = this.page.getByRole("switch", { name: "Toggle diff" });
 
   commentsBtn = this.page.getByRole("button", { name: "Comments" });
+  vlmAnalysis = this.page.getByTestId("vlm-analysis");
   comment = this.page.getByTestId("comment");
   commentPopper = this.page.getByRole("tooltip").filter({ has: this.comment });
   commentSaveBtn = this.commentPopper.getByRole("button", { name: "Save" });
@@ -70,6 +73,7 @@ export class TestDetailsDialog extends PageObject {
   variationsCancel = this.variations.getByRole("button", { name: "Cancel" });
   variationThumbnails = this.variations.locator("img");
 
+  noiseChip = this.page.getByTestId("noise-hint-popover-chip");
   noisePanel = this.page.getByTestId("noise-hint-panel");
   analyseRun = this.page.getByTestId("analyse-noise-run-button");
   hintBlur = this.page.getByTestId("hint-areas-blur");
