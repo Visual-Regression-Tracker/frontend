@@ -1,10 +1,4 @@
-import {
-  FormControlLabel,
-  FormHelperText,
-  Stack,
-  Switch,
-  Typography,
-} from "@mui/material";
+import { FormHelperText, Stack } from "@mui/material";
 import { type ChangeEvent } from "react";
 import { useDinov2Status } from "../../_helpers/useDinov2Status";
 import { type Rule } from "../../_helpers/validation";
@@ -13,6 +7,7 @@ import { ImageComparison } from "../../types/imageComparison";
 import { useProjectState } from "../../contexts";
 import { ValidatedTextField } from "../ValidatedForm";
 import { POSITIVE_RULES, UNIT_RANGE, UNIT_RANGE_RULES } from "./rules";
+import { SettingsSection, ToggleRow } from "./SettingsRow";
 import { useNoiseConfig } from "./useNoiseConfig";
 
 const statusNote = (
@@ -64,14 +59,14 @@ const NumberField = ({
     name={name}
     rules={rules}
     slotProps={{ htmlInput: { min, max, step } }}
-    margin="dense"
+    size="small"
     id={name}
     label={label}
     helperText={helperText}
     type="number"
-    fullWidth
     required
     disabled={disabled}
+    sx={{ width: 150 }}
     value={value ?? ""}
     onChange={(event: ChangeEvent<HTMLInputElement>) =>
       onChange(parseFloat(event.target.value))
@@ -91,95 +86,91 @@ export const PostAnalysisForm = () => {
   const stageTwoOff = stageOneOff || !config.dinov2.enabled || noService;
 
   return (
-    <Stack component="section" aria-labelledby="postAnalysisTitle" spacing={1}>
-      <Typography id="postAnalysisTitle" variant="h6" component="h3">
-        Post-analysis
-      </Typography>
-      <Typography variant="body2" color="text.secondary">
-        Rendering-noise check — on request, marks unresolved runs that look like
-        rendering noise. A hint, it never approves anything
-      </Typography>
-      {sectionOff && (
-        <FormHelperText id="postAnalysisVlm">
-          Not available with the VLM comparator
-        </FormHelperText>
-      )}
-
-      <Typography variant="subtitle2" component="h4">
-        Stage 1 · Blur
-      </Typography>
-      <FormControlLabel
-        label="Blurred difference and change density. Cheap, runs on this server. Catches 92 of 120 bugs on our benchmark with the default thresholds, 0 false alarms"
+    <SettingsSection
+      id="post-analysis"
+      title="Post-analysis"
+      description={
+        <>
+          Rendering-noise check — on request, marks unresolved runs that look
+          like rendering noise. A hint, it never approves anything
+          {sectionOff && (
+            <FormHelperText id="postAnalysisVlm">
+              Not available with the VLM comparator
+            </FormHelperText>
+          )}
+        </>
+      }
+    >
+      <ToggleRow
+        title="Stage 1 · Blur"
+        description="Blurred difference and change density. Cheap, runs on this server. Catches 92 of 120 bugs on our benchmark with the default thresholds, 0 false alarms"
+        name="blurEnabled"
+        checked={config.blur.enabled}
         disabled={sectionOff}
-        control={
-          <Switch
-            checked={config.blur.enabled}
-            onChange={(_event, checked) =>
-              updateConfig("blur", "enabled", checked)
+        onChange={(checked) => updateConfig("blur", "enabled", checked)}
+      >
+        <Stack direction="row" spacing={1.5} sx={{ alignItems: "flex-start" }}>
+          <NumberField
+            name="blurAmplitudeThreshold"
+            label="Amplitude threshold"
+            helperText="Noise on our benchmark stays below 51"
+            value={config.blur.amplitudeThreshold}
+            step="any"
+            rules={POSITIVE_RULES}
+            disabled={stageOneOff}
+            onChange={(value) =>
+              updateConfig("blur", "amplitudeThreshold", value)
             }
-            color="primary"
-            name="blurEnabled"
           />
-        }
-      />
-      <NumberField
-        name="blurAmplitudeThreshold"
-        label="Amplitude threshold"
-        helperText="Noise on our benchmark stays below 51"
-        value={config.blur.amplitudeThreshold}
-        step="any"
-        rules={POSITIVE_RULES}
-        disabled={stageOneOff}
-        onChange={(value) => updateConfig("blur", "amplitudeThreshold", value)}
-      />
-      <NumberField
-        name="blurSolidShareMax"
-        label="Solid share, max"
-        value={config.blur.solidShareMax}
-        step={0.001}
-        rules={UNIT_RANGE_RULES}
-        {...UNIT_RANGE}
-        disabled={stageOneOff}
-        onChange={(value) => updateConfig("blur", "solidShareMax", value)}
-      />
+          <NumberField
+            name="blurSolidShareMax"
+            label="Solid share, max"
+            value={config.blur.solidShareMax}
+            step={0.001}
+            rules={UNIT_RANGE_RULES}
+            {...UNIT_RANGE}
+            disabled={stageOneOff}
+            onChange={(value) => updateConfig("blur", "solidShareMax", value)}
+          />
+        </Stack>
+      </ToggleRow>
 
-      <Typography variant="subtitle2" component="h4">
-        Stage 2 · DINOv2 second look
-      </Typography>
-      <FormControlLabel
-        label="Asks the DINOv2 service about patches the blur calls noise. Catches faint icons and borders, 102 of 120 together"
-        disabled={stageOneOff || noService}
-        control={
-          <Switch
-            checked={config.dinov2.enabled}
-            onChange={(_event, checked) =>
-              updateConfig("dinov2", "enabled", checked)
-            }
-            color="primary"
-            name="dinov2Enabled"
-          />
+      <ToggleRow
+        title="Stage 2 · DINOv2 second look"
+        description={
+          <>
+            Asks the DINOv2 service about patches the blur calls noise. Catches
+            faint icons and borders, 102 of 120 together
+            {!sectionOff && !config.blur.enabled && (
+              <FormHelperText>Needs stage 1</FormHelperText>
+            )}
+            {note && (
+              <FormHelperText
+                id="dinov2Status"
+                sx={note.warning ? { color: "warning.main" } : undefined}
+              >
+                {note.text}
+              </FormHelperText>
+            )}
+          </>
         }
-      />
-      {!sectionOff && !config.blur.enabled && (
-        <FormHelperText>Needs stage 1</FormHelperText>
-      )}
-      <NumberField
-        name="dinov2DistanceThreshold"
-        label="Distance threshold"
-        value={config.dinov2.distanceThreshold}
-        step="any"
-        rules={POSITIVE_RULES}
-        disabled={stageTwoOff}
-        onChange={(value) => updateConfig("dinov2", "distanceThreshold", value)}
-      />
-      {note && (
-        <FormHelperText
-          id="dinov2Status"
-          sx={note.warning ? { color: "warning.main" } : undefined}
-        >
-          {note.text}
-        </FormHelperText>
-      )}
-    </Stack>
+        name="dinov2Enabled"
+        checked={config.dinov2.enabled}
+        disabled={stageOneOff || noService}
+        onChange={(checked) => updateConfig("dinov2", "enabled", checked)}
+      >
+        <NumberField
+          name="dinov2DistanceThreshold"
+          label="Distance threshold"
+          value={config.dinov2.distanceThreshold}
+          step="any"
+          rules={POSITIVE_RULES}
+          disabled={stageTwoOff}
+          onChange={(value) =>
+            updateConfig("dinov2", "distanceThreshold", value)
+          }
+        />
+      </ToggleRow>
+    </SettingsSection>
   );
 };
