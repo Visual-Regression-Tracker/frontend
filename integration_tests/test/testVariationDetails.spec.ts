@@ -38,12 +38,25 @@ test("lists every baseline with who made it", async ({
   await expect(detailsPage.testRunBtns).toHaveCount(
     TEST_VARIATION_ONE.baselines.length,
   );
+  await expect(detailsPage.versionBtns).toHaveCount(
+    TEST_VARIATION_ONE.baselines.length,
+  );
   const { user } = TEST_VARIATION_ONE.baselines[0];
   await expect(
-    detailsPage.page.getByText(
-      `${user?.firstName} ${user?.lastName} <${user?.email}>`,
-    ),
-  ).toHaveCount(TEST_VARIATION_ONE.baselines.length);
+    detailsPage.page.getByText(`v2 · ${user?.firstName} ${user?.lastName}`),
+  ).toBeVisible();
+});
+
+test("a version in the list scrolls to its image", async ({
+  openTestVariationDetailsPage,
+}) => {
+  const detailsPage = await openTestVariationDetailsPage(TEST_VARIATION_ONE.id);
+  const last = detailsPage.images.last();
+  await expect(last).not.toBeInViewport({ ratio: 1 });
+
+  await detailsPage.versionBtns.last().click();
+
+  await expect(last).toBeInViewport({ ratio: 1 });
 });
 
 test("opens the test run a baseline came from", async ({

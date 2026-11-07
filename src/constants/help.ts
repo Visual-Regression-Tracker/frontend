@@ -2,8 +2,7 @@ import type { Step } from "react-joyride";
 
 export const LOCATOR_LOGIN_FORM = "loginform-1";
 export const LOCATOR_BUILD_DETAILS = "build-details";
-export const LOCATOR_RESET_FILTER = "reset-filter";
-export const LOCATOR_TEST_VARIATION_SELECT_BRANCH = "select-branch";
+export const LOCATOR_TEST_VARIATION_FILTERS = "variation-filters";
 export const LOCATOR_PROJECT_LIST_PAGE_PROJECT_LIST = "projectlist-1";
 export const LOCATOR_PROJECT_PAGE_SELECT_PROJECT = "select-project";
 export const LOCATOR_PROJECT_PAGE_BUILD_LIST = "build-list";
@@ -64,13 +63,8 @@ export const TEST_VARIATION_LIST_PAGE = [
     content: "Switch to another project here.",
   },
   {
-    target: `#${LOCATOR_TEST_VARIATION_SELECT_BRANCH}`,
-    title: "Merge from one branch to another",
+    target: `#${LOCATOR_TEST_VARIATION_FILTERS}`,
     content:
-      "Select the branch from/to which you want to merge the variations.",
-  },
-  {
-    target: `#${LOCATOR_RESET_FILTER}`,
-    content: "Only filtered items are displayed/merged to the target branch.",
+      "Find a variation by name, OS, browser, viewport, device, tags or branch.",
   },
 ];

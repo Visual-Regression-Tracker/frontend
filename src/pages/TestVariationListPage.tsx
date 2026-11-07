@@ -4,22 +4,53 @@ import { useParams } from "react-router-dom";
 import { TestVariation } from "../types";
 import { testVariationService } from "../services";
 import {
+  Box,
   Container,
   Pagination,
-  Paper,
   Stack,
   TextField,
   MenuItem,
-  Typography,
 } from "@mui/material";
 import { PageHeader } from "../components/PageHeader";
-import Filters from "../components/Filters";
-import { TestVariationMergeForm } from "../components/TestVariationMergeForm";
+import { FilterBar } from "../components/FilterBar";
 import { useSnackbar } from "notistack";
 import { useHelpSteps } from "../contexts/help.context";
-import { TEST_VARIATION_LIST_PAGE } from "../constants";
+import {
+  LOCATOR_TEST_VARIATION_FILTERS,
+  TEST_VARIATION_LIST_PAGE,
+} from "../constants";
 
 const PAGE_SIZE_OPTIONS = [12, 24, 48, 96];
+
+const FILTER_FIELDS = [
+  { field: "os", label: "OS" },
+  { field: "browser", label: "Browser" },
+  { field: "viewport", label: "Viewport" },
+  { field: "device", label: "Device" },
+  { field: "customTags", label: "Tags" },
+  { field: "branchName", label: "Branch" },
+] as const;
+
+type FilterField = (typeof FILTER_FIELDS)[number]["field"];
+type Selected = Record<FilterField, string[]>;
+
+const NOTHING_SELECTED: Selected = {
+  os: [],
+  browser: [],
+  viewport: [],
+  device: [],
+  customTags: [],
+  branchName: [],
+};
+
+const optionsOf = (items: TestVariation[], field: FilterField) =>
+  Array.from(
+    new Set(
+      items
+        .map((item) => item[field])
+        .filter((value): value is string => !!value),
+    ),
+  ).sort((a, b) => a.localeCompare(b));
 
 const TestVariationListPage = () => {
   const { enqueueSnackbar } = useSnackbar();
@@ -27,27 +58,13 @@ const TestVariationListPage = () => {
   const [testVariations, setTestVariations] = useState<TestVariation[]>([]);
 
   const [query, setQuery] = useState("");
-  const [os, setOs] = useState("");
-  const [device, setDevice] = useState("");
-  const [browser, setBrowser] = useState("");
-  const [viewport, setViewport] = useState("");
-  const [customTags, setCustomTags] = useState("");
-  const [branchName, setBranchName] = useState("");
+  const [selected, setSelected] = useState<Selected>(NOTHING_SELECTED);
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(PAGE_SIZE_OPTIONS[0]);
 
   useHelpSteps(TEST_VARIATION_LIST_PAGE);
 
-  // a changed filter starts again on the first page
-  const filters = JSON.stringify([
-    query,
-    os,
-    device,
-    browser,
-    viewport,
-    customTags,
-    branchName,
-  ]);
+  const filters = JSON.stringify([query, selected]);
   const [pagedFilters, setPagedFilters] = useState(filters);
   if (pagedFilters !== filters) {
     setPagedFilters(filters);
@@ -74,23 +91,13 @@ const TestVariationListPage = () => {
       testVariations.filter(
         (t) =>
           t.name.toLowerCase().includes(query.toLowerCase()) &&
-          (branchName ? t.branchName === branchName : true) &&
-          (os ? t.os === os : true) &&
-          (device ? t.device === device : true) &&
-          (viewport ? t.viewport === viewport : true) &&
-          (customTags ? t.customTags === customTags : true) &&
-          (browser ? t.browser === browser : true),
+          FILTER_FIELDS.every(
+            ({ field }) =>
+              selected[field].length === 0 ||
+              selected[field].includes(t[field] ?? ""),
+          ),
       ),
-    [
-      query,
-      branchName,
-      os,
-      device,
-      browser,
-      viewport,
-      customTags,
-      testVariations,
-    ],
+    [query, selected, testVariations],
   );
 
   const handleDelete = (id: string) => {
@@ -126,29 +133,25 @@ const TestVariationListPage = () => {
             : `${filteredItems.length} of ${testVariations.length} baselines`
         }
       />
-      <Stack spacing={2} sx={{ mb: 3 }}>
-        <Paper variant="outlined" sx={{ p: 2 }}>
-          <Typography variant="subtitle2" sx={{ mb: 1 }}>
-            Merge branches
-          </Typography>
-          <TestVariationMergeForm
-            projectId={projectId}
-            items={Array.from(new Set(testVariations.map((t) => t.branchName)))}
-          />
-        </Paper>
-        <Paper variant="outlined" sx={{ p: 2 }}>
-          <Filters
-            items={testVariations}
-            queryState={[query, setQuery]}
-            osState={[os, setOs]}
-            deviceState={[device, setDevice]}
-            browserState={[browser, setBrowser]}
-            viewportState={[viewport, setViewport]}
-            customTagsState={[customTags, setCustomTags]}
-            branchNameState={[branchName, setBranchName]}
-          />
-        </Paper>
-      </Stack>
+      <Box id={LOCATOR_TEST_VARIATION_FILTERS} sx={{ mb: 3 }}>
+        <FilterBar
+          search={query}
+          onSearchChange={setQuery}
+          searchLabel="Name"
+          filters={FILTER_FIELDS.map(({ field, label }) => ({
+            id: field,
+            label,
+            options: optionsOf(testVariations, field),
+            value: selected[field],
+            onChange: (value) =>
+              setSelected((current) => ({ ...current, [field]: value })),
+          }))}
+          onClear={() => {
+            setQuery("");
+            setSelected(NOTHING_SELECTED);
+          }}
+        />
+      </Box>
       <TestVariationList items={paginatedItems} onDeleteClick={handleDelete} />
       {filteredItems.length > Math.min(...PAGE_SIZE_OPTIONS) && (
         <Stack
