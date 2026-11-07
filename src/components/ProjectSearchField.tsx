@@ -1,5 +1,5 @@
 import { useEffect, useRef } from "react";
-import { InputAdornment, TextField } from "@mui/material";
+import { Box, InputAdornment, TextField } from "@mui/material";
 import { Search } from "@mui/icons-material";
 import { isTypingTarget } from "../_helpers/hotkeys.helper";
 
@@ -38,6 +38,24 @@ export const ProjectSearchField = ({
           startAdornment: (
             <InputAdornment position="start">
               <Search fontSize="small" />
+            </InputAdornment>
+          ),
+          endAdornment: value ? undefined : (
+            <InputAdornment position="end">
+              <Box
+                component="kbd"
+                sx={{
+                  px: 0.75,
+                  border: 1,
+                  borderColor: "divider",
+                  borderRadius: 0.5,
+                  color: "text.secondary",
+                  fontFamily: "monospace",
+                  fontSize: 12,
+                }}
+              >
+                /
+              </Box>
             </InputAdornment>
           ),
         },

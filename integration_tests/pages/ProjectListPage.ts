@@ -6,7 +6,7 @@ export class ProjectListPage extends ProjectFormPage {
   // exact: the cards' "Add to favourites" also matches
   addBtn = this.page.getByRole("button", { name: "Add project", exact: true });
   deleteBtn = this.page.getByTestId("delete");
-  editBtn = this.page.getByTestId("EditIcon");
+  settingsBtn = this.page.getByTestId("SettingsIcon");
   search = this.page.getByRole("searchbox", { name: "Search projects" });
   dialog = this.modal.dialog;
 

@@ -26,6 +26,7 @@ import {
   mockGetBuilds,
   mockGetFavoriteProjects,
   mockGetProjects,
+  mockGetStatisticsResults,
   mockGetTestRuns,
   mockGetTestVariationDetails,
   mockGetTestVariations,
@@ -41,6 +42,7 @@ import {
   mockUpdateTestRun,
 } from "utils/mocks";
 import { defined } from "utils/defined";
+import { STATISTICS_BUILDS } from "utils/statistics";
 import {
   ANALYSED_RUNS,
   BLUR_REGIONS,
@@ -415,7 +417,7 @@ const VIEWS: [name: string, body: Body][] = [
       const projectPage = await openProjectPage(project.id, build.id);
 
       await expect(projectPage.testRunList.noiseChips).toHaveCount(5);
-      await expect(projectPage.testRunList.analyseNoiseBtn).toBeVisible();
+      await expect(projectPage.buildDetails.menuButton).toBeVisible();
       await expect(projectPage.noiseCaption).toBeVisible();
       await expect(projectPage.noiseBanner).toBeVisible();
       await shot("project-page-noise-hints");
@@ -432,7 +434,7 @@ const VIEWS: [name: string, body: Body][] = [
       await expect(
         projectPage.testRunList.noiseChip(PENDING_SEARCH.id),
       ).toHaveText("Analysing…");
-      await expect(projectPage.testRunList.analyseNoiseBtn).toHaveText(
+      await expect(projectPage.buildDetails.noiseLine).toHaveText(
         "Analysing 1 of 5…",
       );
 
@@ -758,12 +760,42 @@ const VIEWS: [name: string, body: Body][] = [
     "project statistics",
     async ({ page, authUser, shot }) => {
       void authUser;
+      await mockGetStatisticsResults(page, project.id, STATISTICS_BUILDS);
       await page.goto(`/statistics/${project.id}`);
 
       await expect(
         page.getByRole("heading", { name: "Statistics", exact: true }),
       ).toBeVisible();
+      await expect(page.getByRole("link", { name: /Build #/ })).toHaveCount(12);
       await shot("project-statistics");
+    },
+  ],
+
+  [
+    "project statistics with few builds",
+    async ({ page, authUser, shot }) => {
+      void authUser;
+      await mockGetStatisticsResults(
+        page,
+        project.id,
+        STATISTICS_BUILDS.slice(0, 2),
+      );
+      await page.goto(`/statistics/${project.id}`);
+
+      await expect(page.getByText("Only a few builds so far")).toBeVisible();
+      await shot("project-statistics-few");
+    },
+  ],
+
+  [
+    "project statistics without builds",
+    async ({ page, authUser, shot }) => {
+      void authUser;
+      await mockGetStatisticsResults(page, project.id, []);
+      await page.goto(`/statistics/${project.id}`);
+
+      await expect(page.getByText("No builds yet")).toBeVisible();
+      await shot("project-statistics-empty");
     },
   ],
 
@@ -791,6 +823,48 @@ const VIEWS: [name: string, body: Body][] = [
       await expect(userListPage.selectionBar).toBeVisible();
 
       await shot("user-list-selection");
+    },
+  ],
+
+  [
+    "project page with builds selected",
+    async ({ openProjectPage, shot }) => {
+      const projectPage = await openProjectPage(project.id, build.id);
+
+      await projectPage.buildList.selectAll.click();
+
+      await expect(projectPage.buildList.selectionBar).toContainText(
+        "3 selected",
+      );
+      await shot("project-page-builds-selected");
+    },
+  ],
+
+  [
+    "project page with the build menu open",
+    async ({ openProjectPage, page, shot }) => {
+      const { buildDetails } = await openProjectPage(project.id, build.id);
+
+      await buildDetails.openMenu();
+
+      await expect(page.getByRole("menu")).toBeVisible();
+      await shot("project-page-build-menu");
+    },
+  ],
+
+  [
+    "project page with the build list failing",
+    async ({ openProjectPage, page, shot }) => {
+      await mockApiError(
+        page,
+        (url) => url.pathname === "/builds",
+        500,
+        "Builds are down",
+      );
+      const projectPage = await openProjectPage(project.id);
+
+      await expect(projectPage.buildList.errorMessage).toBeVisible();
+      await shot("project-page-builds-failed");
     },
   ],
 ];

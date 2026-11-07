@@ -12,6 +12,7 @@ import {
   HelpProvider,
   CrumbProvider,
 } from "../contexts";
+import { TestRunFiltersProvider } from "../components/TestRunList/TestRunFiltersContext";
 import { theme } from "../theme";
 import { User } from "../types";
 
@@ -88,7 +89,11 @@ const providers = (route: string) => {
               <BuildProvider>
                 <TestRunProvider>
                   <HelpProvider>
-                    <CrumbProvider>{children}</CrumbProvider>
+                    <CrumbProvider>
+                      <TestRunFiltersProvider>
+                        {children}
+                      </TestRunFiltersProvider>
+                    </CrumbProvider>
                   </HelpProvider>
                 </TestRunProvider>
               </BuildProvider>
