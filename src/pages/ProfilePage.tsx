@@ -7,14 +7,15 @@ import {
   Button,
   Typography,
   CardHeader,
-  Select,
-  MenuItem,
+  Chip,
   Container,
+  Stack,
 } from "@mui/material";
 import { PageHeader } from "../components/PageHeader";
 import { useUserDispatch, useUserState, update } from "../contexts";
 import { usersService } from "../services";
 import { useSnackbar } from "notistack";
+import { ApiKeyCard } from "../components/ApiKeyCard";
 import { ConfigurationExamples } from "../components/ConfigurationExamples";
 import { ValidatedForm } from "../components/ValidatedForm";
 import { Role } from "../types";
@@ -77,63 +78,87 @@ const ProfilePage = () => {
 
   return (
     <Container maxWidth="lg" sx={{ py: 4 }}>
-      <PageHeader
-        title="Profile"
-        subtitle="Your details, password and the key your test runs use"
-      />
+      <PageHeader title="Profile" />
       <Grid container spacing={2}>
-        <Grid size={6}>
-          <Grid container spacing={2}>
-            <Grid size={12}>
-              <ValidatedForm onSubmit={handleUserUpdateSubmit}>
+        <Grid size={{ xs: 12, md: 6 }}>
+          <Stack spacing={2}>
+            <ValidatedForm onSubmit={handleUserUpdateSubmit}>
+              <Card variant="outlined">
+                <CardHeader
+                  title="Your details"
+                  slotProps={{ title: { variant: "h6" } }}
+                />
+                <CardContent>
+                  <Stack spacing={2}>
+                    <Stack direction="row" spacing={2}>
+                      <NameField
+                        name="firstName"
+                        label="First name"
+                        value={firstName}
+                        onChange={setFirstName}
+                      />
+                      <NameField
+                        name="lastName"
+                        label="Last name"
+                        value={lastName}
+                        onChange={setLastName}
+                      />
+                    </Stack>
+                    <EmailField
+                      value={email}
+                      onChange={setEmail}
+                      disabled={oidcEnabled !== false}
+                      helperText={
+                        oidcEnabled === true
+                          ? "Locked when you sign in with SSO"
+                          : undefined
+                      }
+                    />
+                    <Stack
+                      direction="row"
+                      spacing={1.5}
+                      sx={{ alignItems: "center" }}
+                    >
+                      <Typography variant="body2">Role</Typography>
+                      <Chip
+                        size="small"
+                        label={user ? Role[user.role] : ""}
+                        data-testid="role"
+                      />
+                      <Typography
+                        variant="caption"
+                        sx={{ color: "text.secondary" }}
+                      >
+                        changed by an admin on Users
+                      </Typography>
+                    </Stack>
+                  </Stack>
+                </CardContent>
+                <CardActions sx={cardActionsSx}>
+                  <Button
+                    type="submit"
+                    color="primary"
+                    variant="contained"
+                    data-testid="submit"
+                  >
+                    Update
+                  </Button>
+                </CardActions>
+              </Card>
+            </ValidatedForm>
+            {oidcEnabled === false && (
+              <ValidatedForm onSubmit={handlePasswordUpdateSubmit}>
                 <Card variant="outlined">
                   <CardHeader
-                    title="User details"
+                    title="Password"
                     slotProps={{ title: { variant: "h6" } }}
                   />
                   <CardContent>
-                    <Grid container spacing={2}>
-                      <Grid size={6}>
-                        <NameField
-                          name="firstName"
-                          label="First name"
-                          value={firstName}
-                          onChange={setFirstName}
-                        />
-                      </Grid>
-                      <Grid size={6}>
-                        <NameField
-                          name="lastName"
-                          label="Last name"
-                          value={lastName}
-                          onChange={setLastName}
-                        />
-                      </Grid>
-                      <Grid size={12}>
-                        <EmailField
-                          value={email}
-                          onChange={setEmail}
-                          // The identity provider owns the email of SSO users.
-                          disabled={oidcEnabled !== false}
-                        />
-                      </Grid>
-                      <Grid size={12}>
-                        <Select
-                          id="role"
-                          labelId="role"
-                          displayEmpty
-                          fullWidth
-                          disabled
-                          value={user?.role}
-                        >
-                          {Object.entries(Role).map(([key, value]) => (
-                            <MenuItem key={key} value={key}>
-                              {value}
-                            </MenuItem>
-                          ))}
-                        </Select>
-                      </Grid>
-                    </Grid>
+                    <PasswordField
+                      password={password}
+                      setPassword={setPassword}
+                      label="New password"
+                    />
                   </CardContent>
                   <CardActions sx={cardActionsSx}>
                     <Button
@@ -142,78 +167,19 @@ const ProfilePage = () => {
                       variant="contained"
                       data-testid="submit"
                     >
-                      Update
+                      Update password
                     </Button>
                   </CardActions>
                 </Card>
               </ValidatedForm>
-            </Grid>
-            {oidcEnabled === false && (
-              <Grid size={12}>
-                <ValidatedForm onSubmit={handlePasswordUpdateSubmit}>
-                  <Card variant="outlined">
-                    <CardHeader
-                      title="Change password"
-                      slotProps={{ title: { variant: "h6" } }}
-                    />
-                    <CardContent>
-                      <Grid container spacing={2}>
-                        <Grid size={12}>
-                          <PasswordField
-                            password={password}
-                            setPassword={setPassword}
-                            label={"New password"}
-                          />
-                        </Grid>
-                      </Grid>
-                    </CardContent>
-                    <CardActions sx={cardActionsSx}>
-                      <Button
-                        type="submit"
-                        color="primary"
-                        variant="contained"
-                        data-testid="submit"
-                      >
-                        Update
-                      </Button>
-                    </CardActions>
-                  </Card>
-                </ValidatedForm>
-              </Grid>
             )}
-          </Grid>
+          </Stack>
         </Grid>
-        <Grid size={6}>
-          <Grid container spacing={2}>
-            <Grid size={12}>
-              <Card variant="outlined">
-                <CardHeader
-                  title="Api key"
-                  slotProps={{ title: { variant: "h6" } }}
-                />
-                <CardContent>
-                  <Typography
-                    component="code"
-                    sx={{
-                      display: "block",
-                      px: 1.5,
-                      py: 1,
-                      borderRadius: 1,
-                      bgcolor: "action.hover",
-                      fontFamily:
-                        "ui-monospace, SFMono-Regular, Menlo, monospace",
-                      overflowWrap: "anywhere",
-                    }}
-                  >
-                    {user?.apiKey}
-                  </Typography>
-                </CardContent>
-              </Card>
-            </Grid>
-            <Grid size={12}>
-              <ConfigurationExamples />
-            </Grid>
-          </Grid>
+        <Grid size={{ xs: 12, md: 6 }}>
+          <Stack spacing={2}>
+            <ApiKeyCard />
+            <ConfigurationExamples />
+          </Stack>
         </Grid>
       </Grid>
     </Container>

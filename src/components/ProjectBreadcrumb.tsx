@@ -231,6 +231,14 @@ export const ProjectBreadcrumb = ({ route }: { route: ShellRoute }) => {
     );
   }
 
+  if (route.kind === "profile") {
+    return (
+      <Breadcrumbs separator="/" aria-label="Breadcrumb">
+        <Typography sx={{ fontWeight: 600 }}>Profile</Typography>
+      </Breadcrumbs>
+    );
+  }
+
   return (
     <Breadcrumbs
       separator="/"
