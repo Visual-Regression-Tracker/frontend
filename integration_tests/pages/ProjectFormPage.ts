@@ -11,13 +11,13 @@ export class ProjectFormPage extends BasePage {
   mainBranch = this.root.locator("#branchName");
   buildCount = this.root.locator("#buildCount");
   maxBranchLifetime = this.root.locator("#maxBranchLifetime");
-  autoApprove = this.root.getByLabel("Auto approve feature");
+  autoApprove = this.root.getByLabel("Auto approve", { exact: true });
   imageComparison = this.root.getByRole("combobox", {
     name: "Image comparison library",
   });
 
-  blurSwitch = this.root.getByLabel(/^Blurred difference and change density/);
-  dinov2Switch = this.root.getByLabel(/^Asks the DINOv2 service about patches/);
+  blurSwitch = this.root.getByLabel("Stage 1 · Blur");
+  dinov2Switch = this.root.getByLabel("Stage 2 · DINOv2 second look");
   amplitudeThreshold = this.root.getByLabel("Amplitude threshold");
   solidShareMax = this.root.getByLabel("Solid share, max");
   distanceThreshold = this.root.getByLabel("Distance threshold");
@@ -28,8 +28,7 @@ export class ProjectFormPage extends BasePage {
   vlmProvider = this.root.getByRole("combobox", { name: "VLM Provider" });
   ollamaModel = this.root.getByRole("combobox", { name: "Model" });
   ollamaModelText = this.root.getByRole("textbox", {
-    name: "Model",
-    exact: true,
+    name: /^Model/,
   });
   geminiModel = this.root.getByRole("textbox", { name: "Gemini Model" });
   // a password field has no role to find it by
@@ -40,7 +39,6 @@ export class ProjectFormPage extends BasePage {
   tolerance = this.root.getByLabel("Tolerance", { exact: true });
 
   switchLabelled(label: string) {
-    // by label, not role name: a tooltip's title becomes the label's name
     return this.root.getByLabel(label, { exact: true });
   }
 
@@ -51,7 +49,6 @@ export class ProjectFormPage extends BasePage {
 
   async selectOllamaModel(value: string) {
     await this.ollamaModel.click();
-    // keyboard: the field's tooltip covers the list on focus and takes the pointer
     await this.page
       .getByRole("option", { name: value, exact: true })
       .press("Enter");

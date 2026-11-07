@@ -324,10 +324,12 @@ const VIEWS: [name: string, body: Body][] = [
   [
     "project settings with VLM and Ollama",
     async ({ projectSettingsPage, shot }) => {
+      await projectSettingsPage.page.setViewportSize({
+        width: 1280,
+        height: 1500,
+      });
       await projectSettingsPage.selectImageComparison(ImageComparison.vlm);
       await projectSettingsPage.selectOllamaModel("llava:13b");
-      // blur: the focused field keeps its tooltip open over the form
-      await projectSettingsPage.heading.click();
 
       await expect(projectSettingsPage.ollamaModel).toHaveText("llava:13b");
       await expect(projectSettingsPage.page.getByRole("tooltip")).toHaveCount(
@@ -845,6 +847,20 @@ const VIEWS: [name: string, body: Body][] = [
   ],
 
   [
+    "project settings with looksSame",
+    async ({ projectSettingsPage, shot }) => {
+      await projectSettingsPage.page.setViewportSize({
+        width: 1280,
+        height: 1500,
+      });
+      await projectSettingsPage.selectImageComparison(ImageComparison.lookSame);
+
+      await expect(projectSettingsPage.tolerance).toBeVisible();
+      await shot("project-settings-looks-same", { fullPage: true });
+    },
+  ],
+
+  [
     "user list with selection",
     async ({ userListPage, shot }) => {
       await userListPage.table.checkRow(GUEST_USER.id);
@@ -866,6 +882,21 @@ const VIEWS: [name: string, body: Body][] = [
         "3 selected",
       );
       await shot("project-page-builds-selected");
+    },
+  ],
+
+  [
+    "project settings with VLM and Gemini",
+    async ({ projectSettingsPage, shot }) => {
+      await projectSettingsPage.page.setViewportSize({
+        width: 1280,
+        height: 1500,
+      });
+      await projectSettingsPage.selectImageComparison(ImageComparison.vlm);
+      await projectSettingsPage.selectVlmProvider("Google Gemini");
+
+      await expect(projectSettingsPage.geminiModel).toBeVisible();
+      await shot("project-settings-vlm-gemini", { fullPage: true });
     },
   ],
 

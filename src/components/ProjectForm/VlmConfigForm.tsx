@@ -1,11 +1,5 @@
 import { Fragment } from "react";
-import {
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
-  SelectChangeEvent,
-} from "@mui/material";
+import { Select, MenuItem, SelectChangeEvent } from "@mui/material";
 import { VlmConfig } from "../../types/imageComparison";
 import { useConfigHook } from "./useConfigHook";
 import {
@@ -15,6 +9,7 @@ import {
 } from "../../contexts";
 import { GeminiConfigForm } from "./GeminiConfigForm";
 import { OllamaConfigForm } from "./OllamaConfigForm";
+import { FieldRow, fieldLabelId } from "./SettingsRow";
 
 export const VlmConfigForm = () => {
   const [config] = useConfigHook<VlmConfig>();
@@ -40,12 +35,12 @@ export const VlmConfigForm = () => {
 
   return (
     <Fragment>
-      <FormControl fullWidth margin="dense" required>
-        <InputLabel id="provider-select-label">VLM Provider</InputLabel>
+      <FieldRow id="provider-select" title="VLM Provider">
         <Select
-          labelId="provider-select-label"
-          label="VLM Provider"
+          labelId={fieldLabelId("provider-select")}
           id="provider-select"
+          size="small"
+          fullWidth
           value={currentProvider}
           onChange={handleProviderChange}
           name="provider"
@@ -53,7 +48,7 @@ export const VlmConfigForm = () => {
           <MenuItem value="ollama">Ollama</MenuItem>
           <MenuItem value="gemini">Google Gemini</MenuItem>
         </Select>
-      </FormControl>
+      </FieldRow>
       {currentProvider === "gemini" ? (
         <GeminiConfigForm />
       ) : (

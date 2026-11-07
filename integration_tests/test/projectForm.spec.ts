@@ -104,15 +104,14 @@ test("shows the looksSame fields", async ({ projectSettingsPage }) => {
 
   await expect(projectSettingsPage.switchLabelled("Strict")).toBeVisible();
   await expect(projectSettingsPage.tolerance).toBeVisible();
-  // the app spells the labels "anti-alliasing" and "carret"
   await expect(
-    projectSettingsPage.switchLabelled("Ignore anti-alliasing"),
+    projectSettingsPage.switchLabelled("Ignore anti-aliasing"),
   ).toBeVisible();
   await expect(
     projectSettingsPage.page.getByLabel("Antialiasing tolerance"),
   ).toBeVisible();
   await expect(
-    projectSettingsPage.switchLabelled("Ignore carret"),
+    projectSettingsPage.switchLabelled("Ignore caret"),
   ).toBeVisible();
   await expect(
     projectSettingsPage.switchLabelled("Allow diff dimensions"),
@@ -130,9 +129,8 @@ test("shows the odiff fields", async ({ projectSettingsPage }) => {
   await expect(
     projectSettingsPage.switchLabelled("Fail on layout diff"),
   ).toBeVisible();
-  // spelled "anti-alliasing" here too
   await expect(
-    projectSettingsPage.switchLabelled("Ignore anti-alliasing"),
+    projectSettingsPage.switchLabelled("Ignore anti-aliasing"),
   ).toBeVisible();
   await expect(projectSettingsPage.threshold).toBeVisible();
   await expect(
@@ -269,7 +267,7 @@ test("saves a changed looksSame config", async ({
 }) => {
   await projectSettingsPage.selectImageComparison(ImageComparison.lookSame);
   await projectSettingsPage.switchLabelled("Strict").check();
-  await projectSettingsPage.switchLabelled("Ignore carret").uncheck();
+  await projectSettingsPage.switchLabelled("Ignore caret").uncheck();
 
   const saved = await savedProject(page, () =>
     projectSettingsPage.saveBtn.click(),
