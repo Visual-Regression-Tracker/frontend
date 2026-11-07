@@ -194,7 +194,7 @@ test.describe("a build of thousands of runs", () => {
     page,
   }) => {
     await openLargeBuild(page, testRuns[0].id);
-    const step = page.getByRole("heading", { name: /^Step \d+\/\d+:/ });
+    const step = page.getByTestId("step-position");
     await expect(step).toBeVisible({ timeout: 60_000 });
     await expect(page.getByTestId("drawArea").locator("canvas")).toHaveCount(
       2,

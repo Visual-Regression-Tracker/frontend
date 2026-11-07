@@ -1,75 +1,64 @@
-import { type ReactNode } from "react";
-import { Box, Divider, Grid, IconButton } from "@mui/material";
-import { WarningRounded } from "@mui/icons-material";
-import type { SnackbarMessage } from "notistack";
+import { type ReactNode, useState } from "react";
+import { Alert, Box, Button, Divider, Stack, Typography } from "@mui/material";
 import { TestRun } from "../../types";
-import { testRunService } from "../../services";
-import { CommentsPopper } from "../CommentsPopper";
 import { Tooltip } from "../Tooltip";
-import { TestRunDetails } from "./TestRunDetails";
-import type { DialogEnqueue } from "./useDialogSnackbar";
-
-const testRunDetailsSx = { alignItems: "center", paddingLeft: "8px" } as const;
 
 interface TestRunInfoBarProps {
   testRun: TestRun;
-  sizeMismatch: boolean;
+  sizes: { baseline?: string; checkpoint?: string } | null;
   ignoreAreasToolbar: ReactNode;
-  noiseHint?: ReactNode;
-  enqueueSnackbar: DialogEnqueue;
 }
+
+const VlmLine = ({ description }: { description: string }) => {
+  const [expanded, setExpanded] = useState(false);
+  return (
+    <Stack
+      direction="row"
+      spacing={1}
+      data-testid="vlm-analysis"
+      sx={{ alignItems: expanded ? "flex-start" : "center", py: 0.5 }}
+    >
+      <Tooltip title="AI-generated description of the differences found by the Vision Language Model (VLM).">
+        <Typography variant="caption" sx={{ fontWeight: 600, flexShrink: 0 }}>
+          ✦ VLM analysis
+        </Typography>
+      </Tooltip>
+      <Typography
+        variant="body2"
+        noWrap={!expanded}
+        sx={{
+          minWidth: 0,
+          flexGrow: 1,
+          whiteSpace: expanded ? "pre-wrap" : undefined,
+          wordBreak: "break-word",
+        }}
+      >
+        {description}
+      </Typography>
+      <Button size="small" onClick={() => setExpanded(!expanded)}>
+        {expanded ? "Less" : "More"}
+      </Button>
+    </Stack>
+  );
+};
 
 export const TestRunInfoBar = ({
   testRun,
-  sizeMismatch,
+  sizes,
   ignoreAreasToolbar,
-  noiseHint,
-  enqueueSnackbar,
-}: TestRunInfoBarProps) => {
-  const saveComment = (comment: string) =>
-    testRunService
-      .update(testRun.id, {
-        comment,
-      })
-      .then(() =>
-        enqueueSnackbar("Comment updated", {
-          variant: "success",
-        }),
-      )
-      .catch((err: SnackbarMessage) => {
-        enqueueSnackbar(err, {
-          variant: "error",
-        });
-        // still a failure, so the comment box stays open
-        throw err;
-      });
-
-  return (
-    <Box sx={{ mx: 1 }}>
-      <Grid container spacing={1} sx={testRunDetailsSx}>
-        <TestRunDetails testRun={testRun} noiseHint={noiseHint} />
-        {sizeMismatch && (
-          <Grid>
-            <Tooltip
-              title={
-                "Image height/width differ from baseline! Cannot calculate diff!"
-              }
-            >
-              <IconButton size="large">
-                <WarningRounded
-                  data-testid="WarningRoundedIcon"
-                  color="secondary"
-                />
-              </IconButton>
-            </Tooltip>
-          </Grid>
-        )}
-        <Grid sx={{ ml: "auto" }}>{ignoreAreasToolbar}</Grid>
-        <Grid>
-          <CommentsPopper text={testRun.comment} onSave={saveComment} />
-        </Grid>
-      </Grid>
-      <Divider />
+}: TestRunInfoBarProps) => (
+  <Box sx={{ mx: 1 }}>
+    {testRun.vlmDescription && (
+      <VlmLine key={testRun.id} description={testRun.vlmDescription} />
+    )}
+    {sizes && (
+      <Alert severity="warning" sx={{ py: 0 }}>
+        {`Image sizes differ: baseline ${sizes.baseline ?? "unknown"}, checkpoint ${sizes.checkpoint ?? "unknown"}. Cannot calculate diff.`}
+      </Alert>
+    )}
+    <Box sx={{ display: "flex", justifyContent: "flex-end" }}>
+      {ignoreAreasToolbar}
     </Box>
-  );
-};
+    <Divider />
+  </Box>
+);
