@@ -1368,6 +1368,38 @@ const VIEWS: [name: string, body: Body][] = [
       await shot("test-run-baseline-image-failed");
     },
   ],
+
+  [
+    "test run details with a comment",
+    async ({ openProjectPage, page, shot }) => {
+      await mockUpdateTestRun(page, TEST_UNRESOLVED);
+      const { details } = await openProjectPage(
+        project.id,
+        build.id,
+        TEST_UNRESOLVED.id,
+      );
+
+      await expect(details.commentChip).toBeVisible();
+      await shot("test-run-comment-chip");
+    },
+  ],
+
+  [
+    "test run details without a comment",
+    async ({ openProjectPage, page, shot }) => {
+      const uncommented = { ...TEST_UNRESOLVED, comment: "" };
+      await mockTestRun(page, uncommented);
+      await mockUpdateTestRun(page, uncommented);
+      const { details } = await openProjectPage(
+        project.id,
+        build.id,
+        TEST_UNRESOLVED.id,
+      );
+
+      await expect(details.addCommentBtn).toBeVisible();
+      await shot("test-run-no-comment");
+    },
+  ],
 ];
 
 for (const scheme of SCHEMES) {

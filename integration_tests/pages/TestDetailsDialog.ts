@@ -73,7 +73,11 @@ export class TestDetailsDialog extends PageObject {
   fadeSlider = this.page.getByTestId("overlayOpacity").getByRole("slider");
   differenceBlend = this.page.getByTestId("differenceToggle");
 
-  commentsBtn = this.page.getByRole("button", { name: "Comments" });
+  commentsBtn = this.page.getByRole("button", {
+    name: /^(add|edit) comment$/i,
+  });
+  commentChip = this.page.getByRole("button", { name: "Edit comment" });
+  addCommentBtn = this.page.getByRole("button", { name: "Add comment" });
   vlmAnalysis = this.page.getByTestId("vlm-analysis");
   comment = this.page.getByTestId("comment");
   commentPopper = this.page.getByRole("tooltip").filter({ has: this.comment });

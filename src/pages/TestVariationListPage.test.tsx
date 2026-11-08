@@ -386,4 +386,10 @@ describe("TestVariationListPage", () => {
     ).toBeInTheDocument();
     expect(getList).not.toHaveBeenCalled();
   });
+
+  it("marks the variations that have a comment", async () => {
+    await renderPage([{ ...LOGIN, comment: "Flaky on Safari" }, CHECKOUT]);
+
+    expect(screen.getAllByTestId("comment-indicator")).toHaveLength(1);
+  });
 });

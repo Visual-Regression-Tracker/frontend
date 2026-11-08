@@ -8,6 +8,7 @@ import {
   Chip,
   Typography,
 } from "@mui/material";
+import { CommentIndicator } from "../CommentIndicator";
 import { StatusChip } from "../StatusChip";
 import { NoiseHintChip } from "./NoiseHintChip";
 import noImage from "../../static/no-image.png";
@@ -181,6 +182,7 @@ export const TestRunGrid = ({
               <StatusChip status={representative.status} />
             </Box>
             {noiseAvailable && <NoiseHintChip run={representative} />}
+            <CommentIndicator text={representative.comment} />
             {/* buttons so the keyboard reaches them */}
             <Typography
               variant="caption"

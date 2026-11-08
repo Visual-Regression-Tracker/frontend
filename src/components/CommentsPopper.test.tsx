@@ -25,14 +25,37 @@ const write = async (
   await user.paste(text);
 };
 
-const openButton = () => screen.getByRole("button", { name: "Comments" });
+const openButton = () =>
+  screen.getByRole("button", { name: /^(add|edit) comment$/i });
 
 describe("CommentsPopper", () => {
   it("keeps the editor closed until Comments is clicked", () => {
     renderPopper({ text: "existing comment" });
 
-    expect(screen.getByRole("button", { name: "Comments" })).toBeVisible();
+    expect(openButton()).toBeVisible();
     expect(screen.queryByPlaceholderText(PLACEHOLDER)).not.toBeInTheDocument();
+  });
+
+  it("shows a chip with the first words of the comment when there is one", async () => {
+    const { user } = renderPopper({
+      text: "The footer overlaps the cookie banner on mobile\nsecond line",
+    });
+
+    const chip = screen.getByRole("button", { name: "Edit comment" });
+    expect(chip).toHaveTextContent("The footer overlaps the…");
+    expect(chip).not.toHaveTextContent("second line");
+
+    await user.hover(chip);
+    expect(await screen.findByRole("tooltip")).toHaveTextContent("second line");
+  });
+
+  it("offers a plain Add comment button when there is no comment", () => {
+    renderPopper({ text: "  " });
+
+    expect(screen.getByRole("button", { name: "Add comment" })).toBeVisible();
+    expect(
+      screen.queryByRole("button", { name: "Edit comment" }),
+    ).not.toBeInTheDocument();
   });
 
   it("opens with the current comment in the editor", async () => {

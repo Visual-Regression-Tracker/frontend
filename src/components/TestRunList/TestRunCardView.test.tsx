@@ -1,5 +1,5 @@
 import { type ComponentProps, useState } from "react";
-import { screen } from "@testing-library/react";
+import { screen, within } from "@testing-library/react";
 import type { GridPaginationModel } from "@mui/x-data-grid";
 import { renderWithProviders } from "../../_test/render";
 import { A_DE, A_EN, B_EN, groupsFor } from "../../_test/testRunListFixture";
@@ -254,5 +254,20 @@ describe("TestRunCardView", () => {
       "src",
       expect.stringContaining("a-en.png"),
     );
+  });
+
+  it("marks only the cards that have a comment", () => {
+    renderCards(
+      propsFor([
+        run({ id: "c", name: "Commented", comment: "Check the header" }),
+        run({ id: "n", name: "Plain" }),
+      ]),
+    );
+
+    expect(screen.getAllByTestId("comment-indicator")).toHaveLength(1);
+    const card = screen
+      .getByText("Commented")
+      .closest<HTMLElement>('[data-testid="testRunCard"]') as HTMLElement;
+    expect(within(card).getByTestId("comment-indicator")).toBeVisible();
   });
 });

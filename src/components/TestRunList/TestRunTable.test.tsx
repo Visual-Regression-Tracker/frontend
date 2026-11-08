@@ -227,4 +227,22 @@ describe("TestRunTable", () => {
 
     await waitFor(() => expect(densityClass()).toContain("densityCompact"));
   });
+
+  it("marks only the rows that have a comment", async () => {
+    renderTable(
+      propsFor([
+        run({ id: "c", name: "Commented", comment: "Check the header" }),
+        run({ id: "n", name: "Plain" }),
+      ]),
+    );
+
+    await waitFor(() => expect(dataRows()).toHaveLength(2));
+
+    expect(
+      within(rowOf("Commented")).getByRole("img", { name: "Has a comment" }),
+    ).toBeVisible();
+    expect(
+      within(rowOf("Plain")).queryByTestId("comment-indicator"),
+    ).not.toBeInTheDocument();
+  });
 });

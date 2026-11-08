@@ -116,7 +116,10 @@ const ProjectMenuContent = ({
           }}
         />
       </Box>
-      <MenuList ref={listRef} sx={{ maxHeight: 360, overflow: "auto" }}>
+      <MenuList
+        ref={listRef}
+        sx={{ maxHeight: 360, overflow: "auto", py: 0, pb: 1 }}
+      >
         {groups.length === 0 && (
           <Typography
             variant="body2"
@@ -125,9 +128,25 @@ const ProjectMenuContent = ({
             No projects match
           </Typography>
         )}
-        {groups.flatMap(({ title, projects }) => [
+        {groups.flatMap(({ title, projects }, index) => [
           showTitles && (
-            <ListSubheader key={title} component="li" disableSticky>
+            <ListSubheader
+              key={title}
+              component="li"
+              sx={{
+                ...(index > 0 && { borderTop: 1, borderColor: "divider" }),
+                bgcolor: "background.paper",
+                backgroundImage: "inherit",
+                color: "text.secondary",
+                fontSize: "0.75rem",
+                fontWeight: 700,
+                letterSpacing: "0.04em",
+                lineHeight: "32px",
+                mt: index > 0 ? 0.5 : 0,
+                pt: index > 0 ? 0.5 : 0,
+                px: 2,
+              }}
+            >
               {title}
             </ListSubheader>
           ),
@@ -136,8 +155,11 @@ const ProjectMenuContent = ({
               key={`${title}:${project.id}`}
               selected={project.id === currentId}
               onClick={() => onSelect(project)}
+              sx={{ borderRadius: 1, minHeight: 40, mx: 1, my: 0.25, px: 1.5 }}
             >
-              {project.name}
+              <Typography noWrap sx={{ fontSize: "inherit" }}>
+                {project.name}
+              </Typography>
             </MenuItem>
           )),
         ])}

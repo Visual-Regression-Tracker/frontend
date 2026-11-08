@@ -11,15 +11,25 @@ import {
   IconButton,
   Paper,
   TextField,
-  Badge,
+  Chip,
 } from "@mui/material";
-import { ChatBubbleOutlined } from "@mui/icons-material";
+import { ChatBubble, ChatBubbleOutlined } from "@mui/icons-material";
 import {
   usePopupState,
   bindToggle,
   bindPopper,
 } from "material-ui-popup-state/hooks";
+import { CommentText } from "./CommentIndicator";
 import { Tooltip } from "./Tooltip";
+
+const PREVIEW_LENGTH = 24;
+
+const previewOf = (text: string) => {
+  const line = text.trim().split("\n")[0];
+  return line.length > PREVIEW_LENGTH
+    ? `${line.slice(0, PREVIEW_LENGTH).trimEnd()}…`
+    : line;
+};
 
 interface IProps {
   text: string | undefined;
@@ -39,6 +49,8 @@ export const CommentsPopper = ({ text, onSave }: IProps) => {
     setComment(text || "");
   }
 
+  const savedComment = text?.trim() ? text : "";
+
   // Escape closes the box, not the dialog around it
   const closeOnEscape = (event: KeyboardEvent) => {
     if (event.key === "Escape" && popupState.isOpen) {
@@ -49,27 +61,31 @@ export const CommentsPopper = ({ text, onSave }: IProps) => {
 
   return (
     <>
-      <Badge
-        color="secondary"
-        variant="dot"
-        badgeContent=" "
-        anchorOrigin={{
-          vertical: "top",
-          horizontal: "right",
-        }}
-        invisible={!comment || comment === ""}
-      >
-        <Tooltip title="Comments">
+      {savedComment ? (
+        <Tooltip title={<CommentText text={savedComment} />} describeChild>
+          <Chip
+            {...bindToggle(popupState)}
+            clickable
+            color="secondary"
+            icon={<ChatBubble />}
+            label={previewOf(savedComment)}
+            aria-label="Edit comment"
+            onKeyDown={closeOnEscape}
+            sx={{ maxWidth: 220 }}
+          />
+        </Tooltip>
+      ) : (
+        <Tooltip title="Add comment">
           <IconButton
             {...bindToggle(popupState)}
-            aria-label="Comments"
-            color="primary"
+            aria-label="Add comment"
+            color="default"
             onKeyDown={closeOnEscape}
           >
             <ChatBubbleOutlined />
           </IconButton>
         </Tooltip>
-      </Badge>
+      )}
       <Popper
         {...bindPopper(popupState)}
         transition

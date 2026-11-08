@@ -41,7 +41,9 @@ const writeComment = async (
   user: ReturnType<typeof renderHeader>["user"],
   text: string,
 ) => {
-  await user.click(screen.getByRole("button", { name: "Comments" }));
+  await user.click(
+    screen.getByRole("button", { name: /^(add|edit) comment$/i }),
+  );
   await user.type(await screen.findByTestId("comment"), text);
   await user.click(screen.getByRole("button", { name: "Save" }));
 };
