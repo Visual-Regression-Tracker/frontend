@@ -18,16 +18,26 @@ import { Link, useLocation } from "react-router-dom";
 import { useUserDispatch, useUserState, logout } from "../contexts";
 import { routes } from "../constants";
 import logo from "../static/logo.png";
+import { Tooltip } from "./Tooltip";
 import { ColorModeToggle } from "./ColorModeToggle";
 import { ProjectBreadcrumb } from "./ProjectBreadcrumb";
 import { ProjectTabs } from "./ProjectTabs";
 import { matchShellRoute } from "../_helpers/route.helpers";
 import {
+  HEADER_HELP_MENU_ID,
   HEADER_AVATAR_MENU_ID,
   HEADER_AVATAR_BUTTON_TEST_ID,
+  HEADER_HELP_MENU_BUTTON_TEST_ID,
   HEADER_LOGOUT_BUTTON_TEST_ID,
 } from "./Header.locators";
-import { AllInbox, Face, People, Logout } from "@mui/icons-material";
+import {
+  AllInbox,
+  Face,
+  GitHub,
+  HelpOutlineOutlined,
+  People,
+  Logout,
+} from "@mui/icons-material";
 
 const menuAnchor = {
   anchorOrigin: { vertical: "bottom", horizontal: "right" },
@@ -37,6 +47,8 @@ const menuAnchor = {
 const Header = () => {
   const [avatarMenuRef, setAvatarMenuRef] = useState<null | HTMLElement>(null);
 
+  const [helpMenuRef, setHelpMenuRef] = useState<null | HTMLElement>(null);
+
   const { loggedIn, user } = useUserState();
   const authDispatch = useUserDispatch();
   const { pathname } = useLocation();
@@ -44,7 +56,45 @@ const Header = () => {
 
   const handleMenuClose = () => {
     setAvatarMenuRef(null);
+    setHelpMenuRef(null);
   };
+
+  const closeMenuAndOpenLink = () => {
+    handleMenuClose();
+    window.open(
+      "https://github.com/Visual-Regression-Tracker/Visual-Regression-Tracker/issues/new",
+      "_blank",
+      "noopener,noreferrer",
+    );
+  };
+
+  const getVRTVersion = (): string => {
+    return window._env_.VRT_VERSION;
+  };
+
+  const renderHelpMenu = (
+    <Menu
+      {...menuAnchor}
+      anchorEl={helpMenuRef}
+      data-testid={HEADER_HELP_MENU_ID}
+      keepMounted
+      open={!!helpMenuRef}
+      onClose={handleMenuClose}
+    >
+      <MenuItem onClick={closeMenuAndOpenLink}>
+        <ListItemIcon>
+          <GitHub fontSize="small" />
+        </ListItemIcon>
+        <ListItemText>Open an issue in GitHub</ListItemText>
+      </MenuItem>
+      <Divider />
+      <MenuItem sx={{ justifyContent: "center" }} disabled>
+        <Typography variant="caption">
+          VRT Version : {getVRTVersion()}
+        </Typography>
+      </MenuItem>
+    </Menu>
+  );
 
   const renderAvatarMenu = (
     <Menu
@@ -156,6 +206,16 @@ const Header = () => {
           <Box sx={{ flex: 1 }} />
           <Stack direction="row" spacing={0.5} sx={{ alignItems: "center" }}>
             <ColorModeToggle />
+            <Tooltip title="Help">
+              <IconButton
+                onClick={(event: MouseEvent<HTMLElement>) =>
+                  setHelpMenuRef(event.currentTarget)
+                }
+                data-testid={HEADER_HELP_MENU_BUTTON_TEST_ID}
+              >
+                <HelpOutlineOutlined />
+              </IconButton>
+            </Tooltip>
             {loggedIn && (
               <IconButton
                 onClick={(event: MouseEvent<HTMLElement>) =>
@@ -181,6 +241,7 @@ const Header = () => {
       </AppBar>
       {shellRoute && <ProjectTabs route={shellRoute} />}
       {renderAvatarMenu}
+      {renderHelpMenu}
     </Fragment>
   );
 };

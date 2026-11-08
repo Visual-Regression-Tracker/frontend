@@ -2,11 +2,15 @@ import { PageObject } from "./PageObject";
 import {
   HEADER_AVATAR_BUTTON_TEST_ID,
   HEADER_AVATAR_MENU_ID,
+  HEADER_HELP_MENU_ID,
+  HEADER_HELP_MENU_BUTTON_TEST_ID,
   HEADER_LOGOUT_BUTTON_TEST_ID,
 } from "~client/components/Header.locators";
 import { LOCATOR_PROJECT_PAGE_SELECT_PROJECT } from "~client/constants/locators";
 
 export class Header extends PageObject {
+  helpMenuButton = this.page.getByTestId(HEADER_HELP_MENU_BUTTON_TEST_ID);
+  helpMenu = this.page.getByTestId(HEADER_HELP_MENU_ID);
   avatarButton = this.page.getByTestId(HEADER_AVATAR_BUTTON_TEST_ID);
   avatarMenu = this.page.locator(`#${HEADER_AVATAR_MENU_ID}`);
   breadcrumb = this.page.getByRole("navigation", { name: "Breadcrumb" });

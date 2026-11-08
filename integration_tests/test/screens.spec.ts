@@ -800,6 +800,18 @@ const VIEWS: [name: string, body: Body][] = [
   ],
 
   [
+    "help menu",
+    async ({ projectListPage, shot }) => {
+      await expect(projectListPage.projects).toHaveCount(1);
+
+      await projectListPage.header.helpMenuButton.click();
+
+      await expect(projectListPage.header.helpMenu).toBeVisible();
+      await shot("help-menu");
+    },
+  ],
+
+  [
     "project settings",
     async ({ projectSettingsPage, shot }) => {
       await expect(projectSettingsPage.name).toHaveValue(project.name);

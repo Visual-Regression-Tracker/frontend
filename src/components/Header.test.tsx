@@ -13,6 +13,7 @@ import {
 import { User } from "../types";
 import {
   HEADER_AVATAR_BUTTON_TEST_ID,
+  HEADER_HELP_MENU_BUTTON_TEST_ID,
   HEADER_LOGOUT_BUTTON_TEST_ID,
 } from "./Header.locators";
 import Header from "./Header";
@@ -39,14 +40,16 @@ const mountedMenuItemLabels = () =>
 
 describe("Header", () => {
   beforeEach(() => {
+    window._env_ = { VRT_VERSION: "9.8.7", REACT_APP_API_URL: "" };
     vi.spyOn(projectsService, "getAll").mockResolvedValue([]);
   });
 
   describe("logged out", () => {
-    it("shows the logo but no avatar", () => {
+    it("shows the logo and help but no avatar", () => {
       renderHeader({ user: null });
 
       expect(screen.getByAltText("logo")).toBeVisible();
+      expect(screen.getByTestId(HEADER_HELP_MENU_BUTTON_TEST_ID)).toBeVisible();
       expect(
         screen.queryByTestId(HEADER_AVATAR_BUTTON_TEST_ID),
       ).not.toBeInTheDocument();
@@ -153,6 +156,40 @@ describe("Header", () => {
       expect(
         screen.queryByTestId(HEADER_AVATAR_BUTTON_TEST_ID),
       ).not.toBeInTheDocument();
+    });
+  });
+
+  describe("help menu", () => {
+    it("is available when logged out", async () => {
+      const { user } = renderHeader({ user: null });
+
+      await user.click(screen.getByTestId(HEADER_HELP_MENU_BUTTON_TEST_ID));
+
+      expect(menuItem("Open an issue in GitHub")).toBeVisible();
+    });
+
+    it("shows the VRT version", async () => {
+      const { user } = renderHeader({ user: TEST_USER });
+
+      await user.click(screen.getByTestId(HEADER_HELP_MENU_BUTTON_TEST_ID));
+
+      expect(screen.getByText(/VRT Version/)).toHaveTextContent(
+        "VRT Version : 9.8.7",
+      );
+    });
+
+    it("opens a new GitHub issue in another tab that cannot reach back", async () => {
+      const open = vi.spyOn(window, "open").mockReturnValue(null);
+      const { user } = renderHeader({ user: TEST_USER });
+
+      await user.click(screen.getByTestId(HEADER_HELP_MENU_BUTTON_TEST_ID));
+      await user.click(menuItem("Open an issue in GitHub"));
+
+      expect(open).toHaveBeenCalledWith(
+        "https://github.com/Visual-Regression-Tracker/Visual-Regression-Tracker/issues/new",
+        "_blank",
+        "noopener,noreferrer",
+      );
     });
   });
 
