@@ -125,8 +125,9 @@ const TestVariationList = ({ items, onDeleteClick }: IProps) => {
       {selectedItem && (
         <BaseModal
           open={!!selectedItem}
-          title={"Delete TestVariation"}
+          title={"Delete test variation"}
           submitButtonText={"Delete"}
+          submitColor="error"
           onCancel={handleClose}
           content={
             <Typography>{`Are you sure you want to delete: ${selectedItem.name}?`}</Typography>

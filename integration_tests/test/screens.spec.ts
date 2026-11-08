@@ -1421,6 +1421,64 @@ const VIEWS: [name: string, body: Body][] = [
       await shot("add-project");
     },
   ],
+
+  [
+    "delete build confirmation",
+    async ({ openProjectPage, page, shot }) => {
+      const projectPage = await openProjectPage(project.id, build.id);
+
+      await projectPage.buildList.openMenu(1);
+      await projectPage.buildList.menuItem("Delete build…").click();
+
+      await expect(page.getByRole("dialog")).toContainText(
+        "Are you sure you want to delete build",
+      );
+      await shot("delete-build");
+    },
+  ],
+
+  [
+    "edit CI build id dialog",
+    async ({ openProjectPage, page, shot }) => {
+      const projectPage = await openProjectPage(project.id, build.id);
+
+      await projectPage.buildList.openMenu(1);
+      await projectPage.buildList.menuItem("Edit CI build id…").click();
+
+      await expect(projectPage.buildList.ciBuildIdInput).toBeVisible();
+      await expect(page.getByRole("dialog")).toBeVisible();
+      await shot("edit-ci-build-id");
+    },
+  ],
+
+  [
+    "delete builds confirmation",
+    async ({ openProjectPage, page, shot }) => {
+      const projectPage = await openProjectPage(project.id, build.id);
+      await projectPage.buildList.selectAll.click();
+
+      await projectPage.buildList.deleteSelectedBtn.click();
+
+      await expect(page.getByRole("dialog")).toContainText(
+        "This also removes their test runs.",
+      );
+      await shot("delete-builds");
+    },
+  ],
+
+  [
+    "delete test variation confirmation",
+    async ({ openTestVariationListPage, page, shot }) => {
+      const listPage = await openTestVariationListPage(project.id);
+
+      await listPage.deleteBtn(TEST_VARIATION_ONE.name).click();
+
+      await expect(page.getByRole("dialog")).toContainText(
+        `Are you sure you want to delete: ${TEST_VARIATION_ONE.name}?`,
+      );
+      await shot("delete-test-variation");
+    },
+  ],
 ];
 
 for (const scheme of SCHEMES) {

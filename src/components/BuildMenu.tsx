@@ -90,6 +90,7 @@ export const BuildMenu = ({
       <BaseModal
         open={dialog === "edit"}
         title="Edit CI build id"
+        size="md"
         submitButtonText="Edit"
         onCancel={onClose}
         content={
@@ -116,6 +117,7 @@ export const BuildMenu = ({
         open={dialog === "delete"}
         title="Delete build"
         submitButtonText="Delete"
+        submitColor="error"
         onCancel={onClose}
         content={
           <Typography>{`Are you sure you want to delete build: ${label}?`}</Typography>

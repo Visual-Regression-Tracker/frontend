@@ -376,6 +376,7 @@ const BuildList = () => {
         open={bulkDeleteDialogOpen}
         title={"Delete builds"}
         submitButtonText={"Delete"}
+        submitColor="error"
         onCancel={() => setBulkDeleteDialogOpen(false)}
         content={
           <>

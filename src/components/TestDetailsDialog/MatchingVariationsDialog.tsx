@@ -6,11 +6,13 @@ import {
   DialogActions,
   Button,
   Checkbox,
+  IconButton,
   FormControlLabel,
   Switch,
   Typography,
   CircularProgress,
 } from "@mui/material";
+import { Close } from "@mui/icons-material";
 import { styled } from "@mui/material/styles";
 import { useDialogSnackbar } from "./useDialogSnackbar";
 import { LightboxPreview, VariationLightbox } from "./VariationLightbox";
@@ -411,6 +413,19 @@ export const MatchingVariationsDialog = ({
     <>
       <Dialog open onClose={onClose} maxWidth="lg" fullWidth>
         <DialogTitle>{verb} variations — review before applying</DialogTitle>
+        <IconButton
+          aria-label="Close dialog"
+          onClick={onClose}
+          size="small"
+          sx={{
+            position: "absolute",
+            top: 12,
+            right: 16,
+            color: "text.secondary",
+          }}
+        >
+          <Close fontSize="small" />
+        </IconButton>
         <DialogContent dividers>
           {submitting && (
             <Loading>
@@ -498,10 +513,12 @@ export const MatchingVariationsDialog = ({
         </DialogContent>
         {!submitting && (
           <DialogActions>
-            <Button onClick={onClose}>Cancel</Button>
+            <Button onClick={onClose} color="inherit">
+              Cancel
+            </Button>
             <Button
               variant="contained"
-              color={mode === "reject" ? "secondary" : "primary"}
+              color={mode === "reject" ? "error" : "primary"}
               disabled={selected.size === 0}
               onClick={submit}
             >

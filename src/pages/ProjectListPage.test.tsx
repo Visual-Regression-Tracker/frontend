@@ -311,13 +311,13 @@ describe("ProjectListPage", () => {
       );
       const { user } = await renderPage({ projects: [ALPHA] });
       await user.click(screen.getByTestId("delete"));
-      const dialog = screen.getByRole("dialog", { name: "Delete Project" });
+      const dialog = screen.getByRole("dialog", { name: "Delete project" });
 
       await user.click(within(dialog).getByRole("button", { name: "Delete" }));
 
       await expectErrorToast("Project still has builds");
       expect(
-        screen.getByRole("dialog", { name: "Delete Project" }),
+        screen.getByRole("dialog", { name: "Delete project" }),
       ).toBeInTheDocument();
       expect(screen.getByTestId(`project-${ALPHA.id}`)).toBeInTheDocument();
     });

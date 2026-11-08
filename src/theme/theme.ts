@@ -169,6 +169,31 @@ export const theme = createTheme({
         }),
       },
     },
+    MuiDialogTitle: {
+      styleOverrides: {
+        root: ({ theme }) => ({
+          ...theme.typography.h6,
+          padding: theme.spacing(2.5, 7, 1, 3),
+        }),
+      },
+    },
+    MuiDialogContent: {
+      styleOverrides: {
+        root: ({ theme }) => ({
+          padding: theme.spacing(1, 3, 2),
+          "&.MuiDialogContent-dividers": { padding: theme.spacing(2, 3) },
+        }),
+      },
+    },
+    MuiDialogActions: {
+      styleOverrides: {
+        root: ({ theme }) => ({
+          padding: theme.spacing(1.5, 3, 2.5),
+          gap: theme.spacing(1),
+          "& > :not(style) ~ :not(style)": { marginLeft: 0 },
+        }),
+      },
+    },
     MuiTooltip: {
       styleOverrides: {
         tooltip: ({ theme }) => ({

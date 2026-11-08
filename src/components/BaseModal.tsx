@@ -5,7 +5,9 @@ import {
   DialogContent,
   DialogActions,
   Button,
+  IconButton,
 } from "@mui/material";
+import { Close } from "@mui/icons-material";
 import { ValidatedForm } from "./ValidatedForm";
 
 interface IProps {
@@ -14,6 +16,7 @@ interface IProps {
   content: ReactNode;
   submitButtonText: string;
   submitColor?: "primary" | "error";
+  size?: "sm" | "md";
   onSubmit: () => void | Promise<unknown>;
   onCancel: () => void;
 }
@@ -23,6 +26,7 @@ export const BaseModal = ({
   title,
   submitButtonText,
   submitColor = "primary",
+  size = "sm",
   content,
   onSubmit,
   onCancel,
@@ -52,17 +56,32 @@ export const BaseModal = ({
       open={open}
       onClose={onCancel}
       aria-labelledby="form-dialog-title"
+      maxWidth={size}
       fullWidth
     >
       <DialogTitle id="form-dialog-title">{title}</DialogTitle>
+      <IconButton
+        aria-label="Close dialog"
+        onClick={onCancel}
+        size="small"
+        sx={{
+          position: "absolute",
+          top: 12,
+          right: 16,
+          color: "text.secondary",
+        }}
+      >
+        <Close fontSize="small" />
+      </IconButton>
       <ValidatedForm onSubmit={handleSubmit}>
         <DialogContent>{content}</DialogContent>
         <DialogActions>
-          <Button onClick={onCancel} color="primary">
+          <Button onClick={onCancel} color="inherit">
             Cancel
           </Button>
           <Button
             type="submit"
+            variant="contained"
             color={submitColor}
             data-testid="submitButton"
             disabled={submitting}

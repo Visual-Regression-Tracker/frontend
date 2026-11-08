@@ -1,5 +1,7 @@
-import { act, render, screen } from "@testing-library/react";
+import { type ComponentProps } from "react";
+import { act, render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { renderWithProviders } from "../_test/render";
 import { BaseModal } from "./BaseModal";
 
 const renderModal = (onSubmit: () => void | Promise<unknown>) =>
@@ -54,5 +56,65 @@ describe("BaseModal", () => {
 
     expect(onSubmit).toHaveBeenCalledTimes(2);
     expect(screen.getByRole("button", { name: "Create" })).toBeEnabled();
+  });
+});
+
+describe("BaseModal layout", () => {
+  const renderPlain = (
+    props: Partial<ComponentProps<typeof BaseModal>> = {},
+  ) => {
+    const onCancel = vi.fn();
+    renderWithProviders(
+      <BaseModal
+        open
+        title="Delete build"
+        submitButtonText="Delete"
+        content={<p>Sure?</p>}
+        onSubmit={vi.fn()}
+        onCancel={onCancel}
+        {...props}
+      />,
+    );
+    return onCancel;
+  };
+
+  test("titles the dialog", () => {
+    renderPlain();
+
+    expect(
+      screen.getByRole("dialog", { name: "Delete build" }),
+    ).toBeInTheDocument();
+  });
+
+  test("puts Cancel before the submit button", () => {
+    renderPlain();
+
+    const names = within(screen.getByRole("dialog"))
+      .getAllByRole("button")
+      .map((button) => button.textContent);
+
+    expect(names.indexOf("Cancel")).toBeLessThan(names.indexOf("Delete"));
+  });
+
+  test("colours a destructive submit with the error colour", () => {
+    renderPlain({ submitColor: "error" });
+
+    expect(screen.getByRole("button", { name: "Delete" })).toHaveClass(
+      "MuiButton-colorError",
+    );
+  });
+
+  test("closes from the close button", async () => {
+    const onCancel = renderPlain();
+
+    await userEvent.click(screen.getByRole("button", { name: "Close dialog" }));
+
+    expect(onCancel).toHaveBeenCalledTimes(1);
+  });
+
+  test("a form is wider than a confirmation", () => {
+    renderPlain({ size: "md" });
+
+    expect(document.querySelector(".MuiDialog-paperWidthMd")).not.toBeNull();
   });
 });

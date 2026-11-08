@@ -201,8 +201,9 @@ const ProjectsListPage = () => {
         <>
           <BaseModal
             open={deleteDialogOpen}
-            title={"Delete Project"}
+            title={"Delete project"}
             submitButtonText={"Delete"}
+            submitColor="error"
             onCancel={toggleDeleteDialogOpen}
             content={
               <Typography>{`Are you sure you want to delete: ${projectState.projectEditState.name}?`}</Typography>
