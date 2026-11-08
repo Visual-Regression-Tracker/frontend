@@ -138,6 +138,22 @@ describe("parseNoiseAnalysisConfig", () => {
   );
 });
 
+describe("parseNoiseAnalysisConfig switches", () => {
+  it("reads a config without enabled as off", () => {
+    const config = parseNoiseAnalysisConfig("{}");
+    expect(config.blur.enabled).toBe(false);
+    expect(config.dinov2.enabled).toBe(false);
+  });
+
+  it("keeps a stored enabled: true on", () => {
+    const config = parseNoiseAnalysisConfig(
+      '{"blur":{"enabled":true},"dinov2":{"enabled":true}}',
+    );
+    expect(config.blur.enabled).toBe(true);
+    expect(config.dinov2.enabled).toBe(true);
+  });
+});
+
 describe("noiseAnalysisAvailable", () => {
   const project = (
     imageComparison: ImageComparison,
@@ -152,9 +168,9 @@ describe("noiseAnalysisAvailable", () => {
     ).toBe(true);
   });
 
-  it("is on for a project saved before the config existed", () => {
+  it("is off for a project saved before the config existed", () => {
     expect(noiseAnalysisAvailable(project(ImageComparison.odiff, ""))).toBe(
-      true,
+      false,
     );
   });
 

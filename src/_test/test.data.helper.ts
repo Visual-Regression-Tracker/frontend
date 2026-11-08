@@ -1,9 +1,10 @@
 import {
-  DEFAULT_NOISE_ANALYSIS_CONFIG_JSON,
+  DEFAULT_NOISE_ANALYSIS_CONFIG,
   PIXELMATCH_DEFAULT_CONFIG,
 } from "../constants";
 import {
   Build,
+  NoiseAnalysisConfig,
   NoiseAnalysisDto,
   NoiseAnalysisPending,
   NoiseSummary,
@@ -16,6 +17,12 @@ import { BuildStatus } from "../types/buildStatus";
 import { ImageComparison } from "../types/imageComparison";
 import { TestStatus } from "../types/testStatus";
 
+export const NOISE_ANALYSIS_ON: NoiseAnalysisConfig = {
+  blur: { ...DEFAULT_NOISE_ANALYSIS_CONFIG.blur, enabled: true },
+  dinov2: { ...DEFAULT_NOISE_ANALYSIS_CONFIG.dinov2, enabled: true },
+};
+export const NOISE_ANALYSIS_ON_JSON = JSON.stringify(NOISE_ANALYSIS_ON);
+
 export const TEST_PROJECT: Project = {
   id: "someProjectId",
   name: "Project name",
@@ -26,7 +33,7 @@ export const TEST_PROJECT: Project = {
   autoApproveFeature: true,
   imageComparison: ImageComparison.pixelmatch,
   imageComparisonConfig: PIXELMATCH_DEFAULT_CONFIG,
-  noiseAnalysisConfig: DEFAULT_NOISE_ANALYSIS_CONFIG_JSON,
+  noiseAnalysisConfig: NOISE_ANALYSIS_ON_JSON,
   maxBuildAllowed: 100,
   maxBranchLifetime: 30,
   bulkApproveVariations: false,
