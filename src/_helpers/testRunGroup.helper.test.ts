@@ -182,4 +182,13 @@ describe("groupStatusSummary", () => {
       ]),
     ).toBe("2 unresolved · 1 approved");
   });
+
+  it("words the statuses as the labels do", () => {
+    expect(
+      groupStatusSummary([
+        run({ id: "a", status: TestStatus.ok }),
+        run({ id: "b", status: TestStatus.autoApproved }),
+      ]),
+    ).toBe("1 auto-approved · 1 passed");
+  });
 });

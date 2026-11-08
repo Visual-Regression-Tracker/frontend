@@ -66,7 +66,7 @@ describe("TestRunTable", () => {
     await waitFor(() => expect(dataRows()).toHaveLength(2));
     const row = rowOf("Screen A");
     expect(within(row).getByText("en")).toBeInTheDocument();
-    expect(within(row).getByText("unresolved")).toBeInTheDocument();
+    expect(within(row).getByText("Unresolved")).toBeInTheDocument();
     expect(screen.queryByTestId("groupCount")).not.toBeInTheDocument();
   });
 

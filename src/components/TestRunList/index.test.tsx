@@ -751,7 +751,7 @@ describe("TestRunList status filter", () => {
     await user.click(screen.getByRole("button", { name: "Approve open-a" }));
 
     await waitFor(() =>
-      expect(within(rowOf("Screen A")).getByText("approved")).toBeVisible(),
+      expect(within(rowOf("Screen A")).getByText("Approved")).toBeVisible(),
     );
     expect(filterChip("unresolved")).toBeInTheDocument();
   });

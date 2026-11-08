@@ -1,6 +1,7 @@
 import { TestRun, TestStatus } from "../types";
 import { byAttention, statusesByAttention } from "./testRunStatus.helper";
 import { byDiffDesc } from "./testRunOrder.helper";
+import { statusLabelInline } from "./statusLabel.helper";
 
 // Mirrors the backend; siblings differ only on the axis the project groups by.
 const GROUP_BY_AXES = [
@@ -56,7 +57,7 @@ export const groupStatusSummary = (runs: TestRun[]): string => {
   }
 
   return statusesByAttention(Array.from(counts.keys()))
-    .map((status) => `${counts.get(status)} ${status}`)
+    .map((status) => `${counts.get(status)} ${statusLabelInline(status)}`)
     .join(" · ");
 };
 

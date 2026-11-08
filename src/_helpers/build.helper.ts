@@ -1,6 +1,7 @@
 import type { Build } from "../types";
 import { BuildStatus } from "../types/buildStatus";
 import { pluralize } from "./format.helper";
+import { statusLabelInline } from "./statusLabel.helper";
 
 const MINUTE = 60_000;
 
@@ -31,5 +32,5 @@ export const buildSummary = (
   if (build.status === BuildStatus.failed) {
     return `${count} · ${build.failedCount} failed`;
   }
-  return `${count} · ${build.status}`;
+  return `${count} · ${statusLabelInline(build.status)}`;
 };

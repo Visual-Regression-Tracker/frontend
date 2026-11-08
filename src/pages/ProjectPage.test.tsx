@@ -167,14 +167,14 @@ describe("ProjectPage live updates", () => {
   describe("test runs of the open build", () => {
     it("shows a changed status on the row", async () => {
       const { socket } = await renderProjectPage();
-      expect(testRunRow("Screen A").getByText("unresolved")).toBeVisible();
+      expect(testRunRow("Screen A").getByText("Unresolved")).toBeVisible();
 
       socket.receive("testRun_updated", [
         testRun("Screen A", { status: TestStatus.approved }),
       ]);
 
-      expect(testRunRow("Screen A").getByText("approved")).toBeVisible();
-      expect(testRunRow("Screen B").getByText("unresolved")).toBeVisible();
+      expect(testRunRow("Screen A").getByText("Approved")).toBeVisible();
+      expect(testRunRow("Screen B").getByText("Unresolved")).toBeVisible();
     });
 
     it("adds a row for a created test run", async () => {
@@ -210,7 +210,7 @@ describe("ProjectPage live updates", () => {
         expect.arrayContaining(["Screen A", "Screen B"]),
       );
       expect(testRunNames()).toHaveLength(2);
-      expect(testRunRow("Screen A").getByText("unresolved")).toBeVisible();
+      expect(testRunRow("Screen A").getByText("Unresolved")).toBeVisible();
     });
   });
 

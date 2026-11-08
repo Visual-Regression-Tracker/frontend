@@ -16,7 +16,9 @@ describe("ResultsChart", () => {
     const bars = within(
       screen.getByRole("list", { name: "Results per build" }),
     ).getAllByRole("link");
-    expect(bars[0]).toHaveAccessibleName("Build #7: 5 runs (4 ok, 1 failed)");
+    expect(bars[0]).toHaveAccessibleName(
+      "Build #7: 5 runs (4 passed, 1 failed)",
+    );
     expect(bars[1]).toHaveAccessibleName("Build #8: 0 runs");
   });
 
@@ -61,8 +63,18 @@ describe("ResultsChart", () => {
       <ResultsChart projectId="p1" builds={[buildResult(1)]} />,
     );
 
-    for (const status of Object.values(TestStatus)) {
-      expect(screen.getByTestId(`legend-${status}`)).toHaveTextContent(status);
+    const labels = {
+      [TestStatus.ok]: "Passed",
+      [TestStatus.approved]: "Approved",
+      [TestStatus.autoApproved]: "Auto-approved",
+      [TestStatus.new]: "New",
+      [TestStatus.unresolved]: "Unresolved",
+      [TestStatus.failed]: "Failed",
+    };
+    for (const [status, label] of Object.entries(labels)) {
+      expect(screen.getByTestId(`legend-${status}`)).toHaveTextContent(
+        new RegExp(`^${label}$`),
+      );
     }
   });
 

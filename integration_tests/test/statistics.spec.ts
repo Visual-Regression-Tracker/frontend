@@ -35,7 +35,7 @@ test("shows a bar per kept build and the build limit", async ({ page }) => {
   await expect(statistics.bars.getByRole("link")).toHaveCount(12);
   await expect(page.getByText("12 builds kept (limit 100)")).toBeVisible();
   await expect(statistics.bar("Build #4")).toHaveAccessibleName(
-    "Build #4: 20 runs (12 ok, 2 unresolved, 6 failed)",
+    "Build #4: 20 runs (12 passed, 2 unresolved, 6 failed)",
   );
 });
 
@@ -47,7 +47,7 @@ test("a bar tells the counts per status on hover", async ({ page }) => {
 
   const tooltip = page.getByRole("tooltip");
   await expect(tooltip).toContainText("Build #4");
-  await expect(tooltip).toContainText("failed");
+  await expect(tooltip).toContainText("Failed");
   await expect(tooltip).toContainText("6");
 });
 

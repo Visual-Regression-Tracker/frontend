@@ -421,6 +421,25 @@ const VIEWS: [name: string, body: Body][] = [
   ],
 
   [
+    "project page table with an auto-approved run",
+    async ({ openProjectPage, page, shot }) => {
+      await mockGetTestRuns(page, build.id, [
+        TEST_RUN_NEW,
+        {
+          ...TEST_RUN_APPROVED,
+          id: "auto-approved",
+          status: TestStatus.autoApproved,
+        },
+        TEST_RUN_OK,
+      ]);
+      const projectPage = await openProjectPage(project.id, build.id);
+
+      await expect(projectPage.testRunList.rows).toHaveCount(3);
+      await shot("project-page-table-auto-approved");
+    },
+  ],
+
+  [
     "project page as a table",
     async ({ openProjectPage, shot }) => {
       const projectPage = await openProjectPage(project.id, build.id);

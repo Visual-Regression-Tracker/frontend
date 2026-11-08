@@ -1,5 +1,6 @@
 import { Box, Chip } from "@mui/material";
 import { statusColor } from "../theme";
+import { statusLabel } from "../_helpers/statusLabel.helper";
 
 type StatusChipVariant = "outlined" | "dot" | "filled";
 
@@ -31,9 +32,16 @@ export const StatusChip = ({ status, variant = "outlined" }: IProps) => {
             bgcolor: color === "default" ? "text.disabled" : `${color}.main`,
           }}
         />
-        {status}
+        {statusLabel(status)}
       </Box>
     );
   }
-  return <Chip variant={variant} color={color} label={status} size="small" />;
+  return (
+    <Chip
+      variant={variant}
+      color={color}
+      label={statusLabel(status)}
+      size="small"
+    />
+  );
 };

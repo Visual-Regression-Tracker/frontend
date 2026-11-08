@@ -24,25 +24,28 @@ describe("StatusChip", () => {
   });
 
   it.each([
-    ["new", "info"],
-    ["unresolved", "warning"],
-    ["failed", "error"],
-    ["approved", "success"],
-    ["autoApproved", "success"],
-    ["ok", "success"],
-    ["passed", "success"],
-    ["something else", "default"],
-  ])("shows %s as an outlined small chip coloured %s", (status, color) => {
-    render(<StatusChip status={status} />);
+    ["new", "New", "info"],
+    ["unresolved", "Unresolved", "warning"],
+    ["failed", "Failed", "error"],
+    ["approved", "Approved", "success"],
+    ["autoApproved", "Auto-approved", "success"],
+    ["ok", "Passed", "success"],
+    ["passed", "Passed", "success"],
+    ["something else", "something else", "default"],
+  ])(
+    "shows %s as an outlined small chip labelled %s coloured %s",
+    (status, label, color) => {
+      render(<StatusChip status={status} />);
 
-    expect(screen.getByText(status)).toBeInTheDocument();
-    expect(lastChipProps()).toMatchObject({
-      label: status,
-      color,
-      variant: "outlined",
-      size: "small",
-    });
-  });
+      expect(screen.getByText(label)).toBeInTheDocument();
+      expect(lastChipProps()).toMatchObject({
+        label,
+        color,
+        variant: "outlined",
+        size: "small",
+      });
+    },
+  );
 
   it("shows a filled chip", () => {
     render(<StatusChip status="unresolved" variant="filled" />);
@@ -56,7 +59,7 @@ describe("StatusChip", () => {
   it("shows a dot and the text without a chip", () => {
     render(<StatusChip status="failed" variant="dot" />);
 
-    expect(screen.getByText("failed")).toBeInTheDocument();
+    expect(screen.getByText("Failed")).toBeInTheDocument();
     expect(screen.getByTestId("status-dot")).toBeInTheDocument();
     expect(chipProps).toHaveLength(0);
   });
@@ -65,7 +68,7 @@ describe("StatusChip", () => {
     render(<StatusChip status={undefined} />);
 
     expect(lastChipProps()).toMatchObject({
-      label: undefined,
+      label: "",
       color: "default",
     });
   });

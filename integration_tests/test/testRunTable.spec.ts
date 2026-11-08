@@ -80,7 +80,7 @@ test("narrows the table to the runs with the chosen status", async ({
   );
   await expect(testRunList.rows).toHaveCount(10);
 
-  await testRunFilters.selectStatus("unresolved");
+  await testRunFilters.selectStatus("Unresolved");
   await expect(testRunList.rowNames).toHaveText(
     UNRESOLVED.slice(0, 10).map((run) => run.name),
   );
@@ -99,7 +99,7 @@ test("walks only the filtered runs with the right arrow, in table order", async 
     project.id,
     build.id,
   );
-  await testRunFilters.selectStatus("unresolved");
+  await testRunFilters.selectStatus("Unresolved");
   await expect(testRunList.rows).toHaveCount(10);
 
   await testRunList.rowNames.first().click();
@@ -127,7 +127,7 @@ test("stays on the last filtered run when the right arrow is pressed again", asy
     project.id,
     build.id,
   );
-  await testRunFilters.selectStatus("unresolved");
+  await testRunFilters.selectStatus("Unresolved");
   await expect(testRunList.rows).toHaveCount(10);
   await testRunList.tableNextPage.click();
   await expect(testRunList.rows).toHaveCount(2);
@@ -187,7 +187,7 @@ test("ticks every filtered run across the pages with the header checkbox", async
 }) => {
   const { testRunList, testRunFilters, modal, notification } =
     await openProjectPage(project.id, build.id);
-  await testRunFilters.selectStatus("unresolved");
+  await testRunFilters.selectStatus("Unresolved");
   await expect(testRunList.rows).toHaveCount(10);
 
   await testRunList.selectAllRows.click();
@@ -223,7 +223,7 @@ test("undoes a bulk approval from its toast", async ({
   await mockRevertTestRuns(page);
   const { testRunList, testRunFilters, modal, notification } =
     await openProjectPage(project.id, build.id);
-  await testRunFilters.selectStatus("unresolved");
+  await testRunFilters.selectStatus("Unresolved");
   await testRunList.checkRow(UNRESOLVED[0].id);
   await testRunList.checkRow(UNRESOLVED[1].id);
   await testRunList.approveBtn.click();
@@ -248,7 +248,7 @@ test("clears the ticks when the header checkbox is unticked", async ({
     project.id,
     build.id,
   );
-  await testRunFilters.selectStatus("unresolved");
+  await testRunFilters.selectStatus("Unresolved");
   await testRunList.selectAllRows.click();
   await expect(testRunList.tableSelectionCount).toBeVisible();
 

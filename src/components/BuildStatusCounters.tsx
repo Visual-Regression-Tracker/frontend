@@ -2,6 +2,7 @@ import { useMemo } from "react";
 import { Chip, Stack } from "@mui/material";
 import { type TestRun, TestStatus } from "../types";
 import { statusColor } from "../theme";
+import { statusLabel } from "../_helpers/statusLabel.helper";
 import { statusesByAttention } from "../_helpers/testRunStatus.helper";
 
 interface IProps {
@@ -9,11 +10,6 @@ interface IProps {
   statuses: TestStatus[];
   onStatusesChange: (statuses: TestStatus[]) => void;
 }
-
-const labelOf = (status: TestStatus) => {
-  const words = status.replace(/([A-Z])/g, " $1").toLowerCase();
-  return words.charAt(0).toUpperCase() + words.slice(1);
-};
 
 const ALL_STATUSES = statusesByAttention(Object.values(TestStatus));
 
@@ -65,7 +61,7 @@ export const BuildStatusCounters = ({
             aria-pressed={active}
             variant={active ? "filled" : "outlined"}
             color={statusColor(status)}
-            label={`${labelOf(status)} ${count}`}
+            label={`${statusLabel(status)} ${count}`}
             onClick={() => toggle(status)}
           />
         );

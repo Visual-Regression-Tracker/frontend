@@ -805,7 +805,7 @@ test("groups runs of one screen whose reviews are half done", async ({
 
   const screenA = projectPage.testRunList.getCard("Screen A");
   await expect(screenA.getByTestId("groupCount")).toHaveText("2");
-  await expect(screenA.getByText("unresolved")).toBeVisible();
+  await expect(screenA.getByText("Unresolved", { exact: true })).toBeVisible();
   await expect(
     screenA.locator('[title="1 unresolved · 1 approved"]'),
   ).toBeVisible();
