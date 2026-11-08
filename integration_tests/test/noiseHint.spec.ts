@@ -127,7 +127,7 @@ test.describe("run list", () => {
     await expect(buildDetails.analyseNoiseItem).toBeDisabled();
   });
 
-  test("sends the unresolved runs to the analysis and offers it again after the fallback wait", async ({
+  test("sends the unresolved runs to the analysis and shows them as analysing", async ({
     openProjectPage,
     page,
   }) => {
@@ -135,9 +135,7 @@ test.describe("run list", () => {
     await mockAnalyseNoise(page, { queued: 5, skipped: [] });
     const { buildDetails } = await openProjectPage(project.id, build.id);
     await buildDetails.openMenu();
-    await expect(buildDetails.analyseNoiseItem).toHaveText(
-      "Analyse rendering noise (5)",
-    );
+    await expect(buildDetails.analyseNoiseItem).toHaveText("Analyse noise (5)");
 
     const [request] = await Promise.all([
       page.waitForRequest(analysesNoise),
@@ -145,8 +143,39 @@ test.describe("run list", () => {
     ]);
 
     expect(sentIds(request)).toEqual(idsOf([...ANALYSED_RUNS, NOT_ANALYSED]));
+    await expect(buildDetails.noiseLine).toHaveText("Analysing 5 of 5…");
     await buildDetails.openMenu();
-    await expect(buildDetails.analyseNoiseItem).toBeEnabled();
+    await expect(buildDetails.analyseNoiseItem).toBeDisabled();
+  });
+
+  test("analyses the selected runs and shows them as analysing at once", async ({
+    openProjectPage,
+    page,
+  }) => {
+    await mockTestRunsWithDetails(page, build.id, withUnanalysed);
+    await mockAnalyseNoise(page, { queued: 2, skipped: [] });
+    const { testRunList, notification } = await openProjectPage(
+      project.id,
+      build.id,
+    );
+    await expect(testRunList.rows).toHaveCount(withUnanalysed.length);
+    await testRunList.checkRow(NOT_ANALYSED.id);
+    await testRunList.checkRow(NOISE_CART.id);
+
+    const [request] = await Promise.all([
+      page.waitForRequest(analysesNoise),
+      testRunList.analyseBtn.click(),
+    ]);
+
+    expect(sentIds(request)).toEqual(idsOf([NOT_ANALYSED, NOISE_CART]));
+    await expect(testRunList.noiseChip(NOT_ANALYSED.id)).toHaveText(
+      "Analysing…",
+    );
+    await expect(testRunList.noiseChip(NOISE_CART.id)).toHaveText("Analysing…");
+    await expect(testRunList.noiseChip(NOISE_LOGIN.id)).toHaveText(
+      "Likely noise",
+    );
+    await expect(notification.toast("Analysing 2 test runs.")).toBeVisible();
   });
 
   test("warns when the analysis queue is full", async ({
@@ -217,9 +246,7 @@ test.describe("run list", () => {
     );
     await testRunFilters.selectNoiseHint("Likely noise");
     await buildDetails.openMenu();
-    await expect(buildDetails.analyseNoiseItem).toHaveText(
-      "Analyse rendering noise (3)",
-    );
+    await expect(buildDetails.analyseNoiseItem).toHaveText("Analyse noise (3)");
 
     const [request] = await Promise.all([
       page.waitForRequest(analysesNoise),
