@@ -92,6 +92,7 @@ export class TestDetailsDialog extends PageObject {
   commentChip = this.page.getByRole("button", { name: "Edit comment" });
   addCommentBtn = this.page.getByRole("button", { name: "Add comment" });
   vlmAnalysis = this.page.getByTestId(TEST_ID.vlmAnalysis);
+  vlmMore = this.vlmAnalysis.getByRole("button", { name: "More" });
   comment = this.page.getByTestId(TEST_ID.comment);
   commentPopper = this.page.getByRole("tooltip").filter({ has: this.comment });
   commentSaveBtn = this.commentPopper.getByRole("button", { name: "Save" });

@@ -6,6 +6,7 @@ export class ProjectListPage extends BasePage {
   addBtn = this.page.getByRole("button", { name: "Add project", exact: true });
   deleteBtn = this.page.getByTestId("delete");
   settingsBtn = this.page.getByTestId("SettingsIcon");
+  loadingStatus = this.page.getByRole("status", { name: "Loading projects" });
   search = this.page.getByRole("searchbox", { name: "Search projects" });
 
   project(name: string) {

@@ -20,7 +20,6 @@ export class BuildList extends PageObject {
   });
   currentPage = this.buildList.locator('[aria-current="page"]');
 
-  menu = this.page.getByRole("menu");
   ciBuildIdInput = this.page.getByTestId(TEST_ID.newCiBuildId);
 
   getBuildItem(number: number) {

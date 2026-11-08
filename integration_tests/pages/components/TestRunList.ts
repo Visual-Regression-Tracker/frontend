@@ -62,6 +62,10 @@ export class TestRunList extends Table {
   selectAll = this.page.getByTestId(TEST_ID.gridSelectAll);
   selectionCount = this.page.getByTestId(TEST_ID.gridSelectionCount);
 
+  rowCheckbox(rowId: string) {
+    return this.getRow(rowId).getByRole("checkbox");
+  }
+
   rowName(text: string) {
     return this.rowNames.getByText(text);
   }

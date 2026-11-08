@@ -131,11 +131,11 @@ test("opens the baseline history in a new tab", async ({
   openProjectPage,
   page,
 }) => {
-  await open(openProjectPage);
+  const details = await open(openProjectPage);
 
   const [history] = await Promise.all([
     page.waitForEvent("popup"),
-    page.getByRole("button", { name: /^History/ }).click(),
+    details.history.click(),
   ]);
 
   expect(history.url()).toContain(
