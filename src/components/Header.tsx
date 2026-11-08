@@ -18,7 +18,6 @@ import { Link, useLocation } from "react-router-dom";
 import { useUserDispatch, useUserState, logout } from "../contexts";
 import { routes } from "../constants";
 import logo from "../static/logo.png";
-import GuidedTour from "./GuidedTour";
 import { Tooltip } from "./Tooltip";
 import { ColorModeToggle } from "./ColorModeToggle";
 import { ProjectBreadcrumb } from "./ProjectBreadcrumb";
@@ -82,9 +81,6 @@ const Header = () => {
       open={!!helpMenuRef}
       onClose={handleMenuClose}
     >
-      <MenuItem onClick={handleMenuClose}>
-        <GuidedTour />
-      </MenuItem>
       <MenuItem onClick={closeMenuAndOpenLink}>
         <ListItemIcon>
           <GitHub fontSize="small" />

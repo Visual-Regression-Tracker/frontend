@@ -31,10 +31,10 @@ tests, never lower them to get green.
 src/
   pages/        one file per route, composes components; routes in Router.tsx
   components/   UI; a folder when a component has parts (TestRunList/, TestDetailsDialog/)
-  contexts/     React context + reducer per domain (user, project, build, testRun, socket, help)
+  contexts/     React context + reducer per domain (user, project, build, testRun, socket)
   services/     the only place that talks HTTP (fetch); one file per API resource
   _helpers/     pure functions and small hooks, no JSX
-  constants/    routes, guided-tour locators and steps, defaults
+  constants/    routes, element-id locators, defaults
   theme/        MUI theme, design tokens, colour mode
   types/        API types, shared enums
   _test/        test fixtures and renderWithProviders
@@ -100,9 +100,8 @@ Patterns that already work here, with example files: `docs/TESTING.md`.
 ## Things that look free to change but are not
 
 - `data-testid`s, `aria-label`s, element ids and visible button texts are
-  used by page objects and by the guided tour (`src/constants/help.ts`,
-  `*.locators.ts`). Renaming one means updating the page object and the tour
-  in the same change.
+  used by page objects (`src/constants/locators.ts`, `*.locators.ts`).
+  Renaming one means updating the page object in the same change.
 - Page objects also match some stock MUI class names (`.MuiCard-root`,
   `.MuiDataGrid-row`, `.MuiChip-label`, `.notistack-MuiContent`); keep those
   elements as the same MUI components.
@@ -111,6 +110,3 @@ Patterns that already work here, with example files: `docs/TESTING.md`.
   purpose, regenerate in Docker and look at every changed PNG before
   committing.
 - `react-konva` follows React's major, so the two are upgraded together.
-- The guided tour is `react-joyride`. Its look is set once, through the
-  `options` and `styles` props in `GuidedTour.tsx`, and page objects find it
-  by `.react-joyride__tooltip`.

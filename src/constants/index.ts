@@ -1,4 +1,4 @@
-export * from "./help";
+export * from "./locators";
 export * from "./ignoreAreas";
 export * from "./project";
 export * from "./routes";

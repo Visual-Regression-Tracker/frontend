@@ -26,7 +26,7 @@ import {
   useNoiseAnalysisAvailable,
   useTestRunState,
 } from "../contexts";
-import { LOCATOR_BUILD_DETAILS } from "../constants/help";
+import { LOCATOR_BUILD_DETAILS } from "../constants/locators";
 import { buildTestRunLocation } from "../_helpers/route.helpers";
 import { hasLaterRun } from "../_helpers/build.helper";
 import { noiseHintOf } from "../_helpers/noiseHint.helper";

@@ -812,18 +812,6 @@ const VIEWS: [name: string, body: Body][] = [
   ],
 
   [
-    "guided tour",
-    async ({ projectListPage, shot }) => {
-      await expect(projectListPage.projects).toHaveCount(1);
-
-      const tour = await projectListPage.header.startTour();
-
-      await expect(tour.joyrideOverlay).toBeVisible();
-      await shot("guided-tour");
-    },
-  ],
-
-  [
     "project settings",
     async ({ projectSettingsPage, shot }) => {
       await expect(projectSettingsPage.name).toHaveValue(project.name);
