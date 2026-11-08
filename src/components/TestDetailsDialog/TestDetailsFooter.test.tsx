@@ -15,7 +15,6 @@ const renderFooter = (overrides: Partial<Props> = {}) => {
   const props: Props = {
     testRun: run({ status: TestStatus.unresolved }),
     zoomControls: <button>Zoom slot</button>,
-    hasNext: true,
     onNext: vi.fn(),
     onOpenVariations: vi.fn(),
     ...overrides,
@@ -133,17 +132,15 @@ describe("TestDetailsFooter", () => {
       expect(await undoIn("Approved")).toBeVisible();
     });
 
-    it("leaves the undo to the footer on the last run, where there is no next to go to", async () => {
+    it("keeps the undo in the toast with Go to the next on, since the footer undo waits for the status update", async () => {
       localStorage.setItem(GO_TO_NEXT_KEY, "true");
       vi.spyOn(testRunService, "approveBulk").mockResolvedValue(NO_FAILURES);
-      const { user } = renderFooter({ hasNext: false });
+      const { user, props } = renderFooter({ onNext: vi.fn() });
 
       await user.click(approve());
 
-      const toast = await toastOf("Approved");
-      expect(
-        within(toast).queryByText("Undo", { selector: "button" }),
-      ).toBeNull();
+      expect(await undoIn("Approved")).toBeVisible();
+      expect(props.onNext).toHaveBeenCalledTimes(1);
     });
 
     it("leaves the undo to the footer when staying on the run", async () => {
