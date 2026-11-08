@@ -1,6 +1,7 @@
 import { Locator } from "@playwright/test";
 import { PageObject } from "./PageObject";
 import { boxOf } from "utils/boxOf";
+import { defined } from "utils/defined";
 import { TEST_ID } from "~client/constants/locators";
 
 type KonvaNode = {
@@ -41,6 +42,11 @@ export class TestDetailsDialog extends PageObject {
   });
   areasChip = this.page.getByRole("button", { name: /^Ignore areas \(\d+\)$/ });
   drawMode = this.iconButton(TEST_ID.addIcon);
+  drawModeToggle = this.page.locator(`button[value="drawMode"]`);
+  lastCanvas = this.drawAreas.last().locator("canvas").last();
+  promptYes = this.page.getByRole("button", { name: "Yes" });
+  promptCancel = this.page.getByRole("button", { name: "Cancel" });
+  promptDiscard = this.page.getByRole("button", { name: "Discard" });
   deleteArea = this.iconButton(TEST_ID.deleteIcon);
   clearAreas = this.iconButton(TEST_ID.layersClearIcon);
   applyAreas = this.iconButton(TEST_ID.collectionsIcon);
@@ -113,6 +119,19 @@ export class TestDetailsDialog extends PageObject {
   hintDinov2 = this.page.getByTestId(TEST_ID.hintAreasDinov2);
 
   discardPrompt = this.page.getByText("You have not saved ignore areas");
+
+  fullSizeBaseline = this.page.getByAltText("baseline");
+  fullSizeCheckpoint = this.page.getByAltText("checkpoint");
+
+  variationsText(text: string): Locator {
+    return this.variations.getByText(text);
+  }
+
+  viewVariationFullSize(name: string): Locator {
+    return this.variations.getByRole("button", {
+      name: `View ${name} full size`,
+    });
+  }
 
   variation(label: string): Locator {
     return this.variations.getByRole("checkbox", { name: label, exact: true });
@@ -370,6 +389,29 @@ export class TestDetailsDialog extends PageObject {
 
       return overlaid.globalCompositeOperation();
     });
+  }
+
+  /** Page coordinates, for gestures that must end outside the image. */
+  async dragOnPage(
+    from: { x: number; y: number },
+    to: { x: number; y: number },
+  ) {
+    const viewport = defined(this.page.viewportSize(), "The viewport size");
+    const { mouse } = this.page;
+
+    // Firefox never sees the release outside the window: stop at its edge, still past the image
+    await mouse.move(from.x, from.y);
+    await mouse.down();
+    await mouse.move(
+      Math.min(Math.max(to.x, 0), viewport.width - 1),
+      Math.min(Math.max(to.y, 0), viewport.height - 1),
+      { steps: 10 },
+    );
+    await mouse.up();
+  }
+
+  async clickOnPage(point: { x: number; y: number }) {
+    await this.page.mouse.click(point.x, point.y);
   }
 
   async chooseAreaKind(kind: "Ignore Areas" | "Compare Area") {

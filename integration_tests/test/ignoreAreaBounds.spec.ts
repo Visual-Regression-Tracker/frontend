@@ -1,5 +1,5 @@
 import { expect, Page } from "@playwright/test";
-import { test } from "fixtures";
+import { OpenProjectPage, test } from "fixtures";
 import {
   TEST_BUILD_FAILED,
   TEST_PROJECT,
@@ -16,8 +16,8 @@ import {
   mockTestRun,
 } from "utils/mocks";
 import { boxOf } from "utils/boxOf";
-import { defined } from "utils/defined";
 import { postData } from "utils/postData";
+import type { TestDetailsDialog } from "pages/TestDetailsDialog";
 
 const project = TEST_PROJECT;
 const build = TEST_BUILD_FAILED;
@@ -25,7 +25,7 @@ const IMAGE = { width: 1280, height: 720 };
 
 const openRunWith = async (
   page: Page,
-  openProjectPage: (id: string, buildId: string, testId: string) => unknown,
+  openProjectPage: OpenProjectPage,
   ignoreAreas: IgnoreArea[],
   tempIgnoreAreas: Omit<IgnoreArea, "id">[] = [],
 ) => {
@@ -43,44 +43,28 @@ const openRunWith = async (
   await mockImage(page, "diff.png");
   await mockImage(page, "baseline.png");
 
-  await openProjectPage(project.id, build.id, run.id);
-  await page.getByRole("button", { name: "Edit areas" }).click();
+  const { details } = await openProjectPage(project.id, build.id, run.id);
+  await details.editAreas.click();
 
-  const canvas = page.getByTestId("drawArea").last().locator("canvas").last();
-  await expect(canvas).toBeVisible();
-  const box = await boxOf(canvas);
+  await expect(details.lastCanvas).toBeVisible();
+  const box = await boxOf(details.lastCanvas);
   const scale = box.width / IMAGE.width;
-  return (x: number, y: number) => ({
+  const toPage = (x: number, y: number) => ({
     x: box.x + x * scale,
     y: box.y + y * scale,
   });
+
+  return { details, toPage };
 };
 
-const drag = async (
-  page: Page,
-  from: { x: number; y: number },
-  to: { x: number; y: number },
-) => {
-  // Firefox never sees the release outside the window: stop at its edge, still past the image
-  const viewport = defined(page.viewportSize(), "The viewport size");
-  await page.mouse.move(from.x, from.y);
-  await page.mouse.down();
-  await page.mouse.move(
-    Math.min(Math.max(to.x, 0), viewport.width - 1),
-    Math.min(Math.max(to.y, 0), viewport.height - 1),
-    { steps: 10 },
-  );
-  await page.mouse.up();
-};
-
-const saveIgnoreAreas = async (page: Page) => {
+const saveIgnoreAreas = async (page: Page, details: TestDetailsDialog) => {
   const request = page.waitForRequest(
     `${API_URL}/test-runs/ignoreAreas/update`,
   );
   await page.route(`${API_URL}/test-runs/ignoreAreas/update`, (route) =>
     route.fulfill({ status: 200, body: "{}" }),
   );
-  await page.locator('[data-testid="SaveIcon"]').click();
+  await details.saveAreas.click();
   return postData<UpdateIgnoreAreaDto>(await request).ignoreAreas;
 };
 
@@ -89,16 +73,15 @@ test("stops an area resized past the bottom-right of the image at its border", a
   page,
 }) => {
   const area = { id: "1", x: 1100, y: 600, width: 100, height: 80 };
-  const toPage = await openRunWith(page, openProjectPage, [area]);
+  const { toPage, details } = await openRunWith(page, openProjectPage, [area]);
 
-  await page.mouse.click(
-    toPage(area.x + area.width / 2, area.y + area.height / 2).x,
-    toPage(area.x + area.width / 2, area.y + area.height / 2).y,
+  await details.clickOnPage(
+    toPage(area.x + area.width / 2, area.y + area.height / 2),
   );
   const corner = toPage(area.x + area.width, area.y + area.height);
-  await drag(page, corner, { x: corner.x + 200, y: corner.y + 200 });
+  await details.dragOnPage(corner, { x: corner.x + 200, y: corner.y + 200 });
 
-  expect(await saveIgnoreAreas(page)).toEqual([
+  expect(await saveIgnoreAreas(page, details)).toEqual([
     {
       ...area,
       width: IMAGE.width - area.x,
@@ -112,16 +95,15 @@ test("stops an area resized past the top-left of the image at its border", async
   page,
 }) => {
   const area = { id: "1", x: 40, y: 30, width: 100, height: 80 };
-  const toPage = await openRunWith(page, openProjectPage, [area]);
+  const { toPage, details } = await openRunWith(page, openProjectPage, [area]);
 
-  await page.mouse.click(
-    toPage(area.x + area.width / 2, area.y + area.height / 2).x,
-    toPage(area.x + area.width / 2, area.y + area.height / 2).y,
+  await details.clickOnPage(
+    toPage(area.x + area.width / 2, area.y + area.height / 2),
   );
   const corner = toPage(area.x, area.y);
-  await drag(page, corner, { x: corner.x - 200, y: corner.y - 200 });
+  await details.dragOnPage(corner, { x: corner.x - 200, y: corner.y - 200 });
 
-  expect(await saveIgnoreAreas(page)).toEqual([
+  expect(await saveIgnoreAreas(page, details)).toEqual([
     {
       ...area,
       x: 0,
@@ -136,13 +118,13 @@ test("keeps an area drawn at the edge of the image inside it", async ({
   openProjectPage,
   page,
 }) => {
-  const toPage = await openRunWith(page, openProjectPage, []);
+  const { toPage, details } = await openRunWith(page, openProjectPage, []);
 
-  await page.locator('button[value="drawMode"]').click();
+  await details.drawModeToggle.click();
   const corner = toPage(IMAGE.width - 1, IMAGE.height - 1);
-  await page.mouse.click(corner.x - 1, corner.y - 1);
+  await details.clickOnPage({ x: corner.x - 1, y: corner.y - 1 });
 
-  const [drawn] = await saveIgnoreAreas(page);
+  const [drawn] = await saveIgnoreAreas(page, details);
   expect(drawn.x + drawn.width).toBeLessThanOrEqual(IMAGE.width);
   expect(drawn.y + drawn.height).toBeLessThanOrEqual(IMAGE.height);
   expect(drawn.width).toBeGreaterThan(0);
@@ -154,7 +136,7 @@ test("lets an area under the compared run's areas be selected and moved", async 
   page,
 }) => {
   const area = { id: "1", x: 200, y: 200, width: 100, height: 80 };
-  const toPage = await openRunWith(
+  const { toPage, details } = await openRunWith(
     page,
     openProjectPage,
     [area],
@@ -162,14 +144,14 @@ test("lets an area under the compared run's areas be selected and moved", async 
   );
 
   const center = toPage(area.x + area.width / 2, area.y + area.height / 2);
-  await page.mouse.click(center.x, center.y);
+  await details.clickOnPage(center);
   const moved = toPage(
     area.x + area.width / 2 + 100,
     area.y + area.height / 2 + 50,
   );
-  await drag(page, center, moved);
+  await details.dragOnPage(center, moved);
 
-  const [saved] = await saveIgnoreAreas(page);
+  const [saved] = await saveIgnoreAreas(page, details);
   expect(saved.x).toBeCloseTo(area.x + 100, -1);
   expect(saved.y).toBeCloseTo(area.y + 50, -1);
 });

@@ -118,7 +118,7 @@ test("draws the areas applied at upload where they cannot be edited", async ({
 
   await expect.poll(() => details.lockedRects()).toEqual([TEMP_AREA]);
   expect(await details.ignoreRects()).toEqual([]);
-  await expect(page.getByTestId("WarningRoundedIcon").first()).toBeVisible();
+  await expect(details.warningIcons.first()).toBeVisible();
 });
 
 test("draws a rectangle and saves it as an ignore area", async ({
@@ -153,7 +153,7 @@ test("draws a rectangle and saves it as an ignore area", async ({
       },
     ],
   });
-  await expect(page.getByText("Ignore areas are updated.")).toBeVisible();
+  await expect(details.text("Ignore areas are updated.")).toBeVisible();
   await expect(details.saveAreas).toHaveCount(0);
   await expect(details.editAreas).toBeVisible();
 });
@@ -335,9 +335,7 @@ test("saves nothing in compare mode until an area is selected", async ({
 
   await details.saveAreas.click();
 
-  await expect(
-    page.getByText("Select the area to compare first."),
-  ).toBeVisible();
+  await expect(details.text("Select the area to compare first.")).toBeVisible();
   expect(saved).toBe(false);
   await expect(details.saveAreas).toBeEnabled();
 });
@@ -360,7 +358,7 @@ test("applies the selected area to every run in the build", async ({
 
   await details.applyAreas.click();
   await expect(
-    page.getByText(
+    details.text(
       "All images in the current build will be re-compared with new ignore area taken into account. Are you sure?",
     ),
   ).toBeVisible();
@@ -370,7 +368,7 @@ test("applies the selected area to every run in the build", async ({
         request.url() === `${API_URL}/test-runs/ignoreAreas/add` &&
         request.method() === "POST",
     ),
-    page.getByRole("button", { name: "Yes" }).click(),
+    details.promptYes.click(),
   ]);
 
   expect(request.postDataJSON()).toEqual({
@@ -378,7 +376,7 @@ test("applies the selected area to every run in the build", async ({
     ignoreAreas: [EXISTING_AREA],
   });
   await expect(
-    page.getByText("Ignore areas are updated in all images in this build."),
+    details.text("Ignore areas are updated in all images in this build."),
   ).toBeVisible();
   await expect(details.applyAreas).toBeDisabled();
 });
@@ -397,9 +395,9 @@ test("does not apply the area when the question is declined", async ({
   await details.clickAt({ x: 315, y: 192 });
   await details.applyAreas.click();
 
-  await page.getByRole("button", { name: "Cancel" }).click();
+  await details.promptCancel.click();
 
-  await expect(page.getByRole("button", { name: "Yes" })).toBeHidden();
+  await expect(details.promptYes).toBeHidden();
   expect(applied).toEqual([]);
 });
 
@@ -433,9 +431,7 @@ test("saves the area drawn in compare mode as the areas around it", async ({
     { x: 200, y: 120, width: 1080, height: 600 },
   ]);
   await expect(
-    page.getByText(
-      "Selected area has been inverted to ignore areas and saved.",
-    ),
+    details.text("Selected area has been inverted to ignore areas and saved."),
   ).toBeVisible();
 });
 
@@ -482,14 +478,14 @@ test("asks before leaving with an area that was not saved", async ({
   await details.closeBtn.click();
 
   await expect(details.discardPrompt).toBeVisible();
-  await page.getByRole("button", { name: "Cancel" }).click();
+  await details.promptCancel.click();
   await expect(details.discardPrompt).toBeHidden();
   await expect(details.drawAreas).toHaveCount(2);
   await expect(details.saveAreas).toBeEnabled();
   expect(await details.ignoreRects()).toHaveLength(1);
 
   await details.closeBtn.click();
-  await page.getByRole("button", { name: "Discard" }).click();
+  await details.promptDiscard.click();
 
   await expect(details.drawAreas).toHaveCount(0);
   await expect(page).not.toHaveURL(/testId=/);
@@ -507,7 +503,7 @@ test("asks before leaving on Escape with an area that was not saved", async ({
   await page.keyboard.press("Escape");
 
   await expect(details.discardPrompt).toBeVisible();
-  await page.getByRole("button", { name: "Discard" }).click();
+  await details.promptDiscard.click();
   await expect(details.drawAreas).toHaveCount(0);
   await expect(page).not.toHaveURL(/testId=/);
 });
