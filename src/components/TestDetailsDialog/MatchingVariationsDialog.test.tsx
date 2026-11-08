@@ -181,6 +181,56 @@ describe("MatchingVariationsDialog", () => {
     localStorage.removeItem(GO_TO_NEXT_KEY);
   });
 
+  it("closes from the close button", async () => {
+    const buildId = nextBuildId();
+    const { onClose } = await renderDialog({
+      buildId,
+      current: run("current", buildId),
+      answer: { variations: [run("v1", buildId)], skipped: [] },
+    });
+
+    await newReviewer().click(
+      screen.getByRole("button", { name: "Close dialog" }),
+    );
+
+    expect(onClose).toHaveBeenCalledTimes(1);
+  });
+
+  it("closes only the full-size view from its close button", async () => {
+    const buildId = nextBuildId();
+    const { onClose } = await renderDialog({
+      buildId,
+      current: run("current", buildId),
+      answer: { variations: [run("v1", buildId)], skipped: [] },
+    });
+    const reviewer = newReviewer();
+
+    await reviewer.click(
+      screen.getByRole("button", { name: /^View .* full size$/ }),
+    );
+    const closes = await screen.findAllByRole("button", {
+      name: "Close dialog",
+    });
+    await reviewer.click(closes[closes.length - 1]);
+
+    await waitFor(() => expect(screen.getAllByRole("dialog")).toHaveLength(1));
+    expect(onClose).not.toHaveBeenCalled();
+  });
+
+  it("colours the reject button with the error colour", async () => {
+    const buildId = nextBuildId();
+    await renderDialog({
+      buildId,
+      current: run("current", buildId),
+      mode: "reject",
+      answer: { variations: [run("v1", buildId)], skipped: [] },
+    });
+
+    expect(
+      screen.getByRole("button", { name: "Reject 1 selected" }),
+    ).toHaveClass("MuiButton-colorError");
+  });
+
   it("starts with the matching variations selected and the skipped ones not", async () => {
     const buildId = nextBuildId();
     const current = run("current", buildId);

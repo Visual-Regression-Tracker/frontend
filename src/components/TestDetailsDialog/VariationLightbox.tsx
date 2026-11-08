@@ -73,7 +73,7 @@ export const VariationLightbox = ({
     <Dialog open={!!run} onClose={onClose} maxWidth="xl" fullWidth>
       {preview && run && (
         <>
-          <DialogTitle>
+          <DialogTitle sx={{ pr: 3 }}>
             <Box
               sx={{
                 display: "flex",
@@ -110,7 +110,7 @@ export const VariationLightbox = ({
                     label="Show diff"
                   />
                 </Tooltip>
-                <IconButton onClick={onClose}>
+                <IconButton aria-label="Close dialog" onClick={onClose}>
                   <CloseIcon />
                 </IconButton>
               </Box>
