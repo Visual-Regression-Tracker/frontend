@@ -14,16 +14,14 @@ import {
   TEST_USER,
 } from "~client/_test/test.data.helper";
 import { Role, User } from "~client/types";
-import { waitForPage } from "utils/waitForPage";
 
 test.beforeEach(async ({ page }) => {
   await mockGetProjects(page, [TEST_PROJECT]);
   await mockGetUsers(page, [TEST_USER, EDITOR_USER, GUEST_USER]);
 });
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 test("renders", async ({ userListPage, page }) => {
-  await waitForPage(page);
+  await userListPage.waitUntilLoaded();
   await expect(page).toHaveScreenshot("user-list-page.png");
 });
 

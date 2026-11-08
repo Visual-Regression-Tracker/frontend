@@ -50,6 +50,14 @@ export class ProjectFormPage extends BasePage {
     );
   }
 
+  get options(): Locator {
+    return this.page.getByRole("option");
+  }
+
+  get listbox(): Locator {
+    return this.page.getByRole("listbox");
+  }
+
   switchLabelled(label: string) {
     return this.root.getByLabel(label, { exact: true });
   }

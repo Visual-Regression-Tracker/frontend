@@ -17,6 +17,10 @@ export class ProjectPage extends BasePage {
   noiseCaption = this.page.getByText(/unresolved look like rendering noise/);
   detailsDialog = this.modal.dialog;
 
+  get menuItems() {
+    return this.page.getByRole("menuitem");
+  }
+
   detailsText(text: string) {
     return this.detailsDialog.getByText(text, { exact: true });
   }

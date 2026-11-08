@@ -74,7 +74,7 @@ test("choosing a branch shows only its builds", async ({ page }) => {
   await expect(statistics.links).toHaveCount(12);
 
   await statistics.branchSelect.click();
-  await statistics.option("feature").click();
+  await statistics.branchOption("feature").click();
 
   await expect(statistics.links).toHaveCount(1);
   await expect(statistics.text("1 build kept (limit 100)")).toBeVisible();

@@ -8,7 +8,7 @@ import {
   ProjectStatisticsPage,
 } from "pages";
 import { RegisterPage } from "pages/RegisterPage";
-import type { PageObject } from "pages/PageObject";
+import type { BasePage } from "pages/BasePage";
 import type { ProjectSettingsPage } from "pages/ProjectSettingsPage";
 import {
   EDITOR_USER,
@@ -140,7 +140,7 @@ const showTopOfSettings = async (settings: ProjectSettingsPage) => {
   await expect(settings.saveBtn).toBeVisible();
 };
 
-const showWholeContent = async (content: PageObject) => {
+const showWholeContent = async (content: BasePage) => {
   await expect
     .poll(async () => {
       const extra = await content.mainOverflow();

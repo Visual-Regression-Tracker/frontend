@@ -3,11 +3,9 @@ import { expect } from "@playwright/test";
 import { LoginPage } from "pages";
 import { RegisterPage } from "pages/RegisterPage";
 import { API_URL, mockApiError, mockRegistrationEnabled } from "utils/mocks";
-import { waitForPage } from "utils/waitForPage";
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 test("renders", async ({ registerPage, page }) => {
-  await waitForPage(page);
+  await registerPage.waitUntilLoaded();
   await expect(page).toHaveScreenshot("register-page.png");
 });
 

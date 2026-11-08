@@ -4,8 +4,8 @@ import { LoginPage, ProfilePage } from "pages";
 import { TEST_PROJECT } from "~client/_test/test.data.helper";
 import { API_URL, mockApiError, mockGetProjects, mockLogin } from "utils/mocks";
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-test("renders", async ({ page, loginPage }) => {
+test("renders", async ({ page }) => {
+  await page.goto("/");
   await expect(page).toHaveScreenshot("login-page.png");
 });
 

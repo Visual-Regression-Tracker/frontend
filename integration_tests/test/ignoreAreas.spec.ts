@@ -395,7 +395,7 @@ test("does not apply the area when the question is declined", async ({
   await details.clickAt({ x: 315, y: 192 });
   await details.applyAreas.click();
 
-  await details.promptCancel.click();
+  await details.cancelBtn.click();
 
   await expect(details.promptYes).toBeHidden();
   expect(applied).toEqual([]);
@@ -478,7 +478,7 @@ test("asks before leaving with an area that was not saved", async ({
   await details.closeBtn.click();
 
   await expect(details.discardPrompt).toBeVisible();
-  await details.promptCancel.click();
+  await details.cancelBtn.click();
   await expect(details.discardPrompt).toBeHidden();
   await expect(details.drawAreas).toHaveCount(2);
   await expect(details.saveAreas).toBeEnabled();

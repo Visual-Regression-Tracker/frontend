@@ -21,7 +21,6 @@ import {
 } from "utils/mocks";
 import { boxOf } from "utils/boxOf";
 import { postData } from "utils/postData";
-import { waitForPage } from "utils/waitForPage";
 
 const project = TEST_PROJECT;
 
@@ -30,9 +29,8 @@ test.beforeEach(async ({ page }) => {
   await mockDinov2Status(page, { configured: true, available: true });
 });
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 test("renders", async ({ projectListPage, page }) => {
-  await waitForPage(page);
+  await projectListPage.waitUntilLoaded();
   await expect(page).toHaveScreenshot("projects-list-page.png");
 });
 
