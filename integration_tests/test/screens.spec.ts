@@ -800,30 +800,6 @@ const VIEWS: [name: string, body: Body][] = [
   ],
 
   [
-    "help menu",
-    async ({ projectListPage, shot }) => {
-      await expect(projectListPage.projects).toHaveCount(1);
-
-      await projectListPage.header.helpMenuButton.click();
-
-      await expect(projectListPage.header.helpMenu).toBeVisible();
-      await shot("help-menu");
-    },
-  ],
-
-  [
-    "guided tour",
-    async ({ projectListPage, shot }) => {
-      await expect(projectListPage.projects).toHaveCount(1);
-
-      const tour = await projectListPage.header.startTour();
-
-      await expect(tour.joyrideOverlay).toBeVisible();
-      await shot("guided-tour");
-    },
-  ],
-
-  [
     "project settings",
     async ({ projectSettingsPage, shot }) => {
       await expect(projectSettingsPage.name).toHaveValue(project.name);

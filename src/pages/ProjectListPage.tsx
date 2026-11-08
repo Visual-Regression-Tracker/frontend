@@ -8,7 +8,6 @@ import {
   createProject,
   setProjectEditState,
   toggleFavoriteProject,
-  useHelpSteps,
   useUserState,
 } from "../contexts";
 import { Add, FolderOpenOutlined, Search } from "@mui/icons-material";
@@ -17,7 +16,7 @@ import { SkeletonList } from "../components/SkeletonList";
 import { ProjectCard } from "../components/ProjectCard";
 import { ProjectGrid, ProjectSection } from "../components/ProjectGrid";
 import { ProjectSearchField } from "../components/ProjectSearchField";
-import { PROJECT_EDITOR_ROLES, PROJECT_LIST_PAGE_STEPS } from "../constants";
+import { PROJECT_EDITOR_ROLES } from "../constants";
 import { buildProjectSettingsUrl } from "../_helpers/route.helpers";
 import {
   groupProjects,
@@ -44,8 +43,6 @@ const ProjectsListPage = () => {
 
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-
-  useHelpSteps(PROJECT_LIST_PAGE_STEPS);
 
   const groups = useMemo(
     () => groupProjects(projectList, favoriteProjectIds, recentProjectIds),

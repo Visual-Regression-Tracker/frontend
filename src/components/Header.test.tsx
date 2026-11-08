@@ -1,11 +1,9 @@
-import { useEffect, useState } from "react";
 import { act, screen, waitFor, within } from "@testing-library/react";
 import type userEvent from "@testing-library/user-event";
 import { useLocation } from "react-router-dom";
 import { renderWithProviders } from "../_test/render";
 import { usersService, projectsService } from "../services";
 import { routes } from "../constants";
-import { useHelpDispatch, setHelpSteps } from "../contexts";
 import {
   EDITOR_USER,
   GUEST_USER,
@@ -15,23 +13,13 @@ import {
 import { User } from "../types";
 import {
   HEADER_AVATAR_BUTTON_TEST_ID,
-  HEADER_HELP_MENU_BUTTON_TEST_ID,
   HEADER_LOGOUT_BUTTON_TEST_ID,
 } from "./Header.locators";
-import { TAKE_TOUR_BUTTON_TEST_ID } from "./GuidedTour.locators";
 import Header from "./Header";
 
 const CurrentLocation = () => (
   <div data-testid="location">{useLocation().pathname}</div>
 );
-
-const HelpSteps = ({ target }: { target: string }) => {
-  const dispatch = useHelpDispatch();
-  useEffect(() => {
-    setHelpSteps(dispatch, [{ target, content: "First step of the tour" }]);
-  }, [dispatch, target]);
-  return null;
-};
 
 const renderHeader = (options: Parameters<typeof renderWithProviders>[1]) =>
   renderWithProviders(
@@ -51,16 +39,14 @@ const mountedMenuItemLabels = () =>
 
 describe("Header", () => {
   beforeEach(() => {
-    window._env_ = { VRT_VERSION: "9.8.7", REACT_APP_API_URL: "" };
     vi.spyOn(projectsService, "getAll").mockResolvedValue([]);
   });
 
   describe("logged out", () => {
-    it("shows the logo and help but no avatar", () => {
+    it("shows the logo but no avatar", () => {
       renderHeader({ user: null });
 
       expect(screen.getByAltText("logo")).toBeVisible();
-      expect(screen.getByTestId(HEADER_HELP_MENU_BUTTON_TEST_ID)).toBeVisible();
       expect(
         screen.queryByTestId(HEADER_AVATAR_BUTTON_TEST_ID),
       ).not.toBeInTheDocument();
@@ -166,136 +152,6 @@ describe("Header", () => {
       expect(localStorage.getItem("user")).toBeNull();
       expect(
         screen.queryByTestId(HEADER_AVATAR_BUTTON_TEST_ID),
-      ).not.toBeInTheDocument();
-    });
-  });
-
-  describe("help menu", () => {
-    it("is available when logged out", async () => {
-      const { user } = renderHeader({ user: null });
-
-      await user.click(screen.getByTestId(HEADER_HELP_MENU_BUTTON_TEST_ID));
-
-      expect(screen.getByTestId(TAKE_TOUR_BUTTON_TEST_ID)).toBeVisible();
-      expect(menuItem("Open an issue in GitHub")).toBeVisible();
-    });
-
-    it("shows the take-tour button and the VRT version", async () => {
-      const { user } = renderHeader({ user: TEST_USER });
-      expect(screen.getByTestId(TAKE_TOUR_BUTTON_TEST_ID)).not.toBeVisible();
-
-      await user.click(screen.getByTestId(HEADER_HELP_MENU_BUTTON_TEST_ID));
-      expect(screen.getByTestId(TAKE_TOUR_BUTTON_TEST_ID)).toBeVisible();
-
-      expect(
-        within(screen.getByTestId(TAKE_TOUR_BUTTON_TEST_ID)).getByText(
-          "Take a tour",
-        ),
-      ).toBeVisible();
-      expect(screen.getByText(/VRT Version/)).toHaveTextContent(
-        "VRT Version : 9.8.7",
-      );
-    });
-
-    it("opens a new GitHub issue in another tab that cannot reach back", async () => {
-      const open = vi.spyOn(window, "open").mockReturnValue(null);
-      const { user } = renderHeader({ user: TEST_USER });
-
-      await user.click(screen.getByTestId(HEADER_HELP_MENU_BUTTON_TEST_ID));
-      await user.click(menuItem("Open an issue in GitHub"));
-
-      expect(open).toHaveBeenCalledWith(
-        "https://github.com/Visual-Regression-Tracker/Visual-Regression-Tracker/issues/new",
-        "_blank",
-        "noopener,noreferrer",
-      );
-    });
-
-    it("starts the tour when the first step's target is on the page", async () => {
-      const { user } = renderWithProviders(
-        <>
-          <Header />
-          <HelpSteps target="#tour-target" />
-          <div id="tour-target">Tour target</div>
-        </>,
-        { user: TEST_USER },
-      );
-
-      await user.click(screen.getByTestId(HEADER_HELP_MENU_BUTTON_TEST_ID));
-      await user.click(screen.getByTestId(TAKE_TOUR_BUTTON_TEST_ID));
-
-      expect(await screen.findByText("First step of the tour")).toBeVisible();
-    });
-
-    it("starts the tour once steps arrive after a click on a page without any", async () => {
-      const StepsLater = () => {
-        const [shown, setShown] = useState(false);
-        return shown ? (
-          <>
-            <HelpSteps target="#tour-target" />
-            <div id="tour-target">Tour target</div>
-          </>
-        ) : (
-          <button onClick={() => setShown(true)}>Show steps</button>
-        );
-      };
-      const { user } = renderWithProviders(
-        <>
-          <Header />
-          <StepsLater />
-        </>,
-        { user: TEST_USER },
-      );
-
-      await user.click(screen.getByTestId(HEADER_HELP_MENU_BUTTON_TEST_ID));
-      await user.click(screen.getByTestId(TAKE_TOUR_BUTTON_TEST_ID));
-      await user.click(screen.getByRole("button", { name: "Show steps" }));
-      await user.click(screen.getByTestId(HEADER_HELP_MENU_BUTTON_TEST_ID));
-      await user.click(screen.getByTestId(TAKE_TOUR_BUTTON_TEST_ID));
-
-      expect(await screen.findByText("First step of the tour")).toBeVisible();
-    });
-
-    it("stays closed after the last step", async () => {
-      const { user } = renderWithProviders(
-        <>
-          <Header />
-          <HelpSteps target="#tour-target" />
-          <div id="tour-target">Tour target</div>
-        </>,
-        { user: TEST_USER },
-      );
-
-      await user.click(screen.getByTestId(HEADER_HELP_MENU_BUTTON_TEST_ID));
-      await user.click(screen.getByTestId(TAKE_TOUR_BUTTON_TEST_ID));
-      await user.click(await screen.findByRole("button", { name: /^Last/ }));
-
-      await waitFor(() =>
-        expect(
-          screen.queryByText("First step of the tour"),
-        ).not.toBeInTheDocument(),
-      );
-      // a restarted tour would come back within a frame or two
-      await new Promise((resolve) => setTimeout(resolve, 100));
-      expect(
-        screen.queryByText("First step of the tour"),
-      ).not.toBeInTheDocument();
-    });
-
-    it("does not start the tour when the first step's target is not on the page", async () => {
-      const { user } = renderWithProviders(
-        <>
-          <Header />
-          <HelpSteps target="#missing-target" />
-        </>,
-        { user: TEST_USER },
-      );
-
-      await user.click(screen.getByTestId(HEADER_HELP_MENU_BUTTON_TEST_ID));
-      await user.click(screen.getByTestId(TAKE_TOUR_BUTTON_TEST_ID));
-
-      expect(
-        screen.queryByText("First step of the tour"),
       ).not.toBeInTheDocument();
     });
   });

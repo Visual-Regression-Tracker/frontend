@@ -14,11 +14,7 @@ import {
 import { PageHeader } from "../components/PageHeader";
 import { FilterBar } from "../components/FilterBar";
 import { useSnackbar } from "notistack";
-import { useHelpSteps } from "../contexts/help.context";
-import {
-  LOCATOR_TEST_VARIATION_FILTERS,
-  TEST_VARIATION_LIST_PAGE,
-} from "../constants";
+import { LOCATOR_TEST_VARIATION_FILTERS } from "../constants";
 
 const PAGE_SIZE_OPTIONS = [12, 24, 48, 96];
 
@@ -61,8 +57,6 @@ const TestVariationListPage = () => {
   const [selected, setSelected] = useState<Selected>(NOTHING_SELECTED);
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(PAGE_SIZE_OPTIONS[0]);
-
-  useHelpSteps(TEST_VARIATION_LIST_PAGE);
 
   const filters = JSON.stringify([query, selected]);
   const [pagedFilters, setPagedFilters] = useState(filters);
