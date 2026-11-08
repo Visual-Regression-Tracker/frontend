@@ -5,9 +5,7 @@ import BuildList from "../components/BuildList";
 import TestRunList from "../components/TestRunList";
 import { TestRunFiltersProvider } from "../components/TestRunList/TestRunFiltersContext";
 import BuildDetails from "../components/BuildDetails";
-import { useHelpSteps } from "../contexts";
 import {
-  PROJECT_PAGE_STEPS,
   LOCATOR_PROJECT_PAGE_BUILD_LIST,
   LOCATOR_PROJECT_PAGE_TEST_RUN_LIST,
 } from "../constants";
@@ -27,8 +25,6 @@ const ProjectPage = () => {
       void loadTestDetailsDialog();
     }
   }, [buildId]);
-
-  useHelpSteps(PROJECT_PAGE_STEPS);
 
   return (
     <TestRunFiltersProvider>

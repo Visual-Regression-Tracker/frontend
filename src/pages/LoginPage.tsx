@@ -3,16 +3,14 @@ import { useNavigate } from "react-router-dom";
 import { useSnackbar } from "notistack";
 import LoginForm from "../components/LoginForm";
 import { AuthLayout } from "../components/AuthLayout";
-import { useHelpSteps, useUserDispatch } from "../contexts";
-import { LOGIN_PAGE_STEPS, routes } from "../constants";
+import { useUserDispatch } from "../contexts";
+import { routes } from "../constants";
 import { usersService } from "../services";
 
 const LoginPage = () => {
   const userDispatch = useUserDispatch();
   const navigate = useNavigate();
   const { enqueueSnackbar } = useSnackbar();
-
-  useHelpSteps(LOGIN_PAGE_STEPS);
 
   // the token arrives in the url fragment, so it never reaches server logs
   useEffect(() => {
