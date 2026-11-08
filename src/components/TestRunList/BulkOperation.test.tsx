@@ -879,14 +879,14 @@ describe("BulkOperation analyse rendering noise", () => {
   it("sends the selected ids, without a dialog, and reports what was queued", async () => {
     const analyse = vi
       .spyOn(testRunService, "analyseNoise")
-      .mockResolvedValue({ queued: 2, skipped: [] });
+      .mockResolvedValue({ queued: 1, skipped: [] });
     const { user } = await renderWithProject();
 
     await user.click(actionButton(ANALYSE));
 
     expect(analyse).toHaveBeenCalledExactlyOnceWith([UNRESOLVED_RUN.id]);
     expect(screen.queryByRole("dialog")).toBeNull();
-    expect(await toastOf("Analysing 2 test runs.")).toHaveClass(
+    expect(await toastOf("Analysing 1 test run.")).toHaveClass(
       "notistack-MuiContent-success",
     );
   });

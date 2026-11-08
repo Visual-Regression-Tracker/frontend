@@ -6,7 +6,7 @@ export class BuildDetails extends PageObject {
   noiseLine = this.pane.getByTestId("build-noise-line");
   showNoise = this.pane.getByRole("button", { name: "Show them" });
   analyseNoiseItem = this.page.getByRole("menuitem", {
-    name: /^Analyse rendering noise/,
+    name: /^Analyse noise/,
   });
 
   statusCounter(name: string) {

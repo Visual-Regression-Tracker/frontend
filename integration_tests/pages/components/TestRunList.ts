@@ -33,9 +33,12 @@ export class TestRunList extends Table {
   pageSize = this.pane.getByLabel("Cards per page:");
 
   noiseChips = this.pane.getByTestId("noise-hint-chip");
+  noiseColumnHeader = this.pane.locator(
+    ".MuiDataGrid-columnHeader[data-field='noise']",
+  );
 
   rows = this.page.locator(".MuiDataGrid-row");
-  rowNames = this.rows.locator("[data-field='name']");
+  rowNames = this.rows.locator("[data-field='name'] p");
   selectAllRows = this.page.getByRole("checkbox", {
     name: /^(un)?select all rows$/i,
   });

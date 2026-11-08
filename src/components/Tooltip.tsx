@@ -4,8 +4,14 @@ import { Tooltip as MuiTooltip, TooltipProps } from "@mui/material";
 export const Tooltip = ({
   title,
   children,
-}: Pick<TooltipProps, "title" | "children">) => (
-  <MuiTooltip title={title} placement="bottom" arrow>
+  describeChild,
+}: Pick<TooltipProps, "title" | "children" | "describeChild">) => (
+  <MuiTooltip
+    title={title}
+    placement="bottom"
+    arrow
+    describeChild={describeChild}
+  >
     {children}
   </MuiTooltip>
 );

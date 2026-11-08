@@ -172,7 +172,9 @@ describe("TestDetailsModal", () => {
       vi.spyOn(testRunService, "updateIgnoreAreas").mockResolvedValue();
       const { user } = renderModal({ ...RUN, comment: "" });
 
-      await user.click(screen.getByRole("button", { name: "Comments" }));
+      await user.click(
+        screen.getByRole("button", { name: /^(add|edit) comment/i }),
+      );
       await user.type(await screen.findByTestId("comment"), "looks fine");
       await user.click(screen.getByRole("button", { name: "Save" }));
       expect(await screen.findByText("Comment updated")).toBeVisible();

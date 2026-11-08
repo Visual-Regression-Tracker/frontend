@@ -54,6 +54,9 @@ outside `src/services`. The one known cycle, `_helpers/service.helpers` ↔
 
 ## Conventions
 
+- A user-visible change also updates the user docs in the umbrella repo
+  (Visual-Regression-Tracker/Visual-Regression-Tracker, `docs/wiki/`, published
+  to the GitHub Wiki on merge to master).
 - Styling: the `sx` prop or `styled()` from `@mui/material/styles`, with
   values from the theme (`"primary.main"`, `theme.spacing`). No
   `@mui/styles`/`makeStyles`, no new global CSS, no hard-coded colours:

@@ -61,7 +61,7 @@ const BuildDetails = () => {
 
   const analysis = available
     ? {
-        label: `Analyse rendering noise (${unresolvedIds.length})`,
+        label: `Analyse noise (${unresolvedIds.length})`,
         disabled: requesting || analysing || unresolvedIds.length === 0,
         onClick: () => void analyse(unresolvedIds),
       }
