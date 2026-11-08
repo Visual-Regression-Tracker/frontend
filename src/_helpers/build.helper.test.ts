@@ -38,8 +38,8 @@ describe("buildSummary", () => {
     passedCount: 1,
   };
 
-  it("says running for a build in progress", () => {
-    expect(buildSummary({ ...base, isRunning: true })).toBe("running");
+  it("says Running for a build in progress", () => {
+    expect(buildSummary({ ...base, isRunning: true })).toBe("Running");
   });
 
   it("counts the unresolved runs of an unresolved build", () => {

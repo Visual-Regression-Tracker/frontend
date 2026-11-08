@@ -4,6 +4,7 @@ import { StatusChip } from "./StatusChip";
 import { Tooltip } from "./Tooltip";
 import { BuildResult, TestStatus } from "../types";
 import { statusColor } from "../theme";
+import { statusLabel, statusLabelInline } from "../_helpers/statusLabel.helper";
 import { formatShortDate, pluralize } from "../_helpers/format.helper";
 import {
   buildProjectPageUrl,
@@ -40,7 +41,7 @@ const present = (build: BuildResult) =>
 const describe = (build: BuildResult) => {
   const runs = total(build);
   const breakdown = present(build)
-    .map((status) => `${build.counts[status]} ${status}`)
+    .map((status) => `${build.counts[status]} ${statusLabelInline(status)}`)
     .join(", ");
   const detail = breakdown ? ` (${breakdown})` : "";
   return `${buildName(build)}: ${runs} ${pluralize(runs, "run")}${detail}`;
@@ -185,7 +186,7 @@ export const ResultsChart = ({
                 opacity: SEGMENT_OPACITY[status] ?? 1,
               }}
             />
-            <span>{status}</span>
+            <span>{statusLabel(status)}</span>
           </Stack>
         ))}
       </Stack>

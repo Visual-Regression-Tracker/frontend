@@ -708,7 +708,7 @@ describe("BuildList rows and chrome", () => {
     listed([{ ...TEST_BUILD_PASSED, isRunning: true }]);
     renderWithProviders(<OpenProject />);
 
-    expect(await screen.findByText(/· running/)).toBeVisible();
+    expect(await screen.findByText(/· Running/)).toBeVisible();
     expect(screen.getByRole("progressbar")).toBeVisible();
   });
 

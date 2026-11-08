@@ -237,9 +237,9 @@ describe("TestVariationDetailsPage", () => {
     expect(
       within(latest).getByText(formatShortDate("2020-09-14T06:57:25.845Z")),
     ).toBeInTheDocument();
-    expect(within(latest).getByText(TestStatus.approved)).toBeInTheDocument();
+    expect(within(latest).getByText("Approved")).toBeInTheDocument();
     expect(within(older).getByText("v2")).toBeInTheDocument();
-    expect(within(older).getByText(TestStatus.unresolved)).toBeInTheDocument();
+    expect(within(older).getByText("Unresolved")).toBeInTheDocument();
     expect(
       within(manual).queryByText(TestStatus.approved),
     ).not.toBeInTheDocument();

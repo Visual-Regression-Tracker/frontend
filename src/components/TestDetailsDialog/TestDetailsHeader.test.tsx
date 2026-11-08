@@ -52,7 +52,7 @@ describe("TestDetailsHeader", () => {
 
     expect(screen.getByTestId("step-position")).toHaveTextContent("2/3");
     expect(screen.getByRole("heading", { name: "Cart" })).toBeVisible();
-    expect(screen.getByText(TestStatus.unresolved)).toBeVisible();
+    expect(screen.getByText("Unresolved")).toBeVisible();
     expect(screen.getByText("Diff 8.12% · tolerance 2%")).toBeVisible();
   });
 

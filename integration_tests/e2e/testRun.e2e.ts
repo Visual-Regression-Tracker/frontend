@@ -18,12 +18,12 @@ test("approves a run posted through the API", async ({
 
   await page.goto(`/${project.id}?buildId=${build.id}&testId=${run.id}`);
   const { detailsDialog, details } = new ProjectPage(page);
-  await expect(detailsDialog.getByText("new", { exact: true })).toBeVisible();
+  await expect(detailsDialog.getByText("New", { exact: true })).toBeVisible();
 
   await details.approve.click();
 
   await expect(
-    detailsDialog.getByText("approved", { exact: true }),
+    detailsDialog.getByText("Approved", { exact: true }),
   ).toBeVisible();
 });
 

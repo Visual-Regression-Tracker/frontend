@@ -14,8 +14,7 @@ export class TestRunFilters extends PageObject {
     return this.page.locator(`#filter-chip-${id}`);
   }
 
-  async selectStatus(status: string) {
-    const label = status.charAt(0).toUpperCase() + status.slice(1);
+  async selectStatus(label: string) {
     await this.statusFilter
       .getByRole("button", { name: new RegExp(String.raw`^${label} \d+$`) })
       .click();
