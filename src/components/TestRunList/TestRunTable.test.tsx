@@ -211,6 +211,24 @@ describe("TestRunTable", () => {
     );
   });
 
+  it("shows the Noise column only when the noise check is available", async () => {
+    const { rerender } = renderTable(propsFor([A_EN, B_EN]));
+    await waitFor(() => expect(dataRows()).toHaveLength(2));
+    expect(
+      screen.getByRole("columnheader", { name: /Noise/ }),
+    ).toBeInTheDocument();
+
+    rerender(
+      <TestRunTable {...propsFor([A_EN, B_EN], { noiseAvailable: false })} />,
+    );
+
+    await waitFor(() =>
+      expect(
+        screen.queryByRole("columnheader", { name: /Noise/ }),
+      ).not.toBeInTheDocument(),
+    );
+  });
+
   it("follows a change of density after it first rendered", async () => {
     const densityClass = () =>
       document.querySelector(".MuiDataGrid-root")?.className ?? "";

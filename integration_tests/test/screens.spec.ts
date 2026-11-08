@@ -56,6 +56,7 @@ import {
   PARTLY_ANALYSED_SUMMARY,
   NOISE_CART,
   PENDING_SEARCH,
+  PROJECT_WITHOUT_NOISE,
   RENDERER_CHANGE_SUMMARY,
   withNoiseRegions,
 } from "utils/noiseRuns";
@@ -421,6 +422,18 @@ const VIEWS: [name: string, body: Body][] = [
 
       await expect(page.getByRole("menuitem")).toHaveCount(4);
       await shot("project-switcher");
+    },
+  ],
+
+  [
+    "project page without the noise check",
+    async ({ openProjectPage, page, shot }) => {
+      await mockGetProjects(page, [PROJECT_WITHOUT_NOISE]);
+      const projectPage = await openProjectPage(project.id, build.id);
+
+      await expect(projectPage.testRunList.rows).toHaveCount(4);
+      await expect(projectPage.testRunList.noiseColumnHeader).toHaveCount(0);
+      await shot("project-page-without-noise");
     },
   ],
 
