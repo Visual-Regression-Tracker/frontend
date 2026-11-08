@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { staleGuard } from "../../_helpers/staleGuard";
 import { Box } from "@mui/material";
 import {
   useTestRunState,
@@ -150,8 +151,7 @@ const TestRunList = () => {
   }
 
   useEffect(() => {
-    // switching builds outruns the answers, and only the open build's may land
-    let ignore = false;
+    const guard = staleGuard();
 
     testRunDispatch({
       type: "request",
@@ -160,7 +160,7 @@ const TestRunList = () => {
       testRunService
         .getList(selectedBuild.id)
         .then((payload) => {
-          if (!ignore) {
+          if (guard.isCurrent()) {
             testRunDispatch({
               type: "get",
               payload,
@@ -168,7 +168,7 @@ const TestRunList = () => {
           }
         })
         .catch((err: string) => {
-          if (!ignore) {
+          if (guard.isCurrent()) {
             testRunDispatch({ type: "failure" });
             enqueueSnackbar(err, {
               variant: "error",
@@ -182,9 +182,7 @@ const TestRunList = () => {
       });
     }
 
-    return () => {
-      ignore = true;
-    };
+    return guard.cancel;
   }, [testRunDispatch, enqueueSnackbar, selectedBuild?.id]);
 
   // the arrow order: the rows on screen with groups expanded, frozen while open

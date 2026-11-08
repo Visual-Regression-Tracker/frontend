@@ -5,6 +5,7 @@ import {
   useEffect,
   useReducer,
 } from "react";
+import { staleGuard } from "../_helpers/staleGuard";
 import { TestRun } from "../types";
 import { useLocation } from "react-router-dom";
 import { getQueryParams } from "../_helpers/route.helpers";
@@ -74,7 +75,7 @@ export function testRunReducer(state: State, action: IAction): State {
       };
 
     case "filterSort":
-      // The list republishes its order on every grid state change; a fresh array would re-render every reader for nothing
+      // a fresh array on every grid state change would re-render every reader
       if (sameOrder(state.filteredSortedTestRunIds, action.payload)) {
         return state;
       }
@@ -193,8 +194,7 @@ function TestRunProvider({ children }: Readonly<TestRunProviderProps>) {
 
   useEffect(() => {
     const { testId } = getQueryParams(location.search);
-    // paging with the arrows moves the URL faster than answers return; only the run the URL names now may be shown
-    let ignore = false;
+    const guard = staleGuard();
 
     if (!testId) {
       dispatch({
@@ -204,7 +204,7 @@ function TestRunProvider({ children }: Readonly<TestRunProviderProps>) {
       testRunService
         .getDetails(testId)
         .then((payload) => {
-          if (!ignore) {
+          if (guard.isCurrent()) {
             dispatch({
               type: "select",
               payload,
@@ -213,7 +213,7 @@ function TestRunProvider({ children }: Readonly<TestRunProviderProps>) {
         })
         // a deleted run's link: close rather than keep the previous run open
         .catch(() => {
-          if (!ignore) {
+          if (guard.isCurrent()) {
             dispatch({
               type: "select",
             });
@@ -221,9 +221,7 @@ function TestRunProvider({ children }: Readonly<TestRunProviderProps>) {
         });
     }
 
-    return () => {
-      ignore = true;
-    };
+    return guard.cancel;
   }, [location.search]);
 
   return (

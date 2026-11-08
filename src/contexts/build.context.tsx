@@ -5,6 +5,7 @@ import {
   useEffect,
   useReducer,
 } from "react";
+import { staleGuard } from "../_helpers/staleGuard";
 import { Build, PaginatedData } from "../types";
 import { buildsService } from "../services";
 import { useLocation } from "react-router-dom";
@@ -157,13 +158,9 @@ function BuildProvider({ children }: Readonly<BuildProviderProps>) {
   const { buildId } = getQueryParams(location.search);
 
   useEffect(() => {
-    // switching builds moves the URL faster than answers return; only the build the URL names now may be shown
-    let ignore = false;
-    // selectBuild handles its own failure
-    void selectBuild(dispatch, buildId, () => !ignore);
-    return () => {
-      ignore = true;
-    };
+    const guard = staleGuard();
+    void selectBuild(dispatch, buildId, guard.isCurrent);
+    return guard.cancel;
   }, [buildId]);
 
   return (

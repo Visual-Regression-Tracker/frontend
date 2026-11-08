@@ -1,6 +1,6 @@
 import type { IgnoreArea } from "../types/ignoreArea";
 
-// Port of backend src/compare/libs/pixelmatch/blur-amplitude.core.ts (solidMask); the parity test keeps the two identical.
+// port of the backend solidMask; the parity test keeps the two identical
 
 export interface RawImage {
   data: Uint8Array | Uint8ClampedArray;

@@ -3,32 +3,27 @@ import {
   memo,
   useCallback,
   useEffect,
-  useLayoutEffect,
   useRef,
   useState,
 } from "react";
-import {
-  List,
-  Checkbox,
-  Typography,
-  Pagination,
-  Box,
-  Stack,
-} from "@mui/material";
+import { List, Typography, Pagination, Box, Stack } from "@mui/material";
 import { DeleteOutlineOutlined } from "@mui/icons-material";
 import { BuildListPlaceholder } from "./BuildListPlaceholder";
 import { BuildListItem } from "./BuildListItem";
-import { DebouncedTextField } from "../DebouncedTextField";
+import { BuildListToolbar } from "./BuildListToolbar";
+import { useBulkDeleteBuilds } from "./useBulkDeleteBuilds";
+import { useBuildSelection } from "./useBuildSelection";
+import { useRequestGuard } from "../../_helpers/staleGuard";
 import {
   useBuildState,
   useBuildDispatch,
-  deleteBuild,
   useProjectState,
 } from "../../contexts";
 import { useSnackbar } from "notistack";
 import { BuildMenu } from "../BuildMenu";
 import { SelectionBar } from "../SelectionBar";
 import { Build } from "../../types";
+import { TEST_ID } from "../../constants/locators";
 import { BaseModal } from "../BaseModal";
 import { buildsService } from "../../services";
 import { useLocation, useNavigate } from "react-router-dom";
@@ -36,8 +31,6 @@ import {
   buildTestRunLocation,
   getQueryParams,
 } from "../../_helpers/route.helpers";
-import { Tooltip } from "../Tooltip";
-import { TEST_ID } from "../../constants/locators";
 
 const BuildList = () => {
   const navigate = useNavigate();
@@ -64,13 +57,27 @@ const BuildList = () => {
   const linkedBuildId = useRef(getQueryParams(location.search).buildId);
   const [searchQuery, setSearchQuery] = useState("");
   const listRef = useRef<HTMLDivElement>(null);
-  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const {
+    selectedIds,
+    setSelectedIds,
+    selectingAll,
+    allSelected,
+    someSelected,
+    toggleSelect,
+    clearSelection,
+    selectAllMatching,
+    toggleSelectAll,
+    selectAllLabel,
+  } = useBuildSelection({
+    buildList,
+    total,
+    selectedProjectId,
+    searchQuery,
+    refreshes,
+    lastDeletedId,
+  });
   const [bulkDeleteDialogOpen, setBulkDeleteDialogOpen] = useState(false);
-  const [bulkDeleting, setBulkDeleting] = useState(false);
-  const [selectingAll, setSelectingAll] = useState(false);
-  const selectAllRequest = useRef(0);
-  // answers for a project or search the reviewer has left must not fill the list
-  const pageRequest = useRef(0);
+  const pageGuard = useRequestGuard();
 
   // a new project or search starts on the first page, with nothing selected
   const [listedFor, setListedFor] = useState({
@@ -88,50 +95,6 @@ const BuildList = () => {
     setPaginationPage(1);
     setListedFor({ selectedProjectId, searchQuery, take });
   }
-
-  const [seenRefresh, setSeenRefresh] = useState(refreshes);
-  if (seenRefresh !== refreshes) {
-    setSeenRefresh(refreshes);
-    setSelectedIds((prev) => prev.filter((id) => id !== lastDeletedId));
-  }
-
-  const allSelected = total > 0 && selectedIds.length === total;
-  const someSelected = selectedIds.length > 0 && !allSelected;
-
-  const toggleSelect = (id: string) =>
-    setSelectedIds((prev) =>
-      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id],
-    );
-
-  const clearSelection = () => setSelectedIds([]);
-
-  const selectAllMatching = () => {
-    if (buildList.length === total) {
-      setSelectedIds(buildList.map((build) => build.id));
-      return;
-    }
-    if (!selectedProjectId) {
-      return;
-    }
-
-    const request = ++selectAllRequest.current;
-    setSelectingAll(true);
-    buildsService
-      .getList(selectedProjectId, total, 0, searchQuery)
-      .then((payload) => {
-        if (request === selectAllRequest.current) {
-          setSelectedIds(payload.data.map((build) => build.id));
-        }
-      })
-      .catch((err: string) => enqueueSnackbar(err, { variant: "error" }))
-      .finally(() => setSelectingAll(false));
-  };
-
-  const toggleSelectAll = () =>
-    selectedIds.length > 0 ? clearSelection() : selectAllMatching();
-
-  const selectAllLabel =
-    selectedIds.length > 0 ? "Clear selection" : `Select all (${total})`;
 
   const handleMenuClick = (event: MouseEvent<HTMLElement>, build: Build) => {
     event.stopPropagation();
@@ -156,7 +119,7 @@ const BuildList = () => {
   const loadPage = useCallback(
     (page: number, aroundBuildId?: string) => {
       listRef.current?.scrollTo({ top: 0 });
-      const request = ++pageRequest.current;
+      const isCurrent = pageGuard.start();
       if (selectedProjectId) {
         // the link is spent: from here paging and search decide the page
         linkedBuildId.current = undefined;
@@ -170,7 +133,7 @@ const BuildList = () => {
             aroundBuildId,
           )
           .then((payload) => {
-            if (request !== pageRequest.current) {
+            if (!isCurrent()) {
               return;
             }
             // the answer gives the build's page; an unplaced build stays on this one
@@ -180,7 +143,7 @@ const BuildList = () => {
             buildDispatch({ type: "get", payload, search: searchQuery });
           })
           .catch((err: string) => {
-            if (request !== pageRequest.current) {
+            if (!isCurrent()) {
               return;
             }
             buildDispatch({ type: "failure", payload: err });
@@ -190,7 +153,14 @@ const BuildList = () => {
           });
       }
     },
-    [buildDispatch, enqueueSnackbar, selectedProjectId, take, searchQuery],
+    [
+      buildDispatch,
+      enqueueSnackbar,
+      pageGuard,
+      selectedProjectId,
+      take,
+      searchQuery,
+    ],
   );
 
   const showPage = (page: number) => {
@@ -216,95 +186,33 @@ const BuildList = () => {
     }
   });
 
-  // in the commit that cleared the selection, so an in-flight select all cannot land on another search
-  useLayoutEffect(() => {
-    selectAllRequest.current += 1;
-  }, [selectedProjectId, searchQuery]);
-
   useEffect(() => {
     buildDispatch({ type: "reset" });
   }, [buildDispatch, selectedProjectId]);
 
-  const handleBulkDelete = () => {
-    if (bulkDeleting) {
-      return;
-    }
-    setBulkDeleting(true);
-    setBulkDeleteDialogOpen(false);
-    const ids = [...selectedIds];
-
-    void Promise.all(
-      ids.map((id) =>
-        deleteBuild(buildDispatch, id)
-          .then(() => ({ id, ok: true }))
-          .catch(() => ({ id, ok: false })),
-      ),
-    ).then((results) => {
-      const deleted = results.filter((r) => r.ok);
-      const failed = results.filter((r) => !r.ok);
-
-      if (deleted.length > 0) {
-        enqueueSnackbar(`${deleted.length} build(s) deleted`, {
-          variant: "success",
-        });
-      }
-      if (failed.length > 0) {
-        enqueueSnackbar(`Failed to delete ${failed.length} build(s)`, {
-          variant: "error",
-        });
-      }
-      if (deleted.some((r) => r.id === selectedBuild?.id)) {
-        selectBuildCalback();
-      }
-
-      setBulkDeleting(false);
-      clearSelection();
-
-      reloadAfterDeleting(deleted.length);
-    });
-  };
+  const { bulkDeleting, handleBulkDelete } = useBulkDeleteBuilds({
+    selectedIds,
+    selectedBuildId: selectedBuild?.id,
+    clearSelection,
+    closeDialog: () => setBulkDeleteDialogOpen(false),
+    onDone: (deleted) => reloadAfterDeleting(deleted),
+    openAfterDelete: () => selectBuildCalback(),
+  });
 
   const pageCount = Math.ceil(total / take);
 
   return (
     <>
       <Stack sx={{ height: "100%" }}>
-        <Box sx={{ padding: 1, display: "flex", alignItems: "center" }}>
-          {/* kept mounted so an empty search does not shift the search field */}
-          <Tooltip title={selectAllLabel}>
-            <span>
-              <Checkbox
-                size="small"
-                checked={allSelected}
-                indeterminate={someSelected}
-                disabled={selectingAll || buildList.length === 0}
-                onChange={toggleSelectAll}
-                data-testid={TEST_ID.buildSelectAll}
-                slotProps={{
-                  input: { "aria-label": selectAllLabel },
-                }}
-              />
-            </span>
-          </Tooltip>
-          <Box sx={{ flexGrow: 1 }}>
-            <DebouncedTextField
-              size="small"
-              variant="outlined"
-              fullWidth
-              label="CI build id"
-              placeholder="Search by CI build id"
-              value={searchQuery}
-              debounceTimeout={300}
-              onChange={setSearchQuery}
-              slotProps={{
-                htmlInput: {
-                  "data-testid": TEST_ID.buildSearch,
-                  autoComplete: "off",
-                },
-              }}
-            />
-          </Box>
-        </Box>
+        <BuildListToolbar
+          selectAllLabel={selectAllLabel}
+          allSelected={allSelected}
+          someSelected={someSelected}
+          selectAllDisabled={selectingAll || buildList.length === 0}
+          onToggleSelectAll={toggleSelectAll}
+          searchQuery={searchQuery}
+          onSearchChange={setSearchQuery}
+        />
         {selectedIds.length > 0 && (
           <Box sx={{ px: 1, pb: 1 }}>
             <SelectionBar
