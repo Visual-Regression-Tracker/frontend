@@ -1,4 +1,5 @@
 import { BasePage } from "./BasePage";
+import { TEST_ID, filterChipId } from "~client/constants/locators";
 
 export class TestVariationListPage extends BasePage {
   cards = this.page.locator(".MuiCard-root");
@@ -13,11 +14,11 @@ export class TestVariationListPage extends BasePage {
   }
 
   deleteBtn(name: string) {
-    return this.getCard(name).getByTestId("DeleteIcon");
+    return this.getCard(name).getByTestId(TEST_ID.deleteIcon);
   }
 
   async filterBy(field: string, option: string) {
-    await this.page.locator(`#filter-chip-${field}`).click();
+    await this.page.locator(`#${filterChipId(field)}`).click();
     await this.page.getByRole("menuitemcheckbox", { name: option }).click();
     await this.page.keyboard.press("Escape");
   }

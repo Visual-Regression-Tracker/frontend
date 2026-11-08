@@ -50,6 +50,20 @@ inventing a new setup.
   `integration_tests/pages`, API mocks in `integration_tests/utils/mocks.ts`
   (`mockGetBuilds`, `mockGetTestRuns`, `mockTestRun`, `mockApproveTestRuns`,
   `mockApiError`, …), fixtures in `integration_tests/fixtures/index.ts`.
+- **Specs use page objects only.** A spec never calls `page.locator` or
+  `page.getByRole`/`getByTestId`/… and never reaches into `somePage.page`;
+  `no-restricted-syntax` in `eslint.config.js` fails `npm run lint` on any
+  `locator`, `getBy*` or `.page` in `integration_tests/test`, `e2e` and `perf`
+  specs. Add a field or method to the page object instead: `Modal` for
+  confirmations, `Notification` for toasts, `fieldError(text)` for validation
+  messages, `text(...)` for content, `TestDetailsDialog` for the image panes
+  (canvas gestures, wheel zoom, overlay state), `Table` for Data Grid rows.
+  `page` stays in specs for `route` mocks, `goto`, `waitFor*`, keyboard
+  presses and screenshot assertions.
+- **One source for ids.** A `data-testid` or element id the tests find lives in
+  `src/constants/locators.ts` (`TEST_ID`, `ELEMENT_ID`, `filterChipId`, …) or a
+  `*.locators.ts` beside the component. The component and the page object both
+  import it, so a rename breaks the build, not a test.
 - **Port:** set `PW_PORT` to a free port between 4200 and 4999 when running
   Playwright (e.g. `PW_PORT=4311 npx playwright test ...`). The default 4173 is
   shared by every worktree, and Playwright reuses a server already listening
@@ -64,9 +78,9 @@ inventing a new setup.
   Grid's header checkbox with `click()`, not `uncheck()` (its state settles
   late and `uncheck()` reports "did not change its state").
 - `mockTestRunsWithDetails(page, buildId, runs)` mocks a run list and each
-  run's details (added by T8).
+  run's details.
 - Socket.io cannot be mocked in Playwright here; live-update behaviour is
-  tested in Vitest (fake socket from task T1) and, against the real
+  tested in Vitest (fake socket) and, against the real
   backend, in the e2e smoke below.
 - Screenshot baselines are made only in Docker (`npm run test:pw:docker:update`)
   and reviewed by a person. Agents do not commit baselines.

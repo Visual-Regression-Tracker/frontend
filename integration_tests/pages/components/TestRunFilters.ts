@@ -1,17 +1,18 @@
 import { PageObject } from "../PageObject";
+import { TEST_ID, filterChipId } from "~client/constants/locators";
 
 type FilterChip =
   "os" | "browser" | "viewport" | "device" | "customTags" | "noise";
 
 export class TestRunFilters extends PageObject {
-  name = this.page.getByTestId("testRunNameFilter");
+  name = this.page.getByTestId(TEST_ID.testRunNameFilter);
   noiseHint = this.chip("noise");
   chipOptions = this.page.getByRole("menuitemcheckbox");
   clearFilters = this.page.getByRole("button", { name: "Clear filters" });
   statusFilter = this.page.getByRole("group", { name: "Filter by status" });
 
   chip(id: FilterChip) {
-    return this.page.locator(`#filter-chip-${id}`);
+    return this.page.locator(`#${filterChipId(id)}`);
   }
 
   async selectStatus(label: string) {

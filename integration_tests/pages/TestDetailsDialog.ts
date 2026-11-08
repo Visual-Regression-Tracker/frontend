@@ -27,6 +27,7 @@ export type Rect = { x: number; y: number; width: number; height: number };
 export class TestDetailsDialog extends PageObject {
   drawAreas = this.page.getByTestId(TEST_ID.drawArea);
   firstPane = this.drawAreas.first();
+  canvases = this.drawAreas.locator("canvas");
   checkpointPane = this.drawAreas.nth(1);
   imageSize = this.page.getByTestId(TEST_ID.imageSize);
 
