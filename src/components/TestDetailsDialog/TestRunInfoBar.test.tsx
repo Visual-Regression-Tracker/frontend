@@ -53,6 +53,17 @@ describe("TestRunInfoBar", () => {
       ).toBeVisible();
     });
 
+    it("does not talk about sizes for a run without a baseline", () => {
+      renderBar({
+        testRun: run({ baselineName: "" }),
+        failedImages: ["checkpoint"],
+      });
+
+      expect(
+        screen.getByText("Could not load the checkpoint image."),
+      ).toBeVisible();
+    });
+
     it("names both when neither could be loaded", () => {
       renderBar({ failedImages: ["baseline", "checkpoint"] });
 

@@ -30,13 +30,15 @@ export const imageSizesDiffer = (
       currentImage.width !== baselineImage.width)
   );
 
+export type FailedImage = "baseline" | "checkpoint";
+
 type LoadStatus = "loaded" | "loading" | "failed";
 
 export const failedComparisonImages = (
   testRun: Pick<TestRun, "baselineName" | "imageName">,
   currentStatus: LoadStatus,
   baselineStatus: LoadStatus,
-): ("baseline" | "checkpoint")[] => [
+): FailedImage[] => [
   ...(testRun.baselineName && baselineStatus === "failed"
     ? (["baseline"] as const)
     : []),

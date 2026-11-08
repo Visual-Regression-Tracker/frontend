@@ -797,6 +797,17 @@ describe("Diff without noise", () => {
     expect(caveat).not.toHaveTextContent("outlined");
   });
 
+  it("warns when the baseline image fails to load", () => {
+    vi.mocked(useImage).mockImplementation((url) => [
+      undefined,
+      url.endsWith(RUN.baselineName) ? "failed" : "loading",
+    ]);
+
+    renderModal();
+
+    expect(screen.getByText(/Could not load the baseline image/)).toBeVisible();
+  });
+
   it("shows no image under the label while the view is computing", async () => {
     vi.mocked(useImage).mockImplementation((url) => [
       url ? document.createElement("img") : undefined,

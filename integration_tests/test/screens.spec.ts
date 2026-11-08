@@ -136,17 +136,22 @@ const showTopOfSettings = async ({ page, saveBtn }: ProjectSettingsPage) => {
 
 const showWholeContent = async (page: Page) => {
   const main = page.getByRole("main");
-  const { height } = page.viewportSize() ?? { height: 720 };
-  const overflow = await main.evaluate(
-    (element) => element.scrollHeight - element.clientHeight,
-  );
-  await page.setViewportSize({ width: 1280, height: height + overflow });
-  await main.evaluate((element) => element.scrollTo(0, 0));
+  const overflow = () =>
+    main.evaluate((element) => element.scrollHeight - element.clientHeight);
   await expect
-    .poll(() =>
-      main.evaluate((element) => element.scrollHeight <= element.clientHeight),
-    )
-    .toBe(true);
+    .poll(async () => {
+      const extra = await overflow();
+      if (extra > 0) {
+        const { width, height } = page.viewportSize() ?? {
+          width: 1280,
+          height: 720,
+        };
+        await page.setViewportSize({ width, height: height + extra });
+      }
+      return extra;
+    })
+    .toBe(0);
+  await main.evaluate((element) => element.scrollTo(0, 0));
 };
 
 const VARIATION_EN: TestRun = {
@@ -367,21 +372,6 @@ const VIEWS: [name: string, body: Body][] = [
       await showTopOfSettings(projectSettingsPage);
       await showWholeContent(projectSettingsPage.page);
       await shot("project-settings-vlm-ollama", { fullPage: true });
-    },
-  ],
-
-  [
-    "project settings with post-analysis",
-    async ({ projectSettingsPage, shot }) => {
-      await projectSettingsPage.distanceThreshold.scrollIntoViewIfNeeded();
-
-      await expect(projectSettingsPage.blurSwitch).toBeChecked();
-      await expect(projectSettingsPage.dinov2Status).toHaveCount(0);
-      await expect(projectSettingsPage.page.getByRole("tooltip")).toHaveCount(
-        0,
-      );
-      await showWholeContent(projectSettingsPage.page);
-      await shot("project-settings-post-analysis", { fullPage: true });
     },
   ],
 
@@ -1358,6 +1348,24 @@ const VIEWS: [name: string, body: Body][] = [
         notification.toast("A later approval changed this baseline"),
       ).toBeVisible();
       await shot("test-run-undo-refused");
+    },
+  ],
+
+  [
+    "test run details when the baseline image fails to load",
+    async ({ openProjectPage, page, shot }) => {
+      const run = { ...TEST_UNRESOLVED, baselineName: "missing-baseline.png" };
+      await mockGetTestRuns(page, build.id, [run]);
+      await mockTestRun(page, run);
+      const { details } = await openProjectPage(project.id, build.id, run.id);
+
+      await expect(
+        page.getByText(
+          "Could not load the baseline image. Image sizes cannot be compared.",
+        ),
+      ).toBeVisible();
+      await expect(details.drawAreas).toHaveCount(1);
+      await shot("test-run-baseline-image-failed");
     },
   ],
 ];

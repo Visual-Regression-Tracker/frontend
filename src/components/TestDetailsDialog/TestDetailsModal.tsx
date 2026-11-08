@@ -195,7 +195,9 @@ const TestDetailsModal = ({
             onFit={stage.fitImagesToStage}
           />
         }
-        hasNext={totalTestRunCount > currentRunIndex + 1}
+        hasNext={
+          currentRunIndex >= 0 && totalTestRunCount > currentRunIndex + 1
+        }
         onNext={handleNext}
         onOpenVariations={setVariationsMode}
       />

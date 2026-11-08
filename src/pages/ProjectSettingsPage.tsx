@@ -18,6 +18,7 @@ import { SkeletonList } from "../components/SkeletonList";
 import { ValidatedForm } from "../components/ValidatedForm";
 
 const ACTIVE_OFFSET = 80;
+const SCROLL_SETTLE_MS = 150;
 
 const sectionInView = (main: HTMLElement): string => {
   const atEnd =
@@ -38,15 +39,34 @@ const sectionInView = (main: HTMLElement): string => {
 const SectionNav = () => {
   const [active, setActive] = useState<string>(SETTINGS_SECTIONS[0].id);
   const navRef = useRef<HTMLElement>(null);
+  const settleTimer = useRef<number>(undefined);
+  const jumping = useRef(false);
+
+  const holdUntilScrollSettles = () => {
+    jumping.current = true;
+    window.clearTimeout(settleTimer.current);
+    settleTimer.current = window.setTimeout(() => {
+      jumping.current = false;
+    }, SCROLL_SETTLE_MS);
+  };
 
   useEffect(() => {
     const main = navRef.current?.closest("main");
     if (!main) {
       return;
     }
-    const follow = () => setActive(sectionInView(main));
+    const follow = () => {
+      if (jumping.current) {
+        holdUntilScrollSettles();
+        return;
+      }
+      setActive(sectionInView(main));
+    };
     main.addEventListener("scroll", follow, { passive: true });
-    return () => main.removeEventListener("scroll", follow);
+    return () => {
+      main.removeEventListener("scroll", follow);
+      window.clearTimeout(settleTimer.current);
+    };
   }, []);
 
   return (
@@ -70,6 +90,7 @@ const SectionNav = () => {
             onClick={(event) => {
               event.preventDefault();
               setActive(id);
+              holdUntilScrollSettles();
               document
                 .getElementById(settingsSectionId(id))
                 ?.scrollIntoView({ behavior: "smooth" });

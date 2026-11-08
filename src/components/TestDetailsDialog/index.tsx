@@ -10,7 +10,7 @@ import {
 import { useNavigate } from "react-router-dom";
 import { useBuildState, useTestRunState } from "../../contexts";
 import { buildTestRunLocation } from "../../_helpers/route.helpers";
-import { isTypingTarget } from "../../_helpers/hotkeys.helper";
+import { ownsEscape } from "../../_helpers/hotkeys.helper";
 import { orderByIds } from "../../_helpers/testRunOrder.helper";
 import { BaseModal } from "../BaseModal";
 import TestDetailsModal from "./TestDetailsModal";
@@ -96,7 +96,7 @@ export const TestDetailsDialog = () => {
       onClose={(event, reason) => {
         if (
           reason === "escapeKeyDown" &&
-          !isTypingTarget((event as KeyboardEvent).target)
+          !ownsEscape((event as KeyboardEvent).target)
         ) {
           navigateById();
         }

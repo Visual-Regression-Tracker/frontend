@@ -1,12 +1,13 @@
 import { type ReactNode, useState } from "react";
 import { Alert, Box, Button, Divider, Stack, Typography } from "@mui/material";
 import { TestRun } from "../../types";
+import type { FailedImage } from "../../_helpers/testRunImage.helper";
 import { Tooltip } from "../Tooltip";
 
 interface TestRunInfoBarProps {
   testRun: TestRun;
   sizes: { baseline?: string; checkpoint?: string } | null;
-  failedImages: string[];
+  failedImages: FailedImage[];
   toolbar: ReactNode;
 }
 
@@ -60,7 +61,7 @@ export const TestRunInfoBar = ({
     )}
     {failedImages.length > 0 && (
       <Alert severity="warning" sx={{ py: 0 }}>
-        {`Could not load the ${failedImages.join(" and ")} image${failedImages.length > 1 ? "s" : ""}. Image sizes cannot be compared.`}
+        {`Could not load the ${failedImages.join(" and ")} image${failedImages.length > 1 ? "s" : ""}.${testRun.baselineName ? " Image sizes cannot be compared." : ""}`}
       </Alert>
     )}
     {toolbar}

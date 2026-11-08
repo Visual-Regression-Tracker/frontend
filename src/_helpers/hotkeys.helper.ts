@@ -16,10 +16,14 @@ export const isTypingTarget = (target: EventTarget | null): boolean => {
   );
 };
 
+const isSlider = (target: EventTarget | null): boolean =>
+  target instanceof HTMLInputElement && target.type === "range";
+
 const isSliderArrow = (event: KeyboardEvent): boolean =>
-  event.target instanceof HTMLInputElement &&
-  event.target.type === "range" &&
-  event.key.startsWith("Arrow");
+  isSlider(event.target) && event.key.startsWith("Arrow");
+
+export const ownsEscape = (target: EventTarget | null): boolean =>
+  isTypingTarget(target) || isSlider(target);
 
 // Confirmations render in their own portal and take focus; the review dialog marks its paper with data-review-dialog
 export const isOutsideReviewDialog = (target: EventTarget | null): boolean => {
