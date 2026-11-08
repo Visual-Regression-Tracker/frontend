@@ -158,7 +158,7 @@ const isOidcEnabled = cachedFlag("/oidc/enabled", false, {
   retryOnError: false,
 });
 
-// On unless the backend says false: an older backend keeps it open, and a failed request is no answer, so ask again next time.
+// on unless the backend says false; a failed request is no answer, so ask again
 const isRegistrationEnabled = cachedFlag("/registration/enabled", true, {
   retryOnError: true,
 });
@@ -167,7 +167,7 @@ function getOidcLoginUrl(): string {
   return `${API_URL}${ENDPOINT_URL}/oidc/login`;
 }
 
-// Set on an explicit logout so the login page does not redirect straight back to the IdP, whose session is still alive
+// set on logout so the login page does not bounce straight back to the IdP
 const OIDC_LOGGED_OUT_KEY = "oidcLoggedOut";
 
 function markOidcLoggedOut() {

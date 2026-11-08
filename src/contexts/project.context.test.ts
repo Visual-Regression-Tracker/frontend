@@ -2,12 +2,12 @@ import {
   createProject,
   deleteProject,
   getProjectList,
-  projectReducer,
   selectProject,
   setProjectEditState,
   toggleFavoriteProject,
   updateProject,
 } from "./project.context";
+import { projectReducer } from "./project.reducer";
 import { projectsService } from "../services";
 import { DEFAULT_PROJECT_EDIT_STATE } from "../constants";
 import { Project, ProjectDto } from "../types";

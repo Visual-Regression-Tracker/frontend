@@ -23,7 +23,7 @@ function dropWorker() {
   worker = undefined;
 }
 
-// One worker at a time: a newer request terminates the older computation, which cannot be interrupted otherwise.
+// one worker at a time: a newer request terminates the older computation
 export function computeSolidMask(
   request: SolidMaskRequest,
   signal?: AbortSignal,

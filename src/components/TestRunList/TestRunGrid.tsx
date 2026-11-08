@@ -21,6 +21,7 @@ import {
 import { thumbnailFor } from "../../_helpers/testRunImage.helper";
 import type { TagFilters } from "./useTestRunFilters";
 import { TagField } from "../../types";
+import { imageOverlay } from "../../theme/tokens";
 
 const clampToLines = (lines: number) => ({
   display: "-webkit-box",
@@ -135,8 +136,8 @@ export const TestRunGrid = ({
                 top: 2,
                 left: 2,
                 padding: 0.5,
-                backgroundColor: "rgba(255, 255, 255, 0.85)",
-                "&:hover": { backgroundColor: "rgba(255, 255, 255, 0.95)" },
+                backgroundColor: imageOverlay.control,
+                "&:hover": { backgroundColor: imageOverlay.controlHover },
               }}
               slotProps={{
                 input: { "aria-label": `Select ${representative.name}` },
@@ -151,7 +152,7 @@ export const TestRunGrid = ({
                   position: "absolute",
                   top: 4,
                   right: 4,
-                  backgroundColor: "rgba(0, 0, 0, 0.6)",
+                  backgroundColor: imageOverlay.badge,
                   color: "common.white",
                 }}
               />

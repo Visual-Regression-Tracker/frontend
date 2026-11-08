@@ -91,6 +91,13 @@ export const imageSurface = {
   thumbnail: "#fafafa",
 } as const;
 
+// controls laid over a thumbnail; thumbnails stay light in both modes, so one value serves both
+export const imageOverlay = {
+  control: "rgba(255, 255, 255, 0.85)",
+  controlHover: "rgba(255, 255, 255, 0.95)",
+  badge: "rgba(0, 0, 0, 0.6)",
+} as const;
+
 export const radius = 10;
 
 export const fontFamily =

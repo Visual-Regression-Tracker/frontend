@@ -12,7 +12,7 @@ interface Loaded {
   analysis: NoiseAnalysis;
 }
 
-// the run in the context is a Dto without regions once a socket event replaces it; the full result comes from GET /test-runs/:id
+// a socket event replaces the run with a Dto without regions, so fetch the full result
 export function useNoiseAnalysis(
   testRun: Pick<TestRun, "id" | "noiseAnalysis">,
   enabled: boolean,
