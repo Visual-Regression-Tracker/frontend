@@ -1,11 +1,14 @@
-import { expect } from "@playwright/test";
+import { expect, type Page } from "@playwright/test";
 import { test } from "fixtures";
 import {
   TEST_BUILD_FAILED,
   TEST_PROJECT,
+  TEST_RUN_APPROVED,
   TEST_RUN_NEW,
   TEST_UNRESOLVED,
 } from "~client/_test/test.data.helper";
+import { GO_TO_NEXT_KEY } from "~client/constants";
+import { TestStatus } from "~client/types";
 import {
   API_URL,
   isRevertUrl,
@@ -42,60 +45,64 @@ test.beforeEach(async ({ page }) => {
   await mockRejectTestRuns(page);
 });
 
+const goToNextAfterDecision = (page: Page) =>
+  page.addInitScript(
+    (key) => localStorage.setItem(key, "true"),
+    GO_TO_NEXT_KEY,
+  );
+
+const humanDecided = (status: TestStatus) => ({
+  ...TEST_RUN_APPROVED,
+  status,
+});
+
 test("raises its toast clear of the approve buttons", async ({
   openProjectPage,
-  page,
 }) => {
-  const projectPage = await openProjectPage(
+  const { details, notification } = await openProjectPage(
     project.id,
     build.id,
     TEST_UNRESOLVED.id,
   );
-  // by text: the tooltip wrapper makes "Hotkey: A" the name; anchored vs "Approve variations"
-  const approve = page.locator("button").filter({ hasText: /^Approve$/ });
-  await expect(approve).toBeVisible();
-  const buttons = await boxOf(approve);
+  await expect(details.approve).toBeVisible();
+  const buttons = await boxOf(details.approve);
 
-  await approve.click();
+  await details.approve.click();
 
-  await expect(projectPage.notification.message).toBeVisible();
-  const toast = await boxOf(projectPage.notification.message);
+  await expect(notification.message).toBeVisible();
+  const toast = await boxOf(notification.message);
   expect(toast.y + toast.height).toBeLessThanOrEqual(buttons.y);
 });
 
 test("replaces its confirmation rather than stacking them up", async ({
   openProjectPage,
-  page,
 }) => {
-  const { notification } = await openProjectPage(
+  const { details, notification } = await openProjectPage(
     project.id,
     build.id,
     TEST_UNRESOLVED.id,
   );
-  const approve = page.locator("button").filter({ hasText: /^Approve$/ });
 
-  await approve.click();
-  await approve.click();
-  await approve.click();
+  await details.approve.click();
+  await details.approve.click();
+  await details.approve.click();
 
   await expect(notification.toast("Approved")).toHaveCount(1);
 });
 
-test("keeps the confirmation up long enough to undo it, then lets it go", async ({
+test("keeps the confirmation with an undo up long enough to use it, then lets it go", async ({
   openProjectPage,
   page,
 }) => {
+  await goToNextAfterDecision(page);
   await page.clock.install();
-  const { notification } = await openProjectPage(
+  const { details, notification } = await openProjectPage(
     project.id,
     build.id,
     TEST_UNRESOLVED.id,
   );
 
-  await page
-    .locator("button")
-    .filter({ hasText: /^Approve$/ })
-    .click();
+  await details.approve.click();
   await expect(notification.toast("Approved")).toBeVisible();
 
   await page.clock.runFor(5500);
@@ -104,17 +111,33 @@ test("keeps the confirmation up long enough to undo it, then lets it go", async 
   await expect(notification.toast("Approved")).toBeHidden();
 });
 
-test("undoes an approval from its toast", async ({ openProjectPage, page }) => {
-  await mockRevertTestRuns(page);
-  const { notification } = await openProjectPage(
+test("leaves the undo to the footer when staying on the run", async ({
+  openProjectPage,
+}) => {
+  const { details, notification } = await openProjectPage(
     project.id,
     build.id,
     TEST_UNRESOLVED.id,
   );
-  await page
-    .locator("button")
-    .filter({ hasText: /^Approve$/ })
-    .click();
+
+  await details.approve.click();
+
+  await expect(notification.toast("Approved")).toBeVisible();
+  await expect(notification.undoBtn("Approved")).toHaveCount(0);
+});
+
+test("undoes an approval from its toast when going to the next run", async ({
+  openProjectPage,
+  page,
+}) => {
+  await goToNextAfterDecision(page);
+  await mockRevertTestRuns(page);
+  const { details, notification } = await openProjectPage(
+    project.id,
+    build.id,
+    TEST_UNRESOLVED.id,
+  );
+  await details.approve.click();
 
   const [request] = await Promise.all([
     page.waitForRequest(reverts),
@@ -127,22 +150,23 @@ test("undoes an approval from its toast", async ({ openProjectPage, page }) => {
   await expect(notification.toast("Approved")).toBeHidden();
 });
 
-test("shows why an undo was refused", async ({ openProjectPage, page }) => {
+test("shows why an undo from the toast was refused", async ({
+  openProjectPage,
+  page,
+}) => {
+  await goToNextAfterDecision(page);
   await mockApiError(
     page,
     isRevertUrl,
     409,
     "Test run was changed after the approval",
   );
-  const { notification } = await openProjectPage(
+  const { details, notification } = await openProjectPage(
     project.id,
     build.id,
     TEST_UNRESOLVED.id,
   );
-  await page
-    .locator("button")
-    .filter({ hasText: /^Reject$/ })
-    .click();
+  await details.reject.click();
 
   await notification.undoBtn("Rejected").click();
 
@@ -152,6 +176,99 @@ test("shows why an undo was refused", async ({ openProjectPage, page }) => {
   await expect(notification.toast("Undone")).toHaveCount(0);
 });
 
+for (const [status, decision] of [
+  [TestStatus.approved, "approve"],
+  [TestStatus.failed, "reject"],
+] as const) {
+  test(`undoes a ${status} run from the footer`, async ({
+    openProjectPage,
+    page,
+  }) => {
+    const decided = humanDecided(status);
+    await mockGetTestRuns(page, build.id, [decided]);
+    await mockTestRun(page, decided);
+    await mockRevertTestRuns(page);
+    const { details, notification } = await openProjectPage(
+      project.id,
+      build.id,
+      decided.id,
+    );
+    await expect(details.approve).toHaveCount(0);
+    const undo =
+      decision === "approve" ? details.undoApproval : details.undoRejection;
+
+    const [request] = await Promise.all([
+      page.waitForRequest(reverts),
+      undo.click(),
+    ]);
+
+    expect(request.postDataJSON()).toEqual([decided.id]);
+    expect(revertDecision(request)).toBe(decision);
+    await expect(notification.toast("Undone")).toBeVisible();
+  });
+}
+
+test("shows why the footer undo was refused", async ({
+  openProjectPage,
+  page,
+}) => {
+  const decided = humanDecided(TestStatus.approved);
+  await mockGetTestRuns(page, build.id, [decided]);
+  await mockTestRun(page, decided);
+  await mockApiError(
+    page,
+    isRevertUrl,
+    409,
+    `Test run ${decided.id}: a later approval changed this baseline`,
+  );
+  const { details, notification } = await openProjectPage(
+    project.id,
+    build.id,
+    decided.id,
+  );
+
+  await details.undoApproval.click();
+
+  await expect(
+    notification.toast("A later approval changed this baseline"),
+  ).toHaveClass(/notistack-MuiContent-error/);
+});
+
+test("shows a toast when the API refuses the footer undo", async ({
+  openProjectPage,
+  page,
+}) => {
+  const decided = humanDecided(TestStatus.approved);
+  await mockGetTestRuns(page, build.id, [decided]);
+  await mockTestRun(page, decided);
+  await mockApiError(page, isRevertUrl, 403, "Forbidden resource");
+  const { details, notification } = await openProjectPage(
+    project.id,
+    build.id,
+    decided.id,
+  );
+
+  await details.undoApproval.click();
+
+  await expect(notification.toast("Forbidden resource")).toHaveClass(
+    /notistack-MuiContent-error/,
+  );
+});
+
+test("offers no undo for an auto-approved run", async ({
+  openProjectPage,
+  page,
+}) => {
+  const auto = humanDecided(TestStatus.autoApproved);
+  await mockGetTestRuns(page, build.id, [auto]);
+  await mockTestRun(page, auto);
+  const { details } = await openProjectPage(project.id, build.id, auto.id);
+  await expect(details.step).toBeVisible();
+
+  await expect(details.undoApproval).toHaveCount(0);
+  await expect(details.undoRejection).toHaveCount(0);
+});
+
 test("lets an error outlive the confirmation that follows it", async ({
   openProjectPage,
   page,
@@ -159,58 +276,54 @@ test("lets an error outlive the confirmation that follows it", async ({
   await page.route(`${API_URL}/test-runs/reject`, (route) =>
     route.fulfill({ status: 500, body: JSON.stringify({ message: "nope" }) }),
   );
-  const { notification } = await openProjectPage(
+  const { details, notification } = await openProjectPage(
     project.id,
     build.id,
     TEST_UNRESOLVED.id,
   );
 
-  await page
-    .locator("button")
-    .filter({ hasText: /^Reject$/ })
-    .click();
+  await details.reject.click();
   await expect(page.getByText("nope")).toBeVisible();
-  await page
-    .locator("button")
-    .filter({ hasText: /^Approve$/ })
-    .click();
+  await details.approve.click();
 
   await expect(page.getByText("nope")).toBeVisible();
   await expect(notification.toast("Approved")).toBeVisible();
 });
 
-test("leaves draw mode behind when moving to another run", async ({
+test("leaves the edit mode and draw mode behind when moving to another run", async ({
   openProjectPage,
   page,
 }) => {
-  await openProjectPage(project.id, build.id, TEST_UNRESOLVED.id);
-  // an unlabelled icon: found by the value MUI puts on the button
+  const { details } = await openProjectPage(
+    project.id,
+    build.id,
+    TEST_UNRESOLVED.id,
+  );
   const drawMode = page.locator('button[value="drawMode"]');
 
+  await details.editAreas.click();
   await drawMode.click();
   await expect(drawMode).toHaveAttribute("aria-pressed", "true");
   await page.keyboard.press("ArrowLeft");
 
   await expect(page).toHaveURL(new RegExp(`testId=${TEST_RUN_NEW.id}$`));
+  await expect(drawMode).toHaveCount(0);
+  await details.editAreas.click();
   await expect(drawMode).toHaveAttribute("aria-pressed", "false");
 });
 
 test("does not dress a rejection up as a success", async ({
   openProjectPage,
-  page,
 }) => {
-  const projectPage = await openProjectPage(
+  const { details, notification } = await openProjectPage(
     project.id,
     build.id,
     TEST_UNRESOLVED.id,
   );
 
-  await page
-    .locator("button")
-    .filter({ hasText: /^Reject$/ })
-    .click();
+  await details.reject.click();
 
-  const toast = projectPage.notification.toast("Rejected");
+  const toast = notification.toast("Rejected");
   await expect(toast).toBeVisible();
   await expect(toast).not.toHaveClass(/notistack-MuiContent-success/);
 });

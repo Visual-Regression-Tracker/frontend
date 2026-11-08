@@ -1,4 +1,5 @@
 import { useEffect, type ReactNode } from "react";
+import type { UserEvent } from "@testing-library/user-event";
 import { screen, waitFor } from "@testing-library/react";
 import { renderWithProviders } from "../../_test/render";
 import { buttonAroundIcon } from "../../_test/buttonAroundIcon";
@@ -102,6 +103,13 @@ const renderModal = (
 
 const ignoreAreaCount = () => screen.getByTestId("ignoreAreaCount").textContent;
 const drawAnArea = () => screen.getByRole("button", { name: "Draw an area" });
+const draw = async (user: UserEvent) => {
+  const edit = screen.queryByRole("button", { name: "Edit areas" });
+  if (edit) {
+    await user.click(edit);
+  }
+  await user.click(drawAnArea());
+};
 const saveButton = () => buttonAroundIcon("SaveIcon");
 const applyToBuildButton = () => buttonAroundIcon("CollectionsIcon");
 const deleteTheArea = () =>
@@ -121,7 +129,7 @@ describe("TestDetailsModal", () => {
         .mockResolvedValue();
       const { user } = renderModal();
 
-      await user.click(drawAnArea());
+      await draw(user);
       expect(saveButton()).toBeEnabled();
       await user.click(saveButton());
 
@@ -132,7 +140,8 @@ describe("TestDetailsModal", () => {
       expect(
         await screen.findByText("Ignore areas are updated."),
       ).toBeVisible();
-      expect(saveButton()).toBeDisabled();
+      expect(screen.getByRole("button", { name: "Edit areas" })).toBeVisible();
+      expect(screen.queryByRole("button", { name: "Save" })).toBeNull();
     });
 
     it("keeps the areas unsaved when saving fails", async () => {
@@ -141,7 +150,7 @@ describe("TestDetailsModal", () => {
       );
       const { user } = renderModal();
 
-      await user.click(drawAnArea());
+      await draw(user);
       await user.click(saveButton());
 
       expect(await screen.findByText("Cannot save")).toBeVisible();
@@ -159,7 +168,7 @@ describe("TestDetailsModal", () => {
       await user.type(await screen.findByTestId("comment"), "looks fine");
       await user.click(screen.getByRole("button", { name: "Save" }));
       expect(await screen.findByText("Comment updated")).toBeVisible();
-      await user.click(drawAnArea());
+      await draw(user);
       await user.click(saveButton());
 
       expect(
@@ -177,7 +186,7 @@ describe("TestDetailsModal", () => {
     it("keeps unsaved areas when the same run comes back changed elsewhere", async () => {
       const { user, showTestRun } = renderModal();
 
-      await user.click(drawAnArea());
+      await draw(user);
       expect(ignoreAreaCount()).toBe("1");
       showTestRun({ ...RUN, comment: "a new comment" });
 
@@ -196,7 +205,7 @@ describe("TestDetailsModal", () => {
     it("shows the areas of another run when it opens", async () => {
       const { user, showTestRun } = renderModal();
 
-      await user.click(drawAnArea());
+      await draw(user);
       showTestRun({
         ...RUN,
         id: "another run",
@@ -211,7 +220,7 @@ describe("TestDetailsModal", () => {
     const applySelectedArea = async (
       user: ReturnType<typeof renderModal>["user"],
     ) => {
-      await user.click(drawAnArea());
+      await draw(user);
       await user.click(applyToBuildButton());
       await user.click(screen.getByRole("button", { name: "Yes" }));
     };
@@ -262,9 +271,8 @@ describe("TestDetailsModal", () => {
   describe("the unsaved flag", () => {
     it("is set by drawing an area and cleared by deleting it", async () => {
       const { user } = renderModal();
-      expect(saveButton()).toBeDisabled();
 
-      await user.click(drawAnArea());
+      await draw(user);
       expect(saveButton()).toBeEnabled();
       await user.click(deleteTheArea());
 
@@ -278,7 +286,7 @@ describe("TestDetailsModal", () => {
         ignoreAreas: JSON.stringify([SAVED_AREA]),
       });
 
-      await user.click(drawAnArea());
+      await draw(user);
       expect(saveButton()).toBeEnabled();
       await user.click(deleteTheArea());
 
@@ -288,8 +296,7 @@ describe("TestDetailsModal", () => {
   });
 
   describe("the view of a run", () => {
-    const diffSwitch = () =>
-      screen.getByRole("switch", { name: "Toggle diff" });
+    const mode = (name: string) => screen.getByRole("button", { name });
     const fade = () =>
       screen.getByRole("slider", { name: "Fade to the baseline" });
     const blend = () => screen.getByTestId("differenceToggle");
@@ -297,27 +304,150 @@ describe("TestDetailsModal", () => {
     it("starts over with the diff shown, no fade and no blend when another run opens", async () => {
       const { user, showTestRun } = renderModal(UNRESOLVED_RUN);
 
+      await user.click(mode("Fade"));
       fade().focus();
       await user.keyboard("{ArrowLeft}");
       await user.click(blend());
-      expect(diffSwitch()).not.toBeChecked();
-      expect(fade()).toHaveAttribute("aria-valuenow", "0.95");
+      expect(mode("Diff")).toHaveAttribute("aria-pressed", "false");
+      expect(fade()).toHaveAttribute("aria-valuenow", "0.45");
       expect(blend()).toHaveAttribute("aria-pressed", "true");
 
       showTestRun({ ...UNRESOLVED_RUN, id: "another run" });
 
-      expect(diffSwitch()).toBeChecked();
-      expect(fade()).toHaveAttribute("aria-valuenow", "1");
+      expect(mode("Diff")).toHaveAttribute("aria-pressed", "true");
+      await user.click(mode("Fade"));
+      expect(fade()).toHaveAttribute("aria-valuenow", "0.5");
       expect(blend()).toHaveAttribute("aria-pressed", "false");
     });
 
     it("keeps the view when the same run comes back changed elsewhere", async () => {
       const { user, showTestRun } = renderModal(UNRESOLVED_RUN);
 
-      await user.click(diffSwitch());
+      await user.click(mode("Side by side"));
       showTestRun({ ...UNRESOLVED_RUN, comment: "a new comment" });
 
-      expect(diffSwitch()).not.toBeChecked();
+      expect(mode("Side by side")).toHaveAttribute("aria-pressed", "true");
+    });
+
+    it("toggles between Diff and Side by side with D and returns from Fade to Diff", async () => {
+      const { user } = renderModal(UNRESOLVED_RUN);
+      expect(mode("Diff")).toHaveAttribute("aria-pressed", "true");
+
+      await user.keyboard("d");
+      expect(mode("Side by side")).toHaveAttribute("aria-pressed", "true");
+
+      await user.click(mode("Fade"));
+      await user.keyboard("d");
+      expect(mode("Diff")).toHaveAttribute("aria-pressed", "true");
+    });
+
+    it("offers Diff only when the run has a diff image", () => {
+      renderModal({ ...UNRESOLVED_RUN, diffName: null });
+
+      expect(screen.queryByRole("button", { name: "Diff" })).toBeNull();
+      expect(mode("Side by side")).toHaveAttribute("aria-pressed", "true");
+    });
+
+    it("offers no view modes for a new run", () => {
+      renderModal({
+        ...UNRESOLVED_RUN,
+        status: TestStatus.new,
+        diffName: null,
+        baselineName: "",
+      });
+
+      expect(screen.queryByRole("group", { name: "View mode" })).toBeNull();
+    });
+  });
+
+  describe("editing areas", () => {
+    it("shows the tools only in the edit mode and leaves it with Cancel, dropping the unsaved areas", async () => {
+      const { user } = renderModal();
+      expect(screen.queryByRole("button", { name: "Save" })).toBeNull();
+
+      await user.click(screen.getByRole("button", { name: "Edit areas" }));
+      await user.click(drawAnArea());
+      expect(ignoreAreaCount()).toBe("1");
+      await user.click(screen.getByRole("button", { name: "Cancel" }));
+
+      expect(screen.getByRole("button", { name: "Edit areas" })).toBeVisible();
+      expect(screen.queryByRole("button", { name: "Save" })).toBeNull();
+      expect(ignoreAreaCount()).toBe("0");
+    });
+
+    it("shows the count of the areas and hides them on a click", async () => {
+      const { user } = renderModal({
+        ...RUN,
+        ignoreAreas: JSON.stringify([SAVED_AREA]),
+      });
+      const chip = screen.getByRole("button", { name: "Ignore areas (1)" });
+      expect(chip).toHaveAttribute("aria-pressed", "true");
+
+      await user.click(chip);
+
+      expect(chip).toHaveAttribute("aria-pressed", "false");
+    });
+
+    it("has no count chip for a run without areas", () => {
+      renderModal();
+
+      expect(
+        screen.queryByRole("button", { name: /^Ignore areas \(/ }),
+      ).toBeNull();
+    });
+
+    it("ignores D while editing", async () => {
+      const { user } = renderModal(UNRESOLVED_RUN);
+      await user.click(screen.getByRole("button", { name: "Edit areas" }));
+
+      await user.keyboard("d");
+      await user.click(screen.getByRole("button", { name: "Cancel" }));
+
+      expect(screen.getByRole("button", { name: "Diff" })).toHaveAttribute(
+        "aria-pressed",
+        "true",
+      );
+    });
+
+    it("shows the areas again on the next run after they were hidden", async () => {
+      const withArea = { ...RUN, ignoreAreas: JSON.stringify([SAVED_AREA]) };
+      const { user, showTestRun } = renderModal(withArea);
+      await user.click(
+        screen.getByRole("button", { name: "Ignore areas (1)" }),
+      );
+
+      showTestRun({ ...withArea, id: "another run" });
+
+      expect(
+        screen.getByRole("button", { name: "Ignore areas (1)" }),
+      ).toHaveAttribute("aria-pressed", "true");
+    });
+
+    it("offers the undo once a person decided the run, not when it was auto-approved", () => {
+      const { showTestRun } = renderModal(UNRESOLVED_RUN);
+      expect(screen.queryByRole("button", { name: /^Undo/ })).toBeNull();
+
+      showTestRun({ ...UNRESOLVED_RUN, status: TestStatus.approved });
+      expect(
+        screen.getByRole("button", { name: "Undo approval" }),
+      ).toBeVisible();
+
+      showTestRun({ ...UNRESOLVED_RUN, status: TestStatus.failed });
+      expect(
+        screen.getByRole("button", { name: "Undo rejection" }),
+      ).toBeVisible();
+
+      showTestRun({ ...UNRESOLVED_RUN, status: TestStatus.autoApproved });
+      expect(screen.queryByRole("button", { name: /^Undo/ })).toBeNull();
+    });
+
+    it("leaves the edit mode when another run opens", async () => {
+      const { user, showTestRun } = renderModal();
+      await user.click(screen.getByRole("button", { name: "Edit areas" }));
+
+      showTestRun({ ...RUN, id: "another run" });
+
+      expect(screen.getByRole("button", { name: "Edit areas" })).toBeVisible();
     });
   });
 

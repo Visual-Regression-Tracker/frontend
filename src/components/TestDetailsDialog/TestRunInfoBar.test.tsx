@@ -10,7 +10,7 @@ const renderBar = (overrides: Partial<Props> = {}) => {
   const props: Props = {
     testRun: run(),
     sizes: null,
-    ignoreAreasToolbar: <button>Toolbar slot</button>,
+    toolbar: <button>Toolbar slot</button>,
     ...overrides,
   };
   return renderWithProviders(<TestRunInfoBar {...props} />);
@@ -72,7 +72,7 @@ describe("TestRunInfoBar", () => {
         <TestRunInfoBar
           testRun={run({ id: "b", vlmDescription: "Second run text." })}
           sizes={null}
-          ignoreAreasToolbar={null}
+          toolbar={null}
         />,
       );
 

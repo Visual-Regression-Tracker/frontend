@@ -44,6 +44,7 @@ const openRunWith = async (
   await mockImage(page, "baseline.png");
 
   await openProjectPage(project.id, build.id, run.id);
+  await page.getByRole("button", { name: "Edit areas" }).click();
 
   const canvas = page.getByTestId("drawArea").last().locator("canvas").last();
   await expect(canvas).toBeVisible();

@@ -19,6 +19,33 @@ interface UndoOptions {
   onUndone?: () => void;
 }
 
+const RUN_PREFIX = /^Test run \S+: /;
+
+const withoutRunPrefix = (message: string) => {
+  if (typeof message !== "string" || !RUN_PREFIX.test(message)) {
+    return message;
+  }
+  const rest = message.replace(RUN_PREFIX, "");
+  return rest.charAt(0).toUpperCase() + rest.slice(1);
+};
+
+export const revertDecision = ({
+  ids,
+  decision,
+  undoneText,
+  enqueueSnackbar,
+  onUndone,
+}: UndoOptions) =>
+  testRunService
+    .revert(ids, decision)
+    .then(() => {
+      onUndone?.();
+      enqueueSnackbar(undoneText, { variant: "info" });
+    })
+    .catch((err: string) =>
+      enqueueSnackbar(withoutRunPrefix(err), { variant: "error" }),
+    );
+
 const UndoSnackbarAction = ({
   snackbarKey,
   ids,
@@ -33,13 +60,13 @@ const UndoSnackbarAction = ({
   const undo = () => {
     setUndoing(true);
     closeSnackbar(snackbarKey);
-    testRunService
-      .revert(ids, decision)
-      .then(() => {
-        onUndone?.();
-        enqueueSnackbar(undoneText, { variant: "info" });
-      })
-      .catch((err: string) => enqueueSnackbar(err, { variant: "error" }));
+    void revertDecision({
+      ids,
+      decision,
+      undoneText,
+      enqueueSnackbar,
+      onUndone,
+    });
   };
 
   return (

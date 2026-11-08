@@ -1,5 +1,6 @@
 import { type ComponentProps } from "react";
-import { screen, waitFor } from "@testing-library/react";
+import { screen, waitFor, within } from "@testing-library/react";
+import { toastOf, undoIn } from "../../_test/toast";
 import { renderWithProviders } from "../../_test/render";
 import { run } from "../../_helpers/testRun.fixture";
 import { NO_FAILURES } from "../../_test/bulkResult";
@@ -62,6 +63,86 @@ describe("TestDetailsFooter", () => {
         ).not.toBeInTheDocument();
       },
     );
+  });
+
+  describe("undo", () => {
+    const undoButton = (name: string) => screen.getByRole("button", { name });
+
+    it.each([
+      [TestStatus.approved, "Undo approval", "approve"],
+      [TestStatus.failed, "Undo rejection", "reject"],
+    ] as const)(
+      "reverts a %s run from the footer",
+      async (status, name, decision) => {
+        const revert = vi.spyOn(testRunService, "revert").mockResolvedValue();
+        const testRun = run({ status });
+        const { user } = renderFooter({ testRun });
+
+        await user.click(undoButton(name));
+
+        expect(revert).toHaveBeenCalledWith([testRun.id], decision);
+        expect(await screen.findByText("Undone")).toBeVisible();
+      },
+    );
+
+    it.each([TestStatus.autoApproved, TestStatus.ok, TestStatus.unresolved])(
+      "offers no undo for a %s run",
+      (status) => {
+        renderFooter({ testRun: run({ status }) });
+
+        expect(screen.queryByRole("button", { name: /^Undo/ })).toBeNull();
+      },
+    );
+
+    it("shows why the backend refused the undo", async () => {
+      vi.spyOn(testRunService, "revert").mockRejectedValue(
+        "A later approval changed this baseline",
+      );
+      const { user } = renderFooter({
+        testRun: run({ status: TestStatus.approved }),
+      });
+
+      await user.click(undoButton("Undo approval"));
+
+      const toast = await toastOf("A later approval changed this baseline");
+      expect(toast).toHaveClass("notistack-MuiContent-error");
+    });
+
+    it("drops the run id from the backend's reason", async () => {
+      const testRun = run({ status: TestStatus.approved });
+      vi.spyOn(testRunService, "revert").mockRejectedValue(
+        `Test run ${testRun.id}: a later approval changed this baseline`,
+      );
+      const { user } = renderFooter({ testRun });
+
+      await user.click(undoButton("Undo approval"));
+
+      expect(
+        await toastOf("A later approval changed this baseline"),
+      ).toHaveClass("notistack-MuiContent-error");
+    });
+
+    it("keeps the undo in the toast when the dialog goes to the next run", async () => {
+      localStorage.setItem(GO_TO_NEXT_KEY, "true");
+      vi.spyOn(testRunService, "approveBulk").mockResolvedValue(NO_FAILURES);
+      const { user } = renderFooter();
+
+      await user.click(approve());
+
+      expect(await undoIn("Approved")).toBeVisible();
+    });
+
+    it("leaves the undo to the footer when staying on the run", async () => {
+      vi.spyOn(testRunService, "approveBulk").mockResolvedValue(NO_FAILURES);
+      const { user } = renderFooter();
+
+      await user.click(approve());
+
+      const toast = await toastOf("Approved");
+      expect(
+        within(toast).queryByText("Undo", { selector: "button" }),
+      ).toBeNull();
+    });
   });
 
   describe("go to the next after Approve/Reject", () => {

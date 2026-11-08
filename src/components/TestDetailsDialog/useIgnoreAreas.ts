@@ -25,6 +25,7 @@ export const useIgnoreAreas = (
   const [isDrawMode, setIsDrawMode] = useState(false);
   const [areaKind, setAreaKind] = useState(AREA_KINDS[0]);
   const [processing, setProcessing] = useState(false);
+  const [editing, setEditing] = useState(false);
 
   // by fields, not the run object: an update to the run would wipe the unsaved areas drawn here
   const { id, diffName, ignoreAreas: storedAreas } = testRun;
@@ -36,6 +37,9 @@ export const useIgnoreAreas = (
     if (imagesChanged) {
       setIsDrawMode(false);
       setSelectedRectId(undefined);
+    }
+    if (runChanged) {
+      setEditing(false);
     }
     if (areasChanged) {
       setIgnoreAreas(parseIgnoreAreas(storedAreas));
@@ -84,6 +88,9 @@ export const useIgnoreAreas = (
           type: "touched",
           payload: false,
         });
+        setSelectedRectId(undefined);
+        setIsDrawMode(false);
+        setEditing(false);
       })
       .catch((err: SnackbarMessage) =>
         enqueueSnackbar(err, {
@@ -164,7 +171,18 @@ export const useIgnoreAreas = (
     }
   };
 
+  const cancelEditing = () => {
+    setIgnoreAreas(parseIgnoreAreas(storedAreas));
+    setSelectedRectId(undefined);
+    setIsDrawMode(false);
+    setEditing(false);
+    testRunDispatch({ type: "touched", payload: false });
+  };
+
   return {
+    editing,
+    startEditing: () => setEditing(true),
+    cancelEditing,
     ignoreAreas,
     tempIgnoreAreas,
     changeIgnoreAreas,

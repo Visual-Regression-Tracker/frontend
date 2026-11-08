@@ -55,6 +55,7 @@ const renderButtons = async ({
   testRuns = [testRun],
   afterApprove = vi.fn(),
   afterReject = vi.fn(),
+  undoInToast = true,
   onOpenVariations = vi.fn(),
 }: {
   testRun?: TestRun;
@@ -62,6 +63,7 @@ const renderButtons = async ({
   testRuns?: TestRun[];
   afterApprove?: () => void;
   afterReject?: () => void;
+  undoInToast?: boolean;
   onOpenVariations?: (mode: "approve" | "reject") => void;
 } = {}) => {
   vi.spyOn(projectsService, "getAll").mockResolvedValue([project]);
@@ -73,6 +75,7 @@ const renderButtons = async ({
         testRun={run}
         afterApprove={afterApprove}
         afterReject={afterReject}
+        undoInToast={undoInToast}
         onOpenVariations={onOpenVariations}
       />
     </>
@@ -97,6 +100,7 @@ const renderButtons = async ({
             testRun={testRun}
             afterApprove={callbacks.afterApprove ?? afterApprove}
             afterReject={callbacks.afterReject ?? afterReject}
+            undoInToast={undoInToast}
             onOpenVariations={onOpenVariations}
           />
         </>,
@@ -354,6 +358,35 @@ describe("ApproveRejectButtons", () => {
     });
   });
 
+  describe("without the undo in the toast", () => {
+    it.each([
+      ["Approved", approveButton, "approveBulk"],
+      ["Rejected", rejectButton, "rejectBulk"],
+    ] as const)(
+      "confirms %s with no undo, as the footer offers it",
+      async (text, button, method) => {
+        vi.spyOn(testRunService, method).mockResolvedValue(NO_FAILURES);
+        const { user } = await renderButtons({ undoInToast: false });
+
+        await user.click(button());
+
+        const toast = await toastOf(text);
+        expect(
+          within(toast).queryByText("Undo", { selector: "button" }),
+        ).not.toBeInTheDocument();
+      },
+    );
+  });
+
+  it("shows the hotkey on each button", async () => {
+    await renderButtons();
+
+    expect(approveButton()).toHaveAttribute("aria-keyshortcuts", "a");
+    expect(rejectButton()).toHaveAttribute("aria-keyshortcuts", "x");
+    expect(within(approveButton()).getByText("A")).toBeInTheDocument();
+    expect(within(rejectButton()).getByText("X")).toBeInTheDocument();
+  });
+
   describe("undo", () => {
     it("reverts an approval from its toast and says so", async () => {
       vi.spyOn(testRunService, "approveBulk").mockResolvedValue(NO_FAILURES);
@@ -486,8 +519,8 @@ describe("ApproveRejectButtons", () => {
   describe("variations buttons", () => {
     const SIBLING = siblingOf(UNRESOLVED, {});
     const variationButtons = () => ({
-      approve: screen.queryByText("Approve variations"),
-      reject: screen.queryByText("Reject variations"),
+      approve: screen.queryByText("Approve variations…"),
+      reject: screen.queryByText("Reject variations…"),
     });
 
     it("offers to approve or reject the variations of a screen", async () => {
@@ -497,10 +530,10 @@ describe("ApproveRejectButtons", () => {
         onOpenVariations,
       });
 
-      await user.click(screen.getByText("Approve variations"));
+      await user.click(screen.getByText("Approve variations…"));
       expect(onOpenVariations).toHaveBeenLastCalledWith("approve");
 
-      await user.click(screen.getByText("Reject variations"));
+      await user.click(screen.getByText("Reject variations…"));
       expect(onOpenVariations).toHaveBeenLastCalledWith("reject");
       expect(onOpenVariations).toHaveBeenCalledTimes(2);
     });
@@ -510,7 +543,7 @@ describe("ApproveRejectButtons", () => {
       const rejectBulk = vi.spyOn(testRunService, "rejectBulk");
       const { user } = await renderButtons({ testRuns: [UNRESOLVED, SIBLING] });
 
-      await user.click(screen.getByText("Approve variations"));
+      await user.click(screen.getByText("Approve variations…"));
 
       expect(approveBulk).not.toHaveBeenCalled();
       expect(rejectBulk).not.toHaveBeenCalled();
@@ -524,7 +557,7 @@ describe("ApproveRejectButtons", () => {
         ],
       });
 
-      expect(screen.getByText("Approve variations")).toBeVisible();
+      expect(screen.getByText("Approve variations…")).toBeVisible();
     });
 
     it("hides them when the project does not allow bulk approval of variations", async () => {
@@ -591,7 +624,7 @@ describe("ApproveRejectButtons", () => {
         ],
       });
 
-      expect(screen.getByText("Approve variations")).toBeVisible();
+      expect(screen.getByText("Approve variations…")).toBeVisible();
     });
   });
 });

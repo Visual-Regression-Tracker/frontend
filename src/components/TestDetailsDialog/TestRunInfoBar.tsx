@@ -6,7 +6,7 @@ import { Tooltip } from "../Tooltip";
 interface TestRunInfoBarProps {
   testRun: TestRun;
   sizes: { baseline?: string; checkpoint?: string } | null;
-  ignoreAreasToolbar: ReactNode;
+  toolbar: ReactNode;
 }
 
 const VlmLine = ({ description }: { description: string }) => {
@@ -45,7 +45,7 @@ const VlmLine = ({ description }: { description: string }) => {
 export const TestRunInfoBar = ({
   testRun,
   sizes,
-  ignoreAreasToolbar,
+  toolbar,
 }: TestRunInfoBarProps) => (
   <Box sx={{ mx: 1 }}>
     {testRun.vlmDescription && (
@@ -56,9 +56,7 @@ export const TestRunInfoBar = ({
         {`Image sizes differ: baseline ${sizes.baseline ?? "unknown"}, checkpoint ${sizes.checkpoint ?? "unknown"}. Cannot calculate diff.`}
       </Alert>
     )}
-    <Box sx={{ display: "flex", justifyContent: "flex-end" }}>
-      {ignoreAreasToolbar}
-    </Box>
+    {toolbar}
     <Divider />
   </Box>
 );

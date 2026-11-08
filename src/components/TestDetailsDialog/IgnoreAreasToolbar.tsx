@@ -1,11 +1,9 @@
-import { useState } from "react";
+import { type ReactNode, useState } from "react";
 import {
-  Grid,
-  IconButton,
-  MenuItem,
-  Select,
-  SelectChangeEvent,
+  Button,
+  Stack,
   ToggleButton,
+  ToggleButtonGroup,
   Typography,
 } from "@mui/material";
 import {
@@ -21,6 +19,7 @@ import { AREA_KINDS } from "../../constants";
 
 const applyIgnoreAreaText =
   "Apply selected ignore area to all images in this build.";
+const textButtonSx = { textTransform: "none" } as const;
 
 interface IgnoreAreasToolbarProps {
   areaKind: string;
@@ -34,7 +33,35 @@ interface IgnoreAreasToolbarProps {
   onClear: () => void;
   onApplyToBuild: () => void;
   onSave: () => void;
+  onCancel: () => void;
 }
+
+const ToolButton = ({
+  tooltip,
+  children,
+  ...props
+}: {
+  tooltip?: string;
+  children: ReactNode;
+  disabled?: boolean;
+  onClick: () => void;
+  startIcon: ReactNode;
+  color?: "primary" | "secondary";
+}) => {
+  const button = (
+    <Button size="small" sx={textButtonSx} {...props}>
+      {children}
+    </Button>
+  );
+
+  return tooltip ? (
+    <Tooltip title={tooltip}>
+      <span>{button}</span>
+    </Tooltip>
+  ) : (
+    button
+  );
+};
 
 export const IgnoreAreasToolbar = ({
   areaKind,
@@ -48,6 +75,7 @@ export const IgnoreAreasToolbar = ({
   onClear,
   onApplyToBuild,
   onSave,
+  onCancel,
 }: IgnoreAreasToolbarProps) => {
   const [applyDialogOpen, setApplyDialogOpen] = useState(false);
 
@@ -57,91 +85,75 @@ export const IgnoreAreasToolbar = ({
 
   return (
     <>
-      <Grid container spacing={2} sx={{ alignItems: "center" }}>
-        <Grid>
-          <Select
-            variant="standard"
-            id="area-select"
-            labelId="areaSelect"
-            // a standard select underlines itself and would read as a text field among buttons
-            sx={{
-              "&:before, &:after, &:hover:not(.Mui-disabled):before": {
-                borderBottom: "none",
-              },
-            }}
-            value={areaKind}
-            onChange={(event: SelectChangeEvent<string>) =>
-              onAreaKindChange(event.target.value)
-            }
-          >
-            {AREA_KINDS.map((eachItem) => (
-              <MenuItem key={eachItem} value={eachItem}>
-                {eachItem}
-              </MenuItem>
-            ))}
-          </Select>
-        </Grid>
-        <Grid>
-          <ToggleButton
-            value={"drawMode"}
-            selected={isDrawMode}
-            size="small"
-            aria-label="Draw area"
-            onClick={() => {
-              onDrawModeChange(!isDrawMode);
-            }}
-            style={{
-              padding: 4,
-            }}
-          >
-            <Add data-testid="AddIcon" />
-          </ToggleButton>
-        </Grid>
-        <Grid>
-          <IconButton
-            size="small"
-            aria-label="Delete selected area"
-            disabled={!hasSelection || !hasAreas}
-            onClick={onDelete}
-          >
-            <Delete data-testid="DeleteIcon" />
-          </IconButton>
-        </Grid>
-        <Tooltip title="Clears all ignore areas.">
-          <Grid>
-            <IconButton
-              size="small"
-              aria-label="Clear all areas"
-              disabled={!hasAreas}
-              onClick={onClear}
-            >
-              <LayersClear data-testid="LayersClearIcon" />
-            </IconButton>
-          </Grid>
-        </Tooltip>
-        <Tooltip title={applyIgnoreAreaText}>
-          <Grid>
-            <IconButton
-              size="small"
-              aria-label="Apply selected area to build"
-              disabled={!hasSelection || !hasAreas}
-              onClick={toggleApplyDialogOpen}
-            >
-              <Collections data-testid="CollectionsIcon" />
-            </IconButton>
-          </Grid>
-        </Tooltip>
-        <Grid>
-          <IconButton
-            size="small"
-            aria-label="Save areas"
-            disabled={!touched}
-            onClick={onSave}
-          >
-            <Save data-testid="SaveIcon" />
-          </IconButton>
-        </Grid>
-      </Grid>
+      <Stack
+        direction="row"
+        spacing={1}
+        sx={{ alignItems: "center", flexWrap: "wrap", rowGap: 0.5 }}
+      >
+        <Typography variant="body2" color="textSecondary">
+          Editing areas
+        </Typography>
+        <ToggleButtonGroup
+          exclusive
+          size="small"
+          value={areaKind}
+          aria-label="Area type"
+          onChange={(_event, value: string | null) =>
+            value && onAreaKindChange(value)
+          }
+        >
+          {AREA_KINDS.map((kind) => (
+            <ToggleButton key={kind} value={kind} sx={textButtonSx}>
+              {kind === AREA_KINDS[0] ? "Ignore areas" : "Compare area"}
+            </ToggleButton>
+          ))}
+        </ToggleButtonGroup>
+        <ToggleButton
+          value="drawMode"
+          selected={isDrawMode}
+          size="small"
+          onClick={() => onDrawModeChange(!isDrawMode)}
+          sx={{ ...textButtonSx, gap: 0.5 }}
+        >
+          <Add fontSize="small" data-testid="AddIcon" />
+          Draw
+        </ToggleButton>
+        <ToolButton
+          startIcon={<Delete data-testid="DeleteIcon" />}
+          disabled={!hasSelection || !hasAreas}
+          onClick={onDelete}
+        >
+          Delete selected
+        </ToolButton>
+        <ToolButton
+          tooltip="Clears all ignore areas."
+          startIcon={<LayersClear data-testid="LayersClearIcon" />}
+          disabled={!hasAreas}
+          onClick={onClear}
+        >
+          Clear all
+        </ToolButton>
+        <ToolButton
+          tooltip={applyIgnoreAreaText}
+          startIcon={<Collections data-testid="CollectionsIcon" />}
+          disabled={!hasSelection || !hasAreas}
+          onClick={toggleApplyDialogOpen}
+        >
+          Apply selected to whole build…
+        </ToolButton>
+        <Button size="small" color="secondary" onClick={onCancel}>
+          Cancel
+        </Button>
+        <Button
+          size="small"
+          variant="contained"
+          startIcon={<Save data-testid="SaveIcon" />}
+          disabled={!touched}
+          onClick={onSave}
+        >
+          Save
+        </Button>
+      </Stack>
       <BaseModal
         open={applyDialogOpen}
         title={applyIgnoreAreaText}

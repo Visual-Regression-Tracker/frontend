@@ -1,3 +1,4 @@
+import type { UserEvent } from "@testing-library/user-event";
 import { screen, waitFor } from "@testing-library/react";
 import { renderWithProviders } from "../../_test/render";
 import { buttonAroundIcon } from "../../_test/buttonAroundIcon";
@@ -70,6 +71,13 @@ const renderDialog = async ({
 
 const NOT_SAVED_TITLE = "You have not saved ignore areas";
 const drawAnArea = () => screen.getByRole("button", { name: "Draw an area" });
+const draw = async (user: UserEvent) => {
+  const edit = screen.queryByRole("button", { name: "Edit areas" });
+  if (edit) {
+    await user.click(edit);
+  }
+  await user.click(drawAnArea());
+};
 const deleteTheArea = () =>
   screen.getByRole("button", { name: "Delete the selected area" });
 // a tooltip names these two buttons after their hotkey, so they are found by text
@@ -178,7 +186,7 @@ describe("TestDetailsDialog", () => {
   describe("unsaved ignore areas", () => {
     it("ask before Escape closes the dialog", async () => {
       const { user } = await renderDialog({ openRun: FIRST });
-      await user.click(drawAnArea());
+      await draw(user);
 
       await user.keyboard("{Escape}");
 
@@ -188,7 +196,7 @@ describe("TestDetailsDialog", () => {
 
     it("ask before the right arrow goes to the next run", async () => {
       const { user } = await renderDialog({ openRun: FIRST });
-      await user.click(drawAnArea());
+      await draw(user);
 
       await user.keyboard("{ArrowRight}");
 
@@ -199,7 +207,7 @@ describe("TestDetailsDialog", () => {
 
     it("ask before the next button goes to the next run", async () => {
       const { user } = await renderDialog({ openRun: FIRST });
-      await user.click(drawAnArea());
+      await draw(user);
 
       await user.click(buttonAroundIcon("NavigateNextIcon"));
 
@@ -218,7 +226,7 @@ describe("TestDetailsDialog", () => {
 
     it("go to the next run when the changes are discarded after the right arrow", async () => {
       const { user } = await renderDialog({ openRun: FIRST });
-      await user.click(drawAnArea());
+      await draw(user);
       await user.keyboard("{ArrowRight}");
       await screen.findByText(NOT_SAVED_TITLE);
 
@@ -233,7 +241,7 @@ describe("TestDetailsDialog", () => {
 
     it("close the dialog when the changes are discarded after Escape", async () => {
       const { user } = await renderDialog({ openRun: FIRST });
-      await user.click(drawAnArea());
+      await draw(user);
       await user.keyboard("{Escape}");
       await screen.findByText(NOT_SAVED_TITLE);
 
@@ -247,7 +255,7 @@ describe("TestDetailsDialog", () => {
 
     it("stay on the run when the prompt is cancelled", async () => {
       const { user } = await renderDialog({ openRun: FIRST });
-      await user.click(drawAnArea());
+      await draw(user);
       await user.keyboard("{ArrowRight}");
       await screen.findByText(NOT_SAVED_TITLE);
 
@@ -262,7 +270,7 @@ describe("TestDetailsDialog", () => {
 
     it("do not ask again on the run reached after discarding", async () => {
       const { user } = await renderDialog({ openRun: FIRST });
-      await user.click(drawAnArea());
+      await draw(user);
       await user.keyboard("{ArrowRight}");
       await screen.findByText(NOT_SAVED_TITLE);
       await user.click(discard());
@@ -290,7 +298,7 @@ describe("TestDetailsDialog", () => {
         openRun: UNRESOLVED[0],
         testRuns: UNRESOLVED,
       });
-      await user.click(drawAnArea());
+      await draw(user);
       await user.keyboard("{ArrowRight}");
       await screen.findByText(NOT_SAVED_TITLE);
 
@@ -305,7 +313,7 @@ describe("TestDetailsDialog", () => {
         openRun: UNRESOLVED[0],
         testRuns: UNRESOLVED,
       });
-      await user.click(drawAnArea());
+      await draw(user);
       await user.keyboard("{ArrowRight}");
       await screen.findByText(NOT_SAVED_TITLE);
 
@@ -316,7 +324,7 @@ describe("TestDetailsDialog", () => {
 
     it("the arrows do not change where Discard goes", async () => {
       const { user } = await renderDialog({ openRun: SECOND });
-      await user.click(drawAnArea());
+      await draw(user);
       await user.keyboard("{ArrowRight}");
       await screen.findByText(NOT_SAVED_TITLE);
 
@@ -331,7 +339,7 @@ describe("TestDetailsDialog", () => {
     it("is set by drawing an area", async () => {
       const { user } = await renderDialog({ openRun: FIRST });
 
-      await user.click(drawAnArea());
+      await draw(user);
       await user.keyboard("{ArrowRight}");
 
       expect(await screen.findByText(NOT_SAVED_TITLE)).toBeVisible();
@@ -339,7 +347,7 @@ describe("TestDetailsDialog", () => {
 
     it("is cleared when the drawn area is deleted", async () => {
       const { user } = await renderDialog({ openRun: FIRST });
-      await user.click(drawAnArea());
+      await draw(user);
       expect(screen.getByTestId("ignoreAreaCount")).toHaveTextContent("1");
 
       await user.click(deleteTheArea());
@@ -352,8 +360,8 @@ describe("TestDetailsDialog", () => {
 
     it("stays set while an unsaved area is left after another is deleted", async () => {
       const { user } = await renderDialog({ openRun: FIRST });
-      await user.click(drawAnArea());
-      await user.click(drawAnArea());
+      await draw(user);
+      await draw(user);
 
       await user.click(deleteTheArea());
       expect(screen.getByTestId("ignoreAreaCount")).toHaveTextContent("1");

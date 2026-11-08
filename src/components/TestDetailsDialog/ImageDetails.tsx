@@ -1,4 +1,4 @@
-import { Typography, Grid, IconButton } from "@mui/material";
+import { Typography, Grid } from "@mui/material";
 import { WarningRounded, AltRoute } from "@mui/icons-material";
 import { IgnoreArea } from "../../types/ignoreArea";
 import { Tooltip } from "../Tooltip";
@@ -61,12 +61,14 @@ const ImageDetails = ({
             "Contains noneditable ignore areas applied during image upload."
           }
         >
-          <IconButton size="large">
-            <WarningRounded
-              data-testid="WarningRoundedIcon"
-              color="secondary"
-            />
-          </IconButton>
+          <Typography
+            variant="caption"
+            color="secondary"
+            sx={{ display: "flex", alignItems: "center", gap: 0.5, ml: 1 }}
+          >
+            <WarningRounded fontSize="small" data-testid="WarningRoundedIcon" />
+            {`${ignoreAreas.length} ignore ${ignoreAreas.length === 1 ? "area" : "areas"} from upload`}
+          </Typography>
         </Tooltip>
       )}
     </Grid>

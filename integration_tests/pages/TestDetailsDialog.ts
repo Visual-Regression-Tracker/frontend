@@ -28,28 +28,42 @@ export class TestDetailsDialog extends PageObject {
   nextRun = this.page.getByLabel("Next run");
   closeBtn = this.iconButton("CloseIcon");
 
+  editAreas = this.page.getByRole("button", { name: "Edit areas" });
+  cancelEditing = this.page.getByRole("button", {
+    name: "Cancel",
+    exact: true,
+  });
+  areasChip = this.page.getByRole("button", { name: /^Ignore areas \(\d+\)$/ });
   drawMode = this.iconButton("AddIcon");
   deleteArea = this.iconButton("DeleteIcon");
   clearAreas = this.iconButton("LayersClearIcon");
   applyAreas = this.iconButton("CollectionsIcon");
   saveAreas = this.iconButton("SaveIcon");
-  areaKind = this.page.locator("#area-select");
 
-  zoomIn = this.iconButton("ZoomInIcon");
-  zoomOut = this.iconButton("ZoomOutIcon");
-  originalSize = this.iconButton("FullscreenIcon");
-  fitToScreen = this.iconButton("FullscreenExitIcon");
+  zoomIn = this.page.getByRole("button", { name: "Zoom in" });
+  zoomOut = this.page.getByRole("button", { name: "Zoom out" });
+  zoomLevel = this.page.getByTestId("zoom-level");
+  originalSize = this.page.getByRole("button", { name: "Original size" });
+  fitToScreen = this.page.getByRole("button", { name: "Fit into screen" });
 
-  // by text: the tooltip wrapper makes "Hotkey: A" the name; anchored vs "Approve variations"
-  approve = this.page.getByRole("button").filter({ hasText: /^Approve$/ });
-  reject = this.page.getByRole("button").filter({ hasText: /^Reject$/ });
+  // by text: the hotkey hint is part of the text, and "Approve variations…" must not match
+  approve = this.page.getByRole("button").filter({ hasText: /^Approve\s?A$/ });
+  reject = this.page.getByRole("button").filter({ hasText: /^Reject\s?X$/ });
   approveVariations = this.page
     .getByRole("button")
-    .filter({ hasText: /^Approve variations$/ });
+    .filter({ hasText: /^Approve variations…$/ });
   rejectVariations = this.page
     .getByRole("button")
-    .filter({ hasText: /^Reject variations$/ });
-  toggleDiff = this.page.getByRole("switch", { name: "Toggle diff" });
+    .filter({ hasText: /^Reject variations…$/ });
+  undoApproval = this.page.getByRole("button", { name: "Undo approval" });
+  undoRejection = this.page.getByRole("button", { name: "Undo rejection" });
+
+  viewModes = this.page.getByRole("group", { name: "View mode" });
+  sideBySide = this.viewModes.getByRole("button", { name: "Side by side" });
+  diffMode = this.viewModes.getByRole("button", { name: "Diff" });
+  fadeMode = this.viewModes.getByRole("button", { name: "Fade" });
+  fadeSlider = this.page.getByTestId("overlayOpacity").getByRole("slider");
+  differenceBlend = this.page.getByTestId("differenceToggle");
 
   commentsBtn = this.page.getByRole("button", { name: "Comments" });
   vlmAnalysis = this.page.getByTestId("vlm-analysis");
@@ -185,7 +199,9 @@ export class TestDetailsDialog extends PageObject {
   }
 
   async chooseAreaKind(kind: "Ignore Areas" | "Compare Area") {
-    await this.areaKind.click();
-    await this.page.getByRole("option", { name: kind }).click();
+    await this.page
+      .getByRole("group", { name: "Area type" })
+      .getByRole("button", { name: kind })
+      .click();
   }
 }

@@ -802,7 +802,7 @@ describe("MatchingVariationsDialog", () => {
 
     it("shows the review again when variations are rejected after they were approved", async () => {
       const { user, openVariations } = await openDetails(nextBuildId());
-      await openVariations("Approve variations");
+      await openVariations("Approve variations…");
       await user.click(
         await screen.findByRole("button", { name: "Approve 1 selected" }),
       );
@@ -813,7 +813,7 @@ describe("MatchingVariationsDialog", () => {
         ).not.toBeInTheDocument(),
       );
 
-      await openVariations("Reject variations");
+      await openVariations("Reject variations…");
 
       expect(
         await screen.findByRole("button", { name: "Reject 1 selected" }),
@@ -826,9 +826,12 @@ describe("MatchingVariationsDialog", () => {
       const buildId = nextBuildId();
       const { user, openVariations } = await openDetails(buildId);
       await user.click(
+        await screen.findByRole("button", { name: "Edit areas" }),
+      );
+      await user.click(
         await screen.findByRole("button", { name: "Draw an area" }),
       );
-      await openVariations("Approve variations");
+      await openVariations("Approve variations…");
       await user.click(
         await screen.findByRole("button", { name: "Approve 1 selected" }),
       );
