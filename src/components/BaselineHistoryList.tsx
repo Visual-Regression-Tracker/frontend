@@ -1,5 +1,6 @@
 import { Avatar, Box, Button, Stack, Typography } from "@mui/material";
 import { Baseline } from "../types/baseline";
+import { CommentIndicator } from "./CommentIndicator";
 import { StatusChip } from "./StatusChip";
 import { DateLabel } from "./DateLabel";
 import { Tooltip } from "./Tooltip";
@@ -82,6 +83,7 @@ export const BaselineHistoryList = ({
             >
               <StatusChip status={testRun.status} />
               {noiseAvailable && <NoiseHintChip run={testRun} />}
+              <CommentIndicator text={testRun.comment} />
               <Box sx={{ flex: 1 }} />
               <Button
                 size="small"

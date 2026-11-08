@@ -444,6 +444,42 @@ describe("Header", () => {
         expect(screen.getByText("Recently opened")).toBeVisible();
         expect(screen.queryByText("Other projects")).not.toBeInTheDocument();
       });
+
+      it("keeps the group headers in view while the list scrolls and out of keyboard navigation", async () => {
+        const { user } = await renderShell(`/${TEST_PROJECT.id}`, {
+          favorites: [OTHER.id],
+        });
+        await openMenu(user);
+
+        const header = await screen.findByText("Favourites");
+
+        expect(header).toHaveStyle({ position: "sticky" });
+        expect(header).not.toHaveAttribute("role", "menuitem");
+        await user.keyboard("{ArrowDown}");
+        expect(screen.getAllByRole("menuitem")[0]).toHaveFocus();
+      });
+
+      it("puts each group header right before the projects of that group", async () => {
+        const { user } = await renderShell(`/${TEST_PROJECT.id}`, {
+          favorites: [OTHER.id],
+        });
+        await openMenu(user);
+        await screen.findByText("Favourites");
+
+        const menu = screen.getByRole("menu");
+        const sequence = Array.from(menu.children).map((child) =>
+          child.getAttribute("role") === "menuitem"
+            ? `item:${child.textContent}`
+            : `header:${child.textContent}`,
+        );
+
+        expect(sequence).toEqual([
+          "header:Favourites",
+          `item:${OTHER.name}`,
+          "header:Recently opened",
+          `item:${TEST_PROJECT.name}`,
+        ]);
+      });
     });
   });
 });

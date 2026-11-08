@@ -35,7 +35,7 @@ export class TestRunList extends Table {
   );
 
   rows = this.page.locator(".MuiDataGrid-row");
-  rowNames = this.rows.locator("[data-field='name']");
+  rowNames = this.rows.locator("[data-field='name'] p");
   selectAllRows = this.page.getByRole("checkbox", {
     name: /^(un)?select all rows$/i,
   });
