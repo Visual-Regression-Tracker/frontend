@@ -241,6 +241,9 @@ export const BulkOperation = ({
         open={action !== null}
         title={title}
         submitButtonText={verb}
+        submitColor={
+          action === "Delete" || action === "Clear" ? "error" : "primary"
+        }
         onCancel={() => setAction(null)}
         content={<Typography>{confirmationText()}</Typography>}
         onSubmit={() => {

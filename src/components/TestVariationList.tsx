@@ -119,6 +119,7 @@ const TestVariationList = ({ items, onDeleteClick }: IProps) => {
           open={!!selectedItem}
           title={"Delete TestVariation"}
           submitButtonText={"Delete"}
+          submitColor="error"
           onCancel={handleClose}
           content={
             <Typography>{`Are you sure you want to delete: ${selectedItem.name}?`}</Typography>

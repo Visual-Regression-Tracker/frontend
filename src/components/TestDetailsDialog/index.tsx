@@ -116,6 +116,7 @@ export const TestDetailsDialog = () => {
         open={notSavedChangesModal}
         title={"You have not saved ignore areas"}
         submitButtonText={"Discard"}
+        submitColor="error"
         onCancel={() => setNotSavedChangesModal(false)}
         content={
           <Typography>{`Are you sure you want to discard changes?`}</Typography>
