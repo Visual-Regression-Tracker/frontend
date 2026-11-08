@@ -9,7 +9,6 @@ import {
   ProjectProvider,
   BuildProvider,
   TestRunProvider,
-  HelpProvider,
   CrumbProvider,
 } from "../contexts";
 import { TestRunFiltersProvider } from "../components/TestRunList/TestRunFiltersContext";
@@ -88,13 +87,9 @@ const providers = (route: string) => {
             <ProjectProvider>
               <BuildProvider>
                 <TestRunProvider>
-                  <HelpProvider>
-                    <CrumbProvider>
-                      <TestRunFiltersProvider>
-                        {children}
-                      </TestRunFiltersProvider>
-                    </CrumbProvider>
-                  </HelpProvider>
+                  <CrumbProvider>
+                    <TestRunFiltersProvider>{children}</TestRunFiltersProvider>
+                  </CrumbProvider>
                 </TestRunProvider>
               </BuildProvider>
             </ProjectProvider>
