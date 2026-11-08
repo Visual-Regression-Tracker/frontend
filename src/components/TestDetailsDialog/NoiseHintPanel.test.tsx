@@ -232,25 +232,6 @@ describe("NoiseHintPanel", () => {
       expect(analyseButton()).toHaveTextContent("Analyse");
     });
 
-    it("offers Analyse again after three seconds without a pending event", async () => {
-      vi.useFakeTimers({ shouldAdvanceTime: true });
-      vi.spyOn(testRunService, "analyseNoise").mockResolvedValue({
-        queued: 1,
-        skipped: [],
-      });
-      const { user } = await renderConnected("r1", null);
-
-      await user.click(analyseButton());
-      expect(chip()).toHaveTextContent("Analysing…");
-
-      act(() => {
-        vi.advanceTimersByTime(3000);
-      });
-
-      await user.click(chip());
-      expect(analyseButton()).toHaveTextContent("Analyse");
-    });
-
     it("shows analysing for a pending run without a click", async () => {
       await renderPanel({ analysis: NOISE_ANALYSIS_PENDING });
 

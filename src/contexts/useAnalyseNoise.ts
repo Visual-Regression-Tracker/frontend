@@ -1,108 +1,65 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import type { EnqueueSnackbar } from "notistack";
 import { testRunService } from "../services";
-import type { NoiseAnalysisSkip, TestRun } from "../types";
-import { isNoisePending, isNoiseResult } from "../_helpers/noiseHint.helper";
-import { useTestRunState } from "./testRun.context";
-
-const PENDING_EVENT_WAIT_MS = 3000;
+import type { NoiseAnalysisQueued, NoiseAnalysisSkip } from "../types";
+import {
+  updateTestRun,
+  useTestRunDispatch,
+  useTestRunState,
+} from "./testRun.context";
 
 const QUEUE_FULL = "queue full";
-
-type Snapshot = Map<string, string>;
 
 const skipMessage = ({ reason }: NoiseAnalysisSkip) =>
   reason === QUEUE_FULL
     ? "Queue is full, try again in a minute"
     : `Not analysed: ${reason}`;
 
-const signatureOf = (analysis: TestRun["noiseAnalysis"]) => {
-  if (isNoisePending(analysis)) {
-    return `pending:${analysis.requestedAt}`;
-  }
-  return isNoiseResult(analysis) ? `result:${analysis.computedAt}` : "none";
-};
-
-const analysisById = (
-  wanted: { has(id: string): boolean },
-  testRuns: TestRun[],
-  selectedTestRun?: TestRun,
-): Snapshot => {
-  const signatures: Snapshot = new Map();
-  for (const run of testRuns) {
-    if (wanted.has(run.id)) {
-      signatures.set(run.id, signatureOf(run.noiseAnalysis));
-    }
-  }
-  if (selectedTestRun && wanted.has(selectedTestRun.id)) {
-    signatures.set(
-      selectedTestRun.id,
-      signatureOf(selectedTestRun.noiseAnalysis),
-    );
-  }
-  return signatures;
-};
-
-const allChanged = (
-  awaiting: Snapshot,
-  testRuns: TestRun[],
-  selectedTestRun?: TestRun,
-): boolean =>
-  [...analysisById(awaiting, testRuns, selectedTestRun)].every(
-    ([id, signature]) => signature !== awaiting.get(id),
-  );
-
 export const useAnalyseNoise = (enqueue: EnqueueSnackbar) => {
   const { testRuns, selectedTestRun } = useTestRunState();
-  const [posting, setPosting] = useState(false);
-  const [awaiting, setAwaiting] = useState<Snapshot>();
-
-  const settled = useMemo(
-    () => !!awaiting && allChanged(awaiting, testRuns, selectedTestRun),
-    [awaiting, testRuns, selectedTestRun],
-  );
-
-  if (settled) {
-    setAwaiting(undefined);
-  }
-
-  useEffect(() => {
-    if (!awaiting) {
-      return;
-    }
-    const timer = setTimeout(
-      () => setAwaiting(undefined),
-      PENDING_EVENT_WAIT_MS,
-    );
-    return () => clearTimeout(timer);
-  }, [awaiting]);
+  const dispatch = useTestRunDispatch();
+  const [requesting, setRequesting] = useState(false);
 
   const analyse = useCallback(
-    async (ids: string[]) => {
-      const before = analysisById(new Set(ids), testRuns, selectedTestRun);
-      setPosting(true);
+    async (ids: string[]): Promise<NoiseAnalysisQueued | undefined> => {
+      setRequesting(true);
       try {
-        const { queued, skipped } = await testRunService.analyseNoise(ids);
+        const result = await testRunService.analyseNoise(ids);
+        const { queued, skipped } = result;
         const queueFull = skipped.find(({ reason }) => reason === QUEUE_FULL);
         const warning = queued > 0 ? queueFull : (queueFull ?? skipped[0]);
         if (warning) {
           enqueue(skipMessage(warning), { variant: "warning" });
         }
         if (queued > 0) {
-          for (const { id } of skipped) {
-            before.delete(id);
+          const skippedIds = new Set(skipped.map(({ id }) => id));
+          const queuedIds = new Set(ids.filter((id) => !skippedIds.has(id)));
+          const requestedAt = new Date().toISOString();
+          const runs = new Map(
+            [...testRuns, ...(selectedTestRun ? [selectedTestRun] : [])]
+              .filter((run) => queuedIds.has(run.id))
+              .map((run) => [
+                run.id,
+                {
+                  ...run,
+                  noiseAnalysis: { pending: true as const, requestedAt },
+                },
+              ]),
+          );
+          if (runs.size > 0) {
+            updateTestRun(dispatch, [...runs.values()]);
           }
-          setAwaiting(before.size > 0 ? before : undefined);
         }
+        return result;
       } catch (err) {
         enqueue(String(err), { variant: "error" });
+        return undefined;
       } finally {
-        setPosting(false);
+        setRequesting(false);
       }
     },
-    [enqueue, testRuns, selectedTestRun],
+    [enqueue, dispatch, testRuns, selectedTestRun],
   );
 
-  const requesting = posting || (!!awaiting && !settled);
   return useMemo(() => ({ analyse, requesting }), [analyse, requesting]);
 };
