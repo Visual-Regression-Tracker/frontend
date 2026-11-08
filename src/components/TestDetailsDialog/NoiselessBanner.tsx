@@ -14,7 +14,9 @@ const caveatText = (caveat: NonNullable<NoiselessCaveat>, outlined: number) =>
     ? {
         severity: "warning" as const,
         title: "DINOv2 sees a change this view hides.",
-        detail: `Blur: noise-like · DINOv2: likely change, ${caveat.patches} patches (${outlined} strongest outlined)`,
+        detail:
+          `Blur: noise-like · DINOv2: likely change, ${caveat.patches} patches` +
+          (outlined ? ` (${outlined} strongest outlined)` : ""),
       }
     : {
         severity: "info" as const,

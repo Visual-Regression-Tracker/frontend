@@ -32,6 +32,10 @@ export function useNoiselessDiff(
   active: boolean,
 ): NoiselessView {
   const [settled, setSettled] = useState<{ key: string; view: Settled }>();
+  // a failure is retried the next time the mode is selected
+  if (!active && settled?.view.status === "failed") {
+    setSettled(undefined);
+  }
   const key = JSON.stringify([
     baselineName,
     imageName,

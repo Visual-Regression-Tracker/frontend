@@ -779,6 +779,19 @@ describe("Diff without noise", () => {
     expect(hintAreas()).toEqual([PATCH]);
   });
 
+  it("does not mention outlined patches while none are loaded", async () => {
+    const { user } = renderModal({
+      ...UNRESOLVED_RUN,
+      noiseAnalysis: NOISE_ANALYSIS_CHANGE,
+    });
+
+    await user.click(noiseless());
+
+    const caveat = await screen.findByTestId("noiseless-caveat");
+    expect(caveat).toHaveTextContent("DINOv2: likely change, 8 patches");
+    expect(caveat).not.toHaveTextContent("outlined");
+  });
+
   it("says faint changes may be hidden when DINOv2 did not check the run", async () => {
     const { user } = renderModal({ ...UNRESOLVED_RUN, noiseAnalysis: null });
 

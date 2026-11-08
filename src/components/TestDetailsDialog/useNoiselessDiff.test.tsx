@@ -108,6 +108,20 @@ describe("useNoiselessDiff", () => {
     );
   });
 
+  it("tries again when the mode is selected again after a failure", async () => {
+    vi.mocked(computeSolidMask)
+      .mockRejectedValueOnce(new Error("offline"))
+      .mockResolvedValueOnce(READY);
+    const { result, rerender } = render();
+    await waitFor(() => expect(result.current.status).toBe("failed"));
+
+    rerender({ run: RUN, active: false });
+    rerender({ run: RUN, active: true });
+
+    await waitFor(() => expect(result.current.status).toBe("ready"));
+    expect(computeSolidMask).toHaveBeenCalledTimes(2);
+  });
+
   it("cancels the computation for a run no longer shown", () => {
     const signals: (AbortSignal | undefined)[] = [];
     vi.mocked(computeSolidMask).mockImplementation((_request, signal) => {
