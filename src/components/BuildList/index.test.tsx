@@ -325,18 +325,14 @@ describe("BuildList", () => {
         );
         expect(rowCheckboxes().every((box) => box.checked)).toBe(true);
         await user.click(screen.getByRole("button", { name: "Delete…" }));
-        expect(
-          await screen.findByText(
-            "Are you sure you want to delete 3 build(s)?",
-          ),
-        ).toBeVisible();
+        expect(await screen.findByText("Delete 3 builds?")).toBeVisible();
 
         getList.mockClear();
         getList.mockResolvedValue(pageOf([makeBuild(2)], 1));
         await confirm(user, "Delete builds");
 
-        expect(await screen.findByText("2 build(s) deleted")).toBeVisible();
-        expect(screen.getByText("Failed to delete 1 build(s)")).toBeVisible();
+        expect(await screen.findByText("2 builds deleted")).toBeVisible();
+        expect(screen.getByText("Failed to delete 1 build")).toBeVisible();
         expect(remove).toHaveBeenCalledTimes(3);
         expect(remove).toHaveBeenCalledWith("build-1");
         expect(remove).toHaveBeenCalledWith("build-2");
@@ -475,11 +471,7 @@ describe("BuildList", () => {
         );
 
         await user.click(screen.getByRole("button", { name: "Delete…" }));
-        expect(
-          await screen.findByText(
-            "Are you sure you want to delete 1 build(s)?",
-          ),
-        ).toBeVisible();
+        expect(await screen.findByText("Delete 1 build?")).toBeVisible();
       });
 
       it("keeps the open build when another build is deleted", async () => {
@@ -573,11 +565,7 @@ describe("BuildList", () => {
         expect(rowCheckboxes()).toHaveLength(10);
         expect(rowCheckboxes().every((box) => box.checked)).toBe(true);
         await user.click(screen.getByRole("button", { name: "Delete…" }));
-        expect(
-          await screen.findByText(
-            "Are you sure you want to delete 25 build(s)?",
-          ),
-        ).toBeVisible();
+        expect(await screen.findByText("Delete 25 builds?")).toBeVisible();
       });
 
       it("asks for the builds the search matched", async () => {

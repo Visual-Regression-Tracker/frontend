@@ -67,25 +67,28 @@ export const BulkOperation = ({
   );
 
   const verb = action ?? "";
+  const targetCount = isReview(action)
+    ? idsEligibleForApproveOrReject.length
+    : shownSelectedIds.length;
   const title =
     action === "Clear"
-      ? "Clear Ignore Area For Selected Items"
-      : `${verb} Test Runs`;
+      ? "Clear ignore areas"
+      : `${verb} ${pluralize(targetCount, "test run")}`;
 
   const confirmationText = (): string => {
+    if (action === "Clear") {
+      return `Clear ignore areas on ${testRuns(targetCount)}?`;
+    }
     if (!isReview(action)) {
-      return `Are you sure you want to ${verb.toLowerCase()} ${
-        shownSelectedIds.length
-      } items?`;
+      return `${verb} ${testRuns(targetCount)}?`;
     }
 
-    const eligible = idsEligibleForApproveOrReject.length;
-    const settled = shownSelectedIds.length - eligible;
+    const settled = shownSelectedIds.length - targetCount;
     if (settled === 0) {
-      return `${verb} ${testRuns(eligible)}?`;
+      return `${verb} ${testRuns(targetCount)}?`;
     }
 
-    return `${verb} ${eligible} of ${shownSelectedIds.length} selected test runs? The other ${settled} ${pluralize(
+    return `${verb} ${targetCount} of ${shownSelectedIds.length} selected test runs? The other ${settled} ${pluralize(
       settled,
       "is",
       "are",

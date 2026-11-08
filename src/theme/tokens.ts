@@ -21,13 +21,6 @@ export const darkAccent = {
   contrastText: "#082028",
 } as const;
 
-export const violet = {
-  300: "#c4b5fd",
-  400: "#a78bfa",
-  600: "#7c3aed",
-  700: "#6d28d9",
-} as const;
-
 export const slate = {
   50: "#f8fafc",
   100: "#f1f5f9",

@@ -109,6 +109,22 @@ const renderButtons = async ({
 };
 
 describe("ApproveRejectButtons", () => {
+  it("colours Reject as a destructive choice", async () => {
+    await renderButtons();
+
+    expect(rejectButton()).toHaveClass("MuiButton-colorError");
+  });
+
+  it("colours Reject variations as a destructive choice", async () => {
+    await renderButtons({
+      testRuns: [UNRESOLVED, siblingOf(UNRESOLVED, {})],
+    });
+
+    expect(
+      screen.getByText("Reject variations…", { selector: "button" }),
+    ).toHaveClass("MuiButton-colorError");
+  });
+
   describe("approve", () => {
     it("approves the test run by its id", async () => {
       const approveBulk = vi

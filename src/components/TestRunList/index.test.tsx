@@ -274,9 +274,7 @@ describe("TestRunList grouping", () => {
     expect(tickRow("Screen A")).toBeChecked();
     expect(tickRow("Screen B")).not.toBeChecked();
     await user.click(actionButton("Delete…"));
-    expect(
-      screen.getByText("Are you sure you want to delete 2 items?"),
-    ).toBeInTheDocument();
+    expect(screen.getByText("Delete 2 test runs?")).toBeInTheDocument();
     await user.click(screen.getByRole("button", { name: "Delete" }));
     expect(testRunService.removeBulk).toHaveBeenCalledWith(["a-en", "a-de"]);
   });
@@ -319,9 +317,7 @@ describe("TestRunList grouping", () => {
       "1 card selected",
     );
     await user.click(actionButton("Delete…"));
-    expect(
-      screen.getByText("Are you sure you want to delete 2 items?"),
-    ).toBeInTheDocument();
+    expect(screen.getByText("Delete 2 test runs?")).toBeInTheDocument();
   });
 
   it("publishes the groups expanded as the navigation order", async () => {

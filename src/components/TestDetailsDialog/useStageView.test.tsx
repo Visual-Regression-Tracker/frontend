@@ -46,7 +46,46 @@ const moveAway = (stage: ReturnType<typeof renderStage>["stage"]) => {
   });
 };
 
+type Observed = { callback: () => void; targets: unknown[] };
+const observers: Observed[] = [];
+
+class FakeResizeObserver {
+  private readonly record: Observed;
+  constructor(callback: () => void) {
+    this.record = { callback, targets: [] };
+    observers.push(this.record);
+  }
+  observe(target: unknown) {
+    this.record.targets.push(target);
+  }
+  disconnect() {
+    this.record.targets = [];
+  }
+  unobserve() {}
+}
+
+const resizePanes = (
+  stage: ReturnType<typeof renderStage>["stage"],
+  width: number,
+) => {
+  for (const ref of [stage().leftItemRef, stage().rightItemRef]) {
+    (ref.current as unknown as { offsetWidth: number }).offsetWidth = width;
+  }
+  act(() =>
+    observers.forEach(({ callback, targets }) => targets.length && callback()),
+  );
+};
+
 describe("useStageView", () => {
+  beforeEach(() => {
+    observers.length = 0;
+    vi.stubGlobal("ResizeObserver", FakeResizeObserver);
+  });
+
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
   it("waits for the images, then fits the larger one into its pane", () => {
     const { stage, rerender } = renderStage();
     expect(scaleOf(stage)).toBe(1);
@@ -133,5 +172,35 @@ describe("useStageView", () => {
 
     expect(scaleOf(stage)).toBe(3);
     expect(stage().stageProps.stagePosState[0]).toEqual(ORIGIN);
+  });
+
+  it("fits again when the panes resize and the reviewer has not zoomed", () => {
+    const { stage, rerender } = renderStage();
+    rerender({ current: image(1000, 300), baseline: image(1000, 300) });
+
+    resizePanes(stage, 320);
+
+    expect(scaleOf(stage)).toBeCloseTo(320 / 1020);
+  });
+
+  it("keeps the reviewer's own zoom when the panes resize", () => {
+    const { stage, rerender } = renderStage();
+    rerender({ current: image(1000, 300), baseline: image(1000, 300) });
+    zoomTo(stage, 2);
+
+    resizePanes(stage, 320);
+
+    expect(scaleOf(stage)).toBe(2);
+  });
+
+  it("follows the panes again after Fit", () => {
+    const { stage, rerender } = renderStage();
+    rerender({ current: image(1000, 300), baseline: image(1000, 300) });
+    zoomTo(stage, 2);
+    act(() => stage().fitImagesToStage());
+
+    resizePanes(stage, 320);
+
+    expect(scaleOf(stage)).toBeCloseTo(320 / 1020);
   });
 });

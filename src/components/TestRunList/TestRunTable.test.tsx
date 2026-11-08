@@ -46,6 +46,15 @@ const tickRow = (name: string) =>
   within(rowOf(name)).getByRole("checkbox", { name: /select row/i });
 
 describe("TestRunTable", () => {
+  it("says so, as the card view does, when the filters leave no run", async () => {
+    renderTable(propsFor([]));
+
+    expect(
+      await screen.findByText("No test runs match the filters"),
+    ).toBeVisible();
+    expect(screen.queryByText("No rows")).not.toBeInTheDocument();
+  });
+
   it("offers 10, 30 and 100 rows per page", async () => {
     renderTable(propsFor([A_EN, B_EN]));
 

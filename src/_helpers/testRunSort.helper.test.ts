@@ -1,5 +1,5 @@
 import { run } from "./testRun.fixture";
-import { DEFAULT_SORT } from "../components/TestRunList/TestRunGridHeader";
+import { DEFAULT_SORT } from "../components/TestRunList/TestRunGridToolbar";
 import { TAG_FIELDS } from "./testRunTags.helper";
 import { TagField, TestRun, TestStatus } from "../types";
 import { comparatorFor, sortOfModel } from "./testRunSort.helper";

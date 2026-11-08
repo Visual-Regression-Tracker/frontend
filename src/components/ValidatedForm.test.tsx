@@ -97,6 +97,26 @@ describe("ValidatedForm", () => {
     expect(onSubmit).not.toHaveBeenCalled();
   });
 
+  it("shows a required field's own error, not the browser's tooltip", async () => {
+    const onSubmit = vi.fn();
+    const { user } = renderWithProviders(
+      <ValidatedForm onSubmit={onSubmit}>
+        <ValidatedTextField
+          label="City"
+          required
+          rules={CITY_RULES}
+          value=""
+          onChange={() => undefined}
+        />
+        <button type="submit">Save</button>
+      </ValidatedForm>,
+    );
+
+    await user.click(screen.getByRole("button", { name: "Save" }));
+
+    expect(await screen.findByText("City is required")).toBeVisible();
+  });
+
   it("submits when every field is valid", async () => {
     const onSubmit = vi.fn();
     const { user } = renderWithProviders(

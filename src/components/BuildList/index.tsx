@@ -14,6 +14,7 @@ import { BuildListToolbar } from "./BuildListToolbar";
 import { useBulkDeleteBuilds } from "./useBulkDeleteBuilds";
 import { useBuildSelection } from "./useBuildSelection";
 import { useRequestGuard } from "../../_helpers/staleGuard";
+import { pluralize } from "../../_helpers/format.helper";
 import {
   useBuildState,
   useBuildDispatch,
@@ -282,14 +283,14 @@ const BuildList = () => {
       )}
       <BaseModal
         open={bulkDeleteDialogOpen}
-        title={"Delete builds"}
+        title={pluralize(selectedIds.length, "Delete build", "Delete builds")}
         submitButtonText={"Delete"}
         submitColor="error"
         onCancel={() => setBulkDeleteDialogOpen(false)}
         content={
           <>
             <Typography>
-              {`Are you sure you want to delete ${selectedIds.length} build(s)?`}
+              {`Delete ${selectedIds.length} ${pluralize(selectedIds.length, "build")}?`}
             </Typography>
             <Typography>This also removes their test runs.</Typography>
           </>

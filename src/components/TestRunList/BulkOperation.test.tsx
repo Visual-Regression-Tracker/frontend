@@ -143,7 +143,7 @@ describe("BulkOperation", () => {
       await user.click(actionButton(APPROVE));
 
       const dialog = await screen.findByRole("dialog");
-      expect(within(dialog).getByText("Approve Test Runs")).toBeVisible();
+      expect(within(dialog).getByText("Approve test runs")).toBeVisible();
       expect(
         within(dialog).getByText(
           "Approve 2 of 3 selected test runs? The other 1 is already settled.",
@@ -610,10 +610,8 @@ describe("BulkOperation", () => {
 
       await user.click(actionButton(DELETE));
       const dialog = await screen.findByRole("dialog");
-      expect(within(dialog).getByText("Delete Test Runs")).toBeVisible();
-      expect(
-        within(dialog).getByText("Are you sure you want to delete 3 items?"),
-      ).toBeVisible();
+      expect(within(dialog).getByText("Delete test runs")).toBeVisible();
+      expect(within(dialog).getByText("Delete 3 test runs?")).toBeVisible();
       await confirm(user);
 
       await waitFor(() => expect(removeBulk).toHaveBeenCalledWith(SELECTED));
@@ -630,9 +628,7 @@ describe("BulkOperation", () => {
       });
 
       await user.click(actionButton(DELETE));
-      expect(
-        await screen.findByText("Are you sure you want to delete 1 items?"),
-      ).toBeVisible();
+      expect(await screen.findByText("Delete 1 test run?")).toBeVisible();
       await confirm(user);
 
       await waitFor(() =>
@@ -679,9 +675,7 @@ describe("BulkOperation", () => {
       const { user, onProcessed } = renderBulkOperation();
 
       await user.click(actionButton(DOWNLOAD));
-      expect(
-        await screen.findByText("Are you sure you want to download 3 items?"),
-      ).toBeVisible();
+      expect(await screen.findByText("Download 3 test runs?")).toBeVisible();
       await confirm(user);
 
       await waitFor(() =>
@@ -744,9 +738,7 @@ describe("BulkOperation", () => {
       });
 
       await user.click(actionButton(DOWNLOAD));
-      expect(
-        await screen.findByText("Are you sure you want to download 1 items?"),
-      ).toBeVisible();
+      expect(await screen.findByText("Download 1 test run?")).toBeVisible();
       await confirm(user);
 
       await waitFor(() =>
@@ -766,11 +758,9 @@ describe("BulkOperation", () => {
 
       await user.click(actionButton(CLEAR_IGNORE));
       const dialog = await screen.findByRole("dialog");
+      expect(within(dialog).getByText("Clear ignore areas")).toBeVisible();
       expect(
-        within(dialog).getByText("Clear Ignore Area For Selected Items"),
-      ).toBeVisible();
-      expect(
-        within(dialog).getByText("Are you sure you want to clear 3 items?"),
+        within(dialog).getByText("Clear ignore areas on 3 test runs?"),
       ).toBeVisible();
       await confirm(user);
 
@@ -794,7 +784,7 @@ describe("BulkOperation", () => {
 
       await user.click(actionButton(CLEAR_IGNORE));
       expect(
-        await screen.findByText("Are you sure you want to clear 1 items?"),
+        await screen.findByText("Clear ignore areas on 1 test run?"),
       ).toBeVisible();
       await confirm(user);
 

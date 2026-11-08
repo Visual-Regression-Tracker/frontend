@@ -10,7 +10,7 @@ import {
   useState,
 } from "react";
 import { TextField, type TextFieldProps } from "@mui/material";
-import { firstError, type Rule } from "../_helpers/validation";
+import { firstError, required, type Rule } from "../_helpers/validation";
 
 type Check = () => boolean;
 type Register = (check: Check) => () => void;
@@ -48,7 +48,7 @@ export const ValidatedForm = ({
 
   return (
     <RegisterContext value={register}>
-      <form {...props} onSubmit={handleSubmit}>
+      <form noValidate {...props} onSubmit={handleSubmit}>
         {children}
       </form>
     </RegisterContext>
@@ -92,6 +92,8 @@ export const useFieldValidation = (
   return firstError(value, rules, Object.is(submittedValue, value));
 };
 
+const REQUIRED_RULE = required("This field is required");
+
 type ValidatedTextFieldProps = TextFieldProps & {
   rules: readonly Rule[];
 };
@@ -103,7 +105,10 @@ export const ValidatedTextField = ({
   helperText,
   ...props
 }: ValidatedTextFieldProps) => {
-  const message = useFieldValidation(value, rules);
+  const message = useFieldValidation(
+    value,
+    props.required ? [...rules, REQUIRED_RULE] : rules,
+  );
   return (
     <TextField
       {...props}

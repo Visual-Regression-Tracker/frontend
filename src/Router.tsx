@@ -64,20 +64,25 @@ function Router() {
             <PrivateRoute
               component={ProjectSettingsPage}
               roles={[...PROJECT_EDITOR_ROLES]}
+              requireProject
             />
           }
         />
         <Route
           path={`${routes.PROJECT_STATISTICS_PAGE}/:projectId`}
-          element={<PrivateRoute component={ProjectStatisticsPage} />}
+          element={
+            <PrivateRoute component={ProjectStatisticsPage} requireProject />
+          }
         />
         <Route
           path={`${routes.HOME}:projectId`}
-          element={<PrivateRoute component={ProjectPage} />}
+          element={<PrivateRoute component={ProjectPage} requireProject />}
         />
         <Route
           path={`${routes.VARIATION_LIST_PAGE}/:projectId`}
-          element={<PrivateRoute component={TestVariationListPage} />}
+          element={
+            <PrivateRoute component={TestVariationListPage} requireProject />
+          }
         />
         <Route
           path={`${routes.VARIATION_DETAILS_PAGE}/:testVariationId`}
