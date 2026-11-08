@@ -168,6 +168,20 @@ describe("Header", () => {
       expect(menuItem("Open an issue in GitHub")).toBeVisible();
     });
 
+    it("links to the documentation in a new tab", async () => {
+      const { user } = renderHeader({ user: TEST_USER });
+
+      await user.click(screen.getByTestId(HEADER_HELP_MENU_BUTTON_TEST_ID));
+
+      const link = menuItem("Documentation");
+      expect(link).toHaveAttribute(
+        "href",
+        "https://github.com/Visual-Regression-Tracker/Visual-Regression-Tracker/wiki",
+      );
+      expect(link).toHaveAttribute("target", "_blank");
+      expect(link).toHaveAttribute("rel", "noopener noreferrer");
+    });
+
     it("shows the VRT version", async () => {
       const { user } = renderHeader({ user: TEST_USER });
 

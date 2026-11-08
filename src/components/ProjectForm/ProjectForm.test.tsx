@@ -3,8 +3,7 @@ import { fireEvent, screen, waitFor, within } from "@testing-library/react";
 import { renderWithProviders } from "../../_test/render";
 import { dinov2Service, ollamaService } from "../../services";
 import {
-  DEFAULT_NOISE_ANALYSIS_CONFIG,
-  DEFAULT_NOISE_ANALYSIS_CONFIG_JSON,
+  DEFAULT_PROJECT_EDIT_STATE,
   LOOKSSAME_DEFAULT_CONFIG,
   ODIFF_DEFAULT_CONFIG,
   PIXELMATCH_DEFAULT_CONFIG,
@@ -20,6 +19,10 @@ import { ImageComparison, VlmConfig } from "../../types/imageComparison";
 import { Button } from "@mui/material";
 import { ValidatedForm } from "../ValidatedForm";
 import { ProjectForm } from "./ProjectForm";
+import {
+  NOISE_ANALYSIS_ON,
+  NOISE_ANALYSIS_ON_JSON,
+} from "../../_test/test.data.helper";
 
 type User = ReturnType<typeof renderWithProviders>["user"];
 
@@ -30,7 +33,7 @@ const PROJECT: ProjectDto = {
   autoApproveFeature: true,
   imageComparison: ImageComparison.pixelmatch,
   imageComparisonConfig: PIXELMATCH_DEFAULT_CONFIG,
-  noiseAnalysisConfig: DEFAULT_NOISE_ANALYSIS_CONFIG_JSON,
+  noiseAnalysisConfig: NOISE_ANALYSIS_ON_JSON,
   maxBuildAllowed: 100,
   maxBranchLifetime: 30,
   bulkApproveVariations: false,
@@ -663,11 +666,18 @@ describe("ProjectForm", () => {
     ])("shows the defaults for %s", async (_name, project) => {
       await renderForm(project as ProjectDto);
 
-      expect(screen.getByLabelText(BLUR_SWITCH)).toBeChecked();
-      expect(screen.getByLabelText(DINOV2_SWITCH)).toBeChecked();
+      expect(screen.getByLabelText(BLUR_SWITCH)).not.toBeChecked();
+      expect(screen.getByLabelText(DINOV2_SWITCH)).not.toBeChecked();
       expect(screen.getByLabelText(/^Amplitude threshold/)).toHaveValue(80);
       expect(screen.getByLabelText(/^Solid share, max/)).toHaveValue(0.01);
       expect(screen.getByLabelText(/^Distance threshold/)).toHaveValue(0.15);
+    });
+
+    it("starts a new project with both switches off", async () => {
+      await renderForm(DEFAULT_PROJECT_EDIT_STATE);
+
+      expect(screen.getByLabelText(BLUR_SWITCH)).not.toBeChecked();
+      expect(screen.getByLabelText(DINOV2_SWITCH)).not.toBeChecked();
     });
 
     it("fills the keys a saved config lacks from the defaults", async () => {
@@ -678,7 +688,7 @@ describe("ProjectForm", () => {
       expect(screen.getByLabelText(/^Amplitude threshold/)).toHaveValue(60);
       expect(screen.getByLabelText(/^Solid share, max/)).toHaveValue(0.01);
 
-      await user.click(screen.getByLabelText(DINOV2_SWITCH));
+      await user.click(screen.getByLabelText(BLUR_SWITCH));
 
       expect(noiseConfig()).toEqual({
         blur: { enabled: true, amplitudeThreshold: 60, solidShareMax: 0.01 },
@@ -775,7 +785,7 @@ describe("ProjectForm", () => {
 
     it("keeps the saved keys that are not part of the form", async () => {
       const { user } = await renderForm(
-        withNoiseConfig({ ...DEFAULT_NOISE_ANALYSIS_CONFIG, future: 1 }),
+        withNoiseConfig({ ...NOISE_ANALYSIS_ON, future: 1 }),
       );
 
       await user.click(screen.getByLabelText(BLUR_SWITCH));
@@ -815,8 +825,8 @@ describe("ProjectForm", () => {
 
     describe("with stage 1 off", () => {
       const stageOneOff = withNoiseConfig({
-        ...DEFAULT_NOISE_ANALYSIS_CONFIG,
-        blur: { ...DEFAULT_NOISE_ANALYSIS_CONFIG.blur, enabled: false },
+        ...NOISE_ANALYSIS_ON,
+        blur: { ...NOISE_ANALYSIS_ON.blur, enabled: false },
       });
 
       it("disables stage 2 and says it needs stage 1", async () => {
@@ -838,7 +848,7 @@ describe("ProjectForm", () => {
 
         expect(screen.getByLabelText(DINOV2_SWITCH)).toBeEnabled();
         expect(screen.queryByText("Needs stage 1")).toBeNull();
-        expect(noiseConfig()).toEqual(DEFAULT_NOISE_ANALYSIS_CONFIG);
+        expect(noiseConfig()).toEqual(NOISE_ANALYSIS_ON);
       });
     });
 

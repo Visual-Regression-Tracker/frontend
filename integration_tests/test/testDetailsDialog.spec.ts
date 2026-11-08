@@ -283,10 +283,10 @@ test("lets an error outlive the confirmation that follows it", async ({
   );
 
   await details.reject.click();
-  await expect(page.getByText("nope")).toBeVisible();
+  await expect(page.getByText("nope", { exact: true })).toBeVisible();
   await details.approve.click();
 
-  await expect(page.getByText("nope")).toBeVisible();
+  await expect(page.getByText("nope", { exact: true })).toBeVisible();
   await expect(notification.toast("Approved")).toBeVisible();
 });
 
