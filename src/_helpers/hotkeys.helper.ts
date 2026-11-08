@@ -25,7 +25,7 @@ const isSliderArrow = (event: KeyboardEvent): boolean =>
 export const ownsEscape = (target: EventTarget | null): boolean =>
   isTypingTarget(target) || isSlider(target);
 
-// Confirmations render in their own portal and take focus; the review dialog marks its paper with data-review-dialog
+// confirmations portal out of the review dialog, which marks its paper data-review-dialog
 export const isOutsideReviewDialog = (target: EventTarget | null): boolean => {
   if (!(target instanceof HTMLElement)) {
     return false;

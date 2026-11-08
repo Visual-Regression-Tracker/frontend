@@ -55,7 +55,7 @@ export const buildColumns = (
         size="small"
         value={row.role}
         onChange={(event) => onRoleChange(row, event.target.value)}
-        inputProps={{ "aria-label": `Role of ${fullName(row)}` }}
+        slotProps={{ input: { "aria-label": `Role of ${fullName(row)}` } }}
         sx={{
           minWidth: 112,
           color: row.role === "guest" ? "warning.main" : undefined,

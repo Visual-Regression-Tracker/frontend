@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useState } from "react";
 import {
   Dialog,
   DialogTitle,
@@ -13,109 +13,35 @@ import {
   CircularProgress,
 } from "@mui/material";
 import { Close } from "@mui/icons-material";
-import { styled } from "@mui/material/styles";
 import { useDialogSnackbar } from "./useDialogSnackbar";
 import { LightboxPreview, VariationLightbox } from "./VariationLightbox";
+import {
+  Grid,
+  Loading,
+  MatchingVariationCard,
+  Toolbar,
+} from "./MatchingVariationCard";
+import { useMatchingVariations } from "./useMatchingVariations";
+import { useVariationHotkeys } from "./useVariationHotkeys";
+import { findNextUnresolved, forgetActed, rememberActed } from "./actedRuns";
 import { Tooltip } from "../Tooltip";
 import { undoSnackbarOptions } from "../UndoSnackbarAction";
 import { testRunService } from "../../services";
-import {
-  MatchingVariations,
-  ReviewDecision,
-} from "../../services/testRun.service";
+import { ReviewDecision } from "../../services/testRun.service";
 import { useTestRunState } from "../../contexts";
 import { GO_TO_NEXT_KEY } from "../../constants";
 import { parseJson } from "../../_helpers/parseJson";
-import { thumbnailFor } from "../../_helpers/testRunImage.helper";
-import { byDiffDesc, orderByIds } from "../../_helpers/testRunOrder.helper";
 import { TestRun } from "../../types";
-import { TestStatus } from "../../types/testStatus";
-import { imageSurface } from "../../theme/tokens";
 import {
   failureVariant,
   partialFailureText,
   pluralize,
 } from "../../_helpers/format.helper";
 
-const Toolbar = styled("div")({
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "space-between",
-  marginBottom: 12,
-});
-
-const Grid = styled("div")({
-  display: "grid",
-  gridTemplateColumns: "repeat(auto-fill, minmax(150px, 1fr))",
-  gap: 12,
-});
-
-const Card = styled("div", {
-  shouldForwardProp: (prop) => prop !== "selected",
-})<{ selected?: boolean }>(({ theme, selected }) => ({
-  border: `1px solid ${theme.vars?.palette.divider}`,
-  borderRadius: 6,
-  padding: 6,
-  ...(selected && {
-    borderColor: theme.vars?.palette.primary.main,
-    boxShadow: `0 0 0 1px ${theme.vars?.palette.primary.main}`,
-  }),
-}));
-
-const CardHead = styled("div")({
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "space-between",
-});
-
-const Thumb = styled("img")({
-  display: "block",
-  width: "100%",
-  height: 220,
-  objectFit: "contain",
-  background: imageSurface.thumbnail,
-});
-
-const ThumbButton = styled("button")({
-  display: "block",
-  width: "100%",
-  padding: 0,
-  border: "none",
-  background: "none",
-  cursor: "zoom-in",
-});
-
-const Loading = styled("div")({
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "center",
-  padding: 48,
-});
-
 const variationCount = (count: number): string =>
   `${count} ${pluralize(count, "variation")}`;
 
 export type MatchingVariationsMode = ReviewDecision;
-
-// runs acted on this session, per build: go-to-next skips them before socket state catches up
-const acted: { buildId: string | null; ids: Set<string> } = {
-  buildId: null,
-  ids: new Set(),
-};
-const rememberActed = (buildId: string, ids: string[]): void => {
-  if (acted.buildId !== buildId) {
-    acted.buildId = buildId;
-    acted.ids = new Set();
-  }
-  ids.forEach((id) => acted.ids.add(id));
-};
-const forgetActed = (buildId: string, ids: string[]): void => {
-  if (acted.buildId === buildId) {
-    ids.forEach((id) => acted.ids.delete(id));
-  }
-};
-const isActed = (buildId: string, id: string): boolean =>
-  acted.buildId === buildId && acted.ids.has(id);
 
 export const MatchingVariationsDialog = ({
   mode,
@@ -134,92 +60,22 @@ export const MatchingVariationsDialog = ({
   const { enqueueSnackbar, enqueueAside } = useDialogSnackbar();
   const { testRuns: allTestRuns, filteredSortedTestRunIds } = useTestRunState();
 
-  const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
-  const [data, setData] = useState<MatchingVariations | null>(null);
-  const [selected, setSelected] = useState<Set<string>>(new Set());
   const [showDiff, setShowDiff] = useState(true);
   const [preview, setPreview] = useState<LightboxPreview | null>(null);
   const setPreviewDiff = (showDiff: boolean) =>
     setPreview((prev) => prev && { index: prev.index, showDiff });
-  const seenVariationIds = useRef<Set<string>>(new Set());
-
-  const loadData = useCallback(
-    (background: boolean) => {
-      testRunService
-        .getMatchingVariations(testRun.id)
-        .then((result) => {
-          setData(result);
-          const presentIds = new Set(
-            [...result.variations, ...result.skipped].map((v) => v.id),
-          );
-          // read now: the updater below runs later, after the ref is replaced
-          const seen = seenVariationIds.current;
-          if (background) {
-            setSelected((prev) => {
-              const next = new Set(
-                [...prev].filter((id) => presentIds.has(id)),
-              );
-              result.variations.forEach((v) => {
-                if (!seen.has(v.id)) next.add(v.id);
-              });
-              return next;
-            });
-          } else {
-            setSelected(new Set(result.variations.map((v) => v.id)));
-          }
-          seenVariationIds.current = new Set(
-            result.variations.map((v) => v.id),
-          );
-        })
-        .catch((err: string) => {
-          if (!background) enqueueSnackbar(err, { variant: "error" });
-        })
-        .finally(() => {
-          if (!background) setLoading(false);
-        });
-    },
-    [testRun.id, enqueueSnackbar],
-  );
-
-  useEffect(() => {
-    loadData(false);
-  }, [loadData]);
-
-  // background refresh when siblings change mid-build; debounced so a burst refetches once
-  const groupKey = useMemo(
-    () =>
-      allTestRuns
-        .filter((run) => run.name === testRun.name)
-        .map((run) => `${run.id}:${run.status}`)
-        .sort((a: string, b: string) => a.localeCompare(b))
-        .join(","),
-    [allTestRuns, testRun.name],
-  );
-  const lastGroupKey = useRef<string | null>(null);
-  useEffect(() => {
-    if (lastGroupKey.current === null || lastGroupKey.current === groupKey) {
-      lastGroupKey.current = groupKey;
-      return;
-    }
-    lastGroupKey.current = groupKey;
-    if (submitting) return;
-    const timer = setTimeout(() => loadData(true), 1500);
-    return () => clearTimeout(timer);
-  }, [groupKey, submitting, loadData]);
-
-  const variations = useMemo(
-    () => (data ? [...data.variations].sort(byDiffDesc) : []),
-    [data],
-  );
-  const skipped = useMemo(
-    () => (data ? [...data.skipped].sort(byDiffDesc) : []),
-    [data],
-  );
-  const allShown = useMemo<TestRun[]>(
-    () => [...variations, ...skipped],
-    [variations, skipped],
-  );
+  const {
+    loading,
+    data,
+    selected,
+    variations,
+    skipped,
+    allShown,
+    toggle,
+    matched,
+    skippedSelection,
+  } = useMatchingVariations({ testRun, submitting, enqueueSnackbar });
 
   const step = useCallback(
     (delta: number) =>
@@ -234,76 +90,17 @@ export const MatchingVariationsDialog = ({
     [allShown.length],
   );
 
-  useEffect(() => {
-    const swallow = new Set([
-      "ArrowLeft",
-      "ArrowRight",
-      "a",
-      "A",
-      "x",
-      "X",
-      "d",
-      "D",
-    ]);
-    const onKey = (e: KeyboardEvent) => {
-      if (!swallow.has(e.key)) return;
-      // the page behind would act on these keys (arrows, a/x) and change the reviewed run
-      e.preventDefault();
-      e.stopPropagation();
-      if (e.key === "d" || e.key === "D") {
-        if (preview) setPreviewDiff(!preview.showDiff);
-        else setShowDiff((value) => !value);
-        return;
-      }
-      if (preview && e.key === "ArrowLeft") step(-1);
-      if (preview && e.key === "ArrowRight") step(1);
-    };
-    window.addEventListener("keydown", onKey, true);
-    return () => window.removeEventListener("keydown", onKey, true);
-  }, [preview, step]);
-
-  const toggle = useCallback((id: string) => {
-    setSelected((prev) => {
-      const next = new Set(prev);
-      if (next.has(id)) {
-        next.delete(id);
-      } else {
-        next.add(id);
-      }
-      return next;
-    });
-  }, []);
-
-  const selectionOf = (runs: TestRun[]) => {
-    const count = runs.filter((run) => selected.has(run.id)).length;
-    const all = runs.length > 0 && count === runs.length;
-    const toggleAll = () =>
-      setSelected((prev) => {
-        const next = new Set(prev);
-        runs.forEach((run) => (all ? next.delete(run.id) : next.add(run.id)));
-        return next;
-      });
-    return { count, all, toggleAll };
-  };
-  const matched = selectionOf(variations);
-  const skippedSelection = selectionOf(skipped);
+  useVariationHotkeys({
+    preview,
+    step,
+    setPreviewDiff,
+    toggleShowDiff: () => setShowDiff((value) => !value),
+  });
 
   const verb = mode === "approve" ? "Approve" : "Reject";
 
-  // wraps round the list, so the last run still finds an earlier unresolved one
-  const findNextUnresolved = (): TestRun | undefined => {
-    const ordered = orderByIds(allTestRuns, filteredSortedTestRunIds);
-    const currentIndex = ordered.findIndex((run) => run.id === testRun.id);
-    const rotated = [
-      ...ordered.slice(currentIndex + 1),
-      ...ordered.slice(0, currentIndex + 1),
-    ];
-    return rotated.find(
-      (run) =>
-        run.status === TestStatus.unresolved &&
-        !isActed(testRun.buildId, run.id),
-    );
-  };
+  const findNext = () =>
+    findNextUnresolved(allTestRuns, filteredSortedTestRunIds, testRun);
 
   const submit = () => {
     const ids = Array.from(selected);
@@ -339,7 +136,7 @@ export const MatchingVariationsDialog = ({
           return;
         }
         if (parseJson(localStorage.getItem(GO_TO_NEXT_KEY), false)) {
-          const next = findNextUnresolved();
+          const next = findNext();
           if (next) {
             navigateTo(next.id);
           }
@@ -360,54 +157,23 @@ export const MatchingVariationsDialog = ({
   const labelOf = (run: TestRun): string =>
     ((run as unknown as Record<string, string | null>)[groupBy] ?? "") || "—";
 
-  const renderCard = (run: TestRun, reason?: string) => {
-    const isSelected = selected.has(run.id);
-    const openIndex = allShown.findIndex((item) => item.id === run.id);
-    return (
-      <Card key={run.id} selected={isSelected}>
-        <CardHead>
-          <FormControlLabel
-            sx={{ minWidth: 0, marginLeft: 0, marginRight: "4px" }}
-            control={
-              <Checkbox
-                checked={isSelected}
-                onChange={() => toggle(run.id)}
-                size="small"
-              />
-            }
-            label={
-              <Typography variant="caption" noWrap>
-                {labelOf(run)}
-              </Typography>
-            }
-          />
-          <Typography variant="caption" color="textSecondary">
-            {(run.diffPercent ?? 0).toFixed(1)}%
-          </Typography>
-        </CardHead>
-        <ThumbButton
-          type="button"
-          onClick={() => setPreview({ index: openIndex, showDiff })}
-          aria-label={`View ${labelOf(run)} full size`}
-        >
-          <Thumb
-            src={thumbnailFor(run, showDiff)}
-            alt={run.customTags}
-            loading="lazy"
-          />
-        </ThumbButton>
-        {reason && (
-          <Typography
-            variant="caption"
-            align="center"
-            sx={{ display: "block" }}
-          >
-            {reason}
-          </Typography>
-        )}
-      </Card>
-    );
-  };
+  const renderCard = (run: TestRun, reason?: string) => (
+    <MatchingVariationCard
+      key={run.id}
+      run={run}
+      label={labelOf(run)}
+      selected={selected.has(run.id)}
+      showDiff={showDiff}
+      reason={reason}
+      onToggle={() => toggle(run.id)}
+      onOpen={() =>
+        setPreview({
+          index: allShown.findIndex((item) => item.id === run.id),
+          showDiff,
+        })
+      }
+    />
+  );
 
   return (
     <>

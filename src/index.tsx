@@ -8,7 +8,7 @@ import "./index.css";
 // bundled, so screenshots do not depend on a font CDN
 import "@fontsource-variable/inter";
 
-// After a redeploy old chunks are gone: reload at most once a minute, so a chunk that is really missing cannot loop
+// reload at most once a minute, so a truly missing chunk cannot loop
 window.addEventListener("vite:preloadError", (event) => {
   const key = "vrt-chunk-reload-at";
   try {

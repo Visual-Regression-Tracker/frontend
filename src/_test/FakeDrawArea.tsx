@@ -2,7 +2,7 @@ import type { ComponentProps } from "react";
 import { IgnoreArea } from "../types/ignoreArea";
 import type { DrawArea as RealDrawArea } from "../components/TestDetailsDialog/DrawArea";
 
-// Konva needs the native canvas package, which jsdom lacks; use as vi.mock("./DrawArea", async () => import("../../_test/FakeDrawArea"))
+// jsdom lacks the canvas package Konva needs; mock DrawArea with this
 export const DrawArea = ({
   imageState,
   ignoreAreas,
