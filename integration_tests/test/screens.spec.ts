@@ -1385,6 +1385,27 @@ const VIEWS: [name: string, body: Body][] = [
   ],
 
   [
+    "test run details with a long comment",
+    async ({ openProjectPage, page, shot }) => {
+      const long = {
+        ...TEST_UNRESOLVED,
+        comment:
+          "The footer overlaps the cookie banner on small screens, and the cart badge is clipped.\nSee the design review for the agreed fix.",
+      };
+      await mockTestRun(page, long);
+      await mockUpdateTestRun(page, long);
+      const { details } = await openProjectPage(
+        project.id,
+        build.id,
+        TEST_UNRESOLVED.id,
+      );
+
+      await expect(details.commentChip).toBeVisible();
+      await shot("test-run-long-comment");
+    },
+  ],
+
+  [
     "test run details without a comment",
     async ({ openProjectPage, page, shot }) => {
       const uncommented = { ...TEST_UNRESOLVED, comment: "" };

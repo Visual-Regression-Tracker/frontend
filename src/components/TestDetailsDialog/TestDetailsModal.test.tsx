@@ -173,7 +173,7 @@ describe("TestDetailsModal", () => {
       const { user } = renderModal({ ...RUN, comment: "" });
 
       await user.click(
-        screen.getByRole("button", { name: /^(add|edit) comment$/i }),
+        screen.getByRole("button", { name: /^(add|edit) comment/i }),
       );
       await user.type(await screen.findByTestId("comment"), "looks fine");
       await user.click(screen.getByRole("button", { name: "Save" }));

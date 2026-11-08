@@ -268,6 +268,13 @@ describe("TestRunCardView", () => {
     const card = screen
       .getByText("Commented")
       .closest<HTMLElement>('[data-testid="testRunCard"]') as HTMLElement;
-    expect(within(card).getByTestId("comment-indicator")).toBeVisible();
+    const indicator = within(card).getByTestId("comment-indicator");
+    expect(indicator).toBeVisible();
+    expect(indicator.parentElement).toContainElement(
+      within(card).getByText("Unresolved"),
+    );
+    expect(indicator.parentElement).not.toContainElement(
+      within(card).getByTestId("cardName"),
+    );
   });
 });

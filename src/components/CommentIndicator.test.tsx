@@ -15,6 +15,21 @@ describe("CommentIndicator", () => {
     );
   });
 
+  it("opens the tooltip from the keyboard and describes the icon with the text", async () => {
+    const { user } = renderWithProviders(
+      <CommentIndicator text="Footer is cut off" />,
+    );
+
+    await user.tab();
+
+    const icon = screen.getByRole("img", { name: "Has a comment" });
+    expect(icon).toHaveFocus();
+    expect(icon).toHaveAccessibleDescription("Footer is cut off");
+    expect(await screen.findByRole("tooltip")).toHaveTextContent(
+      "Footer is cut off",
+    );
+  });
+
   it.each([undefined, null, "", "   "])("shows nothing for %j", (text) => {
     renderWithProviders(<CommentIndicator text={text} />);
 

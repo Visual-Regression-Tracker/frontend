@@ -118,7 +118,13 @@ const ProjectMenuContent = ({
       </Box>
       <MenuList
         ref={listRef}
-        sx={{ maxHeight: 360, overflow: "auto", py: 0, pb: 1 }}
+        sx={{
+          bgcolor: "inherit",
+          maxHeight: 360,
+          overflow: "auto",
+          py: 0,
+          pb: 1,
+        }}
       >
         {groups.length === 0 && (
           <Typography
@@ -135,8 +141,7 @@ const ProjectMenuContent = ({
               component="li"
               sx={{
                 ...(index > 0 && { borderTop: 1, borderColor: "divider" }),
-                bgcolor: "background.paper",
-                backgroundImage: "inherit",
+                bgcolor: "inherit",
                 color: "text.secondary",
                 fontSize: "0.75rem",
                 fontWeight: 700,

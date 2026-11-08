@@ -2,6 +2,7 @@ import {
   type ChangeEvent,
   Fragment,
   type KeyboardEvent,
+  useId,
   useState,
 } from "react";
 import {
@@ -12,6 +13,7 @@ import {
   Paper,
   TextField,
   Chip,
+  Box,
 } from "@mui/material";
 import { ChatBubble, ChatBubbleOutlined } from "@mui/icons-material";
 import {
@@ -19,17 +21,10 @@ import {
   bindToggle,
   bindPopper,
 } from "material-ui-popup-state/hooks";
-import { CommentText } from "./CommentIndicator";
+import { CommentText, visuallyHidden } from "./CommentIndicator";
 import { Tooltip } from "./Tooltip";
 
-const PREVIEW_LENGTH = 24;
-
-const previewOf = (text: string) => {
-  const line = text.trim().split("\n")[0];
-  return line.length > PREVIEW_LENGTH
-    ? `${line.slice(0, PREVIEW_LENGTH).trimEnd()}…`
-    : line;
-};
+const firstLine = (text: string) => text.trim().split(/\r?\n/)[0];
 
 interface IProps {
   text: string | undefined;
@@ -44,12 +39,16 @@ export const CommentsPopper = ({ text, onSave }: IProps) => {
 
   const [comment, setComment] = useState(text || "");
   const [shownText, setShownText] = useState(text);
+  const [saved, setSaved] = useState(text || "");
+  const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
+  const descriptionId = useId();
   if (text !== shownText) {
     setShownText(text);
     setComment(text || "");
+    setSaved(text || "");
   }
 
-  const savedComment = text?.trim() ? text : "";
+  const savedComment = saved.trim() ? saved : "";
 
   // Escape closes the box, not the dialog around it
   const closeOnEscape = (event: KeyboardEvent) => {
@@ -61,33 +60,40 @@ export const CommentsPopper = ({ text, onSave }: IProps) => {
 
   return (
     <>
-      {savedComment ? (
-        <Tooltip title={<CommentText text={savedComment} />} describeChild>
-          <Chip
-            {...bindToggle(popupState)}
-            clickable
-            color="secondary"
-            icon={<ChatBubble />}
-            label={previewOf(savedComment)}
-            aria-label="Edit comment"
-            onKeyDown={closeOnEscape}
-            sx={{ maxWidth: 220 }}
-          />
-        </Tooltip>
-      ) : (
-        <Tooltip title="Add comment">
-          <IconButton
-            {...bindToggle(popupState)}
-            aria-label="Add comment"
-            color="default"
-            onKeyDown={closeOnEscape}
-          >
-            <ChatBubbleOutlined />
-          </IconButton>
-        </Tooltip>
-      )}
+      <Box component="span" ref={setAnchorEl} sx={{ display: "inline-flex" }}>
+        {savedComment ? (
+          <Tooltip title={<CommentText text={savedComment} />} describeChild>
+            <Chip
+              {...bindToggle(popupState)}
+              aria-describedby={descriptionId}
+              clickable
+              color="secondary"
+              icon={<ChatBubble />}
+              label={firstLine(savedComment)}
+              aria-label={`Edit comment: ${firstLine(savedComment)}`}
+              onKeyDown={closeOnEscape}
+              sx={{ maxWidth: 220 }}
+            />
+          </Tooltip>
+        ) : (
+          <Tooltip title="Add comment">
+            <IconButton
+              {...bindToggle(popupState)}
+              aria-label="Add comment"
+              onKeyDown={closeOnEscape}
+              sx={{ color: "text.secondary" }}
+            >
+              <ChatBubbleOutlined />
+            </IconButton>
+          </Tooltip>
+        )}
+        <Box component="span" id={descriptionId} sx={visuallyHidden}>
+          {savedComment}
+        </Box>
+      </Box>
       <Popper
         {...bindPopper(popupState)}
+        anchorEl={anchorEl}
         transition
         disablePortal
         sx={{ zIndex: 1400 }}
@@ -118,7 +124,10 @@ export const CommentsPopper = ({ text, onSave }: IProps) => {
                   onClick={() => {
                     // a failed save is the caller's to report; the box stays open
                     onSave(comment).then(
-                      () => popupState.close(),
+                      () => {
+                        setSaved(comment);
+                        popupState.close();
+                      },
                       () => undefined,
                     );
                   }}

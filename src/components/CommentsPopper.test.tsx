@@ -26,7 +26,7 @@ const write = async (
 };
 
 const openButton = () =>
-  screen.getByRole("button", { name: /^(add|edit) comment$/i });
+  screen.getByRole("button", { name: /^(add|edit) comment/i });
 
 describe("CommentsPopper", () => {
   it("keeps the editor closed until Comments is clicked", () => {
@@ -41,12 +41,32 @@ describe("CommentsPopper", () => {
       text: "The footer overlaps the cookie banner on mobile\nsecond line",
     });
 
-    const chip = screen.getByRole("button", { name: "Edit comment" });
-    expect(chip).toHaveTextContent("The footer overlaps the…");
+    const chip = screen.getByRole("button", { name: /^Edit comment/ });
+    expect(chip).toHaveTextContent(
+      "The footer overlaps the cookie banner on mobile",
+    );
     expect(chip).not.toHaveTextContent("second line");
+    expect(chip).toHaveAccessibleName(
+      "Edit comment: The footer overlaps the cookie banner on mobile",
+    );
+    expect(chip).toHaveAccessibleDescription(
+      "The footer overlaps the cookie banner on mobile\nsecond line",
+    );
 
     await user.hover(chip);
     expect(await screen.findByRole("tooltip")).toHaveTextContent("second line");
+  });
+
+  it("shows the chip with the new text once a comment is saved, without waiting for the prop", async () => {
+    const { user } = renderPopper({ text: "" });
+
+    await user.click(openButton());
+    await write(user, await screen.findByPlaceholderText(PLACEHOLDER), "fresh");
+    await user.click(screen.getByRole("button", { name: "Save" }));
+
+    expect(
+      await screen.findByRole("button", { name: "Edit comment: fresh" }),
+    ).toBeVisible();
   });
 
   it("offers a plain Add comment button when there is no comment", () => {
@@ -54,7 +74,7 @@ describe("CommentsPopper", () => {
 
     expect(screen.getByRole("button", { name: "Add comment" })).toBeVisible();
     expect(
-      screen.queryByRole("button", { name: "Edit comment" }),
+      screen.queryByRole("button", { name: /^Edit comment/ }),
     ).not.toBeInTheDocument();
   });
 

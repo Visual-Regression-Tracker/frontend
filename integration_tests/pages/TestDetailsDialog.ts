@@ -74,7 +74,7 @@ export class TestDetailsDialog extends PageObject {
   differenceBlend = this.page.getByTestId("differenceToggle");
 
   commentsBtn = this.page.getByRole("button", {
-    name: /^(add|edit) comment$/i,
+    name: /^(add|edit) comment/i,
   });
   commentChip = this.page.getByRole("button", { name: "Edit comment" });
   addCommentBtn = this.page.getByRole("button", { name: "Add comment" });
