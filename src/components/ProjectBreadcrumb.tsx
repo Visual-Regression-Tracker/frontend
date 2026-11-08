@@ -163,7 +163,11 @@ const ProjectMenuContent = ({
               onClick={() => onSelect(project)}
               sx={{ borderRadius: 1, minHeight: 40, mx: 1, my: 0.25, px: 1.5 }}
             >
-              <Typography noWrap sx={{ fontSize: "inherit" }}>
+              <Typography
+                noWrap
+                title={project.name}
+                sx={{ fontSize: "inherit" }}
+              >
                 {project.name}
               </Typography>
             </MenuItem>
