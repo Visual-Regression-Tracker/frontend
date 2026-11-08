@@ -48,9 +48,12 @@ export function noiselessCaveat(analysis: NoiseAnalysisValue): NoiselessCaveat {
       ? { kind: "dinov2 disagrees", patches: dinov2.signals.patches }
       : null;
   }
-  return dinov2 &&
+  if (
+    dinov2 &&
     "skipped" in dinov2 &&
     dinov2.skipped === "blur sees a change"
-    ? null
-    : { kind: "no dinov2" };
+  ) {
+    return null;
+  }
+  return { kind: "no dinov2" };
 }

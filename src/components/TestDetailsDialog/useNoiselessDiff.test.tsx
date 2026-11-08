@@ -51,7 +51,6 @@ describe("useNoiselessDiff", () => {
       expect(result.current).toEqual({
         status: "ready",
         url: "blob:noiseless",
-        solidPixels: 26,
       }),
     );
     expect(computeSolidMask).toHaveBeenCalledWith(

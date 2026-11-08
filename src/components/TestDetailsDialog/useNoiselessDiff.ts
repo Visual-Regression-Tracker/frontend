@@ -10,7 +10,7 @@ import {
 export type NoiselessView =
   | { status: "idle" }
   | { status: "computing" }
-  | { status: "ready"; url: string; solidPixels: number }
+  | { status: "ready"; url: string }
   | { status: "unavailable"; reason: SolidMaskUnavailable }
   | { status: "failed"; message: string };
 
@@ -66,7 +66,6 @@ export function useNoiselessDiff(
               ? {
                   status: "ready",
                   url: URL.createObjectURL(result.diff),
-                  solidPixels: result.solidPixels,
                 }
               : { status: "unavailable", reason: result.unavailable },
         }),

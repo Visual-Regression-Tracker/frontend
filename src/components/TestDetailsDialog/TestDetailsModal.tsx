@@ -162,11 +162,10 @@ const TestDetailsModal = ({
         stageProps={stage.stageProps}
         baseline={[baselineImage, baselineImageStatus]}
         checkpoint={[currentImage, currentImageStatus]}
-        diff={[diffImage, diffImageStatus]}
-        noiseless={
-          noiselessView.status === "ready"
+        diff={
+          noiseless && noiselessView.status === "ready"
             ? [noiselessImage, noiselessImageStatus]
-            : undefined
+            : [diffImage, diffImageStatus]
         }
         hintAreas={hintAreas}
         areasShown={areasVisible}

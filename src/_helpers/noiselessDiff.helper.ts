@@ -1,7 +1,6 @@
 import type { RawImage } from "./solidMask.helper";
 
 const PIXELMATCH_ALPHA = 0.1;
-const KEPT = [255, 0, 0] as const;
 
 const PNG_SIGNATURE = [137, 80, 78, 71, 13, 10, 26, 10];
 export const PNG_HEADER_BYTES = 24;
@@ -10,22 +9,21 @@ export const PNG_HEADER_BYTES = 24;
 export function renderNoiselessDiff(
   { data, width, height }: RawImage,
   mask: Uint8Array,
-): RawImage {
+): RawImage & { data: Uint8ClampedArray<ArrayBuffer> } {
   const out = new Uint8ClampedArray(width * height * 4);
   for (let i = 0; i < mask.length; i++) {
     const o = i * 4;
     if (mask[i]) {
-      out.set(KEPT, o);
+      out[o] = 255;
     } else {
       const luma =
         data[o] * 0.29889531 +
         data[o + 1] * 0.58662247 +
         data[o + 2] * 0.11448223;
-      out.fill(
-        255 + (luma - 255) * PIXELMATCH_ALPHA * (data[o + 3] / 255),
-        o,
-        o + 3,
-      );
+      const grey = 255 + (luma - 255) * PIXELMATCH_ALPHA * (data[o + 3] / 255);
+      out[o] = grey;
+      out[o + 1] = grey;
+      out[o + 2] = grey;
     }
     out[o + 3] = 255;
   }

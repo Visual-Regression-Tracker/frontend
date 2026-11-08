@@ -42,12 +42,12 @@ export async function decodeImage(blob: Blob): Promise<RawImage> {
   };
 }
 
-export function encodePng({ data, width, height }: RawImage): Promise<Blob> {
+export function encodePng({
+  data,
+  width,
+  height,
+}: RawImage & { data: Uint8ClampedArray<ArrayBuffer> }): Promise<Blob> {
   const context = context2d(width, height);
-  context.putImageData(
-    new ImageData(Uint8ClampedArray.from(data), width, height),
-    0,
-    0,
-  );
+  context.putImageData(new ImageData(data, width, height), 0, 0);
   return context.canvas.convertToBlob({ type: "image/png" });
 }
