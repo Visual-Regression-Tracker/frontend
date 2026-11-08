@@ -3,15 +3,9 @@ import TestVariationList from "../components/TestVariationList";
 import { useParams } from "react-router-dom";
 import { TestVariation } from "../types";
 import { testVariationService } from "../services";
-import {
-  Box,
-  Container,
-  Pagination,
-  Stack,
-  TextField,
-  MenuItem,
-} from "@mui/material";
-import { PageHeader } from "../components/PageHeader";
+import { Box, Pagination, Stack, TextField, MenuItem } from "@mui/material";
+import { PageContainer } from "../components/PageContainer";
+import { PageToolbar } from "../components/PageToolbar";
 import { FilterBar } from "../components/FilterBar";
 import { useSnackbar } from "notistack";
 import { LOCATOR_TEST_VARIATION_FILTERS } from "../constants";
@@ -118,34 +112,34 @@ const TestVariationListPage = () => {
   );
 
   return (
-    <Container maxWidth="xl" sx={{ py: 4 }}>
-      <PageHeader
-        title="Variations"
-        subtitle={
+    <PageContainer>
+      <PageToolbar
+        summary={
           filteredItems.length === testVariations.length
             ? `${testVariations.length} baselines`
             : `${filteredItems.length} of ${testVariations.length} baselines`
         }
-      />
-      <Box id={LOCATOR_TEST_VARIATION_FILTERS} sx={{ mb: 3 }}>
-        <FilterBar
-          search={query}
-          onSearchChange={setQuery}
-          searchLabel="Name"
-          filters={FILTER_FIELDS.map(({ field, label }) => ({
-            id: field,
-            label,
-            options: optionsOf(testVariations, field),
-            value: selected[field],
-            onChange: (value) =>
-              setSelected((current) => ({ ...current, [field]: value })),
-          }))}
-          onClear={() => {
-            setQuery("");
-            setSelected(NOTHING_SELECTED);
-          }}
-        />
-      </Box>
+      >
+        <Box id={LOCATOR_TEST_VARIATION_FILTERS}>
+          <FilterBar
+            search={query}
+            onSearchChange={setQuery}
+            searchLabel="Name"
+            filters={FILTER_FIELDS.map(({ field, label }) => ({
+              id: field,
+              label,
+              options: optionsOf(testVariations, field),
+              value: selected[field],
+              onChange: (value) =>
+                setSelected((current) => ({ ...current, [field]: value })),
+            }))}
+            onClear={() => {
+              setQuery("");
+              setSelected(NOTHING_SELECTED);
+            }}
+          />
+        </Box>
+      </PageToolbar>
       <TestVariationList items={paginatedItems} onDeleteClick={handleDelete} />
       {filteredItems.length > Math.min(...PAGE_SIZE_OPTIONS) && (
         <Stack
@@ -200,7 +194,7 @@ const TestVariationListPage = () => {
           </TextField>
         </Stack>
       )}
-    </Container>
+    </PageContainer>
   );
 };
 

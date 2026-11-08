@@ -168,6 +168,20 @@ describe("Header", () => {
       expect(menuItem("Open an issue in GitHub")).toBeVisible();
     });
 
+    it("links to the documentation in a new tab", async () => {
+      const { user } = renderHeader({ user: TEST_USER });
+
+      await user.click(screen.getByTestId(HEADER_HELP_MENU_BUTTON_TEST_ID));
+
+      const link = menuItem("Documentation");
+      expect(link).toHaveAttribute(
+        "href",
+        "https://github.com/Visual-Regression-Tracker/Visual-Regression-Tracker/wiki",
+      );
+      expect(link).toHaveAttribute("target", "_blank");
+      expect(link).toHaveAttribute("rel", "noopener noreferrer");
+    });
+
     it("shows the VRT version", async () => {
       const { user } = renderHeader({ user: TEST_USER });
 
@@ -292,6 +306,16 @@ describe("Header", () => {
 
       const crumb = screen.getByRole("navigation", { name: "Breadcrumb" });
       expect(crumb).toHaveTextContent(/^Profile$/);
+      expect(
+        screen.queryByRole("navigation", { name: "Project" }),
+      ).not.toBeInTheDocument();
+    });
+
+    it("shows Projects / Add project on the add project page, without tabs", async () => {
+      await renderShell(routes.PROJECT_NEW_PAGE);
+
+      const crumb = screen.getByRole("navigation", { name: "Breadcrumb" });
+      expect(crumb).toHaveTextContent("Projects/Add project");
       expect(
         screen.queryByRole("navigation", { name: "Project" }),
       ).not.toBeInTheDocument();
@@ -429,6 +453,42 @@ describe("Header", () => {
         );
         expect(screen.getByText("Recently opened")).toBeVisible();
         expect(screen.queryByText("Other projects")).not.toBeInTheDocument();
+      });
+
+      it("keeps the group headers in view while the list scrolls and out of keyboard navigation", async () => {
+        const { user } = await renderShell(`/${TEST_PROJECT.id}`, {
+          favorites: [OTHER.id],
+        });
+        await openMenu(user);
+
+        const header = await screen.findByText("Favourites");
+
+        expect(header).toHaveStyle({ position: "sticky" });
+        expect(header).not.toHaveAttribute("role", "menuitem");
+        await user.keyboard("{ArrowDown}");
+        expect(screen.getAllByRole("menuitem")[0]).toHaveFocus();
+      });
+
+      it("puts each group header right before the projects of that group", async () => {
+        const { user } = await renderShell(`/${TEST_PROJECT.id}`, {
+          favorites: [OTHER.id],
+        });
+        await openMenu(user);
+        await screen.findByText("Favourites");
+
+        const menu = screen.getByRole("menu");
+        const sequence = Array.from(menu.children).map((child) =>
+          child.getAttribute("role") === "menuitem"
+            ? `item:${child.textContent}`
+            : `header:${child.textContent}`,
+        );
+
+        expect(sequence).toEqual([
+          "header:Favourites",
+          `item:${OTHER.name}`,
+          "header:Recently opened",
+          `item:${TEST_PROJECT.name}`,
+        ]);
       });
     });
   });

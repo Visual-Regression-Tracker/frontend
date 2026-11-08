@@ -35,6 +35,7 @@ import {
   Face,
   GitHub,
   HelpOutlineOutlined,
+  MenuBook,
   People,
   Logout,
 } from "@mui/icons-material";
@@ -81,6 +82,18 @@ const Header = () => {
       open={!!helpMenuRef}
       onClose={handleMenuClose}
     >
+      <MenuItem
+        component="a"
+        href="https://github.com/Visual-Regression-Tracker/Visual-Regression-Tracker/wiki"
+        target="_blank"
+        rel="noopener noreferrer"
+        onClick={handleMenuClose}
+      >
+        <ListItemIcon>
+          <MenuBook fontSize="small" />
+        </ListItemIcon>
+        <ListItemText>Documentation</ListItemText>
+      </MenuItem>
       <MenuItem onClick={closeMenuAndOpenLink}>
         <ListItemIcon>
           <GitHub fontSize="small" />

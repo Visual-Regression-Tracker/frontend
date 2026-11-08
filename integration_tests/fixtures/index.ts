@@ -1,5 +1,11 @@
 import { Page, test as base } from "@playwright/test";
-import { LoginPage, ProfilePage, ProjectListPage, ProjectPage } from "pages";
+import {
+  AddProjectPage,
+  LoginPage,
+  ProfilePage,
+  ProjectListPage,
+  ProjectPage,
+} from "pages";
 import { ProjectSettingsPage } from "pages/ProjectSettingsPage";
 import { RegisterPage } from "pages/RegisterPage";
 import { TestVariationDetailsPage } from "pages/TestVariationDetailsPage";
@@ -28,6 +34,7 @@ type Fixtures = {
     id: string,
   ) => Promise<TestVariationDetailsPage>;
   projectListPage: ProjectListPage;
+  addProjectPage: AddProjectPage;
   projectSettingsPage: ProjectSettingsPage;
   profilePage: ProfilePage;
   userListPage: UserListPage;
@@ -68,6 +75,12 @@ export const test = base.extend<Fixtures & Options>({
     await page.goto("/projects");
 
     await use(new ProjectListPage(page));
+  },
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  addProjectPage: async ({ page, authUser }, use) => {
+    await page.goto("/projects/new");
+
+    await use(new AddProjectPage(page));
   },
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   projectSettingsPage: async ({ page, authUser }, use) => {

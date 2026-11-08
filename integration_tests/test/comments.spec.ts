@@ -191,3 +191,25 @@ test("keeps the box open and says so when saving fails", async ({
   await expect(details.commentSaveBtn).toBeVisible();
   await expect(details.comment).toHaveValue("Will not stick");
 });
+
+test("shows a chip with the comment's first words when the run has a comment", async ({
+  openProjectPage,
+}) => {
+  const { details } = await openDialog(openProjectPage);
+
+  await expect(details.commentChip).toContainText(
+    defined(testRun.comment, "The run's comment").slice(0, 10),
+  );
+  await expect(details.addCommentBtn).toBeHidden();
+});
+
+test("offers Add comment when the run has none", async ({
+  openProjectPage,
+  page,
+}) => {
+  await mockTestRun(page, { ...testRun, comment: "" });
+  const { details } = await openDialog(openProjectPage);
+
+  await expect(details.addCommentBtn).toBeVisible();
+  await expect(details.commentChip).toBeHidden();
+});

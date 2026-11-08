@@ -97,3 +97,5 @@ export const fontFamily =
   '"Inter Variable", "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif';
 
 export const monoFontFamily = "ui-monospace, SFMono-Regular, Menlo, monospace";
+
+export const layout = { contentMaxWidth: 1200, contentPaddingY: 4 } as const;

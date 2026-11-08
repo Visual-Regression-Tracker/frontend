@@ -1,7 +1,7 @@
 import { expect, Page } from "@playwright/test";
 import { PNG } from "pngjs";
 import { AUTH_USER, test as base } from "fixtures";
-import { LoginPage, ProjectListPage } from "pages";
+import { AddProjectPage, LoginPage, ProjectListPage } from "pages";
 import type { ProjectSettingsPage } from "pages/ProjectSettingsPage";
 import {
   EDITOR_USER,
@@ -56,6 +56,7 @@ import {
   PARTLY_ANALYSED_SUMMARY,
   NOISE_CART,
   PENDING_SEARCH,
+  PROJECT_WITHOUT_NOISE,
   RENDERER_CHANGE_SUMMARY,
   withNoiseRegions,
 } from "utils/noiseRuns";
@@ -343,20 +344,6 @@ const VIEWS: [name: string, body: Body][] = [
   ],
 
   [
-    "create project dialog",
-    async ({ projectListPage, shot }) => {
-      await projectListPage.addBtn.click();
-
-      await expect(projectListPage.dialog).toBeVisible();
-      await expect(projectListPage.imageComparison).toHaveText(
-        ImageComparison.pixelmatch,
-      );
-      await expect(projectListPage.threshold).toHaveValue("0.1");
-      await shot("create-project");
-    },
-  ],
-
-  [
     "project settings with VLM and Ollama",
     async ({ projectSettingsPage, shot }) => {
       await projectSettingsPage.selectImageComparison(ImageComparison.vlm);
@@ -401,7 +388,7 @@ const VIEWS: [name: string, body: Body][] = [
     async ({ projectListPage, shot }) => {
       await projectListPage.deleteBtn.click();
 
-      await expect(projectListPage.dialog).toContainText(
+      await expect(projectListPage.modal.dialog).toContainText(
         `Are you sure you want to delete: ${project.name}?`,
       );
       await expect(projectListPage.page.getByRole("tooltip")).toHaveCount(0);
@@ -421,6 +408,18 @@ const VIEWS: [name: string, body: Body][] = [
 
       await expect(page.getByRole("menuitem")).toHaveCount(4);
       await shot("project-switcher");
+    },
+  ],
+
+  [
+    "project page without the noise check",
+    async ({ openProjectPage, page, shot }) => {
+      await mockGetProjects(page, [PROJECT_WITHOUT_NOISE]);
+      const projectPage = await openProjectPage(project.id, build.id);
+
+      await expect(projectPage.testRunList.rows).toHaveCount(4);
+      await expect(projectPage.testRunList.noiseColumnHeader).toHaveCount(0);
+      await shot("project-page-without-noise");
     },
   ],
 
@@ -829,9 +828,6 @@ const VIEWS: [name: string, body: Body][] = [
       await mockGetStatisticsResults(page, project.id, STATISTICS_BUILDS);
       await page.goto(`/statistics/${project.id}`);
 
-      await expect(
-        page.getByRole("heading", { name: "Statistics", exact: true }),
-      ).toBeVisible();
       await expect(page.getByRole("link", { name: /Build #/ })).toHaveCount(12);
       await shot("project-statistics");
     },
@@ -1354,6 +1350,75 @@ const VIEWS: [name: string, body: Body][] = [
       ).toBeVisible();
       await expect(details.drawAreas).toHaveCount(1);
       await shot("test-run-baseline-image-failed");
+    },
+  ],
+
+  [
+    "test run details with a comment",
+    async ({ openProjectPage, page, shot }) => {
+      await mockUpdateTestRun(page, TEST_UNRESOLVED);
+      const { details } = await openProjectPage(
+        project.id,
+        build.id,
+        TEST_UNRESOLVED.id,
+      );
+
+      await expect(details.commentChip).toBeVisible();
+      await shot("test-run-comment-chip");
+    },
+  ],
+
+  [
+    "test run details with a long comment",
+    async ({ openProjectPage, page, shot }) => {
+      const long = {
+        ...TEST_UNRESOLVED,
+        comment:
+          "The footer overlaps the cookie banner on small screens, and the cart badge is clipped.\nSee the design review for the agreed fix.",
+      };
+      await mockTestRun(page, long);
+      await mockUpdateTestRun(page, long);
+      const { details } = await openProjectPage(
+        project.id,
+        build.id,
+        TEST_UNRESOLVED.id,
+      );
+
+      await expect(details.commentChip).toBeVisible();
+      await shot("test-run-long-comment");
+    },
+  ],
+
+  [
+    "test run details without a comment",
+    async ({ openProjectPage, page, shot }) => {
+      const uncommented = { ...TEST_UNRESOLVED, comment: "" };
+      await mockTestRun(page, uncommented);
+      await mockUpdateTestRun(page, uncommented);
+      const { details } = await openProjectPage(
+        project.id,
+        build.id,
+        TEST_UNRESOLVED.id,
+      );
+
+      await expect(details.addCommentBtn).toBeVisible();
+      await shot("test-run-no-comment");
+    },
+  ],
+
+  [
+    "add project page",
+    async ({ page, authUser, shot }) => {
+      void authUser;
+      await page.goto("/projects/new");
+
+      const addProjectPage = new AddProjectPage(page);
+      await expect(addProjectPage.heading).toBeVisible();
+      await expect(addProjectPage.imageComparison).toHaveText(
+        ImageComparison.pixelmatch,
+      );
+      await expect(addProjectPage.threshold).toHaveValue("0.1");
+      await shot("add-project");
     },
   ],
 

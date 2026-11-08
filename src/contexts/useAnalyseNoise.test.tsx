@@ -2,12 +2,14 @@ import { act } from "@testing-library/react";
 import { renderHookWithProviders } from "../_test/render";
 import { run } from "../_helpers/testRun.fixture";
 import { testRunService } from "../services";
-import {
-  NOISE_ANALYSIS_NOISE,
-  NOISE_ANALYSIS_PENDING,
-} from "../_test/test.data.helper";
+import { NOISE_ANALYSIS_NOISE } from "../_test/test.data.helper";
 import { type TestRun, TestStatus } from "../types";
-import { updateTestRun, useTestRunDispatch } from "./testRun.context";
+import {
+  updateTestRun,
+  useTestRunDispatch,
+  useTestRunState,
+} from "./testRun.context";
+import { isNoisePending } from "../_helpers/noiseHint.helper";
 import { useAnalyseNoise } from "./useAnalyseNoise";
 
 const unresolved = (id: string) =>
@@ -23,10 +25,6 @@ const setup = () => {
 };
 
 describe("useAnalyseNoise", () => {
-  afterEach(() => {
-    vi.useRealTimers();
-  });
-
   describe("warnings", () => {
     it("stays quiet when only some runs were skipped for a reason the user cannot act on", async () => {
       vi.spyOn(testRunService, "analyseNoise").mockResolvedValue({
@@ -100,197 +98,162 @@ describe("useAnalyseNoise", () => {
     });
   });
 
-  describe("requesting", () => {
+  describe("optimistic pending state", () => {
     const withRuns = (...runs: TestRun[]) => {
-      const hook = setup();
+      const hook = renderHookWithProviders(() => ({
+        ...useAnalyseNoise(vi.fn()),
+        state: useTestRunState(),
+        dispatch: useTestRunDispatch(),
+      }));
       act(() => {
         updateTestRun(hook.result.current.dispatch, runs);
       });
       return hook;
     };
-    const show = (
-      dispatch: ReturnType<typeof useTestRunDispatch>,
+    const analysisOf = (
+      hook: ReturnType<typeof withRuns>,
       id: string,
-      noiseAnalysis: TestRun["noiseAnalysis"],
-    ) => {
-      act(() => {
-        updateTestRun(dispatch, [{ ...unresolved(id), noiseAnalysis }]);
-      });
-    };
+    ): TestRun["noiseAnalysis"] =>
+      hook.result.current.state.testRuns.find((item) => item.id === id)
+        ?.noiseAnalysis;
 
-    beforeEach(() => {
-      vi.useFakeTimers();
+    it("marks every queued run as pending at once", async () => {
+      const hook = withRuns(unresolved("a"), unresolved("b"), unresolved("c"));
       vi.spyOn(testRunService, "analyseNoise").mockResolvedValue({
-        queued: 2,
+        queued: 3,
         skipped: [],
       });
-    });
-
-    it("stays on after the answer until every queued run shows as pending", async () => {
-      const { result } = withRuns(unresolved("a"), unresolved("b"));
 
       await act(async () => {
-        await result.current.analyse(["a", "b"]);
+        await hook.result.current.analyse(["a", "b", "c"]);
       });
-      expect(result.current.requesting).toBe(true);
 
-      show(result.current.dispatch, "a", NOISE_ANALYSIS_PENDING);
-      expect(result.current.requesting).toBe(true);
-
-      show(result.current.dispatch, "b", NOISE_ANALYSIS_PENDING);
-      expect(result.current.requesting).toBe(false);
-
-      show(result.current.dispatch, "a", null);
-      expect(result.current.requesting).toBe(false);
+      for (const id of ["a", "b", "c"]) {
+        expect(isNoisePending(analysisOf(hook, id))).toBe(true);
+      }
     });
 
-    it("is off at once when the pending event came before the answer", async () => {
-      const { result } = withRuns(unresolved("a"), unresolved("b"));
+    it("leaves skipped runs and runs outside the request as they were", async () => {
+      const hook = withRuns(
+        unresolved("a"),
+        { ...unresolved("b"), noiseAnalysis: NOISE_ANALYSIS_NOISE },
+        unresolved("c"),
+      );
+      vi.spyOn(testRunService, "analyseNoise").mockResolvedValue({
+        queued: 1,
+        skipped: [{ id: "b", reason: "analysis off" }],
+      });
+
+      await act(async () => {
+        await hook.result.current.analyse(["a", "b"]);
+      });
+
+      expect(isNoisePending(analysisOf(hook, "a"))).toBe(true);
+      expect(analysisOf(hook, "b")).toEqual(NOISE_ANALYSIS_NOISE);
+      expect(analysisOf(hook, "c")).toBeUndefined();
+    });
+
+    it("keeps a socket result that lands before the answer", async () => {
+      const hook = withRuns(unresolved("a"), unresolved("b"));
       vi.spyOn(testRunService, "analyseNoise").mockImplementation(() => {
-        show(result.current.dispatch, "a", NOISE_ANALYSIS_PENDING);
-        show(result.current.dispatch, "b", NOISE_ANALYSIS_PENDING);
+        act(() => {
+          updateTestRun(hook.result.current.dispatch, [
+            {
+              ...unresolved("a"),
+              status: TestStatus.approved,
+              noiseAnalysis: NOISE_ANALYSIS_NOISE,
+            },
+          ]);
+        });
         return Promise.resolve({ queued: 2, skipped: [] });
       });
 
       await act(async () => {
-        await result.current.analyse(["a", "b"]);
+        await hook.result.current.analyse(["a", "b"]);
       });
 
-      expect(result.current.requesting).toBe(false);
+      expect(analysisOf(hook, "a")).toEqual(NOISE_ANALYSIS_NOISE);
+      expect(
+        hook.result.current.state.testRuns.find((item) => item.id === "a")
+          ?.status,
+      ).toBe(TestStatus.approved);
+      expect(isNoisePending(analysisOf(hook, "b"))).toBe(true);
     });
 
-    it("stops when a re-analysed run gets a new result", async () => {
-      const { result } = withRuns({
-        ...unresolved("a"),
-        noiseAnalysis: NOISE_ANALYSIS_NOISE,
-      });
-      vi.spyOn(testRunService, "analyseNoise").mockResolvedValue({
-        queued: 1,
-        skipped: [],
-      });
+    it("changes nothing when the request fails", async () => {
+      const hook = withRuns(unresolved("a"));
+      vi.spyOn(testRunService, "analyseNoise").mockRejectedValue("No access");
 
       await act(async () => {
-        await result.current.analyse(["a"]);
+        await hook.result.current.analyse(["a"]);
       });
-      expect(result.current.requesting).toBe(true);
 
-      show(result.current.dispatch, "a", {
-        ...NOISE_ANALYSIS_NOISE,
-        computedAt: "2026-11-04T11:00:00Z",
-      });
-      expect(result.current.requesting).toBe(false);
+      expect(analysisOf(hook, "a")).toBeUndefined();
     });
 
-    it("stops when the pending marker is cleared", async () => {
-      const { result } = withRuns({
-        ...unresolved("a"),
-        noiseAnalysis: NOISE_ANALYSIS_PENDING,
-      });
-      vi.spyOn(testRunService, "analyseNoise").mockResolvedValue({
-        queued: 1,
-        skipped: [],
-      });
-
-      await act(async () => {
-        await result.current.analyse(["a"]);
-      });
-      expect(result.current.requesting).toBe(true);
-
-      show(result.current.dispatch, "a", null);
-      expect(result.current.requesting).toBe(false);
-    });
-
-    it("keeps waiting when the run is replaced by a copy with the same analysis", async () => {
-      const { result } = withRuns({
-        ...unresolved("a"),
-        noiseAnalysis: NOISE_ANALYSIS_NOISE,
-      });
-      vi.spyOn(testRunService, "analyseNoise").mockResolvedValue({
-        queued: 1,
-        skipped: [],
-      });
-
-      await act(async () => {
-        await result.current.analyse(["a"]);
-      });
-      show(result.current.dispatch, "a", { ...NOISE_ANALYSIS_NOISE });
-
-      expect(result.current.requesting).toBe(true);
-
-      show(result.current.dispatch, "a", NOISE_ANALYSIS_PENDING);
-      expect(result.current.requesting).toBe(false);
-    });
-
-    it("keeps waiting when the run is opened and its copy carries the same result", async () => {
-      const analysed = {
-        ...unresolved("a"),
-        noiseAnalysis: NOISE_ANALYSIS_NOISE,
-      };
-      const { result } = withRuns(analysed);
-      vi.spyOn(testRunService, "analyseNoise").mockResolvedValue({
-        queued: 1,
-        skipped: [],
-      });
-
-      await act(async () => {
-        await result.current.analyse(["a"]);
-      });
+    it("shows the pending state on the open run too", async () => {
+      const hook = withRuns(unresolved("a"));
       act(() => {
-        result.current.dispatch({
+        hook.result.current.dispatch({
           type: "select",
-          payload: { ...analysed, noiseAnalysis: { ...NOISE_ANALYSIS_NOISE } },
+          payload: unresolved("a"),
         });
       });
-
-      expect(result.current.requesting).toBe(true);
-    });
-
-    it("is off at once when the awaited runs are no longer in the list", async () => {
-      const { result } = withRuns(unresolved("a"), unresolved("b"));
-
-      await act(async () => {
-        await result.current.analyse(["a", "b"]);
-      });
-      expect(result.current.requesting).toBe(true);
-
-      act(() => {
-        result.current.dispatch({ type: "get", payload: [unresolved("c")] });
-      });
-
-      expect(result.current.requesting).toBe(false);
-    });
-
-    it("gives up waiting for the pending event after three seconds", async () => {
-      const { result } = withRuns(unresolved("a"), unresolved("b"));
-
-      await act(async () => {
-        await result.current.analyse(["a", "b"]);
-      });
-      expect(result.current.requesting).toBe(true);
-
-      act(() => {
-        vi.advanceTimersByTime(2900);
-      });
-      expect(result.current.requesting).toBe(true);
-
-      act(() => {
-        vi.advanceTimersByTime(200);
-      });
-      expect(result.current.requesting).toBe(false);
-    });
-
-    it("is off again at once when nothing was queued", async () => {
       vi.spyOn(testRunService, "analyseNoise").mockResolvedValue({
-        queued: 0,
-        skipped: [{ id: "a", reason: "not unresolved" }],
+        queued: 1,
+        skipped: [],
       });
-      const { result } = withRuns(unresolved("a"));
 
       await act(async () => {
-        await result.current.analyse(["a"]);
+        await hook.result.current.analyse(["a"]);
       });
 
-      expect(result.current.requesting).toBe(false);
+      expect(
+        isNoisePending(
+          hook.result.current.state.selectedTestRun?.noiseAnalysis,
+        ),
+      ).toBe(true);
+    });
+
+    it("lets a socket result replace the pending state", async () => {
+      const hook = withRuns(unresolved("a"));
+      vi.spyOn(testRunService, "analyseNoise").mockResolvedValue({
+        queued: 1,
+        skipped: [],
+      });
+      await act(async () => {
+        await hook.result.current.analyse(["a"]);
+      });
+
+      act(() => {
+        updateTestRun(hook.result.current.dispatch, [
+          { ...unresolved("a"), noiseAnalysis: NOISE_ANALYSIS_NOISE },
+        ]);
+      });
+
+      expect(analysisOf(hook, "a")).toEqual(NOISE_ANALYSIS_NOISE);
+    });
+
+    it("is requesting only while the request is in flight", async () => {
+      const hook = withRuns(unresolved("a"));
+      let finish: (value: { queued: number; skipped: [] }) => void = () => {};
+      vi.spyOn(testRunService, "analyseNoise").mockReturnValue(
+        new Promise((resolve) => {
+          finish = resolve;
+        }),
+      );
+
+      let pending: Promise<unknown> = Promise.resolve();
+      act(() => {
+        pending = hook.result.current.analyse(["a"]);
+      });
+      expect(hook.result.current.requesting).toBe(true);
+
+      await act(async () => {
+        finish({ queued: 1, skipped: [] });
+        await pending;
+      });
+      expect(hook.result.current.requesting).toBe(false);
     });
   });
 });

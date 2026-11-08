@@ -211,6 +211,24 @@ describe("TestRunTable", () => {
     );
   });
 
+  it("shows the Noise column only when the noise check is available", async () => {
+    const { rerender } = renderTable(propsFor([A_EN, B_EN]));
+    await waitFor(() => expect(dataRows()).toHaveLength(2));
+    expect(
+      screen.getByRole("columnheader", { name: /Noise/ }),
+    ).toBeInTheDocument();
+
+    rerender(
+      <TestRunTable {...propsFor([A_EN, B_EN], { noiseAvailable: false })} />,
+    );
+
+    await waitFor(() =>
+      expect(
+        screen.queryByRole("columnheader", { name: /Noise/ }),
+      ).not.toBeInTheDocument(),
+    );
+  });
+
   it("follows a change of density after it first rendered", async () => {
     const densityClass = () =>
       document.querySelector(".MuiDataGrid-root")?.className ?? "";
@@ -226,5 +244,26 @@ describe("TestRunTable", () => {
     );
 
     await waitFor(() => expect(densityClass()).toContain("densityCompact"));
+  });
+
+  it("marks only the rows that have a comment", async () => {
+    renderTable(
+      propsFor([
+        run({ id: "c", name: "Commented", comment: "Check the header" }),
+        run({ id: "n", name: "Plain" }),
+      ]),
+    );
+
+    await waitFor(() => expect(dataRows()).toHaveLength(2));
+
+    expect(
+      within(rowOf("Commented")).getByRole("img", { name: "Has a comment" }),
+    ).toBeVisible();
+    expect(
+      within(rowOf("Commented")).getByTestId("comment-indicator"),
+    ).toHaveAttribute("tabindex", "-1");
+    expect(
+      within(rowOf("Plain")).queryByTestId("comment-indicator"),
+    ).not.toBeInTheDocument();
   });
 });

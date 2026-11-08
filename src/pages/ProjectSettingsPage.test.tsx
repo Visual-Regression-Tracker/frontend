@@ -42,7 +42,7 @@ describe("ProjectSettingsPage", () => {
     expect(
       await screen.findByRole("textbox", { name: /project name/i }),
     ).toHaveValue("Beta");
-    expect(screen.getByRole("heading", { name: "Settings" })).toBeVisible();
+    expect(screen.queryByRole("heading", { level: 1 })).toBeNull();
   });
 
   test("says so when the project does not exist", async () => {

@@ -381,9 +381,13 @@ describe("TestVariationListPage", () => {
 
     renderRoute("/variations", "/variations");
 
-    expect(
-      await screen.findByRole("heading", { name: "Variations" }),
-    ).toBeInTheDocument();
+    expect(await screen.findByText("0 baselines")).toBeInTheDocument();
     expect(getList).not.toHaveBeenCalled();
+  });
+
+  it("marks the variations that have a comment", async () => {
+    await renderPage([{ ...LOGIN, comment: "Flaky on Safari" }, CHECKOUT]);
+
+    expect(screen.getAllByTestId("comment-indicator")).toHaveLength(1);
   });
 });

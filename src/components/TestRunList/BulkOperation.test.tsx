@@ -1,11 +1,24 @@
+import { useEffect } from "react";
 import { screen, waitFor, within } from "@testing-library/react";
 import { rejectWithMessage } from "../../_helpers/service.helpers";
 import { renderWithProviders } from "../../_test/render";
 import { toastOf, undoIn } from "../../_test/toast";
 import { SeedTestRuns } from "../../_test/SeedTestRuns";
-import { staticService, testRunService } from "../../services";
+import { projectsService, staticService, testRunService } from "../../services";
+import {
+  selectProject,
+  useProjectDispatch,
+  useProjectState,
+  useTestRunState,
+} from "../../contexts";
+import { isNoisePending } from "../../_helpers/noiseHint.helper";
+import { ImageComparison } from "../../types/imageComparison";
 import { TestRun, TestStatus } from "../../types";
-import { testRunMock } from "../../_test/test.data.helper";
+import {
+  TEST_PROJECT,
+  TEST_USER,
+  testRunMock,
+} from "../../_test/test.data.helper";
 import { BulkOperation } from "./BulkOperation";
 import { allSucceeded } from "../../_test/bulkResult";
 
@@ -792,5 +805,154 @@ describe("BulkOperation", () => {
         }),
       );
     });
+  });
+});
+
+describe("BulkOperation analyse rendering noise", () => {
+  const ANALYSE = "Analyse noise";
+
+  const SelectProject = () => {
+    const dispatch = useProjectDispatch();
+    const { projectList, selectedProjectId } = useProjectState();
+    useEffect(() => selectProject(dispatch, TEST_PROJECT.id), [dispatch]);
+    return projectList.length > 0 && selectedProjectId === TEST_PROJECT.id ? (
+      <div data-testid="project-ready" />
+    ) : null;
+  };
+
+  const Statuses = () => (
+    <output data-testid="analysis">
+      {useTestRunState()
+        .testRuns.map(
+          (item) => `${item.id}:${isNoisePending(item.noiseAnalysis)}`,
+        )
+        .join(",")}
+    </output>
+  );
+
+  const renderWithProject = async (
+    project = {},
+    selectedIds = [NEW_RUN.id, UNRESOLVED_RUN.id],
+  ) => {
+    vi.spyOn(projectsService, "getAll").mockResolvedValue([
+      { ...TEST_PROJECT, ...project },
+    ]);
+    const rendered = renderWithProviders(
+      <>
+        <SeedTestRuns testRuns={ROWS} />
+        <SelectProject />
+        <Statuses />
+        <BulkOperation
+          selectedIds={selectedIds}
+          rows={ROWS}
+          onSelectAll={vi.fn()}
+          onClear={vi.fn()}
+          onProcessed={vi.fn()}
+        />
+      </>,
+      { user: TEST_USER },
+    );
+    await screen.findByTestId("project-ready");
+    return rendered;
+  };
+
+  it("is offered when the project has the analysis available", async () => {
+    await renderWithProject();
+
+    expect(actionButton(ANALYSE)).toBeEnabled();
+  });
+
+  it("is hidden when the project has the analysis off", async () => {
+    await renderWithProject({
+      noiseAnalysisConfig: JSON.stringify({ blur: { enabled: false } }),
+    });
+
+    expect(screen.queryByRole("button", { name: ANALYSE })).toBeNull();
+  });
+
+  it("is hidden for a project that compares with a VLM", async () => {
+    await renderWithProject({ imageComparison: ImageComparison.vlm });
+
+    expect(screen.queryByRole("button", { name: ANALYSE })).toBeNull();
+  });
+
+  it("sends the selected ids, without a dialog, and reports what was queued", async () => {
+    const analyse = vi
+      .spyOn(testRunService, "analyseNoise")
+      .mockResolvedValue({ queued: 1, skipped: [] });
+    const { user } = await renderWithProject();
+
+    await user.click(actionButton(ANALYSE));
+
+    expect(analyse).toHaveBeenCalledExactlyOnceWith([UNRESOLVED_RUN.id]);
+    expect(screen.queryByRole("dialog")).toBeNull();
+    expect(await toastOf("Analysing 1 test run.")).toHaveClass(
+      "notistack-MuiContent-success",
+    );
+  });
+
+  it("sends only the unresolved runs that are shown, not hidden ticks", async () => {
+    const analyse = vi
+      .spyOn(testRunService, "analyseNoise")
+      .mockResolvedValue({ queued: 1, skipped: [] });
+    const { user } = await renderWithProject({}, [
+      NEW_RUN.id,
+      UNRESOLVED_RUN.id,
+      APPROVED_RUN.id,
+      "hidden-unresolved",
+    ]);
+
+    await user.click(actionButton(ANALYSE));
+
+    expect(analyse).toHaveBeenCalledExactlyOnceWith([UNRESOLVED_RUN.id]);
+  });
+
+  it("is disabled when no selected run is unresolved", async () => {
+    await renderWithProject({}, [NEW_RUN.id, APPROVED_RUN.id]);
+
+    expect(actionButton(ANALYSE)).toBeDisabled();
+  });
+
+  it("reports the skipped runs next to the queued ones", async () => {
+    vi.spyOn(testRunService, "analyseNoise").mockResolvedValue({
+      queued: 1,
+      skipped: [{ id: NEW_RUN.id, reason: "not unresolved" }],
+    });
+    const { user } = await renderWithProject();
+
+    await user.click(actionButton(ANALYSE));
+
+    expect(await toastOf("Analysing 1 test run, 1 skipped.")).toBeVisible();
+  });
+
+  it("flips the queued runs to analysing at once and leaves the skipped ones", async () => {
+    vi.spyOn(testRunService, "analyseNoise").mockResolvedValue({
+      queued: 1,
+      skipped: [{ id: NEW_RUN.id, reason: "not unresolved" }],
+    });
+    const { user } = await renderWithProject();
+
+    await user.click(actionButton(ANALYSE));
+
+    await waitFor(() =>
+      expect(screen.getByTestId("analysis")).toHaveTextContent(
+        `${NEW_RUN.id}:false,${UNRESOLVED_RUN.id}:true,${APPROVED_RUN.id}:false,${NOT_SELECTED_RUN.id}:false`,
+      ),
+    );
+  });
+
+  it("says nothing queued when every run was skipped", async () => {
+    vi.spyOn(testRunService, "analyseNoise").mockResolvedValue({
+      queued: 0,
+      skipped: [{ id: NEW_RUN.id, reason: "analysis off" }],
+    });
+    const { user } = await renderWithProject();
+
+    await user.click(actionButton(ANALYSE));
+
+    expect(await toastOf("Not analysed: analysis off")).toHaveClass(
+      "notistack-MuiContent-warning",
+    );
+    expect(screen.queryByText(/^Analysing/)).toBeNull();
   });
 });

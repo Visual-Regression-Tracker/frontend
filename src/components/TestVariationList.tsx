@@ -4,6 +4,7 @@ import { TestVariation } from "../types";
 import { staticService } from "../services";
 import { routes } from "../constants";
 import { BaseModal } from "./BaseModal";
+import { CommentIndicator } from "./CommentIndicator";
 import { EmptyState } from "./EmptyState";
 import { TagLine } from "./TagLine";
 import { Tooltip } from "./Tooltip";
@@ -77,13 +78,20 @@ const TestVariationList = ({ items, onDeleteClick }: IProps) => {
               title={t.name}
             />
             <CardContent sx={{ flex: 1 }}>
-              <Typography
-                variant="subtitle2"
-                component="h2"
-                sx={{ overflowWrap: "anywhere" }}
+              <Stack
+                direction="row"
+                spacing={0.75}
+                sx={{ alignItems: "center" }}
               >
-                {t.name}
-              </Typography>
+                <Typography
+                  variant="subtitle2"
+                  component="h2"
+                  sx={{ overflowWrap: "anywhere", minWidth: 0 }}
+                >
+                  {t.name}
+                </Typography>
+                <CommentIndicator text={t.comment} />
+              </Stack>
               <Box sx={{ mt: 0.5 }}>
                 <TagLine tags={t} />
               </Box>

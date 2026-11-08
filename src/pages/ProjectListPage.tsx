@@ -1,28 +1,28 @@
 import { useMemo, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { Typography, Button, Box, Stack, Container } from "@mui/material";
+import { Typography, Button, Box, Stack } from "@mui/material";
 import {
   useProjectState,
   useProjectDispatch,
   deleteProject,
-  createProject,
   setProjectEditState,
   toggleFavoriteProject,
   useUserState,
 } from "../contexts";
 import { Add, FolderOpenOutlined, Search } from "@mui/icons-material";
+import { PageContainer } from "../components/PageContainer";
+import { PageHeader } from "../components/PageHeader";
 import { EmptyState } from "../components/EmptyState";
 import { SkeletonList } from "../components/SkeletonList";
 import { ProjectCard } from "../components/ProjectCard";
 import { ProjectGrid, ProjectSection } from "../components/ProjectGrid";
 import { ProjectSearchField } from "../components/ProjectSearchField";
-import { PROJECT_EDITOR_ROLES } from "../constants";
+import { PROJECT_EDITOR_ROLES, routes } from "../constants";
 import { buildProjectSettingsUrl } from "../_helpers/route.helpers";
 import {
   groupProjects,
   matchesProjectQuery,
 } from "../_helpers/projectList.helper";
-import { ProjectForm } from "../components/ProjectForm";
 import { useSnackbar } from "notistack";
 import { BaseModal } from "../components/BaseModal";
 import { Project } from "../types";
@@ -41,7 +41,6 @@ const ProjectsListPage = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const query = searchParams.get("q") ?? "";
 
-  const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
 
   const groups = useMemo(
@@ -62,10 +61,6 @@ const ProjectsListPage = () => {
 
   const setQuery = (value: string) =>
     setSearchParams(value ? { q: value } : {}, { replace: true });
-
-  const toggleCreateDialogOpen = () => {
-    setCreateDialogOpen(!createDialogOpen);
-  };
 
   const toggleDeleteDialogOpen = () => {
     setDeleteDialogOpen(!deleteDialogOpen);
@@ -113,7 +108,7 @@ const ProjectsListPage = () => {
         <EmptyState
           icon={<Search />}
           title={`No projects match “${query.trim()}”`}
-          description="Search looks at the name, the id and the main branch."
+          description="Search looks at the name and the main branch."
         />
       );
     }
@@ -174,76 +169,41 @@ const ProjectsListPage = () => {
       .catch((err: string) => enqueueSnackbar(err, { variant: "error" }));
 
   return (
-    <Container maxWidth="lg" sx={{ py: 4 }}>
-      <Stack
-        direction={{ xs: "column", sm: "row" }}
-        spacing={2}
-        sx={{
-          alignItems: { xs: "flex-start", sm: "center" },
-          justifyContent: "space-between",
-          mb: 3,
-        }}
-      >
-        <Box>
-          <Typography variant="h4" component="h1">
-            Projects
-          </Typography>
-          {!loading && (
-            <Typography variant="body2" sx={{ color: "text.secondary" }}>
-              {`${projectList.length} ${pluralize(projectList.length, "project")}`}
-            </Typography>
-          )}
-        </Box>
-        <Stack
-          direction="row"
-          spacing={2}
-          sx={{
-            alignItems: "center",
-            width: { xs: "100%", sm: "auto" },
-          }}
-        >
-          {projectList.length > 0 && (
-            <ProjectSearchField value={query} onChange={setQuery} />
-          )}
-          {canEditProjects && (
-            <Button
-              variant="contained"
-              startIcon={<Add data-testid="AddIcon" />}
-              sx={{ flexShrink: 0 }}
-              onClick={() => {
-                toggleCreateDialogOpen();
-                setProjectEditState(projectDispatch);
-              }}
-            >
-              Add project
-            </Button>
-          )}
-        </Stack>
-      </Stack>
+    <PageContainer>
+      <PageHeader
+        title="Projects"
+        subtitle={
+          !loading &&
+          `${projectList.length} ${pluralize(projectList.length, "project")}`
+        }
+        actions={
+          <>
+            {projectList.length > 0 && (
+              <ProjectSearchField value={query} onChange={setQuery} />
+            )}
+            {canEditProjects && (
+              <Button
+                variant="contained"
+                startIcon={<Add data-testid="AddIcon" />}
+                sx={{ flexShrink: 0 }}
+                onClick={() => void navigate(routes.PROJECT_NEW_PAGE)}
+              >
+                Add project
+              </Button>
+            )}
+          </>
+        }
+      />
 
       {renderBody()}
 
       {canEditProjects && (
         <>
           <BaseModal
-            open={createDialogOpen}
-            title={"Create Project"}
-            submitButtonText={"Create"}
-            onCancel={toggleCreateDialogOpen}
-            content={<ProjectForm />}
-            onSubmit={() =>
-              submit(
-                createProject(projectDispatch, projectState.projectEditState),
-                "created",
-                toggleCreateDialogOpen,
-              )
-            }
-          />
-
-          <BaseModal
             open={deleteDialogOpen}
-            title={"Delete Project"}
+            title={"Delete project"}
             submitButtonText={"Delete"}
+            submitColor="error"
             onCancel={toggleDeleteDialogOpen}
             content={
               <Typography>{`Are you sure you want to delete: ${projectState.projectEditState.name}?`}</Typography>
@@ -261,7 +221,7 @@ const ProjectsListPage = () => {
           />
         </>
       )}
-    </Container>
+    </PageContainer>
   );
 };
 
