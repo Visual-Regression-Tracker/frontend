@@ -219,7 +219,7 @@ test("shows why the footer undo was refused", async ({
     page,
     isRevertUrl,
     409,
-    "A later approval changed this baseline",
+    `Test run ${decided.id}: a later approval changed this baseline`,
   );
   const { details, notification } = await openProjectPage(
     project.id,

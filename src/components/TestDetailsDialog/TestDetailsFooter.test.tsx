@@ -108,6 +108,20 @@ describe("TestDetailsFooter", () => {
       expect(toast).toHaveClass("notistack-MuiContent-error");
     });
 
+    it("drops the run id from the backend's reason", async () => {
+      const testRun = run({ status: TestStatus.approved });
+      vi.spyOn(testRunService, "revert").mockRejectedValue(
+        `Test run ${testRun.id}: a later approval changed this baseline`,
+      );
+      const { user } = renderFooter({ testRun });
+
+      await user.click(undoButton("Undo approval"));
+
+      expect(
+        await toastOf("A later approval changed this baseline"),
+      ).toHaveClass("notistack-MuiContent-error");
+    });
+
     it("keeps the undo in the toast when the dialog goes to the next run", async () => {
       localStorage.setItem(GO_TO_NEXT_KEY, "true");
       vi.spyOn(testRunService, "approveBulk").mockResolvedValue(NO_FAILURES);

@@ -10,7 +10,7 @@ const DEFAULT_OPACITY = 0.5;
 const initialMode = (testRun: TestRun): ViewMode =>
   testRun.diffName ? "diff" : "sideBySide";
 
-export const useViewMode = (testRun: TestRun) => {
+export const useViewMode = (testRun: TestRun, hotkeyEnabled: boolean) => {
   const [mode, setMode] = useState<ViewMode>(() => initialMode(testRun));
   const [opacity, setOpacity] = useState(DEFAULT_OPACITY);
   const [blendDifference, setBlendDifference] = useState(false);
@@ -34,7 +34,7 @@ export const useViewMode = (testRun: TestRun) => {
         setMode((current) => (current === "diff" ? "sideBySide" : "diff"));
       }
     },
-    hotkeyOptions,
+    { ...hotkeyOptions, enabled: hotkeyEnabled },
     [testRun.diffName],
   );
 

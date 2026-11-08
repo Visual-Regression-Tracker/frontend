@@ -26,7 +26,11 @@ export const ViewModeStrip = ({
       Side by side
     </ToggleButton>
     {hasDiff && (
-      <ToggleButton value="diff" sx={{ textTransform: "none" }}>
+      <ToggleButton
+        value="diff"
+        aria-keyshortcuts="d"
+        sx={{ textTransform: "none" }}
+      >
         Diff
         <HotkeyHint>D</HotkeyHint>
       </ToggleButton>

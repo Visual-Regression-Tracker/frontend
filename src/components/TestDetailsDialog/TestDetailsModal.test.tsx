@@ -140,7 +140,8 @@ describe("TestDetailsModal", () => {
       expect(
         await screen.findByText("Ignore areas are updated."),
       ).toBeVisible();
-      expect(saveButton()).toBeDisabled();
+      expect(screen.getByRole("button", { name: "Edit areas" })).toBeVisible();
+      expect(screen.queryByRole("button", { name: "Save" })).toBeNull();
     });
 
     it("keeps the areas unsaved when saving fails", async () => {
@@ -393,6 +394,51 @@ describe("TestDetailsModal", () => {
       expect(
         screen.queryByRole("button", { name: /^Ignore areas \(/ }),
       ).toBeNull();
+    });
+
+    it("ignores D while editing", async () => {
+      const { user } = renderModal(UNRESOLVED_RUN);
+      await user.click(screen.getByRole("button", { name: "Edit areas" }));
+
+      await user.keyboard("d");
+      await user.click(screen.getByRole("button", { name: "Cancel" }));
+
+      expect(screen.getByRole("button", { name: "Diff" })).toHaveAttribute(
+        "aria-pressed",
+        "true",
+      );
+    });
+
+    it("shows the areas again on the next run after they were hidden", async () => {
+      const withArea = { ...RUN, ignoreAreas: JSON.stringify([SAVED_AREA]) };
+      const { user, showTestRun } = renderModal(withArea);
+      await user.click(
+        screen.getByRole("button", { name: "Ignore areas (1)" }),
+      );
+
+      showTestRun({ ...withArea, id: "another run" });
+
+      expect(
+        screen.getByRole("button", { name: "Ignore areas (1)" }),
+      ).toHaveAttribute("aria-pressed", "true");
+    });
+
+    it("offers the undo once a person decided the run, not when it was auto-approved", () => {
+      const { showTestRun } = renderModal(UNRESOLVED_RUN);
+      expect(screen.queryByRole("button", { name: /^Undo/ })).toBeNull();
+
+      showTestRun({ ...UNRESOLVED_RUN, status: TestStatus.approved });
+      expect(
+        screen.getByRole("button", { name: "Undo approval" }),
+      ).toBeVisible();
+
+      showTestRun({ ...UNRESOLVED_RUN, status: TestStatus.failed });
+      expect(
+        screen.getByRole("button", { name: "Undo rejection" }),
+      ).toBeVisible();
+
+      showTestRun({ ...UNRESOLVED_RUN, status: TestStatus.autoApproved });
+      expect(screen.queryByRole("button", { name: /^Undo/ })).toBeNull();
     });
 
     it("leaves the edit mode when another run opens", async () => {

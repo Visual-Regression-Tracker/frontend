@@ -381,6 +381,8 @@ describe("ApproveRejectButtons", () => {
   it("shows the hotkey on each button", async () => {
     await renderButtons();
 
+    expect(approveButton()).toHaveAttribute("aria-keyshortcuts", "a");
+    expect(rejectButton()).toHaveAttribute("aria-keyshortcuts", "x");
     expect(within(approveButton()).getByText("A")).toBeInTheDocument();
     expect(within(rejectButton()).getByText("X")).toBeInTheDocument();
   });

@@ -154,7 +154,8 @@ test("draws a rectangle and saves it as an ignore area", async ({
     ],
   });
   await expect(page.getByText("Ignore areas are updated.")).toBeVisible();
-  await expect(details.saveAreas).toBeDisabled();
+  await expect(details.saveAreas).toHaveCount(0);
+  await expect(details.editAreas).toBeVisible();
 });
 
 test("adds a drawn rectangle to the areas the run has", async ({

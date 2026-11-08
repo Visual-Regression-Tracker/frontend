@@ -50,8 +50,11 @@ const TestDetailsModal = ({
   const [variationsMode, setVariationsMode] =
     useState<MatchingVariationsMode | null>(null);
 
-  const [areasShown, setAreasShown] = useState(true);
-  const view = useViewMode(testRun);
+  const [areasShown, setAreasShown] = useState({
+    runId: testRun.id,
+    shown: true,
+  });
+  const areasVisible = areasShown.runId !== testRun.id || areasShown.shown;
 
   const [currentImage, currentImageStatus] = useImage(
     staticService.getImage(testRun.imageName),
@@ -68,6 +71,7 @@ const TestDetailsModal = ({
   // one instance, so a toast replaces the last one whichever part of the dialog raised it
   const { enqueueSnackbar } = useDialogSnackbar();
   const areas = useIgnoreAreas(testRun, currentImage, enqueueSnackbar);
+  const view = useViewMode(testRun, !areas.editing);
   const noiseAvailable = useNoiseAnalysisAvailable();
   const showNoiseHint =
     testRun.status === TestStatus.unresolved && noiseAvailable;
@@ -112,8 +116,10 @@ const TestDetailsModal = ({
             view={view}
             areas={areas}
             touched={touched}
-            areasShown={areasShown}
-            onAreasShownChange={setAreasShown}
+            areasShown={areasVisible}
+            onAreasShownChange={(shown) =>
+              setAreasShown({ runId: testRun.id, shown })
+            }
           />
         }
       />
@@ -128,7 +134,7 @@ const TestDetailsModal = ({
         checkpoint={[currentImage, currentImageStatus]}
         diff={[diffImage, diffImageStatus]}
         hintAreas={noiseHint.hintAreas}
-        areasShown={areasShown}
+        areasShown={areasVisible}
       />
       <TestDetailsFooter
         testRun={testRun}

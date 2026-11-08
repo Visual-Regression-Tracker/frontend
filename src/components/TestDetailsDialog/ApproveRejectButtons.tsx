@@ -129,6 +129,7 @@ export const ApproveRejectButtons = ({
       <Button
         onClick={approve}
         variant="contained"
+        aria-keyshortcuts="a"
         startIcon={<CheckRounded />}
         sx={actionButtonSx}
       >
@@ -138,6 +139,7 @@ export const ApproveRejectButtons = ({
       <Button
         color="secondary"
         variant="outlined"
+        aria-keyshortcuts="x"
         onClick={reject}
         startIcon={<ClearRounded />}
         sx={actionButtonSx}

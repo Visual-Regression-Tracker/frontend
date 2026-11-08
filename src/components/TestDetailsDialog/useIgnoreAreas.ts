@@ -88,6 +88,9 @@ export const useIgnoreAreas = (
           type: "touched",
           payload: false,
         });
+        setSelectedRectId(undefined);
+        setIsDrawMode(false);
+        setEditing(false);
       })
       .catch((err: SnackbarMessage) =>
         enqueueSnackbar(err, {

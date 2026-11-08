@@ -1096,13 +1096,16 @@ const VIEWS: [name: string, body: Body][] = [
 
   [
     "test run details of an approved run with the undo",
-    async ({ openProjectPage, shot }) => {
+    async ({ openProjectPage, page, shot }) => {
+      const approved = { ...TEST_RUN_APPROVED, baselineName: "baseline.png" };
+      await mockGetTestRuns(page, build.id, [approved, TEST_RUN_NEW]);
+      await mockTestRun(page, approved);
       const { details } = await openProjectPage(
         project.id,
         build.id,
-        TEST_RUN_APPROVED.id,
+        approved.id,
       );
-      await expect(details.step).toBeVisible();
+      await expect(details.drawAreas).toHaveCount(2);
 
       await expect(details.undoApproval).toBeVisible();
       await shot("test-run-undo-approval");
@@ -1112,7 +1115,11 @@ const VIEWS: [name: string, body: Body][] = [
   [
     "test run details of a rejected run with the undo",
     async ({ openProjectPage, page, shot }) => {
-      const rejected = { ...TEST_RUN_APPROVED, status: TestStatus.failed };
+      const rejected = {
+        ...TEST_RUN_APPROVED,
+        baselineName: "baseline.png",
+        status: TestStatus.failed,
+      };
       await mockGetTestRuns(page, build.id, [rejected, TEST_RUN_NEW]);
       await mockTestRun(page, rejected);
       const { details } = await openProjectPage(
@@ -1120,7 +1127,7 @@ const VIEWS: [name: string, body: Body][] = [
         build.id,
         rejected.id,
       );
-      await expect(details.step).toBeVisible();
+      await expect(details.drawAreas).toHaveCount(2);
 
       await expect(details.undoRejection).toBeVisible();
       await shot("test-run-undo-rejection");
