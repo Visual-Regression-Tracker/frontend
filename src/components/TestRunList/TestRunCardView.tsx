@@ -10,8 +10,7 @@ import { pluralize } from "../../_helpers/format.helper";
 import { TestRunGroup } from "../../_helpers/testRunGroup.helper";
 import { TagField } from "../../types";
 import type { TestRunSort } from "../../types/testRunSort";
-import { SearchOff } from "@mui/icons-material";
-import { EmptyState } from "../EmptyState";
+import { NoMatchState } from "../GridEmptyState";
 import { TestRunGrid } from "./TestRunGrid";
 import { TestRunGridToolbar } from "./TestRunGridToolbar";
 import { PAGE_SIZE_OPTIONS, TestRunDensity } from "./TestRunListControls";
@@ -103,11 +102,9 @@ export const TestRunCardView = ({
       {loading && <LinearProgress />}
       <Box sx={{ flex: 1, overflow: "auto" }}>
         {groups.length === 0 ? (
-          <EmptyState
-            dense
-            icon={<SearchOff />}
+          <NoMatchState
             title="No test runs match the filters"
-            data-testid="testRunGridEmpty"
+            testId="testRunGridEmpty"
           />
         ) : (
           <TestRunGrid

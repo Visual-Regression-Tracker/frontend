@@ -121,11 +121,13 @@ export const useStageView = (
     let lastSize = sizeOf();
     const observer = new ResizeObserver(() => {
       const size = sizeOf();
-      if (size !== lastSize && followsPanes.current) {
-        lastSize = size;
-        refit.current();
+      if (size === lastSize) {
+        return;
       }
       lastSize = size;
+      if (followsPanes.current) {
+        refit.current();
+      }
     });
     panes.forEach((pane) => observer.observe(pane));
     return () => observer.disconnect();

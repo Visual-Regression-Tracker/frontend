@@ -79,12 +79,8 @@ export const BulkOperation = ({
     if (action === "Clear") {
       return `Clear ignore areas on ${testRuns(targetCount)}?`;
     }
-    if (!isReview(action)) {
-      return `${verb} ${testRuns(targetCount)}?`;
-    }
-
     const settled = shownSelectedIds.length - targetCount;
-    if (settled === 0) {
+    if (!isReview(action) || settled === 0) {
       return `${verb} ${testRuns(targetCount)}?`;
     }
 
