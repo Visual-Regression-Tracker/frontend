@@ -15,6 +15,7 @@ const renderFooter = (overrides: Partial<Props> = {}) => {
   const props: Props = {
     testRun: run({ status: TestStatus.unresolved }),
     zoomControls: <button>Zoom slot</button>,
+    hasNext: true,
     onNext: vi.fn(),
     onOpenVariations: vi.fn(),
     ...overrides,
@@ -130,6 +131,19 @@ describe("TestDetailsFooter", () => {
       await user.click(approve());
 
       expect(await undoIn("Approved")).toBeVisible();
+    });
+
+    it("leaves the undo to the footer on the last run, where there is no next to go to", async () => {
+      localStorage.setItem(GO_TO_NEXT_KEY, "true");
+      vi.spyOn(testRunService, "approveBulk").mockResolvedValue(NO_FAILURES);
+      const { user } = renderFooter({ hasNext: false });
+
+      await user.click(approve());
+
+      const toast = await toastOf("Approved");
+      expect(
+        within(toast).queryByText("Undo", { selector: "button" }),
+      ).toBeNull();
     });
 
     it("leaves the undo to the footer when staying on the run", async () => {

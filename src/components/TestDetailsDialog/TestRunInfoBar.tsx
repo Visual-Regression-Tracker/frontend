@@ -6,6 +6,7 @@ import { Tooltip } from "../Tooltip";
 interface TestRunInfoBarProps {
   testRun: TestRun;
   sizes: { baseline?: string; checkpoint?: string } | null;
+  failedImages: string[];
   toolbar: ReactNode;
 }
 
@@ -45,6 +46,7 @@ const VlmLine = ({ description }: { description: string }) => {
 export const TestRunInfoBar = ({
   testRun,
   sizes,
+  failedImages,
   toolbar,
 }: TestRunInfoBarProps) => (
   <Box sx={{ mx: 1 }}>
@@ -54,6 +56,11 @@ export const TestRunInfoBar = ({
     {sizes && (
       <Alert severity="warning" sx={{ py: 0 }}>
         {`Image sizes differ: baseline ${sizes.baseline ?? "unknown"}, checkpoint ${sizes.checkpoint ?? "unknown"}. Cannot calculate diff.`}
+      </Alert>
+    )}
+    {failedImages.length > 0 && (
+      <Alert severity="warning" sx={{ py: 0 }}>
+        {`Could not load the ${failedImages.join(" and ")} image${failedImages.length > 1 ? "s" : ""}. Image sizes cannot be compared.`}
       </Alert>
     )}
     {toolbar}

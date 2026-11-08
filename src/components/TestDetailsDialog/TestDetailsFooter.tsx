@@ -27,6 +27,7 @@ const centerActionsSx = {
 interface TestDetailsFooterProps {
   testRun: TestRun;
   zoomControls: ReactNode;
+  hasNext: boolean;
   onNext: () => void;
   onOpenVariations: (mode: MatchingVariationsMode) => void;
 }
@@ -34,6 +35,7 @@ interface TestDetailsFooterProps {
 export const TestDetailsFooter = ({
   testRun,
   zoomControls,
+  hasNext,
   onNext,
   onOpenVariations,
 }: TestDetailsFooterProps) => {
@@ -62,7 +64,7 @@ export const TestDetailsFooter = ({
             testRun={testRun}
             afterApprove={handleGoToNextAutomatically}
             afterReject={handleGoToNextAutomatically}
-            undoInToast={goToNextAutomatically}
+            undoInToast={goToNextAutomatically && hasNext}
             onOpenVariations={onOpenVariations}
           />
         ) : (

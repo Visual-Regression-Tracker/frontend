@@ -1,6 +1,6 @@
 import type { Options } from "react-hotkeys-hook";
 
-// A checkbox only takes Space, so a switch that keeps focus after a click must not block hotkeys
+// A checkbox only takes Space and a slider only the arrows, so neither blocks the letter hotkeys
 export const isTypingTarget = (target: EventTarget | null): boolean => {
   if (!(target instanceof HTMLElement)) {
     return false;
@@ -9,12 +9,17 @@ export const isTypingTarget = (target: EventTarget | null): boolean => {
     return true;
   }
   if (target instanceof HTMLInputElement) {
-    return target.type !== "checkbox";
+    return target.type !== "checkbox" && target.type !== "range";
   }
   return (
     target instanceof HTMLTextAreaElement || target instanceof HTMLSelectElement
   );
 };
+
+const isSliderArrow = (event: KeyboardEvent): boolean =>
+  event.target instanceof HTMLInputElement &&
+  event.target.type === "range" &&
+  event.key.startsWith("Arrow");
 
 // Confirmations render in their own portal and take focus; the review dialog marks its paper with data-review-dialog
 export const isOutsideReviewDialog = (target: EventTarget | null): boolean => {
@@ -34,5 +39,7 @@ export const hotkeyOptions: Options = {
   ...hotkeyMatching,
   enableOnFormTags: true,
   ignoreEventWhen: (event) =>
-    isTypingTarget(event.target) || isOutsideReviewDialog(event.target),
+    isTypingTarget(event.target) ||
+    isSliderArrow(event) ||
+    isOutsideReviewDialog(event.target),
 };

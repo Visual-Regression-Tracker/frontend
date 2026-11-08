@@ -5,15 +5,19 @@ import {
   NOISE_HINT_FILTERS,
   NoiseHintFilter,
 } from "../../_helpers/noiseHint.helper";
+import { TAG_LABELS } from "../../_helpers/testRunTags.helper";
 import type { TagFilters } from "./useTestRunFilters";
 
-const CHIP_FIELDS: { field: TagField; label: string }[] = [
-  { field: "os", label: "OS" },
-  { field: "browser", label: "Browser" },
-  { field: "viewport", label: "Viewport" },
-  { field: "device", label: "Device" },
-  { field: "customTags", label: "Tags" },
+const CHIP_ORDER: TagField[] = [
+  "os",
+  "browser",
+  "viewport",
+  "device",
+  "customTags",
 ];
+
+const chipLabel = (field: TagField) =>
+  field === "customTags" ? "Tags" : TAG_LABELS[field];
 
 interface IProps {
   name: string;
@@ -50,9 +54,9 @@ const TestRunFilters = ({
     active={hasActiveFilters}
     actions={actions}
     filters={[
-      ...CHIP_FIELDS.map(({ field, label }) => ({
+      ...CHIP_ORDER.map((field) => ({
         id: field,
-        label,
+        label: chipLabel(field),
         options: tagOptions[field],
         value: tagFilters[field],
         onChange: (values: string[]) => onTagFilterChange(field, values),

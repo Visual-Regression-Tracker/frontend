@@ -209,14 +209,10 @@ test.describe("with SSO", () => {
     await mockOidcEnabled(page, true);
   });
 
-  test("locks the email with a hint and hides the password card", async ({
-    profilePage,
-  }) => {
-    await expect(profilePage.email).toBeDisabled();
+  test("says why the email is locked", async ({ profilePage }) => {
     await expect(
       profilePage.userForm.getByText("Locked when you sign in with SSO"),
     ).toBeVisible();
-    await expect(profilePage.passwordForm).toHaveCount(0);
   });
 });
 

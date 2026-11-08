@@ -4,7 +4,10 @@ import { TestRun, TestStatus } from "../../types";
 import { staticService } from "../../services";
 import useImage from "use-image";
 import { useNoiseAnalysisAvailable, useSelectedProject } from "../../contexts";
-import { imageSizesDiffer } from "../../_helpers/testRunImage.helper";
+import {
+  failedComparisonImages,
+  imageSizesDiffer,
+} from "../../_helpers/testRunImage.helper";
 import {
   MatchingVariationsDialog,
   MatchingVariationsMode,
@@ -136,6 +139,11 @@ const TestDetailsModal = ({
               }
             : null
         }
+        failedImages={failedComparisonImages(
+          testRun,
+          currentImageStatus,
+          baselineImageStatus,
+        )}
         toolbar={
           <ViewToolbar
             testRun={testRun}
@@ -187,6 +195,7 @@ const TestDetailsModal = ({
             onFit={stage.fitImagesToStage}
           />
         }
+        hasNext={totalTestRunCount > currentRunIndex + 1}
         onNext={handleNext}
         onOpenVariations={setVariationsMode}
       />

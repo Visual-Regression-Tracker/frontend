@@ -1,11 +1,5 @@
 import { testVariationService } from "./testVariation.service";
-import {
-  API,
-  AUTH,
-  JSON_AUTH,
-  signInForEachTest,
-  stubFetch,
-} from "../_test/fetch.helper";
+import { API, AUTH, signInForEachTest, stubFetch } from "../_test/fetch.helper";
 
 vi.mock("../_config/env.config", () => ({ API_URL: "http://api.test" }));
 
@@ -35,23 +29,6 @@ describe("testVariationService", () => {
     );
   });
 
-  it("merge posts the project and both branches in the body", async () => {
-    const fetchMock = stubFetch({ id: "b1" });
-
-    const result = await testVariationService.merge("p1", "feat/a&b", "main");
-
-    expect(result).toEqual({ id: "b1" });
-    expect(fetchMock).toHaveBeenCalledWith(`${API}/test-variations/merge`, {
-      method: "POST",
-      headers: JSON_AUTH,
-      body: JSON.stringify({
-        projectId: "p1",
-        fromBranch: "feat/a&b",
-        toBranch: "main",
-      }),
-    });
-  });
-
   it("remove deletes a variation by id", async () => {
     const fetchMock = stubFetch({ id: "v1" });
 
@@ -66,8 +43,6 @@ describe("testVariationService", () => {
   it("rejects with the API message when the request fails", async () => {
     stubFetch({ message: "Conflict" }, { status: 409 });
 
-    await expect(testVariationService.merge("p1", "a", "b")).rejects.toBe(
-      "Conflict",
-    );
+    await expect(testVariationService.remove("v1")).rejects.toBe("Conflict");
   });
 });

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useParams } from "react-router-dom";
 import { Box, Button, Container, Link, Stack } from "@mui/material";
 import { SearchOff } from "@mui/icons-material";
@@ -17,11 +17,41 @@ import { settingsSectionId } from "../components/ProjectForm/SettingsRow";
 import { SkeletonList } from "../components/SkeletonList";
 import { ValidatedForm } from "../components/ValidatedForm";
 
+const ACTIVE_OFFSET = 80;
+
+const sectionInView = (main: HTMLElement): string => {
+  const atEnd =
+    main.scrollHeight > main.clientHeight &&
+    main.scrollTop + main.clientHeight >= main.scrollHeight - 2;
+  if (atEnd) {
+    return SETTINGS_SECTIONS[SETTINGS_SECTIONS.length - 1].id;
+  }
+  const line = main.getBoundingClientRect().top + ACTIVE_OFFSET;
+  const passed = SETTINGS_SECTIONS.filter(
+    ({ id }) =>
+      (document.getElementById(settingsSectionId(id))?.getBoundingClientRect()
+        .top ?? Infinity) <= line,
+  );
+  return (passed[passed.length - 1] ?? SETTINGS_SECTIONS[0]).id;
+};
+
 const SectionNav = () => {
   const [active, setActive] = useState<string>(SETTINGS_SECTIONS[0].id);
+  const navRef = useRef<HTMLElement>(null);
+
+  useEffect(() => {
+    const main = navRef.current?.closest("main");
+    if (!main) {
+      return;
+    }
+    const follow = () => setActive(sectionInView(main));
+    main.addEventListener("scroll", follow, { passive: true });
+    return () => main.removeEventListener("scroll", follow);
+  }, []);
 
   return (
     <Box
+      ref={navRef}
       component="nav"
       aria-label="Settings sections"
       sx={{ position: { md: "sticky" }, top: { md: 16 }, alignSelf: "start" }}

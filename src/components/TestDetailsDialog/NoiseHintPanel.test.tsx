@@ -308,6 +308,12 @@ describe("NoiseHintPanel", () => {
       expect(analyseButton()).toHaveTextContent("Analyse again");
     });
 
+    it("keeps the Analyse again label on one line", async () => {
+      await renderPanel({ analysis: CHANGE });
+
+      expect(analyseButton()).toHaveStyle({ whiteSpace: "nowrap" });
+    });
+
     it("says likely noise for a noise verdict", async () => {
       await renderPanel({ analysis: withRegions(NOISE_ANALYSIS_NOISE) });
 

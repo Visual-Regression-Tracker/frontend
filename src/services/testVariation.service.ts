@@ -1,12 +1,8 @@
-import { TestVariation, Build } from "../types";
+import { TestVariation } from "../types";
 import { handleResponse, authHeader } from "../_helpers/service.helpers";
 import { API_URL } from "../_config/env.config";
 
 const ENDPOINT_URL = "/test-variations";
-
-const DEFAULT_HEADERS = {
-  "Content-Type": "application/json",
-};
 
 function getList(projectId: string): Promise<TestVariation[]> {
   const requestOptions = {
@@ -31,25 +27,6 @@ function getDetails(id: string): Promise<TestVariation> {
   );
 }
 
-function merge(
-  projectId: string,
-  fromBranch: string,
-  toBranch: string,
-): Promise<Build> {
-  const requestOptions = {
-    method: "POST",
-    headers: {
-      ...DEFAULT_HEADERS,
-      ...authHeader(),
-    },
-    body: JSON.stringify({ projectId, fromBranch, toBranch }),
-  };
-
-  return fetch(`${API_URL}${ENDPOINT_URL}/merge`, requestOptions).then(
-    handleResponse<Build>,
-  );
-}
-
 function remove(id: string): Promise<TestVariation> {
   const requestOptions = {
     method: "DELETE",
@@ -64,6 +41,5 @@ function remove(id: string): Promise<TestVariation> {
 export const testVariationService = {
   getList,
   getDetails,
-  merge,
   remove,
 };

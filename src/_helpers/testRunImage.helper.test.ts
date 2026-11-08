@@ -3,6 +3,7 @@ import { fakeImage } from "../_test/fakeImage";
 import {
   imageFor,
   imageSizesDiffer,
+  failedComparisonImages,
   thumbnailFor,
 } from "./testRunImage.helper";
 import { staticService } from "../services";
@@ -87,5 +88,37 @@ describe("imageSizesDiffer", () => {
     expect(
       imageSizesDiffer(run({ ...withBoth, imageName: "" }), ...sized),
     ).toBe(false);
+  });
+});
+
+describe("failedComparisonImages", () => {
+  const withBoth = run({ imageName: "image.png", baselineName: "base.png" });
+
+  it("names the images that failed to load", () => {
+    expect(failedComparisonImages(withBoth, "loaded", "failed")).toEqual([
+      "baseline",
+    ]);
+    expect(failedComparisonImages(withBoth, "failed", "loaded")).toEqual([
+      "checkpoint",
+    ]);
+    expect(failedComparisonImages(withBoth, "failed", "failed")).toEqual([
+      "baseline",
+      "checkpoint",
+    ]);
+  });
+
+  it("is empty while loading or when everything loaded", () => {
+    expect(failedComparisonImages(withBoth, "loading", "loaded")).toEqual([]);
+    expect(failedComparisonImages(withBoth, "loaded", "loaded")).toEqual([]);
+  });
+
+  it("ignores a side the run does not have", () => {
+    expect(
+      failedComparisonImages(
+        run({ imageName: "image.png", baselineName: "" }),
+        "loaded",
+        "failed",
+      ),
+    ).toEqual([]);
   });
 });
