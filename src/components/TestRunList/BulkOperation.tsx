@@ -3,6 +3,7 @@ import { Box, Typography, LinearProgress } from "@mui/material";
 import { BaseModal } from "../BaseModal";
 import { useSnackbar } from "notistack";
 import {
+  BlurOn,
   CloudDownload,
   DeleteOutlineOutlined,
   LayersClear,
@@ -11,9 +12,10 @@ import {
 } from "@mui/icons-material";
 import { staticService, testRunService } from "../../services";
 import { BulkResult, allSucceeded } from "../../services/testRun.service";
-import { TestRun } from "../../types";
+import { NoiseAnalysisQueued, TestRun, TestStatus } from "../../types";
+import { useAnalyseNoise, useNoiseAnalysisAvailable } from "../../contexts";
 import { isAwaitingReview } from "../../_helpers/testRunStatus.helper";
-import { SelectionBar } from "../SelectionBar";
+import { SelectionAction, SelectionBar } from "../SelectionBar";
 import { undoSnackbarOptions } from "../UndoSnackbarAction";
 import {
   TAG_FIELDS,
@@ -60,6 +62,16 @@ const ACTION_BUTTONS: {
   },
 ];
 
+const ANALYSE_BUTTON = {
+  label: "Analyse noise",
+  icon: <BlurOn />,
+};
+
+const analysedText = ({ queued, skipped }: NoiseAnalysisQueued): string =>
+  `Analysing ${testRuns(queued)}${
+    skipped.length > 0 ? `, ${skipped.length} skipped` : ""
+  }.`;
+
 const processedText = (
   verb: BulkAction,
   eligibleCount: number,
@@ -102,6 +114,8 @@ export const BulkOperation = ({
   const [action, setAction] = useState<BulkAction | null>(null);
 
   const [isProcessing, setIsProcessing] = useState(false);
+  const available = useNoiseAnalysisAvailable();
+  const { analyse, requesting } = useAnalyseNoise(enqueueSnackbar);
 
   const selectedIdSet = useMemo(() => new Set(selectedIds), [selectedIds]);
 
@@ -219,6 +233,38 @@ export const BulkOperation = ({
       .then(() => allSucceeded(shownSelectedIds));
   };
 
+  const unresolvedSelectedIds = useMemo(
+    () =>
+      shownSelectedRows
+        .filter((row) => row.status === TestStatus.unresolved)
+        .map((row) => row.id),
+    [shownSelectedRows],
+  );
+
+  const analyseSelected = () =>
+    analyse(unresolvedSelectedIds).then((result) => {
+      if (result && result.queued > 0) {
+        enqueueSnackbar(analysedText(result), { variant: "success" });
+      }
+    });
+
+  const [approve, reject, download, ...rest] = ACTION_BUTTONS.map(
+    ({ action: buttonAction, ...button }): SelectionAction => ({
+      ...button,
+      onClick: () => setAction(buttonAction),
+    }),
+  );
+  const analysis: SelectionAction[] = available
+    ? [
+        {
+          ...ANALYSE_BUTTON,
+          disabled: requesting || unresolvedSelectedIds.length === 0,
+          onClick: () => void analyseSelected(),
+        },
+      ]
+    : [];
+  const actions = [approve, reject, download, ...analysis, ...rest];
+
   return (
     <Fragment>
       {shownSelectedIds.length > 0 && (
@@ -226,12 +272,7 @@ export const BulkOperation = ({
           <SelectionBar
             selected={shownSelectedIds.length}
             total={rows.length}
-            actions={ACTION_BUTTONS.map(
-              ({ action: buttonAction, ...rest }) => ({
-                ...rest,
-                onClick: () => setAction(buttonAction),
-              }),
-            )}
+            actions={actions}
             onSelectAll={onSelectAll}
             onClose={onClear}
           />

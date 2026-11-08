@@ -48,7 +48,10 @@ export const ProjectCard = ({
         "& .MuiIconButton-root": { position: "relative", zIndex: 1 },
         display: "flex",
         flexDirection: "column",
-        "&:hover": { borderColor: "primary.main", boxShadow: 2 },
+        "&:hover, &:focus-within": {
+          borderColor: "primary.main",
+          boxShadow: 2,
+        },
       }}
     >
       <CardContent sx={{ flex: 1 }}>

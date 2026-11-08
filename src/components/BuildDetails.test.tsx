@@ -224,8 +224,7 @@ describe("BuildDetails status counters", () => {
 });
 
 describe("BuildDetails menu", () => {
-  const item = () =>
-    screen.getByRole("menuitem", { name: /^Analyse rendering noise/ });
+  const item = () => screen.getByRole("menuitem", { name: /^Analyse noise/ });
 
   it("analyses the unresolved runs the filters leave", async () => {
     const analyse = vi
@@ -238,7 +237,7 @@ describe("BuildDetails menu", () => {
     ]);
     await user.click(counter(/^Unresolved 2$/));
     await openMenu(user);
-    expect(item()).toHaveTextContent("Analyse rendering noise (2)");
+    expect(item()).toHaveTextContent("Analyse noise (2)");
 
     await user.click(item());
 
@@ -273,7 +272,7 @@ describe("BuildDetails menu", () => {
     await openMenu(user);
 
     expect(
-      screen.queryByRole("menuitem", { name: /^Analyse rendering noise/ }),
+      screen.queryByRole("menuitem", { name: /^Analyse noise/ }),
     ).not.toBeInTheDocument();
     expect(
       screen.getByRole("menuitem", { name: "Edit CI build id…" }),

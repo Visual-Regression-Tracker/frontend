@@ -14,6 +14,7 @@ import {
 import { StatusChip } from "../StatusChip";
 import { NoiseHintChip } from "./NoiseHintChip";
 import { TagLine } from "../TagLine";
+import { CommentIndicator } from "../CommentIndicator";
 import { PAGE_SIZE_OPTIONS, TestRunDensity } from "./TestRunListControls";
 import {
   groupStatusSummary,
@@ -79,6 +80,10 @@ const buildColumns = (
           {count > 1 && (
             <Chip size="small" label={count} data-testid="groupCount" />
           )}
+          <CommentIndicator
+            text={params.row.comment}
+            tabIndex={params.tabIndex}
+          />
         </Box>
       );
     },

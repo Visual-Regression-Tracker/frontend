@@ -7,7 +7,7 @@ import {
 describe("noise analysis defaults", () => {
   it("serialise to the config string the API stores for a new project", () => {
     expect(DEFAULT_NOISE_ANALYSIS_CONFIG_JSON).toBe(
-      '{"blur":{"enabled":true,"amplitudeThreshold":80,"solidShareMax":0.01},"dinov2":{"enabled":true,"distanceThreshold":0.15}}',
+      '{"blur":{"enabled":false,"amplitudeThreshold":80,"solidShareMax":0.01},"dinov2":{"enabled":false,"distanceThreshold":0.15}}',
     );
     expect(JSON.parse(DEFAULT_NOISE_ANALYSIS_CONFIG_JSON)).toEqual(
       DEFAULT_NOISE_ANALYSIS_CONFIG,

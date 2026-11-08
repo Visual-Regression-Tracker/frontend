@@ -108,7 +108,7 @@ const ProjectsListPage = () => {
         <EmptyState
           icon={<Search />}
           title={`No projects match “${query.trim()}”`}
-          description="Search looks at the name, the id and the main branch."
+          description="Search looks at the name and the main branch."
         />
       );
     }

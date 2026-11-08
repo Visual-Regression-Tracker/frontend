@@ -6,8 +6,10 @@ import {
   CardContent,
   Checkbox,
   Chip,
+  Stack,
   Typography,
 } from "@mui/material";
+import { CommentIndicator } from "../CommentIndicator";
 import { StatusChip } from "../StatusChip";
 import { NoiseHintChip } from "./NoiseHintChip";
 import noImage from "../../static/no-image.png";
@@ -177,9 +179,15 @@ export const TestRunGrid = ({
               {representative.name}
             </Typography>
             {/* the chip shows the representative only; the title gives the group's status */}
-            <Box component="span" title={groupStatusSummary(runs) || undefined}>
-              <StatusChip status={representative.status} />
-            </Box>
+            <Stack direction="row" spacing={0.75} sx={{ alignItems: "center" }}>
+              <Box
+                component="span"
+                title={groupStatusSummary(runs) || undefined}
+              >
+                <StatusChip status={representative.status} />
+              </Box>
+              <CommentIndicator text={representative.comment} />
+            </Stack>
             {noiseAvailable && <NoiseHintChip run={representative} />}
             {/* buttons so the keyboard reaches them */}
             <Typography

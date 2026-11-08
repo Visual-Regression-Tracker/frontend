@@ -2,7 +2,7 @@ import type { MouseEvent, ReactNode } from "react";
 import { Button, IconButton, Stack, Typography } from "@mui/material";
 import { Close } from "@mui/icons-material";
 
-interface SelectionAction {
+export interface SelectionAction {
   label: string;
   icon?: ReactNode;
   color?: "primary" | "error";
@@ -53,6 +53,7 @@ export const SelectionBar = ({
         <Button
           key={action.label}
           size="small"
+          sx={{ whiteSpace: "nowrap" }}
           color={action.color}
           startIcon={action.icon}
           disabled={action.disabled}

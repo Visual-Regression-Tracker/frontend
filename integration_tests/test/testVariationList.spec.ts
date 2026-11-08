@@ -26,7 +26,7 @@ test("renders", async ({ openTestVariationListPage, page }) => {
   await openTestVariationListPage(TEST_PROJECT.id);
 
   await expect(page.getByRole("textbox", { name: "Name" })).toBeVisible();
-  await page.waitForLoadState("networkidle");
+  await expect(page.getByText("2 baselines")).toBeVisible();
   await expect(page).toHaveScreenshot("test-variation-list-page.png");
 });
 

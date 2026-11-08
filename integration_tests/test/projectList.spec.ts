@@ -389,8 +389,8 @@ test.describe("post-analysis settings", () => {
   }) => {
     await mockSaveProject(page);
 
-    await expect(addProjectPage.blurSwitch).toBeChecked();
-    await expect(addProjectPage.dinov2Switch).toBeChecked();
+    await expect(addProjectPage.blurSwitch).not.toBeChecked();
+    await expect(addProjectPage.dinov2Switch).not.toBeChecked();
     await expect(addProjectPage.amplitudeThreshold).toHaveValue("80");
     await expect(addProjectPage.solidShareMax).toHaveValue("0.01");
     await expect(addProjectPage.distanceThreshold).toHaveValue("0.15");

@@ -93,6 +93,14 @@ describe("ProjectListPage", () => {
     expect(screen.getByText("/")).toBeInTheDocument();
   });
 
+  test("describes the search shortcut to assistive technology", async () => {
+    await renderPage();
+
+    expect(screen.getByRole("searchbox")).toHaveAccessibleDescription(
+      "Press / to search",
+    );
+  });
+
   test("explains the search shortcut in a tooltip", async () => {
     const { user } = await renderPage();
 

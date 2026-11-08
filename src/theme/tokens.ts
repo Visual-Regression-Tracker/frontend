@@ -98,5 +98,4 @@ export const fontFamily =
 
 export const monoFontFamily = "ui-monospace, SFMono-Regular, Menlo, monospace";
 
-// every page's content column: width in px, vertical padding in theme spacing units
 export const layout = { contentMaxWidth: 1200, contentPaddingY: 4 } as const;

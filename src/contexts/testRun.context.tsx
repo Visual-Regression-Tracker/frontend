@@ -19,6 +19,13 @@ type IAction =
   | { type: "add"; payload: TestRun[] }
   | { type: "update"; payload: TestRun[] }
   | { type: "filterSort"; payload?: GridRowId[] }
+  | {
+      type: "markNoisePending";
+      payload: {
+        requestedAt: string;
+        seen: ReadonlyMap<string, TestRun["noiseAnalysis"]>;
+      };
+    }
   | { type: "touched"; payload: boolean }
   | { type: "select"; payload?: TestRun };
 type Dispatch = (action: IAction) => void;
@@ -155,6 +162,20 @@ export function testRunReducer(state: State, action: IAction): State {
       };
     }
 
+    case "markNoisePending": {
+      const { requestedAt, seen } = action.payload;
+      const mark = (run: TestRun): TestRun =>
+        seen.has(run.id) &&
+        JSON.stringify(run.noiseAnalysis) === JSON.stringify(seen.get(run.id))
+          ? { ...run, noiseAnalysis: { pending: true, requestedAt } }
+          : run;
+      return {
+        ...state,
+        testRuns: state.testRuns.map(mark),
+        selectedTestRun: state.selectedTestRun && mark(state.selectedTestRun),
+      };
+    }
+
     case "touched":
       return {
         ...state,
@@ -255,8 +276,17 @@ function updateTestRun(dispatch: Dispatch, testRuns: TestRun[]) {
   });
 }
 
+function markNoisePending(
+  dispatch: Dispatch,
+  requestedAt: string,
+  seen: ReadonlyMap<string, TestRun["noiseAnalysis"]>,
+) {
+  dispatch({ type: "markNoisePending", payload: { requestedAt, seen } });
+}
+
 export {
   TestRunProvider,
+  markNoisePending,
   useTestRunState,
   useTestRunDispatch,
   addTestRun,
