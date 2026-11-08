@@ -809,7 +809,7 @@ describe("BulkOperation", () => {
 });
 
 describe("BulkOperation analyse rendering noise", () => {
-  const ANALYSE = "Analyse rendering noise";
+  const ANALYSE = "Analyse noise";
 
   const SelectProject = () => {
     const dispatch = useProjectDispatch();
@@ -830,7 +830,10 @@ describe("BulkOperation analyse rendering noise", () => {
     </output>
   );
 
-  const renderWithProject = async (project = {}) => {
+  const renderWithProject = async (
+    project = {},
+    selectedIds = [NEW_RUN.id, UNRESOLVED_RUN.id],
+  ) => {
     vi.spyOn(projectsService, "getAll").mockResolvedValue([
       { ...TEST_PROJECT, ...project },
     ]);
@@ -840,7 +843,7 @@ describe("BulkOperation analyse rendering noise", () => {
         <SelectProject />
         <Statuses />
         <BulkOperation
-          selectedIds={[NEW_RUN.id, UNRESOLVED_RUN.id]}
+          selectedIds={selectedIds}
           rows={ROWS}
           onSelectAll={vi.fn()}
           onClear={vi.fn()}
@@ -881,14 +884,33 @@ describe("BulkOperation analyse rendering noise", () => {
 
     await user.click(actionButton(ANALYSE));
 
-    expect(analyse).toHaveBeenCalledExactlyOnceWith([
-      NEW_RUN.id,
-      UNRESOLVED_RUN.id,
-    ]);
+    expect(analyse).toHaveBeenCalledExactlyOnceWith([UNRESOLVED_RUN.id]);
     expect(screen.queryByRole("dialog")).toBeNull();
     expect(await toastOf("Analysing 2 test runs.")).toHaveClass(
       "notistack-MuiContent-success",
     );
+  });
+
+  it("sends only the unresolved runs that are shown, not hidden ticks", async () => {
+    const analyse = vi
+      .spyOn(testRunService, "analyseNoise")
+      .mockResolvedValue({ queued: 1, skipped: [] });
+    const { user } = await renderWithProject({}, [
+      NEW_RUN.id,
+      UNRESOLVED_RUN.id,
+      APPROVED_RUN.id,
+      "hidden-unresolved",
+    ]);
+
+    await user.click(actionButton(ANALYSE));
+
+    expect(analyse).toHaveBeenCalledExactlyOnceWith([UNRESOLVED_RUN.id]);
+  });
+
+  it("is disabled when no selected run is unresolved", async () => {
+    await renderWithProject({}, [NEW_RUN.id, APPROVED_RUN.id]);
+
+    expect(actionButton(ANALYSE)).toBeDisabled();
   });
 
   it("reports the skipped runs next to the queued ones", async () => {

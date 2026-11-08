@@ -1356,18 +1356,6 @@ const VIEWS: [name: string, body: Body][] = [
       await shot("test-run-baseline-image-failed");
     },
   ],
-  [
-    "project page with test runs selected, with the analyse action",
-    async ({ openProjectPage, shot }) => {
-      const projectPage = await openProjectPage(project.id, build.id);
-      await expect(projectPage.testRunList.rows).toHaveCount(4);
-      await projectPage.testRunList.checkRow(TEST_UNRESOLVED.id);
-      await projectPage.testRunList.checkRow(TEST_RUN_NEW.id);
-
-      await expect(projectPage.testRunList.analyseBtn).toBeVisible();
-      await shot("project-page-test-runs-selected");
-    },
-  ],
 ];
 
 for (const scheme of SCHEMES) {

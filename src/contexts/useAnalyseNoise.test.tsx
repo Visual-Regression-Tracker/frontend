@@ -153,6 +153,33 @@ describe("useAnalyseNoise", () => {
       expect(analysisOf(hook, "c")).toBeUndefined();
     });
 
+    it("keeps a socket result that lands before the answer", async () => {
+      const hook = withRuns(unresolved("a"), unresolved("b"));
+      vi.spyOn(testRunService, "analyseNoise").mockImplementation(() => {
+        act(() => {
+          updateTestRun(hook.result.current.dispatch, [
+            {
+              ...unresolved("a"),
+              status: TestStatus.approved,
+              noiseAnalysis: NOISE_ANALYSIS_NOISE,
+            },
+          ]);
+        });
+        return Promise.resolve({ queued: 2, skipped: [] });
+      });
+
+      await act(async () => {
+        await hook.result.current.analyse(["a", "b"]);
+      });
+
+      expect(analysisOf(hook, "a")).toEqual(NOISE_ANALYSIS_NOISE);
+      expect(
+        hook.result.current.state.testRuns.find((item) => item.id === "a")
+          ?.status,
+      ).toBe(TestStatus.approved);
+      expect(isNoisePending(analysisOf(hook, "b"))).toBe(true);
+    });
+
     it("changes nothing when the request fails", async () => {
       const hook = withRuns(unresolved("a"));
       vi.spyOn(testRunService, "analyseNoise").mockRejectedValue("No access");

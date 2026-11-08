@@ -3,7 +3,7 @@ import type { EnqueueSnackbar } from "notistack";
 import { testRunService } from "../services";
 import type { NoiseAnalysisQueued, NoiseAnalysisSkip } from "../types";
 import {
-  updateTestRun,
+  markNoisePending,
   useTestRunDispatch,
   useTestRunState,
 } from "./testRun.context";
@@ -33,22 +33,12 @@ export const useAnalyseNoise = (enqueue: EnqueueSnackbar) => {
         }
         if (queued > 0) {
           const skippedIds = new Set(skipped.map(({ id }) => id));
-          const queuedIds = new Set(ids.filter((id) => !skippedIds.has(id)));
-          const requestedAt = new Date().toISOString();
-          const runs = new Map(
+          const seen = new Map(
             [...testRuns, ...(selectedTestRun ? [selectedTestRun] : [])]
-              .filter((run) => queuedIds.has(run.id))
-              .map((run) => [
-                run.id,
-                {
-                  ...run,
-                  noiseAnalysis: { pending: true as const, requestedAt },
-                },
-              ]),
+              .filter(({ id }) => ids.includes(id) && !skippedIds.has(id))
+              .map((run) => [run.id, run.noiseAnalysis]),
           );
-          if (runs.size > 0) {
-            updateTestRun(dispatch, [...runs.values()]);
-          }
+          markNoisePending(dispatch, new Date().toISOString(), seen);
         }
         return result;
       } catch (err) {

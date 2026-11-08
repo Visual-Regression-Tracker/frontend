@@ -26,7 +26,7 @@ export class TestRunList extends Table {
     exact: true,
   });
   analyseBtn = this.selectionBar.getByRole("button", {
-    name: "Analyse rendering noise",
+    name: "Analyse noise",
   });
   downloadBtn = this.selectionBar.getByRole("button", { name: "Download zip" });
   nextPage = this.pane.getByLabel("Go to next page");

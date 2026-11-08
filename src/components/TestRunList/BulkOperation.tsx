@@ -12,7 +12,7 @@ import {
 } from "@mui/icons-material";
 import { staticService, testRunService } from "../../services";
 import { BulkResult, allSucceeded } from "../../services/testRun.service";
-import { NoiseAnalysisQueued, TestRun } from "../../types";
+import { NoiseAnalysisQueued, TestRun, TestStatus } from "../../types";
 import { useAnalyseNoise, useNoiseAnalysisAvailable } from "../../contexts";
 import { isAwaitingReview } from "../../_helpers/testRunStatus.helper";
 import { SelectionAction, SelectionBar } from "../SelectionBar";
@@ -63,7 +63,7 @@ const ACTION_BUTTONS: {
 ];
 
 const ANALYSE_BUTTON = {
-  label: "Analyse rendering noise",
+  label: "Analyse noise",
   icon: <BlurOn />,
 };
 
@@ -233,8 +233,16 @@ export const BulkOperation = ({
       .then(() => allSucceeded(shownSelectedIds));
   };
 
+  const unresolvedSelectedIds = useMemo(
+    () =>
+      shownSelectedRows
+        .filter((row) => row.status === TestStatus.unresolved)
+        .map((row) => row.id),
+    [shownSelectedRows],
+  );
+
   const analyseSelected = () =>
-    analyse(shownSelectedIds).then((result) => {
+    analyse(unresolvedSelectedIds).then((result) => {
       if (result && result.queued > 0) {
         enqueueSnackbar(analysedText(result), { variant: "success" });
       }
@@ -250,7 +258,7 @@ export const BulkOperation = ({
     ? [
         {
           ...ANALYSE_BUTTON,
-          disabled: requesting,
+          disabled: requesting || unresolvedSelectedIds.length === 0,
           onClick: () => void analyseSelected(),
         },
       ]

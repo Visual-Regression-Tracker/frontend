@@ -53,6 +53,7 @@ export const SelectionBar = ({
         <Button
           key={action.label}
           size="small"
+          sx={{ whiteSpace: "nowrap" }}
           color={action.color}
           startIcon={action.icon}
           disabled={action.disabled}
