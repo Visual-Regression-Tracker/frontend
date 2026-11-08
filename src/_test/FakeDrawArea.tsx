@@ -11,8 +11,8 @@ export const DrawArea = ({
   deleteIgnoreArea,
   hintAreas,
 }: ComponentProps<typeof RealDrawArea>) =>
-  // only the image pane edits areas; the baseline pane is left out
-  deleteIgnoreArea ? (
+  // only the checkpoint pane takes hint areas; the baseline pane is left out
+  hintAreas ? (
     <div>
       <span data-testid="ignoreAreaCount">{ignoreAreas.length}</span>
       <span data-testid="hintAreas">{JSON.stringify(hintAreas ?? [])}</span>
@@ -32,7 +32,7 @@ export const DrawArea = ({
         Draw an area
       </button>
       <button
-        onClick={() => selectedRectId && deleteIgnoreArea(selectedRectId)}
+        onClick={() => selectedRectId && deleteIgnoreArea?.(selectedRectId)}
       >
         Delete the selected area
       </button>

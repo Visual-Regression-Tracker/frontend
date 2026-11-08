@@ -17,7 +17,7 @@ import {
   TEST_VARIATION_TWO,
 } from "~client/_test/test.data.helper";
 import { ImageComparison } from "~client/types/imageComparison";
-import type { TestRun } from "~client/types";
+import { type TestRun, TestStatus } from "~client/types";
 import {
   API_URL,
   mockApiError,
@@ -535,7 +535,7 @@ const VIEWS: [name: string, body: Body][] = [
 
       await expect(details.step).toBeVisible();
       await expect(details.drawAreas).toHaveCount(2);
-      await expect(details.toggleDiff).toBeChecked();
+      await expect(details.diffMode).toHaveAttribute("aria-pressed", "true");
       await shot("test-run-details");
     },
   ],
@@ -603,6 +603,7 @@ const VIEWS: [name: string, body: Body][] = [
       );
       await expect(details.drawAreas).toHaveCount(2);
 
+      await details.editAreas.click();
       await details.drawMode.click();
       await expect(details.drawMode).toHaveAttribute("aria-pressed", "true");
       await details.drag({ x: 60, y: 60 }, { x: 260, y: 180 });
@@ -1037,6 +1038,92 @@ const VIEWS: [name: string, body: Body][] = [
 
       await expect(profilePage.modal.dialog).toBeVisible();
       await shot("profile-regenerate-api-key");
+    },
+  ],
+
+  [
+    "test run details in the fade view",
+    async ({ openProjectPage, shot }) => {
+      const { details } = await openProjectPage(
+        project.id,
+        build.id,
+        TEST_UNRESOLVED.id,
+      );
+      await expect(details.drawAreas).toHaveCount(2);
+
+      await details.fadeMode.click();
+
+      await expect(details.fadeSlider).toBeVisible();
+      await shot("test-run-fade");
+    },
+  ],
+
+  [
+    "test run details side by side",
+    async ({ openProjectPage, shot }) => {
+      const { details } = await openProjectPage(
+        project.id,
+        build.id,
+        TEST_UNRESOLVED.id,
+      );
+      await expect(details.drawAreas).toHaveCount(2);
+
+      await details.sideBySide.click();
+
+      await expect(details.sideBySide).toHaveAttribute("aria-pressed", "true");
+      await shot("test-run-side-by-side");
+    },
+  ],
+
+  [
+    "test run details editing the areas",
+    async ({ openProjectPage, page, shot }) => {
+      await mockGetTestRuns(page, build.id, [WITHOUT_AREAS, TEST_RUN_NEW]);
+      await mockTestRun(page, WITHOUT_AREAS);
+      const { details } = await openProjectPage(
+        project.id,
+        build.id,
+        WITHOUT_AREAS.id,
+      );
+      await expect(details.drawAreas).toHaveCount(2);
+
+      await details.editAreas.click();
+
+      await expect(details.saveAreas).toBeDisabled();
+      await shot("test-run-edit-areas");
+    },
+  ],
+
+  [
+    "test run details of an approved run with the undo",
+    async ({ openProjectPage, shot }) => {
+      const { details } = await openProjectPage(
+        project.id,
+        build.id,
+        TEST_RUN_APPROVED.id,
+      );
+      await expect(details.step).toBeVisible();
+
+      await expect(details.undoApproval).toBeVisible();
+      await shot("test-run-undo-approval");
+    },
+  ],
+
+  [
+    "test run details of a rejected run with the undo",
+    async ({ openProjectPage, page, shot }) => {
+      const rejected = { ...TEST_RUN_APPROVED, status: TestStatus.failed };
+      await mockGetTestRuns(page, build.id, [rejected, TEST_RUN_NEW]);
+      await mockTestRun(page, rejected);
+      const { details } = await openProjectPage(
+        project.id,
+        build.id,
+        rejected.id,
+      );
+      await expect(details.step).toBeVisible();
+
+      await expect(details.undoRejection).toBeVisible();
+      await shot("test-run-undo-rejection");
     },
   ],
 ];

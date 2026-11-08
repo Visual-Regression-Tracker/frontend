@@ -1,11 +1,6 @@
-import {
-  Box,
-  Slider,
-  ToggleButton,
-  Tooltip as MuiTooltip,
-  Typography,
-} from "@mui/material";
+import { Box, Slider, ToggleButton, Typography } from "@mui/material";
 import { Compare } from "@mui/icons-material";
+import { Tooltip } from "../Tooltip";
 
 interface OverlayControlsProps {
   opacity: number;
@@ -21,10 +16,10 @@ export const OverlayControls = ({
   onBlendToggle,
 }: OverlayControlsProps) => (
   <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-    <MuiTooltip title="Fade the checkpoint out to see the baseline through it">
+    <Tooltip title="Fade the checkpoint out to see the baseline through it">
       <Box sx={{ display: "flex", alignItems: "center", gap: 1, minWidth: 0 }}>
         <Typography variant="caption" color="textSecondary" noWrap>
-          Fade
+          Baseline
         </Typography>
         <Box
           data-testid="overlayOpacity"
@@ -41,19 +36,24 @@ export const OverlayControls = ({
             aria-label="Fade to the baseline"
           />
         </Box>
+        <Typography variant="caption" color="textSecondary" noWrap>
+          Checkpoint
+        </Typography>
       </Box>
-    </MuiTooltip>
-    <MuiTooltip title="Blend the two as a difference: what matches goes black, and a shift shows as an offset ghost">
+    </Tooltip>
+    <Tooltip title="Blend the two as a difference: what matches goes black, and a shift shows as an offset ghost">
       <ToggleButton
         value="blend"
         size="small"
         selected={blendDifference}
         onChange={onBlendToggle}
         data-testid="differenceToggle"
-        style={{ padding: 4, marginLeft: 8 }}
+        aria-label="Difference blend"
+        sx={{ px: 1, py: 0.25, textTransform: "none", gap: 0.5 }}
       >
         <Compare fontSize="small" />
+        Difference blend
       </ToggleButton>
-    </MuiTooltip>
+    </Tooltip>
   </Box>
 );

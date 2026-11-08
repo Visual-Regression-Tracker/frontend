@@ -19,6 +19,21 @@ interface UndoOptions {
   onUndone?: () => void;
 }
 
+export const revertDecision = ({
+  ids,
+  decision,
+  undoneText,
+  enqueueSnackbar,
+  onUndone,
+}: UndoOptions) =>
+  testRunService
+    .revert(ids, decision)
+    .then(() => {
+      onUndone?.();
+      enqueueSnackbar(undoneText, { variant: "info" });
+    })
+    .catch((err: string) => enqueueSnackbar(err, { variant: "error" }));
+
 const UndoSnackbarAction = ({
   snackbarKey,
   ids,
@@ -33,13 +48,13 @@ const UndoSnackbarAction = ({
   const undo = () => {
     setUndoing(true);
     closeSnackbar(snackbarKey);
-    testRunService
-      .revert(ids, decision)
-      .then(() => {
-        onUndone?.();
-        enqueueSnackbar(undoneText, { variant: "info" });
-      })
-      .catch((err: string) => enqueueSnackbar(err, { variant: "error" }));
+    void revertDecision({
+      ids,
+      decision,
+      undoneText,
+      enqueueSnackbar,
+      onUndone,
+    });
   };
 
   return (

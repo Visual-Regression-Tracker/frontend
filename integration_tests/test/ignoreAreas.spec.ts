@@ -20,6 +20,7 @@ import {
   mockUpdateIgnoreAreas,
 } from "utils/mocks";
 import { postData } from "utils/postData";
+import { afterTwoFrames } from "utils/afterTwoFrames";
 
 const project = TEST_PROJECT;
 const build = TEST_BUILD_FAILED;
@@ -76,6 +77,13 @@ const openAtOriginalSize = async (
   await expect(details.drawAreas).toHaveCount(2);
   await details.originalSize.click();
   await expect.poll(() => details.canvasWidths()).toEqual([1280, 1280]);
+  await details.editAreas.click();
+  const areaCount = (JSON.parse(testRun.ignoreAreas) as unknown[]).length;
+  await expect
+    .poll(async () => (await details.ignoreRects()).length)
+    .toBe(areaCount);
+  // the hit canvas is redrawn on the next frame: a click before it misses the area
+  await afterTwoFrames(page);
 
   return details;
 };

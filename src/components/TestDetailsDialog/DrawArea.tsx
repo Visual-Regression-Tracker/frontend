@@ -50,6 +50,7 @@ interface IDrawArea {
   tempIgnoreAreas: IgnoreArea[];
   hintAreas?: NoiseRegion[];
   ignoreAreas: IgnoreArea[];
+  readOnly?: boolean;
   setIgnoreAreas: (ignoreAreas: IgnoreArea[]) => void;
   selectedRectId: string | undefined;
   setSelectedRectId: (id: string) => void;
@@ -70,6 +71,7 @@ export const DrawArea = ({
   overlayOpacity,
   blendDifference,
   ignoreAreas,
+  readOnly = false,
   tempIgnoreAreas,
   hintAreas = [],
   setIgnoreAreas,
@@ -369,40 +371,53 @@ export const DrawArea = ({
                   document.body.style.cursor = "default";
                 }}
               />
-              {ignoreAreas.map((rect, i) => (
-                <Rectangle
-                  key={rect.id}
-                  shapeProps={{
-                    x: rect.x,
-                    y: rect.y,
-                    width: rect.width,
-                    height: rect.height,
-                  }}
-                  isSelected={rect.id === selectedRectId}
-                  onSelect={() => setSelectedRectId(rect.id)}
-                  onChange={(newAttrs: Konva.RectConfig) => {
-                    const rects = ignoreAreas.slice();
+              {ignoreAreas.map((rect, i) =>
+                readOnly ? (
+                  <Rectangle
+                    key={rect.id}
+                    shapeProps={{
+                      x: rect.x,
+                      y: rect.y,
+                      width: rect.width,
+                      height: rect.height,
+                      listening: false,
+                    }}
+                  />
+                ) : (
+                  <Rectangle
+                    key={rect.id}
+                    shapeProps={{
+                      x: rect.x,
+                      y: rect.y,
+                      width: rect.width,
+                      height: rect.height,
+                    }}
+                    isSelected={rect.id === selectedRectId}
+                    onSelect={() => setSelectedRectId(rect.id)}
+                    onChange={(newAttrs: Konva.RectConfig) => {
+                      const rects = ignoreAreas.slice();
 
-                    rects[i] = clampToImage(
-                      {
-                        ...rects[i],
-                        x: Math.round(newAttrs.x || 0),
-                        y: Math.round(newAttrs.y || 0),
-                        width: Math.round(
-                          newAttrs.width || MIN_RECT_SIDE_PIXEL,
-                        ),
-                        height: Math.round(
-                          newAttrs.height || MIN_RECT_SIDE_PIXEL,
-                        ),
-                      },
-                      stageWidth,
-                      stageHeight,
-                    );
+                      rects[i] = clampToImage(
+                        {
+                          ...rects[i],
+                          x: Math.round(newAttrs.x || 0),
+                          y: Math.round(newAttrs.y || 0),
+                          width: Math.round(
+                            newAttrs.width || MIN_RECT_SIDE_PIXEL,
+                          ),
+                          height: Math.round(
+                            newAttrs.height || MIN_RECT_SIDE_PIXEL,
+                          ),
+                        },
+                        stageWidth,
+                        stageHeight,
+                      );
 
-                    setIgnoreAreas(rects);
-                  }}
-                />
-              ))}
+                      setIgnoreAreas(rects);
+                    }}
+                  />
+                ),
+              )}
               {tempIgnoreAreas.map((rect, i) => (
                 <Rectangle
                   key={i}

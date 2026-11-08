@@ -5,6 +5,7 @@ import { GO_TO_NEXT_KEY } from "../../constants";
 import { parseJson } from "../../_helpers/parseJson";
 import { TestRun } from "../../types";
 import { ApproveRejectButtons } from "./ApproveRejectButtons";
+import { UndoDecisionButton } from "./UndoDecisionButton";
 import { MatchingVariationsMode } from "./MatchingVariationsDialog";
 
 const footerSx = { bgcolor: "background.default" } as const;
@@ -56,13 +57,16 @@ export const TestDetailsFooter = ({
         {zoomControls}
       </Grid>
       <Grid size={6} sx={centerActionsSx}>
-        {isAwaitingReview(testRun.status) && (
+        {isAwaitingReview(testRun.status) ? (
           <ApproveRejectButtons
             testRun={testRun}
             afterApprove={handleGoToNextAutomatically}
             afterReject={handleGoToNextAutomatically}
+            undoInToast={goToNextAutomatically}
             onOpenVariations={onOpenVariations}
           />
+        ) : (
+          <UndoDecisionButton testRun={testRun} />
         )}
       </Grid>
       <Grid size={3} sx={testRunActionsSx}>

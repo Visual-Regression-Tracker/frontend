@@ -115,7 +115,10 @@ test.describe("on a dark system", () => {
     // the dialog is a lazy chunk: wait for it like screens.spec does
     await expect(projectPage.details.step).toBeVisible();
     await expect(projectPage.details.drawAreas).toHaveCount(2);
-    await expect(projectPage.details.toggleDiff).toBeChecked();
+    await expect(projectPage.details.diffMode).toHaveAttribute(
+      "aria-pressed",
+      "true",
+    );
 
     await expect(page).toHaveScreenshot("test-run-details-dark.png");
   });

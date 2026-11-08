@@ -6,6 +6,7 @@ import { UserListPage } from "pages/UserListPage";
 import {
   TEST_BUILD_FAILED,
   TEST_PROJECT,
+  TEST_RUN_APPROVED,
   TEST_RUN_NEW,
   TEST_UNRESOLVED,
   TEST_USER,
@@ -14,6 +15,7 @@ import {
 } from "~client/_test/test.data.helper";
 import {
   API_URL,
+  isRevertUrl,
   mockApiError,
   mockGetBuildDetails,
   mockGetBuilds,
@@ -280,4 +282,31 @@ test.describe("own profile by role", () => {
       });
     });
   }
+});
+
+test.describe("as guest undoing a decision in the dialog footer", () => {
+  test.use({ userRole: "guest" });
+
+  test("sees the undo and gets the API's refusal as a toast", async ({
+    openProjectPage,
+    page,
+  }) => {
+    const approved = { ...TEST_RUN_APPROVED };
+    await mockGetBuilds(page, TEST_PROJECT.id, [TEST_BUILD_FAILED]);
+    await mockGetBuildDetails(page, TEST_BUILD_FAILED);
+    await mockTestRunsWithDetails(page, TEST_BUILD_FAILED.id, [approved]);
+    await mockImage(page, "image.png");
+    await mockImage(page, "diff.png");
+    await mockImage(page, "baseline.png");
+    await mockApiError(page, isRevertUrl, 403, "Forbidden resource");
+    const { details, notification } = await openProjectPage(
+      TEST_PROJECT.id,
+      TEST_BUILD_FAILED.id,
+      approved.id,
+    );
+
+    await details.undoApproval.click();
+
+    await expect(notification.toast("Forbidden resource")).toBeVisible();
+  });
 });

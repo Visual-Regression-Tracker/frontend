@@ -19,6 +19,7 @@ const renderToolbar = (overrides: Partial<Props> = {}) => {
     onClear: vi.fn(),
     onApplyToBuild: vi.fn(),
     onSave: vi.fn(),
+    onCancel: vi.fn(),
     ...overrides,
   };
   return { ...renderWithProviders(<IgnoreAreasToolbar {...props} />), props };
@@ -46,11 +47,12 @@ describe("IgnoreAreasToolbar", () => {
       renderToolbar();
 
       for (const name of [
-        "Draw area",
-        "Delete selected area",
-        "Clear all areas",
-        "Apply selected area to build",
-        "Save areas",
+        "Draw",
+        "Delete selected",
+        "Clear all",
+        "Apply selected to whole build…",
+        "Save",
+        "Cancel",
       ]) {
         expect(screen.getByRole("button", { name })).toBeEnabled();
       }
@@ -109,8 +111,7 @@ describe("IgnoreAreasToolbar", () => {
   it("switches to the compare area", async () => {
     const { user, props } = renderToolbar();
 
-    await user.click(screen.getByRole("combobox"));
-    await user.click(screen.getByRole("option", { name: "Compare Area" }));
+    await user.click(screen.getByRole("button", { name: "Compare area" }));
 
     expect(props.onAreaKindChange).toHaveBeenCalledWith("Compare Area");
   });
@@ -118,7 +119,20 @@ describe("IgnoreAreasToolbar", () => {
   it("shows the chosen kind of area", () => {
     renderToolbar({ areaKind: "Compare Area" });
 
-    expect(screen.getByRole("combobox")).toHaveTextContent("Compare Area");
+    expect(
+      screen.getByRole("button", { name: "Compare area" }),
+    ).toHaveAttribute("aria-pressed", "true");
+    expect(
+      screen.getByRole("button", { name: "Ignore areas" }),
+    ).toHaveAttribute("aria-pressed", "false");
+  });
+
+  it("cancels the editing", async () => {
+    const { user, props } = renderToolbar();
+
+    await user.click(screen.getByRole("button", { name: "Cancel" }));
+
+    expect(props.onCancel).toHaveBeenCalledTimes(1);
   });
 
   describe("applying the selected area to the build", () => {

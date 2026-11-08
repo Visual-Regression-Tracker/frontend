@@ -1,4 +1,4 @@
-import { expect } from "@playwright/test";
+import { expect, type Locator } from "@playwright/test";
 import { test } from "fixtures";
 import {
   TEST_BUILD_FAILED,
@@ -22,6 +22,9 @@ import { afterTwoFrames } from "utils/afterTwoFrames";
 
 const project = TEST_PROJECT;
 const build = TEST_BUILD_FAILED;
+
+const pressed = (button: Locator) =>
+  expect(button).toHaveAttribute("aria-pressed", "true");
 
 test.beforeEach(async ({ page }) => {
   await mockGetProjects(page, [project]);
@@ -177,7 +180,7 @@ test("does not approve, reject or toggle the diff while typing a comment", async
   await details.comment.press("d");
 
   await expect(details.comment).toHaveValue("axd");
-  await expect(details.toggleDiff).toBeChecked();
+  await pressed(details.diffMode);
   expect(sent).toEqual([]);
 });
 
@@ -239,44 +242,7 @@ test("steps between runs with the arrow keys", async ({
   await expect(page).toHaveURL(first);
 });
 
-test("toggles the diff with D", async ({ openProjectPage, page }) => {
-  const { details } = await openProjectPage(
-    project.id,
-    build.id,
-    TEST_UNRESOLVED.id,
-  );
-  await expect(details.drawAreas).toHaveCount(2);
-  await expect(details.toggleDiff).toBeChecked();
-  await expect.poll(() => details.shownImage()).toBe("diff.png");
-
-  await page.keyboard.press("d");
-
-  await expect(details.toggleDiff).not.toBeChecked();
-  await expect.poll(() => details.shownImage()).toBe("image.png");
-
-  await page.keyboard.press("d");
-
-  await expect(details.toggleDiff).toBeChecked();
-  await expect.poll(() => details.shownImage()).toBe("diff.png");
-});
-
-test("keeps D and the switch in step", async ({ openProjectPage, page }) => {
-  const { details } = await openProjectPage(
-    project.id,
-    build.id,
-    TEST_UNRESOLVED.id,
-  );
-  await expect(details.drawAreas).toHaveCount(2);
-
-  await page.keyboard.press("d");
-  await expect.poll(() => details.shownImage()).toBe("image.png");
-  await details.toggleDiff.check();
-
-  await expect(details.toggleDiff).toBeChecked();
-  await expect.poll(() => details.shownImage()).toBe("diff.png");
-});
-
-test("keeps D and the arrow keys working after a click on the diff switch", async ({
+test("toggles between Diff and Side by side with D", async ({
   openProjectPage,
   page,
 }) => {
@@ -286,13 +252,72 @@ test("keeps D and the arrow keys working after a click on the diff switch", asyn
     TEST_UNRESOLVED.id,
   );
   await expect(details.drawAreas).toHaveCount(2);
-  await details.toggleDiff.uncheck();
-  await expect.poll(() => details.shownImage()).toBe("image.png");
-  await expect(details.toggleDiff).toBeFocused();
+  await pressed(details.diffMode);
+  await expect.poll(() => details.shownImage()).toBe("diff.png");
 
   await page.keyboard.press("d");
 
-  await expect(details.toggleDiff).toBeChecked();
+  await pressed(details.sideBySide);
+  await expect.poll(() => details.shownImage()).toBe("image.png");
+
+  await page.keyboard.press("d");
+
+  await pressed(details.diffMode);
+  await expect.poll(() => details.shownImage()).toBe("diff.png");
+});
+
+test("returns from Fade to Diff with D", async ({ openProjectPage, page }) => {
+  const { details } = await openProjectPage(
+    project.id,
+    build.id,
+    TEST_UNRESOLVED.id,
+  );
+  await expect(details.drawAreas).toHaveCount(2);
+  await details.fadeMode.click();
+  await pressed(details.fadeMode);
+
+  await page.keyboard.press("d");
+
+  await pressed(details.diffMode);
+  await expect.poll(() => details.shownImage()).toBe("diff.png");
+});
+
+test("keeps D and the view modes in step", async ({
+  openProjectPage,
+  page,
+}) => {
+  const { details } = await openProjectPage(
+    project.id,
+    build.id,
+    TEST_UNRESOLVED.id,
+  );
+  await expect(details.drawAreas).toHaveCount(2);
+
+  await page.keyboard.press("d");
+  await expect.poll(() => details.shownImage()).toBe("image.png");
+  await details.diffMode.click();
+
+  await pressed(details.diffMode);
+  await expect.poll(() => details.shownImage()).toBe("diff.png");
+});
+
+test("keeps D and the arrow keys working after a click on a view mode", async ({
+  openProjectPage,
+  page,
+}) => {
+  const { details } = await openProjectPage(
+    project.id,
+    build.id,
+    TEST_UNRESOLVED.id,
+  );
+  await expect(details.drawAreas).toHaveCount(2);
+  await details.sideBySide.click();
+  await expect.poll(() => details.shownImage()).toBe("image.png");
+  await expect(details.sideBySide).toBeFocused();
+
+  await page.keyboard.press("d");
+
+  await pressed(details.diffMode);
   await expect.poll(() => details.shownImage()).toBe("diff.png");
 
   await page.keyboard.press("ArrowRight");
@@ -310,11 +335,12 @@ test("does nothing on D when the run has no diff", async ({
   await mockGetTestRuns(page, build.id, [noDiff]);
   const { details } = await openProjectPage(project.id, build.id, noDiff.id);
   await expect(details.drawAreas).toHaveCount(2);
-  await expect(details.toggleDiff).toHaveCount(0);
+  await expect(details.diffMode).toHaveCount(0);
   await expect.poll(() => details.shownImage()).toBe("image.png");
 
   await page.keyboard.press("d");
 
-  await expect(details.toggleDiff).toHaveCount(0);
+  await expect(details.diffMode).toHaveCount(0);
+  await pressed(details.sideBySide);
   await expect.poll(() => details.shownImage()).toBe("image.png");
 });

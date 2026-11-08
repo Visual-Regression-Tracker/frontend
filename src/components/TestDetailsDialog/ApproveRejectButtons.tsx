@@ -1,4 +1,6 @@
 import { Chip, Button } from "@mui/material";
+import { CheckRounded, ClearRounded } from "@mui/icons-material";
+import { HotkeyHint } from "../HotkeyHint";
 import { VariantType } from "notistack";
 import { useDialogSnackbar } from "./useDialogSnackbar";
 import { useHotkeys } from "react-hotkeys-hook";
@@ -19,14 +21,10 @@ import {
 } from "../../_helpers/testRunGroup.helper";
 
 const actionButtonSx = {
-  width: 120,
   marginLeft: "4px",
   marginRight: "4px",
-};
-const wideActionButtonSx = {
-  marginLeft: "4px",
-  marginRight: "4px",
-};
+  textTransform: "none",
+} as const;
 
 const DECIDED: Record<ReviewDecision, { text: string; variant: VariantType }> =
   {
@@ -39,11 +37,13 @@ export const ApproveRejectButtons = ({
   testRun,
   afterApprove,
   afterReject,
+  undoInToast,
   onOpenVariations,
 }: {
   testRun: TestRun;
   afterApprove?: () => void;
   afterReject?: () => void;
+  undoInToast: boolean;
   onOpenVariations: (mode: MatchingVariationsMode) => void;
 }) => {
   const { enqueueSnackbar, enqueueAside } = useDialogSnackbar();
@@ -88,12 +88,13 @@ export const ApproveRejectButtons = ({
         }
         enqueueSnackbar(DECIDED[decision].text, {
           variant: DECIDED[decision].variant,
-          ...undoSnackbarOptions({
-            ids: [testRun.id],
-            decision,
-            undoneText: "Undone",
-            enqueueSnackbar: enqueueAside,
-          }),
+          ...(undoInToast &&
+            undoSnackbarOptions({
+              ids: [testRun.id],
+              decision,
+              undoneText: "Undone",
+              enqueueSnackbar: enqueueAside,
+            })),
         });
         after?.();
       })
@@ -125,19 +126,32 @@ export const ApproveRejectButtons = ({
           />
         </Tooltip>
       )}
-      <Tooltip title={"Hotkey: A"}>
-        <Button onClick={approve} variant="contained" sx={actionButtonSx}>
-          Approve
-        </Button>
-      </Tooltip>
+      <Button
+        onClick={approve}
+        variant="contained"
+        startIcon={<CheckRounded />}
+        sx={actionButtonSx}
+      >
+        Approve
+        <HotkeyHint>A</HotkeyHint>
+      </Button>
+      <Button
+        color="secondary"
+        variant="outlined"
+        onClick={reject}
+        startIcon={<ClearRounded />}
+        sx={actionButtonSx}
+      >
+        Reject
+        <HotkeyHint>X</HotkeyHint>
+      </Button>
       {variationsEnabled && (
         <Tooltip title="Review and approve this screen's matching variations (e.g. all locales) before applying">
           <Button
             onClick={() => onOpenVariations("approve")}
-            variant="outlined"
-            sx={wideActionButtonSx}
+            sx={actionButtonSx}
           >
-            Approve variations
+            Approve variations…
           </Button>
         </Tooltip>
       )}
@@ -146,18 +160,12 @@ export const ApproveRejectButtons = ({
           <Button
             color="secondary"
             onClick={() => onOpenVariations("reject")}
-            variant="outlined"
-            sx={wideActionButtonSx}
+            sx={actionButtonSx}
           >
-            Reject variations
+            Reject variations…
           </Button>
         </Tooltip>
       )}
-      <Tooltip title={"Hotkey: X"}>
-        <Button color="secondary" onClick={reject} sx={actionButtonSx}>
-          Reject
-        </Button>
-      </Tooltip>
     </>
   );
 };

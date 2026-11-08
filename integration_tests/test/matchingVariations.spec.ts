@@ -310,7 +310,7 @@ test("leaves the run behind alone on its hotkeys while the review is open", asyn
   await expect(page).toHaveURL(new RegExp(`testId=${current.id}$`));
   await details.variationsCancel.click();
   await expect(details.variations).toBeHidden();
-  await expect(details.toggleDiff).toBeChecked();
+  await expect(details.diffMode).toHaveAttribute("aria-pressed", "true");
 });
 
 test("keeps the review open and says so when approving fails", async ({
