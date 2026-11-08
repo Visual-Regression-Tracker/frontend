@@ -111,9 +111,7 @@ test("shows the selection bar for ticked rows and selects every run under the fi
   await testRunList.selectionBarSelectAll.click();
   await expect(testRunList.selectionBar).toContainText("2 selected");
 
-  await testRunList.selectionBar
-    .getByRole("button", { name: "Clear selection" })
-    .click();
+  await testRunList.clearSelectionBtn.click();
   await expect(testRunList.selectionBar).toBeHidden();
 });
 
@@ -133,7 +131,7 @@ test("keeps Show diff in step between the View menu and the grid toolbar", async
   await expect(testRunList.diffToggle).toBeChecked();
 
   await testRunList.viewMenuButton.click();
-  await testRunList.page.getByTestId("viewMenuShowDiff").click();
+  await testRunList.showDiffMenuItem.click();
 
   await expect(testRunList.diffToggle).not.toBeChecked();
 });

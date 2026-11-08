@@ -7,6 +7,7 @@ import { FieldRow } from "./SettingsRow";
 import { useConfigHook } from "./useConfigHook";
 import { VlmSharedFields } from "./VlmSharedFields";
 import { MODEL_RULES } from "./rules";
+import { ELEMENT_ID } from "../../constants/locators";
 
 // the API returns a saved key masked; sending the mask back keeps the key
 const MASKED_KEY_PREFIX = "••••";
@@ -54,7 +55,7 @@ export const GeminiConfigForm = () => {
         />
       </FieldRow>
       <FieldRow
-        id="apiKey"
+        id={ELEMENT_ID.geminiApiKey}
         title="Gemini API Key"
         required
         description="Your Google Gemini API key. Get one from https://makersuite.google.com/app/apikey"
@@ -63,7 +64,7 @@ export const GeminiConfigForm = () => {
         <ValidatedTextField
           name="apiKey"
           rules={API_KEY_RULES}
-          id="apiKey"
+          id={ELEMENT_ID.geminiApiKey}
           size="small"
           type="password"
           fullWidth

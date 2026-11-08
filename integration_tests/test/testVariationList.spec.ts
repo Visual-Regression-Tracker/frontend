@@ -23,10 +23,10 @@ test.beforeEach(async ({ page }) => {
 });
 
 test("renders", async ({ openTestVariationListPage, page }) => {
-  await openTestVariationListPage(TEST_PROJECT.id);
+  const listPage = await openTestVariationListPage(TEST_PROJECT.id);
 
-  await expect(page.getByRole("textbox", { name: "Name" })).toBeVisible();
-  await expect(page.getByText("2 baselines")).toBeVisible();
+  await expect(listPage.nameFilter).toBeVisible();
+  await expect(listPage.text("2 baselines")).toBeVisible();
   await expect(page).toHaveScreenshot("test-variation-list-page.png");
 });
 

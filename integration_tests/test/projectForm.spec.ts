@@ -68,12 +68,11 @@ test("opens on the engine the project uses", async ({
 
 test("offers the four image comparison libraries", async ({
   projectSettingsPage,
-  page,
 }) => {
   await projectSettingsPage.imageComparison.click();
 
   // Ollama and Gemini live under "vlm", behind a second "VLM Provider" select
-  await expect(page.getByRole("option")).toHaveText([
+  await expect(projectSettingsPage.options).toHaveText([
     ImageComparison.pixelmatch,
     ImageComparison.lookSame,
     ImageComparison.odiff,
@@ -107,9 +106,7 @@ test("shows the looksSame fields", async ({ projectSettingsPage }) => {
   await expect(
     projectSettingsPage.switchLabelled("Ignore anti-aliasing"),
   ).toBeVisible();
-  await expect(
-    projectSettingsPage.page.getByLabel("Antialiasing tolerance"),
-  ).toBeVisible();
+  await expect(projectSettingsPage.antialiasingTolerance).toBeVisible();
   await expect(
     projectSettingsPage.switchLabelled("Ignore caret"),
   ).toBeVisible();
@@ -156,12 +153,11 @@ test("shows the vlm fields, on Ollama to begin with", async ({
 
 test("lists the models Ollama has, once they are fetched", async ({
   projectSettingsPage,
-  page,
 }) => {
   await projectSettingsPage.selectImageComparison(ImageComparison.vlm);
   await projectSettingsPage.ollamaModel.click();
 
-  await expect(page.getByRole("option")).toHaveText([
+  await expect(projectSettingsPage.options).toHaveText([
     "gemma3:12b",
     "llava:13b",
   ]);
@@ -175,11 +171,7 @@ test("asks for the Ollama model by hand when it has none", async ({
 
   await projectSettingsPage.selectImageComparison(ImageComparison.vlm);
 
-  await expect(
-    projectSettingsPage.page.getByText(
-      "No models available. Enter model name manually.",
-    ),
-  ).toBeVisible();
+  await expect(projectSettingsPage.noOllamaModels).toBeVisible();
   await expect(projectSettingsPage.ollamaModelText).toBeVisible();
 });
 
@@ -355,12 +347,6 @@ test("does not save a Gemini project without its key", async ({
   await projectSettingsPage.saveBtn.click();
 
   // the browser's required-field check stops the form before the validator's message
-  await expect
-    .poll(() =>
-      projectSettingsPage.geminiApiKey.evaluate(
-        (input: HTMLInputElement) => input.validity.valueMissing,
-      ),
-    )
-    .toBe(true);
+  await expect.poll(() => projectSettingsPage.geminiApiKeyMissing()).toBe(true);
   expect(saves).toEqual([]);
 });

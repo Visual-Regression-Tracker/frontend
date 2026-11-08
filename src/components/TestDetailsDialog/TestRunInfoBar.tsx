@@ -3,6 +3,7 @@ import { Alert, Box, Button, Divider, Stack, Typography } from "@mui/material";
 import { TestRun } from "../../types";
 import type { FailedImage } from "../../_helpers/testRunImage.helper";
 import { Tooltip } from "../Tooltip";
+import { TEST_ID } from "../../constants/locators";
 
 interface TestRunInfoBarProps {
   testRun: TestRun;
@@ -17,7 +18,7 @@ const VlmLine = ({ description }: { description: string }) => {
     <Stack
       direction="row"
       spacing={1}
-      data-testid="vlm-analysis"
+      data-testid={TEST_ID.vlmAnalysis}
       sx={{ alignItems: expanded ? "flex-start" : "center", py: 0.5 }}
     >
       <Tooltip title="AI-generated description of the differences found by the Vision Language Model (VLM).">

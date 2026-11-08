@@ -1,5 +1,6 @@
 import { isEmail } from "../_helpers/validation";
 import { ValidatedTextField } from "./ValidatedForm";
+import { TEST_ID } from "../constants/locators";
 
 const EMAIL_RULES = [isEmail("Enter a valid email.")];
 
@@ -29,7 +30,7 @@ const EmailField = ({
     disabled={disabled}
     helperText={helperText}
     onChange={(event) => onChange(event.target.value)}
-    slotProps={{ htmlInput: { "data-testid": "email" } }}
+    slotProps={{ htmlInput: { "data-testid": TEST_ID.email } }}
   />
 );
 

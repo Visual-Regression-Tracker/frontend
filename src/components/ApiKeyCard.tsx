@@ -13,6 +13,7 @@ import { regenerateApiKey, useUserDispatch, useUserState } from "../contexts";
 import { useCopyToClipboard } from "../_helpers/useCopyToClipboard";
 import { monoFontFamily } from "../theme/tokens";
 import { BaseModal } from "./BaseModal";
+import { TEST_ID } from "../constants/locators";
 
 export const ApiKeyCard = () => {
   const { enqueueSnackbar } = useSnackbar();
@@ -44,7 +45,7 @@ export const ApiKeyCard = () => {
                 htmlInput: {
                   readOnly: true,
                   "aria-label": "API key",
-                  "data-testid": "apiKey",
+                  "data-testid": TEST_ID.apiKey,
                 },
                 input: {
                   sx: {

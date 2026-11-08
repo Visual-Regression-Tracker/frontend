@@ -8,6 +8,7 @@ import { IconButton, InputAdornment } from "@mui/material";
 import { Visibility, VisibilityOff } from "@mui/icons-material";
 import { AT_LEAST_TWO_CHARACTERS } from "../_helpers/validation";
 import { ValidatedTextField } from "./ValidatedForm";
+import { TEST_ID } from "../constants/locators";
 
 interface PasswordFieldProps {
   password: string;
@@ -55,7 +56,7 @@ const PasswordField = ({
             </InputAdornment>
           ),
         },
-        htmlInput: { "data-testid": "password" },
+        htmlInput: { "data-testid": TEST_ID.password },
       }}
     />
   );

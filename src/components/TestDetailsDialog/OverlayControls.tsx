@@ -1,6 +1,7 @@
 import { Box, Slider, ToggleButton, Typography } from "@mui/material";
 import { Compare } from "@mui/icons-material";
 import { Tooltip } from "../Tooltip";
+import { TEST_ID } from "../../constants/locators";
 
 interface OverlayControlsProps {
   opacity: number;
@@ -22,7 +23,7 @@ export const OverlayControls = ({
           Baseline
         </Typography>
         <Box
-          data-testid="overlayOpacity"
+          data-testid={TEST_ID.overlayOpacity}
           sx={{ width: 180, maxWidth: "100%", display: "flex" }}
         >
           <Slider
@@ -47,7 +48,7 @@ export const OverlayControls = ({
         size="small"
         selected={blendDifference}
         onChange={onBlendToggle}
-        data-testid="differenceToggle"
+        data-testid={TEST_ID.differenceToggle}
         aria-label="Difference blend"
         sx={{ px: 1, py: 0.25, textTransform: "none", gap: 0.5 }}
       >

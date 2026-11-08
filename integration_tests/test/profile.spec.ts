@@ -10,7 +10,6 @@ import {
   mockOidcEnabled,
   mockUpdateUser,
 } from "utils/mocks";
-import { waitForPage } from "utils/waitForPage";
 
 const project = TEST_PROJECT;
 
@@ -18,9 +17,8 @@ test.beforeEach(async ({ page }) => {
   await mockGetProjects(page, [project]);
 });
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 test("renders", async ({ profilePage, page }) => {
-  await waitForPage(page);
+  await profilePage.waitUntilLoaded();
   await expect(page).toHaveScreenshot("profile-page.png");
 });
 
@@ -68,11 +66,9 @@ test("does not send user details that fail validation", async ({
   await profilePage.updateUserBtn.click();
 
   await expect(
-    profilePage.userForm.getByText("Enter at least two characters."),
+    profilePage.fieldError("Enter at least two characters."),
   ).toBeVisible();
-  await expect(
-    profilePage.userForm.getByText("Enter a valid email."),
-  ).toBeVisible();
+  await expect(profilePage.fieldError("Enter a valid email.")).toBeVisible();
   expect(updates).toEqual([]);
 });
 
@@ -91,13 +87,10 @@ test("changes the password", async ({ profilePage, page }) => {
   await expect(profilePage.password).toHaveValue("");
 });
 
-test("shows the crumb Profile and no subtitle", async ({
-  profilePage,
-  page,
-}) => {
+test("shows the crumb Profile and no subtitle", async ({ profilePage }) => {
   await expect(profilePage.header.breadcrumb).toHaveText("Profile");
-  await expect(page.getByRole("heading", { name: "Profile" })).toBeVisible();
-  await expect(page.getByText("the key your test runs use")).toHaveCount(0);
+  await expect(profilePage.heading).toBeVisible();
+  await expect(profilePage.text("the key your test runs use")).toHaveCount(0);
 });
 
 test("shows the role as a chip with who changes it", async ({
@@ -105,7 +98,7 @@ test("shows the role as a chip with who changes it", async ({
 }) => {
   await expect(profilePage.role).toHaveText("Admin");
   await expect(
-    profilePage.userForm.getByText("changed by an admin on Users"),
+    profilePage.userNote("changed by an admin on Users"),
   ).toBeVisible();
 });
 
@@ -211,7 +204,7 @@ test.describe("with SSO", () => {
 
   test("says why the email is locked", async ({ profilePage }) => {
     await expect(
-      profilePage.userForm.getByText("Locked when you sign in with SSO"),
+      profilePage.userNote("Locked when you sign in with SSO"),
     ).toBeVisible();
   });
 });

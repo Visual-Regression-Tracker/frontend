@@ -1,48 +1,28 @@
 import { Locator } from "@playwright/test";
-import { PageObject } from "./PageObject";
-import { boxOf } from "utils/boxOf";
+import { ImagePanes } from "./ImagePanes";
+import { TEST_ID } from "~client/constants/locators";
 
-type KonvaNode = {
-  x: () => number;
-  y: () => number;
-  width: () => number;
-  height: () => number;
-  draggable: () => boolean;
-  getParent: () => { getClassName: () => string };
-  image: () => HTMLImageElement;
-};
-type KonvaStage = {
-  container: () => HTMLElement;
-  find: (selector: string) => KonvaNode[];
-};
-type KonvaWindow = { Konva: { stages: KonvaStage[] } };
-
-export type Rect = { x: number; y: number; width: number; height: number };
-
-export class TestDetailsDialog extends PageObject {
-  drawAreas = this.page.getByTestId("drawArea");
-  checkpointPane = this.drawAreas.nth(1);
-
-  step = this.page.getByTestId("step-position");
+export class TestDetailsDialog extends ImagePanes {
+  step = this.page.getByTestId(TEST_ID.stepPosition);
   previousRun = this.page.getByLabel("Previous run");
   nextRun = this.page.getByLabel("Next run");
-  closeBtn = this.iconButton("CloseIcon");
+  closeBtn = this.iconButton(TEST_ID.closeIcon);
 
   editAreas = this.page.getByRole("button", { name: "Edit areas" });
-  cancelEditing = this.page.getByRole("button", {
-    name: "Cancel",
-    exact: true,
-  });
+  cancelBtn = this.page.getByRole("button", { name: "Cancel", exact: true });
   areasChip = this.page.getByRole("button", { name: /^Ignore areas \(\d+\)$/ });
-  drawMode = this.iconButton("AddIcon");
-  deleteArea = this.iconButton("DeleteIcon");
-  clearAreas = this.iconButton("LayersClearIcon");
-  applyAreas = this.iconButton("CollectionsIcon");
-  saveAreas = this.iconButton("SaveIcon");
+  drawMode = this.iconButton(TEST_ID.addIcon);
+  drawModeToggle = this.page.locator(`button[value="drawMode"]`);
+  promptYes = this.page.getByRole("button", { name: "Yes" });
+  promptDiscard = this.page.getByRole("button", { name: "Discard" });
+  deleteArea = this.iconButton(TEST_ID.deleteIcon);
+  clearAreas = this.iconButton(TEST_ID.layersClearIcon);
+  applyAreas = this.iconButton(TEST_ID.collectionsIcon);
+  saveAreas = this.iconButton(TEST_ID.saveIcon);
 
   zoomIn = this.page.getByRole("button", { name: "Zoom in" });
   zoomOut = this.page.getByRole("button", { name: "Zoom out" });
-  zoomLevel = this.page.getByTestId("zoom-level");
+  zoomLevel = this.page.getByTestId(TEST_ID.zoomLevel);
   originalSize = this.page.getByRole("button", { name: "Original size" });
   fitToScreen = this.page.getByRole("button", { name: "Fit into screen" });
 
@@ -59,7 +39,10 @@ export class TestDetailsDialog extends PageObject {
   undoRejection = this.page.getByRole("button", { name: "Undo rejection" });
 
   viewModes = this.page.getByRole("group", { name: "View mode" });
-  sideBySide = this.viewModes.getByRole("button", { name: "Side by side" });
+  sideBySide = this.viewModes.getByRole("button", {
+    name: "Side by side",
+    exact: true,
+  });
   diffMode = this.viewModes.getByRole("button", { name: "Diff", exact: true });
   noiselessMode = this.viewModes.getByRole("button", {
     name: "Diff without noise",
@@ -67,19 +50,21 @@ export class TestDetailsDialog extends PageObject {
   noiselessProgress = this.page.getByRole("progressbar", {
     name: "Computing Diff without noise",
   });
-  noiselessCaveat = this.page.getByTestId("noiseless-caveat");
+  noiselessCaveat = this.page.getByTestId(TEST_ID.noiselessCaveat);
   switchToDiff = this.page.getByRole("button", { name: "Switch to Diff" });
-  fadeMode = this.viewModes.getByRole("button", { name: "Fade" });
-  fadeSlider = this.page.getByTestId("overlayOpacity").getByRole("slider");
-  differenceBlend = this.page.getByTestId("differenceToggle");
+  fadeMode = this.viewModes.getByRole("button", { name: "Fade", exact: true });
+  overlayOpacity = this.page.getByTestId(TEST_ID.overlayOpacity);
+  fadeSlider = this.overlayOpacity.getByRole("slider");
+  differenceBlend = this.page.getByTestId(TEST_ID.differenceToggle);
 
   commentsBtn = this.page.getByRole("button", {
     name: /^(add|edit) comment/i,
   });
   commentChip = this.page.getByRole("button", { name: "Edit comment" });
   addCommentBtn = this.page.getByRole("button", { name: "Add comment" });
-  vlmAnalysis = this.page.getByTestId("vlm-analysis");
-  comment = this.page.getByTestId("comment");
+  vlmAnalysis = this.page.getByTestId(TEST_ID.vlmAnalysis);
+  vlmMore = this.vlmAnalysis.getByRole("button", { name: "More" });
+  comment = this.page.getByTestId(TEST_ID.comment);
   commentPopper = this.page.getByRole("tooltip").filter({ has: this.comment });
   commentSaveBtn = this.commentPopper.getByRole("button", { name: "Save" });
   // MUI's Fade sets opacity to 0 the moment it starts to close, 1 while open
@@ -99,13 +84,26 @@ export class TestDetailsDialog extends PageObject {
   variationsCancel = this.variations.getByRole("button", { name: "Cancel" });
   variationThumbnails = this.variations.locator("img");
 
-  noiseChip = this.page.getByTestId("noise-hint-popover-chip");
-  noisePanel = this.page.getByTestId("noise-hint-panel");
-  analyseRun = this.page.getByTestId("analyse-noise-run-button");
-  hintBlur = this.page.getByTestId("hint-areas-blur");
-  hintDinov2 = this.page.getByTestId("hint-areas-dinov2");
+  noiseChip = this.page.getByTestId(TEST_ID.noiseHintPopoverChip);
+  noisePanel = this.page.getByTestId(TEST_ID.noiseHintPanel);
+  analyseRun = this.page.getByTestId(TEST_ID.analyseNoiseRunButton);
+  hintBlur = this.page.getByTestId(TEST_ID.hintAreasBlur);
+  hintDinov2 = this.page.getByTestId(TEST_ID.hintAreasDinov2);
 
   discardPrompt = this.page.getByText("You have not saved ignore areas");
+
+  fullSizeBaseline = this.page.getByAltText("baseline");
+  fullSizeCheckpoint = this.page.getByAltText("checkpoint");
+
+  variationsText(text: string): Locator {
+    return this.variations.getByText(text);
+  }
+
+  viewVariationFullSize(name: string): Locator {
+    return this.variations.getByRole("button", {
+      name: `View ${name} full size`,
+    });
+  }
 
   variation(label: string): Locator {
     return this.variations.getByRole("checkbox", { name: label, exact: true });
@@ -117,124 +115,24 @@ export class TestDetailsDialog extends PageObject {
     });
   }
 
+  warningIcons = this.page.getByTestId(TEST_ID.warningRoundedIcon);
+  history = this.page.getByRole("button", { name: /^History/ });
+
   private iconButton(icon: string): Locator {
     return this.page
       .getByRole("button")
       .filter({ has: this.page.getByTestId(icon) });
   }
 
-  ignoreRects(): Promise<Rect[]> {
-    return this.rects(true);
-  }
-
-  lockedRects(): Promise<Rect[]> {
-    return this.rects(false);
-  }
-
-  private rects(draggable: boolean): Promise<Rect[]> {
-    return this.checkpointPane.evaluate((pane, draggable) => {
-      const { Konva } = window as unknown as KonvaWindow;
-      const stage = Konva.stages.find((s) => pane.contains(s.container()));
-      if (!stage) throw new Error("No Konva stage in the checkpoint pane");
-
-      return (
-        stage
-          .find("Rect")
-          // the resize handles of a selected area are rects too
-          .filter((rect) => rect.getParent().getClassName() !== "Transformer")
-          // the areas applied at upload are drawn too, and cannot be moved
-          .filter((rect) => rect.draggable() === draggable)
-          .map((rect) => ({
-            x: rect.x(),
-            y: rect.y(),
-            width: rect.width(),
-            height: rect.height(),
-          }))
-      );
-    }, draggable);
-  }
-
-  hasSelection(): Promise<boolean> {
-    return this.checkpointPane.evaluate((pane) => {
-      const { Konva } = window as unknown as KonvaWindow;
-      const stage = Konva.stages.find((s) => pane.contains(s.container()));
-      if (!stage) throw new Error("No Konva stage in the checkpoint pane");
-
-      return stage.find("Transformer").length > 0;
-    });
-  }
-
-  async shownImage(): Promise<string> {
-    const src = await this.checkpointPane.evaluate((pane) => {
-      const { Konva } = window as unknown as KonvaWindow;
-      const stage = Konva.stages.find((s) => pane.contains(s.container()));
-      if (!stage) throw new Error("No Konva stage in the checkpoint pane");
-      const image = stage.find("Image").at(-1);
-      if (!image) throw new Error("No image in the checkpoint pane");
-
-      return image.image().src;
-    });
-
-    return src.split("/").pop() ?? "";
-  }
-
-  /** Pure red pixels of the computed Diff without noise image; null until it is shown. */
-  keptPixels(): Promise<number | null> {
-    return this.checkpointPane.evaluate((pane) => {
-      const { Konva } = window as unknown as KonvaWindow;
-      const stage = Konva.stages.find((s) => pane.contains(s.container()));
-      const image = stage?.find("Image").at(-1)?.image();
-      if (!image?.src.startsWith("blob:")) return null;
-      const context = new OffscreenCanvas(
-        image.naturalWidth,
-        image.naturalHeight,
-      ).getContext("2d");
-      if (!context) throw new Error("No 2d context");
-      context.drawImage(image, 0, 0);
-      const { data } = context.getImageData(
-        0,
-        0,
-        image.naturalWidth,
-        image.naturalHeight,
-      );
-      let kept = 0;
-      for (let i = 0; i < data.length; i += 4) {
-        if (data[i] === 255 && data[i + 1] === 0 && data[i + 2] === 0) kept++;
-      }
-      return kept;
-    });
-  }
-
-  async canvasWidths(): Promise<number[]> {
-    const panes = await this.drawAreas.all();
-
-    return Promise.all(
-      panes.map(
-        async (pane) =>
-          (await pane.locator("canvas").first().boundingBox())?.width ?? 0,
-      ),
+  private async blurFocus() {
+    await this.page.evaluate(() =>
+      (document.activeElement as HTMLElement)?.blur(),
     );
   }
 
-  private checkpointCanvasBox() {
-    return boxOf(this.checkpointPane.locator("canvas").first());
-  }
-
-  /** Image pixels from the top left; they match the screen's only at original size. */
-  async drag(from: { x: number; y: number }, to: { x: number; y: number }) {
-    const box = await this.checkpointCanvasBox();
-    const { mouse } = this.page;
-
-    await mouse.move(box.x + from.x, box.y + from.y);
-    await mouse.down();
-    await mouse.move(box.x + to.x, box.y + to.y, { steps: 5 });
-    await mouse.up();
-  }
-
-  async clickAt(point: { x: number; y: number }) {
-    const box = await this.checkpointCanvasBox();
-
-    await this.page.mouse.click(box.x + point.x, box.y + point.y);
+  async goToNextByKeyboard() {
+    await this.blurFocus();
+    await this.page.keyboard.press("ArrowRight");
   }
 
   async chooseAreaKind(kind: "Ignore Areas" | "Compare Area") {

@@ -16,6 +16,7 @@ import {
 import { BaseModal } from "../BaseModal";
 import { Tooltip } from "../Tooltip";
 import { AREA_KINDS } from "../../constants";
+import { TEST_ID } from "../../constants/locators";
 
 const applyIgnoreAreaText =
   "Apply selected ignore area to all images in this build.";
@@ -115,11 +116,11 @@ export const IgnoreAreasToolbar = ({
           onClick={() => onDrawModeChange(!isDrawMode)}
           sx={{ ...textButtonSx, gap: 0.5 }}
         >
-          <Add fontSize="small" data-testid="AddIcon" />
+          <Add fontSize="small" data-testid={TEST_ID.addIcon} />
           Draw
         </ToggleButton>
         <ToolButton
-          startIcon={<Delete data-testid="DeleteIcon" />}
+          startIcon={<Delete data-testid={TEST_ID.deleteIcon} />}
           disabled={!hasSelection || !hasAreas}
           onClick={onDelete}
         >
@@ -127,7 +128,7 @@ export const IgnoreAreasToolbar = ({
         </ToolButton>
         <ToolButton
           tooltip="Clears all ignore areas."
-          startIcon={<LayersClear data-testid="LayersClearIcon" />}
+          startIcon={<LayersClear data-testid={TEST_ID.layersClearIcon} />}
           disabled={!hasAreas}
           onClick={onClear}
         >
@@ -135,7 +136,7 @@ export const IgnoreAreasToolbar = ({
         </ToolButton>
         <ToolButton
           tooltip={applyIgnoreAreaText}
-          startIcon={<Collections data-testid="CollectionsIcon" />}
+          startIcon={<Collections data-testid={TEST_ID.collectionsIcon} />}
           disabled={!hasSelection || !hasAreas}
           onClick={toggleApplyDialogOpen}
         >
@@ -147,7 +148,7 @@ export const IgnoreAreasToolbar = ({
         <Button
           size="small"
           variant="contained"
-          startIcon={<Save data-testid="SaveIcon" />}
+          startIcon={<Save data-testid={TEST_ID.saveIcon} />}
           disabled={!touched}
           onClick={onSave}
         >

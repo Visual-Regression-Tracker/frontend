@@ -23,6 +23,7 @@ import {
 } from "material-ui-popup-state/hooks";
 import { CommentText, visuallyHidden } from "./CommentIndicator";
 import { Tooltip } from "./Tooltip";
+import { TEST_ID } from "../constants/locators";
 
 const firstLine = (text: string) => text.trim().split(/\r?\n/)[0];
 
@@ -116,7 +117,7 @@ export const CommentsPopper = ({ text, onSave }: IProps) => {
                   }
                   slotProps={{
                     htmlInput: {
-                      "data-testid": "comment",
+                      "data-testid": TEST_ID.comment,
                     },
                   }}
                 />

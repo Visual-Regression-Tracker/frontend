@@ -23,6 +23,7 @@ import { useSnackbar } from "notistack";
 import { BuildMenu } from "../BuildMenu";
 import { SelectionBar } from "../SelectionBar";
 import { Build } from "../../types";
+import { TEST_ID } from "../../constants/locators";
 import { BaseModal } from "../BaseModal";
 import { buildsService } from "../../services";
 import { useLocation, useNavigate } from "react-router-dom";
@@ -233,7 +234,7 @@ const BuildList = () => {
         )}
         <Box
           ref={listRef}
-          data-testid="buildListScroll"
+          data-testid={TEST_ID.buildListScroll}
           sx={{ flex: 1, minHeight: 0, overflow: "auto" }}
         >
           <List disablePadding>

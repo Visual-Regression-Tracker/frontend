@@ -9,6 +9,7 @@ import {
 import { hintColor } from "../../theme";
 import { Tooltip } from "../Tooltip";
 import type { NoiseAnalysisDto, TestRun } from "../../types";
+import { TEST_ID } from "../../constants/locators";
 
 const LABELS = {
   noise: "Likely noise",
@@ -31,7 +32,7 @@ export const NoiseHintChip = ({
 
   const chip = (
     <Chip
-      data-testid="noise-hint-chip"
+      data-testid={TEST_ID.noiseHintChip}
       variant="outlined"
       size="small"
       color={hintColor(hint)}

@@ -2,6 +2,7 @@ import { IconButton } from "@mui/material";
 import { useColorScheme } from "@mui/material/styles";
 import { DarkModeOutlined, LightModeOutlined } from "@mui/icons-material";
 import { Tooltip } from "./Tooltip";
+import { TEST_ID } from "../constants/locators";
 
 export const ColorModeToggle = () => {
   const { mode, systemMode, setMode } = useColorScheme();
@@ -18,7 +19,7 @@ export const ColorModeToggle = () => {
       <IconButton
         aria-label={`Switch to ${next} mode`}
         onClick={() => setMode(next)}
-        data-testid="colorModeToggle"
+        data-testid={TEST_ID.colorModeToggle}
       >
         {current === "dark" ? <LightModeOutlined /> : <DarkModeOutlined />}
       </IconButton>

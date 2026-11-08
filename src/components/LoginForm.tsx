@@ -18,6 +18,7 @@ import { usersService } from "../services";
 import { OIDC_AUTO_REDIRECT } from "../_config/env.config";
 import { useOidcEnabled } from "../_helpers/useOidcEnabled";
 import { useRegistrationEnabled } from "../_helpers/useRegistrationEnabled";
+import { TEST_ID } from "../constants/locators";
 
 const LoginForm = () => {
   const location = useLocation();
@@ -74,7 +75,7 @@ const LoginForm = () => {
             variant="contained"
             size="large"
             fullWidth
-            data-testid="oidcLoginBtn"
+            data-testid={TEST_ID.oidcLoginBtn}
             onClick={() => usersService.startOidcLogin()}
           >
             Login with SSO
@@ -97,7 +98,7 @@ const LoginForm = () => {
               variant="contained"
               size="large"
               fullWidth
-              data-testid="loginBtn"
+              data-testid={TEST_ID.loginBtn}
             >
               Login
             </Button>

@@ -54,7 +54,7 @@ test("renders the CI build id dialog", async ({ openProjectPage, page }) => {
 
 test("stops a running build", async ({ openProjectPage, page }) => {
   await mockUpdateBuild(page, runningBuild);
-  const { buildList } = await openProjectPage(project.id);
+  const { buildList, notification } = await openProjectPage(project.id);
 
   await buildList.openMenu(runningBuild.number);
   const [request] = await Promise.all([
@@ -65,9 +65,7 @@ test("stops a running build", async ({ openProjectPage, page }) => {
   expect(request.postDataJSON()).toEqual({ isRunning: false });
   await expect(buildList.menu).toBeHidden();
   await expect(
-    page.locator("#notistack-snackbar").filter({
-      hasText: `${runningBuild.id} finished`,
-    }),
+    notification.messageWith(`${runningBuild.id} finished`),
   ).toBeVisible();
 });
 
@@ -119,7 +117,7 @@ test("does not save a CI build id that is too short", async ({
   await modal.confirmBtn.click();
 
   await expect(
-    modal.dialog.getByText("Enter at least two characters."),
+    modal.fieldError("Enter at least two characters."),
   ).toBeVisible();
   expect(patches).toEqual([]);
 });
@@ -149,7 +147,7 @@ test("opens nothing by itself after a failed CI build id change", async ({
 
 test("deletes a build", async ({ openProjectPage, page }) => {
   await mockDeleteBuilds(page);
-  const { buildList, modal } = await openProjectPage(project.id);
+  const { buildList, modal, notification } = await openProjectPage(project.id);
 
   await buildList.openMenu(finishedBuild.number);
   await buildList.menuItem("Delete build…").click();
@@ -166,9 +164,7 @@ test("deletes a build", async ({ openProjectPage, page }) => {
   ]);
 
   await expect(
-    page.locator("#notistack-snackbar").filter({
-      hasText: `Build #${finishedBuild.number} deleted`,
-    }),
+    notification.messageWith(`Build #${finishedBuild.number} deleted`),
   ).toBeVisible();
   await expect(modal.dialog).toBeHidden();
 });

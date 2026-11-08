@@ -21,6 +21,7 @@ import {
   TestRunGroup,
 } from "../../_helpers/testRunGroup.helper";
 import { TagField, TestRun } from "../../types";
+import { TEST_ID } from "../../constants/locators";
 
 const HIDDEN_COLUMNS = { id: false };
 
@@ -78,7 +79,7 @@ const buildColumns = (
             {params.row.name}
           </Typography>
           {count > 1 && (
-            <Chip size="small" label={count} data-testid="groupCount" />
+            <Chip size="small" label={count} data-testid={TEST_ID.groupCount} />
           )}
           <CommentIndicator
             text={params.row.comment}

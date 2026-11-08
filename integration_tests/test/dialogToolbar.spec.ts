@@ -94,7 +94,7 @@ test("drops the unsaved areas on Cancel and leaves the edit mode", async ({
   await expect.poll(() => details.ignoreRects()).toHaveLength(2);
   await expect(details.saveAreas).toBeEnabled();
 
-  await details.cancelEditing.click();
+  await details.cancelBtn.click();
 
   await expect(details.editAreas).toBeVisible();
   await expect(details.saveAreas).toHaveCount(0);
@@ -131,11 +131,11 @@ test("opens the baseline history in a new tab", async ({
   openProjectPage,
   page,
 }) => {
-  await open(openProjectPage);
+  const details = await open(openProjectPage);
 
   const [history] = await Promise.all([
     page.waitForEvent("popup"),
-    page.getByRole("button", { name: /^History/ }).click(),
+    details.history.click(),
   ]);
 
   expect(history.url()).toContain(

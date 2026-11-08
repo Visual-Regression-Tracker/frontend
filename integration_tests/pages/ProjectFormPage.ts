@@ -1,5 +1,6 @@
 import { Locator } from "@playwright/test";
 import { BasePage } from "./BasePage";
+import { ELEMENT_ID } from "~client/constants/locators";
 
 export class ProjectFormPage extends BasePage {
   // a getter: the field initialisers below run before a subclass's own fields exist
@@ -7,10 +8,10 @@ export class ProjectFormPage extends BasePage {
     return this.page.locator("body");
   }
 
-  name = this.root.locator("#name");
-  mainBranch = this.root.locator("#branchName");
-  buildCount = this.root.locator("#buildCount");
-  maxBranchLifetime = this.root.locator("#maxBranchLifetime");
+  name = this.root.locator(`#${ELEMENT_ID.name}`);
+  mainBranch = this.root.locator(`#${ELEMENT_ID.branchName}`);
+  buildCount = this.root.locator(`#${ELEMENT_ID.buildCount}`);
+  maxBranchLifetime = this.root.locator(`#${ELEMENT_ID.maxBranchLifetime}`);
   autoApprove = this.root.getByLabel("Auto approve", { exact: true });
   imageComparison = this.root.getByRole("combobox", {
     name: "Image comparison library",
@@ -22,8 +23,8 @@ export class ProjectFormPage extends BasePage {
   solidShareMax = this.root.getByLabel("Solid share, max");
   distanceThreshold = this.root.getByLabel("Distance threshold");
   needsStageOne = this.root.getByText("Needs stage 1");
-  vlmNote = this.root.locator("#postAnalysisVlm");
-  dinov2Status = this.root.locator("#dinov2Status");
+  vlmNote = this.root.locator(`#${ELEMENT_ID.postAnalysisVlm}`);
+  dinov2Status = this.root.locator(`#${ELEMENT_ID.dinov2Status}`);
 
   vlmProvider = this.root.getByRole("combobox", { name: "VLM Provider" });
   ollamaModel = this.root.getByRole("combobox", { name: "Model" });
@@ -32,11 +33,30 @@ export class ProjectFormPage extends BasePage {
   });
   geminiModel = this.root.getByRole("textbox", { name: "Gemini Model" });
   // a password field has no role to find it by
-  geminiApiKey = this.root.locator("#apiKey");
+  geminiApiKey = this.root.locator(`#${ELEMENT_ID.geminiApiKey}`);
   prompt = this.root.getByRole("textbox", { name: "Prompt" });
   temperature = this.root.getByLabel("Temperature");
   threshold = this.root.getByLabel("Pixel diff threshold");
   tolerance = this.root.getByLabel("Tolerance", { exact: true });
+  antialiasingTolerance = this.root.getByLabel("Antialiasing tolerance");
+  variationAxis = this.root.getByRole("combobox", { name: "Variation axis" });
+  noOllamaModels = this.root.getByText(
+    "No models available. Enter model name manually.",
+  );
+
+  geminiApiKeyMissing(): Promise<boolean> {
+    return this.geminiApiKey.evaluate(
+      (input: HTMLInputElement) => input.validity.valueMissing,
+    );
+  }
+
+  get options(): Locator {
+    return this.page.getByRole("option");
+  }
+
+  get listbox(): Locator {
+    return this.page.getByRole("listbox");
+  }
 
   switchLabelled(label: string) {
     return this.root.getByLabel(label, { exact: true });

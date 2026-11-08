@@ -14,6 +14,7 @@ import { TestRunGrid } from "./TestRunGrid";
 import { TestRunGridHeader } from "./TestRunGridHeader";
 import { PAGE_SIZE_OPTIONS, TestRunDensity } from "./TestRunListControls";
 import type { TagFilters } from "./useTestRunFilters";
+import { TEST_ID } from "../../constants/locators";
 
 export const TestRunCardView = ({
   density,
@@ -137,7 +138,7 @@ export const TestRunCardView = ({
         {selectedCardCount > 0 && (
           <Typography
             variant="body2"
-            data-testid="gridSelectionCount"
+            data-testid={TEST_ID.gridSelectionCount}
             sx={{ marginLeft: 2 }}
           >
             {`${selectedCardCount} ${pluralize(selectedCardCount, "card")} selected`}

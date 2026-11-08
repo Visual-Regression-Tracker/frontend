@@ -10,6 +10,20 @@ export class Table extends PageObject {
     return this.getRow(rowId).locator(`[data-field='${name}']`);
   }
 
+  columnHeader(name: string | RegExp): Locator {
+    return this.page.getByRole("columnheader", { name });
+  }
+
+  checkbox(rowId: string): Locator {
+    return this.getColumn(rowId, "__check__").getByRole("checkbox");
+  }
+
+  rowIds(): Promise<(string | null)[]> {
+    return this.page
+      .locator(".MuiDataGrid-row")
+      .evaluateAll((rows) => rows.map((row) => row.getAttribute("data-id")));
+  }
+
   async checkRow(id: string) {
     await this.getColumn(id, "__check__").click();
   }

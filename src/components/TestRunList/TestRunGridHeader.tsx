@@ -2,6 +2,7 @@ import { Box, Button, Checkbox } from "@mui/material";
 import { ArrowDownward, ArrowUpward } from "@mui/icons-material";
 import type { TestRunSort, TestRunSortField } from "../../types/testRunSort";
 import { TestRunDensity } from "./TestRunListControls";
+import { TEST_ID, gridSortTestId } from "../../constants/locators";
 
 const SORT_LABELS: Record<TestRunSortField, string> = {
   name: "Name",
@@ -65,7 +66,7 @@ export const TestRunGridHeader = ({
         color="inherit"
         onClick={() => onSortChange(nextSort(sort, field))}
         endIcon={field === sort.field ? <Arrow fontSize="small" /> : undefined}
-        data-testid={`gridSort-${field}`}
+        data-testid={gridSortTestId(field)}
         sx={{ textTransform: "none", fontSize: 14, fontWeight: 500 }}
       >
         {SORT_LABELS[field]}
@@ -90,7 +91,7 @@ export const TestRunGridHeader = ({
           checked={totalCount > 0 && selectedCount === totalCount}
           indeterminate={selectedCount > 0 && selectedCount < totalCount}
           onChange={onToggleAll}
-          data-testid="gridSelectAll"
+          data-testid={TEST_ID.gridSelectAll}
           slotProps={{
             input: { "aria-label": "Select all runs" },
           }}

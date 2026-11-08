@@ -9,6 +9,7 @@ import {
 } from "@mui/material";
 import { Close } from "@mui/icons-material";
 import { ValidatedForm } from "./ValidatedForm";
+import { TEST_ID } from "../constants/locators";
 
 interface IProps {
   open: boolean;
@@ -83,7 +84,7 @@ export const BaseModal = ({
             type="submit"
             variant="contained"
             color={submitColor}
-            data-testid="submitButton"
+            data-testid={TEST_ID.submitButton}
             disabled={submitting}
           >
             {submitButtonText}

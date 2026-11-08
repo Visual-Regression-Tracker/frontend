@@ -21,6 +21,7 @@ import {
 import { VlmConfigForm } from "./VlmConfigForm";
 import { getDefaultConfig } from "./utils";
 import { WholeNumberField } from "./WholeNumberField";
+import { ELEMENT_ID } from "../../constants/locators";
 
 export const SETTINGS_SECTIONS = [
   { id: "general", title: "General" },
@@ -63,11 +64,11 @@ export const ProjectForm = () => {
   return (
     <Stack spacing={2}>
       <SettingsSection id="general" title="General">
-        <FieldRow id="name" title="Project name" stacked required>
+        <FieldRow id={ELEMENT_ID.name} title="Project name" stacked required>
           <ValidatedTextField
             name="projectName"
             rules={AT_LEAST_TWO_CHARACTERS}
-            id="name"
+            id={ELEMENT_ID.name}
             size="small"
             type="text"
             fullWidth
@@ -78,11 +79,16 @@ export const ProjectForm = () => {
             }
           />
         </FieldRow>
-        <FieldRow id="branchName" title="Main branch" stacked required>
+        <FieldRow
+          id={ELEMENT_ID.branchName}
+          title="Main branch"
+          stacked
+          required
+        >
           <ValidatedTextField
             name="mainBranchName"
             rules={AT_LEAST_TWO_CHARACTERS}
-            id="branchName"
+            id={ELEMENT_ID.branchName}
             size="small"
             type="text"
             fullWidth
@@ -93,7 +99,7 @@ export const ProjectForm = () => {
             }
           />
         </FieldRow>
-        <FieldRow id="buildCount" title="Builds to keep" required>
+        <FieldRow id={ELEMENT_ID.buildCount} title="Builds to keep" required>
           <WholeNumberField
             name="buildCount"
             value={project.maxBuildAllowed}
@@ -101,7 +107,7 @@ export const ProjectForm = () => {
           />
         </FieldRow>
         <FieldRow
-          id="maxBranchLifetime"
+          id={ELEMENT_ID.maxBranchLifetime}
           title="Max branch lifetime, days"
           required
         >

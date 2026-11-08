@@ -1,6 +1,8 @@
 // not part of `playwright test`: run with PW_PERF=1 npx playwright test (CI job "perf")
 import { expect, type CDPSession, type Page } from "@playwright/test";
 import { test } from "fixtures";
+import { TestDetailsDialog } from "pages/TestDetailsDialog";
+import { TestRunList } from "pages/components/TestRunList";
 import {
   TEST_BUILD_FAILED,
   TEST_PROJECT,
@@ -115,7 +117,7 @@ async function openLargeBuild(page: Page, testId?: string) {
 
 async function openList(page: Page) {
   const cdp = await openLargeBuild(page);
-  await expect(page.locator(".MuiDataGrid-row").first()).toBeVisible({
+  await expect(new TestRunList(page).rows.first()).toBeVisible({
     timeout: 60_000,
   });
   await expect.poll(() => hasSocket(page)).toBe(true);
@@ -194,19 +196,16 @@ test.describe("a build of thousands of runs", () => {
     page,
   }) => {
     await openLargeBuild(page, testRuns[0].id);
-    const step = page.getByTestId("step-position");
-    await expect(step).toBeVisible({ timeout: 60_000 });
-    await expect(page.getByTestId("drawArea").locator("canvas")).toHaveCount(
-      2,
-      { timeout: 30_000 },
-    );
+    const details = new TestDetailsDialog(page);
+    await expect(details.step).toBeVisible({ timeout: 60_000 });
+    await expect(details.canvases).toHaveCount(2, { timeout: 30_000 });
     await expect.poll(() => hasSocket(page)).toBe(true);
     await waitForQuietCommits(page);
 
     await resetProbe(page);
-    const before = await step.textContent();
+    const before = await details.step.textContent();
     await page.keyboard.press("ArrowRight");
-    await expect(step).not.toHaveText(before ?? "");
+    await expect(details.step).not.toHaveText(before ?? "");
     await waitForQuietCommits(page);
 
     const { renders } = await readRenders(page);

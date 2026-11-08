@@ -14,16 +14,14 @@ import {
   TEST_USER,
 } from "~client/_test/test.data.helper";
 import { Role, User } from "~client/types";
-import { waitForPage } from "utils/waitForPage";
 
 test.beforeEach(async ({ page }) => {
   await mockGetProjects(page, [TEST_PROJECT]);
   await mockGetUsers(page, [TEST_USER, EDITOR_USER, GUEST_USER]);
 });
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 test("renders", async ({ userListPage, page }) => {
-  await waitForPage(page);
+  await userListPage.waitUntilLoaded();
   await expect(page).toHaveScreenshot("user-list-page.png");
 });
 
@@ -95,7 +93,7 @@ test("changes the role of every selected user", async ({
   await userListPage.table.checkRow(EDITOR_USER.id);
   await userListPage.table.checkRow(GUEST_USER.id);
   await userListPage.changeRoleBtn.click();
-  await page.getByRole("menuitem", { name: "Admin" }).click();
+  await userListPage.menuItem("Admin").click();
 
   await expect(userListPage.notification.message).toHaveText("Updated");
   expect(requests).toHaveLength(2);
@@ -124,13 +122,11 @@ test("shows only Guests from the new guests banner", async ({
   await expect(userListPage.roleFilter).toHaveText("Role: 1");
 });
 
-test("sorts people by role", async ({ userListPage, page }) => {
-  await page.getByRole("columnheader", { name: /^Role/ }).click();
+test("sorts people by role", async ({ userListPage }) => {
+  await userListPage.table.columnHeader(/^Role/).click();
 
   await expect(userListPage.table.getRow(TEST_USER.id)).toBeVisible();
-  const ids = await page
-    .locator(".MuiDataGrid-row")
-    .evaluateAll((rows) => rows.map((row) => row.getAttribute("data-id")));
+  const ids = await userListPage.table.rowIds();
   expect(ids).toEqual([TEST_USER.id, EDITOR_USER.id, GUEST_USER.id]);
 });
 
@@ -145,7 +141,5 @@ test("does not let the signed-in user be selected", async ({
   const userListPage = new UserListPage(page);
 
   await expect(userListPage.table.getRow(self.id)).toContainText("you");
-  await expect(
-    userListPage.table.getColumn(self.id, "__check__").getByRole("checkbox"),
-  ).toBeDisabled();
+  await expect(userListPage.table.checkbox(self.id)).toBeDisabled();
 });

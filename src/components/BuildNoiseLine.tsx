@@ -5,6 +5,7 @@ import { TestStatus } from "../types/testStatus";
 import { noiseHintOf } from "../_helpers/noiseHint.helper";
 import { buildNoiseCaption } from "../_helpers/noiseSummary.helper";
 import { ANALYSING } from "../_helpers/noiseText.helper";
+import { TEST_ID } from "../constants/locators";
 
 interface IProps {
   testRuns: TestRun[];
@@ -25,7 +26,7 @@ export const BuildNoiseLine = ({ testRuns, onShowNoise }: IProps) => {
   return (
     <Stack
       direction="row"
-      data-testid="build-noise-line"
+      data-testid={TEST_ID.buildNoiseLine}
       sx={{ alignItems: "center", gap: 0.75, color: "text.secondary" }}
     >
       <BlurOn fontSize="small" />

@@ -1,4 +1,4 @@
-import { expect, Page } from "@playwright/test";
+import { expect } from "@playwright/test";
 import { test } from "fixtures";
 import {
   TEST_BUILD_FAILED,
@@ -20,11 +20,6 @@ import {
 } from "utils/mocks";
 
 const project = TEST_PROJECT;
-
-const toggle = (page: Page) => page.getByTestId("colorModeToggle");
-
-const background = (page: Page) =>
-  page.evaluate(() => getComputedStyle(document.body).backgroundColor);
 
 const LIGHT = "rgb(244, 246, 249)";
 const DARK = "rgb(17, 19, 24)";
@@ -52,17 +47,16 @@ test.beforeEach(async ({ page }) => {
 test.describe("on a light system", () => {
   test.use({ colorScheme: "light" });
 
-  test("starts light and switches to dark", async ({
-    projectListPage,
-    page,
-  }) => {
+  test("starts light and switches to dark", async ({ projectListPage }) => {
     await expect(projectListPage.projects).toHaveCount(1);
-    expect(await background(page)).toBe(LIGHT);
+    expect(await projectListPage.backgroundColor()).toBe(LIGHT);
 
-    await toggle(page).click();
+    await projectListPage.header.colorModeToggle.click();
 
-    await expect.poll(() => background(page)).toBe(DARK);
-    await expect(toggle(page)).toHaveAccessibleName("Switch to light mode");
+    await expect.poll(() => projectListPage.backgroundColor()).toBe(DARK);
+    await expect(projectListPage.header.colorModeToggle).toHaveAccessibleName(
+      "Switch to light mode",
+    );
   });
 
   test("remembers the choice after a reload", async ({
@@ -70,13 +64,13 @@ test.describe("on a light system", () => {
     page,
   }) => {
     await expect(projectListPage.projects).toHaveCount(1);
-    await toggle(page).click();
-    await expect.poll(() => background(page)).toBe(DARK);
+    await projectListPage.header.colorModeToggle.click();
+    await expect.poll(() => projectListPage.backgroundColor()).toBe(DARK);
 
     await page.reload();
 
-    await expect(toggle(page)).toBeVisible();
-    expect(await background(page)).toBe(DARK);
+    await expect(projectListPage.header.colorModeToggle).toBeVisible();
+    expect(await projectListPage.backgroundColor()).toBe(DARK);
   });
 });
 
@@ -85,14 +79,13 @@ test.describe("on a dark system", () => {
 
   test("follows the system until told otherwise", async ({
     projectListPage,
-    page,
   }) => {
     await expect(projectListPage.projects).toHaveCount(1);
-    expect(await background(page)).toBe(DARK);
+    expect(await projectListPage.backgroundColor()).toBe(DARK);
 
-    await toggle(page).click();
+    await projectListPage.header.colorModeToggle.click();
 
-    await expect.poll(() => background(page)).toBe(LIGHT);
+    await expect.poll(() => projectListPage.backgroundColor()).toBe(LIGHT);
   });
 
   test("renders the project list", async ({ projectListPage, page }) => {

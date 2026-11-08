@@ -6,7 +6,10 @@ import {
   HEADER_HELP_MENU_BUTTON_TEST_ID,
   HEADER_LOGOUT_BUTTON_TEST_ID,
 } from "~client/components/Header.locators";
-import { LOCATOR_PROJECT_PAGE_SELECT_PROJECT } from "~client/constants/locators";
+import {
+  LOCATOR_PROJECT_PAGE_SELECT_PROJECT,
+  TEST_ID,
+} from "~client/constants/locators";
 
 export class Header extends PageObject {
   helpMenuButton = this.page.getByTestId(HEADER_HELP_MENU_BUTTON_TEST_ID);
@@ -17,6 +20,9 @@ export class Header extends PageObject {
   projectCrumb = this.page.locator(`#${LOCATOR_PROJECT_PAGE_SELECT_PROJECT}`);
   projectSearch = this.page.getByRole("searchbox", { name: "Find project" });
   tabs = this.page.getByRole("navigation", { name: "Project", exact: true });
+  projectsLink = this.breadcrumb.getByRole("link", { name: "Projects" });
+  allTabs = this.tabs.getByRole("tab");
+  colorModeToggle = this.page.getByTestId(TEST_ID.colorModeToggle);
   logoutBtn = this.avatarMenu.getByTestId(HEADER_LOGOUT_BUTTON_TEST_ID);
 
   async openAvatarMenu() {

@@ -7,6 +7,7 @@ import {
 } from "../../_helpers/noiseHint.helper";
 import { TAG_LABELS } from "../../_helpers/testRunTags.helper";
 import type { TagFilters } from "./useTestRunFilters";
+import { TEST_ID } from "../../constants/locators";
 
 const CHIP_ORDER: TagField[] = [
   "os",
@@ -50,7 +51,7 @@ const TestRunFilters = ({
     searchLabel="Name"
     searchMinLength={2}
     searchWidth={180}
-    searchTestId="testRunNameFilter"
+    searchTestId={TEST_ID.testRunNameFilter}
     active={hasActiveFilters}
     actions={actions}
     filters={[
