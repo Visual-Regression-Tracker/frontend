@@ -1,9 +1,11 @@
 import { expect, Page } from "@playwright/test";
+import { PNG } from "pngjs";
 import { AUTH_USER, test as base } from "fixtures";
 import { LoginPage, ProjectListPage } from "pages";
 import {
   EDITOR_USER,
   GUEST_USER,
+  NOISE_ANALYSIS_CHANGE,
   TEST_BUILD_FAILED,
   TEST_BUILD_PASSED,
   TEST_BUILD_UNRESOLVED,
@@ -17,6 +19,7 @@ import {
   TEST_VARIATION_TWO,
 } from "~client/_test/test.data.helper";
 import { ImageComparison } from "~client/types/imageComparison";
+import { withRegions } from "~client/_test/noiseRegions";
 import { type TestRun, TestStatus } from "~client/types";
 import {
   API_URL,
@@ -1131,6 +1134,95 @@ const VIEWS: [name: string, body: Body][] = [
 
       await expect(details.undoRejection).toBeVisible();
       await shot("test-run-undo-rejection");
+    },
+  ],
+
+  [
+    "test run details in Diff without noise with DINOv2 disagreeing",
+    async ({ openProjectPage, page, shot }) => {
+      const patch = { x: 600, y: 300, width: 14, height: 14, weight: 0.4 };
+      const disagreeing = {
+        ...TEST_UNRESOLVED,
+        id: "noiseless-disagreeing",
+        noiseAnalysis: withRegions(
+          NOISE_ANALYSIS_CHANGE,
+          [],
+          [patch, { ...patch, x: 900, y: 120, weight: 0.3 }],
+        ),
+      };
+      await mockGetTestRuns(page, build.id, [disagreeing, TEST_RUN_NEW]);
+      await mockTestRun(page, disagreeing);
+      const { details } = await openProjectPage(
+        project.id,
+        build.id,
+        disagreeing.id,
+      );
+      await expect(details.drawAreas).toHaveCount(2);
+
+      await details.noiselessMode.click();
+
+      await expect(details.noiselessCaveat).toContainText(
+        "DINOv2 sees a change this view hides.",
+      );
+      await expect.poll(() => details.keptPixels()).not.toBeNull();
+      await shot("test-run-noiseless-dinov2-disagrees");
+    },
+  ],
+
+  [
+    "test run details in Diff without noise without DINOv2",
+    async ({ openProjectPage, page, shot }) => {
+      const unchecked = {
+        ...TEST_UNRESOLVED,
+        id: "noiseless-unchecked",
+        noiseAnalysis: null,
+      };
+      await mockGetTestRuns(page, build.id, [unchecked, TEST_RUN_NEW]);
+      await mockTestRun(page, unchecked);
+      const { details } = await openProjectPage(
+        project.id,
+        build.id,
+        unchecked.id,
+      );
+      await expect(details.drawAreas).toHaveCount(2);
+
+      await details.noiselessMode.click();
+
+      await expect(details.noiselessCaveat).toContainText(
+        "Faint changes may be hidden.",
+      );
+      await expect.poll(() => details.keptPixels()).not.toBeNull();
+      await shot("test-run-noiseless-faint-changes");
+    },
+  ],
+
+  [
+    "test run details with Diff without noise unavailable",
+    async ({ openProjectPage, page, shot }) => {
+      const png = new PNG({ width: 1280, height: 720 });
+      png.data.fill(128);
+      const translucent = PNG.sync.write(png);
+      for (const name of ["clear-base.png", "clear-image.png"]) {
+        await page.route(`${API_URL}/images/${name}**`, (route) =>
+          route.fulfill({ body: translucent, contentType: "image/png" }),
+        );
+      }
+      const clear = {
+        ...TEST_UNRESOLVED,
+        id: "noiseless-unavailable",
+        baselineName: "clear-base.png",
+        imageName: "clear-image.png",
+        noiseAnalysis: null,
+      };
+      await mockGetTestRuns(page, build.id, [clear, TEST_RUN_NEW]);
+      await mockTestRun(page, clear);
+      const { details } = await openProjectPage(project.id, build.id, clear.id);
+      await expect(details.drawAreas).toHaveCount(2);
+
+      await details.noiselessMode.click();
+
+      await expect(details.noiselessMode).toBeDisabled();
+      await shot("test-run-noiseless-unavailable");
     },
   ],
 ];

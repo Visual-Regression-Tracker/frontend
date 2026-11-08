@@ -9,7 +9,7 @@ type KonvaNode = {
   height: () => number;
   draggable: () => boolean;
   getParent: () => { getClassName: () => string };
-  image: () => { src: string };
+  image: () => HTMLImageElement;
 };
 type KonvaStage = {
   container: () => HTMLElement;
@@ -60,7 +60,15 @@ export class TestDetailsDialog extends PageObject {
 
   viewModes = this.page.getByRole("group", { name: "View mode" });
   sideBySide = this.viewModes.getByRole("button", { name: "Side by side" });
-  diffMode = this.viewModes.getByRole("button", { name: "Diff" });
+  diffMode = this.viewModes.getByRole("button", { name: "Diff", exact: true });
+  noiselessMode = this.viewModes.getByRole("button", {
+    name: "Diff without noise",
+  });
+  noiselessProgress = this.page.getByRole("progressbar", {
+    name: "Computing Diff without noise",
+  });
+  noiselessCaveat = this.page.getByTestId("noiseless-caveat");
+  switchToDiff = this.page.getByRole("button", { name: "Switch to Diff" });
   fadeMode = this.viewModes.getByRole("button", { name: "Fade" });
   fadeSlider = this.page.getByTestId("overlayOpacity").getByRole("slider");
   differenceBlend = this.page.getByTestId("differenceToggle");
@@ -164,6 +172,33 @@ export class TestDetailsDialog extends PageObject {
     });
 
     return src.split("/").pop() ?? "";
+  }
+
+  /** Pure red pixels of the computed Diff without noise image; null until it is shown. */
+  keptPixels(): Promise<number | null> {
+    return this.checkpointPane.evaluate((pane) => {
+      const { Konva } = window as unknown as KonvaWindow;
+      const stage = Konva.stages.find((s) => pane.contains(s.container()));
+      const image = stage?.find("Image").at(-1)?.image();
+      if (!image?.src.startsWith("blob:")) return null;
+      const context = new OffscreenCanvas(
+        image.naturalWidth,
+        image.naturalHeight,
+      ).getContext("2d");
+      if (!context) throw new Error("No 2d context");
+      context.drawImage(image, 0, 0);
+      const { data } = context.getImageData(
+        0,
+        0,
+        image.naturalWidth,
+        image.naturalHeight,
+      );
+      let kept = 0;
+      for (let i = 0; i < data.length; i += 4) {
+        if (data[i] === 255 && data[i + 1] === 0 && data[i + 2] === 0) kept++;
+      }
+      return kept;
+    });
   }
 
   async canvasWidths(): Promise<number[]> {

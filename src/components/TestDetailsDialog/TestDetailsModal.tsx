@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { type ComponentProps, useState } from "react";
 import { LinearProgress, Divider } from "@mui/material";
 import { TestRun, TestStatus } from "../../types";
 import { staticService } from "../../services";
@@ -21,6 +21,14 @@ import { useStageView } from "./useStageView";
 import { useViewMode } from "./useViewMode";
 import { useNoiseHint } from "./useNoiseHint";
 import { NoiseHintPanel } from "./NoiseHintPanel";
+import { NoiselessBanner } from "./NoiselessBanner";
+import { UNAVAILABLE_HINT, useNoiselessDiff } from "./useNoiselessDiff";
+import {
+  changedPatches,
+  noiselessCaveat,
+} from "../../_helpers/noiseRegions.helper";
+
+type LoadedImage = ComponentProps<typeof ComparisonPanels>["diff"];
 
 const sizeLabel = (image: HTMLImageElement | undefined) =>
   image ? `${image.width}×${image.height}` : undefined;
@@ -81,6 +89,24 @@ const TestDetailsModal = ({
     [baselineImage, baselineImageStatus],
   );
   const [stageScale, setStageScale] = stage.stageProps.stageScaleState;
+  const noiseless = view.mode === "noiseless";
+  const noiselessView = useNoiselessDiff(testRun, noiseless);
+  const [noiselessImage, noiselessImageStatus] = useImage(
+    noiselessView.status === "ready" ? noiselessView.url : "",
+  );
+  const noiselessPanelImage = (): LoadedImage | undefined => {
+    if (noiselessView.status === "ready") {
+      return [noiselessImage, noiselessImageStatus];
+    }
+    return noiselessView.status === "computing"
+      ? [undefined, "loading"]
+      : undefined;
+  };
+  const { analysis, stage: hintStage } = noiseHint.panelProps;
+  const patches = noiseless ? changedPatches(analysis) : [];
+  const hintAreas = noiseless
+    ? [...(hintStage === "dinov2" ? [] : noiseHint.hintAreas), ...patches]
+    : noiseHint.hintAreas;
 
   return (
     <>
@@ -117,12 +143,25 @@ const TestDetailsModal = ({
             areas={areas}
             touched={touched}
             areasShown={areasVisible}
+            noiselessUnavailable={
+              noiselessView.status === "unavailable"
+                ? UNAVAILABLE_HINT[noiselessView.reason]
+                : undefined
+            }
             onAreasShownChange={(shown) =>
               setAreasShown({ runId: testRun.id, shown })
             }
           />
         }
       />
+      {noiseless && !areas.editing && (
+        <NoiselessBanner
+          view={noiselessView}
+          caveat={noiselessCaveat(analysis)}
+          outlined={patches.length}
+          onSwitchToDiff={() => view.setMode("diff")}
+        />
+      )}
       <ComparisonPanels
         testRun={testRun}
         view={view}
@@ -132,8 +171,10 @@ const TestDetailsModal = ({
         stageProps={stage.stageProps}
         baseline={[baselineImage, baselineImageStatus]}
         checkpoint={[currentImage, currentImageStatus]}
-        diff={[diffImage, diffImageStatus]}
-        hintAreas={noiseHint.hintAreas}
+        diff={
+          (noiseless && noiselessPanelImage()) || [diffImage, diffImageStatus]
+        }
+        hintAreas={hintAreas}
         areasShown={areasVisible}
       />
       <TestDetailsFooter

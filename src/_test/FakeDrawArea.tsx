@@ -4,6 +4,7 @@ import type { DrawArea as RealDrawArea } from "../components/TestDetailsDialog/D
 
 // Konva needs the native canvas package, which jsdom lacks; use as vi.mock("./DrawArea", async () => import("../../_test/FakeDrawArea"))
 export const DrawArea = ({
+  imageState,
   ignoreAreas,
   setIgnoreAreas,
   selectedRectId,
@@ -15,6 +16,7 @@ export const DrawArea = ({
   hintAreas ? (
     <div>
       <span data-testid="ignoreAreaCount">{ignoreAreas.length}</span>
+      <span data-testid="imageStatus">{imageState[1]}</span>
       <span data-testid="hintAreas">{JSON.stringify(hintAreas ?? [])}</span>
       <button
         onClick={() => {

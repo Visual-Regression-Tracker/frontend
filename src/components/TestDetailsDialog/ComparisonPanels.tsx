@@ -46,7 +46,8 @@ export const ComparisonPanels = ({
   hintAreas,
   areasShown,
 }: ComparisonPanelsProps) => {
-  const showDiff = view.mode === "diff" && !!testRun.diffName;
+  const showDiff =
+    (view.mode === "diff" || view.mode === "noiseless") && !!testRun.diffName;
   const fading = view.mode === "fade";
   const [image, imageStatus] = showDiff ? diff : checkpoint;
   const visible = areas.editing || areasShown;

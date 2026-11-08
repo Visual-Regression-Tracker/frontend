@@ -488,7 +488,9 @@ const overlaidOpacity = (page: Page) =>
     });
 
 const modeButton = (page: Page, name: string) =>
-  page.getByRole("group", { name: "View mode" }).getByRole("button", { name });
+  page
+    .getByRole("group", { name: "View mode" })
+    .getByRole("button", { name, exact: true });
 
 const openFade = (page: Page) => modeButton(page, "Fade").click();
 
