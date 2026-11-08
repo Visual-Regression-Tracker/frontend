@@ -373,13 +373,6 @@ export const mockMatchingVariations = (
   );
 };
 
-export const mockMergeTestVariations = async (page: Page, build: Build) => {
-  return page.route(
-    (url) => url.pathname === "/test-variations/merge",
-    (route) => route.fulfill({ body: JSON.stringify(build) }),
-  );
-};
-
 // appended to the real env-config.js, which the app reads once on load
 export const mockEnvConfig = (
   page: Page,
