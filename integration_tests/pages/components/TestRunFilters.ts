@@ -1,24 +1,35 @@
 import { PageObject } from "../PageObject";
 
+type FilterChip =
+  "os" | "browser" | "viewport" | "device" | "customTags" | "noise";
+
 export class TestRunFilters extends PageObject {
   name = this.page.getByTestId("testRunNameFilter");
-  tags = this.page.getByTestId("testRunTagFilter");
-  status = this.page.getByRole("combobox", { name: "Status" });
-  noiseHint = this.page.getByRole("combobox", { name: "Noise hint" });
-  noiseHintOptions = this.page.getByRole("option");
+  noiseHint = this.chip("noise");
+  chipOptions = this.page.getByRole("menuitemcheckbox");
+  clearFilters = this.page.getByRole("button", { name: "Clear filters" });
+  statusFilter = this.page.getByRole("group", { name: "Filter by status" });
 
-  async selectStatus(status: string) {
-    await this.status.click();
-    await this.page.getByRole("option", { name: status, exact: true }).click();
+  chip(id: FilterChip) {
+    return this.page.locator(`#filter-chip-${id}`);
   }
 
-  async selectNoiseHint(option: string) {
-    await this.noiseHint.click();
-    await this.page.getByRole("option", { name: option, exact: true }).click();
+  async selectStatus(status: string) {
+    const label = status.charAt(0).toUpperCase() + status.slice(1);
+    await this.statusFilter
+      .getByRole("button", { name: new RegExp(String.raw`^${label} \d+$`) })
+      .click();
+  }
+
+  async pick(id: FilterChip, option: string) {
+    await this.chip(id).click();
+    await this.page
+      .getByRole("menuitemcheckbox", { name: option, exact: true })
+      .click();
     await this.page.keyboard.press("Escape");
   }
 
-  selectedTag(tag: string) {
-    return this.tags.locator(".MuiChip-label").filter({ hasText: tag });
+  async selectNoiseHint(option: string) {
+    await this.pick("noise", option);
   }
 }

@@ -102,4 +102,51 @@ describe("FilterBar", () => {
 
     expect(screen.queryByRole("button", { name: "OS" })).toBeNull();
   });
+
+  it("shows Clear filters when the caller reports an active filter of its own", () => {
+    render(
+      <FilterBar
+        search=""
+        onSearchChange={() => {}}
+        filters={[]}
+        active
+        onClear={() => {}}
+      />,
+    );
+
+    expect(clearButton()).toBeInTheDocument();
+  });
+
+  it("renders the actions after the filters", () => {
+    render(
+      <FilterBar
+        search=""
+        onSearchChange={() => {}}
+        filters={[]}
+        actions={<button>View</button>}
+        onClear={() => {}}
+      />,
+    );
+
+    expect(screen.getByRole("button", { name: "View" })).toBeInTheDocument();
+  });
+
+  it("does not report a search shorter than the minimum", async () => {
+    const user = userEvent.setup();
+    const onSearch = vi.fn();
+    render(
+      <FilterBar
+        search=""
+        searchMinLength={2}
+        searchTestId="nameFilter"
+        onSearchChange={onSearch}
+        filters={[]}
+        onClear={() => {}}
+      />,
+    );
+
+    await user.type(screen.getByTestId("nameFilter"), "a{Enter}");
+
+    expect(onSearch).not.toHaveBeenCalled();
+  });
 });

@@ -442,7 +442,7 @@ const VIEWS: [name: string, body: Body][] = [
 
       await projectPage.testRunFilters.noiseHint.click();
 
-      await expect(projectPage.testRunFilters.noiseHintOptions).toHaveCount(3);
+      await expect(projectPage.testRunFilters.chipOptions).toHaveCount(3);
       await shot("project-page-noise-filter");
     },
   ],
@@ -468,7 +468,7 @@ const VIEWS: [name: string, body: Body][] = [
       }
       const projectPage = await openProjectPage(project.id, build.id);
       await projectPage.testRunList.gridViewToggle.click();
-      await projectPage.testRunList.groupToggle.click();
+      await projectPage.testRunList.groupBy("variation");
 
       await expect(projectPage.testRunList.cards).toHaveCount(2);
       await shot("project-page-grouped");
@@ -977,6 +977,56 @@ const VIEWS: [name: string, body: Body][] = [
 
       await expect(projectPage.buildList.errorMessage).toBeVisible();
       await shot("project-page-builds-failed");
+    },
+  ],
+
+  [
+    "project page with a filter chip open",
+    async ({ openProjectPage, shot }) => {
+      const projectPage = await openProjectPage(project.id, build.id);
+      await expect(projectPage.testRunList.rows).toHaveCount(4);
+
+      await projectPage.testRunFilters.chip("browser").click();
+
+      await expect(projectPage.testRunFilters.chipOptions).toHaveCount(1);
+      await shot("project-page-filter-chip-open");
+    },
+  ],
+
+  [
+    "project page with a tag filter picked",
+    async ({ openProjectPage, shot }) => {
+      const projectPage = await openProjectPage(project.id, build.id);
+      await expect(projectPage.testRunList.rows).toHaveCount(4);
+
+      await projectPage.testRunFilters.pick("os", "OS");
+
+      await expect(projectPage.testRunFilters.clearFilters).toBeVisible();
+      await shot("project-page-tag-filter");
+    },
+  ],
+
+  [
+    "project page with the View menu open",
+    async ({ openProjectPage, page, shot }) => {
+      const projectPage = await openProjectPage(project.id, build.id);
+      await expect(projectPage.testRunList.rows).toHaveCount(4);
+
+      await projectPage.testRunList.viewMenuButton.click();
+
+      await expect(page.getByRole("menu")).toBeVisible();
+      await shot("project-page-view-menu");
+    },
+  ],
+
+  [
+    "project page as a grid with the diff switch",
+    async ({ openProjectPage, shot }) => {
+      const projectPage = await openProjectPage(project.id, build.id);
+      await projectPage.testRunList.gridViewToggle.click();
+
+      await expect(projectPage.testRunList.diffToggle).toBeVisible();
+      await shot("project-page-grid-toolbar");
     },
   ],
 

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import {
   Button,
   Checkbox,
@@ -22,6 +22,11 @@ interface IProps {
   search: string;
   onSearchChange: (value: string) => void;
   searchLabel?: string;
+  searchMinLength?: number;
+  searchWidth?: number;
+  searchTestId?: string;
+  active?: boolean;
+  actions?: ReactNode;
   filters: FilterDef[];
   onClear: () => void;
 }
@@ -82,24 +87,43 @@ export const FilterBar = ({
   search,
   onSearchChange,
   searchLabel = "Search",
+  searchMinLength,
+  searchWidth,
+  searchTestId,
+  active = false,
+  actions,
   filters,
   onClear,
 }: IProps) => {
   const visible = filters.filter((filter) => filter.options.length > 0);
   const filtering =
-    search !== "" || filters.some((filter) => filter.value.length > 0);
+    active ||
+    search !== "" ||
+    filters.some((filter) => filter.value.length > 0);
 
-  return (
+  const bar = (
     <Stack
       direction="row"
-      sx={{ flexWrap: "wrap", alignItems: "center", gap: 1 }}
+      sx={{
+        flexWrap: "wrap",
+        alignItems: "center",
+        gap: 1,
+        ...(actions && { flex: 1, minWidth: 0 }),
+      }}
     >
       <DebouncedTextField
         size="small"
         label={searchLabel}
         value={search}
         debounceTimeout={300}
+        minLength={searchMinLength}
         onChange={onSearchChange}
+        sx={searchWidth ? { width: searchWidth } : undefined}
+        slotProps={
+          searchTestId
+            ? { htmlInput: { "data-testid": searchTestId } }
+            : undefined
+        }
       />
       {visible.map((filter) => (
         <FilterChip key={filter.id} filter={filter} />
@@ -109,6 +133,21 @@ export const FilterBar = ({
           Clear filters
         </Button>
       )}
+    </Stack>
+  );
+
+  if (!actions) {
+    return bar;
+  }
+  return (
+    <Stack direction="row" sx={{ alignItems: "flex-start", gap: 1 }}>
+      {bar}
+      <Stack
+        direction="row"
+        sx={{ alignItems: "center", gap: 1, flexShrink: 0, minHeight: 40 }}
+      >
+        {actions}
+      </Stack>
     </Stack>
   );
 };

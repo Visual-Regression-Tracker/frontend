@@ -177,7 +177,7 @@ test.describe("run list", () => {
 
     await testRunFilters.noiseHint.click();
 
-    await expect(testRunFilters.noiseHintOptions).toHaveText([
+    await expect(testRunFilters.chipOptions).toHaveText([
       "Likely noise",
       "Likely change",
       "Not analysed",

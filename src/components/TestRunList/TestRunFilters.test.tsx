@@ -2,49 +2,60 @@ import { useState } from "react";
 import { act, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { renderWithProviders } from "../../_test/render";
-import { TestStatus } from "../../types";
+import type { TagField } from "../../types";
 import type { NoiseHintFilter } from "../../_helpers/noiseHint.helper";
 import TestRunFilters from "./TestRunFilters";
+import type { TagFilters } from "./useTestRunFilters";
+
+const NO_FILTERS: TagFilters = {
+  os: [],
+  browser: [],
+  viewport: [],
+  device: [],
+  customTags: [],
+};
 
 const Harness = ({
   onNameChange,
   initialName = "",
-  onStatusesChange = vi.fn(),
-  onTagsChange = vi.fn(),
+  onTagFilterChange = vi.fn(),
   onNoiseHintsChange = vi.fn(),
   offersNoiseHint = true,
 }: {
   onNameChange: (value: string) => void;
   initialName?: string;
-  onStatusesChange?: (value: TestStatus[]) => void;
-  onTagsChange?: (value: string[]) => void;
+  onTagFilterChange?: (field: TagField, values: string[]) => void;
   onNoiseHintsChange?: (value: NoiseHintFilter[]) => void;
   offersNoiseHint?: boolean;
 }) => {
   const [name, setName] = useState(initialName);
-  const [statuses, setStatuses] = useState<TestStatus[]>([]);
-  const [tags, setTags] = useState<string[]>([]);
+  const [tagFilters, setTagFilters] = useState(NO_FILTERS);
   const [noiseHints, setNoiseHints] = useState<NoiseHintFilter[]>([]);
 
   return (
     <TestRunFilters
-      tagOptions={["en", "de"]}
-      statusOptions={[TestStatus.new, TestStatus.unresolved]}
+      tagOptions={{
+        os: ["Android", "iOS"],
+        browser: ["chrome"],
+        viewport: [],
+        device: [],
+        customTags: ["en", "de"],
+      }}
       name={name}
-      statuses={statuses}
-      tags={tags}
+      tagFilters={tagFilters}
       noiseHints={noiseHints}
+      hasActiveFilters={
+        name.length > 0 ||
+        noiseHints.length > 0 ||
+        Object.values(tagFilters).some((values) => values.length > 0)
+      }
       onNameChange={(value) => {
         onNameChange(value);
         setName(value);
       }}
-      onStatusesChange={(value) => {
-        onStatusesChange(value);
-        setStatuses(value);
-      }}
-      onTagsChange={(value) => {
-        onTagsChange(value);
-        setTags(value);
+      onTagFilterChange={(field, values) => {
+        onTagFilterChange(field, values);
+        setTagFilters((prev) => ({ ...prev, [field]: values }));
       }}
       onNoiseHintsChange={
         offersNoiseHint
@@ -56,8 +67,7 @@ const Harness = ({
       }
       onReset={() => {
         setName("");
-        setStatuses([]);
-        setTags([]);
+        setTagFilters(NO_FILTERS);
         setNoiseHints([]);
       }}
     />
@@ -65,7 +75,8 @@ const Harness = ({
 };
 
 const nameInput = () => screen.getByTestId("testRunNameFilter");
-const resetButton = () => screen.getByRole("button", { name: "Reset" });
+const clearButton = () =>
+  screen.queryByRole("button", { name: "Clear filters" });
 
 describe("TestRunFilters name search", () => {
   let user: ReturnType<typeof userEvent.setup>;
@@ -173,15 +184,15 @@ describe("TestRunFilters name search", () => {
     expect(onNameChange).toHaveBeenCalledTimes(1);
   });
 
-  it("enables Reset only once a name has been reported", async () => {
+  it("offers Clear filters only once a name has been reported", async () => {
     renderWithProviders(<Harness onNameChange={vi.fn()} />);
-    expect(resetButton()).toBeDisabled();
+    expect(clearButton()).toBeNull();
 
     await user.type(nameInput(), "abc");
-    expect(resetButton()).toBeDisabled();
+    expect(clearButton()).toBeNull();
 
     await elapse(400);
-    expect(resetButton()).toBeEnabled();
+    expect(clearButton()).toBeInTheDocument();
   });
 
   it("shows the new value when the name is reset from outside", async () => {
@@ -189,17 +200,17 @@ describe("TestRunFilters name search", () => {
     await user.type(nameInput(), "abc{Enter}");
     expect(nameInput()).toHaveValue("abc");
 
-    await user.click(resetButton());
+    await user.click(screen.getByRole("button", { name: "Clear filters" }));
 
     expect(nameInput()).toHaveValue("");
-    expect(resetButton()).toBeDisabled();
+    expect(clearButton()).toBeNull();
   });
 
   it("can be typed into again after a reset", async () => {
     const onNameChange = vi.fn();
     renderWithProviders(<Harness onNameChange={onNameChange} />);
     await user.type(nameInput(), "abc{Enter}");
-    await user.click(resetButton());
+    await user.click(screen.getByRole("button", { name: "Clear filters" }));
     onNameChange.mockClear();
 
     await user.type(nameInput(), "xyz");
@@ -210,46 +221,45 @@ describe("TestRunFilters name search", () => {
   });
 });
 
-describe("TestRunFilters status and tag filters", () => {
-  it("reports the chosen statuses", async () => {
-    const onStatusesChange = vi.fn();
-    const { user } = renderWithProviders(
-      <Harness onNameChange={vi.fn()} onStatusesChange={onStatusesChange} />,
-    );
+describe("TestRunFilters tag filters", () => {
+  it("has one chip per tag field that has options, in the design order", () => {
+    renderWithProviders(<Harness onNameChange={vi.fn()} />);
 
-    await user.click(screen.getByRole("combobox", { name: "Status" }));
-    await user.click(screen.getByRole("option", { name: TestStatus.new }));
-
-    expect(onStatusesChange).toHaveBeenCalledWith([TestStatus.new]);
+    expect(
+      screen
+        .getAllByRole("button", { name: /^(OS|Browser|Viewport|Device|Tags)/ })
+        .map((chip) => chip.textContent),
+    ).toEqual(["OS", "Browser", "Tags"]);
   });
 
-  it("reports the chosen tags", async () => {
-    const onTagsChange = vi.fn();
+  it("reports the picked values with their field", async () => {
+    const onTagFilterChange = vi.fn();
     const { user } = renderWithProviders(
-      <Harness onNameChange={vi.fn()} onTagsChange={onTagsChange} />,
+      <Harness onNameChange={vi.fn()} onTagFilterChange={onTagFilterChange} />,
     );
 
-    await user.click(screen.getByRole("combobox", { name: "Tag" }));
-    await user.click(screen.getByRole("option", { name: "de" }));
+    await user.click(screen.getByRole("button", { name: "Tags" }));
+    await user.click(screen.getByRole("menuitemcheckbox", { name: "de" }));
 
-    expect(onTagsChange).toHaveBeenCalledWith(["de"]);
+    expect(onTagFilterChange).toHaveBeenCalledWith("customTags", ["de"]);
   });
 
-  it("resets every filter", async () => {
+  it("clears every filter", async () => {
     const { user } = renderWithProviders(<Harness onNameChange={vi.fn()} />);
-    await user.click(screen.getByRole("combobox", { name: "Tag" }));
-    await user.click(screen.getByRole("option", { name: "de" }));
-    expect(resetButton()).toBeEnabled();
+    await user.click(screen.getByRole("button", { name: "OS" }));
+    await user.click(screen.getByRole("menuitemcheckbox", { name: "iOS" }));
+    await user.keyboard("{Escape}");
+    expect(screen.getByRole("button", { name: "OS: 1" })).toBeInTheDocument();
 
-    await user.click(resetButton());
+    await user.click(screen.getByRole("button", { name: "Clear filters" }));
 
-    expect(resetButton()).toBeDisabled();
+    expect(screen.getByRole("button", { name: "OS" })).toBeInTheDocument();
+    expect(clearButton()).toBeNull();
   });
 });
 
-describe("TestRunFilters noise hint filter", () => {
-  const noiseHintBox = () =>
-    screen.queryByRole("combobox", { name: "Noise hint" });
+describe("TestRunFilters noise filter", () => {
+  const noiseChip = () => screen.queryByRole("button", { name: /^Noise/ });
 
   it("offers the three hints and reports the chosen one", async () => {
     const onNoiseHintsChange = vi.fn();
@@ -260,26 +270,17 @@ describe("TestRunFilters noise hint filter", () => {
       />,
     );
 
-    await user.click(screen.getByRole("combobox", { name: "Noise hint" }));
+    await user.click(screen.getByRole("button", { name: /^Noise/ }));
 
     expect(
-      screen.getAllByRole("option").map((option) => option.textContent),
+      screen.getAllByRole("menuitemcheckbox").map((item) => item.textContent),
     ).toEqual(["Likely noise", "Likely change", "Not analysed"]);
 
-    await user.click(screen.getByRole("option", { name: "Likely change" }));
+    await user.click(
+      screen.getByRole("menuitemcheckbox", { name: "Likely change" }),
+    );
 
     expect(onNoiseHintsChange).toHaveBeenCalledWith(["Likely change"]);
-  });
-
-  it("enables Reset once a hint is picked and clears it", async () => {
-    const { user } = renderWithProviders(<Harness onNameChange={vi.fn()} />);
-    await user.click(screen.getByRole("combobox", { name: "Noise hint" }));
-    await user.click(screen.getByRole("option", { name: "Likely noise" }));
-    expect(resetButton()).toBeEnabled();
-
-    await user.click(resetButton());
-
-    expect(resetButton()).toBeDisabled();
   });
 
   it("is hidden without a handler for it", () => {
@@ -287,6 +288,6 @@ describe("TestRunFilters noise hint filter", () => {
       <Harness onNameChange={vi.fn()} offersNoiseHint={false} />,
     );
 
-    expect(noiseHintBox()).not.toBeInTheDocument();
+    expect(noiseChip()).not.toBeInTheDocument();
   });
 });

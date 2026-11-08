@@ -2,14 +2,17 @@ import { useCallback, useMemo, useState } from "react";
 import { TagField, TestRun, TestStatus } from "../../types";
 import type { NoiseHint } from "../../types/noiseAnalysis";
 import { NoiseHintFilter, noiseHintOf } from "../../_helpers/noiseHint.helper";
-import { statusesByAttention } from "../../_helpers/testRunStatus.helper";
-import { TAG_FIELDS, tagValuesOf } from "../../_helpers/testRunTags.helper";
+import { TAG_FIELDS } from "../../_helpers/testRunTags.helper";
 
-interface TagGroups {
-  picked: Set<string>;
-  // per picked tag, the fields it occurs in: a value of another picked tag there counts too
-  fieldsPerTag: TagField[][];
-}
+export type TagFilters = Record<TagField, string[]>;
+
+const EMPTY_TAG_FILTERS: TagFilters = {
+  os: [],
+  browser: [],
+  viewport: [],
+  device: [],
+  customTags: [],
+};
 
 const matchesNameQuery = (run: TestRun, query: string): boolean =>
   !query || run.name.toLowerCase().includes(query);
@@ -39,13 +42,14 @@ const matchesNoiseHints = (
   return picked.some((filter) => HINT_OF_FILTER[filter](hint));
 };
 
-const matchesTagGroups = (
-  run: TestRun,
-  { picked, fieldsPerTag }: TagGroups,
-): boolean =>
-  fieldsPerTag.every((fields) =>
-    fields.some((field) => picked.has(String(run[field] ?? ""))),
-  );
+const matchesTagFilters = (run: TestRun, tagFilters: TagFilters): boolean =>
+  TAG_FIELDS.every((field) => {
+    const picked = tagFilters[field];
+    return picked.length === 0 || picked.includes(String(run[field] ?? ""));
+  });
+
+const hasTagFilters = (tagFilters: TagFilters): boolean =>
+  TAG_FIELDS.some((field) => tagFilters[field].length > 0);
 
 export const useTestRunFilters = (
   testRuns: TestRun[],
@@ -53,57 +57,35 @@ export const useTestRunFilters = (
 ) => {
   const [name, setName] = useState("");
   const [statuses, setStatuses] = useState<TestStatus[]>([]);
-  const [tags, setTags] = useState<string[]>([]);
+  const [tagFilters, setTagFilters] = useState(EMPTY_TAG_FILTERS);
   const [pickedNoiseHints, setNoiseHints] = useState<NoiseHintFilter[]>([]);
   const noiseHints = noiseHintAvailable ? pickedNoiseHints : NO_HINTS;
 
+  const onTagFilterChange = useCallback(
+    (field: TagField, values: string[]) =>
+      setTagFilters((prev) => ({ ...prev, [field]: values })),
+    [],
+  );
+
   const toggleTag = useCallback(
-    (tag: string) =>
-      setTags((prev) =>
-        prev.includes(tag)
-          ? prev.filter((item) => item !== tag)
-          : [...prev, tag],
-      ),
+    (field: TagField, value: string) =>
+      setTagFilters((prev) => ({
+        ...prev,
+        [field]: prev[field].includes(value)
+          ? prev[field].filter((item) => item !== value)
+          : [...prev[field], value],
+      })),
     [],
   );
 
   const onReset = useCallback(() => {
     setName("");
     setStatuses([]);
-    setTags([]);
+    setTagFilters(EMPTY_TAG_FILTERS);
     setNoiseHints([]);
   }, []);
 
-  const tagFieldsByValue = useMemo(() => {
-    const map = new Map<string, TagField[]>();
-    TAG_FIELDS.forEach((field) => {
-      testRuns.forEach((run) => {
-        const value = run[field];
-        if (typeof value !== "string" || !value) {
-          return;
-        }
-        const fields = map.get(value);
-        if (!fields) {
-          map.set(value, [field]);
-        } else if (!fields.includes(field)) {
-          fields.push(field);
-        }
-      });
-    });
-    return map;
-  }, [testRuns]);
-
   const query = name.trim().toLowerCase();
-  const tagGroups: TagGroups = useMemo(
-    () => ({
-      picked: new Set(tags),
-      fieldsPerTag: tags.flatMap((tag) => {
-        const fields = tagFieldsByValue.get(tag);
-        return fields ? [fields] : [];
-      }),
-    }),
-    [tags, tagFieldsByValue],
-  );
 
   const filteredRows = useMemo(
     () =>
@@ -111,69 +93,70 @@ export const useTestRunFilters = (
         (run) =>
           matchesNameQuery(run, query) &&
           matchesStatuses(run, statuses) &&
-          matchesTagGroups(run, tagGroups) &&
+          matchesTagFilters(run, tagFilters) &&
           matchesNoiseHints(run, noiseHints),
       ),
-    [testRuns, query, statuses, tagGroups, noiseHints],
+    [testRuns, query, statuses, tagFilters, noiseHints],
   );
 
-  // options come from rows matching the OTHER filters: each one returns results
-  const statusOptions = useMemo(() => {
-    const present = new Set<TestStatus>(statuses);
-    testRuns.forEach((run) => {
-      if (
-        matchesNameQuery(run, query) &&
-        matchesTagGroups(run, tagGroups) &&
-        matchesNoiseHints(run, noiseHints)
-      ) {
-        present.add(run.status);
-      }
-    });
-    return statusesByAttention(Array.from(present));
-  }, [testRuns, query, tagGroups, noiseHints, statuses]);
-
   const tagOptions = useMemo(() => {
-    const present = new Set<string>(tags);
+    const present = TAG_FIELDS.reduce(
+      (acc, field) => ({ ...acc, [field]: new Set<string>(tagFilters[field]) }),
+      {} as Record<TagField, Set<string>>,
+    );
     testRuns.forEach((run) => {
       if (
         matchesNameQuery(run, query) &&
         matchesStatuses(run, statuses) &&
         matchesNoiseHints(run, noiseHints)
       ) {
-        // read fields off the run: an array per run allocates on every keystroke
         TAG_FIELDS.forEach((field) => {
           const value = run[field];
           if (typeof value === "string" && value) {
-            present.add(value);
+            present[field].add(value);
           }
         });
       }
     });
-    const fieldIndex = (value: string): number => {
-      const field = tagFieldsByValue.get(value)?.[0];
-      return field ? TAG_FIELDS.indexOf(field) : TAG_FIELDS.length;
-    };
-    return Array.from(present).sort(
-      (a, b) => fieldIndex(a) - fieldIndex(b) || a.localeCompare(b),
+    return TAG_FIELDS.reduce(
+      (acc, field) => ({
+        ...acc,
+        [field]: Array.from(present[field]).sort((a, b) => a.localeCompare(b)),
+      }),
+      {} as Record<TagField, string[]>,
     );
-  }, [testRuns, query, statuses, noiseHints, tags, tagFieldsByValue]);
+  }, [testRuns, query, statuses, noiseHints, tagFilters]);
 
   // a tag or status no longer in the runs stops filtering them
   const [prunedFor, setPrunedFor] = useState(testRuns);
   if (prunedFor !== testRuns) {
     setPrunedFor(testRuns);
     if (testRuns.length > 0) {
-      const existingTags = new Set<string>();
+      const existingTags = Object.fromEntries(
+        TAG_FIELDS.map((field) => [field, new Set<string>()]),
+      ) as Record<TagField, Set<string>>;
       const existingStatuses = new Set<TestStatus>();
       testRuns.forEach((run) => {
-        tagValuesOf(run, TAG_FIELDS).forEach((value) =>
-          existingTags.add(value),
-        );
+        TAG_FIELDS.forEach((field) => {
+          const value = run[field];
+          if (typeof value === "string" && value) {
+            existingTags[field].add(value);
+          }
+        });
         existingStatuses.add(run.status);
       });
-      setTags((prev) => {
-        const next = prev.filter((tag) => existingTags.has(tag));
-        return next.length === prev.length ? prev : next;
+      setTagFilters((prev) => {
+        const next = { ...prev };
+        TAG_FIELDS.forEach((field) => {
+          next[field] = prev[field].filter((tag) =>
+            existingTags[field].has(tag),
+          );
+        });
+        return TAG_FIELDS.every(
+          (field) => next[field].length === prev[field].length,
+        )
+          ? prev
+          : next;
       });
       setStatuses((prev) => {
         const next = prev.filter((status) => existingStatuses.has(status));
@@ -182,19 +165,25 @@ export const useTestRunFilters = (
     }
   }
 
+  const hasActiveFilters =
+    name.length > 0 ||
+    statuses.length > 0 ||
+    hasTagFilters(tagFilters) ||
+    noiseHints.length > 0;
+
   return {
     filteredRows,
+    hasActiveFilters,
     toggleTag,
     // shaped as TestRunFilters' props, so the list spreads them onto it
     name,
     statuses,
-    tags,
+    tagFilters,
     noiseHints,
-    statusOptions,
     tagOptions,
     onNameChange: setName,
     onStatusesChange: setStatuses,
-    onTagsChange: setTags,
+    onTagFilterChange,
     onNoiseHintsChange: noiseHintAvailable ? setNoiseHints : undefined,
     onReset,
   };

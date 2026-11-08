@@ -17,7 +17,7 @@ import {
   TestRunGroup,
 } from "../../_helpers/testRunGroup.helper";
 import { thumbnailFor } from "../../_helpers/testRunImage.helper";
-import { tagValuesOf } from "../../_helpers/testRunTags.helper";
+import type { TagFilters } from "./useTestRunFilters";
 import { TagField } from "../../types";
 
 const clampToLines = (lines: number) => ({
@@ -75,11 +75,11 @@ export const TestRunGrid = ({
   selectedIdSet: Set<string>;
   density: TestRunDensity;
   showDiff: boolean;
-  activeTags: string[];
+  activeTags: TagFilters;
   tagFieldsFor: (runCount: number) => TagField[];
   noiseAvailable: boolean;
   onToggleGroup: (ids: string[]) => void;
-  onToggleTag: (tag: string) => void;
+  onToggleTag: (field: TagField, tag: string) => void;
   onOpen: (id: string) => void;
 }) => (
   <Box
@@ -94,7 +94,10 @@ export const TestRunGrid = ({
     {groups.map(({ key, runs, representative }) => {
       const ids = runs.map((run) => run.id);
       const selectedCount = ids.filter((id) => selectedIdSet.has(id)).length;
-      const tags = tagValuesOf(representative, tagFieldsFor(runs.length));
+      const tags = tagFieldsFor(runs.length).flatMap((field) => {
+        const value = representative[field];
+        return typeof value === "string" && value ? [{ field, value }] : [];
+      });
 
       return (
         <Card key={key} variant="outlined" data-testid="testRunCard">
@@ -181,20 +184,20 @@ export const TestRunGrid = ({
             {/* buttons so the keyboard reaches them */}
             <Typography
               variant="caption"
-              title={tags.join(" · ")}
+              title={tags.map(({ value }) => value).join(" · ")}
               data-testid="cardTags"
               sx={CARD_TAGS}
             >
-              {tags.map((tag, index) => {
-                const filteringBy = activeTags.includes(tag);
+              {tags.map(({ field, value: tag }, index) => {
+                const filteringBy = activeTags[field].includes(tag);
 
                 return (
-                  <Fragment key={`${index}-${tag}`}>
+                  <Fragment key={`${field}-${tag}`}>
                     {index > 0 && " · "}
                     <Box
                       component="button"
                       type="button"
-                      onClick={() => onToggleTag(tag)}
+                      onClick={() => onToggleTag(field, tag)}
                       data-testid="cardTag"
                       sx={{
                         ...TAG_BUTTON,

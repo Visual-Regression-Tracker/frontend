@@ -1,17 +1,10 @@
 import { type ComponentProps, useState } from "react";
-import { fireEvent, screen, waitFor } from "@testing-library/react";
+import { screen } from "@testing-library/react";
 import type { GridPaginationModel } from "@mui/x-data-grid";
 import { renderWithProviders } from "../../_test/render";
-import {
-  A_DE,
-  A_EN,
-  B_EN,
-  groupsFor,
-  toolbarProps,
-} from "../../_test/testRunListFixture";
+import { A_DE, A_EN, B_EN, groupsFor } from "../../_test/testRunListFixture";
 import { run } from "../../_helpers/testRun.fixture";
 import { TAG_FIELDS } from "../../_helpers/testRunTags.helper";
-import { TEST_RUN_SHOW_DIFF_KEY } from "../../constants";
 import { NOISE_ANALYSIS_CHANGE } from "../../_test/test.data.helper";
 import { TestRun } from "../../types";
 import { DEFAULT_SORT } from "./TestRunGridHeader";
@@ -27,7 +20,8 @@ const propsFor = (
   }: Partial<Props> & { grouped?: boolean } = {},
 ): Props => {
   return {
-    toolbarProps: toolbarProps("grid"),
+    density: "standard",
+    showDiff: true,
     groups: groupsFor(runs, grouped),
     selectedIds: [],
     loading: false,
@@ -35,10 +29,15 @@ const propsFor = (
     onSortChange: vi.fn(),
     paginationModel: { page: 0, pageSize: 10 },
     onPaginationModelChange: vi.fn(),
-    activeTags: [],
+    activeTags: {
+      os: [],
+      browser: [],
+      viewport: [],
+      device: [],
+      customTags: [],
+    },
     tagFieldsFor: () => TAG_FIELDS,
     noiseAvailable: true,
-    hotkeysEnabled: true,
     onToggleAll: vi.fn(),
     onToggleGroup: vi.fn(),
     onToggleTag: vi.fn(),
@@ -74,12 +73,9 @@ const TWELVE = Array.from({ length: 12 }, (_, index) =>
 
 const cardNames = () =>
   screen.getAllByTestId("cardName").map((name) => name.textContent);
-const showDiffSwitch = () => screen.getByLabelText("Show diff");
 const thumbnail = () => screen.getByRole("img", { name: "Screen A" });
 
 describe("TestRunCardView", () => {
-  afterEach(() => localStorage.removeItem(TEST_RUN_SHOW_DIFF_KEY));
-
   it("shows a card per group", () => {
     renderCards(propsFor([A_EN, A_DE, B_EN], { grouped: true }));
 
@@ -242,40 +238,21 @@ describe("TestRunCardView", () => {
     expect(cardNames()).toEqual(["Screen 11", "Screen 12"]);
   });
 
-  it("shows the diff until it is switched off, and remembers that", async () => {
-    const { user, unmount } = renderCards(propsFor([A_EN]));
-    expect(showDiffSwitch()).toBeChecked();
+  it("shows the diff image of a card while the diff is on", () => {
+    renderCards(propsFor([A_EN]));
+
     expect(thumbnail()).toHaveAttribute(
       "src",
       expect.stringContaining("a-en-diff.png"),
     );
+  });
 
-    await user.click(showDiffSwitch());
+  it("shows the screenshot itself while the diff is off", () => {
+    renderCards(propsFor([A_EN], { showDiff: false }));
 
     expect(thumbnail()).toHaveAttribute(
       "src",
       expect.stringContaining("a-en.png"),
     );
-    expect(localStorage.getItem(TEST_RUN_SHOW_DIFF_KEY)).toBe("false");
-    unmount();
-
-    renderCards(propsFor([A_EN]));
-    expect(showDiffSwitch()).not.toBeChecked();
-  });
-
-  it("toggles the diff with d", async () => {
-    renderCards(propsFor([A_EN]));
-
-    fireEvent.keyDown(document.body, { key: "d", code: "KeyD" });
-
-    await waitFor(() => expect(showDiffSwitch()).not.toBeChecked());
-  });
-
-  it("leaves d alone while hotkeys are off, as while a run is open", () => {
-    renderCards(propsFor([A_EN], { hotkeysEnabled: false }));
-
-    fireEvent.keyDown(document.body, { key: "d", code: "KeyD" });
-
-    expect(showDiffSwitch()).toBeChecked();
   });
 });

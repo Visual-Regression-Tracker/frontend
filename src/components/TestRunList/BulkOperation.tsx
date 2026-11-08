@@ -1,10 +1,10 @@
 import { Fragment, ReactNode, useMemo, useState } from "react";
-import { Typography, IconButton, LinearProgress } from "@mui/material";
+import { Box, Typography, LinearProgress } from "@mui/material";
 import { BaseModal } from "../BaseModal";
 import { useSnackbar } from "notistack";
 import {
   CloudDownload,
-  Delete,
+  DeleteOutlineOutlined,
   LayersClear,
   ThumbDown,
   ThumbUp,
@@ -13,7 +13,7 @@ import { staticService, testRunService } from "../../services";
 import { BulkResult, allSucceeded } from "../../services/testRun.service";
 import { TestRun } from "../../types";
 import { isAwaitingReview } from "../../_helpers/testRunStatus.helper";
-import { Tooltip } from "../Tooltip";
+import { SelectionBar } from "../SelectionBar";
 import { undoSnackbarOptions } from "../UndoSnackbarAction";
 import {
   TAG_FIELDS,
@@ -44,33 +44,19 @@ const isReview = (action: BulkAction | null): action is "Approve" | "Reject" =>
 
 const ACTION_BUTTONS: {
   action: BulkAction;
-  tooltip: string;
+  label: string;
   icon: ReactNode;
+  color?: "error";
 }[] = [
-  {
-    action: "Approve",
-    tooltip: "Approve unresolved in selected",
-    icon: <ThumbUp data-testid="ThumbUpIcon" />,
-  },
-  {
-    action: "Reject",
-    tooltip: "Reject unresolved in selected",
-    icon: <ThumbDown />,
-  },
-  {
-    action: "Download",
-    tooltip: "Download images for selected",
-    icon: <CloudDownload data-testid="CloudDownloadIcon" />,
-  },
+  { action: "Approve", label: "Approve", icon: <ThumbUp /> },
+  { action: "Reject", label: "Reject", icon: <ThumbDown /> },
+  { action: "Download", label: "Download zip", icon: <CloudDownload /> },
+  { action: "Clear", label: "Clear ignore areas…", icon: <LayersClear /> },
   {
     action: "Delete",
-    tooltip: "Delete selected",
-    icon: <Delete data-testid="DeleteIcon" />,
-  },
-  {
-    action: "Clear",
-    tooltip: "Clear ignore areas for selected",
-    icon: <LayersClear data-testid="LayersClearIcon" />,
+    label: "Delete…",
+    icon: <DeleteOutlineOutlined />,
+    color: "error",
   },
 ];
 
@@ -101,12 +87,14 @@ const partialText = (
 export const BulkOperation = ({
   selectedIds,
   rows,
-  selectionNoun,
+  onSelectAll,
+  onClear,
   onProcessed,
 }: {
   selectedIds: string[];
   rows: TestRun[];
-  selectionNoun: "rows" | "cards";
+  onSelectAll: () => void;
+  onClear: () => void;
   // failed ids stay ticked so the action can be retried
   onProcessed: (failedIds: string[]) => void;
 }) => {
@@ -233,20 +221,22 @@ export const BulkOperation = ({
 
   return (
     <Fragment>
-      {ACTION_BUTTONS.map(({ action: buttonAction, tooltip, icon }) => (
-        <Tooltip key={buttonAction} title={`${tooltip} ${selectionNoun}.`}>
-          <span>
-            <IconButton
-              aria-label={`${tooltip} ${selectionNoun}`}
-              disabled={selectedIds.length === 0}
-              onClick={() => setAction(buttonAction)}
-              size="large"
-            >
-              {icon}
-            </IconButton>
-          </span>
-        </Tooltip>
-      ))}
+      {shownSelectedIds.length > 0 && (
+        <Box sx={{ paddingX: 2, paddingBottom: 1 }}>
+          <SelectionBar
+            selected={shownSelectedIds.length}
+            total={rows.length}
+            actions={ACTION_BUTTONS.map(
+              ({ action: buttonAction, ...rest }) => ({
+                ...rest,
+                onClick: () => setAction(buttonAction),
+              }),
+            )}
+            onSelectAll={onSelectAll}
+            onClose={onClear}
+          />
+        </Box>
+      )}
       <BaseModal
         open={action !== null}
         title={title}
