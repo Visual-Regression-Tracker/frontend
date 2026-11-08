@@ -20,15 +20,6 @@ import {
   mockTestRun,
 } from "utils/mocks";
 import type { Build } from "~client/types";
-import { boxOf } from "utils/boxOf";
-
-type KonvaStage = {
-  findOne: (
-    selector: string,
-  ) =>
-    | { opacity: () => number; globalCompositeOperation: () => string }
-    | undefined;
-};
 
 const project = TEST_PROJECT;
 
@@ -121,19 +112,18 @@ test("shows a build's checkbox on hover, and on every build once one is ticked",
 }) => {
   const projectPage = await openProjectPage(project.id);
   const first = projectPage.buildList.getBuildItem(TEST_BUILD_FAILED.number);
-  const second = projectPage.buildList.getBuildItem(TEST_BUILD_PASSED.number);
-  const boxOfBuild = (build: typeof first) =>
-    build.locator(".MuiCheckbox-root");
+  const { buildList } = projectPage;
+  const boxOfBuild = (number: number) => buildList.buildCheckboxFrame(number);
   await expect(first).toBeVisible();
 
-  await expect(boxOfBuild(first)).toHaveCSS("opacity", "0");
+  await expect(boxOfBuild(TEST_BUILD_FAILED.number)).toHaveCSS("opacity", "0");
   await first.hover();
-  await expect(boxOfBuild(first)).toHaveCSS("opacity", "1");
+  await expect(boxOfBuild(TEST_BUILD_FAILED.number)).toHaveCSS("opacity", "1");
 
-  await first.getByRole("checkbox").check();
+  await buildList.buildCheckbox(TEST_BUILD_FAILED.number).check();
   await page.mouse.move(0, 0);
 
-  await expect(boxOfBuild(second)).toHaveCSS("opacity", "1");
+  await expect(boxOfBuild(TEST_BUILD_PASSED.number)).toHaveCSS("opacity", "1");
 });
 
 test("keeps the search field in place when nothing matches", async ({
@@ -164,9 +154,7 @@ test("keeps the empty search message inside the sidebar", async ({
   const message = projectPage.buildList.emptyMessage;
   await expect(message).toHaveText(`No builds match "${query}"`);
 
-  const overflow = await message.evaluate(
-    (el) => el.scrollWidth - el.clientWidth,
-  );
+  const overflow = await projectPage.buildList.emptyMessageOverflow();
   expect(overflow).toBeLessThanOrEqual(0);
 });
 
@@ -183,9 +171,7 @@ test("scrolls back to the top of the list on page change", async ({
   const projectPage = await openProjectPage(project.id);
   await expect(projectPage.buildList.getBuildLocator(100)).toBeVisible();
 
-  await projectPage.buildList.scrollContainer.evaluate((el) =>
-    el.scrollTo(0, el.scrollHeight),
-  );
+  await projectPage.buildList.scrollToBottom();
   expect(await projectPage.buildList.scrollTop()).toBeGreaterThan(0);
 
   await projectPage.buildList.goToPage(2);
@@ -251,149 +237,82 @@ test("leaves the page the reviewer picked alone", async ({
   await expect(projectPage.buildList.getBuildLocator(100)).toBeVisible();
 });
 
-test("keeps wheel zoom inside the image pane", async ({
-  openProjectPage,
-  page,
-}) => {
+test("keeps wheel zoom inside the image pane", async ({ openProjectPage }) => {
   const projectPage = await openProjectPage(project.id, TEST_BUILD_FAILED.id);
   await projectPage.testRunList.getRow(TEST_UNRESOLVED.id).click();
 
-  const pane = page.getByTestId("drawArea").first();
-  await expect(pane).toBeVisible();
+  await expect(projectPage.details.firstPane).toBeVisible();
 
   // a wheel off the artwork must still be handled, or the browser zooms the page
-  const prevented = await pane.evaluate((el) => {
-    const box = el.getBoundingClientRect();
-    const event = new WheelEvent("wheel", {
-      deltaY: 120,
-      clientX: box.right - 5,
-      clientY: box.bottom - 5,
-      bubbles: true,
-      cancelable: true,
-    });
-    el.dispatchEvent(event);
-    return event.defaultPrevented;
-  });
+  const prevented = await projectPage.details.wheelOffArtworkIsPrevented();
 
   expect(prevented).toBe(true);
 });
 
-test("zooms with the cursor off the artwork", async ({
-  openProjectPage,
-  page,
-}) => {
+test("zooms with the cursor off the artwork", async ({ openProjectPage }) => {
   const projectPage = await openProjectPage(project.id, TEST_BUILD_FAILED.id);
   await projectPage.testRunList.getRow(TEST_UNRESOLVED.id).click();
 
-  const pane = page.getByTestId("drawArea").first();
-  await expect(pane).toBeVisible();
-  const canvas = page.locator("canvas").first();
-  const bounds = await boxOf(pane);
+  const { details } = projectPage;
+  await expect(details.firstPane).toBeVisible();
+  const bounds = await details.paneBounds();
 
-  await page.mouse.move(bounds.x + bounds.width / 2, bounds.y + 20);
-  for (let i = 0; i < 40; i++) {
-    await page.mouse.wheel(0, 120);
-  }
+  await details.wheelAt(
+    { x: bounds.x + bounds.width / 2, y: bounds.y + 20 },
+    120,
+    40,
+  );
 
-  const shrunk = await boxOf(canvas);
+  const shrunk = await details.firstCanvasBounds();
   expect(shrunk.x + shrunk.width).toBeLessThan(bounds.x + bounds.width - 20);
 
-  await page.mouse.move(bounds.x + bounds.width - 10, bounds.y + 20);
-  for (let i = 0; i < 10; i++) {
-    await page.mouse.wheel(0, -120);
-  }
+  await details.wheelAt(
+    { x: bounds.x + bounds.width - 10, y: bounds.y + 20 },
+    -120,
+    10,
+  );
 
-  const grown = await boxOf(canvas);
+  const grown = await details.firstCanvasBounds();
   expect(grown.width).toBeGreaterThan(shrunk.width);
 });
 
-test("zooms towards the cursor", async ({ openProjectPage, page }) => {
+test("zooms towards the cursor", async ({ openProjectPage }) => {
   const projectPage = await openProjectPage(project.id, TEST_BUILD_FAILED.id);
   await projectPage.testRunList.getRow(TEST_UNRESOLVED.id).click();
 
-  const pane = page.getByTestId("drawArea").first();
-  await expect(pane).toBeVisible();
+  await expect(projectPage.details.firstPane).toBeVisible();
 
   // only the horizontal axis: the pane grows in height instead of scrolling
-  const scroll = await pane.evaluate(async (el) => {
-    const box = el.getBoundingClientRect();
-
-    for (let i = 0; i < 20; i++) {
-      el.dispatchEvent(
-        new WheelEvent("wheel", {
-          deltaY: -120,
-          clientX: box.right - 20,
-          clientY: box.bottom - 20,
-          bubbles: true,
-          cancelable: true,
-        }),
-      );
-      await new Promise((resolve) => requestAnimationFrame(resolve));
-    }
-
-    return { left: el.scrollLeft, top: el.scrollTop };
-  });
+  const scroll = await projectPage.details.zoomInTowardsCornerScroll();
 
   expect(scroll.left).toBeGreaterThan(0);
 });
 
 test("holds the zoom buttons to the same limits as the wheel", async ({
   openProjectPage,
-  page,
 }) => {
   const projectPage = await openProjectPage(project.id, TEST_BUILD_FAILED.id);
   await projectPage.testRunList.getRow(TEST_UNRESOLVED.id).click();
 
-  const pane = page.getByTestId("drawArea").first();
-  await expect(pane).toBeVisible();
-  const zoomOut = page.getByRole("button", { name: "Zoom out" });
+  await expect(projectPage.details.firstPane).toBeVisible();
 
   for (let i = 0; i < 60; i++) {
-    await zoomOut.click();
+    await projectPage.details.zoomOut.click();
   }
 
-  const width = await pane.evaluate(
-    (el) => (el.firstElementChild as HTMLElement).offsetWidth,
-  );
+  const width = await projectPage.details.zoomedContentWidth();
   expect(width).toBeGreaterThan(100);
 });
 
 test("eases the zoom out instead of stopping dead", async ({
   openProjectPage,
-  page,
 }) => {
   const projectPage = await openProjectPage(project.id, TEST_BUILD_FAILED.id);
   await projectPage.testRunList.getRow(TEST_UNRESOLVED.id).click();
 
-  const pane = page.getByTestId("drawArea").first();
-  await expect(pane).toBeVisible();
+  await expect(projectPage.details.firstPane).toBeVisible();
 
-  const widths = await pane.evaluate(async (el) => {
-    const canvas = el.querySelector<HTMLCanvasElement>("canvas");
-    if (!canvas) throw new Error("No canvas in the pane");
-    const box = el.getBoundingClientRect();
-
-    for (let i = 0; i < 20; i++) {
-      el.dispatchEvent(
-        new WheelEvent("wheel", {
-          deltaY: -120,
-          clientX: box.left + 20,
-          clientY: box.top + 20,
-          bubbles: true,
-          cancelable: true,
-        }),
-      );
-    }
-
-    const samples: number[] = [];
-
-    for (let frame = 0; frame < 12; frame++) {
-      await new Promise((resolve) => requestAnimationFrame(resolve));
-      samples.push(Math.round(canvas.getBoundingClientRect().width));
-    }
-
-    return samples;
-  });
+  const widths = await projectPage.details.zoomInCanvasWidths();
 
   // jumping straight to the target would make every sample identical
   expect(new Set(widths).size).toBeGreaterThan(3);
@@ -434,11 +353,12 @@ test("shows Projects and the project in the breadcrumb, with the project tabs", 
 }) => {
   const projectPage = await openProjectPage(project.id);
 
-  await expect(
-    projectPage.header.breadcrumb.getByRole("link", { name: "Projects" }),
-  ).toHaveAttribute("href", "/projects");
+  await expect(projectPage.header.projectsLink).toHaveAttribute(
+    "href",
+    "/projects",
+  );
   await expect(projectPage.header.projectCrumb).toHaveText(project.name);
-  await expect(projectPage.header.tabs.getByRole("tab")).toHaveText([
+  await expect(projectPage.header.allTabs).toHaveText([
     "Builds",
     "Variations",
     "Statistics",
@@ -459,7 +379,7 @@ const openDialogWithoutDiff = async (
   await mockTestRun(page, noDiff);
   const projectPage = await openProjectPage(project.id, TEST_BUILD_FAILED.id);
   await projectPage.testRunList.getRow(noDiff.id).click();
-  await expect(page.getByTestId("drawArea")).toHaveCount(2);
+  await expect(projectPage.details.drawAreas).toHaveCount(2);
 
   return projectPage;
 };
@@ -477,171 +397,111 @@ const openDialogWithNextUnderReview = async (
   await mockTestRun(page, next);
   const projectPage = await openProjectPage(project.id, TEST_BUILD_FAILED.id);
   await projectPage.testRunList.getRow(TEST_UNRESOLVED.id).click();
-  await expect(page.getByTestId("drawArea")).toHaveCount(2);
+  await expect(projectPage.details.drawAreas).toHaveCount(2);
 
   return projectPage;
 };
 
-const openDialog = async (openProjectPage: OpenProjectPage, page: Page) => {
+const openDialog = async (openProjectPage: OpenProjectPage) => {
   const projectPage = await openProjectPage(project.id, TEST_BUILD_FAILED.id);
   await projectPage.testRunList.getRow(TEST_UNRESOLVED.id).click();
   // both panes, or a count asserted later proves nothing
-  await expect(page.getByTestId("drawArea")).toHaveCount(2);
+  await expect(projectPage.details.drawAreas).toHaveCount(2);
 
   return projectPage;
 };
 
-const overlaidOpacity = (page: Page) =>
-  page
-    .getByTestId("drawArea")
-    .first()
-    .evaluate(() => {
-      const { Konva } = window as unknown as {
-        Konva: { stages: KonvaStage[] };
-      };
-
-      const overlaid = Konva.stages
-        .map((stage) => stage.findOne(".overlaid"))
-        .find(Boolean);
-      if (!overlaid) throw new Error("No overlaid image on any stage");
-
-      return overlaid.opacity();
-    });
-
-const modeButton = (page: Page, name: string) =>
-  page
-    .getByRole("group", { name: "View mode" })
-    .getByRole("button", { name, exact: true });
-
-const openFade = (page: Page) => modeButton(page, "Fade").click();
-
 test("keeps both panes and fades the image over the baseline", async ({
   openProjectPage,
-  page,
 }) => {
-  await openDialog(openProjectPage, page);
-  await openFade(page);
-  await expect(page.getByTestId("overlayOpacity")).toBeVisible();
+  const { details } = await openDialog(openProjectPage);
+  await details.fadeMode.click();
+  await expect(details.overlayOpacity).toBeVisible();
 
-  await page.getByTestId("overlayOpacity").getByRole("slider").press("Home");
+  await details.fadeSlider.press("Home");
 
-  await expect(page.getByTestId("drawArea")).toHaveCount(2);
-  expect(await overlaidOpacity(page)).toBe(0);
+  await expect(details.drawAreas).toHaveCount(2);
+  expect(await details.overlaidOpacity()).toBe(0);
 });
 
 test("takes the pane off the diff when Fade is chosen", async ({
   openProjectPage,
-  page,
 }) => {
-  await openDialog(openProjectPage, page);
-  await expect(modeButton(page, "Diff")).toHaveAttribute(
-    "aria-pressed",
-    "true",
-  );
-  await expect(page.getByTestId("overlayOpacity")).toHaveCount(0);
+  const { details } = await openDialog(openProjectPage);
+  await expect(details.diffMode).toHaveAttribute("aria-pressed", "true");
+  await expect(details.overlayOpacity).toHaveCount(0);
 
-  await openFade(page);
+  await details.fadeMode.click();
 
-  await expect(modeButton(page, "Diff")).toHaveAttribute(
-    "aria-pressed",
-    "false",
-  );
-  await expect(modeButton(page, "Fade")).toHaveAttribute(
-    "aria-pressed",
-    "true",
-  );
-  expect(await overlaidOpacity(page)).toBe(0.5);
+  await expect(details.diffMode).toHaveAttribute("aria-pressed", "false");
+  await expect(details.fadeMode).toHaveAttribute("aria-pressed", "true");
+  expect(await details.overlaidOpacity()).toBe(0.5);
 });
 
 test("blends the two as a difference, diff image or not", async ({
   openProjectPage,
   page,
 }) => {
-  await openDialogWithoutDiff(openProjectPage, page);
-  await openFade(page);
+  const { details } = await openDialogWithoutDiff(openProjectPage, page);
+  await details.fadeMode.click();
 
-  await page.getByTestId("differenceToggle").click();
+  await details.differenceBlend.click();
 
-  expect(
-    await page
-      .getByTestId("drawArea")
-      .first()
-      .evaluate(() => {
-        const { Konva } = window as unknown as {
-          Konva: { stages: KonvaStage[] };
-        };
-
-        const overlaid = Konva.stages
-          .map((stage) => stage.findOne(".overlaid"))
-          .find(Boolean);
-        if (!overlaid) throw new Error("No overlaid image on any stage");
-
-        return overlaid.globalCompositeOperation();
-      }),
-  ).toBe("difference");
+  expect(await details.overlaidBlend()).toBe("difference");
 });
 
 test("blends at full strength, whatever the fade says", async ({
   openProjectPage,
   page,
 }) => {
-  await openDialogWithoutDiff(openProjectPage, page);
-  await openFade(page);
-  await page.getByTestId("overlayOpacity").getByRole("slider").press("Home");
+  const { details } = await openDialogWithoutDiff(openProjectPage, page);
+  await details.fadeMode.click();
+  await details.fadeSlider.press("Home");
 
-  await page.getByTestId("differenceToggle").click();
+  await details.differenceBlend.click();
 
   // a difference blend washes out when faded, so the fade is off here
-  expect(await overlaidOpacity(page)).toBe(1);
-  await expect(
-    page.getByTestId("overlayOpacity").getByRole("slider"),
-  ).toBeDisabled();
+  expect(await details.overlaidOpacity()).toBe(1);
+  await expect(details.fadeSlider).toBeDisabled();
 });
 
 test("forgets the fade on the next screenshot", async ({
   openProjectPage,
   page,
 }) => {
-  await openDialogWithNextUnderReview(openProjectPage, page);
-  await openFade(page);
-  await page.getByTestId("overlayOpacity").getByRole("slider").press("Home");
-  expect(await overlaidOpacity(page)).toBe(0);
+  const { details } = await openDialogWithNextUnderReview(
+    openProjectPage,
+    page,
+  );
+  await details.fadeMode.click();
+  await details.fadeSlider.press("Home");
+  expect(await details.overlaidOpacity()).toBe(0);
 
   // the slider keeps focus and would take the arrow itself
-  await page.evaluate(() => (document.activeElement as HTMLElement)?.blur());
-  await page.keyboard.press("ArrowRight");
+  await details.goToNextByKeyboard();
 
-  await expect(modeButton(page, "Diff")).toHaveAttribute(
-    "aria-pressed",
-    "true",
-  );
-  await openFade(page);
-  await expect(
-    page.getByTestId("overlayOpacity").getByRole("slider"),
-  ).toHaveAttribute("aria-valuenow", "0.5");
+  await expect(details.diffMode).toHaveAttribute("aria-pressed", "true");
+  await details.fadeMode.click();
+  await expect(details.fadeSlider).toHaveAttribute("aria-valuenow", "0.5");
 });
 
 test("forgets the blend on the next screenshot", async ({
   openProjectPage,
   page,
 }) => {
-  await openDialogWithNextUnderReview(openProjectPage, page);
-  await openFade(page);
-  await page.getByTestId("differenceToggle").click();
-  await expect(page.getByTestId("differenceToggle")).toHaveAttribute(
-    "aria-pressed",
-    "true",
+  const { details } = await openDialogWithNextUnderReview(
+    openProjectPage,
+    page,
   );
+  await details.fadeMode.click();
+  await details.differenceBlend.click();
+  await expect(details.differenceBlend).toHaveAttribute("aria-pressed", "true");
 
-  await page.evaluate(() => (document.activeElement as HTMLElement)?.blur());
-  await page.keyboard.press("ArrowRight");
+  await details.goToNextByKeyboard();
 
-  await expect(modeButton(page, "Diff")).toHaveAttribute(
-    "aria-pressed",
-    "true",
-  );
-  await openFade(page);
-  await expect(page.getByTestId("differenceToggle")).toHaveAttribute(
+  await expect(details.diffMode).toHaveAttribute("aria-pressed", "true");
+  await details.fadeMode.click();
+  await expect(details.differenceBlend).toHaveAttribute(
     "aria-pressed",
     "false",
   );
@@ -650,32 +510,32 @@ test("forgets the blend on the next screenshot", async ({
 for (const settled of [TEST_RUN_OK, TEST_RUN_NEW]) {
   test(`hides the fade and the blend on a ${settled.status} screenshot`, async ({
     openProjectPage,
-    page,
   }) => {
     const projectPage = await openProjectPage(project.id, TEST_BUILD_FAILED.id);
+    const { details } = projectPage;
 
     await projectPage.testRunList.getRow(settled.id).click();
-    await expect(page.getByTestId("drawArea").first()).toBeVisible();
+    await expect(details.firstPane).toBeVisible();
 
-    await expect(page.getByTestId("overlayOpacity")).toHaveCount(0);
-    await expect(page.getByTestId("differenceToggle")).toHaveCount(0);
-    await expect(modeButton(page, "Fade")).toHaveCount(0);
+    await expect(details.overlayOpacity).toHaveCount(0);
+    await expect(details.differenceBlend).toHaveCount(0);
+    await expect(details.fadeMode).toHaveCount(0);
   });
 }
 
 test("keeps the fade on an approved screenshot carrying a diff", async ({
   openProjectPage,
-  page,
 }) => {
   const projectPage = await openProjectPage(project.id, TEST_BUILD_FAILED.id);
+  const { details } = projectPage;
 
   await projectPage.testRunList.getRow(TEST_RUN_APPROVED.id).click();
-  await expect(page.getByTestId("drawArea").first()).toBeVisible();
+  await expect(details.firstPane).toBeVisible();
 
-  await expect(modeButton(page, "Diff")).toBeVisible();
-  await openFade(page);
-  await expect(page.getByTestId("overlayOpacity")).toBeVisible();
-  await expect(page.getByTestId("differenceToggle")).toBeVisible();
+  await expect(details.diffMode).toBeVisible();
+  await details.fadeMode.click();
+  await expect(details.overlayOpacity).toBeVisible();
+  await expect(details.differenceBlend).toBeVisible();
 });
 
 test("keeps the fade reachable in a narrow window", async ({
@@ -683,38 +543,33 @@ test("keeps the fade reachable in a narrow window", async ({
   page,
 }) => {
   await page.setViewportSize({ width: 1000, height: 700 });
-  await openDialog(openProjectPage, page);
-  await openFade(page);
+  const { details } = await openDialog(openProjectPage);
+  await details.fadeMode.click();
 
-  await expect(
-    page.getByTestId("overlayOpacity").getByRole("slider"),
-  ).toBeVisible();
+  await expect(details.fadeSlider).toBeVisible();
 
-  await page.getByTestId("overlayOpacity").getByRole("slider").press("Home");
+  await details.fadeSlider.press("Home");
 
-  expect(await overlaidOpacity(page)).toBe(0);
+  expect(await details.overlaidOpacity()).toBe(0);
 });
 
 test("renders the fade", async ({ openProjectPage, page }) => {
-  await openDialog(openProjectPage, page);
-  await openFade(page);
+  const { details } = await openDialog(openProjectPage);
+  await details.fadeMode.click();
 
-  await page.getByTestId("overlayOpacity").getByRole("slider").press("End");
+  await details.fadeSlider.press("End");
   for (let i = 0; i < 10; i++) {
-    await page
-      .getByTestId("overlayOpacity")
-      .getByRole("slider")
-      .press("ArrowLeft");
+    await details.fadeSlider.press("ArrowLeft");
   }
 
   await expect(page).toHaveScreenshot("project-page-test-run-overlay.png");
 });
 
 test("renders the difference blend", async ({ openProjectPage, page }) => {
-  await openDialogWithoutDiff(openProjectPage, page);
-  await openFade(page);
+  const { details } = await openDialogWithoutDiff(openProjectPage, page);
+  await details.fadeMode.click();
 
-  await page.getByTestId("differenceToggle").click();
+  await details.differenceBlend.click();
   await page.mouse.move(0, 0);
 
   await expect(page).toHaveScreenshot("project-page-test-run-difference.png");

@@ -1,6 +1,7 @@
 import { Locator } from "@playwright/test";
 import { PageObject } from "./PageObject";
 import { boxOf } from "utils/boxOf";
+import { TEST_ID } from "~client/constants/locators";
 
 type KonvaNode = {
   x: () => number;
@@ -10,23 +11,28 @@ type KonvaNode = {
   draggable: () => boolean;
   getParent: () => { getClassName: () => string };
   image: () => HTMLImageElement;
+  opacity: () => number;
+  globalCompositeOperation: () => string;
 };
 type KonvaStage = {
   container: () => HTMLElement;
   find: (selector: string) => KonvaNode[];
+  findOne: (selector: string) => KonvaNode | undefined;
 };
 type KonvaWindow = { Konva: { stages: KonvaStage[] } };
 
 export type Rect = { x: number; y: number; width: number; height: number };
 
 export class TestDetailsDialog extends PageObject {
-  drawAreas = this.page.getByTestId("drawArea");
+  drawAreas = this.page.getByTestId(TEST_ID.drawArea);
+  firstPane = this.drawAreas.first();
   checkpointPane = this.drawAreas.nth(1);
+  imageSize = this.page.getByTestId(TEST_ID.imageSize);
 
-  step = this.page.getByTestId("step-position");
+  step = this.page.getByTestId(TEST_ID.stepPosition);
   previousRun = this.page.getByLabel("Previous run");
   nextRun = this.page.getByLabel("Next run");
-  closeBtn = this.iconButton("CloseIcon");
+  closeBtn = this.iconButton(TEST_ID.closeIcon);
 
   editAreas = this.page.getByRole("button", { name: "Edit areas" });
   cancelEditing = this.page.getByRole("button", {
@@ -34,15 +40,15 @@ export class TestDetailsDialog extends PageObject {
     exact: true,
   });
   areasChip = this.page.getByRole("button", { name: /^Ignore areas \(\d+\)$/ });
-  drawMode = this.iconButton("AddIcon");
-  deleteArea = this.iconButton("DeleteIcon");
-  clearAreas = this.iconButton("LayersClearIcon");
-  applyAreas = this.iconButton("CollectionsIcon");
-  saveAreas = this.iconButton("SaveIcon");
+  drawMode = this.iconButton(TEST_ID.addIcon);
+  deleteArea = this.iconButton(TEST_ID.deleteIcon);
+  clearAreas = this.iconButton(TEST_ID.layersClearIcon);
+  applyAreas = this.iconButton(TEST_ID.collectionsIcon);
+  saveAreas = this.iconButton(TEST_ID.saveIcon);
 
   zoomIn = this.page.getByRole("button", { name: "Zoom in" });
   zoomOut = this.page.getByRole("button", { name: "Zoom out" });
-  zoomLevel = this.page.getByTestId("zoom-level");
+  zoomLevel = this.page.getByTestId(TEST_ID.zoomLevel);
   originalSize = this.page.getByRole("button", { name: "Original size" });
   fitToScreen = this.page.getByRole("button", { name: "Fit into screen" });
 
@@ -67,19 +73,20 @@ export class TestDetailsDialog extends PageObject {
   noiselessProgress = this.page.getByRole("progressbar", {
     name: "Computing Diff without noise",
   });
-  noiselessCaveat = this.page.getByTestId("noiseless-caveat");
+  noiselessCaveat = this.page.getByTestId(TEST_ID.noiselessCaveat);
   switchToDiff = this.page.getByRole("button", { name: "Switch to Diff" });
   fadeMode = this.viewModes.getByRole("button", { name: "Fade" });
-  fadeSlider = this.page.getByTestId("overlayOpacity").getByRole("slider");
-  differenceBlend = this.page.getByTestId("differenceToggle");
+  overlayOpacity = this.page.getByTestId(TEST_ID.overlayOpacity);
+  fadeSlider = this.overlayOpacity.getByRole("slider");
+  differenceBlend = this.page.getByTestId(TEST_ID.differenceToggle);
 
   commentsBtn = this.page.getByRole("button", {
     name: /^(add|edit) comment/i,
   });
   commentChip = this.page.getByRole("button", { name: "Edit comment" });
   addCommentBtn = this.page.getByRole("button", { name: "Add comment" });
-  vlmAnalysis = this.page.getByTestId("vlm-analysis");
-  comment = this.page.getByTestId("comment");
+  vlmAnalysis = this.page.getByTestId(TEST_ID.vlmAnalysis);
+  comment = this.page.getByTestId(TEST_ID.comment);
   commentPopper = this.page.getByRole("tooltip").filter({ has: this.comment });
   commentSaveBtn = this.commentPopper.getByRole("button", { name: "Save" });
   // MUI's Fade sets opacity to 0 the moment it starts to close, 1 while open
@@ -99,11 +106,11 @@ export class TestDetailsDialog extends PageObject {
   variationsCancel = this.variations.getByRole("button", { name: "Cancel" });
   variationThumbnails = this.variations.locator("img");
 
-  noiseChip = this.page.getByTestId("noise-hint-popover-chip");
-  noisePanel = this.page.getByTestId("noise-hint-panel");
-  analyseRun = this.page.getByTestId("analyse-noise-run-button");
-  hintBlur = this.page.getByTestId("hint-areas-blur");
-  hintDinov2 = this.page.getByTestId("hint-areas-dinov2");
+  noiseChip = this.page.getByTestId(TEST_ID.noiseHintPopoverChip);
+  noisePanel = this.page.getByTestId(TEST_ID.noiseHintPanel);
+  analyseRun = this.page.getByTestId(TEST_ID.analyseNoiseRunButton);
+  hintBlur = this.page.getByTestId(TEST_ID.hintAreasBlur);
+  hintDinov2 = this.page.getByTestId(TEST_ID.hintAreasDinov2);
 
   discardPrompt = this.page.getByText("You have not saved ignore areas");
 
@@ -116,6 +123,9 @@ export class TestDetailsDialog extends PageObject {
       name: new RegExp(String.raw`^${verb} \d+ selected$`),
     });
   }
+
+  warningIcons = this.page.getByTestId(TEST_ID.warningRoundedIcon);
+  history = this.page.getByRole("button", { name: /^History/ });
 
   private iconButton(icon: string): Locator {
     return this.page
@@ -235,6 +245,131 @@ export class TestDetailsDialog extends PageObject {
     const box = await this.checkpointCanvasBox();
 
     await this.page.mouse.click(box.x + point.x, box.y + point.y);
+  }
+
+  async blurFocus() {
+    await this.page.evaluate(() =>
+      (document.activeElement as HTMLElement)?.blur(),
+    );
+  }
+
+  async goToNextByKeyboard() {
+    await this.blurFocus();
+    await this.page.keyboard.press("ArrowRight");
+  }
+
+  paneBounds() {
+    return boxOf(this.firstPane);
+  }
+
+  firstCanvasBounds() {
+    return boxOf(this.firstPane.locator("canvas").first());
+  }
+
+  async wheelAt(
+    point: { x: number; y: number },
+    deltaY: number,
+    times: number,
+  ) {
+    await this.page.mouse.move(point.x, point.y);
+    for (let i = 0; i < times; i++) {
+      await this.page.mouse.wheel(0, deltaY);
+    }
+  }
+
+  wheelOffArtworkIsPrevented(): Promise<boolean> {
+    return this.firstPane.evaluate((el) => {
+      const box = el.getBoundingClientRect();
+      const event = new WheelEvent("wheel", {
+        deltaY: 120,
+        clientX: box.right - 5,
+        clientY: box.bottom - 5,
+        bubbles: true,
+        cancelable: true,
+      });
+      el.dispatchEvent(event);
+      return event.defaultPrevented;
+    });
+  }
+
+  zoomInTowardsCornerScroll(): Promise<{ left: number; top: number }> {
+    return this.firstPane.evaluate(async (el) => {
+      const box = el.getBoundingClientRect();
+
+      for (let i = 0; i < 20; i++) {
+        el.dispatchEvent(
+          new WheelEvent("wheel", {
+            deltaY: -120,
+            clientX: box.right - 20,
+            clientY: box.bottom - 20,
+            bubbles: true,
+            cancelable: true,
+          }),
+        );
+        await new Promise((resolve) => requestAnimationFrame(resolve));
+      }
+
+      return { left: el.scrollLeft, top: el.scrollTop };
+    });
+  }
+
+  zoomInCanvasWidths(): Promise<number[]> {
+    return this.firstPane.evaluate(async (el) => {
+      const canvas = el.querySelector<HTMLCanvasElement>("canvas");
+      if (!canvas) throw new Error("No canvas in the pane");
+      const box = el.getBoundingClientRect();
+
+      for (let i = 0; i < 20; i++) {
+        el.dispatchEvent(
+          new WheelEvent("wheel", {
+            deltaY: -120,
+            clientX: box.left + 20,
+            clientY: box.top + 20,
+            bubbles: true,
+            cancelable: true,
+          }),
+        );
+      }
+
+      const samples: number[] = [];
+
+      for (let frame = 0; frame < 12; frame++) {
+        await new Promise((resolve) => requestAnimationFrame(resolve));
+        samples.push(Math.round(canvas.getBoundingClientRect().width));
+      }
+
+      return samples;
+    });
+  }
+
+  zoomedContentWidth(): Promise<number> {
+    return this.firstPane.evaluate(
+      (el) => (el.firstElementChild as HTMLElement).offsetWidth,
+    );
+  }
+
+  overlaidOpacity(): Promise<number> {
+    return this.firstPane.evaluate(() => {
+      const { Konva } = window as unknown as KonvaWindow;
+      const overlaid = Konva.stages
+        .map((stage) => stage.findOne(".overlaid"))
+        .find(Boolean);
+      if (!overlaid) throw new Error("No overlaid image on any stage");
+
+      return overlaid.opacity();
+    });
+  }
+
+  overlaidBlend(): Promise<string> {
+    return this.firstPane.evaluate(() => {
+      const { Konva } = window as unknown as KonvaWindow;
+      const overlaid = Konva.stages
+        .map((stage) => stage.findOne(".overlaid"))
+        .find(Boolean);
+      if (!overlaid) throw new Error("No overlaid image on any stage");
+
+      return overlaid.globalCompositeOperation();
+    });
   }
 
   async chooseAreaKind(kind: "Ignore Areas" | "Compare Area") {
