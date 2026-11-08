@@ -343,7 +343,7 @@ const VIEWS: [name: string, body: Body][] = [
       await expect(projectSettingsPage.page.getByRole("tooltip")).toHaveCount(
         0,
       );
-      // the clicks above scroll by wherever the fields sat while the models loaded, and the sticky section nav follows the scroll
+      // the sticky section nav follows wherever the clicks scrolled to
       await projectSettingsPage.page.evaluate(() => window.scrollTo(0, 0));
       await shot("project-settings-vlm-ollama", { fullPage: true });
     },
