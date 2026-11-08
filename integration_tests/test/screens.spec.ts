@@ -2,6 +2,7 @@ import { expect, Page } from "@playwright/test";
 import { PNG } from "pngjs";
 import { AUTH_USER, test as base } from "fixtures";
 import { LoginPage, ProjectListPage } from "pages";
+import type { ProjectSettingsPage } from "pages/ProjectSettingsPage";
 import {
   EDITOR_USER,
   GUEST_USER,
@@ -123,6 +124,15 @@ const test = base.extend<{
 });
 
 type Body = Parameters<typeof test>[2];
+
+// the page scrolls inside <main>, which the clicks on the selects leave wherever they scrolled to
+const showTopOfSettings = async ({ page, saveBtn }: ProjectSettingsPage) => {
+  await page.getByRole("main").evaluate((main) => main.scrollTo(0, 0));
+  await expect
+    .poll(() => page.getByRole("main").evaluate((main) => main.scrollTop))
+    .toBe(0);
+  await expect(saveBtn).toBeVisible();
+};
 
 const VARIATION_EN: TestRun = {
   ...TEST_UNRESOLVED,
@@ -343,8 +353,7 @@ const VIEWS: [name: string, body: Body][] = [
       await expect(projectSettingsPage.page.getByRole("tooltip")).toHaveCount(
         0,
       );
-      // the sticky section nav follows wherever the clicks scrolled to
-      await projectSettingsPage.page.evaluate(() => window.scrollTo(0, 0));
+      await showTopOfSettings(projectSettingsPage);
       await shot("project-settings-vlm-ollama", { fullPage: true });
     },
   ],
@@ -899,6 +908,7 @@ const VIEWS: [name: string, body: Body][] = [
       await projectSettingsPage.selectImageComparison(ImageComparison.lookSame);
 
       await expect(projectSettingsPage.tolerance).toBeVisible();
+      await showTopOfSettings(projectSettingsPage);
       await shot("project-settings-looks-same", { fullPage: true });
     },
   ],
@@ -959,6 +969,7 @@ const VIEWS: [name: string, body: Body][] = [
       await projectSettingsPage.selectVlmProvider("Google Gemini");
 
       await expect(projectSettingsPage.geminiModel).toBeVisible();
+      await showTopOfSettings(projectSettingsPage);
       await shot("project-settings-vlm-gemini", { fullPage: true });
     },
   ],
