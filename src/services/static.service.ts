@@ -75,5 +75,6 @@ async function downloadAsZip(
 
 export const staticService = {
   getImage,
+  getImageDownloadUrl,
   downloadAsZip,
 };

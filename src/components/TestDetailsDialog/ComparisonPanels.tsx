@@ -29,6 +29,7 @@ interface ComparisonPanelsProps {
   baseline: LoadedImage;
   checkpoint: LoadedImage;
   diff: LoadedImage;
+  noiseless?: LoadedImage;
   hintAreas: NoiseRegion[];
   areasShown: boolean;
 }
@@ -43,12 +44,16 @@ export const ComparisonPanels = ({
   baseline: [baselineImage, baselineImageStatus],
   checkpoint,
   diff,
+  noiseless,
   hintAreas,
   areasShown,
 }: ComparisonPanelsProps) => {
-  const showDiff = view.mode === "diff" && !!testRun.diffName;
+  const showDiff =
+    (view.mode === "diff" || view.mode === "noiseless") && !!testRun.diffName;
   const fading = view.mode === "fade";
-  const [image, imageStatus] = showDiff ? diff : checkpoint;
+  const [image, imageStatus] = showDiff
+    ? (view.mode === "noiseless" && noiseless) || diff
+    : checkpoint;
   const visible = areas.editing || areasShown;
 
   const openHistoryTab = () => {

@@ -1,9 +1,16 @@
 import {
   applyIgnoreAreas,
   isOpaque,
+  MAX_MEASURED_PIXELS,
   solidMask,
 } from "../../_helpers/solidMask.helper";
-import { decodeImage } from "../../services/imageDecode.service";
+import { renderNoiselessDiff } from "../../_helpers/noiselessDiff.helper";
+import {
+  decodeImage,
+  encodePng,
+  fetchImage,
+  readImageSize,
+} from "../../services/imageDecode.service";
 import type { SolidMaskRequest, SolidMaskResult } from "./solidMask.client";
 
 async function compute({
@@ -11,10 +18,23 @@ async function compute({
   imageUrl,
   ignoreAreas = [],
 }: SolidMaskRequest): Promise<SolidMaskResult> {
-  const [baseline, image] = await Promise.all([
-    decodeImage(baselineUrl),
-    decodeImage(imageUrl),
+  const blobs = await Promise.all([
+    fetchImage(baselineUrl),
+    fetchImage(imageUrl),
   ]);
+  const [baselineSize, imageSize] = await Promise.all(blobs.map(readImageSize));
+  if (baselineSize && imageSize) {
+    if (
+      baselineSize.width !== imageSize.width ||
+      baselineSize.height !== imageSize.height
+    ) {
+      return { unavailable: "size mismatch" };
+    }
+    if (imageSize.width * imageSize.height > MAX_MEASURED_PIXELS) {
+      return { unavailable: "too large" };
+    }
+  }
+  const [baseline, image] = await Promise.all(blobs.map(decodeImage));
   if (!isOpaque(baseline) || !isOpaque(image)) {
     return { unavailable: "transparent" };
   }
@@ -25,9 +45,14 @@ async function compute({
     applyIgnoreAreas(baseline, ignoreAreas),
     applyIgnoreAreas(image, ignoreAreas),
   );
-  return result
-    ? { mask: result.mask, solidPixels: result.measure.solidPixels }
-    : { unavailable: "too large" };
+  if (!result) {
+    return { unavailable: "too large" };
+  }
+  return {
+    mask: result.mask,
+    solidPixels: result.measure.solidPixels,
+    diff: await encodePng(renderNoiselessDiff(baseline, result.mask)),
+  };
 }
 
 self.onmessage = ({ data }: MessageEvent<SolidMaskRequest>) => {

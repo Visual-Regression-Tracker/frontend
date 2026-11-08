@@ -3,7 +3,7 @@ import { useHotkeys } from "react-hotkeys-hook";
 import { hotkeyOptions } from "../../_helpers/hotkeys.helper";
 import { TestRun } from "../../types";
 
-export type ViewMode = "sideBySide" | "diff" | "fade";
+export type ViewMode = "sideBySide" | "diff" | "noiseless" | "fade";
 
 const DEFAULT_OPACITY = 0.5;
 

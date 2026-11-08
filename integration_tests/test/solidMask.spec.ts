@@ -43,7 +43,6 @@ const withGamma = (png: Buffer): Buffer => {
   ]);
 };
 
-// The app does not use the worker yet, so the production bundle has no copy of it.
 let bundle: string;
 
 test.beforeAll(async () => {
@@ -119,11 +118,11 @@ test("the worker reports a semi-transparent image as unavailable", async ({
   page,
 }) => {
   const translucentUrl = await page.evaluate(async () => {
-    const canvas = new OffscreenCanvas(4, 4);
+    const canvas = new OffscreenCanvas(1280, 800);
     const context = canvas.getContext("2d");
     if (!context) throw new Error("No 2d context");
     context.fillStyle = "rgba(0, 0, 0, 0.5)";
-    context.fillRect(0, 0, 4, 4);
+    context.fillRect(0, 0, 1280, 800);
     return URL.createObjectURL(await canvas.convertToBlob());
   });
 

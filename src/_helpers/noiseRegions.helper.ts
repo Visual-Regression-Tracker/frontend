@@ -24,3 +24,33 @@ export function regionsOf(
   const result = analysis[stage];
   return result && "regions" in result ? result.regions : [];
 }
+
+export function changedPatches(analysis: NoiseAnalysisValue): NoiseRegion[] {
+  if (!isNoiseResult(analysis)) {
+    return [];
+  }
+  const threshold = analysis.config.dinov2.distanceThreshold;
+  return regionsOf(analysis, "dinov2").filter(
+    ({ weight }) => weight > threshold,
+  );
+}
+
+export type NoiselessCaveat =
+  { kind: "dinov2 disagrees"; patches: number } | { kind: "no dinov2" } | null;
+
+export function noiselessCaveat(analysis: NoiseAnalysisValue): NoiselessCaveat {
+  if (!isNoiseResult(analysis)) {
+    return { kind: "no dinov2" };
+  }
+  const { blur, dinov2 } = analysis;
+  if (dinov2 && "verdict" in dinov2) {
+    return blur?.verdict === "noise" && dinov2.verdict === "change"
+      ? { kind: "dinov2 disagrees", patches: dinov2.signals.patches }
+      : null;
+  }
+  return dinov2 &&
+    "skipped" in dinov2 &&
+    dinov2.skipped === "blur sees a change"
+    ? null
+    : { kind: "no dinov2" };
+}

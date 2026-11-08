@@ -21,6 +21,12 @@ import { useStageView } from "./useStageView";
 import { useViewMode } from "./useViewMode";
 import { useNoiseHint } from "./useNoiseHint";
 import { NoiseHintPanel } from "./NoiseHintPanel";
+import { NoiselessBanner } from "./NoiselessBanner";
+import { UNAVAILABLE_HINT, useNoiselessDiff } from "./useNoiselessDiff";
+import {
+  changedPatches,
+  noiselessCaveat,
+} from "../../_helpers/noiseRegions.helper";
 
 const sizeLabel = (image: HTMLImageElement | undefined) =>
   image ? `${image.width}×${image.height}` : undefined;
@@ -81,6 +87,17 @@ const TestDetailsModal = ({
     [baselineImage, baselineImageStatus],
   );
   const [stageScale, setStageScale] = stage.stageProps.stageScaleState;
+  const noiseless = view.mode === "noiseless";
+  const noiselessView = useNoiselessDiff(testRun, noiseless);
+  const [noiselessImage, noiselessImageStatus] = useImage(
+    noiselessView.status === "ready" ? noiselessView.url : "",
+  );
+  const { analysis, stage: hintStage } = noiseHint.panelProps;
+  const patches = noiseless ? changedPatches(analysis) : [];
+  const hintAreas =
+    hintStage === "dinov2"
+      ? noiseHint.hintAreas
+      : [...noiseHint.hintAreas, ...patches];
 
   return (
     <>
@@ -117,12 +134,25 @@ const TestDetailsModal = ({
             areas={areas}
             touched={touched}
             areasShown={areasVisible}
+            noiselessUnavailable={
+              noiselessView.status === "unavailable"
+                ? UNAVAILABLE_HINT[noiselessView.reason]
+                : undefined
+            }
             onAreasShownChange={(shown) =>
               setAreasShown({ runId: testRun.id, shown })
             }
           />
         }
       />
+      {noiseless && !areas.editing && (
+        <NoiselessBanner
+          view={noiselessView}
+          caveat={noiselessCaveat(analysis)}
+          outlined={patches.length}
+          onSwitchToDiff={() => view.setMode("diff")}
+        />
+      )}
       <ComparisonPanels
         testRun={testRun}
         view={view}
@@ -133,7 +163,12 @@ const TestDetailsModal = ({
         baseline={[baselineImage, baselineImageStatus]}
         checkpoint={[currentImage, currentImageStatus]}
         diff={[diffImage, diffImageStatus]}
-        hintAreas={noiseHint.hintAreas}
+        noiseless={
+          noiselessView.status === "ready"
+            ? [noiselessImage, noiselessImageStatus]
+            : undefined
+        }
+        hintAreas={hintAreas}
         areasShown={areasVisible}
       />
       <TestDetailsFooter
