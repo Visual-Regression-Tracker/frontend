@@ -163,7 +163,8 @@ export default tseslint.config(
             "Find elements through a page object (integration_tests/pages), not in the spec.",
         },
         {
-          selector: "MemberExpression[property.name='page']",
+          selector:
+            "MemberExpression[property.name='page'], VariableDeclarator > ObjectPattern > Property[key.name='page']",
           message:
             "Do not reach into a page object's page; add a method to the page object or use the page fixture.",
         },

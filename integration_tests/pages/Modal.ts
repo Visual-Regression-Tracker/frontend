@@ -7,10 +7,6 @@ export class Modal extends PageObject {
   confirmBtn = this.page.getByTestId(TEST_ID.submitButton);
   cancelBtn = this.dialog.getByRole("button", { name: "Cancel" });
 
-  button(name: string): Locator {
-    return this.page.getByRole("button", { name });
-  }
-
   fieldError(message: string): Locator {
     return this.dialog.getByText(message);
   }

@@ -392,7 +392,6 @@ export class TestDetailsDialog extends PageObject {
     });
   }
 
-  /** Page coordinates, for gestures that must end outside the image. */
   async dragOnPage(
     from: { x: number; y: number },
     to: { x: number; y: number },
