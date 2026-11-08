@@ -11,7 +11,6 @@ import {
   TEST_VARIATION_ONE,
   TEST_VARIATION_TWO,
 } from "~client/_test/test.data.helper";
-import { waitForPage } from "utils/waitForPage";
 
 test.beforeEach(async ({ page }) => {
   await mockGetProjects(page, [TEST_PROJECT]);
@@ -26,7 +25,8 @@ test.beforeEach(async ({ page }) => {
 test("renders", async ({ openTestVariationListPage, page }) => {
   await openTestVariationListPage(TEST_PROJECT.id);
 
-  await waitForPage(page);
+  await expect(page.getByRole("textbox", { name: "Name" })).toBeVisible();
+  await page.waitForLoadState("networkidle");
   await expect(page).toHaveScreenshot("test-variation-list-page.png");
 });
 

@@ -8,9 +8,9 @@ import {
   Typography,
   CardHeader,
   Chip,
-  Container,
   Stack,
 } from "@mui/material";
+import { PageContainer } from "../components/PageContainer";
 import { PageHeader } from "../components/PageHeader";
 import { useUserDispatch, useUserState, update } from "../contexts";
 import { usersService } from "../services";
@@ -77,7 +77,7 @@ const ProfilePage = () => {
   };
 
   return (
-    <Container maxWidth="lg" sx={{ py: 4 }}>
+    <PageContainer>
       <PageHeader title="Profile" />
       <Grid container spacing={2}>
         <Grid size={{ xs: 12, md: 6 }}>
@@ -182,7 +182,7 @@ const ProfilePage = () => {
           </Stack>
         </Grid>
       </Grid>
-    </Container>
+    </PageContainer>
   );
 };
 

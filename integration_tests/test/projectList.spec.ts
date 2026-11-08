@@ -6,7 +6,7 @@ import {
   ODIFF_DEFAULT_CONFIG,
 } from "~client/constants/project";
 import { ImageComparison } from "~client/types/imageComparison";
-import { ProjectListPage } from "pages";
+import { AddProjectPage, ProjectListPage } from "pages";
 import { ProjectSettingsPage } from "pages/ProjectSettingsPage";
 import type { NoiseAnalysisConfig, Project, ProjectDto } from "~client/types";
 import {
@@ -105,23 +105,34 @@ test("offers the group by axis with bulk approve off", async ({
   ).toBeVisible();
 });
 
-test("creates a project", async ({ projectListPage, page }) => {
-  await mockSaveProject(page);
-
+test("opens the add project page from the list", async ({
+  projectListPage,
+  page,
+}) => {
   await projectListPage.addBtn.click();
-  await projectListPage.name.fill("New project");
-  await projectListPage.mainBranch.fill("main");
-  await projectListPage.buildCount.fill("10");
-  await projectListPage.maxBranchLifetime.fill("7");
-  await projectListPage.autoApprove.uncheck();
-  await projectListPage.selectImageComparison(ImageComparison.odiff);
+
+  await expect(page).toHaveURL(/\/projects\/new$/);
+  await expect(new AddProjectPage(page).heading).toBeVisible();
+  await expect(projectListPage.modal.dialog).toHaveCount(0);
+});
+
+test("creates a project and opens it", async ({ addProjectPage, page }) => {
+  await mockSaveProject(page);
+  await mockGetBuilds(page, "createdProjectId", []);
+
+  await addProjectPage.name.fill("New project");
+  await addProjectPage.mainBranch.fill("main");
+  await addProjectPage.buildCount.fill("10");
+  await addProjectPage.maxBranchLifetime.fill("7");
+  await addProjectPage.autoApprove.uncheck();
+  await addProjectPage.selectImageComparison(ImageComparison.odiff);
 
   const [request] = await Promise.all([
     page.waitForRequest(
       (request) =>
         request.url() === `${API_URL}/projects` && request.method() === "POST",
     ),
-    projectListPage.modal.confirmBtn.click(),
+    addProjectPage.createBtn.click(),
   ]);
 
   expect(request.postDataJSON()).toMatchObject({
@@ -133,15 +144,14 @@ test("creates a project", async ({ projectListPage, page }) => {
     imageComparison: ImageComparison.odiff,
     imageComparisonConfig: ODIFF_DEFAULT_CONFIG,
   });
-  await expect(projectListPage.notification.message).toHaveText(
+  await expect(addProjectPage.notification.message).toHaveText(
     "New project created",
   );
-  await expect(projectListPage.modal.dialog).toBeHidden();
-  await expect(projectListPage.project("New project")).toBeVisible();
+  await expect(page).toHaveURL(/\/createdProjectId$/);
 });
 
 test("does not create a project with too short a name", async ({
-  projectListPage,
+  addProjectPage,
   page,
 }) => {
   const creates: string[] = [];
@@ -154,16 +164,19 @@ test("does not create a project with too short a name", async ({
     }
   });
 
-  await projectListPage.addBtn.click();
-  await projectListPage.name.fill("N");
-  await projectListPage.mainBranch.fill("main");
-  await projectListPage.modal.confirmBtn.click();
+  await addProjectPage.name.fill("N");
+  await addProjectPage.mainBranch.fill("main");
+  await addProjectPage.createBtn.click();
 
-  await expect(
-    projectListPage.modal.dialog.getByText("Enter at least two characters."),
-  ).toBeVisible();
-  await expect(projectListPage.modal.dialog).toBeVisible();
+  await expect(page.getByText("Enter at least two characters.")).toBeVisible();
+  await expect(page).toHaveURL(/\/projects\/new$/);
   expect(creates).toEqual([]);
+});
+
+test("cancels adding a project", async ({ addProjectPage, page }) => {
+  await addProjectPage.cancelBtn.click();
+
+  await expect(page).toHaveURL(/\/projects$/);
 });
 
 test("edits a project", async ({ projectSettingsPage, page }) => {
@@ -332,7 +345,7 @@ test.describe("favourites and search", () => {
     await expect(projectListPage.search).toHaveValue("");
   });
 
-  test("opens a project's builds without reloading the app", async ({
+  test("opens a project from its name without reloading the app", async ({
     page,
     authUser,
   }) => {
@@ -344,7 +357,7 @@ test.describe("favourites and search", () => {
       (window as unknown as { kept?: boolean }).kept = true;
     });
 
-    await projectListPage.buildsLink("Alpha").click();
+    await projectListPage.openLink("Alpha").click();
 
     await expect(page).toHaveURL(new RegExp(`/${ALPHA.id}$`));
     expect(
@@ -371,23 +384,22 @@ const withNoiseConfig = (config: NoiseAnalysisConfig): Project => ({
 
 test.describe("post-analysis settings", () => {
   test("creates a project with the default settings", async ({
-    projectListPage,
+    addProjectPage,
     page,
   }) => {
     await mockSaveProject(page);
 
-    await projectListPage.addBtn.click();
-    await expect(projectListPage.blurSwitch).toBeChecked();
-    await expect(projectListPage.dinov2Switch).toBeChecked();
-    await expect(projectListPage.amplitudeThreshold).toHaveValue("80");
-    await expect(projectListPage.solidShareMax).toHaveValue("0.01");
-    await expect(projectListPage.distanceThreshold).toHaveValue("0.15");
-    await projectListPage.name.fill("New project");
-    await projectListPage.mainBranch.fill("main");
+    await expect(addProjectPage.blurSwitch).toBeChecked();
+    await expect(addProjectPage.dinov2Switch).toBeChecked();
+    await expect(addProjectPage.amplitudeThreshold).toHaveValue("80");
+    await expect(addProjectPage.solidShareMax).toHaveValue("0.01");
+    await expect(addProjectPage.distanceThreshold).toHaveValue("0.15");
+    await addProjectPage.name.fill("New project");
+    await addProjectPage.mainBranch.fill("main");
 
     const [request] = await Promise.all([
       waitForSave(page, "POST"),
-      projectListPage.modal.confirmBtn.click(),
+      addProjectPage.createBtn.click(),
     ]);
 
     expect(savedNoiseConfig(request)).toEqual(DEFAULT_NOISE_ANALYSIS_CONFIG);

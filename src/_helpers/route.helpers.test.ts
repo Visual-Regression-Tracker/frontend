@@ -76,6 +76,7 @@ describe("getQueryParams", () => {
 describe("matchShellRoute", () => {
   test.each([
     ["/profile", { kind: "profile" }],
+    ["/projects/new", { kind: "newProject" }],
     ["/some-id", { kind: "project", projectId: "some-id", tab: "builds" }],
     [
       "/variations/some-id",

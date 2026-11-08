@@ -1,6 +1,7 @@
 import { useEffect, useRef } from "react";
 import { Box, InputAdornment, TextField } from "@mui/material";
 import { Search } from "@mui/icons-material";
+import { Tooltip } from "./Tooltip";
 import { isTypingTarget } from "../_helpers/hotkeys.helper";
 
 export const ProjectSearchField = ({
@@ -42,20 +43,23 @@ export const ProjectSearchField = ({
           ),
           endAdornment: value ? undefined : (
             <InputAdornment position="end">
-              <Box
-                component="kbd"
-                sx={{
-                  px: 0.75,
-                  border: 1,
-                  borderColor: "divider",
-                  borderRadius: 0.5,
-                  color: "text.secondary",
-                  fontFamily: "monospace",
-                  fontSize: 12,
-                }}
-              >
-                /
-              </Box>
+              <Tooltip title="Press / to search">
+                <Box
+                  component="kbd"
+                  role="img"
+                  sx={{
+                    px: 0.75,
+                    border: 1,
+                    borderColor: "divider",
+                    borderRadius: 0.5,
+                    color: "text.secondary",
+                    fontFamily: "monospace",
+                    fontSize: 12,
+                  }}
+                >
+                  /
+                </Box>
+              </Tooltip>
             </InputAdornment>
           ),
         },

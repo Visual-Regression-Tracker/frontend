@@ -1,18 +1,12 @@
-import { Locator } from "@playwright/test";
-import { ProjectFormPage } from "./ProjectFormPage";
+import { BasePage } from "./BasePage";
 
-export class ProjectListPage extends ProjectFormPage {
+export class ProjectListPage extends BasePage {
   projects = this.page.locator("#projectlist-1");
   // exact: the cards' "Add to favourites" also matches
   addBtn = this.page.getByRole("button", { name: "Add project", exact: true });
   deleteBtn = this.page.getByTestId("delete");
   settingsBtn = this.page.getByTestId("SettingsIcon");
   search = this.page.getByRole("searchbox", { name: "Search projects" });
-  dialog = this.modal.dialog;
-
-  protected get root(): Locator {
-    return this.modal.dialog;
-  }
 
   project(name: string) {
     return this.projects.filter({
@@ -28,7 +22,7 @@ export class ProjectListPage extends ProjectFormPage {
     return this.project(name).getByRole("button", { name: /favourites/ });
   }
 
-  buildsLink(name: string) {
-    return this.project(name).getByRole("link", { name: "Builds" });
+  openLink(name: string) {
+    return this.project(name).getByRole("link", { name, exact: true });
   }
 }

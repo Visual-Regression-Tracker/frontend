@@ -1,11 +1,12 @@
 import { type ReactNode, useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import { Box, Container, MenuItem, Paper, TextField } from "@mui/material";
+import { Box, MenuItem, Paper, TextField } from "@mui/material";
 import { BarChartOutlined, SearchOff } from "@mui/icons-material";
 import { useSnackbar } from "notistack";
 import { useProjectState } from "../contexts";
 import { EmptyState } from "../components/EmptyState";
-import { PageHeader } from "../components/PageHeader";
+import { PageContainer } from "../components/PageContainer";
+import { PageToolbar } from "../components/PageToolbar";
 import { ResultsChart } from "../components/ResultsChart";
 import { SkeletonList } from "../components/SkeletonList";
 import { statisticsService, testVariationService } from "../services";
@@ -64,14 +65,13 @@ const ProjectStatistics = ({ projectId }: { projectId: string }) => {
 
   if (!project && !projectsLoading) {
     return (
-      <Container maxWidth="lg" sx={{ py: 4 }}>
-        <PageHeader title="Statistics" />
+      <PageContainer>
         <EmptyState
           icon={<SearchOff />}
           title="Project not found"
           description="It may have been deleted, or the link is wrong."
         />
-      </Container>
+      </PageContainer>
     );
   }
 
@@ -116,36 +116,32 @@ const ProjectStatistics = ({ projectId }: { projectId: string }) => {
   }
 
   return (
-    <Container maxWidth="lg" sx={{ py: 4 }}>
-      <PageHeader
-        title="Statistics"
-        subtitle={subtitle}
-        actions={
-          branches.length > 0 && (
-            <TextField
-              select
-              size="small"
-              label="Branch"
-              value={branchName}
-              onChange={(event) => setBranchName(event.target.value)}
-              sx={{ minWidth: 200 }}
-              slotProps={{
-                select: { displayEmpty: true },
-                inputLabel: { shrink: true },
-              }}
-            >
-              <MenuItem value="">All branches</MenuItem>
-              {branches.map((branch) => (
-                <MenuItem key={branch} value={branch}>
-                  {branch}
-                </MenuItem>
-              ))}
-            </TextField>
-          )
-        }
-      />
+    <PageContainer>
+      <PageToolbar summary={subtitle}>
+        {branches.length > 0 && (
+          <TextField
+            select
+            size="small"
+            label="Branch"
+            value={branchName}
+            onChange={(event) => setBranchName(event.target.value)}
+            sx={{ minWidth: 200 }}
+            slotProps={{
+              select: { displayEmpty: true },
+              inputLabel: { shrink: true },
+            }}
+          >
+            <MenuItem value="">All branches</MenuItem>
+            {branches.map((branch) => (
+              <MenuItem key={branch} value={branch}>
+                {branch}
+              </MenuItem>
+            ))}
+          </TextField>
+        )}
+      </PageToolbar>
       {content}
-    </Container>
+    </PageContainer>
   );
 };
 

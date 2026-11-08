@@ -231,6 +231,17 @@ export const ProjectBreadcrumb = ({ route }: { route: ShellRoute }) => {
     );
   }
 
+  if (route.kind === "newProject") {
+    return (
+      <Breadcrumbs separator="/" aria-label="Breadcrumb">
+        <Box component={Link} to={routes.PROJECT_LIST_PAGE} sx={crumbLink}>
+          Projects
+        </Box>
+        <Typography sx={{ fontWeight: 600 }}>New project</Typography>
+      </Breadcrumbs>
+    );
+  }
+
   if (route.kind === "profile") {
     return (
       <Breadcrumbs separator="/" aria-label="Breadcrumb">

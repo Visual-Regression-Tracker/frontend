@@ -230,7 +230,7 @@ test.describe("project settings by role", () => {
         await expect(page).toHaveURL(
           new RegExp(`/settings/${TEST_PROJECT.id}$`),
         );
-        await expect(new ProjectSettingsPage(page).heading).toBeVisible();
+        await expect(new ProjectSettingsPage(page).saveBtn).toBeVisible();
       });
     });
   }
