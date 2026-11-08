@@ -1,4 +1,4 @@
-import { Page } from "@playwright/test";
+import { Locator, Page } from "@playwright/test";
 import { Header } from "./Header";
 import { Modal } from "./Modal";
 import { Notification } from "./Notification";
@@ -14,5 +14,15 @@ export abstract class BasePage extends PageObject {
     this.header = new Header(page);
     this.modal = new Modal(page);
     this.notification = new Notification(page);
+  }
+
+  fieldError(message: string): Locator {
+    return this.text(message);
+  }
+
+  backgroundColor(): Promise<string> {
+    return this.page.evaluate(
+      () => getComputedStyle(document.body).backgroundColor,
+    );
   }
 }

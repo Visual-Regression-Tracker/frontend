@@ -33,6 +33,7 @@ export class TestRunList extends Table {
   pageSize = this.pane.getByLabel("Cards per page:");
 
   noiseChips = this.pane.getByTestId("noise-hint-chip");
+  progress = this.pane.getByRole("progressbar");
   noiseColumnHeader = this.pane.locator(
     ".MuiDataGrid-columnHeader[data-field='noise']",
   );
@@ -49,6 +50,10 @@ export class TestRunList extends Table {
     .getByRole("button", { name: "Go to next page" });
   selectAll = this.page.getByTestId("gridSelectAll");
   selectionCount = this.page.getByTestId("gridSelectionCount");
+
+  rowName(text: string) {
+    return this.rowNames.getByText(text);
+  }
 
   densityItem(density: "compact" | "standard" | "comfortable") {
     return this.page.getByTestId(`${density}Density`);

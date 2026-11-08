@@ -17,14 +17,13 @@ test("approves a run posted through the API", async ({
   expect(run.status).toBe("new");
 
   await page.goto(`/${project.id}?buildId=${build.id}&testId=${run.id}`);
-  const { detailsDialog, details } = new ProjectPage(page);
-  await expect(detailsDialog.getByText("New", { exact: true })).toBeVisible();
+  const projectPage = new ProjectPage(page);
+  const { details } = projectPage;
+  await expect(projectPage.detailsText("New")).toBeVisible();
 
   await details.approve.click();
 
-  await expect(
-    detailsDialog.getByText("Approved", { exact: true }),
-  ).toBeVisible();
+  await expect(projectPage.detailsText("Approved")).toBeVisible();
 });
 
 test("shows a run posted to the open build without a reload", async ({
@@ -37,9 +36,9 @@ test("shows a run posted to the open build without a reload", async ({
 
   await page.goto(`/${project.id}?buildId=${build.id}`);
   const { testRunList } = new ProjectPage(page);
-  await expect(testRunList.rowNames.getByText("first screen")).toBeVisible();
+  await expect(testRunList.rowName("first screen")).toBeVisible();
 
   await api.postTestRun(build, "second screen");
 
-  await expect(testRunList.rowNames.getByText("second screen")).toBeVisible();
+  await expect(testRunList.rowName("second screen")).toBeVisible();
 });
