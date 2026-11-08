@@ -5,6 +5,7 @@ import { useBuildState, useTestRunState } from "../contexts";
 import { noiseHintOf } from "../_helpers/noiseHint.helper";
 import { rendererChangeText } from "../_helpers/noiseSummary.helper";
 import type { NoiseSummary } from "../types/noiseAnalysis";
+import { TEST_ID } from "../constants/locators";
 
 export const NoiseBanner = () => {
   const { selectedBuild } = useBuildState();
@@ -46,7 +47,7 @@ export const NoiseBanner = () => {
   return (
     <Alert
       severity="info"
-      data-testid="noise-banner"
+      data-testid={TEST_ID.noiseBanner}
       sx={(theme) => ({
         backgroundColor: `rgba(${theme.vars?.palette.info.mainChannel} / 0.12)`,
       })}

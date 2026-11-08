@@ -26,6 +26,7 @@ import type { NoiseAnalysisDto } from "../../types";
 import { useAnalyseNoise } from "../../contexts";
 import { hintColor } from "../../theme";
 import { useDialogSnackbar } from "./useDialogSnackbar";
+import { TEST_ID } from "../../constants/locators";
 
 interface NoiseHintPanelProps {
   runId: string;
@@ -91,7 +92,7 @@ export const NoiseHintPanel = ({
     <Button
       size="small"
       variant="outlined"
-      data-testid="analyse-noise-run-button"
+      data-testid={TEST_ID.analyseNoiseRunButton}
       sx={{ whiteSpace: "nowrap", flexShrink: 0 }}
       onClick={() => {
         setAnchor(null);
@@ -133,14 +134,14 @@ export const NoiseHintPanel = ({
             >
               <ToggleButton
                 value="blur"
-                data-testid="hint-areas-blur"
+                data-testid={TEST_ID.hintAreasBlur}
                 disabled={regionsOf(result, "blur").length === 0}
               >
                 Blur areas
               </ToggleButton>
               <ToggleButton
                 value="dinov2"
-                data-testid="hint-areas-dinov2"
+                data-testid={TEST_ID.hintAreasDinov2}
                 disabled={regionsOf(result, "dinov2").length === 0}
               >
                 DINOv2 areas
@@ -168,7 +169,7 @@ export const NoiseHintPanel = ({
         size="small"
         variant="outlined"
         color={view.color}
-        data-testid="noise-hint-popover-chip"
+        data-testid={TEST_ID.noiseHintPopoverChip}
         label={`≋ ${view.label}`}
         onClick={
           analysing
@@ -198,7 +199,10 @@ export const NoiseHintPanel = ({
             ref={(node: HTMLElement | null) => node?.focus()}
             onKeyDown={closeOnEscape}
           >
-            <Box data-testid="noise-hint-panel" sx={{ p: 2, maxWidth: 520 }}>
+            <Box
+              data-testid={TEST_ID.noiseHintPanel}
+              sx={{ p: 2, maxWidth: 520 }}
+            >
               {body}
             </Box>
           </Paper>

@@ -17,6 +17,7 @@ import Konva from "konva";
 import { clampScale } from "../../_helpers/scale.helper";
 import { clampToImage } from "../../_helpers/ignoreArea.helper";
 import { imageSurface } from "../../theme/tokens";
+import { TEST_ID } from "../../constants/locators";
 
 export type ImageStateLoad = "loaded" | "loading" | "failed";
 
@@ -280,7 +281,7 @@ export const DrawArea = ({
     return (
       <Box
         sx={{ overflow: "auto", backgroundColor: imageSurface.canvas }}
-        data-testid="drawArea"
+        data-testid={TEST_ID.drawArea}
         ref={scrollContainerRef}
         onScroll={(event: SyntheticEvent<HTMLElement>) => {
           // mid-zoom the animation sets the scroll; echoing it back renders the pane twice

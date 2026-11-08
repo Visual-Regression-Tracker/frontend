@@ -21,6 +21,7 @@ import {
   Stack,
   Typography,
 } from "@mui/material";
+import { TEST_ID } from "../constants/locators";
 
 interface IProps {
   items: TestVariation[];
@@ -114,7 +115,7 @@ const TestVariationList = ({ items, onDeleteClick }: IProps) => {
               <Box sx={{ flex: 1 }} />
               <Tooltip title="Delete variation">
                 <IconButton onClick={() => setSelectedItem(t)}>
-                  <Delete data-testid="DeleteIcon" fontSize="small" />
+                  <Delete data-testid={TEST_ID.deleteIcon} fontSize="small" />
                 </IconButton>
               </Tooltip>
             </CardActions>

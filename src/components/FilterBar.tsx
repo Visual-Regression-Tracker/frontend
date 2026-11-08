@@ -9,6 +9,7 @@ import {
   Stack,
 } from "@mui/material";
 import { DebouncedTextField } from "./DebouncedTextField";
+import { filterChipId } from "../constants/locators";
 
 interface FilterDef {
   id: string;
@@ -44,7 +45,7 @@ const FilterChip = ({ filter }: { filter: FilterDef }) => {
   return (
     <>
       <Chip
-        id={`filter-chip-${filter.id}`}
+        id={filterChipId(filter.id)}
         label={
           active ? `${filter.label}: ${filter.value.length}` : filter.label
         }
@@ -58,7 +59,7 @@ const FilterChip = ({ filter }: { filter: FilterDef }) => {
         anchorEl={anchor}
         open={!!anchor}
         onClose={() => setAnchor(null)}
-        slotProps={{ list: { "aria-labelledby": `filter-chip-${filter.id}` } }}
+        slotProps={{ list: { "aria-labelledby": filterChipId(filter.id) } }}
       >
         {filter.options.map((option) => (
           <MenuItem

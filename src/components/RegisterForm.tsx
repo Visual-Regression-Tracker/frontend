@@ -9,6 +9,7 @@ import PasswordField from "./PasswordField";
 import EmailField from "./EmailField";
 import NameField from "./NameField";
 import { ValidatedForm } from "./ValidatedForm";
+import { TEST_ID } from "../constants/locators";
 
 const RegisterForm = () => {
   const navigate = useNavigate();
@@ -64,7 +65,7 @@ const RegisterForm = () => {
               variant="contained"
               size="large"
               fullWidth
-              data-testid="submit"
+              data-testid={TEST_ID.submit}
             >
               Submit
             </Button>

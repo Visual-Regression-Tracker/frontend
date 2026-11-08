@@ -37,6 +37,7 @@ import {
   getQueryParams,
 } from "../../_helpers/route.helpers";
 import { Tooltip } from "../Tooltip";
+import { TEST_ID } from "../../constants/locators";
 
 const BuildList = () => {
   const navigate = useNavigate();
@@ -278,7 +279,7 @@ const BuildList = () => {
                 indeterminate={someSelected}
                 disabled={selectingAll || buildList.length === 0}
                 onChange={toggleSelectAll}
-                data-testid="buildSelectAll"
+                data-testid={TEST_ID.buildSelectAll}
                 slotProps={{
                   input: { "aria-label": selectAllLabel },
                 }}
@@ -297,7 +298,7 @@ const BuildList = () => {
               onChange={setSearchQuery}
               slotProps={{
                 htmlInput: {
-                  "data-testid": "buildSearch",
+                  "data-testid": TEST_ID.buildSearch,
                   autoComplete: "off",
                 },
               }}
@@ -325,7 +326,7 @@ const BuildList = () => {
         )}
         <Box
           ref={listRef}
-          data-testid="buildListScroll"
+          data-testid={TEST_ID.buildListScroll}
           sx={{ flex: 1, minHeight: 0, overflow: "auto" }}
         >
           <List disablePadding>

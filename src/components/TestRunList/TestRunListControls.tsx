@@ -24,6 +24,7 @@ import {
 } from "@mui/icons-material";
 import { Tooltip } from "../Tooltip";
 import { GroupByAxis } from "../../_helpers/testRunGroup.helper";
+import { TEST_ID, densityTestId } from "../../constants/locators";
 
 export type TestRunView = "table" | "grid";
 
@@ -102,7 +103,7 @@ const ShowDiffSwitch = ({ diffToggle }: { diffToggle: DiffToggle }) => (
           checked={diffToggle.checked}
           onChange={(event) => diffToggle.onChange(event.target.checked)}
           slotProps={{ input: { "aria-label": "Show diff" } }}
-          data-testid="showDiffToggle"
+          data-testid={TEST_ID.showDiffToggle}
         />
       }
       label={switchLabel("Show diff")}
@@ -141,7 +142,7 @@ const ViewMenu = ({
         endIcon={<ArrowDropDown />}
         aria-haspopup="menu"
         aria-expanded={!!anchor}
-        data-testid="viewMenuButton"
+        data-testid={TEST_ID.viewMenuButton}
         onClick={(event) => setAnchor(event.currentTarget)}
       >
         View
@@ -155,7 +156,7 @@ const ViewMenu = ({
             role="menuitemradio"
             aria-checked={density === value}
             selected={density === value}
-            data-testid={`${value}Density`}
+            data-testid={densityTestId(value)}
             onClick={() => {
               onDensityChange(value);
               close();
@@ -172,13 +173,13 @@ const ViewMenu = ({
             grouped: false,
             label: "None",
             hint: undefined,
-            testId: "groupByNone",
+            testId: TEST_ID.groupByNone,
           },
           {
             grouped: true,
             label: `Variation (${groupByAxis})`,
             hint: groupHint,
-            testId: "groupByVariation",
+            testId: TEST_ID.groupByVariation,
           },
         ].map((option) => (
           <MenuItem
@@ -202,7 +203,7 @@ const ViewMenu = ({
           dense
           role="menuitemcheckbox"
           aria-checked={diffToggle.checked}
-          data-testid="viewMenuShowDiff"
+          data-testid={TEST_ID.viewMenuShowDiff}
           onClick={() => {
             diffToggle.onChange(!diffToggle.checked);
             close();
@@ -242,14 +243,14 @@ export const TestRunListControls = ({ onViewChange, ...menu }: Props) => (
         value="table"
         title="Table"
         ariaLabel="Table view"
-        testId="tableViewToggle"
+        testId={TEST_ID.tableViewToggle}
         icon={<ViewList fontSize="small" />}
       />
       <IconToggle
         value="grid"
         title="Grid"
         ariaLabel="Grid view"
-        testId="gridViewToggle"
+        testId={TEST_ID.gridViewToggle}
         icon={<ViewModule fontSize="small" />}
       />
     </ToggleButtonGroup>
