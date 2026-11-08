@@ -9,7 +9,7 @@ const LABELS: Record<string, string> = {
   [TestStatus.approved]: "Approved",
   [TestStatus.autoApproved]: "Auto-approved",
   [BuildStatus.passed]: "Passed",
-};
+} satisfies Record<TestStatus | BuildStatus, string>;
 
 export const statusLabel = (status: string | undefined): string =>
   status === undefined ? "" : (LABELS[status] ?? status);

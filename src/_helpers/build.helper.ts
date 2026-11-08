@@ -22,7 +22,7 @@ export const buildSummary = (
   >,
 ): string => {
   if (build.isRunning) {
-    return "Running";
+    return "running";
   }
   const runs = runCountOf(build);
   const count = `${runs} ${pluralize(runs, "run")}`;
