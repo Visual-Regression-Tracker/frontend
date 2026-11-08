@@ -25,11 +25,16 @@ import {
 import { withRegions } from "../../_test/noiseRegions";
 import TestDetailsModal from "./TestDetailsModal";
 import { computeSolidMask } from "./solidMask.client";
+import useImage from "use-image";
 import { NO_FAILURES } from "../../_test/bulkResult";
 
 // Konva needs native canvas under Node; a stand-in lets tests draw and delete areas
 vi.mock("./DrawArea", () => import("../../_test/FakeDrawArea"));
 vi.mock("./solidMask.client", () => ({ computeSolidMask: vi.fn() }));
+vi.mock("use-image", async (importOriginal) => {
+  const actual = await importOriginal<{ default: typeof useImage }>();
+  return { default: vi.fn(actual.default) };
+});
 
 const SelectProject = () => {
   const dispatch = useProjectDispatch();
@@ -790,6 +795,48 @@ describe("Diff without noise", () => {
     const caveat = await screen.findByTestId("noiseless-caveat");
     expect(caveat).toHaveTextContent("DINOv2: likely change, 8 patches");
     expect(caveat).not.toHaveTextContent("outlined");
+  });
+
+  it("shows no image under the label while the view is computing", async () => {
+    vi.mocked(useImage).mockImplementation((url) => [
+      url ? document.createElement("img") : undefined,
+      url ? "loaded" : "loading",
+    ]);
+    vi.mocked(computeSolidMask).mockReturnValue(new Promise(() => {}));
+    const { user } = renderModal(UNRESOLVED_RUN);
+    expect(screen.getByTestId("imageStatus")).toHaveTextContent("loaded");
+
+    await user.click(noiseless());
+
+    expect(screen.getByTestId("imageStatus")).toHaveTextContent("loading");
+  });
+
+  it("draws only the change patches it counts, whichever hint areas are on", async () => {
+    vi.spyOn(projectsService, "getAll").mockResolvedValue([TEST_PROJECT]);
+    const { user } = renderModal(
+      {
+        ...UNRESOLVED_RUN,
+        noiseAnalysis: withRegions(
+          NOISE_ANALYSIS_CHANGE,
+          [],
+          [PATCH, WEAK_PATCH],
+        ),
+      },
+      undefined,
+      <SelectProject />,
+    );
+    await screen.findByTestId("project-ready");
+    await user.click(screen.getByTestId("noise-hint-popover-chip"));
+    await user.click(screen.getByTestId("hint-areas-dinov2"));
+    await user.keyboard("{Escape}");
+    expect(hintAreas()).toEqual([PATCH, WEAK_PATCH]);
+
+    await user.click(noiseless());
+
+    expect(hintAreas()).toEqual([PATCH]);
+    expect(await screen.findByTestId("noiseless-caveat")).toHaveTextContent(
+      "(1 strongest outlined)",
+    );
   });
 
   it("says faint changes may be hidden when DINOv2 did not check the run", async () => {

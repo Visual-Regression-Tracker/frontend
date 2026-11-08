@@ -167,6 +167,20 @@ describe("useNoiselessDiff", () => {
     expect(revokeObjectURL).not.toHaveBeenCalledWith("blob:noiseless");
   });
 
+  it("frees the image when the run changes while the mode is off", async () => {
+    vi.mocked(computeSolidMask).mockResolvedValue(READY);
+    const { result, rerender } = render();
+    await waitFor(() => expect(result.current.status).toBe("ready"));
+
+    rerender({ run: RUN, active: false });
+    rerender({ run: { ...RUN, ignoreAreas: "[]" }, active: false });
+
+    await waitFor(() =>
+      expect(revokeObjectURL).toHaveBeenCalledWith("blob:noiseless"),
+    );
+    expect(result.current).toEqual({ status: "idle" });
+  });
+
   it("computes nothing without a diff", () => {
     const { result } = render({ ...RUN, diffName: null as unknown as string });
 

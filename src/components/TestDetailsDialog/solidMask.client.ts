@@ -62,7 +62,7 @@ export function computeSolidMask(
     current.onerror = (event) =>
       settle(() => {
         dropWorker();
-        reject(new Error(event.message));
+        reject(new Error(event.message || "The image worker could not start"));
       });
     cancelRunning = cancel;
     signal?.addEventListener("abort", cancel);

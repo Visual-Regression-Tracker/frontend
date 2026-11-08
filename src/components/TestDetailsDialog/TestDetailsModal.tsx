@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { type ComponentProps, useState } from "react";
 import { LinearProgress, Divider } from "@mui/material";
 import { TestRun, TestStatus } from "../../types";
 import { staticService } from "../../services";
@@ -27,6 +27,8 @@ import {
   changedPatches,
   noiselessCaveat,
 } from "../../_helpers/noiseRegions.helper";
+
+type LoadedImage = ComponentProps<typeof ComparisonPanels>["diff"];
 
 const sizeLabel = (image: HTMLImageElement | undefined) =>
   image ? `${image.width}×${image.height}` : undefined;
@@ -92,12 +94,19 @@ const TestDetailsModal = ({
   const [noiselessImage, noiselessImageStatus] = useImage(
     noiselessView.status === "ready" ? noiselessView.url : "",
   );
+  const noiselessPanelImage = (): LoadedImage | undefined => {
+    if (noiselessView.status === "ready") {
+      return [noiselessImage, noiselessImageStatus];
+    }
+    return noiselessView.status === "computing"
+      ? [undefined, "loading"]
+      : undefined;
+  };
   const { analysis, stage: hintStage } = noiseHint.panelProps;
   const patches = noiseless ? changedPatches(analysis) : [];
-  const hintAreas =
-    hintStage === "dinov2"
-      ? noiseHint.hintAreas
-      : [...noiseHint.hintAreas, ...patches];
+  const hintAreas = noiseless
+    ? [...(hintStage === "dinov2" ? [] : noiseHint.hintAreas), ...patches]
+    : noiseHint.hintAreas;
 
   return (
     <>
@@ -163,9 +172,7 @@ const TestDetailsModal = ({
         baseline={[baselineImage, baselineImageStatus]}
         checkpoint={[currentImage, currentImageStatus]}
         diff={
-          noiseless && noiselessView.status === "ready"
-            ? [noiselessImage, noiselessImageStatus]
-            : [diffImage, diffImageStatus]
+          (noiseless && noiselessPanelImage()) || [diffImage, diffImageStatus]
         }
         hintAreas={hintAreas}
         areasShown={areasVisible}

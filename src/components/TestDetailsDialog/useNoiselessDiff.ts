@@ -32,16 +32,19 @@ export function useNoiselessDiff(
   active: boolean,
 ): NoiselessView {
   const [settled, setSettled] = useState<{ key: string; view: Settled }>();
-  // a failure is retried the next time the mode is selected
-  if (!active && settled?.view.status === "failed") {
-    setSettled(undefined);
-  }
   const key = JSON.stringify([
     baselineName,
     imageName,
     ignoreAreas,
     tempIgnoreAreas,
   ]);
+  // a failure is retried the next time the mode is selected; another run's image is freed
+  if (
+    settled &&
+    (settled.key !== key || (!active && settled.view.status === "failed"))
+  ) {
+    setSettled(undefined);
+  }
   const current = settled?.key === key ? settled.view : undefined;
   const needed = active && !!diffName && !!baselineName && !current;
   const url = settled?.view.status === "ready" ? settled.view.url : undefined;

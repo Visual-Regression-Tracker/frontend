@@ -105,6 +105,13 @@ describe("computeSolidMask", () => {
     expect(workers).toHaveLength(2);
   });
 
+  it("names the failure when the worker script cannot load", async () => {
+    const result = computeSolidMask(request);
+    latest().onerror?.({ message: "" });
+
+    await expect(result).rejects.toThrow("The image worker could not start");
+  });
+
   it("rejects when the worker's answer cannot be read", async () => {
     const result = computeSolidMask(request);
     latest().onmessageerror?.();
