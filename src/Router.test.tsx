@@ -70,4 +70,10 @@ describe("Router project routes", () => {
 
     expect(await screen.findByText("statistics page")).toBeVisible();
   });
+
+  it("sends an unknown address to the project list", async () => {
+    renderRoute("/some/unknown/address");
+
+    expect(await screen.findByText("project list page")).toBeVisible();
+  });
 });

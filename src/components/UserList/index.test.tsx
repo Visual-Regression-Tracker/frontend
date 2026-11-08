@@ -109,6 +109,15 @@ describe("UserList", () => {
     expect(within(rowOf(GUEST)).queryByText("you")).not.toBeInTheDocument();
   });
 
+  it("has no grid toolbar for filters and density", async () => {
+    await renderUserList();
+
+    expect(
+      screen.queryByRole("button", { name: /^(Filters|Density)/ }),
+    ).not.toBeInTheDocument();
+    expect(screen.queryByRole("toolbar")).not.toBeInTheDocument();
+  });
+
   it("explains the roles", async () => {
     await renderUserList();
 

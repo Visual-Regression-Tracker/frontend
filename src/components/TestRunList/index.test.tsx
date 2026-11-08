@@ -97,6 +97,12 @@ describe("TestRunList", () => {
     );
   });
 
+  it("asks to select a build when none is open", () => {
+    renderWithProviders(<TestRunList />);
+
+    expect(screen.getByText("Select a build")).toBeVisible();
+  });
+
   it("drops the selection when another build is opened", async () => {
     const { user } = renderWithProviders(
       <>

@@ -19,6 +19,7 @@ import {
   mockSaveProject,
   mockToggleFavoriteProject,
 } from "utils/mocks";
+import { boxOf } from "utils/boxOf";
 import { postData } from "utils/postData";
 import { waitForPage } from "utils/waitForPage";
 
@@ -62,6 +63,38 @@ test("can dismiss a notification without waiting it out", async ({
   await expect(projectListPage.notification.message).toBeHidden({
     timeout: 1000,
   });
+});
+
+test("stacks at most three notifications, centred at the bottom", async ({
+  projectListPage,
+  page,
+}) => {
+  const projects = ["a", "b", "c", "d"].map((id) => ({
+    ...project,
+    id,
+    name: `Project ${id}`,
+  }));
+  await mockGetProjects(page, projects);
+  for (const listed of projects) {
+    await mockDeleteProject(page, listed);
+  }
+  await page.reload();
+  await expect(projectListPage.deleteBtn).toHaveCount(4);
+
+  for (const listed of projects) {
+    await projectListPage.deleteBtn.first().click();
+    await projectListPage.modal.confirmBtn.click();
+    await expect(
+      projectListPage.notification.toast(`${listed.name} deleted`),
+    ).toBeVisible();
+  }
+
+  const toasts = page.locator(".notistack-MuiContent");
+  await expect(toasts).toHaveCount(3);
+  const box = await boxOf(toasts.first());
+  const viewport = page.viewportSize();
+  expect(box.x + box.width / 2).toBeCloseTo((viewport?.width ?? 0) / 2, -1);
+  expect(box.y).toBeGreaterThan((viewport?.height ?? 0) / 2);
 });
 
 test("offers the group by axis with bulk approve off", async ({
