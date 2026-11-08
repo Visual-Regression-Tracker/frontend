@@ -1,15 +1,9 @@
+import { PageContainer } from "../components/PageContainer";
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { TestVariation } from "../types";
 import { testVariationService, staticService } from "../services";
-import {
-  Container,
-  Box,
-  Card,
-  CardMedia,
-  Stack,
-  Typography,
-} from "@mui/material";
+import { Box, Card, CardMedia, Stack, Typography } from "@mui/material";
 import { imageSurface } from "../theme/tokens";
 import {
   buildProjectPageUrl,
@@ -68,7 +62,7 @@ const TestVariationDetailsPage = () => {
       ?.scrollIntoView({ behavior: "smooth", block: "start" });
 
   return (
-    <Container maxWidth="lg" sx={{ py: 4 }}>
+    <PageContainer>
       {testVariation && (
         <>
           <TestVariationDetails testVariation={testVariation} />
@@ -125,7 +119,7 @@ const TestVariationDetailsPage = () => {
           </Box>
         </>
       )}
-    </Container>
+    </PageContainer>
   );
 };
 

@@ -113,6 +113,16 @@ test.describe("as guest", () => {
     await expect(projectListPage.settingsBtn).toHaveCount(0);
     await expect(projectListPage.deleteBtn).toHaveCount(0);
   });
+
+  test("is sent from the add project page to the projects", async ({
+    projectListPage,
+    page,
+  }) => {
+    await page.goto("/projects/new");
+
+    await expect(page).toHaveURL(/\/projects$/);
+    await expect(projectListPage.projects).toBeVisible();
+  });
 });
 
 const mockReviewData = async (page: Page) => {
@@ -230,7 +240,7 @@ test.describe("project settings by role", () => {
         await expect(page).toHaveURL(
           new RegExp(`/settings/${TEST_PROJECT.id}$`),
         );
-        await expect(new ProjectSettingsPage(page).heading).toBeVisible();
+        await expect(new ProjectSettingsPage(page).saveBtn).toBeVisible();
       });
     });
   }

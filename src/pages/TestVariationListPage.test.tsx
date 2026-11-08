@@ -381,9 +381,7 @@ describe("TestVariationListPage", () => {
 
     renderRoute("/variations", "/variations");
 
-    expect(
-      await screen.findByRole("heading", { name: "Variations" }),
-    ).toBeInTheDocument();
+    expect(await screen.findByText("0 baselines")).toBeInTheDocument();
     expect(getList).not.toHaveBeenCalled();
   });
 

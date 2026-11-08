@@ -6,6 +6,7 @@ import { PROJECT_EDITOR_ROLES, routes } from "./constants";
 
 const ProjectsListPage = lazy(() => import("./pages/ProjectListPage"));
 const ProjectPage = lazy(() => import("./pages/ProjectPage"));
+const AddProjectPage = lazy(() => import("./pages/AddProjectPage"));
 const RegisterPage = lazy(() => import("./pages/RegisterPage"));
 const ProfilePage = lazy(() => import("./pages/ProfilePage"));
 const TestVariationListPage = lazy(
@@ -43,6 +44,15 @@ function Router() {
         <Route
           path={routes.PROJECT_LIST_PAGE}
           element={<PrivateRoute component={ProjectsListPage} />}
+        />
+        <Route
+          path={routes.PROJECT_NEW_PAGE}
+          element={
+            <PrivateRoute
+              component={AddProjectPage}
+              roles={[...PROJECT_EDITOR_ROLES]}
+            />
+          }
         />
         <Route
           path={routes.USER_LIST_PAGE}

@@ -43,7 +43,8 @@ export type ShellRoute =
   | { kind: "project"; projectId: string; tab: ProjectTab }
   | { kind: "variation" }
   | { kind: "users" }
-  | { kind: "profile" };
+  | { kind: "profile" }
+  | { kind: "newProject" };
 
 const FIRST_SEGMENTS_OF_OTHER_PAGES = new Set(
   Object.values(routes)
@@ -57,6 +58,9 @@ export const matchShellRoute = (pathname: string): ShellRoute | undefined => {
   }
   if (matchPath(routes.PROFILE_PAGE, pathname)) {
     return { kind: "profile" };
+  }
+  if (matchPath(routes.PROJECT_NEW_PAGE, pathname)) {
+    return { kind: "newProject" };
   }
   if (
     matchPath(`${routes.VARIATION_DETAILS_PAGE}/:testVariationId`, pathname)

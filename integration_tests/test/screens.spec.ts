@@ -1,7 +1,7 @@
 import { expect, Page } from "@playwright/test";
 import { PNG } from "pngjs";
 import { AUTH_USER, test as base } from "fixtures";
-import { LoginPage, ProjectListPage } from "pages";
+import { AddProjectPage, LoginPage, ProjectListPage } from "pages";
 import type { ProjectSettingsPage } from "pages/ProjectSettingsPage";
 import {
   EDITOR_USER,
@@ -344,20 +344,6 @@ const VIEWS: [name: string, body: Body][] = [
   ],
 
   [
-    "create project dialog",
-    async ({ projectListPage, shot }) => {
-      await projectListPage.addBtn.click();
-
-      await expect(projectListPage.dialog).toBeVisible();
-      await expect(projectListPage.imageComparison).toHaveText(
-        ImageComparison.pixelmatch,
-      );
-      await expect(projectListPage.threshold).toHaveValue("0.1");
-      await shot("create-project");
-    },
-  ],
-
-  [
     "project settings with VLM and Ollama",
     async ({ projectSettingsPage, shot }) => {
       await projectSettingsPage.selectImageComparison(ImageComparison.vlm);
@@ -402,7 +388,7 @@ const VIEWS: [name: string, body: Body][] = [
     async ({ projectListPage, shot }) => {
       await projectListPage.deleteBtn.click();
 
-      await expect(projectListPage.dialog).toContainText(
+      await expect(projectListPage.modal.dialog).toContainText(
         `Are you sure you want to delete: ${project.name}?`,
       );
       await expect(projectListPage.page.getByRole("tooltip")).toHaveCount(0);
@@ -842,9 +828,6 @@ const VIEWS: [name: string, body: Body][] = [
       await mockGetStatisticsResults(page, project.id, STATISTICS_BUILDS);
       await page.goto(`/statistics/${project.id}`);
 
-      await expect(
-        page.getByRole("heading", { name: "Statistics", exact: true }),
-      ).toBeVisible();
       await expect(page.getByRole("link", { name: /Build #/ })).toHaveCount(12);
       await shot("project-statistics");
     },
@@ -1420,6 +1403,22 @@ const VIEWS: [name: string, body: Body][] = [
 
       await expect(details.addCommentBtn).toBeVisible();
       await shot("test-run-no-comment");
+    },
+  ],
+
+  [
+    "add project page",
+    async ({ page, authUser, shot }) => {
+      void authUser;
+      await page.goto("/projects/new");
+
+      const addProjectPage = new AddProjectPage(page);
+      await expect(addProjectPage.heading).toBeVisible();
+      await expect(addProjectPage.imageComparison).toHaveText(
+        ImageComparison.pixelmatch,
+      );
+      await expect(addProjectPage.threshold).toHaveValue("0.1");
+      await shot("add-project");
     },
   ],
 ];

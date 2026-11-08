@@ -1,11 +1,11 @@
 import { Link as RouterLink } from "react-router-dom";
 import {
   Box,
-  Button,
   Card,
   CardActions,
   CardContent,
   IconButton,
+  Link,
   Stack,
   Typography,
 } from "@mui/material";
@@ -16,13 +16,9 @@ import {
   Star,
   StarBorder,
 } from "@mui/icons-material";
-import { useCopyToClipboard } from "../_helpers/useCopyToClipboard";
 import { Tooltip } from "./Tooltip";
 import { LOCATOR_PROJECT_LIST_PAGE_PROJECT_LIST } from "../constants";
-import {
-  buildProjectPageUrl,
-  buildVariationListUrl,
-} from "../_helpers/route.helpers";
+import { buildProjectPageUrl } from "../_helpers/route.helpers";
 import { DateLabel } from "./DateLabel";
 import { Project } from "../types";
 
@@ -39,8 +35,6 @@ export const ProjectCard = ({
   onEdit?: () => void;
   onDelete?: () => void;
 }) => {
-  const copy = useCopyToClipboard();
-  const copyId = () => copy(project.id, "Id copied", "Could not copy the id");
   const favoriteLabel = favorite
     ? "Remove from favourites"
     : "Add to favourites";
@@ -50,16 +44,31 @@ export const ProjectCard = ({
       id={LOCATOR_PROJECT_LIST_PAGE_PROJECT_LIST}
       data-testid={`project-${project.id}`}
       sx={{
+        position: "relative",
+        "& .MuiIconButton-root": { position: "relative", zIndex: 1 },
         display: "flex",
         flexDirection: "column",
-        "&:hover": { borderColor: "primary.main", boxShadow: 2 },
+        "&:hover, &:focus-within": {
+          borderColor: "primary.main",
+          boxShadow: 2,
+        },
       }}
     >
       <CardContent sx={{ flex: 1 }}>
         <Stack direction="row" spacing={1} sx={{ alignItems: "flex-start" }}>
           <Box sx={{ flex: 1, minWidth: 0 }}>
             <Typography variant="h6" component="h3" noWrap>
-              {project.name}
+              <Link
+                component={RouterLink}
+                to={buildProjectPageUrl(project.id)}
+                color="inherit"
+                underline="none"
+                sx={{
+                  "&::after": { content: '""', position: "absolute", inset: 0 },
+                }}
+              >
+                {project.name}
+              </Link>
             </Typography>
             <Stack
               direction="row"
@@ -105,25 +114,6 @@ export const ProjectCard = ({
           }}
         >
           <Typography component="dt" variant="caption">
-            Id
-          </Typography>
-          <Typography component="dd" variant="caption">
-            <Stack direction="row" spacing={1} sx={{ alignItems: "center" }}>
-              <Box
-                component="span"
-                title={project.id}
-                sx={{ fontFamily: "monospace" }}
-              >
-                {project.id.length > 8
-                  ? `${project.id.slice(0, 8)}…`
-                  : project.id}
-              </Box>
-              <Button size="small" sx={{ minWidth: 0, p: 0 }} onClick={copyId}>
-                Copy id
-              </Button>
-            </Stack>
-          </Typography>
-          <Typography component="dt" variant="caption">
             Created
           </Typography>
           <Typography component="dd" variant="caption">
@@ -132,22 +122,6 @@ export const ProjectCard = ({
         </Box>
       </CardContent>
       <CardActions sx={{ px: 2, pb: 2 }}>
-        <Button
-          variant="contained"
-          size="small"
-          component={RouterLink}
-          to={buildProjectPageUrl(project.id)}
-        >
-          Builds
-        </Button>
-        <Button
-          variant="outlined"
-          size="small"
-          component={RouterLink}
-          to={buildVariationListUrl(project.id)}
-        >
-          Variations
-        </Button>
         <Box sx={{ flex: 1 }} />
         {onEdit && (
           <Tooltip title="Project settings">

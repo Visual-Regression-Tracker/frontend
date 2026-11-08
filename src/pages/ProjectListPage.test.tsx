@@ -1,10 +1,4 @@
-import {
-  act,
-  fireEvent,
-  screen,
-  waitFor,
-  within,
-} from "@testing-library/react";
+import { screen, within } from "@testing-library/react";
 import { actAsync } from "../_test/act";
 import { renderWithProviders } from "../_test/render";
 import {
@@ -93,43 +87,28 @@ describe("ProjectListPage", () => {
     expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
   });
 
-  test("copies the project id from the card", async () => {
-    vi.spyOn(projectsService, "getAll").mockResolvedValue([ALPHA]);
-    vi.spyOn(projectsService, "getFavorites").mockResolvedValue([]);
-    const { user } = renderWithProviders(<ProjectsListPage />, {
-      user: TEST_USER,
-      route: "/projects",
-    });
-    const writeText = vi.spyOn(navigator.clipboard, "writeText");
-
-    await user.click(await screen.findByRole("button", { name: "Copy id" }));
-
-    expect(writeText).toHaveBeenCalledWith(ALPHA.id);
-    expect(await screen.findByText("Id copied")).toBeInTheDocument();
-  });
-
-  test("says so when the browser cannot copy to the clipboard", async () => {
-    vi.spyOn(projectsService, "getAll").mockResolvedValue([ALPHA]);
-    vi.spyOn(projectsService, "getFavorites").mockResolvedValue([]);
-    const { user } = renderWithProviders(<ProjectsListPage />, {
-      user: TEST_USER,
-      route: "/projects",
-    });
-    const copy = await screen.findByRole("button", { name: "Copy id" });
-    vi.stubGlobal("navigator", { ...navigator, clipboard: undefined });
-
-    await user.click(copy);
-
-    expect(
-      await screen.findByText("Could not copy the id"),
-    ).toBeInTheDocument();
-    vi.unstubAllGlobals();
-  });
-
   test("hints the search shortcut in the search field", async () => {
     await renderPage();
 
     expect(screen.getByText("/")).toBeInTheDocument();
+  });
+
+  test("describes the search shortcut to assistive technology", async () => {
+    await renderPage();
+
+    expect(screen.getByRole("searchbox")).toHaveAccessibleDescription(
+      "Press / to search",
+    );
+  });
+
+  test("explains the search shortcut in a tooltip", async () => {
+    const { user } = await renderPage();
+
+    await user.hover(screen.getByRole("img", { name: "Press / to search" }));
+
+    expect(await screen.findByRole("tooltip")).toHaveTextContent(
+      "Press / to search",
+    );
   });
 
   describe("while the projects load", () => {
@@ -176,7 +155,9 @@ describe("ProjectListPage", () => {
   test("shows the projects read-only to a guest", async () => {
     await renderPage({ user: GUEST_USER });
 
-    expect(screen.getByRole("link", { name: "Builds" })).toBeInTheDocument();
+    expect(
+      screen.getByRole("link", { name: TEST_PROJECT.name }),
+    ).toBeInTheDocument();
     expect(
       screen.queryByRole("button", { name: /add project/i }),
     ).not.toBeInTheDocument();
@@ -184,17 +165,33 @@ describe("ProjectListPage", () => {
     expect(screen.queryByTestId("delete")).not.toBeInTheDocument();
   });
 
-  test("links a project's builds and variations as pages of the app", async () => {
+  test("opens the project from its name and has no id or tab links on the card", async () => {
     await renderPage();
 
-    expect(screen.getByRole("link", { name: "Builds" })).toHaveAttribute(
-      "href",
-      `/${TEST_PROJECT.id}`,
+    expect(
+      screen.getByRole("link", { name: TEST_PROJECT.name }),
+    ).toHaveAttribute("href", `/${TEST_PROJECT.id}`);
+    expect(screen.queryByRole("button", { name: "Copy id" })).toBeNull();
+    expect(screen.queryByRole("link", { name: "Variations" })).toBeNull();
+  });
+
+  test("sends Add project to its own page", async () => {
+    vi.spyOn(projectsService, "getAll").mockResolvedValue([ALPHA]);
+    vi.spyOn(projectsService, "getFavorites").mockResolvedValue([]);
+    const { user } = renderWithProviders(
+      <>
+        <ProjectsListPage />
+        <CurrentLocation />
+      </>,
+      { user: TEST_USER, route: "/projects" },
     );
-    expect(screen.getByRole("link", { name: "Variations" })).toHaveAttribute(
-      "href",
-      `/variations/${TEST_PROJECT.id}`,
+
+    await user.click(
+      await screen.findByRole("button", { name: "Add project" }),
     );
+
+    expect(screen.getByTestId("location")).toHaveTextContent("/projects/new");
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
   });
 
   test("lists every project by name when none is starred or opened yet", async () => {
@@ -302,61 +299,11 @@ describe("ProjectListPage", () => {
     expect(screen.getByRole("searchbox")).toHaveValue("");
   });
 
-  test("creates a project once however often Create is clicked", async () => {
-    const create = vi
-      .spyOn(projectsService, "create")
-      .mockReturnValue(new Promise(() => {}));
-    const { user } = await renderPage({ projects: [ALPHA] });
-    await user.click(screen.getByRole("button", { name: /add project/i }));
-    const dialog = screen.getByRole("dialog", { name: "Create Project" });
-    await user.type(
-      within(dialog).getByRole("textbox", { name: /project name/i }),
-      "Beta",
-    );
-    await user.type(
-      within(dialog).getByRole("textbox", { name: /main branch/i }),
-      "main",
-    );
-
-    await user.click(within(dialog).getByRole("button", { name: "Create" }));
-    await waitFor(() => expect(create).toHaveBeenCalledTimes(1));
-    // a disabled button ignores clicks, but userEvent refuses to try one
-    fireEvent.click(within(dialog).getByRole("button", { name: "Create" }));
-    // the form validates asynchronously before it submits
-    await act(() => new Promise((resolve) => setTimeout(resolve, 50)));
-
-    expect(create).toHaveBeenCalledTimes(1);
-  });
-
   describe("when the API refuses a change", () => {
     const expectErrorToast = async (message: string) =>
       expect(
         (await screen.findByText(message)).closest(".notistack-MuiContent"),
       ).toHaveClass("notistack-MuiContent-error");
-
-    test("keeps the create dialog open and shows the error", async () => {
-      vi.spyOn(projectsService, "create").mockRejectedValue(
-        "Name already used",
-      );
-      const { user } = await renderPage({ projects: [ALPHA] });
-      await user.click(screen.getByRole("button", { name: /add project/i }));
-      const dialog = screen.getByRole("dialog", { name: "Create Project" });
-      await user.type(
-        within(dialog).getByRole("textbox", { name: /project name/i }),
-        "Beta",
-      );
-      await user.type(
-        within(dialog).getByRole("textbox", { name: /main branch/i }),
-        "main",
-      );
-
-      await user.click(within(dialog).getByRole("button", { name: "Create" }));
-
-      await expectErrorToast("Name already used");
-      expect(
-        screen.getByRole("dialog", { name: "Create Project" }),
-      ).toBeInTheDocument();
-    });
 
     test("keeps the delete dialog open and shows the error", async () => {
       vi.spyOn(projectsService, "remove").mockRejectedValue(

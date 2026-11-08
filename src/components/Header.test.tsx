@@ -311,6 +311,16 @@ describe("Header", () => {
       ).not.toBeInTheDocument();
     });
 
+    it("shows Projects / Add project on the add project page, without tabs", async () => {
+      await renderShell(routes.PROJECT_NEW_PAGE);
+
+      const crumb = screen.getByRole("navigation", { name: "Breadcrumb" });
+      expect(crumb).toHaveTextContent("Projects/Add project");
+      expect(
+        screen.queryByRole("navigation", { name: "Project" }),
+      ).not.toBeInTheDocument();
+    });
+
     it("has no crumb or tabs on the project list", async () => {
       await renderShell(routes.PROJECT_LIST_PAGE);
 
