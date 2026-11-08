@@ -1,5 +1,5 @@
 import type { ComponentProps } from "react";
-import { screen, waitFor, within } from "@testing-library/react";
+import { fireEvent, screen, waitFor, within } from "@testing-library/react";
 import { renderWithProviders } from "../../_test/render";
 import { A_DE, A_EN, B_EN, groupsFor } from "../../_test/testRunListFixture";
 import { TAG_FIELDS } from "../../_helpers/testRunTags.helper";
@@ -46,6 +46,20 @@ const tickRow = (name: string) =>
   within(rowOf(name)).getByRole("checkbox", { name: /select row/i });
 
 describe("TestRunTable", () => {
+  it("offers 10, 30 and 100 rows per page", async () => {
+    renderTable(propsFor([A_EN, B_EN]));
+
+    await waitFor(() => expect(dataRows()).toHaveLength(2));
+    expect(screen.getByText("Rows per page:")).toBeInTheDocument();
+    fireEvent.mouseDown(screen.getByRole("combobox", { hidden: true }));
+    const options = await screen.findAllByRole("option");
+    expect(options.map((option) => option.textContent)).toEqual([
+      "10",
+      "30",
+      "100",
+    ]);
+  });
+
   it("shows a run per row with its tags and status", async () => {
     renderTable(propsFor([A_EN, B_EN]));
 

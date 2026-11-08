@@ -115,6 +115,27 @@ test("selects every build the search matched and deletes them", async ({
   );
 });
 
+test("shows a build's checkbox on hover, and on every build once one is ticked", async ({
+  openProjectPage,
+  page,
+}) => {
+  const projectPage = await openProjectPage(project.id);
+  const first = projectPage.buildList.getBuildItem(TEST_BUILD_FAILED.number);
+  const second = projectPage.buildList.getBuildItem(TEST_BUILD_PASSED.number);
+  const boxOfBuild = (build: typeof first) =>
+    build.locator(".MuiCheckbox-root");
+  await expect(first).toBeVisible();
+
+  await expect(boxOfBuild(first)).toHaveCSS("opacity", "0");
+  await first.hover();
+  await expect(boxOfBuild(first)).toHaveCSS("opacity", "1");
+
+  await first.getByRole("checkbox").check();
+  await page.mouse.move(0, 0);
+
+  await expect(boxOfBuild(second)).toHaveCSS("opacity", "1");
+});
+
 test("keeps the search field in place when nothing matches", async ({
   openProjectPage,
 }) => {

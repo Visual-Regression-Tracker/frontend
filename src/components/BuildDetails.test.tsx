@@ -41,13 +41,16 @@ const Deliver = ({ runs }: { runs: TestRun[] }) => {
 const unresolved = (id: string, noiseAnalysis?: TestRun["noiseAnalysis"]) =>
   run({ id, status: TestStatus.unresolved, noiseAnalysis });
 
-const renderDetails = async (runs: TestRun[], project = {}, extra = <></>) => {
+const renderDetails = async (
+  runs: TestRun[],
+  project = {},
+  extra = <></>,
+  build = TEST_BUILD_UNRESOLVED,
+) => {
   vi.spyOn(projectsService, "getAll").mockResolvedValue([
     { ...TEST_PROJECT, ...project },
   ]);
-  vi.spyOn(buildsService, "getDetails").mockResolvedValue(
-    TEST_BUILD_UNRESOLVED,
-  );
+  vi.spyOn(buildsService, "getDetails").mockResolvedValue(build);
   const getNoiseSummary = vi
     .spyOn(buildsService, "getNoiseSummary")
     .mockRejectedValue(new Error("no summary"));
@@ -58,7 +61,7 @@ const renderDetails = async (runs: TestRun[], project = {}, extra = <></>) => {
       {extra}
       <BuildDetails />
     </>,
-    { user: TEST_USER, route: `/?buildId=${TEST_BUILD_UNRESOLVED.id}` },
+    { user: TEST_USER, route: `/?buildId=${build.id}` },
   );
   await screen.findByTestId("project-ready");
   await screen.findByText("#3");
@@ -285,5 +288,22 @@ describe("BuildDetails menu", () => {
     expect(
       screen.queryByRole("menuitem", { name: "Stop build" }),
     ).not.toBeInTheDocument();
+  });
+});
+
+describe("BuildDetails progress", () => {
+  it("shows a progress bar while the build runs", async () => {
+    await renderDetails([], {}, <></>, {
+      ...TEST_BUILD_UNRESOLVED,
+      isRunning: true,
+    });
+
+    expect(await screen.findByRole("progressbar")).toBeVisible();
+  });
+
+  it("shows no progress bar once the build is done", async () => {
+    await renderDetails([]);
+
+    expect(screen.queryByRole("progressbar")).not.toBeInTheDocument();
   });
 });

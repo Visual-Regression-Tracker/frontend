@@ -23,6 +23,7 @@ import { withRegions } from "~client/_test/noiseRegions";
 import { type TestRun, TestStatus } from "~client/types";
 import {
   API_URL,
+  isRevertUrl,
   mockApiError,
   mockApproveTestRuns,
   mockGetBuildDetails,
@@ -44,6 +45,7 @@ import {
   mockTestRunsWithDetails,
   mockUpdateTestRun,
 } from "utils/mocks";
+import { GO_TO_NEXT_KEY } from "~client/constants";
 import { defined } from "utils/defined";
 import { STATISTICS_BUILDS } from "utils/statistics";
 import {
@@ -335,9 +337,14 @@ const VIEWS: [name: string, body: Body][] = [
       await projectSettingsPage.selectOllamaModel("llava:13b");
 
       await expect(projectSettingsPage.ollamaModel).toHaveText("llava:13b");
+      await expect(projectSettingsPage.page.getByRole("listbox")).toHaveCount(
+        0,
+      );
       await expect(projectSettingsPage.page.getByRole("tooltip")).toHaveCount(
         0,
       );
+      // the clicks above scroll by wherever the fields sat while the models loaded, and the sticky section nav follows the scroll
+      await projectSettingsPage.page.evaluate(() => window.scrollTo(0, 0));
       await shot("project-settings-vlm-ollama", { fullPage: true });
     },
   ],
@@ -1223,6 +1230,84 @@ const VIEWS: [name: string, body: Body][] = [
 
       await expect(details.noiselessMode).toBeDisabled();
       await shot("test-run-noiseless-unavailable");
+    },
+  ],
+
+  [
+    "project page with no builds matching the search",
+    async ({ openProjectPage, shot }) => {
+      const projectPage = await openProjectPage(project.id);
+
+      await projectPage.buildList.searchInput.fill("4999");
+
+      await expect(projectPage.buildList.emptyMessage).toBeVisible();
+      await shot("project-page-no-builds-match");
+    },
+  ],
+
+  [
+    "project page with no test runs matching the filters",
+    async ({ openProjectPage, shot }) => {
+      const projectPage = await openProjectPage(project.id, build.id);
+      await expect(projectPage.testRunList.rows).toHaveCount(4);
+
+      await projectPage.testRunFilters.name.fill("no such screen");
+
+      await expect(projectPage.testRunList.rows).toHaveCount(0);
+      await shot("project-page-no-runs-match");
+    },
+  ],
+
+  [
+    "test run details after Go to the next, with the undo in the toast",
+    async ({ openProjectPage, page, shot }) => {
+      await page.addInitScript(
+        (key) => localStorage.setItem(key, "true"),
+        GO_TO_NEXT_KEY,
+      );
+      await mockApproveTestRuns(page);
+      const { details, notification } = await openProjectPage(
+        project.id,
+        build.id,
+        TEST_UNRESOLVED.id,
+      );
+      await expect(details.drawAreas).toHaveCount(2);
+
+      await details.approve.click();
+
+      await expect(notification.undoBtn("Approved")).toBeVisible();
+      await shot("test-run-go-to-next-undo-toast");
+    },
+  ],
+
+  [
+    "test run details when the undo is refused",
+    async ({ openProjectPage, page, shot }) => {
+      const decided = {
+        ...TEST_RUN_APPROVED,
+        baselineName: "baseline.png",
+      };
+      await mockGetTestRuns(page, build.id, [decided, TEST_RUN_NEW]);
+      await mockTestRun(page, decided);
+      await mockApiError(
+        page,
+        isRevertUrl,
+        409,
+        `Test run ${decided.id}: a later approval changed this baseline`,
+      );
+      const { details, notification } = await openProjectPage(
+        project.id,
+        build.id,
+        decided.id,
+      );
+      await expect(details.drawAreas).toHaveCount(2);
+
+      await details.undoApproval.click();
+
+      await expect(
+        notification.toast("A later approval changed this baseline"),
+      ).toBeVisible();
+      await shot("test-run-undo-refused");
     },
   ],
 ];
