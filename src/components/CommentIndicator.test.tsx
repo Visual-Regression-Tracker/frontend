@@ -30,6 +30,15 @@ describe("CommentIndicator", () => {
     );
   });
 
+  it("leaves the tab order to the caller when given a tabIndex", () => {
+    renderWithProviders(<CommentIndicator text="Note" tabIndex={-1} />);
+
+    expect(screen.getByRole("img", { name: "Has a comment" })).toHaveAttribute(
+      "tabindex",
+      "-1",
+    );
+  });
+
   it.each([undefined, null, "", "   "])("shows nothing for %j", (text) => {
     renderWithProviders(<CommentIndicator text={text} />);
 

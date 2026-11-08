@@ -80,7 +80,10 @@ const buildColumns = (
           {count > 1 && (
             <Chip size="small" label={count} data-testid="groupCount" />
           )}
-          <CommentIndicator text={params.row.comment} />
+          <CommentIndicator
+            text={params.row.comment}
+            tabIndex={params.tabIndex}
+          />
         </Box>
       );
     },

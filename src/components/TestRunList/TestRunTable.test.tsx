@@ -242,6 +242,9 @@ describe("TestRunTable", () => {
       within(rowOf("Commented")).getByRole("img", { name: "Has a comment" }),
     ).toBeVisible();
     expect(
+      within(rowOf("Commented")).getByTestId("comment-indicator"),
+    ).toHaveAttribute("tabindex", "-1");
+    expect(
       within(rowOf("Plain")).queryByTestId("comment-indicator"),
     ).not.toBeInTheDocument();
   });

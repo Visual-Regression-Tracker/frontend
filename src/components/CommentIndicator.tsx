@@ -33,7 +33,13 @@ export const CommentText = ({ text }: { text: string }) => (
   </Box>
 );
 
-export const CommentIndicator = ({ text }: { text?: string | null }) => {
+export const CommentIndicator = ({
+  text,
+  tabIndex = 0,
+}: {
+  text?: string | null;
+  tabIndex?: number;
+}) => {
   const descriptionId = useId();
 
   if (!text?.trim()) {
@@ -45,7 +51,7 @@ export const CommentIndicator = ({ text }: { text?: string | null }) => {
       <Box
         component="span"
         role="img"
-        tabIndex={0}
+        tabIndex={tabIndex}
         aria-label="Has a comment"
         aria-describedby={descriptionId}
         data-testid="comment-indicator"

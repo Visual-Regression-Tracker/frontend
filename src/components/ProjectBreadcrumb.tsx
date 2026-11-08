@@ -120,6 +120,7 @@ const ProjectMenuContent = ({
         ref={listRef}
         sx={{
           bgcolor: "inherit",
+          scrollPaddingTop: "40px",
           maxHeight: 360,
           overflow: "auto",
           py: 0,
