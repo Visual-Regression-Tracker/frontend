@@ -2,10 +2,21 @@ import {
   NOISE_ANALYSIS_CHANGE,
   NOISE_ANALYSIS_NOISE,
   NOISE_ANALYSIS_PENDING,
+  TEST_PROJECT,
   TEST_UNRESOLVED,
 } from "~client/_test/test.data.helper";
+import { DEFAULT_NOISE_ANALYSIS_CONFIG } from "~client/constants/project";
 import { withRegions } from "~client/_test/noiseRegions";
 import type { NoiseSummary, TestRun } from "~client/types";
+
+export const PROJECT_WITHOUT_NOISE = {
+  ...TEST_PROJECT,
+  noiseAnalysisConfig: JSON.stringify({
+    ...DEFAULT_NOISE_ANALYSIS_CONFIG,
+    blur: { ...DEFAULT_NOISE_ANALYSIS_CONFIG.blur, enabled: false },
+    dinov2: { ...DEFAULT_NOISE_ANALYSIS_CONFIG.dinov2, enabled: false },
+  }),
+};
 
 const unresolved = (
   id: string,
