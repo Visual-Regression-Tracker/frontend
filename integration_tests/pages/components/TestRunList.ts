@@ -1,18 +1,29 @@
+import type { Locator } from "@playwright/test";
 import type { TestRunSortField } from "~client/types/testRunSort";
 import { Table } from "./Table";
+import {
+  LOCATOR_PROJECT_PAGE_TEST_RUN_LIST,
+  TEST_ID,
+  densityTestId,
+  gridSortTestId,
+} from "~client/constants/locators";
+
+// the data grid colours its own subtree: left alone its chrome inherits pure black
+const colourOf = (locator: Locator) =>
+  locator.evaluate((el: HTMLElement) => getComputedStyle(el).color);
 
 export class TestRunList extends Table {
-  gridViewToggle = this.page.getByTestId("gridViewToggle");
-  grid = this.page.getByTestId("testRunGrid");
-  cards = this.page.getByTestId("testRunCard");
-  cardTags = this.page.getByTestId("cardTags");
+  gridViewToggle = this.page.getByTestId(TEST_ID.gridViewToggle);
+  grid = this.page.getByTestId(TEST_ID.testRunGrid);
+  cards = this.page.getByTestId(TEST_ID.testRunCard);
+  cardTags = this.page.getByTestId(TEST_ID.cardTags);
   // locators, not texts: assertions retry while the list re-renders
-  cardNames = this.cards.getByTestId("cardName");
-  diffToggle = this.page.getByTestId("showDiffToggle");
-  viewMenuButton = this.page.getByTestId("viewMenuButton");
+  cardNames = this.cards.getByTestId(TEST_ID.cardName);
+  diffToggle = this.page.getByTestId(TEST_ID.showDiffToggle);
+  viewMenuButton = this.page.getByTestId(TEST_ID.viewMenuButton);
 
   // scoped: the build list pagination and selection bar carry the same labels
-  pane = this.page.locator("#test-run-list");
+  pane = this.page.locator(`#${LOCATOR_PROJECT_PAGE_TEST_RUN_LIST}`);
   selectionBar = this.pane.getByRole("toolbar", { name: "Selection" });
   selectionBarSelectAll = this.selectionBar.getByRole("button", {
     name: /^Select all \d+$/,
@@ -32,7 +43,7 @@ export class TestRunList extends Table {
   nextPage = this.pane.getByLabel("Go to next page");
   pageSize = this.pane.getByLabel("Cards per page:");
 
-  noiseChips = this.pane.getByTestId("noise-hint-chip");
+  noiseChips = this.pane.getByTestId(TEST_ID.noiseHintChip);
   progress = this.pane.getByRole("progressbar");
   noiseColumnHeader = this.pane.locator(
     ".MuiDataGrid-columnHeader[data-field='noise']",
@@ -48,15 +59,61 @@ export class TestRunList extends Table {
   tableNextPage = this.page
     .locator(".MuiDataGrid-root")
     .getByRole("button", { name: "Go to next page" });
-  selectAll = this.page.getByTestId("gridSelectAll");
-  selectionCount = this.page.getByTestId("gridSelectionCount");
+  selectAll = this.page.getByTestId(TEST_ID.gridSelectAll);
+  selectionCount = this.page.getByTestId(TEST_ID.gridSelectionCount);
 
   rowName(text: string) {
     return this.rowNames.getByText(text);
   }
 
+  clearSelectionBtn = this.selectionBar.getByRole("button", {
+    name: "Clear selection",
+  });
+  showDiffMenuItem = this.page.getByTestId(TEST_ID.viewMenuShowDiff);
+  groupByVariationItem = this.page.getByTestId(TEST_ID.groupByVariation);
+  firstCardImage = this.cards.first().locator("img");
+  gridSortName = this.page.getByTestId(gridSortTestId("name"));
+
+  groupCount(scope: Locator) {
+    return scope.getByTestId(TEST_ID.groupCount);
+  }
+
+  cardGroupCount(name: string) {
+    return this.groupCount(this.getCard(name));
+  }
+
+  rowGroupCount(rowId: string) {
+    return this.groupCount(this.getRow(rowId));
+  }
+
+  cardStatus(name: string, status: string) {
+    return this.getCard(name).getByText(status, { exact: true });
+  }
+
+  cardBreakdown(name: string, title: string) {
+    return this.getCard(name).locator(`[title="${title}"]`);
+  }
+
+  tableHeaderColour() {
+    return colourOf(
+      this.page.locator(".MuiDataGrid-columnHeaderTitle").first(),
+    );
+  }
+
+  gridSwitchLabelColour() {
+    return colourOf(
+      this.page
+        .locator(".MuiFormControlLabel-root .MuiTypography-root")
+        .first(),
+    );
+  }
+
+  gridSortNameColour() {
+    return colourOf(this.gridSortName);
+  }
+
   densityItem(density: "compact" | "standard" | "comfortable") {
-    return this.page.getByTestId(`${density}Density`);
+    return this.page.getByTestId(densityTestId(density));
   }
 
   async setDensity(density: "compact" | "standard" | "comfortable") {
@@ -67,16 +124,18 @@ export class TestRunList extends Table {
   async groupBy(mode: "none" | "variation") {
     await this.viewMenuButton.click();
     await this.page
-      .getByTestId(mode === "none" ? "groupByNone" : "groupByVariation")
+      .getByTestId(
+        mode === "none" ? TEST_ID.groupByNone : TEST_ID.groupByVariation,
+      )
       .click();
   }
 
   noiseChip(rowId: string) {
-    return this.getColumn(rowId, "noise").getByTestId("noise-hint-chip");
+    return this.getColumn(rowId, "noise").getByTestId(TEST_ID.noiseHintChip);
   }
 
   sortBy(field: TestRunSortField) {
-    return this.page.getByTestId(`gridSort-${field}`).click();
+    return this.page.getByTestId(gridSortTestId(field)).click();
   }
 
   async setPageSize(size: number) {
@@ -90,7 +149,7 @@ export class TestRunList extends Table {
 
   clickTag(tag: string) {
     return this.page
-      .getByTestId("cardTag")
+      .getByTestId(TEST_ID.cardTag)
       .filter({ hasText: tag })
       .first()
       .click();
