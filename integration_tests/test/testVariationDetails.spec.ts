@@ -43,7 +43,7 @@ test("lists every baseline with who made it", async ({
   );
   const { user } = TEST_VARIATION_ONE.baselines[0];
   await expect(
-    detailsPage.page.getByText(`v2 · ${user?.firstName} ${user?.lastName}`),
+    detailsPage.text(`v2 · ${user?.firstName} ${user?.lastName}`),
   ).toBeVisible();
 });
 

@@ -37,6 +37,17 @@ export class ProjectFormPage extends BasePage {
   temperature = this.root.getByLabel("Temperature");
   threshold = this.root.getByLabel("Pixel diff threshold");
   tolerance = this.root.getByLabel("Tolerance", { exact: true });
+  antialiasingTolerance = this.root.getByLabel("Antialiasing tolerance");
+  variationAxis = this.root.getByRole("combobox", { name: "Variation axis" });
+  noOllamaModels = this.root.getByText(
+    "No models available. Enter model name manually.",
+  );
+
+  geminiApiKeyMissing(): Promise<boolean> {
+    return this.geminiApiKey.evaluate(
+      (input: HTMLInputElement) => input.validity.valueMissing,
+    );
+  }
 
   switchLabelled(label: string) {
     return this.root.getByLabel(label, { exact: true });

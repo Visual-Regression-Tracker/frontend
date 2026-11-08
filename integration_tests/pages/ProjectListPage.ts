@@ -18,6 +18,14 @@ export class ProjectListPage extends BasePage {
     return this.page.getByRole("region", { name });
   }
 
+  sectionHeadings(name: string) {
+    return this.section(name).getByRole("heading", { level: 3 });
+  }
+
+  sectionHeading(name: string, heading: string) {
+    return this.section(name).getByRole("heading", { name: heading });
+  }
+
   starBtn(name: string) {
     return this.project(name).getByRole("button", { name: /favourites/ });
   }
