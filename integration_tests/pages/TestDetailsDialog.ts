@@ -44,7 +44,7 @@ export class TestDetailsDialog extends PageObject {
   areasChip = this.page.getByRole("button", { name: /^Ignore areas \(\d+\)$/ });
   drawMode = this.iconButton(TEST_ID.addIcon);
   drawModeToggle = this.page.locator(`button[value="drawMode"]`);
-  lastCanvas = this.drawAreas.last().locator("canvas").last();
+  lastCanvas = this.canvases.last();
   promptYes = this.page.getByRole("button", { name: "Yes" });
   promptCancel = this.page.getByRole("button", { name: "Cancel" });
   promptDiscard = this.page.getByRole("button", { name: "Discard" });
@@ -268,7 +268,7 @@ export class TestDetailsDialog extends PageObject {
     await this.page.mouse.click(box.x + point.x, box.y + point.y);
   }
 
-  async blurFocus() {
+  private async blurFocus() {
     await this.page.evaluate(() =>
       (document.activeElement as HTMLElement)?.blur(),
     );
@@ -284,7 +284,7 @@ export class TestDetailsDialog extends PageObject {
   }
 
   firstCanvasBounds() {
-    return boxOf(this.firstPane.locator("canvas").first());
+    return boxOf(this.canvases.first());
   }
 
   async wheelAt(
@@ -369,19 +369,15 @@ export class TestDetailsDialog extends PageObject {
     );
   }
 
-  overlaidOpacity(): Promise<number> {
-    return this.firstPane.evaluate(() => {
-      const { Konva } = window as unknown as KonvaWindow;
-      const overlaid = Konva.stages
-        .map((stage) => stage.findOne(".overlaid"))
-        .find(Boolean);
-      if (!overlaid) throw new Error("No overlaid image on any stage");
-
-      return overlaid.opacity();
-    });
+  async overlaidOpacity(): Promise<number> {
+    return (await this.overlaidState()).opacity;
   }
 
-  overlaidBlend(): Promise<string> {
+  async overlaidBlend(): Promise<string> {
+    return (await this.overlaidState()).blend;
+  }
+
+  private overlaidState(): Promise<{ opacity: number; blend: string }> {
     return this.firstPane.evaluate(() => {
       const { Konva } = window as unknown as KonvaWindow;
       const overlaid = Konva.stages
@@ -389,7 +385,10 @@ export class TestDetailsDialog extends PageObject {
         .find(Boolean);
       if (!overlaid) throw new Error("No overlaid image on any stage");
 
-      return overlaid.globalCompositeOperation();
+      return {
+        opacity: overlaid.opacity(),
+        blend: overlaid.globalCompositeOperation(),
+      };
     });
   }
 
