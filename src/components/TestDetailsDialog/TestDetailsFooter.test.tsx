@@ -132,6 +132,17 @@ describe("TestDetailsFooter", () => {
       expect(await undoIn("Approved")).toBeVisible();
     });
 
+    it("keeps the undo in the toast with Go to the next on, since the footer undo waits for the status update", async () => {
+      localStorage.setItem(GO_TO_NEXT_KEY, "true");
+      vi.spyOn(testRunService, "approveBulk").mockResolvedValue(NO_FAILURES);
+      const { user, props } = renderFooter({ onNext: vi.fn() });
+
+      await user.click(approve());
+
+      expect(await undoIn("Approved")).toBeVisible();
+      expect(props.onNext).toHaveBeenCalledTimes(1);
+    });
+
     it("leaves the undo to the footer when staying on the run", async () => {
       vi.spyOn(testRunService, "approveBulk").mockResolvedValue(NO_FAILURES);
       const { user } = renderFooter();

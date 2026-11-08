@@ -183,6 +183,18 @@ describe("TestDetailsDialog", () => {
     });
   });
 
+  describe("Escape on the Fade slider", () => {
+    it("leaves the dialog open", async () => {
+      const { user } = await renderDialog({ openRun: FIRST });
+      await user.click(screen.getByRole("button", { name: "Fade" }));
+      screen.getByRole("slider").focus();
+
+      await user.keyboard("{Escape}");
+
+      expect(currentSearch()).toBe(searchOf(FIRST.id));
+    });
+  });
+
   describe("unsaved ignore areas", () => {
     it("ask before Escape closes the dialog", async () => {
       const { user } = await renderDialog({ openRun: FIRST });

@@ -10,6 +10,7 @@ const renderBar = (overrides: Partial<Props> = {}) => {
   const props: Props = {
     testRun: run(),
     sizes: null,
+    failedImages: [],
     toolbar: <button>Toolbar slot</button>,
     ...overrides,
   };
@@ -38,6 +39,45 @@ describe("TestRunInfoBar", () => {
       renderBar();
 
       expect(screen.queryByText(/Image sizes differ/)).not.toBeInTheDocument();
+    });
+  });
+
+  describe("image load warning", () => {
+    it("says which image could not be loaded", () => {
+      renderBar({ failedImages: ["baseline"] });
+
+      expect(
+        screen.getByText(
+          "Could not load the baseline image. Image sizes cannot be compared.",
+        ),
+      ).toBeVisible();
+    });
+
+    it("does not talk about sizes for a run without a baseline", () => {
+      renderBar({
+        testRun: run({ baselineName: "" }),
+        failedImages: ["checkpoint"],
+      });
+
+      expect(
+        screen.getByText("Could not load the checkpoint image."),
+      ).toBeVisible();
+    });
+
+    it("names both when neither could be loaded", () => {
+      renderBar({ failedImages: ["baseline", "checkpoint"] });
+
+      expect(
+        screen.getByText(
+          "Could not load the baseline and checkpoint images. Image sizes cannot be compared.",
+        ),
+      ).toBeVisible();
+    });
+
+    it("is quiet when everything loaded", () => {
+      renderBar();
+
+      expect(screen.queryByText(/Could not load/)).not.toBeInTheDocument();
     });
   });
 
@@ -72,6 +112,7 @@ describe("TestRunInfoBar", () => {
         <TestRunInfoBar
           testRun={run({ id: "b", vlmDescription: "Second run text." })}
           sizes={null}
+          failedImages={[]}
           toolbar={null}
         />,
       );

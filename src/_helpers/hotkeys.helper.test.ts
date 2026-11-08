@@ -11,7 +11,7 @@ const input = (type: string) => {
 };
 
 describe("isTypingTarget", () => {
-  it.each(["text", "search", "number", "range", "radio"])(
+  it.each(["text", "search", "number", "radio"])(
     "is true for an input of type %s",
     (type) => {
       expect(isTypingTarget(input(type))).toBe(true);
@@ -31,8 +31,8 @@ describe("isTypingTarget", () => {
     expect(isTypingTarget(element)).toBe(true);
   });
 
-  it("is false for a checkbox, which only takes Space", () => {
-    expect(isTypingTarget(input("checkbox"))).toBe(false);
+  it.each(["checkbox", "range"])("is false for a %s", (type) => {
+    expect(isTypingTarget(input(type))).toBe(false);
   });
 
   it.each(["button", "div", "body"])("is false for a %s", (tag) => {
@@ -102,8 +102,8 @@ describe("isOutsideReviewDialog", () => {
 });
 
 describe("hotkeyOptions", () => {
-  const keyOn = (target: EventTarget) => {
-    const event = new KeyboardEvent("keydown", { key: "d" });
+  const keyOn = (target: EventTarget, key = "d") => {
+    const event = new KeyboardEvent("keydown", { key });
     Object.defineProperty(event, "target", { value: target });
     return event;
   };
@@ -132,5 +132,15 @@ describe("hotkeyOptions", () => {
     expect(hotkeyOptions.ignoreEventWhen?.(keyOn(input("checkbox")))).toBe(
       false,
     );
+  });
+
+  it("takes a letter pressed on a focused slider", () => {
+    expect(hotkeyOptions.ignoreEventWhen?.(keyOn(input("range")))).toBe(false);
+  });
+
+  it("leaves the arrows to a focused slider", () => {
+    expect(
+      hotkeyOptions.ignoreEventWhen?.(keyOn(input("range"), "ArrowLeft")),
+    ).toBe(true);
   });
 });

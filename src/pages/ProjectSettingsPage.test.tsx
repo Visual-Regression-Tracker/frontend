@@ -1,5 +1,11 @@
 import { Route, Routes } from "react-router-dom";
-import { screen, waitFor, within } from "@testing-library/react";
+import {
+  act,
+  fireEvent,
+  screen,
+  waitFor,
+  within,
+} from "@testing-library/react";
 import { renderWithProviders } from "../_test/render";
 import { TEST_PROJECT, TEST_USER } from "../_test/test.data.helper";
 import { dinov2Service, projectsService } from "../services";
@@ -19,13 +25,14 @@ const renderPage = ({
     configured: true,
     available: true,
   });
-  const result = renderWithProviders(
-    <Routes>
-      <Route path="/settings/:projectId" element={<ProjectSettingsPage />} />
-    </Routes>,
+  return renderWithProviders(
+    <main>
+      <Routes>
+        <Route path="/settings/:projectId" element={<ProjectSettingsPage />} />
+      </Routes>
+    </main>,
     { user: TEST_USER, route: `/settings/${projectId}` },
   );
-  return result;
 };
 
 describe("ProjectSettingsPage", () => {
@@ -177,6 +184,84 @@ describe("ProjectSettingsPage", () => {
       "id",
       "settings-comparison",
     );
+  });
+
+  test("marks the section at the top of the scrolled page", async () => {
+    renderPage();
+    await screen.findByRole("textbox", { name: /project name/i });
+    const nav = screen.getByRole("navigation", { name: "Settings sections" });
+    const tops: Record<string, number> = {
+      General: -900,
+      Review: -300,
+      Comparison: 40,
+      "Post-analysis": 600,
+    };
+    for (const [name, top] of Object.entries(tops)) {
+      screen.getByRole("region", { name }).getBoundingClientRect = () =>
+        ({ top }) as DOMRect;
+    }
+
+    fireEvent.scroll(screen.getByRole("main"));
+
+    expect(
+      within(nav).getByRole("link", { name: "Comparison" }),
+    ).toHaveAttribute("aria-current", "location");
+    expect(
+      within(nav).getByRole("link", { name: "General" }),
+    ).not.toHaveAttribute("aria-current");
+  });
+
+  describe("section highlight", () => {
+    const scrolled = (main: HTMLElement, scrollTop: number) => {
+      Object.defineProperties(main, {
+        scrollHeight: { value: 2000, configurable: true },
+        clientHeight: { value: 800, configurable: true },
+        scrollTop: { value: scrollTop, configurable: true },
+      });
+      fireEvent.scroll(main);
+    };
+    const link = (name: string) =>
+      within(
+        screen.getByRole("navigation", { name: "Settings sections" }),
+      ).getByRole("link", { name });
+
+    beforeEach(() => {
+      Element.prototype.scrollIntoView = vi.fn();
+      onTestFinished(() => {
+        Reflect.deleteProperty(Element.prototype, "scrollIntoView");
+      });
+    });
+
+    test("marks the last section at the bottom of the page", async () => {
+      renderPage();
+      await screen.findByRole("textbox", { name: /project name/i });
+
+      scrolled(screen.getByRole("main"), 1200);
+
+      expect(link("Post-analysis")).toHaveAttribute("aria-current", "location");
+    });
+
+    test("keeps the clicked section while the page scrolls to it, even at the bottom", async () => {
+      vi.useFakeTimers({ shouldAdvanceTime: true });
+      onTestFinished(() => {
+        vi.useRealTimers();
+      });
+      renderPage();
+      await screen.findByRole("textbox", { name: /project name/i });
+
+      fireEvent.click(link("Comparison"));
+      scrolled(screen.getByRole("main"), 1200);
+
+      expect(link("Comparison")).toHaveAttribute("aria-current", "location");
+      expect(link("Post-analysis")).not.toHaveAttribute("aria-current");
+
+      act(() => {
+        vi.advanceTimersByTime(500);
+      });
+      scrolled(screen.getByRole("main"), 1190);
+
+      expect(link("Post-analysis")).toHaveAttribute("aria-current", "location");
+    });
   });
 
   test("starts from the saved project when it is opened again", async () => {

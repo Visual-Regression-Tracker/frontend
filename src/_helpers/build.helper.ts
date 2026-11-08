@@ -27,10 +27,10 @@ export const buildSummary = (
   const runs = runCountOf(build);
   const count = `${runs} ${pluralize(runs, "run")}`;
   if (build.status === BuildStatus.unresolved) {
-    return `${count} · ${build.unresolvedCount} unresolved`;
+    return `${count} · ${build.unresolvedCount} ${statusLabelInline(build.status)}`;
   }
   if (build.status === BuildStatus.failed) {
-    return `${count} · ${build.failedCount} failed`;
+    return `${count} · ${build.failedCount} ${statusLabelInline(build.status)}`;
   }
   return `${count} · ${statusLabelInline(build.status)}`;
 };

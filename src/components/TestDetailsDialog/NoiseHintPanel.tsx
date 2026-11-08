@@ -92,6 +92,7 @@ export const NoiseHintPanel = ({
       size="small"
       variant="outlined"
       data-testid="analyse-noise-run-button"
+      sx={{ whiteSpace: "nowrap", flexShrink: 0 }}
       onClick={() => {
         setAnchor(null);
         void analyse([runId]);

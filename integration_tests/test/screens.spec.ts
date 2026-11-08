@@ -134,6 +134,26 @@ const showTopOfSettings = async ({ page, saveBtn }: ProjectSettingsPage) => {
   await expect(saveBtn).toBeVisible();
 };
 
+const showWholeContent = async (page: Page) => {
+  const main = page.getByRole("main");
+  const overflow = () =>
+    main.evaluate((element) => element.scrollHeight - element.clientHeight);
+  await expect
+    .poll(async () => {
+      const extra = await overflow();
+      if (extra > 0) {
+        const { width, height } = page.viewportSize() ?? {
+          width: 1280,
+          height: 720,
+        };
+        await page.setViewportSize({ width, height: height + extra });
+      }
+      return extra;
+    })
+    .toBe(0);
+  await main.evaluate((element) => element.scrollTo(0, 0));
+};
+
 const VARIATION_EN: TestRun = {
   ...TEST_UNRESOLVED,
   id: "variation-en",
@@ -339,10 +359,6 @@ const VIEWS: [name: string, body: Body][] = [
   [
     "project settings with VLM and Ollama",
     async ({ projectSettingsPage, shot }) => {
-      await projectSettingsPage.page.setViewportSize({
-        width: 1280,
-        height: 1500,
-      });
       await projectSettingsPage.selectImageComparison(ImageComparison.vlm);
       await projectSettingsPage.selectOllamaModel("llava:13b");
 
@@ -354,21 +370,8 @@ const VIEWS: [name: string, body: Body][] = [
         0,
       );
       await showTopOfSettings(projectSettingsPage);
+      await showWholeContent(projectSettingsPage.page);
       await shot("project-settings-vlm-ollama", { fullPage: true });
-    },
-  ],
-
-  [
-    "project settings with post-analysis",
-    async ({ projectSettingsPage, shot }) => {
-      await projectSettingsPage.distanceThreshold.scrollIntoViewIfNeeded();
-
-      await expect(projectSettingsPage.blurSwitch).toBeChecked();
-      await expect(projectSettingsPage.dinov2Status).toHaveCount(0);
-      await expect(projectSettingsPage.page.getByRole("tooltip")).toHaveCount(
-        0,
-      );
-      await shot("project-settings-post-analysis", { fullPage: true });
     },
   ],
 
@@ -386,6 +389,7 @@ const VIEWS: [name: string, body: Body][] = [
       await expect(projectSettingsPage.page.getByRole("tooltip")).toHaveCount(
         0,
       );
+      await showWholeContent(projectSettingsPage.page);
       await shot("project-settings-post-analysis-no-dinov2", {
         fullPage: true,
       });
@@ -768,6 +772,7 @@ const VIEWS: [name: string, body: Body][] = [
       await expect(profilePage.role).toBeVisible();
       await expect(profilePage.configFile).toBeVisible();
 
+      await showWholeContent(profilePage.page);
       await shot("profile", { fullPage: true });
     },
   ],
@@ -824,6 +829,7 @@ const VIEWS: [name: string, body: Body][] = [
       await expect(projectSettingsPage.name).toHaveValue(project.name);
       await expect(projectSettingsPage.saveBtn).toBeVisible();
 
+      await showWholeContent(projectSettingsPage.page);
       await shot("project-settings", { fullPage: true });
     },
   ],
@@ -920,14 +926,11 @@ const VIEWS: [name: string, body: Body][] = [
   [
     "project settings with looksSame",
     async ({ projectSettingsPage, shot }) => {
-      await projectSettingsPage.page.setViewportSize({
-        width: 1280,
-        height: 1500,
-      });
       await projectSettingsPage.selectImageComparison(ImageComparison.lookSame);
 
       await expect(projectSettingsPage.tolerance).toBeVisible();
       await showTopOfSettings(projectSettingsPage);
+      await showWholeContent(projectSettingsPage.page);
       await shot("project-settings-looks-same", { fullPage: true });
     },
   ],
@@ -980,15 +983,12 @@ const VIEWS: [name: string, body: Body][] = [
   [
     "project settings with VLM and Gemini",
     async ({ projectSettingsPage, shot }) => {
-      await projectSettingsPage.page.setViewportSize({
-        width: 1280,
-        height: 1500,
-      });
       await projectSettingsPage.selectImageComparison(ImageComparison.vlm);
       await projectSettingsPage.selectVlmProvider("Google Gemini");
 
       await expect(projectSettingsPage.geminiModel).toBeVisible();
       await showTopOfSettings(projectSettingsPage);
+      await showWholeContent(projectSettingsPage.page);
       await shot("project-settings-vlm-gemini", { fullPage: true });
     },
   ],
@@ -1296,6 +1296,16 @@ const VIEWS: [name: string, body: Body][] = [
         GO_TO_NEXT_KEY,
       );
       await mockApproveTestRuns(page);
+      const runs = [
+        TEST_UNRESOLVED,
+        TEST_RUN_APPROVED,
+        TEST_RUN_NEW,
+        TEST_RUN_OK,
+      ].map((run) => ({ ...run, baselineName: "baseline.png" }));
+      await mockGetTestRuns(page, build.id, runs);
+      for (const run of runs) {
+        await mockTestRun(page, run);
+      }
       const { details, notification } = await openProjectPage(
         project.id,
         build.id,
@@ -1338,6 +1348,24 @@ const VIEWS: [name: string, body: Body][] = [
         notification.toast("A later approval changed this baseline"),
       ).toBeVisible();
       await shot("test-run-undo-refused");
+    },
+  ],
+
+  [
+    "test run details when the baseline image fails to load",
+    async ({ openProjectPage, page, shot }) => {
+      const run = { ...TEST_UNRESOLVED, baselineName: "missing-baseline.png" };
+      await mockGetTestRuns(page, build.id, [run]);
+      await mockTestRun(page, run);
+      const { details } = await openProjectPage(project.id, build.id, run.id);
+
+      await expect(
+        page.getByText(
+          "Could not load the baseline image. Image sizes cannot be compared.",
+        ),
+      ).toBeVisible();
+      await expect(details.drawAreas).toHaveCount(1);
+      await shot("test-run-baseline-image-failed");
     },
   ],
 ];

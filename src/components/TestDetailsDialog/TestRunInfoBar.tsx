@@ -1,11 +1,13 @@
 import { type ReactNode, useState } from "react";
 import { Alert, Box, Button, Divider, Stack, Typography } from "@mui/material";
 import { TestRun } from "../../types";
+import type { FailedImage } from "../../_helpers/testRunImage.helper";
 import { Tooltip } from "../Tooltip";
 
 interface TestRunInfoBarProps {
   testRun: TestRun;
   sizes: { baseline?: string; checkpoint?: string } | null;
+  failedImages: FailedImage[];
   toolbar: ReactNode;
 }
 
@@ -45,6 +47,7 @@ const VlmLine = ({ description }: { description: string }) => {
 export const TestRunInfoBar = ({
   testRun,
   sizes,
+  failedImages,
   toolbar,
 }: TestRunInfoBarProps) => (
   <Box sx={{ mx: 1 }}>
@@ -54,6 +57,11 @@ export const TestRunInfoBar = ({
     {sizes && (
       <Alert severity="warning" sx={{ py: 0 }}>
         {`Image sizes differ: baseline ${sizes.baseline ?? "unknown"}, checkpoint ${sizes.checkpoint ?? "unknown"}. Cannot calculate diff.`}
+      </Alert>
+    )}
+    {failedImages.length > 0 && (
+      <Alert severity="warning" sx={{ py: 0 }}>
+        {`Could not load the ${failedImages.join(" and ")} image${failedImages.length > 1 ? "s" : ""}.${testRun.baselineName ? " Image sizes cannot be compared." : ""}`}
       </Alert>
     )}
     {toolbar}
