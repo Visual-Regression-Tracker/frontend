@@ -8,13 +8,13 @@ import { EmptyState } from "./EmptyState";
 
 export const RequireProject = ({ children }: { children: ReactNode }) => {
   const { projectId } = useParams();
-  const { projectList, loading } = useProjectState();
+  const { projectList, loading, loadFailed } = useProjectState();
 
-  if (loading) {
+  if (loading && projectList.length === 0) {
     return <></>;
   }
 
-  if (!projectList.some((project) => project.id === projectId)) {
+  if (!loadFailed && !projectList.some((project) => project.id === projectId)) {
     return (
       <EmptyState
         icon={<FolderOffOutlined />}

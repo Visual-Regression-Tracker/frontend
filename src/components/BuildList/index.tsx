@@ -78,6 +78,7 @@ const BuildList = () => {
     lastDeletedId,
   });
   const [bulkDeleteDialogOpen, setBulkDeleteDialogOpen] = useState(false);
+  const [bulkDeleteCount, setBulkDeleteCount] = useState(0);
   const pageGuard = useRequestGuard();
 
   // a new project or search starts on the first page, with nothing selected
@@ -225,7 +226,10 @@ const BuildList = () => {
                   icon: <DeleteOutlineOutlined />,
                   color: "error",
                   disabled: bulkDeleting,
-                  onClick: () => setBulkDeleteDialogOpen(true),
+                  onClick: () => {
+                    setBulkDeleteCount(selectedIds.length);
+                    setBulkDeleteDialogOpen(true);
+                  },
                 },
               ]}
               onSelectAll={selectAllMatching}
@@ -284,14 +288,14 @@ const BuildList = () => {
       )}
       <BaseModal
         open={bulkDeleteDialogOpen}
-        title={pluralize(selectedIds.length, "Delete build", "Delete builds")}
+        title={pluralize(bulkDeleteCount, "Delete build", "Delete builds")}
         submitButtonText={"Delete"}
         submitColor="error"
         onCancel={() => setBulkDeleteDialogOpen(false)}
         content={
           <>
             <Typography>
-              {`Delete ${selectedIds.length} ${pluralize(selectedIds.length, "build")}?`}
+              {`Delete ${bulkDeleteCount} ${pluralize(bulkDeleteCount, "build")}?`}
             </Typography>
             <Typography>This also removes their test runs.</Typography>
           </>

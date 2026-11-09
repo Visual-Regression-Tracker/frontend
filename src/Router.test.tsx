@@ -102,6 +102,18 @@ describe("Router project routes", () => {
     },
   );
 
+  it("does not call a project missing when the list failed to load", async () => {
+    vi.spyOn(projectsService, "getAll").mockRejectedValue("API is down");
+    vi.spyOn(projectsService, "getFavorites").mockResolvedValue([]);
+    renderWithProviders(<Router />, {
+      route: "/some-project",
+      user: TEST_USER,
+    });
+
+    expect(await screen.findByText("builds page")).toBeVisible();
+    expect(screen.queryByText("Project not found")).not.toBeInTheDocument();
+  });
+
   it("shows nothing until the project list has loaded", () => {
     renderRoute("/some-project");
 

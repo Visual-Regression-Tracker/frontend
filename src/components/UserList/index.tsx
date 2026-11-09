@@ -34,6 +34,7 @@ const UserList = () => {
   const [selection, setSelection] = useState<Set<string>>(new Set());
   const [roleMenu, setRoleMenu] = useState<HTMLElement | null>(null);
   const [confirmingDelete, setConfirmingDelete] = useState(false);
+  const [deleteCount, setDeleteCount] = useState(0);
 
   const showError = useCallback(
     (err: string) => enqueueSnackbar(err, { variant: "error" }),
@@ -159,20 +160,23 @@ const UserList = () => {
               label: "Delete",
               color: "error",
               icon: <Delete />,
-              onClick: () => setConfirmingDelete(true),
+              onClick: () => {
+                setDeleteCount(selectedIds.length);
+                setConfirmingDelete(true);
+              },
             },
           ]}
         />
       )}
       <BaseModal
         open={confirmingDelete}
-        title={pluralize(selectedIds.length, "Delete user", "Delete users")}
+        title={pluralize(deleteCount, "Delete user", "Delete users")}
         submitButtonText="Delete"
         submitColor="error"
         onCancel={() => setConfirmingDelete(false)}
         content={
           <Typography>
-            {`Delete ${selectedIds.length} ${pluralize(selectedIds.length, "user")}? They lose access to VRT. This can't be undone.`}
+            {`Delete ${deleteCount} ${pluralize(deleteCount, "user")}? They lose access to VRT. This can't be undone.`}
           </Typography>
         }
         onSubmit={removeSelected}

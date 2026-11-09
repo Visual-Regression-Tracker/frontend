@@ -13,6 +13,7 @@ describe("validation rules", () => {
     ["", false],
     [undefined, false],
     [null, false],
+    [Number.NaN, false],
   ])("required accepts %j: %s", (value, valid) => {
     expect(required("Required").isValid(value)).toBe(valid);
   });

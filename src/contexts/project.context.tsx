@@ -172,6 +172,7 @@ function ProjectProvider({ children }: Readonly<ProjectProviderProps>) {
     recentProjectIds: [],
     // a signed-in user's list is on its way from the first render
     loading: loggedIn,
+    loadFailed: false,
   };
 
   const userId = loggedIn ? user?.id : undefined;

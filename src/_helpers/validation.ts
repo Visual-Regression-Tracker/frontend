@@ -11,7 +11,7 @@ const isEmpty = (value: unknown) =>
 const EMAIL = /^[^\s@]+@[^\s@.]+(?:\.[^\s@.]+)+$/;
 
 export const required = (message: string): Rule => ({
-  isValid: (value) => !isEmpty(value),
+  isValid: (value) => !isEmpty(value) && !Number.isNaN(value),
   message,
   onSubmitOnly: true,
 });
