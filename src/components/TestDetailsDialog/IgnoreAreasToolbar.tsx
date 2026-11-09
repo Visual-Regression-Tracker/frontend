@@ -86,62 +86,70 @@ export const IgnoreAreasToolbar = ({
 
   return (
     <>
-      <Stack
-        direction="row"
-        spacing={1}
-        sx={{ alignItems: "center", flexWrap: "wrap", rowGap: 0.5 }}
-      >
-        <Typography variant="body2" color="textSecondary">
-          Editing areas
-        </Typography>
-        <ToggleButtonGroup
-          exclusive
-          size="small"
-          value={areaKind}
-          aria-label="Area type"
-          onChange={(_event, value: string | null) =>
-            value && onAreaKindChange(value)
-          }
+      <Stack direction="row" spacing={1} sx={{ alignItems: "flex-start" }}>
+        <Stack
+          direction="row"
+          spacing={1}
+          sx={{
+            alignItems: "center",
+            flexWrap: "wrap",
+            rowGap: 0.5,
+            flex: 1,
+            minWidth: 0,
+          }}
         >
-          {AREA_KINDS.map((kind) => (
-            <ToggleButton key={kind} value={kind} sx={textButtonSx}>
-              {kind === AREA_KINDS[0] ? "Ignore areas" : "Compare area"}
-            </ToggleButton>
-          ))}
-        </ToggleButtonGroup>
-        <ToggleButton
-          value="drawMode"
-          selected={isDrawMode}
-          size="small"
-          onClick={() => onDrawModeChange(!isDrawMode)}
-          sx={{ ...textButtonSx, gap: 0.5 }}
-        >
-          <Add fontSize="small" data-testid={TEST_ID.addIcon} />
-          Draw
-        </ToggleButton>
-        <ToolButton
-          startIcon={<Delete data-testid={TEST_ID.deleteIcon} />}
-          disabled={!hasSelection || !hasAreas}
-          onClick={onDelete}
-        >
-          Delete selected
-        </ToolButton>
-        <ToolButton
-          tooltip="Clears all ignore areas."
-          startIcon={<LayersClear data-testid={TEST_ID.layersClearIcon} />}
-          disabled={!hasAreas}
-          onClick={onClear}
-        >
-          Clear all
-        </ToolButton>
-        <ToolButton
-          tooltip={applyIgnoreAreaText}
-          startIcon={<Collections data-testid={TEST_ID.collectionsIcon} />}
-          disabled={!hasSelection || !hasAreas}
-          onClick={toggleApplyDialogOpen}
-        >
-          Apply selected to whole build…
-        </ToolButton>
+          <Typography variant="body2" color="textSecondary">
+            Editing areas
+          </Typography>
+          <ToggleButtonGroup
+            exclusive
+            size="small"
+            value={areaKind}
+            aria-label="Area type"
+            onChange={(_event, value: string | null) =>
+              value && onAreaKindChange(value)
+            }
+          >
+            {AREA_KINDS.map((kind) => (
+              <ToggleButton key={kind} value={kind} sx={textButtonSx}>
+                {kind === AREA_KINDS[0] ? "Ignore areas" : "Compare area"}
+              </ToggleButton>
+            ))}
+          </ToggleButtonGroup>
+          <ToggleButton
+            value="drawMode"
+            selected={isDrawMode}
+            size="small"
+            onClick={() => onDrawModeChange(!isDrawMode)}
+            sx={{ ...textButtonSx, gap: 0.5 }}
+          >
+            <Add fontSize="small" data-testid={TEST_ID.addIcon} />
+            Draw
+          </ToggleButton>
+          <ToolButton
+            startIcon={<Delete data-testid={TEST_ID.deleteIcon} />}
+            disabled={!hasSelection || !hasAreas}
+            onClick={onDelete}
+          >
+            Delete selected
+          </ToolButton>
+          <ToolButton
+            tooltip="Clears all ignore areas."
+            startIcon={<LayersClear data-testid={TEST_ID.layersClearIcon} />}
+            disabled={!hasAreas}
+            onClick={onClear}
+          >
+            Clear all
+          </ToolButton>
+          <ToolButton
+            tooltip={applyIgnoreAreaText}
+            startIcon={<Collections data-testid={TEST_ID.collectionsIcon} />}
+            disabled={!hasSelection || !hasAreas}
+            onClick={toggleApplyDialogOpen}
+          >
+            Apply selected to whole build…
+          </ToolButton>
+        </Stack>
         <Stack direction="row" spacing={1} sx={{ flexShrink: 0 }}>
           <Button size="small" color="secondary" onClick={onCancel}>
             Cancel
