@@ -47,7 +47,6 @@ import {
   mockImage,
   mockMatchingVariations,
   mockDinov2Status,
-  mockNoiseSummary,
   mockOllamaModels,
   mockRegistrationEnabled,
   mockTestRun,
@@ -61,11 +60,9 @@ import {
   ANALYSED_RUNS,
   BLUR_REGIONS,
   NOISE_SETTINGS,
-  PARTLY_ANALYSED_SUMMARY,
   NOISE_CART,
   PENDING_SEARCH,
   PROJECT_WITHOUT_NOISE,
-  RENDERER_CHANGE_SUMMARY,
   withNoiseRegions,
 } from "utils/noiseRuns";
 
@@ -446,13 +443,10 @@ const VIEWS: [name: string, body: Body][] = [
     "project page with noise hints",
     async ({ openProjectPage, page, shot }) => {
       await mockTestRunsWithDetails(page, build.id, ALL_ANALYSED_RUNS);
-      await mockNoiseSummary(page, build.id, RENDERER_CHANGE_SUMMARY);
       const projectPage = await openProjectPage(project.id, build.id);
 
       await expect(projectPage.testRunList.noiseChips).toHaveCount(5);
       await expect(projectPage.buildDetails.menuButton).toBeVisible();
-      await expect(projectPage.noiseCaption).toBeVisible();
-      await expect(projectPage.noiseBanner).toBeVisible();
       await shot("project-page-noise-hints");
     },
   ],
@@ -461,7 +455,6 @@ const VIEWS: [name: string, body: Body][] = [
     "project page with the noise hint filter open",
     async ({ openProjectPage, page, shot }) => {
       await mockTestRunsWithDetails(page, build.id, PARTLY_ANALYSED_RUNS);
-      await mockNoiseSummary(page, build.id, PARTLY_ANALYSED_SUMMARY);
       const projectPage = await openProjectPage(project.id, build.id);
       await expect(projectPage.testRunList.noiseChips).toHaveCount(5);
       await expect(

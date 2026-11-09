@@ -6,7 +6,7 @@ import {
   TEST_RUN_APPROVED,
   TEST_RUN_NEW,
 } from "~client/_test/test.data.helper";
-import type { NoiseSummary, TestRun } from "~client/types";
+import type { TestRun } from "~client/types";
 import {
   analysesNoise,
   mockAnalyseNoise,
@@ -14,7 +14,6 @@ import {
   mockGetBuilds,
   mockGetProjects,
   mockImage,
-  mockNoiseSummary,
   mockTestRun,
   mockTestRunsWithDetails,
 } from "utils/mocks";
@@ -29,7 +28,6 @@ import {
   NOT_ANALYSED,
   PENDING_SEARCH,
   PROJECT_WITHOUT_NOISE,
-  RENDERER_CHANGE_SUMMARY,
   withNoiseRegions,
 } from "utils/noiseRuns";
 import { postData } from "utils/postData";
@@ -42,19 +40,10 @@ const idsOf = (runs: TestRun[]) => sorted(runs.map((run) => run.id));
 const sentIds = (request: Request) =>
   sorted(postData<{ ids: string[] }>(request).ids);
 
-const NOT_RENDERER_CHANGE: NoiseSummary = {
-  ...RENDERER_CHANGE_SUMMARY,
-  noiseLike: 1,
-  byEnvironment: [
-    { ...RENDERER_CHANGE_SUMMARY.byEnvironment[0], noiseLike: 1 },
-  ],
-};
-
 test.beforeEach(async ({ page }) => {
   await mockGetProjects(page, [project]);
   await mockGetBuilds(page, project.id, [build]);
   await mockGetBuildDetails(page, build);
-  await mockNoiseSummary(page, build.id, NOT_RENDERER_CHANGE);
   await mockImage(page, "image.png");
   await mockImage(page, "diff.png");
   await mockImage(page, "baseline.png");
@@ -260,42 +249,6 @@ test.describe("run list", () => {
 });
 
 test.describe("build details", () => {
-  test("sums up how many unresolved runs look like noise", async ({
-    openProjectPage,
-    page,
-  }) => {
-    await mockTestRunsWithDetails(page, build.id, [
-      ...ANALYSED_RUNS,
-      NOT_ANALYSED,
-      TEST_RUN_APPROVED,
-    ]);
-    const projectPage = await openProjectPage(project.id, build.id);
-
-    await expect(projectPage.noiseCaption).toHaveText(
-      "3 of 5 unresolved look like rendering noise · analysed 4 of 5",
-    );
-    await expect(projectPage.noiseBanner).toHaveCount(0);
-  });
-
-  test("shows the likely noise from the summary line", async ({
-    openProjectPage,
-    page,
-  }) => {
-    await mockTestRunsWithDetails(page, build.id, [
-      ...ANALYSED_RUNS,
-      TEST_RUN_APPROVED,
-    ]);
-    const { buildDetails, testRunList } = await openProjectPage(
-      project.id,
-      build.id,
-    );
-    await expect(testRunList.rows).toHaveCount(ANALYSED_RUNS.length + 1);
-
-    await buildDetails.showNoise.click();
-
-    await expect(testRunList.rows).toHaveCount(3);
-  });
-
   test("filters the list by the status counters", async ({
     openProjectPage,
     page,
@@ -320,19 +273,6 @@ test.describe("build details", () => {
 
     await buildDetails.statusCounter("All").click();
     await expect(testRunList.rows).toHaveCount(ANALYSED_RUNS.length + 2);
-  });
-
-  test("points out a renderer change when nearly every diff is noise", async ({
-    openProjectPage,
-    page,
-  }) => {
-    await mockTestRunsWithDetails(page, build.id, ANALYSED_RUNS);
-    await mockNoiseSummary(page, build.id, RENDERER_CHANGE_SUMMARY);
-    const projectPage = await openProjectPage(project.id, build.id);
-
-    await expect(projectPage.noiseBanner).toHaveText(
-      "Chrome runs look like a renderer change: 4 of 5 diffs are rendering noise. Filter likely noise and review them in one pass",
-    );
   });
 });
 

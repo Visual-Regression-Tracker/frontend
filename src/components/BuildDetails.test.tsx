@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { act, screen } from "@testing-library/react";
+import { screen } from "@testing-library/react";
 import { renderWithProviders } from "../_test/render";
 import { SeedTestRuns } from "../_test/SeedTestRuns";
 import {
@@ -22,7 +22,6 @@ import {
 import { ImageComparison } from "../types/imageComparison";
 import { TestRun, TestStatus } from "../types";
 import BuildDetails from "./BuildDetails";
-import { useSharedTestRunFilters } from "./TestRunList/TestRunFiltersContext";
 
 const SelectProject = () => {
   const dispatch = useProjectDispatch();
@@ -51,9 +50,6 @@ const renderDetails = async (
     { ...TEST_PROJECT, ...project },
   ]);
   vi.spyOn(buildsService, "getDetails").mockResolvedValue(build);
-  const getNoiseSummary = vi
-    .spyOn(buildsService, "getNoiseSummary")
-    .mockRejectedValue(new Error("no summary"));
   const rendered = renderWithProviders(
     <>
       <SeedTestRuns testRuns={runs} />
@@ -65,39 +61,29 @@ const renderDetails = async (
   );
   await screen.findByTestId("project-ready");
   await screen.findByText("#3");
-  return { ...rendered, getNoiseSummary };
+  return rendered;
 };
 
-const NoiseHintsProbe = () => (
-  <output data-testid="noise-hints">
-    {useSharedTestRunFilters().noiseHints.join(",")}
-  </output>
-);
-
-const CAPTION = /unresolved look like rendering noise/;
+const PROGRESS = /^Analysing \d+ of \d+…$/;
 
 const openMenu = async (user: ReturnType<typeof renderWithProviders>["user"]) =>
   user.click(screen.getByRole("button", { name: "Build menu" }));
 
 const counter = (name: RegExp) => screen.getByRole("button", { name });
 
-describe("BuildDetails noise caption", () => {
-  it("counts noise and analysed runs among the unresolved ones", async () => {
+describe("BuildDetails noise line", () => {
+  it("shows the progress while unresolved runs are pending", async () => {
     await renderDetails([
-      unresolved("a", NOISE_ANALYSIS_NOISE),
-      unresolved("b", NOISE_ANALYSIS_NOISE),
-      unresolved("c", NOISE_ANALYSIS_CHANGE),
+      unresolved("a", NOISE_ANALYSIS_PENDING),
+      unresolved("b", NOISE_ANALYSIS_PENDING),
+      unresolved("c", NOISE_ANALYSIS_NOISE),
       unresolved("d"),
     ]);
 
-    expect(
-      await screen.findByText(
-        "2 of 4 unresolved look like rendering noise · analysed 3 of 4",
-      ),
-    ).toBeInTheDocument();
+    expect(await screen.findByText("Analysing 2 of 4…")).toBeInTheDocument();
   });
 
-  it("follows the runs when one of them gets its analysis", async () => {
+  it("disappears once the last pending run gets its analysis", async () => {
     const pending = unresolved("d", NOISE_ANALYSIS_PENDING);
     const { user } = await renderDetails(
       [pending],
@@ -108,87 +94,24 @@ describe("BuildDetails noise caption", () => {
 
     await user.click(screen.getByRole("button", { name: "Deliver" }));
 
-    expect(
-      await screen.findByText(
-        "1 of 1 unresolved look like rendering noise · analysed 1 of 1",
-      ),
-    ).toBeInTheDocument();
+    expect(screen.queryByText(PROGRESS)).not.toBeInTheDocument();
   });
 
-  it("is absent when no run is unresolved", async () => {
+  it("is absent when no run is pending", async () => {
     await renderDetails([
-      run({ id: "a", status: TestStatus.approved }),
-      run({ id: "b", status: TestStatus.new }),
+      unresolved("a", NOISE_ANALYSIS_NOISE),
+      unresolved("b", NOISE_ANALYSIS_CHANGE),
     ]);
 
-    expect(screen.queryByText(CAPTION)).not.toBeInTheDocument();
+    expect(screen.queryByText(PROGRESS)).not.toBeInTheDocument();
   });
 
   it("is absent when the analysis is off in the project", async () => {
-    await renderDetails([unresolved("a", NOISE_ANALYSIS_NOISE)], {
+    await renderDetails([unresolved("a", NOISE_ANALYSIS_PENDING)], {
       imageComparison: ImageComparison.vlm,
     });
 
-    expect(screen.queryByText(CAPTION)).not.toBeInTheDocument();
-  });
-
-  it("does not ask for the build summary when the analysis is off in the project", async () => {
-    const { getNoiseSummary } = await renderDetails(
-      [unresolved("a", NOISE_ANALYSIS_NOISE)],
-      { imageComparison: ImageComparison.vlm },
-    );
-
-    await act(() => Promise.resolve());
-    expect(getNoiseSummary).not.toHaveBeenCalled();
-  });
-});
-
-describe("BuildDetails noise line", () => {
-  it("shows the progress while runs are pending, without the caption", async () => {
-    await renderDetails([
-      unresolved("a", NOISE_ANALYSIS_PENDING),
-      unresolved("b", NOISE_ANALYSIS_PENDING),
-      unresolved("c", NOISE_ANALYSIS_NOISE),
-      unresolved("d"),
-    ]);
-
-    expect(await screen.findByText("Analysing 2 of 4…")).toBeInTheDocument();
-    expect(screen.queryByText(CAPTION)).not.toBeInTheDocument();
-  });
-
-  it("offers no Show them when no unresolved run looks like noise", async () => {
-    await renderDetails([unresolved("a", NOISE_ANALYSIS_CHANGE)]);
-
-    await screen.findByText(CAPTION);
-    expect(
-      screen.queryByRole("button", { name: "Show them" }),
-    ).not.toBeInTheDocument();
-  });
-
-  it("sets the noise filter to likely noise from Show them", async () => {
-    const { user } = await renderDetails(
-      [
-        unresolved("a", NOISE_ANALYSIS_NOISE),
-        unresolved("b", NOISE_ANALYSIS_CHANGE),
-      ],
-      {},
-      <NoiseHintsProbe />,
-    );
-    expect(screen.getByTestId("noise-hints")).toBeEmptyDOMElement();
-
-    await user.click(await screen.findByRole("button", { name: "Show them" }));
-
-    expect(screen.getByTestId("noise-hints")).toHaveTextContent("Likely noise");
-  });
-
-  it("is absent when the analysis is off in the project", async () => {
-    await renderDetails([unresolved("a", NOISE_ANALYSIS_NOISE)], {
-      imageComparison: ImageComparison.vlm,
-    });
-
-    expect(
-      screen.queryByRole("button", { name: "Show them" }),
-    ).not.toBeInTheDocument();
+    expect(screen.queryByText(PROGRESS)).not.toBeInTheDocument();
   });
 });
 

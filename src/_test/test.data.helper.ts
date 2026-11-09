@@ -7,7 +7,6 @@ import {
   NoiseAnalysisConfig,
   NoiseAnalysisDto,
   NoiseAnalysisPending,
-  NoiseSummary,
   Project,
   TestRun,
   TestVariation,
@@ -257,23 +256,6 @@ export const NOISE_ANALYSIS_CHANGE: NoiseAnalysisDto = {
 export const NOISE_ANALYSIS_PENDING: NoiseAnalysisPending = {
   pending: true,
   requestedAt: "2026-11-04T10:11:00Z",
-};
-
-export const NOISE_SUMMARY: NoiseSummary = {
-  unresolved: 6,
-  analysed: 6,
-  noiseLike: 5,
-  byEnvironment: [
-    { browser: "chrome", os: "Linux", device: "", unresolved: 4, noiseLike: 4 },
-    {
-      browser: "safari",
-      os: "iOS",
-      device: "iPhone",
-      unresolved: 2,
-      noiseLike: 1,
-    },
-  ],
-  projectTypical: 0.1,
 };
 
 export const TEST_UNRESOLVED: TestRun = {
