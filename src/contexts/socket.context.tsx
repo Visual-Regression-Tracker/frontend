@@ -187,7 +187,7 @@ function SocketProvider({ children }: Readonly<SocketProviderProps>) {
   return children;
 }
 
-// with WS_BROADCAST off the server sends build events to project rooms and test run events to build rooms
+// the server sends build events only to project rooms and test run events only to build rooms
 function useRoom(
   socket: Socket | undefined,
   key: "projectId" | "buildId",
