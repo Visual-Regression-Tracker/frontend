@@ -34,7 +34,6 @@ export const TEST_ID = {
   noiselessCaveat: "noiseless-caveat",
   noiseHintPopoverChip: "noise-hint-popover-chip",
   noiseHintPanel: "noise-hint-panel",
-  noiseBanner: "noise-banner",
   newCiBuildId: "newCiBuildId",
   loginBtn: "loginBtn",
   hintAreasDinov2: "hint-areas-dinov2",

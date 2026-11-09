@@ -70,20 +70,6 @@ export interface NoiseAnalysisPending {
   requestedAt: string;
 }
 
-export interface NoiseSummary {
-  unresolved: number;
-  analysed: number;
-  noiseLike: number;
-  byEnvironment: {
-    browser: string;
-    os: string;
-    device: string;
-    unresolved: number;
-    noiseLike: number;
-  }[];
-  projectTypical?: number;
-}
-
 export interface NoiseAnalysisSkip {
   id: string;
   reason: "not unresolved" | "analysis off" | "queue full";

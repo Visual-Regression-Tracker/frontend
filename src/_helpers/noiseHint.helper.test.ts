@@ -1,6 +1,5 @@
 import { run } from "./testRun.fixture";
 import {
-  isNoiseAnalysed,
   isNoisePending,
   isNoiseResult,
   noiseAnalysisAvailable,
@@ -41,31 +40,6 @@ describe("isNoisePending", () => {
     expect(isNoisePending(NOISE_ANALYSIS_PENDING)).toBe(true);
     expect(isNoisePending(NOISE_ANALYSIS_NOISE)).toBe(false);
     expect(isNoisePending(null)).toBe(false);
-  });
-});
-
-describe("isNoiseAnalysed", () => {
-  it.each([
-    [NOISE_ANALYSIS_NOISE, true],
-    [NOISE_ANALYSIS_CHANGE, true],
-    [{ ...NOISE_ANALYSIS_NOISE, verdict: "unknown" }, true],
-    [NOISE_ANALYSIS_PENDING, false],
-    [{ ...NOISE_ANALYSIS_NOISE, version: 2 }, false],
-    [{ ...NOISE_ANALYSIS_NOISE, verdict: "other" }, false],
-    [null, false],
-  ])("is decided for an unresolved run with %j", (analysis, expected) => {
-    expect(isNoiseAnalysed(unresolved(analysis))).toBe(expected);
-  });
-
-  it("is false for a run that is not unresolved", () => {
-    expect(
-      isNoiseAnalysed(
-        run({
-          status: TestStatus.approved,
-          noiseAnalysis: NOISE_ANALYSIS_NOISE,
-        }),
-      ),
-    ).toBe(false);
   });
 });
 

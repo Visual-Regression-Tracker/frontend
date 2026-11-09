@@ -7,7 +7,7 @@ import {
 } from "~client/_test/test.data.helper";
 import { DEFAULT_NOISE_ANALYSIS_CONFIG } from "~client/constants/project";
 import { withRegions } from "~client/_test/noiseRegions";
-import type { NoiseSummary, TestRun } from "~client/types";
+import type { TestRun } from "~client/types";
 
 export const PROJECT_WITHOUT_NOISE = {
   ...TEST_PROJECT,
@@ -69,24 +69,6 @@ export const ANALYSED_RUNS = [
   NOISE_PRICING,
   CHANGE_CHECKOUT,
 ];
-
-export const RENDERER_CHANGE_SUMMARY: NoiseSummary = {
-  unresolved: 5,
-  analysed: 5,
-  noiseLike: 4,
-  byEnvironment: [
-    { browser: "chrome", os: "Linux", device: "", unresolved: 5, noiseLike: 4 },
-  ],
-};
-
-export const PARTLY_ANALYSED_SUMMARY: NoiseSummary = {
-  unresolved: 5,
-  analysed: 4,
-  noiseLike: 3,
-  byEnvironment: [
-    { browser: "chrome", os: "Linux", device: "", unresolved: 5, noiseLike: 3 },
-  ],
-};
 
 export const BLUR_REGIONS = [
   { x: 200, y: 150, width: 300, height: 120, weight: 0.6 },

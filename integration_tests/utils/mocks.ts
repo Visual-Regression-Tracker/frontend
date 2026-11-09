@@ -3,7 +3,6 @@ import type {
   Build,
   BuildResult,
   NoiseAnalysisQueued,
-  NoiseSummary,
   Project,
   ProjectDto,
   TestRun,
@@ -350,16 +349,6 @@ export const analysesNoise = (request: {
 }) =>
   request.url() === `${API_URL}/test-runs/noise-analysis` &&
   request.method() === "POST";
-
-export const mockNoiseSummary = (
-  page: Page,
-  buildId: string,
-  summary: NoiseSummary,
-) => {
-  return page.route(`${API_URL}/builds/${buildId}/noise-summary`, (route) =>
-    route.fulfill({ json: summary }),
-  );
-};
 
 export const mockMatchingVariations = (
   page: Page,

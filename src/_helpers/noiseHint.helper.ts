@@ -45,12 +45,6 @@ export function isNoisePending(
 
 type DecidedRun = Pick<TestRun, "status" | "noiseAnalysis">;
 
-export function isNoiseAnalysed(run: DecidedRun): boolean {
-  return (
-    run.status === TestStatus.unresolved && isNoiseResult(run.noiseAnalysis)
-  );
-}
-
 export function noiseHintOf(run: DecidedRun): NoiseHint | null {
   const analysis = run.noiseAnalysis;
   if (run.status !== TestStatus.unresolved) {

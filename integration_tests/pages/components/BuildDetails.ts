@@ -5,7 +5,6 @@ export class BuildDetails extends PageObject {
   pane = this.page.locator(`#${LOCATOR_BUILD_DETAILS}`);
   menuButton = this.pane.getByRole("button", { name: "Build menu" });
   noiseLine = this.pane.getByTestId(TEST_ID.buildNoiseLine);
-  showNoise = this.pane.getByRole("button", { name: "Show them" });
   analyseNoiseItem = this.page.getByRole("menuitem", {
     name: /^Analyse noise/,
   });

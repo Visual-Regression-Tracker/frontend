@@ -14,7 +14,6 @@ import { DateLabel } from "./DateLabel";
 import { BuildMenu } from "./BuildMenu";
 import { BuildNoiseLine } from "./BuildNoiseLine";
 import { BuildStatusCounters } from "./BuildStatusCounters";
-import { NoiseBanner } from "./NoiseBanner";
 import { Tooltip } from "./Tooltip";
 import { useSharedTestRunFilters } from "./TestRunList/TestRunFiltersContext";
 import { BuildStatus } from "../types/buildStatus";
@@ -35,7 +34,7 @@ const BuildDetails = () => {
   const { selectedBuild } = useBuildState();
   const buildDispatch = useBuildDispatch();
   const { testRuns } = useTestRunState();
-  const { filteredRows, statuses, onStatusesChange, onNoiseHintsChange } =
+  const { filteredRows, statuses, onStatusesChange } =
     useSharedTestRunFilters();
   const available = useNoiseAnalysisAvailable();
   const { enqueueSnackbar } = useSnackbar();
@@ -113,15 +112,7 @@ const BuildDetails = () => {
         statuses={statuses}
         onStatusesChange={onStatusesChange}
       />
-      {available && (
-        <>
-          <BuildNoiseLine
-            testRuns={testRuns}
-            onShowNoise={() => onNoiseHintsChange?.(["Likely noise"])}
-          />
-          <NoiseBanner />
-        </>
-      )}
+      {available && <BuildNoiseLine testRuns={testRuns} />}
       {selectedBuild.isRunning && <LinearProgress />}
       {menuAnchor && (
         <BuildMenu
