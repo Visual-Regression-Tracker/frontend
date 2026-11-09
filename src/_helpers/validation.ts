@@ -6,12 +6,15 @@ export interface Rule {
 }
 
 const isEmpty = (value: unknown) =>
-  value === undefined || value === null || value === "";
+  value === undefined ||
+  value === null ||
+  value === "" ||
+  (typeof value === "number" && Number.isNaN(value));
 
 const EMAIL = /^[^\s@]+@[^\s@.]+(?:\.[^\s@.]+)+$/;
 
 export const required = (message: string): Rule => ({
-  isValid: (value) => !isEmpty(value) && !Number.isNaN(value),
+  isValid: (value) => !isEmpty(value),
   message,
   onSubmitOnly: true,
 });

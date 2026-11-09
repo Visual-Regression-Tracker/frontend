@@ -1496,7 +1496,7 @@ describe("ProjectForm", () => {
           inRange: "7",
           expected: 7,
           sent: (project) => project.maxBuildAllowed,
-          emptied: { refusedWith: "Enter greater than or equal to 1" },
+          emptied: { refusedWith: "This field is required" },
         },
         {
           name: "max branch lifetime",
@@ -1505,7 +1505,7 @@ describe("ProjectForm", () => {
           inRange: "14",
           expected: 14,
           sent: (project) => project.maxBranchLifetime,
-          emptied: { refusedWith: "Enter greater than or equal to 1" },
+          emptied: { refusedWith: "This field is required" },
         },
       ]);
     });

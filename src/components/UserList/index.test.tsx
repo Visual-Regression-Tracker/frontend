@@ -200,7 +200,7 @@ describe("UserList", () => {
       await user.click(screen.getByRole("button", { name: "Role" }));
       await user.click(screen.getByRole("menuitemcheckbox", { name: "Guest" }));
       await user.keyboard("{Escape}");
-      await user.click(screen.getByRole("button", { name: "Delete" }));
+      await user.click(screen.getByRole("button", { name: "Delete…" }));
       await confirmDelete(user);
 
       await waitFor(() => expect(remove).toHaveBeenCalledWith(["2"]));
@@ -390,7 +390,7 @@ describe("UserList", () => {
 
       await selectRow(user, GUEST);
       await selectRow(user, EDITOR);
-      await user.click(screen.getByRole("button", { name: "Delete" }));
+      await user.click(screen.getByRole("button", { name: "Delete…" }));
       await confirmDelete(user);
 
       await waitFor(() => expect(remove).toHaveBeenCalledWith(["2", "3"]));
@@ -410,7 +410,7 @@ describe("UserList", () => {
 
       await selectRow(user, GUEST);
       await selectRow(user, EDITOR);
-      await user.click(screen.getByRole("button", { name: "Delete" }));
+      await user.click(screen.getByRole("button", { name: "Delete…" }));
 
       const dialog = await screen.findByRole("dialog");
       expect(within(dialog).getByText("Delete users")).toBeVisible();
@@ -428,7 +428,7 @@ describe("UserList", () => {
       const { user } = await renderUserList();
 
       await selectRow(user, GUEST);
-      await user.click(screen.getByRole("button", { name: "Delete" }));
+      await user.click(screen.getByRole("button", { name: "Delete…" }));
 
       const dialog = await screen.findByRole("dialog");
       expect(within(dialog).getByText("Delete user")).toBeVisible();
@@ -440,7 +440,7 @@ describe("UserList", () => {
       const { user } = await renderUserList();
 
       await selectRow(user, GUEST);
-      await user.click(screen.getByRole("button", { name: "Delete" }));
+      await user.click(screen.getByRole("button", { name: "Delete…" }));
       await confirmDelete(user);
 
       expect(await screen.findByText("Cannot remove")).toBeVisible();

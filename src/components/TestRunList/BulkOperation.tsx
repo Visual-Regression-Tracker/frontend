@@ -66,29 +66,37 @@ export const BulkOperation = ({
     [rowsEligibleForApproveOrReject],
   );
 
-  const verb = action ?? "";
-  const targetCount = isReview(action)
-    ? idsEligibleForApproveOrReject.length
-    : shownSelectedIds.length;
-  const title =
-    action === "Clear"
-      ? "Clear ignore areas"
-      : `${verb} ${pluralize(targetCount, "test run")}`;
-
-  const confirmationText = (): string => {
-    if (action === "Clear") {
-      return `Clear ignore areas on ${testRuns(targetCount)}?`;
-    }
+  const describe = (verb: BulkAction) => {
+    const targetCount = isReview(verb)
+      ? idsEligibleForApproveOrReject.length
+      : shownSelectedIds.length;
     const settled = shownSelectedIds.length - targetCount;
-    if (!isReview(action) || settled === 0) {
-      return `${verb} ${testRuns(targetCount)}?`;
+    let text = `${verb} ${testRuns(targetCount)}?`;
+    if (verb === "Clear") {
+      text = `Clear ignore areas on ${testRuns(targetCount)}?`;
+    } else if (isReview(verb) && settled > 0) {
+      text = `${verb} ${targetCount} of ${shownSelectedIds.length} selected test runs? The other ${settled} ${pluralize(
+        settled,
+        "is",
+        "are",
+      )} already settled.`;
     }
+    return {
+      verb,
+      text,
+      title:
+        verb === "Clear"
+          ? "Clear ignore areas"
+          : `${verb} ${pluralize(targetCount, "test run")}`,
+    };
+  };
 
-    return `${verb} ${targetCount} of ${shownSelectedIds.length} selected test runs? The other ${settled} ${pluralize(
-      settled,
-      "is",
-      "are",
-    )} already settled.`;
+  const [opened, setOpened] = useState<ReturnType<typeof describe> | null>(
+    null,
+  );
+  const open = (verb: BulkAction) => {
+    setOpened(describe(verb));
+    setAction(verb);
   };
 
   const getBulkAction = (): Promise<BulkResult> =>
@@ -117,7 +125,7 @@ export const BulkOperation = ({
   const [approve, reject, download, ...rest] = ACTION_BUTTONS.map(
     ({ action: buttonAction, ...button }): SelectionAction => ({
       ...button,
-      onClick: () => setAction(buttonAction),
+      onClick: () => open(buttonAction),
     }),
   );
   const analysis: SelectionAction[] = available
@@ -146,13 +154,15 @@ export const BulkOperation = ({
       )}
       <BaseModal
         open={action !== null}
-        title={title}
-        submitButtonText={verb}
+        title={opened?.title ?? ""}
+        submitButtonText={opened?.verb ?? ""}
         submitColor={
-          action === "Delete" || action === "Clear" ? "error" : "primary"
+          opened?.verb === "Delete" || opened?.verb === "Clear"
+            ? "error"
+            : "primary"
         }
         onCancel={() => setAction(null)}
-        content={<Typography>{confirmationText()}</Typography>}
+        content={<Typography>{opened?.text}</Typography>}
         onSubmit={() => {
           if (!action) {
             return;

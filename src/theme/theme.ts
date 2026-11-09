@@ -223,6 +223,7 @@ export const theme = createTheme({
             "--DataGrid-t-color-border-base": (theme.vars ?? theme).palette
               .divider,
           }),
+          "& .MuiDataGrid-columnSeparator": { display: "none" },
         }),
         columnHeaderTitle: { fontWeight: 600 },
       },

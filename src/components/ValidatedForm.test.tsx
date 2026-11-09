@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { screen } from "@testing-library/react";
 import { renderWithProviders } from "../_test/render";
-import { minLength, required } from "../_helpers/validation";
+import { min, minLength, required } from "../_helpers/validation";
 import { ValidatedForm, ValidatedTextField } from "./ValidatedForm";
 
 const NAME_RULES = [
@@ -115,6 +115,26 @@ describe("ValidatedForm", () => {
     await user.click(screen.getByRole("button", { name: "Save" }));
 
     expect(await screen.findByText("City is required")).toBeVisible();
+  });
+
+  it("calls an emptied number field required, not out of range", async () => {
+    const { user } = renderWithProviders(
+      <ValidatedForm onSubmit={vi.fn()}>
+        <ValidatedTextField
+          label="Count"
+          type="number"
+          required
+          rules={[min(1, "Enter at least 1")]}
+          value={Number.NaN}
+          onChange={() => undefined}
+        />
+        <button type="submit">Save</button>
+      </ValidatedForm>,
+    );
+
+    await user.click(screen.getByRole("button", { name: "Save" }));
+
+    expect(await screen.findByText("This field is required")).toBeVisible();
   });
 
   it("submits when every field is valid", async () => {

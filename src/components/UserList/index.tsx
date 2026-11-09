@@ -157,7 +157,7 @@ const UserList = () => {
               onClick: (e) => setRoleMenu(e.currentTarget),
             },
             {
-              label: "Delete",
+              label: "Delete…",
               color: "error",
               icon: <Delete />,
               onClick: () => {

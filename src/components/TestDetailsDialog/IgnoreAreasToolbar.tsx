@@ -142,18 +142,20 @@ export const IgnoreAreasToolbar = ({
         >
           Apply selected to whole build…
         </ToolButton>
-        <Button size="small" color="secondary" onClick={onCancel}>
-          Cancel
-        </Button>
-        <Button
-          size="small"
-          variant="contained"
-          startIcon={<Save data-testid={TEST_ID.saveIcon} />}
-          disabled={!touched}
-          onClick={onSave}
-        >
-          Save
-        </Button>
+        <Stack direction="row" spacing={1} sx={{ flexShrink: 0 }}>
+          <Button size="small" color="secondary" onClick={onCancel}>
+            Cancel
+          </Button>
+          <Button
+            size="small"
+            variant="contained"
+            startIcon={<Save data-testid={TEST_ID.saveIcon} />}
+            disabled={!touched}
+            onClick={onSave}
+          >
+            Save
+          </Button>
+        </Stack>
       </Stack>
       <BaseModal
         open={applyDialogOpen}

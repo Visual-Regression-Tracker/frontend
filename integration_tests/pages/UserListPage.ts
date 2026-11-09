@@ -14,7 +14,7 @@ export class UserListPage extends BasePage {
     name: "Change role",
   });
   deleteSelectedBtn = this.selectionBar.getByRole("button", {
-    name: "Delete",
+    name: "Delete…",
   });
 
   constructor(page: Page) {

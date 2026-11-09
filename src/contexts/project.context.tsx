@@ -50,6 +50,16 @@ function useSelectedProject(): Project | undefined {
   );
 }
 
+function useProjectMissing(projectId: string | undefined): boolean {
+  const { projectList, loading, loadFailed } = useProjectState();
+  return (
+    !loading &&
+    !loadFailed &&
+    !!projectId &&
+    !projectList.some((project) => project.id === projectId)
+  );
+}
+
 function useNoiseAnalysisAvailable(projectId?: string): boolean {
   const { projectList, selectedProjectId } = useProjectState();
   const id = projectId ?? selectedProjectId;
@@ -237,6 +247,7 @@ export {
   ProjectProvider,
   useProjectState,
   useSelectedProject,
+  useProjectMissing,
   useNoiseAnalysisAvailable,
   useProjectDispatch,
   createProject,

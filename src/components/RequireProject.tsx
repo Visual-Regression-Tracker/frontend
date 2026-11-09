@@ -3,18 +3,19 @@ import { Link, useParams } from "react-router-dom";
 import { Button } from "@mui/material";
 import { FolderOffOutlined } from "@mui/icons-material";
 import { routes } from "../constants";
-import { useProjectState } from "../contexts";
+import { useProjectMissing, useProjectState } from "../contexts";
 import { EmptyState } from "./EmptyState";
 
 export const RequireProject = ({ children }: { children: ReactNode }) => {
   const { projectId } = useParams();
-  const { projectList, loading, loadFailed } = useProjectState();
+  const { projectList, loading } = useProjectState();
+  const missing = useProjectMissing(projectId);
 
   if (loading && projectList.length === 0) {
     return <></>;
   }
 
-  if (!loadFailed && !projectList.some((project) => project.id === projectId)) {
+  if (missing) {
     return (
       <EmptyState
         icon={<FolderOffOutlined />}
