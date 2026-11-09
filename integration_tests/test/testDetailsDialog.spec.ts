@@ -283,10 +283,10 @@ test("lets an error outlive the confirmation that follows it", async ({
   );
 
   await details.reject.click();
-  await expect(page.getByText("nope", { exact: true })).toBeVisible();
+  await expect(details.text("nope", { exact: true })).toBeVisible();
   await details.approve.click();
 
-  await expect(page.getByText("nope", { exact: true })).toBeVisible();
+  await expect(details.text("nope", { exact: true })).toBeVisible();
   await expect(notification.toast("Approved")).toBeVisible();
 });
 
@@ -299,7 +299,7 @@ test("leaves the edit mode and draw mode behind when moving to another run", asy
     build.id,
     TEST_UNRESOLVED.id,
   );
-  const drawMode = page.locator('button[value="drawMode"]');
+  const { drawModeToggle: drawMode } = details;
 
   await details.editAreas.click();
   await drawMode.click();
@@ -354,5 +354,5 @@ test("warns without an undo when someone else approved the run first", async ({
     /notistack-MuiContent-warning/,
   );
   await expect(notification.undoBtn(shown)).toHaveCount(0);
-  await expect(page.getByText("Approved", { exact: true })).toHaveCount(0);
+  await expect(details.text("Approved", { exact: true })).toHaveCount(0);
 });

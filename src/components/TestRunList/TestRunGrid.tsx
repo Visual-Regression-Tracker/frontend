@@ -21,6 +21,7 @@ import {
 import { thumbnailFor } from "../../_helpers/testRunImage.helper";
 import type { TagFilters } from "./useTestRunFilters";
 import { TagField } from "../../types";
+import { TEST_ID } from "../../constants/locators";
 import { imageOverlay } from "../../theme/tokens";
 
 const clampToLines = (lines: number) => ({
@@ -86,7 +87,7 @@ export const TestRunGrid = ({
   onOpen: (id: string) => void;
 }) => (
   <Box
-    data-testid="testRunGrid"
+    data-testid={TEST_ID.testRunGrid}
     sx={{
       display: "grid",
       gridTemplateColumns: `repeat(auto-fill, minmax(${CARD_SIZE_BY_DENSITY[density].width}px, 1fr))`,
@@ -103,7 +104,7 @@ export const TestRunGrid = ({
       });
 
       return (
-        <Card key={key} variant="outlined" data-testid="testRunCard">
+        <Card key={key} variant="outlined" data-testid={TEST_ID.testRunCard}>
           {/* outside the action area, so a tick does not open the dialog */}
           <Box sx={{ position: "relative" }}>
             <CardActionArea onClick={() => onOpen(representative.id)}>
@@ -147,7 +148,7 @@ export const TestRunGrid = ({
               <Chip
                 size="small"
                 label={runs.length}
-                data-testid="groupCount"
+                data-testid={TEST_ID.groupCount}
                 sx={{
                   position: "absolute",
                   top: 4,
@@ -174,7 +175,7 @@ export const TestRunGrid = ({
             <Typography
               variant="body2"
               title={representative.name}
-              data-testid="cardName"
+              data-testid={TEST_ID.cardName}
               sx={CARD_NAME}
             >
               {representative.name}
@@ -194,7 +195,7 @@ export const TestRunGrid = ({
             <Typography
               variant="caption"
               title={tags.map(({ value }) => value).join(" · ")}
-              data-testid="cardTags"
+              data-testid={TEST_ID.cardTags}
               sx={CARD_TAGS}
             >
               {tags.map(({ field, value: tag }, index) => {
@@ -207,7 +208,7 @@ export const TestRunGrid = ({
                       component="button"
                       type="button"
                       onClick={() => onToggleTag(field, tag)}
-                      data-testid="cardTag"
+                      data-testid={TEST_ID.cardTag}
                       sx={{
                         ...TAG_BUTTON,
                         color: filteringBy ? "primary.main" : "inherit",

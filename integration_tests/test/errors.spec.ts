@@ -138,8 +138,6 @@ test.describe("a failing API", () => {
     await expect(projectPage.notification.message).toHaveText(
       "Could not load test runs",
     );
-    await expect(
-      projectPage.testRunList.pane.getByRole("progressbar"),
-    ).toHaveCount(0);
+    await expect(projectPage.testRunList.progress).toHaveCount(0);
   });
 });

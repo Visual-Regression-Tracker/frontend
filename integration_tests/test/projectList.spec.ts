@@ -21,7 +21,6 @@ import {
 } from "utils/mocks";
 import { boxOf } from "utils/boxOf";
 import { postData } from "utils/postData";
-import { waitForPage } from "utils/waitForPage";
 
 const project = TEST_PROJECT;
 
@@ -30,9 +29,8 @@ test.beforeEach(async ({ page }) => {
   await mockDinov2Status(page, { configured: true, available: true });
 });
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 test("renders", async ({ projectListPage, page }) => {
-  await waitForPage(page);
+  await projectListPage.waitUntilLoaded();
   await expect(page).toHaveScreenshot("projects-list-page.png");
 });
 
@@ -89,7 +87,7 @@ test("stacks at most three notifications, centred at the bottom", async ({
     ).toBeVisible();
   }
 
-  const toasts = page.locator(".notistack-MuiContent");
+  const { toasts } = projectListPage.notification;
   await expect(toasts).toHaveCount(3);
   const box = await boxOf(toasts.first());
   const viewport = page.viewportSize();
@@ -100,9 +98,7 @@ test("stacks at most three notifications, centred at the bottom", async ({
 test("offers the group by axis with bulk approve off", async ({
   projectSettingsPage,
 }) => {
-  await expect(
-    projectSettingsPage.page.getByRole("combobox", { name: "Variation axis" }),
-  ).toBeVisible();
+  await expect(projectSettingsPage.variationAxis).toBeVisible();
 });
 
 test("opens the add project page from the list", async ({
@@ -168,7 +164,9 @@ test("does not create a project with too short a name", async ({
   await addProjectPage.mainBranch.fill("main");
   await addProjectPage.createBtn.click();
 
-  await expect(page.getByText("Enter at least two characters.")).toBeVisible();
+  await expect(
+    addProjectPage.fieldError("Enter at least two characters."),
+  ).toBeVisible();
   await expect(page).toHaveURL(/\/projects\/new$/);
   expect(creates).toEqual([]);
 });
@@ -263,9 +261,7 @@ test.describe("favourites and search", () => {
 
     expect(request.method()).toBe("PUT");
     await expect(
-      projectListPage
-        .section("Favourites")
-        .getByRole("heading", { name: "Beta" }),
+      projectListPage.sectionHeading("Favourites", "Beta"),
     ).toBeVisible();
     await expect(projectListPage.starBtn("Beta")).toHaveAttribute(
       "aria-pressed",
@@ -298,14 +294,13 @@ test.describe("favourites and search", () => {
       [GAMMA.id],
     );
 
-    await expect(
-      projectListPage.section("Favourites").getByRole("heading", { level: 3 }),
-    ).toHaveText(["Gamma"]);
-    await expect(
-      projectListPage
-        .section("Other projects")
-        .getByRole("heading", { level: 3 }),
-    ).toHaveText(["Alpha", "Beta"]);
+    await expect(projectListPage.sectionHeadings("Favourites")).toHaveText([
+      "Gamma",
+    ]);
+    await expect(projectListPage.sectionHeadings("Other projects")).toHaveText([
+      "Alpha",
+      "Beta",
+    ]);
   });
 
   test("narrows the projects to the search and keeps it in the link", async ({

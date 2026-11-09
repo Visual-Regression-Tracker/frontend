@@ -1,4 +1,4 @@
-import { expect, Locator, Page } from "@playwright/test";
+import { expect, Page } from "@playwright/test";
 import { OpenProjectPage, test } from "fixtures";
 import {
   TEST_BUILD_FAILED,
@@ -65,10 +65,6 @@ const LONE_SCREEN = {
   diffPercent: 3,
 };
 
-// the data grid colours its own subtree: left alone its chrome inherits pure black
-const colourOf = (locator: Locator) =>
-  locator.evaluate((el: HTMLElement) => getComputedStyle(el).color);
-
 const captureApprovals = async (page: Page): Promise<string[][]> => {
   const approved: string[][] = [];
   await page.route(
@@ -120,12 +116,10 @@ test("collapses the variations of one screen into a single card", async ({
   const projectPage = await openGroupedGrid(openProjectPage, page);
 
   await expect(projectPage.testRunList.cards).toHaveCount(2);
-  await expect(
-    projectPage.testRunList.getCard("Screen A").getByTestId("groupCount"),
-  ).toHaveText("2");
-  await expect(
-    projectPage.testRunList.getCard("Screen B").getByTestId("groupCount"),
-  ).toBeHidden();
+  await expect(projectPage.testRunList.cardGroupCount("Screen A")).toHaveText(
+    "2",
+  );
+  await expect(projectPage.testRunList.cardGroupCount("Screen B")).toBeHidden();
 });
 
 test("groups on request and forgets it after a reload", async ({
@@ -185,7 +179,7 @@ test("forgets what was selected once a bulk action has run", async ({
 
   await projectPage.testRunList.checkCard("Screen B");
   await projectPage.testRunList.approveBtn.click();
-  await expect(page.getByText("Approve 1 test run?")).toBeVisible();
+  await expect(projectPage.text("Approve 1 test run?")).toBeVisible();
   await projectPage.modal.confirmBtn.click();
 
   await expect.poll(() => approved.length).toBe(2);
@@ -427,16 +421,13 @@ test("shows a card per test run and narrows with the filters", async ({
   await expect(projectPage.testRunList.cards).toHaveCount(1);
 });
 
-test("opens the details dialog from a card", async ({
-  openProjectPage,
-  page,
-}) => {
+test("opens the details dialog from a card", async ({ openProjectPage }) => {
   const projectPage = await openProjectPage(project.id, build.id);
   await projectPage.testRunList.gridViewToggle.click();
 
   await projectPage.testRunList.getCard(TEST_UNRESOLVED.name).click();
 
-  await expect(page.getByTestId("drawArea").first()).toBeVisible();
+  await expect(projectPage.details.drawAreas.first()).toBeVisible();
 });
 
 test("resizes the grid cards with the density control", async ({
@@ -532,9 +523,10 @@ test("loads card images lazily", async ({ openProjectPage }) => {
   const projectPage = await openProjectPage(project.id, build.id);
   await projectPage.testRunList.gridViewToggle.click();
 
-  await expect(
-    projectPage.testRunList.cards.first().locator("img"),
-  ).toHaveAttribute("loading", "lazy");
+  await expect(projectPage.testRunList.firstCardImage).toHaveAttribute(
+    "loading",
+    "lazy",
+  );
 });
 
 test("collapses the variations into one table row too", async ({
@@ -545,7 +537,7 @@ test("collapses the variations into one table row too", async ({
 
   await expect(projectPage.testRunList.rows).toHaveCount(2);
   await expect(
-    projectPage.testRunList.getRow(VARIATION_DE.id).getByTestId("groupCount"),
+    projectPage.testRunList.rowGroupCount(VARIATION_DE.id),
   ).toHaveText("2");
   await expect(
     projectPage.testRunList.getColumn(VARIATION_DE.id, "tags"),
@@ -613,7 +605,7 @@ test("swaps the card image between the diff and the screenshot", async ({
   await mockVariations(page);
   const projectPage = await openProjectPage(project.id, build.id);
   await projectPage.testRunList.gridViewToggle.click();
-  const image = projectPage.testRunList.cards.first().locator("img");
+  const image = projectPage.testRunList.firstCardImage;
 
   await expect(image).toHaveAttribute("src", /diff\.png/);
 
@@ -703,14 +695,13 @@ test("wraps a long name and its tags rather than cutting them off", async ({
 
 test("shows the icon tooltips without the browser's delay", async ({
   openProjectPage,
-  page,
 }) => {
   const projectPage = await openProjectPage(project.id, build.id);
 
   await projectPage.testRunList.gridViewToggle.hover();
 
   // a native title has no tooltip role and no DOM text
-  await expect(page.getByRole("tooltip")).toHaveText("Grid");
+  await expect(projectPage.tooltip).toHaveText("Grid");
 });
 
 test("filters by a tag clicked on a card", async ({
@@ -774,7 +765,7 @@ test("opens no dialog when a tag is clicked", async ({
 
   await projectPage.testRunList.clickTag("OS");
 
-  await expect(page.getByTestId("drawArea")).toBeHidden();
+  await expect(projectPage.details.drawAreas).toBeHidden();
 });
 
 test("names the axis the runs are grouped by in the View menu", async ({
@@ -786,9 +777,9 @@ test("names the axis the runs are grouped by in the View menu", async ({
 
   await projectPage.testRunList.viewMenuButton.click();
 
-  await expect(
-    projectPage.testRunList.page.getByTestId("groupByVariation"),
-  ).toContainText("viewport");
+  await expect(projectPage.testRunList.groupByVariationItem).toContainText(
+    "viewport",
+  );
 });
 
 test("groups runs of one screen whose reviews are half done", async ({
@@ -803,43 +794,36 @@ test("groups runs of one screen whose reviews are half done", async ({
   await projectPage.testRunList.gridViewToggle.click();
   await projectPage.testRunList.groupBy("variation");
 
-  const screenA = projectPage.testRunList.getCard("Screen A");
-  await expect(screenA.getByTestId("groupCount")).toHaveText("2");
-  await expect(screenA.getByText("Unresolved", { exact: true })).toBeVisible();
+  await expect(projectPage.testRunList.cardGroupCount("Screen A")).toHaveText(
+    "2",
+  );
   await expect(
-    screenA.locator('[title="1 unresolved · 1 approved"]'),
+    projectPage.testRunList.cardStatus("Screen A", "Unresolved"),
+  ).toBeVisible();
+  await expect(
+    projectPage.testRunList.cardBreakdown(
+      "Screen A",
+      "1 unresolved · 1 approved",
+    ),
   ).toBeVisible();
 });
 
-test("labels its switch in the table's colour", async ({
-  openProjectPage,
-  page,
-}) => {
+test("labels its switch in the table's colour", async ({ openProjectPage }) => {
   const projectPage = await openProjectPage(project.id, build.id);
-  const inTable = await colourOf(
-    page.locator(".MuiDataGrid-columnHeaderTitle").first(),
-  );
+  const inTable = await projectPage.testRunList.tableHeaderColour();
 
   await projectPage.testRunList.gridViewToggle.click();
   await expect(projectPage.testRunList.grid).toBeVisible();
 
-  const label = page
-    .locator(".MuiFormControlLabel-root .MuiTypography-root")
-    .first();
-  expect(await colourOf(label)).toBe(inTable);
+  expect(await projectPage.testRunList.gridSwitchLabelColour()).toBe(inTable);
 });
 
-test("labels its header in the table's colour", async ({
-  openProjectPage,
-  page,
-}) => {
+test("labels its header in the table's colour", async ({ openProjectPage }) => {
   const projectPage = await openProjectPage(project.id, build.id);
-  const inTable = await colourOf(
-    page.locator(".MuiDataGrid-columnHeaderTitle").first(),
-  );
+  const inTable = await projectPage.testRunList.tableHeaderColour();
 
   await projectPage.testRunList.gridViewToggle.click();
   await expect(projectPage.testRunList.grid).toBeVisible();
 
-  expect(await colourOf(page.getByTestId("gridSort-name"))).toBe(inTable);
+  expect(await projectPage.testRunList.gridSortNameColour()).toBe(inTable);
 });

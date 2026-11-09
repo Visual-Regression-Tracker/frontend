@@ -139,7 +139,7 @@ test("pre-selects the matching variations and leaves the others", async ({
   const { details } = await openVariations(openProjectPage);
 
   await expect(
-    details.variations.getByText("Approve variations — review before applying"),
+    details.variationsText("Approve variations — review before applying"),
   ).toBeVisible();
   await expect(details.variationsToggleAll).toBeChecked();
   await expect(details.variationsToggleAll).toHaveAccessibleName(
@@ -152,7 +152,7 @@ test("pre-selects the matching variations and leaves the others", async ({
     "1 didn't match — review separately",
   );
   await expect(details.variation("es")).not.toBeChecked();
-  await expect(details.variations.getByText(spanish.reason)).toBeVisible();
+  await expect(details.variationsText(spanish.reason)).toBeVisible();
   await expect(details.variationsConfirm("Approve")).toHaveText(
     "Approve 2 selected",
   );
@@ -253,7 +253,7 @@ test("rejects the matching variations", async ({ openProjectPage, page }) => {
     "Reject",
   );
   await expect(
-    details.variations.getByText("Reject variations — review before applying"),
+    details.variationsText("Reject variations — review before applying"),
   ).toBeVisible();
 
   const [request] = await Promise.all([
@@ -351,13 +351,11 @@ test("shows the diffs, and the screenshots when the diff is switched off", async
   }
 });
 
-test("opens a variation full size", async ({ openProjectPage, page }) => {
+test("opens a variation full size", async ({ openProjectPage }) => {
   const { details } = await openVariations(openProjectPage);
 
-  await details.variations
-    .getByRole("button", { name: "View de full size" })
-    .click();
+  await details.viewVariationFullSize("de").click();
 
-  await expect(page.getByAltText("baseline")).toBeVisible();
-  await expect(page.getByAltText("checkpoint")).toBeVisible();
+  await expect(details.fullSizeBaseline).toBeVisible();
+  await expect(details.fullSizeCheckpoint).toBeVisible();
 });

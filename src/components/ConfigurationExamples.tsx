@@ -17,17 +17,18 @@ import {
 } from "../contexts";
 import { useCopyToClipboard } from "../_helpers/useCopyToClipboard";
 import ProjectSelect from "./ProjectSelect";
+import { ELEMENT_ID } from "../constants/locators";
 
 type Format = "config" | "env";
 
 const FORMATS = {
   config: {
-    id: "configFile",
+    id: ELEMENT_ID.configFile,
     helperText:
       "Save as vrt.json in project root. Could be overridden with ENV variables",
   },
   env: {
-    id: "envVariables",
+    id: ELEMENT_ID.envVariables,
     helperText: "Add Environment variables inside CI environment",
   },
 } as const;

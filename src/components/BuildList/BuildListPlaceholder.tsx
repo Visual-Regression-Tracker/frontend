@@ -2,6 +2,7 @@ import { Button, Stack, Typography } from "@mui/material";
 import { Inbox, SearchOff } from "@mui/icons-material";
 import { SkeletonList } from "../SkeletonList";
 import { EmptyState } from "../EmptyState";
+import { TEST_ID } from "../../constants/locators";
 
 export const BuildListPlaceholder = ({
   loading,
@@ -20,7 +21,7 @@ export const BuildListPlaceholder = ({
   if (error) {
     return (
       <Stack
-        data-testid="buildListError"
+        data-testid={TEST_ID.buildListError}
         sx={{ alignItems: "center", gap: 1, padding: 2 }}
       >
         <Typography
@@ -42,7 +43,7 @@ export const BuildListPlaceholder = ({
       dense
       icon={searchQuery ? <SearchOff /> : <Inbox />}
       title={searchQuery ? `No builds match "${searchQuery}"` : "No builds"}
-      data-testid="buildListEmpty"
+      data-testid={TEST_ID.buildListEmpty}
     />
   );
 };

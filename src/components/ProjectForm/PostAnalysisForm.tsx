@@ -9,6 +9,7 @@ import { ValidatedTextField } from "../ValidatedForm";
 import { POSITIVE_RULES, UNIT_RANGE, UNIT_RANGE_RULES } from "./rules";
 import { SettingsSection, ToggleRow } from "./SettingsRow";
 import { useNoiseConfig } from "./useNoiseConfig";
+import { ELEMENT_ID } from "../../constants/locators";
 
 const statusNote = (
   status: Dinov2Status | undefined,
@@ -94,7 +95,7 @@ export const PostAnalysisForm = () => {
           Rendering-noise check — on request, marks unresolved runs that look
           like rendering noise. A hint, it never approves anything
           {sectionOff && (
-            <FormHelperText id="postAnalysisVlm">
+            <FormHelperText id={ELEMENT_ID.postAnalysisVlm}>
               Not available with the VLM comparator
             </FormHelperText>
           )}
@@ -146,7 +147,7 @@ export const PostAnalysisForm = () => {
             )}
             {note && (
               <FormHelperText
-                id="dinov2Status"
+                id={ELEMENT_ID.dinov2Status}
                 sx={note.warning ? { color: "warning.main" } : undefined}
               >
                 {note.text}

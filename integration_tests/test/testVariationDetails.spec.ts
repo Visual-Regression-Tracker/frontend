@@ -12,7 +12,6 @@ import {
   TEST_PROJECT,
   TEST_VARIATION_ONE,
 } from "~client/_test/test.data.helper";
-import { waitForPage } from "utils/waitForPage";
 
 test.beforeEach(async ({ page }) => {
   await mockGetProjects(page, [TEST_PROJECT]);
@@ -22,9 +21,9 @@ test.beforeEach(async ({ page }) => {
 });
 
 test("renders", async ({ openTestVariationDetailsPage, page }) => {
-  await openTestVariationDetailsPage(TEST_VARIATION_ONE.id);
+  const detailsPage = await openTestVariationDetailsPage(TEST_VARIATION_ONE.id);
 
-  await waitForPage(page);
+  await detailsPage.waitUntilLoaded();
   await expect(page).toHaveScreenshot("test-variation-details-page.png", {
     fullPage: true,
   });
@@ -43,7 +42,7 @@ test("lists every baseline with who made it", async ({
   );
   const { user } = TEST_VARIATION_ONE.baselines[0];
   await expect(
-    detailsPage.page.getByText(`v2 · ${user?.firstName} ${user?.lastName}`),
+    detailsPage.text(`v2 · ${user?.firstName} ${user?.lastName}`),
   ).toBeVisible();
 });
 

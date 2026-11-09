@@ -2,6 +2,7 @@ import { Button, IconButton, Typography } from "@mui/material";
 import { AddRounded, RemoveRounded } from "@mui/icons-material";
 import { Tooltip } from "../Tooltip";
 import { clampScale } from "../../_helpers/scale.helper";
+import { TEST_ID } from "../../constants/locators";
 
 const SCALE_STEP = 1.2;
 const textButtonSx = { textTransform: "none", minWidth: 0 } as const;
@@ -31,7 +32,7 @@ export const ZoomControls = ({
     <Typography
       variant="body2"
       color="textSecondary"
-      data-testid="zoom-level"
+      data-testid={TEST_ID.zoomLevel}
       sx={{ minWidth: 44, textAlign: "center" }}
     >
       {`${Math.round(scale * 100)}%`}

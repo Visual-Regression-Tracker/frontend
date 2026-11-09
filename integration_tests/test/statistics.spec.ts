@@ -32,8 +32,8 @@ test("shows a bar per kept build and the build limit", async ({ page }) => {
   await page.goto(`/statistics/${project.id}`);
   const statistics = new ProjectStatisticsPage(page);
 
-  await expect(statistics.bars.getByRole("link")).toHaveCount(12);
-  await expect(page.getByText("12 builds kept (limit 100)")).toBeVisible();
+  await expect(statistics.links).toHaveCount(12);
+  await expect(statistics.text("12 builds kept (limit 100)")).toBeVisible();
   await expect(statistics.bar("Build #4")).toHaveAccessibleName(
     "Build #4: 20 runs (12 passed, 2 unresolved, 6 failed)",
   );
@@ -45,7 +45,7 @@ test("a bar tells the counts per status on hover", async ({ page }) => {
 
   await statistics.bar("Build #4").hover();
 
-  const tooltip = page.getByRole("tooltip");
+  const { tooltip } = statistics;
   await expect(tooltip).toContainText("Build #4");
   await expect(tooltip).toContainText("Failed");
   await expect(tooltip).toContainText("6");
@@ -71,11 +71,11 @@ test("choosing a branch shows only its builds", async ({ page }) => {
   );
   await page.goto(`/statistics/${project.id}`);
   const statistics = new ProjectStatisticsPage(page);
-  await expect(statistics.bars.getByRole("link")).toHaveCount(12);
+  await expect(statistics.links).toHaveCount(12);
 
   await statistics.branchSelect.click();
-  await page.getByRole("option", { name: "feature" }).click();
+  await statistics.branchOption("feature").click();
 
-  await expect(statistics.bars.getByRole("link")).toHaveCount(1);
-  await expect(page.getByText("1 build kept (limit 100)")).toBeVisible();
+  await expect(statistics.links).toHaveCount(1);
+  await expect(statistics.text("1 build kept (limit 100)")).toBeVisible();
 });

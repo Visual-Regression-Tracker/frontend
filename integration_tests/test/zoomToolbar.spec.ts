@@ -40,10 +40,7 @@ const openFitted = async (
 ) => {
   const { details } = await openProjectPage(project.id, build.id, testRun.id);
   await expect(details.drawAreas).toHaveCount(2);
-  await expect(details.page.getByTestId("image-size")).toHaveText([
-    "(1280 x 720)",
-    "(1280 x 720)",
-  ]);
+  await expect(details.imageSize).toHaveText(["(1280 x 720)", "(1280 x 720)"]);
   await expect
     .poll(async () => {
       const [baseline, checkpoint] = await details.canvasWidths();
@@ -170,10 +167,7 @@ test("fits the wider screenshot into its pane", async ({
     build.id,
     mixedSizes.id,
   );
-  await expect(details.page.getByTestId("image-size")).toHaveText([
-    "(800 x 450)",
-    "(1600 x 900)",
-  ]);
+  await expect(details.imageSize).toHaveText(["(800 x 450)", "(1600 x 900)"]);
   await details.originalSize.click();
 
   await details.fitToScreen.click();
@@ -234,10 +228,7 @@ test("keeps the zoom when moving to the next run of the same size", async ({
 
   await page.keyboard.press("ArrowRight");
   await expect(page).toHaveURL(/testId=next_run_id$/);
-  await expect(details.page.getByTestId("image-size")).toHaveText([
-    "(1280 x 720)",
-    "(1280 x 720)",
-  ]);
+  await expect(details.imageSize).toHaveText(["(1280 x 720)", "(1280 x 720)"]);
 
   await expectWidth(details, fitted * STEP);
 });
@@ -262,10 +253,7 @@ test("fits again when the next run's screenshots are another size", async ({
 
   await page.keyboard.press("ArrowRight");
   await expect(page).toHaveURL(/testId=next_run_id$/);
-  await expect(details.page.getByTestId("image-size")).toHaveText([
-    "(800 x 450)",
-    "(800 x 450)",
-  ]);
+  await expect(details.imageSize).toHaveText(["(800 x 450)", "(800 x 450)"]);
 
   // the zoom of the 1280 px run would show this one at a width it no longer has
   const inherited = 800 * (fitted / IMAGE_WIDTH) * STEP;

@@ -1,7 +1,15 @@
 import { expect, Page } from "@playwright/test";
 import { PNG } from "pngjs";
 import { AUTH_USER, test as base } from "fixtures";
-import { AddProjectPage, LoginPage, ProjectListPage } from "pages";
+import {
+  AddProjectPage,
+  LoginPage,
+  ProjectListPage,
+  ProjectStatisticsPage,
+} from "pages";
+import { ProjectPage } from "pages/ProjectPage";
+import { RegisterPage } from "pages/RegisterPage";
+import type { BasePage } from "pages/BasePage";
 import type { ProjectSettingsPage } from "pages/ProjectSettingsPage";
 import {
   EDITOR_USER,
@@ -127,32 +135,21 @@ const test = base.extend<{
 type Body = Parameters<typeof test>[2];
 
 // the page scrolls inside <main>, which the clicks on the selects leave wherever they scrolled to
-const showTopOfSettings = async ({ page, saveBtn }: ProjectSettingsPage) => {
-  await page.getByRole("main").evaluate((main) => main.scrollTo(0, 0));
-  await expect
-    .poll(() => page.getByRole("main").evaluate((main) => main.scrollTop))
-    .toBe(0);
-  await expect(saveBtn).toBeVisible();
+const showTopOfSettings = async (settings: ProjectSettingsPage) => {
+  await settings.scrollMainToTop();
+  await expect.poll(() => settings.mainScrollTop()).toBe(0);
+  await expect(settings.saveBtn).toBeVisible();
 };
 
-const showWholeContent = async (page: Page) => {
-  const main = page.getByRole("main");
-  const overflow = () =>
-    main.evaluate((element) => element.scrollHeight - element.clientHeight);
+const showWholeContent = async (content: BasePage) => {
   await expect
     .poll(async () => {
-      const extra = await overflow();
-      if (extra > 0) {
-        const { width, height } = page.viewportSize() ?? {
-          width: 1280,
-          height: 720,
-        };
-        await page.setViewportSize({ width, height: height + extra });
-      }
+      const extra = await content.mainOverflow();
+      if (extra > 0) await content.growViewportBy(extra);
       return extra;
     })
     .toBe(0);
-  await main.evaluate((element) => element.scrollTo(0, 0));
+  await content.scrollMainToTop();
 };
 
 const VARIATION_EN: TestRun = {
@@ -241,8 +238,9 @@ const VIEWS: [name: string, body: Body][] = [
       );
       await page.goto("/login");
 
-      await expect(page.getByTestId("oidcLoginBtn")).toBeVisible();
-      await expect(new LoginPage(page).loginBtn).toBeHidden();
+      const loginPage = new LoginPage(page);
+      await expect(loginPage.ssoBtn).toBeVisible();
+      await expect(loginPage.loginBtn).toBeHidden();
       await shot("login-oidc");
     },
   ],
@@ -262,9 +260,7 @@ const VIEWS: [name: string, body: Body][] = [
       await mockRegistrationEnabled(page, false);
       await page.goto("/register");
 
-      await expect(
-        page.getByText("Registration is turned off.", { exact: false }),
-      ).toBeVisible();
+      await expect(new RegisterPage(page).disabledNotice).toBeVisible();
       await shot("register-off");
     },
   ],
@@ -277,9 +273,7 @@ const VIEWS: [name: string, body: Body][] = [
       await page.route(`${API_URL}/projects`, () => undefined);
       await page.goto("/projects");
 
-      await expect(
-        page.getByRole("status", { name: "Loading projects" }),
-      ).toBeVisible();
+      await expect(new ProjectListPage(page).loadingStatus).toBeVisible();
       await shot("project-list-loading");
     },
   ],
@@ -305,7 +299,7 @@ const VIEWS: [name: string, body: Body][] = [
       await response.finished();
 
       await expect(new ProjectListPage(page).addBtn).toBeVisible();
-      await expect(page.getByText("0 projects")).toBeVisible();
+      await expect(new ProjectListPage(page).text("0 projects")).toBeVisible();
       await expect(new ProjectListPage(page).projects).toHaveCount(0);
       await shot("project-list-empty");
     },
@@ -338,7 +332,9 @@ const VIEWS: [name: string, body: Body][] = [
       await mockGetProjects(page, LISTED_PROJECTS);
       await page.goto("/projects?q=billing");
 
-      await expect(page.getByText("No projects match “billing”")).toBeVisible();
+      await expect(
+        new ProjectListPage(page).text("No projects match “billing”"),
+      ).toBeVisible();
       await shot("project-list-no-match");
     },
   ],
@@ -350,33 +346,27 @@ const VIEWS: [name: string, body: Body][] = [
       await projectSettingsPage.selectOllamaModel("llava:13b");
 
       await expect(projectSettingsPage.ollamaModel).toHaveText("llava:13b");
-      await expect(projectSettingsPage.page.getByRole("listbox")).toHaveCount(
-        0,
-      );
-      await expect(projectSettingsPage.page.getByRole("tooltip")).toHaveCount(
-        0,
-      );
+      await expect(projectSettingsPage.listbox).toHaveCount(0);
+      await expect(projectSettingsPage.tooltip).toHaveCount(0);
       await showTopOfSettings(projectSettingsPage);
-      await showWholeContent(projectSettingsPage.page);
+      await showWholeContent(projectSettingsPage);
       await shot("project-settings-vlm-ollama", { fullPage: true });
     },
   ],
 
   [
     "project settings with post-analysis on a server without DINOv2",
-    async ({ projectSettingsPage, shot }) => {
-      await mockDinov2Status(projectSettingsPage.page, {
+    async ({ projectSettingsPage, page, shot }) => {
+      await mockDinov2Status(page, {
         configured: false,
         available: false,
       });
-      await projectSettingsPage.page.reload();
+      await projectSettingsPage.reload();
       await projectSettingsPage.dinov2Status.scrollIntoViewIfNeeded();
 
       await expect(projectSettingsPage.dinov2Status).toBeVisible();
-      await expect(projectSettingsPage.page.getByRole("tooltip")).toHaveCount(
-        0,
-      );
-      await showWholeContent(projectSettingsPage.page);
+      await expect(projectSettingsPage.tooltip).toHaveCount(0);
+      await showWholeContent(projectSettingsPage);
       await shot("project-settings-post-analysis-no-dinov2", {
         fullPage: true,
       });
@@ -391,7 +381,7 @@ const VIEWS: [name: string, body: Body][] = [
       await expect(projectListPage.modal.dialog).toContainText(
         `Are you sure you want to delete: ${project.name}?`,
       );
-      await expect(projectListPage.page.getByRole("tooltip")).toHaveCount(0);
+      await expect(projectListPage.tooltip).toHaveCount(0);
       await shot("delete-project");
     },
   ],
@@ -406,7 +396,7 @@ const VIEWS: [name: string, body: Body][] = [
 
       await projectPage.header.projectCrumb.click();
 
-      await expect(page.getByRole("menuitem")).toHaveCount(4);
+      await expect(projectPage.menuItems).toHaveCount(4);
       await shot("project-switcher");
     },
   ],
@@ -527,9 +517,7 @@ const VIEWS: [name: string, body: Body][] = [
 
       await expect(projectPage.testRunList.approveBtn).toBeVisible();
       await expect(
-        projectPage.testRunList
-          .getRow(TEST_UNRESOLVED.id)
-          .getByRole("checkbox"),
+        projectPage.testRunList.rowCheckbox(TEST_UNRESOLVED.id),
       ).toBeChecked();
       await shot("project-page-selected");
     },
@@ -758,7 +746,7 @@ const VIEWS: [name: string, body: Body][] = [
       await mockGetTestVariations(page, project.id, []);
       const listPage = await openTestVariationListPage(project.id);
 
-      await expect(page.getByText("No variations")).toBeVisible();
+      await expect(listPage.text("No variations")).toBeVisible();
       await expect(listPage.cards).toHaveCount(0);
       await shot("test-variation-list-empty");
     },
@@ -771,7 +759,7 @@ const VIEWS: [name: string, body: Body][] = [
       await expect(profilePage.role).toBeVisible();
       await expect(profilePage.configFile).toBeVisible();
 
-      await showWholeContent(profilePage.page);
+      await showWholeContent(profilePage);
       await shot("profile", { fullPage: true });
     },
   ],
@@ -816,7 +804,7 @@ const VIEWS: [name: string, body: Body][] = [
       await expect(projectSettingsPage.name).toHaveValue(project.name);
       await expect(projectSettingsPage.saveBtn).toBeVisible();
 
-      await showWholeContent(projectSettingsPage.page);
+      await showWholeContent(projectSettingsPage);
       await shot("project-settings", { fullPage: true });
     },
   ],
@@ -828,7 +816,9 @@ const VIEWS: [name: string, body: Body][] = [
       await mockGetStatisticsResults(page, project.id, STATISTICS_BUILDS);
       await page.goto(`/statistics/${project.id}`);
 
-      await expect(page.getByRole("link", { name: /Build #/ })).toHaveCount(12);
+      await expect(new ProjectStatisticsPage(page).bar(/Build #/)).toHaveCount(
+        12,
+      );
       await shot("project-statistics");
     },
   ],
@@ -844,7 +834,9 @@ const VIEWS: [name: string, body: Body][] = [
       );
       await page.goto(`/statistics/${project.id}`);
 
-      await expect(page.getByText("Only a few builds so far")).toBeVisible();
+      await expect(
+        new ProjectStatisticsPage(page).text("Only a few builds so far"),
+      ).toBeVisible();
       await shot("project-statistics-few");
     },
   ],
@@ -856,7 +848,9 @@ const VIEWS: [name: string, body: Body][] = [
       await mockGetStatisticsResults(page, project.id, []);
       await page.goto(`/statistics/${project.id}`);
 
-      await expect(page.getByText("No builds yet")).toBeVisible();
+      await expect(
+        new ProjectStatisticsPage(page).text("No builds yet"),
+      ).toBeVisible();
       await shot("project-statistics-empty");
     },
   ],
@@ -899,10 +893,10 @@ const VIEWS: [name: string, body: Body][] = [
       await expect(details.drawAreas).toHaveCount(2);
       await expect(details.vlmAnalysis).toContainText("The cart badge moved");
 
-      await details.vlmAnalysis.getByRole("button", { name: "More" }).click();
+      await details.vlmMore.click();
 
       await expect(details.vlmAnalysis).toContainText("a shade darker");
-      await expect(page.getByText(/Image sizes differ/)).toBeVisible();
+      await expect(details.text(/Image sizes differ/)).toBeVisible();
       await shot("test-run-vlm-and-size-mismatch");
     },
   ],
@@ -914,7 +908,7 @@ const VIEWS: [name: string, body: Body][] = [
 
       await expect(projectSettingsPage.tolerance).toBeVisible();
       await showTopOfSettings(projectSettingsPage);
-      await showWholeContent(projectSettingsPage.page);
+      await showWholeContent(projectSettingsPage);
       await shot("project-settings-looks-same", { fullPage: true });
     },
   ],
@@ -972,19 +966,19 @@ const VIEWS: [name: string, body: Body][] = [
 
       await expect(projectSettingsPage.geminiModel).toBeVisible();
       await showTopOfSettings(projectSettingsPage);
-      await showWholeContent(projectSettingsPage.page);
+      await showWholeContent(projectSettingsPage);
       await shot("project-settings-vlm-gemini", { fullPage: true });
     },
   ],
 
   [
     "project page with the build menu open",
-    async ({ openProjectPage, page, shot }) => {
+    async ({ openProjectPage, shot }) => {
       const { buildDetails } = await openProjectPage(project.id, build.id);
 
       await buildDetails.openMenu();
 
-      await expect(page.getByRole("menu")).toBeVisible();
+      await expect(buildDetails.menu).toBeVisible();
       await shot("project-page-build-menu");
     },
   ],
@@ -1033,13 +1027,13 @@ const VIEWS: [name: string, body: Body][] = [
 
   [
     "project page with the View menu open",
-    async ({ openProjectPage, page, shot }) => {
+    async ({ openProjectPage, shot }) => {
       const projectPage = await openProjectPage(project.id, build.id);
       await expect(projectPage.testRunList.rows).toHaveCount(4);
 
       await projectPage.testRunList.viewMenuButton.click();
 
-      await expect(page.getByRole("menu")).toBeVisible();
+      await expect(projectPage.testRunList.menu).toBeVisible();
       await shot("project-page-view-menu");
     },
   ],
@@ -1344,7 +1338,7 @@ const VIEWS: [name: string, body: Body][] = [
       const { details } = await openProjectPage(project.id, build.id, run.id);
 
       await expect(
-        page.getByText(
+        details.text(
           "Could not load the baseline image. Image sizes cannot be compared.",
         ),
       ).toBeVisible();
@@ -1424,13 +1418,13 @@ const VIEWS: [name: string, body: Body][] = [
 
   [
     "delete build confirmation",
-    async ({ openProjectPage, page, shot }) => {
+    async ({ openProjectPage, shot }) => {
       const projectPage = await openProjectPage(project.id, build.id);
 
       await projectPage.buildList.openMenu(1);
       await projectPage.buildList.menuItem("Delete build…").click();
 
-      await expect(page.getByRole("dialog")).toContainText(
+      await expect(projectPage.modal.dialog).toContainText(
         "Are you sure you want to delete build",
       );
       await shot("delete-build");
@@ -1439,27 +1433,27 @@ const VIEWS: [name: string, body: Body][] = [
 
   [
     "edit CI build id dialog",
-    async ({ openProjectPage, page, shot }) => {
+    async ({ openProjectPage, shot }) => {
       const projectPage = await openProjectPage(project.id, build.id);
 
       await projectPage.buildList.openMenu(1);
       await projectPage.buildList.menuItem("Edit CI build id…").click();
 
       await expect(projectPage.buildList.ciBuildIdInput).toBeVisible();
-      await expect(page.getByRole("dialog")).toBeVisible();
+      await expect(projectPage.modal.dialog).toBeVisible();
       await shot("edit-ci-build-id");
     },
   ],
 
   [
     "delete builds confirmation",
-    async ({ openProjectPage, page, shot }) => {
+    async ({ openProjectPage, shot }) => {
       const projectPage = await openProjectPage(project.id, build.id);
       await projectPage.buildList.selectAll.click();
 
       await projectPage.buildList.deleteSelectedBtn.click();
 
-      await expect(page.getByRole("dialog")).toContainText(
+      await expect(projectPage.modal.dialog).toContainText(
         "This also removes their test runs.",
       );
       await shot("delete-builds");
@@ -1468,12 +1462,12 @@ const VIEWS: [name: string, body: Body][] = [
 
   [
     "delete test variation confirmation",
-    async ({ openTestVariationListPage, page, shot }) => {
+    async ({ openTestVariationListPage, shot }) => {
       const listPage = await openTestVariationListPage(project.id);
 
       await listPage.deleteBtn(TEST_VARIATION_ONE.name).click();
 
-      await expect(page.getByRole("dialog")).toContainText(
+      await expect(listPage.modal.dialog).toContainText(
         `Are you sure you want to delete: ${TEST_VARIATION_ONE.name}?`,
       );
       await shot("delete-test-variation");
@@ -1482,29 +1476,27 @@ const VIEWS: [name: string, body: Body][] = [
 
   [
     "delete users confirmation",
-    async ({ userListPage, page, shot }) => {
+    async ({ userListPage, shot }) => {
       await userListPage.table.checkRow(GUEST_USER.id);
       await userListPage.table.checkRow(EDITOR_USER.id);
 
       await userListPage.deleteSelectedBtn.click();
 
-      await expect(page.getByRole("dialog")).toContainText("Delete 2 users?");
+      await expect(userListPage.modal.dialog).toContainText("Delete 2 users?");
       await shot("delete-users");
     },
   ],
 
   [
     "delete test runs confirmation",
-    async ({ openProjectPage, page, shot }) => {
+    async ({ openProjectPage, shot }) => {
       const projectPage = await openProjectPage(project.id, build.id);
       await projectPage.testRunList.checkRow(TEST_UNRESOLVED.id);
       await projectPage.testRunList.checkRow(TEST_RUN_NEW.id);
 
-      await projectPage.testRunList.selectionBar
-        .getByRole("button", { name: "Delete…" })
-        .click();
+      await projectPage.testRunList.deleteBtn.click();
 
-      await expect(page.getByRole("dialog")).toContainText(
+      await expect(projectPage.modal.dialog).toContainText(
         "Delete 2 test runs?",
       );
       await shot("delete-test-runs");
@@ -1517,7 +1509,9 @@ const VIEWS: [name: string, body: Body][] = [
       void authUser;
       await page.goto("/no-such-project");
 
-      await expect(page.getByText("Project not found")).toBeVisible();
+      await expect(
+        new ProjectPage(page).text("Project not found"),
+      ).toBeVisible();
       await shot("project-not-found");
     },
   ],
@@ -1527,9 +1521,7 @@ const VIEWS: [name: string, body: Body][] = [
     async ({ userListPage, shot }) => {
       await userListPage.searchField.fill("nobody-here");
 
-      await expect(
-        userListPage.page.getByText("No people match"),
-      ).toBeVisible();
+      await expect(userListPage.text("No people match")).toBeVisible();
       await shot("user-list-no-match");
     },
   ],

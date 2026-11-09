@@ -1,6 +1,7 @@
 import { Box, Checkbox } from "@mui/material";
 import { DebouncedTextField } from "../DebouncedTextField";
 import { Tooltip } from "../Tooltip";
+import { TEST_ID } from "../../constants/locators";
 
 export const BuildListToolbar = ({
   selectAllLabel,
@@ -29,7 +30,7 @@ export const BuildListToolbar = ({
           indeterminate={someSelected}
           disabled={selectAllDisabled}
           onChange={onToggleSelectAll}
-          data-testid="buildSelectAll"
+          data-testid={TEST_ID.buildSelectAll}
           slotProps={{
             input: { "aria-label": selectAllLabel },
           }}
@@ -48,7 +49,7 @@ export const BuildListToolbar = ({
         onChange={onSearchChange}
         slotProps={{
           htmlInput: {
-            "data-testid": "buildSearch",
+            "data-testid": TEST_ID.buildSearch,
             autoComplete: "off",
           },
         }}

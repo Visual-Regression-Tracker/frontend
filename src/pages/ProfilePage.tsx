@@ -23,6 +23,7 @@ import PasswordField from "../components/PasswordField";
 import NameField from "../components/NameField";
 import EmailField from "../components/EmailField";
 import { useOidcEnabled } from "../_helpers/useOidcEnabled";
+import { TEST_ID } from "../constants/locators";
 
 const cardActionsSx = { justifyContent: "flex-end" } as const;
 
@@ -123,7 +124,7 @@ const ProfilePage = () => {
                       <Chip
                         size="small"
                         label={user ? Role[user.role] : ""}
-                        data-testid="role"
+                        data-testid={TEST_ID.role}
                       />
                       <Typography
                         variant="caption"
@@ -139,7 +140,7 @@ const ProfilePage = () => {
                     type="submit"
                     color="primary"
                     variant="contained"
-                    data-testid="submit"
+                    data-testid={TEST_ID.submit}
                   >
                     Update
                   </Button>
@@ -165,7 +166,7 @@ const ProfilePage = () => {
                       type="submit"
                       color="primary"
                       variant="contained"
-                      data-testid="submit"
+                      data-testid={TEST_ID.submit}
                     >
                       Update password
                     </Button>

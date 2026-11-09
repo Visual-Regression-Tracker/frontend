@@ -1,6 +1,7 @@
 import { Alert, AlertTitle, Box, Button, LinearProgress } from "@mui/material";
 import type { NoiselessCaveat } from "../../_helpers/noiseRegions.helper";
 import { UNAVAILABLE_HINT, type NoiselessView } from "./useNoiselessDiff";
+import { TEST_ID } from "../../constants/locators";
 
 interface NoiselessBannerProps {
   view: NoiselessView;
@@ -61,7 +62,7 @@ export const NoiselessBanner = ({
         <Alert
           severity={text.severity}
           action={switchToDiff}
-          data-testid="noiseless-caveat"
+          data-testid={TEST_ID.noiselessCaveat}
           sx={{ my: 0.5, py: 0 }}
         >
           <AlertTitle sx={{ mb: 0 }}>{text.title}</AlertTitle>

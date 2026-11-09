@@ -7,6 +7,7 @@ import { AT_LEAST_TWO_CHARACTERS } from "../_helpers/validation";
 import type { Build } from "../types";
 import { BaseModal } from "./BaseModal";
 import { ValidatedTextField } from "./ValidatedForm";
+import { TEST_ID } from "../constants/locators";
 
 interface BuildMenuAnalysis {
   label: string;
@@ -107,7 +108,7 @@ export const BuildMenu = ({
               required
               value={newCiBuildId}
               onChange={(event) => setNewCiBuildId(event.target.value)}
-              slotProps={{ htmlInput: { "data-testid": "newCiBuildId" } }}
+              slotProps={{ htmlInput: { "data-testid": TEST_ID.newCiBuildId } }}
             />
           </>
         }

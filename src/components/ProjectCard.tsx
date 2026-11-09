@@ -21,6 +21,7 @@ import { LOCATOR_PROJECT_LIST_PAGE_PROJECT_LIST } from "../constants";
 import { buildProjectPageUrl } from "../_helpers/route.helpers";
 import { DateLabel } from "./DateLabel";
 import { Project } from "../types";
+import { TEST_ID } from "../constants/locators";
 
 export const ProjectCard = ({
   project,
@@ -126,14 +127,14 @@ export const ProjectCard = ({
         {onEdit && (
           <Tooltip title="Project settings">
             <IconButton onClick={onEdit} aria-label="Project settings">
-              <Settings data-testid="SettingsIcon" fontSize="small" />
+              <Settings data-testid={TEST_ID.settingsIcon} fontSize="small" />
             </IconButton>
           </Tooltip>
         )}
         {onDelete && (
           <Tooltip title="Delete project">
-            <IconButton onClick={onDelete} data-testid="delete">
-              <Delete data-testid="DeleteIcon" fontSize="small" />
+            <IconButton onClick={onDelete} data-testid={TEST_ID.delete}>
+              <Delete data-testid={TEST_ID.deleteIcon} fontSize="small" />
             </IconButton>
           </Tooltip>
         )}

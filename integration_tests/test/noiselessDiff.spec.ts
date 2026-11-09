@@ -158,7 +158,7 @@ test("is unavailable, with the reason, for a semi-transparent image", async ({
   await details.noiselessMode.click();
 
   await expect(
-    page.getByText(
+    details.text(
       "Diff without noise: not available for images with semi-transparent pixels.",
     ),
   ).toBeVisible();

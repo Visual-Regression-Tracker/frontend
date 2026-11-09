@@ -4,16 +4,17 @@ import { LoginPage, ProfilePage } from "pages";
 import { TEST_PROJECT } from "~client/_test/test.data.helper";
 import { API_URL, mockApiError, mockGetProjects, mockLogin } from "utils/mocks";
 
-test("renders", async ({ loginPage }) => {
-  await expect(loginPage.page).toHaveScreenshot("login-page.png");
+test("renders", async ({ page }) => {
+  await page.goto("/");
+  await expect(page).toHaveScreenshot("login-page.png");
 });
 
-test("can login", async ({ loginPage }) => {
+test("can login", async ({ loginPage, page }) => {
   await loginPage.email.fill("email@google.com");
   await loginPage.password.fill("123456");
 
   const [request] = await Promise.all([
-    loginPage.page.waitForRequest("**/login"),
+    page.waitForRequest("**/login"),
     loginPage.loginBtn.click(),
   ]);
 
@@ -64,7 +65,7 @@ test("does not send an email that is not one", async ({ loginPage, page }) => {
   await loginPage.password.fill("123456");
   await loginPage.loginBtn.click();
 
-  await expect(page.getByText("Enter a valid email.")).toBeVisible();
+  await expect(loginPage.fieldError("Enter a valid email.")).toBeVisible();
   expect(logins).toEqual([]);
 });
 

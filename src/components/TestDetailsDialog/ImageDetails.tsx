@@ -3,6 +3,7 @@ import { WarningRounded, AltRoute } from "@mui/icons-material";
 import { IgnoreArea } from "../../types/ignoreArea";
 import { Tooltip } from "../Tooltip";
 import { styled } from "@mui/material/styles";
+import { TEST_ID } from "../../constants/locators";
 
 const BranchName = styled("span")({
   cursor: "pointer",
@@ -36,7 +37,7 @@ const ImageDetails = ({
         <Typography
           variant="caption"
           style={{ marginRight: 3, fontSize: "0.7rem" }}
-          data-testid="image-size"
+          data-testid={TEST_ID.imageSize}
         >
           {image ? `(${image.width} x ${image.height})` : "Loading..."}
         </Typography>
@@ -66,7 +67,10 @@ const ImageDetails = ({
             color="secondary"
             sx={{ display: "flex", alignItems: "center", gap: 0.5, ml: 1 }}
           >
-            <WarningRounded fontSize="small" data-testid="WarningRoundedIcon" />
+            <WarningRounded
+              fontSize="small"
+              data-testid={TEST_ID.warningRoundedIcon}
+            />
             {`${ignoreAreas.length} ignore ${ignoreAreas.length === 1 ? "area" : "areas"} from upload`}
           </Typography>
         </Tooltip>

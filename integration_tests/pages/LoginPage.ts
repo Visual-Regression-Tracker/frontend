@@ -1,14 +1,16 @@
 import { BasePage } from "./BasePage";
-import { LOCATOR_LOGIN_FORM } from "~client/constants/locators";
+import { AuthFields } from "./components/AuthFields";
+import { LOCATOR_LOGIN_FORM, TEST_ID } from "~client/constants/locators";
 
 export class LoginPage extends BasePage {
-  email = this.page.getByTestId("email");
-  password = this.page.getByTestId("password");
-  loginBtn = this.page.getByTestId("loginBtn");
+  private fields = new AuthFields(this.page);
+  email = this.fields.email;
+  password = this.fields.password;
+  loginBtn = this.page.getByTestId(TEST_ID.loginBtn);
   showPasswordBtn = this.page.locator(
     "[aria-label='toggle password visibility']",
   );
   loginForm = this.page.locator(`#${LOCATOR_LOGIN_FORM}`);
-  ssoBtn = this.page.getByTestId("oidcLoginBtn");
+  ssoBtn = this.page.getByTestId(TEST_ID.oidcLoginBtn);
   registerLink = this.page.getByText("Create an account");
 }

@@ -27,6 +27,7 @@ import { useSnackbar } from "notistack";
 import { BaseModal } from "../components/BaseModal";
 import { Project } from "../types";
 import { pluralize } from "../_helpers/format.helper";
+import { TEST_ID } from "../constants/locators";
 
 const ProjectsListPage = () => {
   const { enqueueSnackbar } = useSnackbar();
@@ -184,7 +185,7 @@ const ProjectsListPage = () => {
             {canEditProjects && (
               <Button
                 variant="contained"
-                startIcon={<Add data-testid="AddIcon" />}
+                startIcon={<Add data-testid={TEST_ID.addIcon} />}
                 sx={{ flexShrink: 0 }}
                 onClick={() => void navigate(routes.PROJECT_NEW_PAGE)}
               >

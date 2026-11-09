@@ -11,6 +11,7 @@ import { StatusChip } from "../StatusChip";
 import { TagLine } from "../TagLine";
 import { Tooltip } from "../Tooltip";
 import type { DialogEnqueue } from "./useDialogSnackbar";
+import { TEST_ID } from "../../constants/locators";
 
 const headerSx = {
   bgcolor: "background.default",
@@ -96,7 +97,7 @@ export const TestDetailsHeader = ({
           />
           <Typography
             variant="body2"
-            data-testid="step-position"
+            data-testid={TEST_ID.stepPosition}
             sx={{ minWidth: "5ch", textAlign: "center" }}
           >{`${currentRunIndex + 1}/${totalTestRunCount}`}</Typography>
           <RunNavButton
@@ -124,7 +125,7 @@ export const TestDetailsHeader = ({
         <Box sx={{ flexGrow: 1 }} />
         <CommentsPopper text={testRun.comment} onSave={saveComment} />
         <IconButton aria-label="Close" color="inherit" onClick={onClose}>
-          <Close data-testid="CloseIcon" />
+          <Close data-testid={TEST_ID.closeIcon} />
         </IconButton>
       </Stack>
       <Box sx={{ pl: 0.5 }}>
