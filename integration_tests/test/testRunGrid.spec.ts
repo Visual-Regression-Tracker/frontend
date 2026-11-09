@@ -390,6 +390,8 @@ test("renders", async ({ openProjectPage, page }) => {
   await projectPage.testRunList.gridViewToggle.click();
   await expect(projectPage.testRunList.cards).toHaveCount(4);
 
+  await page.mouse.move(0, 0);
+  await expect(projectPage.tooltip).toHaveCount(0);
   await expect(page).toHaveScreenshot("test-run-grid.png");
 });
 

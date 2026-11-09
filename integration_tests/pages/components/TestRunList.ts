@@ -39,6 +39,7 @@ export class TestRunList extends Table {
   analyseBtn = this.selectionBar.getByRole("button", {
     name: "Analyse noise",
   });
+  deleteBtn = this.selectionBar.getByRole("button", { name: "Delete…" });
   downloadBtn = this.selectionBar.getByRole("button", { name: "Download zip" });
   nextPage = this.pane.getByLabel("Go to next page");
   pageSize = this.pane.getByLabel("Cards per page:");

@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useSnackbar } from "notistack";
 import { deleteBuild, useBuildDispatch } from "../../contexts";
+import { pluralize } from "../../_helpers/format.helper";
 
 export function useBulkDeleteBuilds({
   selectedIds,
@@ -40,14 +41,20 @@ export function useBulkDeleteBuilds({
       const failed = results.filter((r) => !r.ok);
 
       if (deleted.length > 0) {
-        enqueueSnackbar(`${deleted.length} build(s) deleted`, {
-          variant: "success",
-        });
+        enqueueSnackbar(
+          `${deleted.length} ${pluralize(deleted.length, "build")} deleted`,
+          {
+            variant: "success",
+          },
+        );
       }
       if (failed.length > 0) {
-        enqueueSnackbar(`Failed to delete ${failed.length} build(s)`, {
-          variant: "error",
-        });
+        enqueueSnackbar(
+          `Failed to delete ${failed.length} ${pluralize(failed.length, "build")}`,
+          {
+            variant: "error",
+          },
+        );
       }
       if (deleted.some((r) => r.id === selectedBuildId)) {
         openAfterDelete();

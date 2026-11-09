@@ -233,6 +233,19 @@ describe("Header", () => {
         .getAllByRole("tab")
         .map((tab) => tab.textContent);
 
+    it("shows neither the id nor the project tabs for a project that does not exist", async () => {
+      await renderShell("/no-such-project");
+
+      const crumb = screen.getByRole("navigation", { name: "Breadcrumb" });
+      expect(
+        within(crumb).getByRole("link", { name: "Projects" }),
+      ).toBeVisible();
+      expect(screen.queryByText("no-such-project")).not.toBeInTheDocument();
+      expect(
+        screen.queryByRole("navigation", { name: "Project" }),
+      ).not.toBeInTheDocument();
+    });
+
     it("shows Projects and the project, with the tabs, on the builds page", async () => {
       await renderShell(`/${TEST_PROJECT.id}`);
 
@@ -360,8 +373,10 @@ describe("Header", () => {
       ).toBeVisible();
     });
 
-    it("shows the project without a menu while there are no projects", async () => {
-      await renderShell(`/${TEST_PROJECT.id}`, { projects: [] });
+    it("shows the project id without a menu when the project list failed to load", async () => {
+      vi.spyOn(projectsService, "getAll").mockRejectedValue("API is down");
+      vi.spyOn(projectsService, "getFavorites").mockResolvedValue([]);
+      renderHeader({ user: TEST_USER, route: `/${TEST_PROJECT.id}` });
 
       const crumb = screen.getByRole("navigation", { name: "Breadcrumb" });
       await waitFor(() =>

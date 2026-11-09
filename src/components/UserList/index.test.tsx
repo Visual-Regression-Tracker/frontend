@@ -50,6 +50,11 @@ const renderUserList = async (users = USERS) => {
   return result;
 };
 
+const confirmDelete = async (user: Setup["user"]) => {
+  const dialog = await screen.findByRole("dialog");
+  await user.click(within(dialog).getByRole("button", { name: "Delete" }));
+};
+
 const rowOf = (user: User): HTMLElement => {
   const row = screen.getByText(user.email).closest<HTMLElement>("[role=row]");
   if (!row) {
@@ -195,10 +200,23 @@ describe("UserList", () => {
       await user.click(screen.getByRole("button", { name: "Role" }));
       await user.click(screen.getByRole("menuitemcheckbox", { name: "Guest" }));
       await user.keyboard("{Escape}");
-      await user.click(screen.getByRole("button", { name: "Delete" }));
+      await user.click(screen.getByRole("button", { name: "Delete…" }));
+      await confirmDelete(user);
 
       await waitFor(() => expect(remove).toHaveBeenCalledWith(["2"]));
     });
+  });
+
+  it("says so when the search matches nobody", async () => {
+    const { user } = await renderUserList();
+
+    await user.type(
+      screen.getByLabelText("Search by name or email"),
+      "nobody-here",
+    );
+
+    expect(await screen.findByText("No people match")).toBeVisible();
+    expect(screen.queryByText("No rows")).not.toBeInTheDocument();
   });
 
   describe("new guests banner", () => {
@@ -372,7 +390,8 @@ describe("UserList", () => {
 
       await selectRow(user, GUEST);
       await selectRow(user, EDITOR);
-      await user.click(screen.getByRole("button", { name: "Delete" }));
+      await user.click(screen.getByRole("button", { name: "Delete…" }));
+      await confirmDelete(user);
 
       await waitFor(() => expect(remove).toHaveBeenCalledWith(["2", "3"]));
       expect(remove).toHaveBeenCalledTimes(1);
@@ -385,12 +404,44 @@ describe("UserList", () => {
       expect(screen.queryByText("2 selected")).not.toBeInTheDocument();
     });
 
+    it("asks before deleting and deletes nothing when cancelled", async () => {
+      const remove = vi.spyOn(usersService, "remove").mockResolvedValue(true);
+      const { user } = await renderUserList();
+
+      await selectRow(user, GUEST);
+      await selectRow(user, EDITOR);
+      await user.click(screen.getByRole("button", { name: "Delete…" }));
+
+      const dialog = await screen.findByRole("dialog");
+      expect(within(dialog).getByText("Delete users")).toBeVisible();
+      expect(within(dialog).getByText(/Delete 2 users\?/)).toBeVisible();
+      await user.click(within(dialog).getByRole("button", { name: "Cancel" }));
+
+      await waitFor(() =>
+        expect(screen.queryByRole("dialog")).not.toBeInTheDocument(),
+      );
+      expect(remove).not.toHaveBeenCalled();
+      expect(screen.getByText(GUEST.email)).toBeVisible();
+    });
+
+    it("names a single user in the delete dialog", async () => {
+      const { user } = await renderUserList();
+
+      await selectRow(user, GUEST);
+      await user.click(screen.getByRole("button", { name: "Delete…" }));
+
+      const dialog = await screen.findByRole("dialog");
+      expect(within(dialog).getByText("Delete user")).toBeVisible();
+      expect(within(dialog).getByText(/Delete 1 user\?/)).toBeVisible();
+    });
+
     it("keeps the users and shows the error when deleting fails", async () => {
       vi.spyOn(usersService, "remove").mockRejectedValue("Cannot remove");
       const { user } = await renderUserList();
 
       await selectRow(user, GUEST);
-      await user.click(screen.getByRole("button", { name: "Delete" }));
+      await user.click(screen.getByRole("button", { name: "Delete…" }));
+      await confirmDelete(user);
 
       expect(await screen.findByText("Cannot remove")).toBeVisible();
       expect(screen.getByText(GUEST.email)).toBeVisible();

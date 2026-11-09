@@ -13,6 +13,7 @@ describe("validation rules", () => {
     ["", false],
     [undefined, false],
     [null, false],
+    [Number.NaN, false],
   ])("required accepts %j: %s", (value, valid) => {
     expect(required("Required").isValid(value)).toBe(valid);
   });
@@ -49,7 +50,7 @@ describe("validation rules", () => {
     [null, true],
     [-0.5, false],
     [1.5, false],
-    [Number.NaN, false],
+    [Number.NaN, true],
   ])("min(0) and max(1) together accept %j: %s", (value, valid) => {
     const rules = [min(0, "Too low"), max(1, "Too high")];
     expect(rules.every((rule) => rule.isValid(value))).toBe(valid);

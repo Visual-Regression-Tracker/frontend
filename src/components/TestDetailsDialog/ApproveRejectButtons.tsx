@@ -137,7 +137,7 @@ export const ApproveRejectButtons = ({
         <HotkeyHint>A</HotkeyHint>
       </Button>
       <Button
-        color="secondary"
+        color="error"
         variant="outlined"
         aria-keyshortcuts="x"
         onClick={reject}
@@ -160,7 +160,7 @@ export const ApproveRejectButtons = ({
       {variationsEnabled && (
         <Tooltip title="Review and reject this screen's matching variations (e.g. all locales) before applying">
           <Button
-            color="secondary"
+            color="error"
             onClick={() => onOpenVariations("reject")}
             sx={actionButtonSx}
           >

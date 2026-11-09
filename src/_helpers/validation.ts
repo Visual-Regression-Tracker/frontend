@@ -6,7 +6,10 @@ export interface Rule {
 }
 
 const isEmpty = (value: unknown) =>
-  value === undefined || value === null || value === "";
+  value === undefined ||
+  value === null ||
+  value === "" ||
+  (typeof value === "number" && Number.isNaN(value));
 
 const EMAIL = /^[^\s@]+@[^\s@.]+(?:\.[^\s@.]+)+$/;
 

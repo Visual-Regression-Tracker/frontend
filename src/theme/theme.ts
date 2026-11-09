@@ -16,7 +16,6 @@ import {
   slate,
   status,
   surface,
-  violet,
 } from "./tokens";
 
 declare module "@mui/material/styles" {
@@ -50,7 +49,7 @@ export const theme = createTheme({
     light: {
       palette: {
         primary: { main: brand[700], light: brand[500], dark: brand[800] },
-        secondary: { main: violet[700], light: violet[400] },
+        secondary: { main: hint.light.neutral },
         success: { main: status.light.success },
         warning: { main: status.light.warning },
         error: { main: status.light.error },
@@ -70,7 +69,7 @@ export const theme = createTheme({
     dark: {
       palette: {
         primary: { ...darkAccent },
-        secondary: { main: violet[300], light: violet[300] },
+        secondary: { main: hint.dark.neutral },
         success: { main: status.dark.success },
         warning: { main: status.dark.warning },
         error: { main: status.dark.error },
@@ -220,6 +219,11 @@ export const theme = createTheme({
           border: 0,
           "--DataGrid-containerBackground": (theme.vars ?? theme).palette
             .background.paper,
+          ...theme.applyStyles("dark", {
+            "--DataGrid-t-color-border-base": (theme.vars ?? theme).palette
+              .divider,
+          }),
+          "& .MuiDataGrid-columnSeparator": { display: "none" },
         }),
         columnHeaderTitle: { fontWeight: 600 },
       },

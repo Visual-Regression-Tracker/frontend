@@ -56,7 +56,7 @@ export const TestDetailsFooter = ({
       <Grid size={3} sx={scaleActionsSx}>
         {zoomControls}
       </Grid>
-      <Grid size={6} sx={centerActionsSx}>
+      <Grid size={{ xs: 5, lg: 6 }} sx={centerActionsSx}>
         {isAwaitingReview(testRun.status) ? (
           <ApproveRejectButtons
             testRun={testRun}
@@ -69,7 +69,7 @@ export const TestDetailsFooter = ({
           <UndoDecisionButton testRun={testRun} />
         )}
       </Grid>
-      <Grid size={3} sx={testRunActionsSx}>
+      <Grid size={{ xs: 4, lg: 3 }} sx={testRunActionsSx}>
         <FormControlLabel
           control={
             <Checkbox

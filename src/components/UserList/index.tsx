@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { Box, Menu, MenuItem, Paper, Stack } from "@mui/material";
+import { Box, Menu, MenuItem, Paper, Stack, Typography } from "@mui/material";
 import { Delete } from "@mui/icons-material";
 import { DataGrid, GridRowSelectionModel } from "@mui/x-data-grid";
 import { useSnackbar } from "notistack";
@@ -11,11 +11,16 @@ import {
   filterUsers,
   recentGuests,
 } from "../../_helpers/userList.helper";
+import { pluralize } from "../../_helpers/format.helper";
+import { BaseModal } from "../BaseModal";
+import { gridEmptyState } from "../GridEmptyState";
 import { FilterBar } from "../FilterBar";
 import { SelectionBar } from "../SelectionBar";
 import { GuestBanner } from "./GuestBanner";
 import { RolesCard } from "./RolesCard";
 import { buildColumns } from "./columns";
+
+const GRID_SLOTS = { noRowsOverlay: gridEmptyState("No people match") };
 
 const ROLE_LABELS = Object.values(Role);
 const GUEST_LABEL = Role.guest;
@@ -28,6 +33,8 @@ const UserList = () => {
   const [roles, setRoles] = useState<string[]>([]);
   const [selection, setSelection] = useState<Set<string>>(new Set());
   const [roleMenu, setRoleMenu] = useState<HTMLElement | null>(null);
+  const [confirmingDelete, setConfirmingDelete] = useState(false);
+  const [deleteCount, setDeleteCount] = useState(0);
 
   const showError = useCallback(
     (err: string) => enqueueSnackbar(err, { variant: "error" }),
@@ -84,8 +91,9 @@ const UserList = () => {
     [userDispatch, enqueueSnackbar, showError],
   );
 
-  const removeSelected = () =>
-    usersService
+  const removeSelected = () => {
+    setConfirmingDelete(false);
+    return usersService
       .remove(selectedIds)
       .then(() => {
         enqueueSnackbar("Removed", { variant: "success" });
@@ -93,6 +101,7 @@ const UserList = () => {
         setSelection(new Set());
       })
       .catch(showError);
+  };
 
   const columns = useMemo(
     () =>
@@ -148,16 +157,30 @@ const UserList = () => {
               onClick: (e) => setRoleMenu(e.currentTarget),
             },
             {
-              label: "Delete",
+              label: "Delete…",
               color: "error",
               icon: <Delete />,
               onClick: () => {
-                void removeSelected();
+                setDeleteCount(selectedIds.length);
+                setConfirmingDelete(true);
               },
             },
           ]}
         />
       )}
+      <BaseModal
+        open={confirmingDelete}
+        title={pluralize(deleteCount, "Delete user", "Delete users")}
+        submitButtonText="Delete"
+        submitColor="error"
+        onCancel={() => setConfirmingDelete(false)}
+        content={
+          <Typography>
+            {`Delete ${deleteCount} ${pluralize(deleteCount, "user")}? They lose access to VRT. This can't be undone.`}
+          </Typography>
+        }
+        onSubmit={removeSelected}
+      />
       <Menu
         anchorEl={roleMenu}
         open={!!roleMenu}
@@ -195,6 +218,7 @@ const UserList = () => {
             isRowSelectable={({ id }) => String(id) !== currentUser?.id}
             rowSelectionModel={{ type: "include", ids: new Set(selectedIds) }}
             onRowSelectionModelChange={onSelectionChange}
+            slots={GRID_SLOTS}
           />
         </Paper>
         <RolesCard />

@@ -11,6 +11,7 @@ import {
   GridSortDirection,
   GridSortModel,
 } from "@mui/x-data-grid";
+import { gridEmptyState } from "../GridEmptyState";
 import { StatusChip } from "../StatusChip";
 import { NoiseHintChip } from "./NoiseHintChip";
 import { TagLine } from "../TagLine";
@@ -24,6 +25,10 @@ import { TagField, TestRun } from "../../types";
 import { TEST_ID } from "../../constants/locators";
 
 const HIDDEN_COLUMNS = { id: false };
+
+const GRID_SLOTS = {
+  noRowsOverlay: gridEmptyState("No test runs match the filters"),
+};
 
 const NAME_CELL_SX = {
   display: "flex",
@@ -254,6 +259,7 @@ export const TestRunTable = ({
       sortModel={sortModel}
       onSortModelChange={onSortModelChange}
       onRowClick={onRowClick}
+      slots={GRID_SLOTS}
     />
   );
 };

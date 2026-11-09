@@ -21,6 +21,7 @@ export type ProjectState = {
   // opened last first, kept in this browser
   recentProjectIds: string[];
   loading: boolean;
+  loadFailed: boolean;
 };
 
 export function projectReducer(
@@ -32,12 +33,14 @@ export function projectReducer(
       return {
         ...state,
         loading: true,
+        loadFailed: false,
       };
 
     case "failure":
       return {
         ...state,
         loading: false,
+        loadFailed: true,
       };
 
     case "get":

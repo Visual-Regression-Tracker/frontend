@@ -3,13 +3,19 @@ import { Navigate, useLocation } from "react-router-dom";
 import { useUserState } from "../contexts";
 import { routes } from "../constants";
 import { User } from "../types";
+import { RequireProject } from "./RequireProject";
 
 interface PropType {
   component: ComponentType;
   roles?: User["role"][];
+  requireProject?: boolean;
 }
 
-const PrivateRoute = ({ component: Component, roles }: PropType) => {
+const PrivateRoute = ({
+  component: Component,
+  roles,
+  requireProject,
+}: PropType) => {
   const { loggedIn, user } = useUserState();
   const location = useLocation();
 
@@ -20,6 +26,14 @@ const PrivateRoute = ({ component: Component, roles }: PropType) => {
 
   if (roles && (!user || !roles.includes(user.role))) {
     return <Navigate to={routes.PROJECT_LIST_PAGE} />;
+  }
+
+  if (requireProject) {
+    return (
+      <RequireProject>
+        <Component />
+      </RequireProject>
+    );
   }
 
   return <Component />;

@@ -102,7 +102,7 @@ test("selects every build the search matched and deletes them", async ({
   await projectPage.modal.confirmBtn.click();
 
   await expect(projectPage.notification.message).toHaveText(
-    "15 build(s) deleted",
+    "15 builds deleted",
   );
 });
 

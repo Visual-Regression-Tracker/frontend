@@ -64,7 +64,7 @@ const ImageDetails = ({
         >
           <Typography
             variant="caption"
-            color="secondary"
+            color="warning.main"
             sx={{ display: "flex", alignItems: "center", gap: 0.5, ml: 1 }}
           >
             <WarningRounded

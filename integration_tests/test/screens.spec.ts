@@ -7,6 +7,7 @@ import {
   ProjectListPage,
   ProjectStatisticsPage,
 } from "pages";
+import { ProjectPage } from "pages/ProjectPage";
 import { RegisterPage } from "pages/RegisterPage";
 import type { BasePage } from "pages/BasePage";
 import type { ProjectSettingsPage } from "pages/ProjectSettingsPage";
@@ -1470,6 +1471,93 @@ const VIEWS: [name: string, body: Body][] = [
         `Are you sure you want to delete: ${TEST_VARIATION_ONE.name}?`,
       );
       await shot("delete-test-variation");
+    },
+  ],
+
+  [
+    "delete users confirmation",
+    async ({ userListPage, shot }) => {
+      await userListPage.table.checkRow(GUEST_USER.id);
+      await userListPage.table.checkRow(EDITOR_USER.id);
+
+      await userListPage.deleteSelectedBtn.click();
+
+      await expect(userListPage.modal.dialog).toContainText("Delete 2 users?");
+      await shot("delete-users");
+    },
+  ],
+
+  [
+    "delete test runs confirmation",
+    async ({ openProjectPage, shot }) => {
+      const projectPage = await openProjectPage(project.id, build.id);
+      await projectPage.testRunList.checkRow(TEST_UNRESOLVED.id);
+      await projectPage.testRunList.checkRow(TEST_RUN_NEW.id);
+
+      await projectPage.testRunList.deleteBtn.click();
+
+      await expect(projectPage.modal.dialog).toContainText(
+        "Delete 2 test runs?",
+      );
+      await shot("delete-test-runs");
+    },
+  ],
+
+  [
+    "project that does not exist",
+    async ({ authUser, page, shot }) => {
+      void authUser;
+      await page.goto("/no-such-project");
+
+      await expect(
+        new ProjectPage(page).text("Project not found"),
+      ).toBeVisible();
+      await shot("project-not-found");
+    },
+  ],
+
+  [
+    "user list with no one matching the search",
+    async ({ userListPage, shot }) => {
+      await userListPage.searchField.fill("nobody-here");
+
+      await expect(userListPage.text("No people match")).toBeVisible();
+      await shot("user-list-no-match");
+    },
+  ],
+
+  [
+    "test run details in a 1024 pixel wide window",
+    async ({ openProjectPage, page, shot }) => {
+      await page.setViewportSize({ width: 1024, height: 700 });
+      const { details } = await openProjectPage(
+        project.id,
+        build.id,
+        TEST_UNRESOLVED.id,
+      );
+      await expect(details.drawAreas).toHaveCount(2);
+
+      await shot("test-run-1024");
+    },
+  ],
+
+  [
+    "test run details editing the areas in a 1024 pixel wide window",
+    async ({ openProjectPage, page, shot }) => {
+      await page.setViewportSize({ width: 1024, height: 700 });
+      await mockGetTestRuns(page, build.id, [WITHOUT_AREAS, TEST_RUN_NEW]);
+      await mockTestRun(page, WITHOUT_AREAS);
+      const { details } = await openProjectPage(
+        project.id,
+        build.id,
+        WITHOUT_AREAS.id,
+      );
+      await expect(details.drawAreas).toHaveCount(2);
+
+      await details.editAreas.click();
+
+      await expect(details.saveAreas).toBeDisabled();
+      await shot("test-run-edit-areas-1024");
     },
   ],
 ];

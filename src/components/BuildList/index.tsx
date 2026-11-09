@@ -14,6 +14,7 @@ import { BuildListToolbar } from "./BuildListToolbar";
 import { useBulkDeleteBuilds } from "./useBulkDeleteBuilds";
 import { useBuildSelection } from "./useBuildSelection";
 import { useRequestGuard } from "../../_helpers/staleGuard";
+import { pluralize } from "../../_helpers/format.helper";
 import {
   useBuildState,
   useBuildDispatch,
@@ -77,6 +78,7 @@ const BuildList = () => {
     lastDeletedId,
   });
   const [bulkDeleteDialogOpen, setBulkDeleteDialogOpen] = useState(false);
+  const [bulkDeleteCount, setBulkDeleteCount] = useState(0);
   const pageGuard = useRequestGuard();
 
   // a new project or search starts on the first page, with nothing selected
@@ -224,7 +226,10 @@ const BuildList = () => {
                   icon: <DeleteOutlineOutlined />,
                   color: "error",
                   disabled: bulkDeleting,
-                  onClick: () => setBulkDeleteDialogOpen(true),
+                  onClick: () => {
+                    setBulkDeleteCount(selectedIds.length);
+                    setBulkDeleteDialogOpen(true);
+                  },
                 },
               ]}
               onSelectAll={selectAllMatching}
@@ -283,14 +288,14 @@ const BuildList = () => {
       )}
       <BaseModal
         open={bulkDeleteDialogOpen}
-        title={"Delete builds"}
+        title={pluralize(bulkDeleteCount, "Delete build", "Delete builds")}
         submitButtonText={"Delete"}
         submitColor="error"
         onCancel={() => setBulkDeleteDialogOpen(false)}
         content={
           <>
             <Typography>
-              {`Are you sure you want to delete ${selectedIds.length} build(s)?`}
+              {`Delete ${bulkDeleteCount} ${pluralize(bulkDeleteCount, "build")}?`}
             </Typography>
             <Typography>This also removes their test runs.</Typography>
           </>

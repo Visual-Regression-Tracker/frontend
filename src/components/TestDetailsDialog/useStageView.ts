@@ -1,4 +1,13 @@
-import { type ComponentProps, useEffect, useRef, useState } from "react";
+import {
+  type ComponentProps,
+  type Dispatch,
+  type SetStateAction,
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+} from "react";
 import { calculateScale } from "../../_helpers/scale.helper";
 import type { DrawArea, ImageStateLoad } from "./DrawArea";
 
@@ -52,12 +61,19 @@ export const useStageView = (
     return scales.length > 0 ? Math.min(1, ...scales) : undefined;
   };
 
+  const followsPanes = useRef(true);
+  const zoomByUser: Dispatch<SetStateAction<number>> = useCallback((scale) => {
+    followsPanes.current = false;
+    setStageScale(scale);
+  }, []);
+
   const resetPosition = () => {
     setStagePos(defaultStagePos);
     setStageOffset(defaultStagePos);
   };
 
   const fitImagesToStage = () => {
+    followsPanes.current = true;
     const scale = fitScale();
     if (scale !== undefined) {
       setStageScale(scale);
@@ -66,6 +82,7 @@ export const useStageView = (
   };
 
   const setOriginalSize = () => {
+    followsPanes.current = false;
     setStageScale(1);
     resetPosition();
   };
@@ -87,8 +104,37 @@ export const useStageView = (
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [baselineImage, currentImage, currentImageStatus, baselineImageStatus]);
 
+  const refit = useRef(fitImagesToStage);
+  useLayoutEffect(() => {
+    refit.current = fitImagesToStage;
+  });
+
+  useEffect(() => {
+    const panes = [leftItemRef.current, rightItemRef.current].filter(
+      (pane): pane is HTMLDivElement => pane !== null,
+    );
+    if (panes.length === 0 || typeof ResizeObserver === "undefined") {
+      return;
+    }
+    const sizeOf = () =>
+      panes.map((pane) => `${pane.offsetWidth}x${pane.offsetHeight}`).join("|");
+    let lastSize = sizeOf();
+    const observer = new ResizeObserver(() => {
+      const size = sizeOf();
+      if (size === lastSize) {
+        return;
+      }
+      lastSize = size;
+      if (followsPanes.current) {
+        refit.current();
+      }
+    });
+    panes.forEach((pane) => observer.observe(pane));
+    return () => observer.disconnect();
+  }, [baselineImage, currentImage]);
+
   const stageProps: StageProps = {
-    stageScaleState: [stageScale, setStageScale],
+    stageScaleState: [stageScale, zoomByUser],
     stagePosState: [stagePos, setStagePos],
     stageScrollPosState: [stageScrollPos, setStageScrollPos],
     stageInitPosState: [stageInitPos, setStageInitPos],

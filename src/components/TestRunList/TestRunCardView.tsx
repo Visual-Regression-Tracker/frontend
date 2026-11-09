@@ -10,8 +10,9 @@ import { pluralize } from "../../_helpers/format.helper";
 import { TestRunGroup } from "../../_helpers/testRunGroup.helper";
 import { TagField } from "../../types";
 import type { TestRunSort } from "../../types/testRunSort";
+import { NoMatchState } from "../GridEmptyState";
 import { TestRunGrid } from "./TestRunGrid";
-import { TestRunGridHeader } from "./TestRunGridHeader";
+import { TestRunGridToolbar } from "./TestRunGridToolbar";
 import { PAGE_SIZE_OPTIONS, TestRunDensity } from "./TestRunListControls";
 import type { TagFilters } from "./useTestRunFilters";
 import { TEST_ID } from "../../constants/locators";
@@ -89,10 +90,9 @@ export const TestRunCardView = ({
         color: "text.primary",
       }}
     >
-      <TestRunGridHeader
+      <TestRunGridToolbar
         sort={sort}
         onSortChange={onSortChange}
-        density={density}
         noiseAvailable={noiseAvailable}
         selectedCount={
           navigationIds.filter((id) => selectedIdSet.has(id)).length
@@ -103,15 +103,10 @@ export const TestRunCardView = ({
       {loading && <LinearProgress />}
       <Box sx={{ flex: 1, overflow: "auto" }}>
         {groups.length === 0 ? (
-          <Typography
-            variant="subtitle1"
-            align="center"
-            color="textSecondary"
-            sx={{ padding: 2 }}
-            data-testid="testRunGridEmpty"
-          >
-            No test runs match the filters
-          </Typography>
+          <NoMatchState
+            title="No test runs match the filters"
+            testId="testRunGridEmpty"
+          />
         ) : (
           <TestRunGrid
             groups={pagedGroups}

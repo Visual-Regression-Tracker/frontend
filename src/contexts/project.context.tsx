@@ -50,6 +50,16 @@ function useSelectedProject(): Project | undefined {
   );
 }
 
+function useProjectMissing(projectId: string | undefined): boolean {
+  const { projectList, loading, loadFailed } = useProjectState();
+  return (
+    !loading &&
+    !loadFailed &&
+    !!projectId &&
+    !projectList.some((project) => project.id === projectId)
+  );
+}
+
 function useNoiseAnalysisAvailable(projectId?: string): boolean {
   const { projectList, selectedProjectId } = useProjectState();
   const id = projectId ?? selectedProjectId;
@@ -172,6 +182,7 @@ function ProjectProvider({ children }: Readonly<ProjectProviderProps>) {
     recentProjectIds: [],
     // a signed-in user's list is on its way from the first render
     loading: loggedIn,
+    loadFailed: false,
   };
 
   const userId = loggedIn ? user?.id : undefined;
@@ -236,6 +247,7 @@ export {
   ProjectProvider,
   useProjectState,
   useSelectedProject,
+  useProjectMissing,
   useNoiseAnalysisAvailable,
   useProjectDispatch,
   createProject,

@@ -22,7 +22,7 @@ import {
 import { BulkOperation } from "./BulkOperation";
 import { useShowDiff } from "./useShowDiff";
 import { hotkeyMatching } from "../../_helpers/hotkeys.helper";
-import { DEFAULT_SORT } from "./TestRunGridHeader";
+import { DEFAULT_SORT } from "./TestRunGridToolbar";
 import TestRunFilters from "./TestRunFilters";
 import { TestRunTable } from "./TestRunTable";
 import { useSharedTestRunFilters } from "./TestRunFiltersContext";

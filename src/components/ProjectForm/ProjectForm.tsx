@@ -64,7 +64,12 @@ export const ProjectForm = () => {
   return (
     <Stack spacing={2}>
       <SettingsSection id="general" title="General">
-        <FieldRow id={ELEMENT_ID.name} title="Project name" stacked required>
+        <FieldRow
+          id={ELEMENT_ID.name}
+          title="Project name"
+          width={320}
+          required
+        >
           <ValidatedTextField
             name="projectName"
             rules={AT_LEAST_TWO_CHARACTERS}
@@ -82,7 +87,7 @@ export const ProjectForm = () => {
         <FieldRow
           id={ELEMENT_ID.branchName}
           title="Main branch"
-          stacked
+          width={320}
           required
         >
           <ValidatedTextField

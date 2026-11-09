@@ -7,7 +7,7 @@ import { run } from "../../_helpers/testRun.fixture";
 import { TAG_FIELDS } from "../../_helpers/testRunTags.helper";
 import { NOISE_ANALYSIS_CHANGE } from "../../_test/test.data.helper";
 import { TestRun } from "../../types";
-import { DEFAULT_SORT } from "./TestRunGridHeader";
+import { DEFAULT_SORT } from "./TestRunGridToolbar";
 import { TestRunCardView } from "./TestRunCardView";
 
 type Props = ComponentProps<typeof TestRunCardView>;
@@ -150,6 +150,17 @@ describe("TestRunCardView", () => {
     renderCards(propsFor([A_EN]));
 
     expect(screen.queryByTestId("gridSelectionCount")).not.toBeInTheDocument();
+  });
+
+  it("offers sorting as a labelled group rather than table columns", () => {
+    renderCards(propsFor([A_EN], { noiseAvailable: false }));
+
+    const sortBy = screen.getByRole("group", { name: "Sort by" });
+    expect(
+      within(sortBy)
+        .getAllByRole("button")
+        .map((button) => button.textContent),
+    ).toEqual(["Name", "Tags", "Status"]);
   });
 
   it("ticks all runs in the arrow order from the header box", async () => {

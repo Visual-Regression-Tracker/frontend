@@ -55,7 +55,10 @@ test("deletes the selected users", async ({ userListPage, page }) => {
       (request) =>
         request.url() === `${API_URL}/users` && request.method() === "DELETE",
     ),
-    userListPage.deleteSelectedBtn.click(),
+    (async () => {
+      await userListPage.deleteSelectedBtn.click();
+      await userListPage.modal.confirmBtn.click();
+    })(),
   ]);
 
   expect(request.postDataJSON()).toEqual([EDITOR_USER.id, GUEST_USER.id]);

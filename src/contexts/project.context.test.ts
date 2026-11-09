@@ -24,6 +24,7 @@ const initial: State = {
   favoriteProjectIds: [],
   recentProjectIds: [],
   loading: false,
+  loadFailed: false,
 };
 
 describe("projectReducer", () => {

@@ -1,5 +1,6 @@
 import { getContrastRatio, type Palette } from "@mui/material/styles";
 import { theme } from "./theme";
+import { hint } from "./tokens";
 import { hintColor, statusColor } from "./status";
 import { TestStatus } from "../types/testStatus";
 import { BuildStatus } from "../types/buildStatus";
@@ -49,6 +50,19 @@ describe("theme", () => {
     expect(
       getContrastRatio(primary.contrastText, primary.main),
     ).toBeGreaterThanOrEqual(4.5);
+  });
+});
+
+describe("secondary", () => {
+  it.each(schemes)("is a neutral that stays readable in %s mode", (scheme) => {
+    const { secondary, background } = colorSchemes[scheme].palette;
+    expect(
+      getContrastRatio(secondary.main, background.paper),
+    ).toBeGreaterThanOrEqual(4.5);
+    expect(
+      getContrastRatio(secondary.contrastText, secondary.main),
+    ).toBeGreaterThanOrEqual(4.5);
+    expect(secondary.main).toBe(hint[scheme].neutral);
   });
 });
 
