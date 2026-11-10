@@ -1,12 +1,10 @@
 import { PageObject } from "../PageObject";
 import { TEST_ID, filterChipId } from "~client/constants/locators";
 
-type FilterChip =
-  "os" | "browser" | "viewport" | "device" | "customTags" | "noise";
+type FilterChip = "os" | "browser" | "viewport" | "device" | "customTags";
 
 export class TestRunFilters extends PageObject {
   name = this.page.getByTestId(TEST_ID.testRunNameFilter);
-  noiseHint = this.chip("noise");
   chipOptions = this.page.getByRole("menuitemcheckbox");
   clearFilters = this.page.getByRole("button", { name: "Clear filters" });
   statusFilter = this.page.getByRole("group", { name: "Filter by status" });
@@ -27,9 +25,5 @@ export class TestRunFilters extends PageObject {
       .getByRole("menuitemcheckbox", { name: option, exact: true })
       .click();
     await this.page.keyboard.press("Escape");
-  }
-
-  async selectNoiseHint(option: string) {
-    await this.pick("noise", option);
   }
 }

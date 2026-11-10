@@ -27,7 +27,6 @@ type StageSnapshot = {
   rects: (Rect & { draggable: boolean })[];
   hasTransformer: boolean;
   imageSrc: string | null;
-  keptPixels: number | null;
 };
 
 export class ImagePanes extends PageObject {
@@ -65,38 +64,13 @@ export class ImagePanes extends PageObject {
     return imageSrc.split("/").pop() ?? "";
   }
 
-  /** Pure red pixels of the computed Diff without noise image; null until it is shown. */
-  async keptPixels(): Promise<number | null> {
-    return (await this.stage(true)).keptPixels;
-  }
-
-  private async stage(withPixels = false): Promise<StageSnapshot> {
-    const snapshot = await this.checkpointPane.evaluate((pane, withPixels) => {
+  private async stage(): Promise<StageSnapshot> {
+    const snapshot = await this.checkpointPane.evaluate((pane) => {
       const { Konva } = window as unknown as KonvaWindow;
       const stage = Konva.stages.find((s) => pane.contains(s.container()));
       if (!stage) return null;
 
       const image = stage.find("Image").at(-1)?.image();
-      let keptPixels: number | null = null;
-      if (withPixels && image?.src.startsWith("blob:")) {
-        const context = new OffscreenCanvas(
-          image.naturalWidth,
-          image.naturalHeight,
-        ).getContext("2d");
-        if (!context) throw new Error("No 2d context");
-        context.drawImage(image, 0, 0);
-        const { data } = context.getImageData(
-          0,
-          0,
-          image.naturalWidth,
-          image.naturalHeight,
-        );
-        keptPixels = 0;
-        for (let i = 0; i < data.length; i += 4) {
-          if (data[i] === 255 && data[i + 1] === 0 && data[i + 2] === 0)
-            keptPixels++;
-        }
-      }
 
       return {
         rects: stage
@@ -112,9 +86,8 @@ export class ImagePanes extends PageObject {
           })),
         hasTransformer: stage.find("Transformer").length > 0,
         imageSrc: image?.src ?? null,
-        keptPixels,
       };
-    }, withPixels);
+    });
     if (!snapshot) throw new Error("No Konva stage in the checkpoint pane");
 
     return snapshot;

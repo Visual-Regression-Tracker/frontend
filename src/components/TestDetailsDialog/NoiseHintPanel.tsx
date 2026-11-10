@@ -6,8 +6,6 @@ import {
   ClickAwayListener,
   Paper,
   Popper,
-  ToggleButton,
-  ToggleButtonGroup,
   Typography,
 } from "@mui/material";
 import {
@@ -15,11 +13,9 @@ import {
   isNoiseResult,
   type NoiseAnalysisValue,
 } from "../../_helpers/noiseHint.helper";
-import { type HintStage, regionsOf } from "../../_helpers/noiseRegions.helper";
 import {
   ANALYSING,
   LIMITATION,
-  stagesText,
   VERDICT_TEXT,
 } from "../../_helpers/noiseText.helper";
 import type { NoiseAnalysisDto } from "../../types";
@@ -31,8 +27,6 @@ import { TEST_ID } from "../../constants/locators";
 interface NoiseHintPanelProps {
   runId: string;
   analysis: NoiseAnalysisValue;
-  stage: HintStage | null;
-  onStageChange: (stage: HintStage | null) => void;
 }
 
 const UNKNOWN_REASON: Record<string, string> = {
@@ -64,12 +58,7 @@ function chipView(result: NoiseAnalysisDto | null, analysing: boolean) {
   };
 }
 
-export const NoiseHintPanel = ({
-  runId,
-  analysis,
-  stage,
-  onStageChange,
-}: NoiseHintPanelProps) => {
+export const NoiseHintPanel = ({ runId, analysis }: NoiseHintPanelProps) => {
   const { enqueueSnackbar } = useDialogSnackbar();
   const { analyse, requesting } = useAnalyseNoise(enqueueSnackbar);
   const [anchor, setAnchor] = useState<HTMLElement | null>(null);
@@ -119,36 +108,6 @@ export const NoiseHintPanel = ({
           <strong>{headline(result)}</strong>
           {known && ` · score ${result.score.toFixed(2)}`}
         </Typography>
-        {known && (
-          <Typography
-            variant="caption"
-            component="div"
-            sx={{ display: "flex", alignItems: "center", gap: 1 }}
-          >
-            {`${stagesText(result)} —`}
-            <ToggleButtonGroup
-              exclusive
-              size="small"
-              value={stage}
-              onChange={(_, next: HintStage | null) => onStageChange(next)}
-            >
-              <ToggleButton
-                value="blur"
-                data-testid={TEST_ID.hintAreasBlur}
-                disabled={regionsOf(result, "blur").length === 0}
-              >
-                Blur areas
-              </ToggleButton>
-              <ToggleButton
-                value="dinov2"
-                data-testid={TEST_ID.hintAreasDinov2}
-                disabled={regionsOf(result, "dinov2").length === 0}
-              >
-                DINOv2 areas
-              </ToggleButton>
-            </ToggleButtonGroup>
-          </Typography>
-        )}
         <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
           {known && (
             <Typography variant="caption" color="text.secondary">

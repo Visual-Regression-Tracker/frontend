@@ -1,7 +1,5 @@
 import { useCallback, useMemo, useState } from "react";
 import { TagField, TestRun, TestStatus } from "../../types";
-import type { NoiseHint } from "../../types/noiseAnalysis";
-import { NoiseHintFilter, noiseHintOf } from "../../_helpers/noiseHint.helper";
 import { TAG_FIELDS } from "../../_helpers/testRunTags.helper";
 
 export type TagFilters = Record<TagField, string[]>;
@@ -20,28 +18,6 @@ const matchesNameQuery = (run: TestRun, query: string): boolean =>
 const matchesStatuses = (run: TestRun, statuses: TestStatus[]): boolean =>
   statuses.length === 0 || statuses.includes(run.status);
 
-const NO_HINTS: NoiseHintFilter[] = [];
-
-const HINT_OF_FILTER: Record<
-  NoiseHintFilter,
-  (hint: NoiseHint | null) => boolean
-> = {
-  "Likely noise": (hint) => hint === "noise",
-  "Likely change": (hint) => hint === "change",
-  "Not analysed": (hint) => hint === null || hint === "pending",
-};
-
-const matchesNoiseHints = (
-  run: TestRun,
-  picked: NoiseHintFilter[],
-): boolean => {
-  if (picked.length === 0) {
-    return true;
-  }
-  const hint = noiseHintOf(run);
-  return picked.some((filter) => HINT_OF_FILTER[filter](hint));
-};
-
 const matchesTagFilters = (run: TestRun, tagFilters: TagFilters): boolean =>
   TAG_FIELDS.every((field) => {
     const picked = tagFilters[field];
@@ -51,15 +27,10 @@ const matchesTagFilters = (run: TestRun, tagFilters: TagFilters): boolean =>
 const hasTagFilters = (tagFilters: TagFilters): boolean =>
   TAG_FIELDS.some((field) => tagFilters[field].length > 0);
 
-export const useTestRunFilters = (
-  testRuns: TestRun[],
-  noiseHintAvailable = true,
-) => {
+export const useTestRunFilters = (testRuns: TestRun[]) => {
   const [name, setName] = useState("");
   const [statuses, setStatuses] = useState<TestStatus[]>([]);
   const [tagFilters, setTagFilters] = useState(EMPTY_TAG_FILTERS);
-  const [pickedNoiseHints, setNoiseHints] = useState<NoiseHintFilter[]>([]);
-  const noiseHints = noiseHintAvailable ? pickedNoiseHints : NO_HINTS;
 
   const onTagFilterChange = useCallback(
     (field: TagField, values: string[]) =>
@@ -82,7 +53,6 @@ export const useTestRunFilters = (
     setName("");
     setStatuses([]);
     setTagFilters(EMPTY_TAG_FILTERS);
-    setNoiseHints([]);
   }, []);
 
   const query = name.trim().toLowerCase();
@@ -93,10 +63,9 @@ export const useTestRunFilters = (
         (run) =>
           matchesNameQuery(run, query) &&
           matchesStatuses(run, statuses) &&
-          matchesTagFilters(run, tagFilters) &&
-          matchesNoiseHints(run, noiseHints),
+          matchesTagFilters(run, tagFilters),
       ),
-    [testRuns, query, statuses, tagFilters, noiseHints],
+    [testRuns, query, statuses, tagFilters],
   );
 
   const tagOptions = useMemo(() => {
@@ -105,11 +74,7 @@ export const useTestRunFilters = (
       {} as Record<TagField, Set<string>>,
     );
     testRuns.forEach((run) => {
-      if (
-        matchesNameQuery(run, query) &&
-        matchesStatuses(run, statuses) &&
-        matchesNoiseHints(run, noiseHints)
-      ) {
+      if (matchesNameQuery(run, query) && matchesStatuses(run, statuses)) {
         TAG_FIELDS.forEach((field) => {
           const value = run[field];
           if (typeof value === "string" && value) {
@@ -125,7 +90,7 @@ export const useTestRunFilters = (
       }),
       {} as Record<TagField, string[]>,
     );
-  }, [testRuns, query, statuses, noiseHints, tagFilters]);
+  }, [testRuns, query, statuses, tagFilters]);
 
   // a tag or status no longer in the runs stops filtering them
   const [prunedFor, setPrunedFor] = useState(testRuns);
@@ -166,10 +131,7 @@ export const useTestRunFilters = (
   }
 
   const hasActiveFilters =
-    name.length > 0 ||
-    statuses.length > 0 ||
-    hasTagFilters(tagFilters) ||
-    noiseHints.length > 0;
+    name.length > 0 || statuses.length > 0 || hasTagFilters(tagFilters);
 
   return {
     filteredRows,
@@ -179,12 +141,10 @@ export const useTestRunFilters = (
     name,
     statuses,
     tagFilters,
-    noiseHints,
     tagOptions,
     onNameChange: setName,
     onStatusesChange: setStatuses,
     onTagFilterChange,
-    onNoiseHintsChange: noiseHintAvailable ? setNoiseHints : undefined,
     onReset,
   };
 };

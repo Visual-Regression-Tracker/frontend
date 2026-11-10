@@ -10,14 +10,13 @@ export const DrawArea = ({
   selectedRectId,
   setSelectedRectId,
   deleteIgnoreArea,
-  hintAreas,
+  overlayOpacity,
 }: ComponentProps<typeof RealDrawArea>) =>
-  // only the checkpoint pane takes hint areas; the baseline pane is left out
-  hintAreas ? (
+  // only the checkpoint pane takes an overlay opacity; the baseline pane is left out
+  overlayOpacity !== undefined ? (
     <div>
       <span data-testid="ignoreAreaCount">{ignoreAreas.length}</span>
       <span data-testid="imageStatus">{imageState[1]}</span>
-      <span data-testid="hintAreas">{JSON.stringify(hintAreas ?? [])}</span>
       <button
         onClick={() => {
           const area: IgnoreArea = {

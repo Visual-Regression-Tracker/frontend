@@ -1,5 +1,5 @@
 import { type ReactNode, createContext, useContext } from "react";
-import { useNoiseAnalysisAvailable, useTestRunState } from "../../contexts";
+import { useTestRunState } from "../../contexts";
 import { useTestRunFilters } from "./useTestRunFilters";
 
 type Filters = ReturnType<typeof useTestRunFilters>;
@@ -10,8 +10,7 @@ export const TestRunFiltersProvider = ({
   children,
 }: Readonly<{ children: ReactNode }>) => {
   const { testRuns } = useTestRunState();
-  const noiseHintAvailable = useNoiseAnalysisAvailable();
-  const filters = useTestRunFilters(testRuns, noiseHintAvailable);
+  const filters = useTestRunFilters(testRuns);
   return (
     <TestRunFiltersContext.Provider value={filters}>
       {children}

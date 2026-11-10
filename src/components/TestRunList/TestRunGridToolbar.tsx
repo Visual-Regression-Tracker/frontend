@@ -7,7 +7,6 @@ const SORT_LABELS: Record<TestRunSortField, string> = {
   name: "Name",
   tags: "Tags",
   status: "Status",
-  noise: "Noise",
 };
 
 const DEFAULT_SORT_DIRECTION: Record<
@@ -18,7 +17,6 @@ const DEFAULT_SORT_DIRECTION: Record<
   status: "desc",
   name: "asc",
   tags: "asc",
-  noise: "desc",
 };
 
 export const DEFAULT_SORT: TestRunSort = { field: "status", direction: "desc" };
@@ -34,22 +32,18 @@ const nextSort = (
 export const TestRunGridToolbar = ({
   sort,
   onSortChange,
-  noiseAvailable,
   selectedCount,
   totalCount,
   onToggleAll,
 }: {
   sort: TestRunSort;
   onSortChange: (sort: TestRunSort) => void;
-  noiseAvailable: boolean;
   selectedCount: number;
   totalCount: number;
   onToggleAll: () => void;
 }) => {
   const Arrow = sort.direction === "asc" ? ArrowUpward : ArrowDownward;
-  const fields = (Object.keys(SORT_LABELS) as TestRunSortField[]).filter(
-    (field) => field !== "noise" || noiseAvailable,
-  );
+  const fields = Object.keys(SORT_LABELS) as TestRunSortField[];
 
   return (
     <Stack

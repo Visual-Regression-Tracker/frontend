@@ -14,7 +14,6 @@ interface ViewToolbarProps {
   areas: ReturnType<typeof useIgnoreAreas>;
   touched: boolean;
   areasShown: boolean;
-  noiselessUnavailable?: string;
   onAreasShownChange: (shown: boolean) => void;
 }
 
@@ -24,7 +23,6 @@ export const ViewToolbar = ({
   areas,
   touched,
   areasShown,
-  noiselessUnavailable,
   onAreasShownChange,
 }: ViewToolbarProps) => {
   const hasDiff = !!testRun.diffName;
@@ -58,7 +56,6 @@ export const ViewToolbar = ({
               mode={view.mode}
               hasDiff={hasDiff}
               canFade={canFade}
-              noiselessUnavailable={noiselessUnavailable}
               onChange={view.setMode}
             />
           )}

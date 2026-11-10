@@ -207,17 +207,14 @@ describe("TestRunTable", () => {
     );
   });
 
-  it("reports a click on the Noise header as a descending sort", async () => {
+  it("does not sort by the Noise column", async () => {
     const props = propsFor([A_EN, B_EN]);
     const { user } = renderTable(props);
     await waitFor(() => expect(dataRows()).toHaveLength(2));
 
     await user.click(screen.getByRole("columnheader", { name: /Noise/ }));
 
-    expect(props.onSortModelChange).toHaveBeenCalledWith(
-      [{ field: "noise", sort: "desc" }],
-      expect.anything(),
-    );
+    expect(props.onSortModelChange).not.toHaveBeenCalled();
   });
 
   it("shows the Noise column only when the noise check is available", async () => {

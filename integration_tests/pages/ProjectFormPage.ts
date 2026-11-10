@@ -19,9 +19,6 @@ export class ProjectFormPage extends BasePage {
 
   blurSwitch = this.root.getByLabel("Stage 1 · Blur");
   dinov2Switch = this.root.getByLabel("Stage 2 · DINOv2 second look");
-  amplitudeThreshold = this.root.getByLabel("Amplitude threshold");
-  solidShareMax = this.root.getByLabel("Solid share, max");
-  distanceThreshold = this.root.getByLabel("Distance threshold");
   needsStageOne = this.root.getByText("Needs stage 1");
   vlmNote = this.root.locator(`#${ELEMENT_ID.postAnalysisVlm}`);
   dinov2Status = this.root.locator(`#${ELEMENT_ID.dinov2Status}`);

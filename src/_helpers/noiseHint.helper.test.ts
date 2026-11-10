@@ -3,7 +3,6 @@ import {
   isNoisePending,
   isNoiseResult,
   noiseAnalysisAvailable,
-  noiseScoreOf,
   parseNoiseAnalysisConfig,
 } from "./noiseHint.helper";
 import { noiseHintOf } from "./noiseHint.helper";
@@ -79,27 +78,13 @@ describe("noiseHintOf", () => {
   );
 });
 
-describe("noiseScoreOf", () => {
-  it("gives the score of a result", () => {
-    expect(noiseScoreOf(unresolved(NOISE_ANALYSIS_CHANGE))).toBeCloseTo(0.77);
-  });
-
-  it.each([
-    ["a pending run", NOISE_ANALYSIS_PENDING],
-    ["no result", null],
-    ["an unknown verdict", { ...NOISE_ANALYSIS_NOISE, verdict: "unknown" }],
-    ["a result without a score", { ...NOISE_ANALYSIS_NOISE, score: null }],
-  ])("gives nothing for %s", (_, analysis) => {
-    expect(noiseScoreOf(unresolved(analysis))).toBeNull();
-  });
-});
-
 describe("parseNoiseAnalysisConfig", () => {
-  it("fills what the saved config lacks from the defaults", () => {
-    expect(parseNoiseAnalysisConfig('{"blur":{"enabled":false}}')).toEqual({
-      blur: { ...DEFAULT_NOISE_ANALYSIS_CONFIG.blur, enabled: false },
-      dinov2: DEFAULT_NOISE_ANALYSIS_CONFIG.dinov2,
-    });
+  it("keeps only the stage switches of a saved config", () => {
+    expect(
+      parseNoiseAnalysisConfig(
+        '{"blur":{"enabled":true,"amplitudeThreshold":50,"solidShareMax":0.2},"dinov2":{"enabled":true,"distanceThreshold":0.3},"extra":1}',
+      ),
+    ).toEqual({ blur: { enabled: true }, dinov2: { enabled: true } });
   });
 
   it.each([undefined, "", "not json", "null"])(

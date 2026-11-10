@@ -386,9 +386,6 @@ test.describe("post-analysis settings", () => {
 
     await expect(addProjectPage.blurSwitch).not.toBeChecked();
     await expect(addProjectPage.dinov2Switch).not.toBeChecked();
-    await expect(addProjectPage.amplitudeThreshold).toHaveValue("80");
-    await expect(addProjectPage.solidShareMax).toHaveValue("0.01");
-    await expect(addProjectPage.distanceThreshold).toHaveValue("0.15");
     await addProjectPage.name.fill("New project");
     await addProjectPage.mainBranch.fill("main");
 
@@ -400,14 +397,21 @@ test.describe("post-analysis settings", () => {
     expect(savedNoiseConfig(request)).toEqual(DEFAULT_NOISE_ANALYSIS_CONFIG);
   });
 
-  test("saves the switches and thresholds of an existing project", async ({
+  test("saves only the switches, dropping thresholds an older version stored", async ({
     projectSettingsPage,
     page,
   }) => {
+    await mockGetProjects(page, [
+      {
+        ...project,
+        noiseAnalysisConfig: JSON.stringify({
+          blur: { enabled: true, amplitudeThreshold: 55, solidShareMax: 0.05 },
+          dinov2: { enabled: true, distanceThreshold: 0.2 },
+        }),
+      },
+    ]);
+    await page.reload();
     await mockSaveProject(page);
-    await projectSettingsPage.amplitudeThreshold.fill("60");
-    await projectSettingsPage.solidShareMax.fill("0.02");
-    await projectSettingsPage.distanceThreshold.fill("0.3");
     await projectSettingsPage.dinov2Switch.uncheck();
 
     const [request] = await Promise.all([
@@ -416,8 +420,8 @@ test.describe("post-analysis settings", () => {
     ]);
 
     expect(savedNoiseConfig(request)).toEqual({
-      blur: { enabled: true, amplitudeThreshold: 60, solidShareMax: 0.02 },
-      dinov2: { enabled: false, distanceThreshold: 0.3 },
+      blur: { enabled: true },
+      dinov2: { enabled: false },
     });
   });
 
@@ -427,17 +431,14 @@ test.describe("post-analysis settings", () => {
   }) => {
     await mockGetProjects(page, [
       withNoiseConfig({
-        blur: { enabled: false, amplitudeThreshold: 55, solidShareMax: 0.05 },
-        dinov2: { enabled: true, distanceThreshold: 0.2 },
+        blur: { enabled: false },
+        dinov2: { enabled: true },
       }),
     ]);
     await page.reload();
 
     await expect(projectSettingsPage.blurSwitch).not.toBeChecked();
     await expect(projectSettingsPage.dinov2Switch).toBeChecked();
-    await expect(projectSettingsPage.amplitudeThreshold).toHaveValue("55");
-    await expect(projectSettingsPage.solidShareMax).toHaveValue("0.05");
-    await expect(projectSettingsPage.distanceThreshold).toHaveValue("0.2");
   });
 
   test("locks the second stage while the first is off", async ({
@@ -449,8 +450,6 @@ test.describe("post-analysis settings", () => {
 
     await expect(projectSettingsPage.dinov2Switch).toBeDisabled();
     await expect(projectSettingsPage.needsStageOne).toBeVisible();
-    await expect(projectSettingsPage.amplitudeThreshold).toBeDisabled();
-    await expect(projectSettingsPage.distanceThreshold).toBeDisabled();
 
     await projectSettingsPage.blurSwitch.check();
 
@@ -470,9 +469,6 @@ test.describe("post-analysis settings", () => {
     );
     await expect(projectSettingsPage.blurSwitch).toBeDisabled();
     await expect(projectSettingsPage.dinov2Switch).toBeDisabled();
-    await expect(projectSettingsPage.amplitudeThreshold).toBeDisabled();
-    await expect(projectSettingsPage.solidShareMax).toBeDisabled();
-    await expect(projectSettingsPage.distanceThreshold).toBeDisabled();
 
     await projectSettingsPage.selectImageComparison(ImageComparison.odiff);
 

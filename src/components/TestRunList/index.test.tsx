@@ -762,22 +762,7 @@ const SelectProject = () => {
   ) : null;
 };
 
-const VLM_PROJECT = {
-  ...TEST_PROJECT,
-  id: "vlm-project",
-  imageComparison: ImageComparison.vlm,
-};
-
-const SwitchToVlm = () => {
-  const dispatch = useProjectDispatch();
-  return (
-    <button onClick={() => selectProject(dispatch, VLM_PROJECT.id)}>
-      Use VLM project
-    </button>
-  );
-};
-
-describe("TestRunList noise hint filter", () => {
+describe("TestRunList noise hint", () => {
   const renderWith = async (project: Partial<typeof TEST_PROJECT>) => {
     vi.spyOn(projectsService, "getAll").mockResolvedValue([
       { ...TEST_PROJECT, ...project },
@@ -799,45 +784,14 @@ describe("TestRunList noise hint filter", () => {
     return rendered;
   };
 
-  it("filters the runs for a project with the analysis on", async () => {
-    const { user } = await renderWith({});
-
-    await user.click(screen.getByRole("button", { name: "Noise" }));
-    await user.click(
-      await screen.findByRole("menuitemcheckbox", { name: "Likely noise" }),
-    );
-
-    await waitFor(() =>
-      expect(screen.queryByText("Screen C")).not.toBeInTheDocument(),
-    );
-    expect(screen.getByText("Screen N")).toBeInTheDocument();
-  });
-
-  it("is not offered for a VLM project", async () => {
-    await renderWith({ imageComparison: ImageComparison.vlm });
-
-    expect(
-      screen.queryByRole("button", { name: /^Noise/ }),
-    ).not.toBeInTheDocument();
-  });
-
-  it("offers the Noise column and its sort for a project with the analysis on", async () => {
+  it("offers the Noise column but neither a noise filter nor a noise sort", async () => {
     const { user } = await renderWith({});
 
     expect(
       screen.getByRole("columnheader", { name: /Noise/ }),
     ).toBeInTheDocument();
-
-    await user.click(await screen.findByRole("button", { name: "Grid view" }));
-
-    expect(await screen.findByTestId("gridSort-noise")).toBeInTheDocument();
-  });
-
-  it("leaves the Noise column and its sort out for a VLM project", async () => {
-    const { user } = await renderWith({ imageComparison: ImageComparison.vlm });
-
     expect(
-      screen.queryByRole("columnheader", { name: /Noise/ }),
+      screen.queryByRole("button", { name: /^Noise/ }),
     ).not.toBeInTheDocument();
 
     await user.click(await screen.findByRole("button", { name: "Grid view" }));
@@ -846,86 +800,8 @@ describe("TestRunList noise hint filter", () => {
     expect(screen.queryByTestId("gridSort-noise")).not.toBeInTheDocument();
   });
 
-  describe("after switching to a project without the Noise sort", () => {
-    const firstName = () =>
-      screen.queryAllByText(/^Screen [NC]$/)[0]?.textContent;
-
-    const renderReady = async () => {
-      vi.spyOn(projectsService, "getAll").mockResolvedValue([
-        TEST_PROJECT,
-        VLM_PROJECT,
-      ]);
-      const { user } = renderList(
-        [
-          run({
-            id: "n",
-            name: "Screen N",
-            noiseAnalysis: NOISE_ANALYSIS_NOISE,
-          }),
-          run({
-            id: "c",
-            name: "Screen C",
-            noiseAnalysis: NOISE_ANALYSIS_CHANGE,
-          }),
-        ],
-        <>
-          <SelectProject />
-          <SwitchToVlm />
-        </>,
-        TEST_USER,
-      );
-      await screen.findByTestId("project-ready");
-      return user;
-    };
-
-    const sortDescendingThenSwitch = async (
-      user: Awaited<ReturnType<typeof renderReady>>,
-      sortByNoise: HTMLElement,
-    ) => {
-      await user.click(sortByNoise);
-      await user.click(sortByNoise);
-      await waitFor(() => expect(firstName()).toBe("Screen N"));
-
-      await user.click(screen.getByRole("button", { name: "Use VLM project" }));
-      await waitFor(() => expect(sortByNoise).not.toBeInTheDocument());
-    };
-
-    it("shows the table in the default order with its sort indicator", async () => {
-      const user = await renderReady();
-
-      await sortDescendingThenSwitch(
-        user,
-        await screen.findByRole("columnheader", { name: /Noise/ }),
-      );
-
-      expect(firstName()).toBe("Screen C");
-      expect(
-        screen.getByRole("columnheader", { name: /Status/ }),
-      ).toHaveAttribute("aria-sort", "descending");
-    });
-
-    it("shows the cards in the default order with the default sort active", async () => {
-      const user = await renderReady();
-      await user.click(
-        await screen.findByRole("button", { name: "Grid view" }),
-      );
-
-      await sortDescendingThenSwitch(
-        user,
-        await screen.findByTestId("gridSort-noise"),
-      );
-
-      expect(firstName()).toBe("Screen C");
-      expect(
-        screen
-          .getByTestId("gridSort-status")
-          .querySelector(".MuiButton-endIcon"),
-      ).toBeInTheDocument();
-    });
-  });
-
-  it("leaves the Noise column out when the blur stage is off", async () => {
-    await renderWith({ noiseAnalysisConfig: '{"blur":{"enabled":false}}' });
+  it("leaves the Noise column out for a VLM project", async () => {
+    await renderWith({ imageComparison: ImageComparison.vlm });
 
     expect(
       screen.queryByRole("columnheader", { name: /Noise/ }),

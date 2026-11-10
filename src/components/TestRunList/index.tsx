@@ -57,8 +57,7 @@ const TestRunList = () => {
     page: 0,
   });
 
-  const [storedSortModel, setSortModel] =
-    useState<GridSortModel>(DEFAULT_SORT_MODEL);
+  const [sortModel, setSortModel] = useState<GridSortModel>(DEFAULT_SORT_MODEL);
 
   const selectedProject = useSelectedProject();
   const noiseHintAvailable = useNoiseAnalysisAvailable();
@@ -69,7 +68,7 @@ const TestRunList = () => {
   const [density, setDensity] = useState<TestRunDensity>("standard");
   const [groupVariations, setGroupVariations] = useState(false);
   const [showDiff, setShowDiff] = useShowDiff();
-  const [storedGridSort, setGridSort] = useState<TestRunSort>(DEFAULT_SORT);
+  const [gridSort, setGridSort] = useState<TestRunSort>(DEFAULT_SORT);
 
   useHotkeys("d", () => setShowDiff((prev) => !prev), {
     ...hotkeyMatching,
@@ -78,15 +77,6 @@ const TestRunList = () => {
       event.target instanceof HTMLElement &&
       !!event.target.closest('[role="menu"],[role="dialog"]'),
   });
-
-  const sortModel =
-    !noiseHintAvailable && storedSortModel[0]?.field === "noise"
-      ? DEFAULT_SORT_MODEL
-      : storedSortModel;
-  const gridSort =
-    !noiseHintAvailable && storedGridSort.field === "noise"
-      ? DEFAULT_SORT
-      : storedGridSort;
 
   const activeSort = useMemo(
     () => (view === "grid" ? gridSort : (sortOfModel(sortModel) ?? gridSort)),
@@ -133,20 +123,18 @@ const TestRunList = () => {
     );
   }, [groupVariations, view, sortedGroups, activeSort, tagFieldsFor]);
 
-  const { name, statuses, tagFilters, noiseHints } = filters;
+  const { name, statuses, tagFilters } = filters;
   const [pagedFilters, setPagedFilters] = useState({
     name,
     statuses,
     tagFilters,
-    noiseHints,
   });
   if (
     pagedFilters.name !== name ||
     pagedFilters.statuses !== statuses ||
-    pagedFilters.tagFilters !== tagFilters ||
-    pagedFilters.noiseHints !== noiseHints
+    pagedFilters.tagFilters !== tagFilters
   ) {
-    setPagedFilters({ name, statuses, tagFilters, noiseHints });
+    setPagedFilters({ name, statuses, tagFilters });
     setPaginationModel((prev) => ({ ...prev, page: 0 }));
   }
 

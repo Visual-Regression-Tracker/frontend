@@ -23,8 +23,8 @@ Describe the difference in about 100 words.`,
 });
 
 export const DEFAULT_NOISE_ANALYSIS_CONFIG: NoiseAnalysisConfig = {
-  blur: { enabled: false, amplitudeThreshold: 80, solidShareMax: 0.01 },
-  dinov2: { enabled: false, distanceThreshold: 0.15 },
+  blur: { enabled: false },
+  dinov2: { enabled: false },
 };
 export const DEFAULT_NOISE_ANALYSIS_CONFIG_JSON = JSON.stringify(
   DEFAULT_NOISE_ANALYSIS_CONFIG,

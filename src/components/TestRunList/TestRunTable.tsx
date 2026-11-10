@@ -53,7 +53,7 @@ const NOISE_COLUMN: GridColDef<TestRun> = {
   flex: 0.3,
   minWidth: NOISE_COLUMN_MIN_WIDTH,
   filterable: false,
-  sortingOrder: ["desc", "asc"],
+  sortable: false,
   renderCell: (params: GridRenderCellParams<TestRun>) => (
     <NoiseHintChip run={params.row} />
   ),

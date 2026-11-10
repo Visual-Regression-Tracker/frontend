@@ -14,21 +14,15 @@ import {
   NOISE_ANALYSIS_PENDING,
 } from "../../_test/test.data.helper";
 import { testRunService } from "../../services";
-import { withRegions } from "../../_test/noiseRegions";
 import { isNoisePending } from "../../_helpers/noiseHint.helper";
-import type { HintStage } from "../../_helpers/noiseRegions.helper";
 import { NoiseHintPanel } from "./NoiseHintPanel";
 
 type Props = Parameters<typeof NoiseHintPanel>[0];
-
-const CHANGE = withRegions(NOISE_ANALYSIS_CHANGE);
 
 const renderPanel = async (overrides: Partial<Props> = {}) => {
   const props: Props = {
     runId: "run",
     analysis: null,
-    stage: null,
-    onStageChange: vi.fn(),
     ...overrides,
   };
   const rendered = renderWithProviders(<NoiseHintPanel {...props} />);
@@ -62,8 +56,6 @@ const ConnectedPanel = ({
     <NoiseHintPanel
       runId={selectedTestRun.id}
       analysis={selectedTestRun.noiseAnalysis ?? null}
-      stage={null}
-      onStageChange={vi.fn()}
     />
   );
 };
@@ -104,8 +96,6 @@ const renderConnected = async (
 const chip = () => screen.getByTestId("noise-hint-popover-chip");
 const panel = () => screen.getByTestId("noise-hint-panel");
 const analyseButton = () => screen.getByTestId("analyse-noise-run-button");
-const blurToggle = () => screen.getByTestId("hint-areas-blur");
-const dinov2Toggle = () => screen.getByTestId("hint-areas-dinov2");
 
 describe("NoiseHintPanel", () => {
   afterEach(() => {
@@ -268,35 +258,32 @@ describe("NoiseHintPanel", () => {
   });
 
   describe("with a result", () => {
-    it("shows the verdict, both stages and the limitation", async () => {
-      await renderPanel({ analysis: CHANGE });
+    it("shows the verdict and the limitation, without the stages or their areas", async () => {
+      await renderPanel({ analysis: NOISE_ANALYSIS_CHANGE });
 
       const view = within(panel());
       expect(
         view.getByText("Rendering-noise check: likely change"),
       ).toBeVisible();
       expect(view.getByText("· score 0.77")).toBeVisible();
+      expect(view.queryByText(/Blur|DINOv2/)).toBeNull();
+      expect(view.queryByRole("button", { name: /areas/ })).toBeNull();
       expect(
         view.getByText(
-          "Blur: likely noise (0.39) · DINOv2: likely change (0.77) —",
-        ),
-      ).toBeVisible();
-      expect(
-        view.getByText(
-          "A hint, not a decision. It can call a small real change noise — a single digit, a dot, a faint border. Look at the highlighted areas before approving.",
+          "A hint, not a decision. It can call a small real change noise — a single digit, a dot, a faint border. Look at the diff before approving.",
         ),
       ).toBeVisible();
       expect(analyseButton()).toHaveTextContent("Analyse again");
     });
 
     it("keeps the Analyse again label on one line", async () => {
-      await renderPanel({ analysis: CHANGE });
+      await renderPanel({ analysis: NOISE_ANALYSIS_CHANGE });
 
       expect(analyseButton()).toHaveStyle({ whiteSpace: "nowrap" });
     });
 
     it("says likely noise for a noise verdict", async () => {
-      await renderPanel({ analysis: withRegions(NOISE_ANALYSIS_NOISE) });
+      await renderPanel({ analysis: NOISE_ANALYSIS_NOISE });
 
       expect(
         within(panel()).getByText("Rendering-noise check: likely noise"),
@@ -325,62 +312,6 @@ describe("NoiseHintPanel", () => {
       expect(within(panel()).getByText("· score 0.50")).toBeVisible();
     });
 
-    it("shows the second stage as off in the project", async () => {
-      await renderPanel({
-        analysis: withRegions({
-          ...NOISE_ANALYSIS_NOISE,
-          dinov2: { skipped: "off" },
-        }),
-      });
-
-      expect(
-        within(panel()).getByText(
-          "Blur: likely noise (0.39) · DINOv2: off in this project —",
-        ),
-      ).toBeVisible();
-    });
-
-    it("shows the second stage as not needed when blur already sees a change", async () => {
-      await renderPanel({
-        analysis: withRegions({
-          ...NOISE_ANALYSIS_CHANGE,
-          dinov2: { skipped: "blur sees a change" },
-        }),
-      });
-
-      expect(
-        within(panel()).getByText(
-          "Blur: likely noise (0.39) · DINOv2: not needed, blur already sees a change —",
-        ),
-      ).toBeVisible();
-    });
-
-    it("shows that the second stage did not answer", async () => {
-      await renderPanel({
-        analysis: withRegions({
-          ...NOISE_ANALYSIS_CHANGE,
-          dinov2: { error: "dinov2 unavailable" },
-        }),
-      });
-
-      expect(
-        within(panel()).getByText(
-          "Blur: likely noise (0.39) · DINOv2: did not answer —",
-        ),
-      ).toBeVisible();
-      expect(analyseButton()).toHaveTextContent("Analyse again");
-    });
-
-    it("says blur only when there is no second stage", async () => {
-      await renderPanel({
-        analysis: withRegions({ ...NOISE_ANALYSIS_NOISE, dinov2: undefined }),
-      });
-
-      expect(
-        within(panel()).getByText("Blur only: likely noise (0.39) —"),
-      ).toBeVisible();
-    });
-
     it.each([
       ["sizes differ", "not available (images differ in size)"],
       ["no diff", "not available (no diff)"],
@@ -394,62 +325,14 @@ describe("NoiseHintPanel", () => {
             verdict: "unknown",
             score: 0,
             reason,
-            blur: undefined,
-            dinov2: undefined,
           },
         });
 
         const view = within(panel());
         expect(view.getByText(`Rendering-noise check: ${text}`)).toBeVisible();
         expect(view.queryByText(/score/)).toBeNull();
-        expect(view.queryByTestId("hint-areas-blur")).toBeNull();
         expect(analyseButton()).toHaveTextContent("Analyse again");
       },
     );
-  });
-
-  describe("area toggles", () => {
-    it("pick the stage to show", async () => {
-      const { user, props } = await renderPanel({ analysis: CHANGE });
-
-      await user.click(blurToggle());
-      await user.click(dinov2Toggle());
-
-      expect(props.onStageChange).toHaveBeenNthCalledWith(1, "blur");
-      expect(props.onStageChange).toHaveBeenNthCalledWith(2, "dinov2");
-    });
-
-    it("show the chosen stage as pressed and clear it when pressed again", async () => {
-      const { user, props } = await renderPanel({
-        analysis: CHANGE,
-        stage: "dinov2" as HintStage,
-      });
-
-      expect(dinov2Toggle()).toHaveAttribute("aria-pressed", "true");
-      expect(blurToggle()).toHaveAttribute("aria-pressed", "false");
-
-      await user.click(dinov2Toggle());
-
-      expect(props.onStageChange).toHaveBeenCalledExactlyOnceWith(null);
-    });
-
-    it.each([
-      ["a skipped stage", { skipped: "off" as const }],
-      ["a stage that failed", { error: "dinov2 unavailable" as const }],
-    ])("are disabled for %s", async (_, dinov2) => {
-      await renderPanel({
-        analysis: withRegions({ ...NOISE_ANALYSIS_NOISE, dinov2 }),
-      });
-
-      expect(blurToggle()).toBeEnabled();
-      expect(dinov2Toggle()).toBeDisabled();
-    });
-
-    it("are disabled while the regions are not loaded", async () => {
-      await renderPanel({ analysis: NOISE_ANALYSIS_CHANGE });
-
-      expect(blurToggle()).toBeDisabled();
-      expect(dinov2Toggle()).toBeDisabled();
-    });
   });
 });

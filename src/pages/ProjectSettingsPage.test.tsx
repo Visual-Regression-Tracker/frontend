@@ -287,48 +287,21 @@ describe("ProjectSettingsPage", () => {
       [
         "blur.enabled",
         () => screen.getByLabelText("Stage 1 · Blur"),
-        undefined,
         { ...stored, blur: { ...stored.blur, enabled: false } },
-      ],
-      [
-        "blur.amplitudeThreshold",
-        () => screen.getByLabelText(/^Amplitude threshold/),
-        "60",
-        { ...stored, blur: { ...stored.blur, amplitudeThreshold: 60 } },
-      ],
-      [
-        "blur.solidShareMax",
-        () => screen.getByLabelText(/^Solid share, max/),
-        "0.02",
-        { ...stored, blur: { ...stored.blur, solidShareMax: 0.02 } },
       ],
       [
         "dinov2.enabled",
         () => screen.getByLabelText("Stage 2 · DINOv2 second look"),
-        undefined,
         { ...stored, dinov2: { ...stored.dinov2, enabled: false } },
       ],
-      [
-        "dinov2.distanceThreshold",
-        () => screen.getByLabelText(/^Distance threshold/),
-        "0.3",
-        { ...stored, dinov2: { ...stored.dinov2, distanceThreshold: 0.3 } },
-      ],
-    ])("sends only %s changed", async (_key, field, typed, expected) => {
+    ])("sends only %s changed", async (_key, field, expected) => {
       const update = vi
         .spyOn(projectsService, "update")
         .mockResolvedValue(ALPHA);
       const { user } = renderPage();
       await screen.findByRole("textbox", { name: /project name/i });
 
-      if (typed === undefined) {
-        await user.click(field());
-      } else {
-        await user.type(field(), typed, {
-          initialSelectionStart: 0,
-          initialSelectionEnd: (field() as HTMLInputElement).value.length,
-        });
-      }
+      await user.click(field());
       await user.click(screen.getByRole("button", { name: "Save" }));
 
       await waitFor(() => expect(update).toHaveBeenCalledTimes(1));

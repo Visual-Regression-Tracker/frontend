@@ -1,14 +1,11 @@
 import Konva from "konva";
-import { useTheme } from "@mui/material";
 import Rectangle, { MIN_RECT_SIDE_PIXEL } from "../Rectangle";
 import { clampToImage } from "../../_helpers/ignoreArea.helper";
 import { IgnoreArea } from "../../types/ignoreArea";
-import type { NoiseRegion } from "../../types";
 
 export const IgnoreAreaShapes = ({
   ignoreAreas,
   tempIgnoreAreas,
-  hintAreas,
   readOnly,
   selectedRectId,
   setSelectedRectId,
@@ -18,7 +15,6 @@ export const IgnoreAreaShapes = ({
 }: {
   ignoreAreas: IgnoreArea[];
   tempIgnoreAreas: IgnoreArea[];
-  hintAreas: NoiseRegion[];
   readOnly: boolean;
   selectedRectId: string | undefined;
   setSelectedRectId: (id: string) => void;
@@ -26,8 +22,6 @@ export const IgnoreAreaShapes = ({
   stageWidth: number;
   stageHeight: number;
 }) => {
-  const hintFill = useTheme().palette.hint.main;
-
   return (
     <>
       {ignoreAreas.map((rect, i) =>
@@ -82,22 +76,6 @@ export const IgnoreAreaShapes = ({
             width: rect.width,
             height: rect.height,
             // shown only: over the areas being edited, so they must not take the pointer
-            listening: false,
-          }}
-        />
-      ))}
-      {hintAreas.map((rect, i) => (
-        <Rectangle
-          key={i}
-          shapeProps={{
-            x: rect.x,
-            y: rect.y,
-            width: rect.width,
-            height: rect.height,
-            fill: hintFill,
-            stroke: hintFill,
-            strokeWidth: 2,
-            strokeScaleEnabled: false,
             listening: false,
           }}
         />

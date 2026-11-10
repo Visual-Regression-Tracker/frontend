@@ -1,4 +1,4 @@
-import { max, min, required, type Rule } from "../../_helpers/validation";
+import { max, min, required } from "../../_helpers/validation";
 
 export const atLeast = (limit: number) =>
   min(limit, `Enter greater than or equal to ${limit}`);
@@ -12,12 +12,5 @@ export const UNIT_RANGE_RULES = [
   atLeast(UNIT_RANGE.min),
   atMost(UNIT_RANGE.max),
 ];
-
-const POSITIVE: Rule = {
-  isValid: (value) => value === "" || Number(value) > 0,
-  message: "Enter greater than 0",
-};
-
-export const POSITIVE_RULES = [POSITIVE];
 
 export const MODEL_RULES = [required("Model is required")];

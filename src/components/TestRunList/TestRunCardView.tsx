@@ -93,7 +93,6 @@ export const TestRunCardView = ({
       <TestRunGridToolbar
         sort={sort}
         onSortChange={onSortChange}
-        noiseAvailable={noiseAvailable}
         selectedCount={
           navigationIds.filter((id) => selectedIdSet.has(id)).length
         }
