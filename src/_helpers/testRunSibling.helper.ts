@@ -9,7 +9,7 @@ const GROUP_BY_AXES = [
   "viewport",
 ] as const;
 
-export type GroupByAxis = (typeof GROUP_BY_AXES)[number];
+type GroupByAxis = (typeof GROUP_BY_AXES)[number];
 
 export const resolveGroupByAxis = (value?: string): GroupByAxis =>
   value && (GROUP_BY_AXES as readonly string[]).includes(value)
