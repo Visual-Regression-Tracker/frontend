@@ -1,55 +1,16 @@
-import { type ReactNode, useState } from "react";
+import { type ReactNode } from "react";
 import {
-  Box,
-  Button,
-  Divider,
-  FormControlLabel,
-  ListItemIcon,
-  ListItemText,
-  ListSubheader,
-  Menu,
-  MenuItem,
-  Switch,
   ToggleButton,
   ToggleButtonGroup,
   Tooltip as MuiTooltip,
   TooltipProps,
-  Typography,
 } from "@mui/material";
-import {
-  ArrowDropDown,
-  Check,
-  ViewList,
-  ViewModule,
-} from "@mui/icons-material";
-import { Tooltip } from "../Tooltip";
-import { GroupByAxis } from "../../_helpers/testRunGroup.helper";
-import { TEST_ID, densityTestId } from "../../constants/locators";
+import { ViewList, ViewModule } from "@mui/icons-material";
+import { TEST_ID } from "../../constants/locators";
 
 export type TestRunView = "table" | "grid";
 
-// the data grid's own density values, so it can take this straight as a prop
-export type TestRunDensity = "compact" | "standard" | "comfortable";
-
-interface DiffToggle {
-  checked: boolean;
-  onChange: (checked: boolean) => void;
-}
-
 export const PAGE_SIZE_OPTIONS = [10, 30, 100];
-
-export const CARD_SIZE_BY_DENSITY: Record<
-  TestRunDensity,
-  { width: number; imageHeight: number }
-> = {
-  compact: { width: 150, imageHeight: 110 },
-  standard: { width: 220, imageHeight: 160 },
-  comfortable: { width: 320, imageHeight: 240 },
-};
-
-const switchLabel = (text: string) => (
-  <Typography variant="body2">{text}</Typography>
-);
 
 // MUI's tooltip, as the app's wrapper drops props; `value` must sit on the child
 type IconToggleProps = {
@@ -82,178 +43,32 @@ const IconToggle = ({
   </MuiTooltip>
 );
 
-const DENSITIES: { value: TestRunDensity; label: string }[] = [
-  { value: "compact", label: "Compact" },
-  { value: "standard", label: "Standard" },
-  { value: "comfortable", label: "Comfortable" },
-];
-
-const CheckMark = ({ shown }: { shown: boolean }) => (
-  <ListItemIcon sx={{ minWidth: 28 }}>
-    {shown && <Check fontSize="small" />}
-  </ListItemIcon>
-);
-
-const ShowDiffSwitch = ({ diffToggle }: { diffToggle: DiffToggle }) => (
-  <Tooltip title="Toggle diff. Hotkey: D">
-    <FormControlLabel
-      control={
-        <Switch
-          size="small"
-          checked={diffToggle.checked}
-          onChange={(event) => diffToggle.onChange(event.target.checked)}
-          slotProps={{ input: { "aria-label": "Show diff" } }}
-          data-testid={TEST_ID.showDiffToggle}
-        />
-      }
-      label={switchLabel("Show diff")}
-      sx={{ marginLeft: 0, marginRight: 0 }}
-    />
-  </Tooltip>
-);
-
-const ViewMenu = ({
+export const TestRunListControls = ({
   view,
-  density,
-  onDensityChange,
-  grouped,
-  onGroupedChange,
-  groupByAxis,
-  diffToggle,
-}: Pick<
-  Props,
-  | "view"
-  | "density"
-  | "onDensityChange"
-  | "grouped"
-  | "onGroupedChange"
-  | "groupByAxis"
-  | "diffToggle"
->) => {
-  const [anchor, setAnchor] = useState<HTMLElement | null>(null);
-  const close = () => setAnchor(null);
-  const groupHint = `One ${view === "grid" ? "card" : "row"} per screen. The axis is set in Settings.`;
-
-  return (
-    <>
-      <Button
-        size="small"
-        color="inherit"
-        endIcon={<ArrowDropDown />}
-        aria-haspopup="menu"
-        aria-expanded={!!anchor}
-        data-testid={TEST_ID.viewMenuButton}
-        onClick={(event) => setAnchor(event.currentTarget)}
-      >
-        View
-      </Button>
-      <Menu anchorEl={anchor} open={!!anchor} onClose={close}>
-        <ListSubheader>Density</ListSubheader>
-        {DENSITIES.map(({ value, label }) => (
-          <MenuItem
-            key={value}
-            dense
-            role="menuitemradio"
-            aria-checked={density === value}
-            selected={density === value}
-            data-testid={densityTestId(value)}
-            onClick={() => {
-              onDensityChange(value);
-              close();
-            }}
-          >
-            <CheckMark shown={density === value} />
-            <ListItemText primary={label} />
-          </MenuItem>
-        ))}
-        <Divider />
-        <ListSubheader>Group by</ListSubheader>
-        {[
-          {
-            grouped: false,
-            label: "None",
-            hint: undefined,
-            testId: TEST_ID.groupByNone,
-          },
-          {
-            grouped: true,
-            label: `Variation (${groupByAxis})`,
-            hint: groupHint,
-            testId: TEST_ID.groupByVariation,
-          },
-        ].map((option) => (
-          <MenuItem
-            key={option.testId}
-            dense
-            role="menuitemradio"
-            aria-checked={grouped === option.grouped}
-            selected={grouped === option.grouped}
-            data-testid={option.testId}
-            onClick={() => {
-              onGroupedChange(option.grouped);
-              close();
-            }}
-          >
-            <CheckMark shown={grouped === option.grouped} />
-            <ListItemText primary={option.label} secondary={option.hint} />
-          </MenuItem>
-        ))}
-        <Divider />
-        <MenuItem
-          dense
-          role="menuitemcheckbox"
-          aria-checked={diffToggle.checked}
-          data-testid={TEST_ID.viewMenuShowDiff}
-          onClick={() => {
-            diffToggle.onChange(!diffToggle.checked);
-            close();
-          }}
-        >
-          <CheckMark shown={diffToggle.checked} />
-          <ListItemText primary="Show diff in grid" secondary="Hotkey: D" />
-        </MenuItem>
-      </Menu>
-    </>
-  );
-};
-
-interface Props {
+  onViewChange,
+}: {
   view: TestRunView;
   onViewChange: (view: TestRunView) => void;
-  density: TestRunDensity;
-  onDensityChange: (density: TestRunDensity) => void;
-  grouped: boolean;
-  onGroupedChange: (grouped: boolean) => void;
-  groupByAxis: GroupByAxis;
-  diffToggle: DiffToggle;
-}
-
-export const TestRunListControls = ({ onViewChange, ...menu }: Props) => (
-  <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-    {menu.view === "grid" && <ShowDiffSwitch diffToggle={menu.diffToggle} />}
-    <ToggleButtonGroup
-      exclusive
-      size="small"
-      value={menu.view}
-      onChange={(_event, next: TestRunView | null) =>
-        next && onViewChange(next)
-      }
-    >
-      <IconToggle
-        value="table"
-        title="Table"
-        ariaLabel="Table view"
-        testId={TEST_ID.tableViewToggle}
-        icon={<ViewList fontSize="small" />}
-      />
-      <IconToggle
-        value="grid"
-        title="Grid"
-        ariaLabel="Grid view"
-        testId={TEST_ID.gridViewToggle}
-        icon={<ViewModule fontSize="small" />}
-      />
-    </ToggleButtonGroup>
-    <ViewMenu {...menu} />
-  </Box>
+}) => (
+  <ToggleButtonGroup
+    exclusive
+    size="small"
+    value={view}
+    onChange={(_event, next: TestRunView | null) => next && onViewChange(next)}
+  >
+    <IconToggle
+      value="table"
+      title="Table"
+      ariaLabel="Table view"
+      testId={TEST_ID.tableViewToggle}
+      icon={<ViewList fontSize="small" />}
+    />
+    <IconToggle
+      value="grid"
+      title="Grid"
+      ariaLabel="Grid view"
+      testId={TEST_ID.gridViewToggle}
+      icon={<ViewModule fontSize="small" />}
+    />
+  </ToggleButtonGroup>
 );

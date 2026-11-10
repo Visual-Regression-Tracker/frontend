@@ -62,9 +62,7 @@ export const ViewToolbar = ({
           {view.mode === "fade" && canFade && (
             <OverlayControls
               opacity={view.opacity}
-              blendDifference={view.blendDifference}
               onOpacityChange={view.setOpacity}
-              onBlendToggle={view.toggleBlend}
             />
           )}
           <Box sx={{ flexGrow: 1 }} />

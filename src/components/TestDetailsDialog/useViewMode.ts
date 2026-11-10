@@ -13,7 +13,6 @@ const initialMode = (testRun: TestRun): ViewMode =>
 export const useViewMode = (testRun: TestRun, hotkeyEnabled: boolean) => {
   const [mode, setMode] = useState<ViewMode>(() => initialMode(testRun));
   const [opacity, setOpacity] = useState(DEFAULT_OPACITY);
-  const [blendDifference, setBlendDifference] = useState(false);
 
   // per-run view state; this dialog is not remounted between runs
   const [shownRun, setShownRun] = useState({
@@ -24,7 +23,6 @@ export const useViewMode = (testRun: TestRun, hotkeyEnabled: boolean) => {
     setShownRun({ id: testRun.id, diffName: testRun.diffName });
     setMode(initialMode(testRun));
     setOpacity(DEFAULT_OPACITY);
-    setBlendDifference(false);
   }
 
   useHotkeys(
@@ -38,14 +36,7 @@ export const useViewMode = (testRun: TestRun, hotkeyEnabled: boolean) => {
     [testRun.diffName],
   );
 
-  return {
-    mode,
-    setMode,
-    opacity,
-    setOpacity,
-    blendDifference,
-    toggleBlend: () => setBlendDifference((blend) => !blend),
-  };
+  return { mode, setMode, opacity, setOpacity };
 };
 
 export type ViewState = ReturnType<typeof useViewMode>;

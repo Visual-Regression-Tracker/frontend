@@ -20,22 +20,14 @@ const renderProjectSelect = ({
   onProjectSelect = vi.fn(),
   projects = [FIRST, SECOND],
   favorites = [] as string[],
-  recent = [] as string[],
 }: {
   projectId?: string;
   onProjectSelect?: (id: string) => void;
   projects?: (typeof FIRST)[];
   favorites?: string[];
-  recent?: string[];
 } = {}) => {
   vi.spyOn(projectsService, "getAll").mockResolvedValue(projects);
   vi.spyOn(projectsService, "getFavorites").mockResolvedValue(favorites);
-  if (recent.length) {
-    localStorage.setItem(
-      `recentProjects:${TEST_USER.id}`,
-      JSON.stringify(recent),
-    );
-  }
   return renderWithProviders(
     <>
       <ProjectSelect projectId={projectId} onProjectSelect={onProjectSelect} />
@@ -81,11 +73,10 @@ describe("ProjectSelect", () => {
     expect(optionNames()).toEqual(["First project", "Second project"]);
   });
 
-  it("lists favourites first, then the recently opened, then the rest", async () => {
+  it("lists favourites first, then the rest", async () => {
     const { user } = renderProjectSelect({
       projects: [FIRST, SECOND, THIRD],
       favorites: [THIRD.id],
-      recent: [SECOND.id],
     });
     await vi.waitFor(() =>
       expect(projectsService.getFavorites).toHaveBeenCalled(),
@@ -94,12 +85,11 @@ describe("ProjectSelect", () => {
     await user.click(await screen.findByRole("combobox"));
 
     expect(await screen.findByText("Favourites")).toBeVisible();
-    expect(screen.getByText("Recently opened")).toBeVisible();
     expect(screen.getByText("Other projects")).toBeVisible();
     expect(optionNames()).toEqual([
       "Third project",
-      "Second project",
       "First project",
+      "Second project",
     ]);
   });
 

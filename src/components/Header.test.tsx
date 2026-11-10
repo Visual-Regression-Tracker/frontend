@@ -457,7 +457,7 @@ describe("Header", () => {
         expect(screen.getByText("No projects match")).toBeVisible();
       });
 
-      it("groups favourites and recently opened projects", async () => {
+      it("groups favourites apart from the other projects", async () => {
         const { user } = await renderShell(`/${TEST_PROJECT.id}`, {
           favorites: [OTHER.id],
         });
@@ -466,8 +466,8 @@ describe("Header", () => {
         await waitFor(() =>
           expect(screen.getByText("Favourites")).toBeVisible(),
         );
-        expect(screen.getByText("Recently opened")).toBeVisible();
-        expect(screen.queryByText("Other projects")).not.toBeInTheDocument();
+        expect(screen.getByText("Other projects")).toBeVisible();
+        expect(screen.queryByText("Recently opened")).not.toBeInTheDocument();
       });
 
       it("keeps the group headers in view while the list scrolls and out of keyboard navigation", async () => {
@@ -501,7 +501,7 @@ describe("Header", () => {
         expect(sequence).toEqual([
           "header:Favourites",
           `item:${OTHER.name}`,
-          "header:Recently opened",
+          "header:Other projects",
           `item:${TEST_PROJECT.name}`,
         ]);
       });

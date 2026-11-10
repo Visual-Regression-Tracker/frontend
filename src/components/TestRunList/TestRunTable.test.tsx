@@ -1,8 +1,7 @@
 import type { ComponentProps } from "react";
 import { fireEvent, screen, waitFor, within } from "@testing-library/react";
 import { renderWithProviders } from "../../_test/render";
-import { A_DE, A_EN, B_EN, groupsFor } from "../../_test/testRunListFixture";
-import { TAG_FIELDS } from "../../_helpers/testRunTags.helper";
+import { A_EN, B_EN } from "../../_test/testRunListFixture";
 import { NOISE_ANALYSIS_NOISE } from "../../_test/test.data.helper";
 import { run } from "../../_helpers/testRun.fixture";
 import { TestRun } from "../../types";
@@ -11,17 +10,9 @@ import { TestRunTable } from "./TestRunTable";
 
 type Props = ComponentProps<typeof TestRunTable>;
 
-const propsFor = (
-  runs: TestRun[],
-  { grouped = false, ...overrides }: Partial<Props> = {},
-): Props => {
+const propsFor = (runs: TestRun[], overrides: Partial<Props> = {}): Props => {
   return {
-    groups: groupsFor(runs, grouped),
-    grouped,
-    tagFieldsFor: (count) =>
-      grouped && count > 1
-        ? TAG_FIELDS.filter((field) => field !== "customTags")
-        : TAG_FIELDS,
+    rows: runs,
     noiseAvailable: true,
     selectedIds: [],
     onSelectionChange: vi.fn(),
@@ -30,7 +21,6 @@ const propsFor = (
     onPaginationModelChange: vi.fn(),
     sortModel: [{ field: "status", sort: "desc" }],
     onSortModelChange: vi.fn(),
-    density: "standard",
     onOpen: vi.fn(),
     ...overrides,
   };
@@ -76,7 +66,6 @@ describe("TestRunTable", () => {
     const row = rowOf("Screen A");
     expect(within(row).getByText("en")).toBeInTheDocument();
     expect(within(row).getByText("Unresolved")).toBeInTheDocument();
-    expect(screen.queryByTestId("groupCount")).not.toBeInTheDocument();
   });
 
   it("shows the diff percent of a run", async () => {
@@ -130,19 +119,6 @@ describe("TestRunTable", () => {
     ).not.toBeInTheDocument();
   });
 
-  it("shows a group as one row with its run count, status mix and the tags it shares", async () => {
-    renderTable(propsFor([A_EN, A_DE, B_EN], { grouped: true }));
-
-    await waitFor(() => expect(dataRows()).toHaveLength(2));
-    const row = rowOf("Screen A");
-    expect(within(row).getByTestId("groupCount")).toHaveTextContent("2");
-    expect(
-      within(row).getByTitle("1 unresolved · 1 approved"),
-    ).toBeInTheDocument();
-    expect(within(row).queryByText("en")).not.toBeInTheDocument();
-    expect(within(rowOf("Screen B")).getByText("en")).toBeInTheDocument();
-  });
-
   it("opens the run of a clicked row", async () => {
     const props = propsFor([A_EN, B_EN]);
     const { user } = renderTable(props);
@@ -152,29 +128,18 @@ describe("TestRunTable", () => {
     expect(props.onOpen).toHaveBeenCalledWith("b-en");
   });
 
-  it("reports every run of a group whose row is ticked", async () => {
-    const props = propsFor([A_EN, A_DE, B_EN], { grouped: true });
+  it("reports a ticked row", async () => {
+    const props = propsFor([A_EN, B_EN]);
     const { user } = renderTable(props);
     await waitFor(() => expect(dataRows()).toHaveLength(2));
 
     await user.click(tickRow("Screen A"));
 
-    expect(props.onSelectionChange).toHaveBeenCalledWith(["a-en", "a-de"]);
+    expect(props.onSelectionChange).toHaveBeenCalledWith(["a-en"]);
   });
 
-  it("ticks a group's row only once every run of it is ticked", async () => {
-    const runs = [A_EN, A_DE, B_EN];
-    const { rerender } = renderTable(
-      propsFor(runs, { grouped: true, selectedIds: ["a-en"] }),
-    );
-    await waitFor(() => expect(dataRows()).toHaveLength(2));
-    expect(tickRow("Screen A")).not.toBeChecked();
-
-    rerender(
-      <TestRunTable
-        {...propsFor(runs, { grouped: true, selectedIds: ["a-en", "a-de"] })}
-      />,
-    );
+  it("ticks the rows of the selected runs", async () => {
+    renderTable(propsFor([A_EN, B_EN], { selectedIds: ["a-en"] }));
 
     await waitFor(() => expect(tickRow("Screen A")).toBeChecked());
     expect(tickRow("Screen B")).not.toBeChecked();
@@ -233,23 +198,6 @@ describe("TestRunTable", () => {
         screen.queryByRole("columnheader", { name: /Noise/ }),
       ).not.toBeInTheDocument(),
     );
-  });
-
-  it("follows a change of density after it first rendered", async () => {
-    const densityClass = () =>
-      document.querySelector(".MuiDataGrid-root")?.className ?? "";
-    const { rerender } = renderTable(propsFor([A_EN]));
-    await waitFor(() => expect(densityClass()).toContain("densityStandard"));
-
-    rerender(
-      <TestRunTable
-        {...propsFor([A_EN], {
-          density: "compact",
-        })}
-      />,
-    );
-
-    await waitFor(() => expect(densityClass()).toContain("densityCompact"));
   });
 
   it("marks only the rows that have a comment", async () => {

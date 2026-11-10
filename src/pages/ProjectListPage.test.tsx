@@ -32,14 +32,10 @@ const renderPage = async ({
   user = TEST_USER,
   projects = [TEST_PROJECT] as Project[],
   favorites = [] as string[],
-  recent = [] as string[],
   route = "/projects",
 } = {}) => {
   vi.spyOn(projectsService, "getAll").mockResolvedValue(projects);
   vi.spyOn(projectsService, "getFavorites").mockResolvedValue(favorites);
-  if (user && recent.length) {
-    localStorage.setItem(`recentProjects:${user.id}`, JSON.stringify(recent));
-  }
   const result = renderWithProviders(<ProjectsListPage />, { user, route });
   await screen.findByRole("heading", { name: projects[0].name });
   return result;
@@ -203,22 +199,21 @@ describe("ProjectListPage", () => {
     ).not.toBeInTheDocument();
   });
 
-  test("puts favourites first, then the recently opened, then the rest", async () => {
+  test("puts favourites first, then the rest", async () => {
     await renderPage({
       projects: [ALPHA, BETA, GAMMA, DELTA],
       favorites: [GAMMA.id],
-      recent: [BETA.id, GAMMA.id],
     });
 
     await within(section("Favourites")).findByRole("heading", {
       name: "Gamma",
     });
     expect(
-      within(section("Recently opened")).getByRole("heading", {
+      within(section("Other projects")).getByRole("heading", {
         name: "Beta",
       }),
     ).toBeInTheDocument();
-    expect(cardNames()).toEqual(["Gamma", "Beta", "Alpha", "Delta"]);
+    expect(cardNames()).toEqual(["Gamma", "Alpha", "Beta", "Delta"]);
   });
 
   test("stars a project and moves it to the favourites", async () => {

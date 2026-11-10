@@ -217,6 +217,73 @@ describe("MatchingVariationsDialog", () => {
     expect(onClose).not.toHaveBeenCalled();
   });
 
+  describe("keyboard", () => {
+    const twoVariations = async () => {
+      const buildId = nextBuildId();
+      await renderDialog({
+        buildId,
+        current: run("current", buildId),
+        answer: {
+          variations: [run("v1", buildId), run("v2", buildId)],
+          skipped: [],
+        },
+      });
+      return newReviewer();
+    };
+    // the grid's switch first; hidden too, as the full-size view hides it
+    const showDiff = () => screen.getAllByRole("switch", { hidden: true });
+
+    it("toggles the grid diff with D", async () => {
+      const reviewer = await twoVariations();
+      expect(showDiff()[0]).toBeChecked();
+
+      await reviewer.keyboard("d");
+
+      expect(showDiff()[0]).not.toBeChecked();
+    });
+
+    it("toggles the full-size diff with D, leaving the grid's", async () => {
+      const reviewer = await twoVariations();
+      await reviewer.click(
+        screen.getAllByRole("button", { name: /^View .* full size$/ })[0],
+      );
+      await screen.findByText(/\(1\/2\)/);
+
+      await reviewer.keyboard("D");
+
+      const [grid, fullSize] = showDiff();
+      expect(fullSize).not.toBeChecked();
+      expect(grid).toBeChecked();
+    });
+
+    it("steps through the full-size views with the arrows", async () => {
+      const reviewer = await twoVariations();
+      await reviewer.click(
+        screen.getAllByRole("button", { name: /^View .* full size$/ })[0],
+      );
+      await screen.findByText(/\(1\/2\)/);
+
+      await reviewer.keyboard("{ArrowRight}");
+      expect(await screen.findByText(/\(2\/2\)/)).toBeVisible();
+
+      await reviewer.keyboard("{ArrowLeft}");
+      expect(await screen.findByText(/\(1\/2\)/)).toBeVisible();
+    });
+
+    it("keeps the review keys from the page behind and lets others through", async () => {
+      const reviewer = await twoVariations();
+      const behind = vi.fn();
+      document.addEventListener("keydown", behind);
+
+      await reviewer.keyboard("a");
+      expect(behind).not.toHaveBeenCalled();
+
+      await reviewer.keyboard("q");
+      document.removeEventListener("keydown", behind);
+      expect(behind).toHaveBeenCalledOnce();
+    });
+  });
+
   it("colours the reject button with the error colour", async () => {
     const buildId = nextBuildId();
     await renderDialog({

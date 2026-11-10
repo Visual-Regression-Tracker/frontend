@@ -215,15 +215,7 @@ export class ImagePanes extends PageObject {
     );
   }
 
-  async overlaidOpacity(): Promise<number> {
-    return (await this.overlaidState()).opacity;
-  }
-
-  async overlaidBlend(): Promise<string> {
-    return (await this.overlaidState()).blend;
-  }
-
-  private overlaidState(): Promise<{ opacity: number; blend: string }> {
+  overlaidOpacity(): Promise<number> {
     return this.firstPane.evaluate(() => {
       const { Konva } = window as unknown as KonvaWindow;
       const overlaid = Konva.stages
@@ -231,10 +223,7 @@ export class ImagePanes extends PageObject {
         .find(Boolean);
       if (!overlaid) throw new Error("No overlaid image on any stage");
 
-      return {
-        opacity: overlaid.opacity(),
-        blend: overlaid.globalCompositeOperation(),
-      };
+      return overlaid.opacity();
     });
   }
 

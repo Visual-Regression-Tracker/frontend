@@ -1,4 +1,4 @@
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
   Dialog,
   DialogTitle,
@@ -22,7 +22,6 @@ import {
   Toolbar,
 } from "./MatchingVariationCard";
 import { useMatchingVariations } from "./useMatchingVariations";
-import { useVariationHotkeys } from "./useVariationHotkeys";
 import { findNextUnresolved, forgetActed, rememberActed } from "./actedRuns";
 import { Tooltip } from "../Tooltip";
 import { undoSnackbarOptions } from "../UndoSnackbarAction";
@@ -90,12 +89,23 @@ export const MatchingVariationsDialog = ({
     [allShown.length],
   );
 
-  useVariationHotkeys({
-    preview,
-    step,
-    setPreviewDiff,
-    toggleShowDiff: () => setShowDiff((value) => !value),
-  });
+  useEffect(() => {
+    const swallowed = new Set(["ArrowLeft", "ArrowRight", "a", "x", "d"]);
+    const onKey = (event: KeyboardEvent) => {
+      const key = event.key.length === 1 ? event.key.toLowerCase() : event.key;
+      if (!swallowed.has(key)) return;
+      // the page behind would act on these keys (arrows, a/x) and change the reviewed run
+      event.preventDefault();
+      event.stopPropagation();
+      if (key === "d") {
+        if (preview) setPreview({ ...preview, showDiff: !preview.showDiff });
+        else setShowDiff((value) => !value);
+      } else if (preview && key === "ArrowLeft") step(-1);
+      else if (preview && key === "ArrowRight") step(1);
+    };
+    window.addEventListener("keydown", onKey, true);
+    return () => window.removeEventListener("keydown", onKey, true);
+  }, [preview, step]);
 
   const verb = mode === "approve" ? "Approve" : "Reject";
 

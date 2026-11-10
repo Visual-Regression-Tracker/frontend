@@ -115,7 +115,6 @@ export const ComparisonPanels = ({
             imageState={[image, imageStatus]}
             underlayImage={fading ? baselineImage : undefined}
             overlayOpacity={view.opacity}
-            blendDifference={view.blendDifference && fading}
             readOnly={!areas.editing}
             ignoreAreas={visible ? areas.ignoreAreas : []}
             tempIgnoreAreas={visible ? areas.tempIgnoreAreas : []}

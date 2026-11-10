@@ -4,7 +4,6 @@ import { Table } from "./Table";
 import {
   LOCATOR_PROJECT_PAGE_TEST_RUN_LIST,
   TEST_ID,
-  densityTestId,
   gridSortTestId,
 } from "~client/constants/locators";
 
@@ -19,8 +18,6 @@ export class TestRunList extends Table {
   cardTags = this.page.getByTestId(TEST_ID.cardTags);
   // locators, not texts: assertions retry while the list re-renders
   cardNames = this.cards.getByTestId(TEST_ID.cardName);
-  diffToggle = this.page.getByTestId(TEST_ID.showDiffToggle);
-  viewMenuButton = this.page.getByTestId(TEST_ID.viewMenuButton);
 
   // scoped: the build list pagination and selection bar carry the same labels
   pane = this.page.locator(`#${LOCATOR_PROJECT_PAGE_TEST_RUN_LIST}`);
@@ -74,30 +71,8 @@ export class TestRunList extends Table {
   clearSelectionBtn = this.selectionBar.getByRole("button", {
     name: "Clear selection",
   });
-  showDiffMenuItem = this.page.getByTestId(TEST_ID.viewMenuShowDiff);
-  groupByVariationItem = this.page.getByTestId(TEST_ID.groupByVariation);
   firstCardImage = this.cards.first().locator("img");
   gridSortName = this.page.getByTestId(gridSortTestId("name"));
-
-  groupCount(scope: Locator) {
-    return scope.getByTestId(TEST_ID.groupCount);
-  }
-
-  cardGroupCount(name: string) {
-    return this.groupCount(this.getCard(name));
-  }
-
-  rowGroupCount(rowId: string) {
-    return this.groupCount(this.getRow(rowId));
-  }
-
-  cardStatus(name: string, status: string) {
-    return this.getCard(name).getByText(status, { exact: true });
-  }
-
-  cardBreakdown(name: string, title: string) {
-    return this.getCard(name).locator(`[title="${title}"]`);
-  }
 
   tableHeaderColour() {
     return colourOf(
@@ -105,34 +80,8 @@ export class TestRunList extends Table {
     );
   }
 
-  gridSwitchLabelColour() {
-    return colourOf(
-      this.page
-        .locator(".MuiFormControlLabel-root .MuiTypography-root")
-        .first(),
-    );
-  }
-
   gridSortNameColour() {
     return colourOf(this.gridSortName);
-  }
-
-  densityItem(density: "compact" | "standard" | "comfortable") {
-    return this.page.getByTestId(densityTestId(density));
-  }
-
-  async setDensity(density: "compact" | "standard" | "comfortable") {
-    await this.viewMenuButton.click();
-    await this.densityItem(density).click();
-  }
-
-  async groupBy(mode: "none" | "variation") {
-    await this.viewMenuButton.click();
-    await this.page
-      .getByTestId(
-        mode === "none" ? TEST_ID.groupByNone : TEST_ID.groupByVariation,
-      )
-      .click();
   }
 
   noiseChip(rowId: string) {

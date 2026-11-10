@@ -36,8 +36,7 @@ const ProjectsListPage = () => {
   const projectDispatch = useProjectDispatch();
   const { user } = useUserState();
   const canEditProjects = !!user && PROJECT_EDITOR_ROLES.includes(user.role);
-  const { projectList, favoriteProjectIds, recentProjectIds, loading } =
-    projectState;
+  const { projectList, favoriteProjectIds, loading } = projectState;
 
   const [searchParams, setSearchParams] = useSearchParams();
   const query = searchParams.get("q") ?? "";
@@ -45,8 +44,8 @@ const ProjectsListPage = () => {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
 
   const groups = useMemo(
-    () => groupProjects(projectList, favoriteProjectIds, recentProjectIds),
-    [projectList, favoriteProjectIds, recentProjectIds],
+    () => groupProjects(projectList, favoriteProjectIds),
+    [projectList, favoriteProjectIds],
   );
   const favoriteIdSet = useMemo(
     () => new Set(favoriteProjectIds),
@@ -54,8 +53,8 @@ const ProjectsListPage = () => {
   );
   const matches = useMemo(
     () =>
-      [...groups.favorites, ...groups.recent, ...groups.others].filter(
-        (project) => matchesProjectQuery(project, query),
+      [...groups.favorites, ...groups.others].filter((project) =>
+        matchesProjectQuery(project, query),
       ),
     [groups, query],
   );
@@ -99,7 +98,7 @@ const ProjectsListPage = () => {
     );
   };
 
-  const hasSections = groups.favorites.length + groups.recent.length > 0;
+  const hasSections = groups.favorites.length > 0;
 
   const renderProjects = () => {
     if (query.trim()) {
@@ -121,11 +120,6 @@ const ProjectsListPage = () => {
         {groups.favorites.length > 0 && (
           <ProjectSection title="Favourites">
             {groups.favorites.map(renderCard)}
-          </ProjectSection>
-        )}
-        {groups.recent.length > 0 && (
-          <ProjectSection title="Recently opened">
-            {groups.recent.map(renderCard)}
           </ProjectSection>
         )}
         {groups.others.length > 0 && (

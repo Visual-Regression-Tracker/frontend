@@ -305,25 +305,21 @@ describe("TestDetailsModal", () => {
     const mode = (name: string) => screen.getByRole("button", { name });
     const fade = () =>
       screen.getByRole("slider", { name: "Fade to the baseline" });
-    const blend = () => screen.getByTestId("differenceToggle");
 
-    it("starts over with the diff shown, no fade and no blend when another run opens", async () => {
+    it("starts over with the diff shown and no fade when another run opens", async () => {
       const { user, showTestRun } = renderModal(UNRESOLVED_RUN);
 
       await user.click(mode("Fade"));
       fade().focus();
       await user.keyboard("{ArrowLeft}");
-      await user.click(blend());
       expect(mode("Diff")).toHaveAttribute("aria-pressed", "false");
       expect(fade()).toHaveAttribute("aria-valuenow", "0.45");
-      expect(blend()).toHaveAttribute("aria-pressed", "true");
 
       showTestRun({ ...UNRESOLVED_RUN, id: "another run" });
 
       expect(mode("Diff")).toHaveAttribute("aria-pressed", "true");
       await user.click(mode("Fade"));
       expect(fade()).toHaveAttribute("aria-valuenow", "0.5");
-      expect(blend()).toHaveAttribute("aria-pressed", "false");
     });
 
     it("keeps the view when the same run comes back changed elsewhere", async () => {

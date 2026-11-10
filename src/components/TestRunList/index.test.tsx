@@ -1,11 +1,5 @@
 import { useEffect, type ReactNode } from "react";
-import {
-  act,
-  fireEvent,
-  screen,
-  waitFor,
-  within,
-} from "@testing-library/react";
+import { act, screen, waitFor, within } from "@testing-library/react";
 import { useNavigate } from "react-router-dom";
 import { renderWithProviders } from "../../_test/render";
 import { run } from "../../_helpers/testRun.fixture";
@@ -27,7 +21,6 @@ import {
   TEST_USER,
 } from "../../_test/test.data.helper";
 import { TestDetailsDialog } from "../TestDetailsDialog";
-import { TEST_RUN_SHOW_DIFF_KEY } from "../../constants";
 import TestRunList from "./index";
 import { useSharedTestRunFilters } from "./TestRunFiltersContext";
 import { NO_FAILURES } from "../../_test/bulkResult";
@@ -71,19 +64,6 @@ const OpenBuildB = () => {
 const actionButton = (name: string): HTMLElement =>
   screen.getByRole("button", { name });
 const selectionBar = () => screen.queryByRole("toolbar", { name: "Selection" });
-
-const openViewMenu = (user: User) =>
-  user.click(screen.getByRole("button", { name: "View" }));
-const groupByVariation = async (user: User) => {
-  await openViewMenu(user);
-  await user.click(
-    await screen.findByRole("menuitemradio", { name: /^Variation/ }),
-  );
-};
-const setDensity = async (user: User, name: string) => {
-  await openViewMenu(user);
-  await user.click(await screen.findByRole("menuitemradio", { name }));
-};
 
 describe("TestRunList", () => {
   beforeEach(() => {
@@ -243,40 +223,28 @@ const A_EN = run({ id: "a-en", name: "Screen A", customTags: "en" });
 const A_DE = run({ id: "a-de", name: "Screen A", customTags: "de" });
 const B_EN = run({ id: "b-en", name: "Screen B", customTags: "en" });
 
-describe("TestRunList grouping", () => {
-  it("lists every run on its own until grouping is switched on", async () => {
-    const { user } = renderList([A_EN, A_DE, B_EN]);
+describe("TestRunList selection and order", () => {
+  it("lists every variation on its own row, with no view menu", async () => {
+    renderList([A_EN, A_DE, B_EN]);
 
     await waitFor(() => expect(dataRows()).toHaveLength(3));
-    await openViewMenu(user);
     expect(
-      await screen.findByRole("menuitemradio", { name: "None" }),
-    ).toHaveAttribute("aria-checked", "true");
-    await user.keyboard("{Escape}");
-    expect(screen.queryByTestId("groupCount")).not.toBeInTheDocument();
-
-    await groupByVariation(user);
-
-    await waitFor(() => expect(dataRows()).toHaveLength(2));
-    expect(screen.getByTestId("groupCount")).toHaveTextContent("2");
+      screen.queryByRole("button", { name: "View" }),
+    ).not.toBeInTheDocument();
   });
 
-  it("selects every run of a group when its table row is ticked", async () => {
+  it("deletes the runs ticked in the table", async () => {
     vi.spyOn(testRunService, "removeBulk").mockResolvedValue(NO_FAILURES);
     const { user } = renderList([A_EN, B_EN, A_DE]);
-    await screen.findByText("Screen B");
-    await groupByVariation(user);
-    await waitFor(() => expect(dataRows()).toHaveLength(2));
+    await waitFor(() => expect(dataRows()).toHaveLength(3));
     expect(selectionBar()).toBeNull();
 
-    await user.click(tickRow("Screen A"));
+    await user.click(tickRow("Screen B"));
 
-    expect(tickRow("Screen A")).toBeChecked();
-    expect(tickRow("Screen B")).not.toBeChecked();
     await user.click(actionButton("Delete…"));
-    expect(screen.getByText("Delete 2 test runs?")).toBeInTheDocument();
+    expect(screen.getByText("Delete 1 test run?")).toBeInTheDocument();
     await user.click(screen.getByRole("button", { name: "Delete" }));
-    expect(testRunService.removeBulk).toHaveBeenCalledWith(["a-en", "a-de"]);
+    expect(testRunService.removeBulk).toHaveBeenCalledWith(["b-en"]);
   });
 
   it("leaves only the runs a bulk action failed on ticked", async () => {
@@ -305,22 +273,22 @@ describe("TestRunList grouping", () => {
     expect(tickRow("Screen B")).toBeChecked();
   });
 
-  it("selects every run of a group when its card is ticked", async () => {
+  it("selects a run when its card is ticked", async () => {
     const { user } = renderList([A_EN, B_EN, A_DE]);
     await user.click(await screen.findByRole("button", { name: "Grid view" }));
-    await groupByVariation(user);
-    await screen.findByTestId("groupCount");
 
-    await user.click(screen.getByRole("checkbox", { name: "Select Screen A" }));
+    await user.click(
+      await screen.findByRole("checkbox", { name: "Select Screen B" }),
+    );
 
     expect(screen.getByTestId("gridSelectionCount")).toHaveTextContent(
       "1 card selected",
     );
     await user.click(actionButton("Delete…"));
-    expect(screen.getByText("Delete 2 test runs?")).toBeInTheDocument();
+    expect(screen.getByText("Delete 1 test run?")).toBeInTheDocument();
   });
 
-  it("publishes the groups expanded as the navigation order", async () => {
+  it("publishes the table's order as the navigation order", async () => {
     const approved = run({
       id: "a-de",
       name: "Screen A",
@@ -328,16 +296,9 @@ describe("TestRunList grouping", () => {
       status: TestStatus.approved,
     });
     const bDe = run({ id: "b-de", name: "Screen B", customTags: "de" });
-    const { user } = renderList(
-      [B_EN, approved, A_EN, bDe],
-      <NavigationOrder />,
-    );
+    renderList([B_EN, approved, A_EN, bDe], <NavigationOrder />);
 
     await waitFor(() => expect(navigationOrder()).toBe("a-en,b-en,b-de,a-de"));
-
-    await groupByVariation(user);
-
-    await waitFor(() => expect(navigationOrder()).toBe("a-en,a-de,b-de,b-en"));
   });
 
   it("keeps a header sort shown on every click, as the rows always follow one", async () => {
@@ -354,61 +315,22 @@ describe("TestRunList grouping", () => {
     );
   });
 
-  it("sorts grouped rows by the tags their column shows, not the grouped axis", async () => {
-    const runs = [
-      run({ id: "b-aa", name: "Screen B", customTags: "aa" }),
-      run({ id: "b-ab", name: "Screen B", customTags: "ab" }),
-      run({ id: "a-zz", name: "Screen A", customTags: "zz" }),
-      run({ id: "a-zy", name: "Screen A", customTags: "zy" }),
-    ];
-    const { user } = renderList(runs);
-    await waitFor(() => expect(dataRows()).toHaveLength(4));
-    await groupByVariation(user);
-    await waitFor(() => expect(dataRows()).toHaveLength(2));
-
-    await user.click(screen.getByRole("columnheader", { name: /Tags/ }));
-
-    await waitFor(() =>
-      expect(
-        dataRows().map(
-          (row) => within(row).queryByText(/^Screen/)?.textContent,
-        ),
-      ).toEqual(["Screen A", "Screen B"]),
-    );
-  });
-
-  it("publishes the grouped table in the order its header sort shows", async () => {
+  it("publishes the table in the order its header sort shows", async () => {
     const aEn = run({
       id: "a-en",
       name: "Screen A",
       customTags: "en",
       status: TestStatus.approved,
     });
-    const aDe = run({
-      id: "a-de",
-      name: "Screen A",
-      customTags: "de",
-      status: TestStatus.approved,
-    });
-    const { user } = renderList([aEn, aDe, B_EN], <NavigationOrder />);
-    await waitFor(() => expect(dataRows()).toHaveLength(3));
-    await groupByVariation(user);
-    await waitFor(() => expect(navigationOrder()?.split(",")[0]).toBe("b-en"));
+    const { user } = renderList([aEn, B_EN], <NavigationOrder />);
+    await waitFor(() => expect(navigationOrder()).toBe("b-en,a-en"));
 
     await user.click(screen.getByRole("columnheader", { name: /Name/ }));
 
-    await waitFor(() =>
-      expect(navigationOrder()?.split(",").at(-1)).toBe("b-en"),
-    );
-    expect(
-      navigationOrder()
-        ?.split(",")
-        .slice(0, 2)
-        .sort((a, b) => a.localeCompare(b)),
-    ).toEqual(["a-de", "a-en"]);
+    await waitFor(() => expect(navigationOrder()).toBe("a-en,b-en"));
   });
 
-  it("publishes the groups expanded in the card view too", async () => {
+  it("publishes the cards' order as the navigation order", async () => {
     const approved = run({
       id: "a-de",
       name: "Screen A",
@@ -417,95 +339,9 @@ describe("TestRunList grouping", () => {
     });
     const { user } = renderList([approved, B_EN, A_EN], <NavigationOrder />);
     await user.click(await screen.findByRole("button", { name: "Grid view" }));
-    await groupByVariation(user);
 
-    await waitFor(() => expect(navigationOrder()).toBe("a-en,a-de,b-en"));
-  });
-});
-
-describe("TestRunList show diff", () => {
-  afterEach(() => localStorage.removeItem(TEST_RUN_SHOW_DIFF_KEY));
-
-  const showDiffSwitch = () => screen.getByLabelText("Show diff");
-
-  it("remembers that the diff was turned off", async () => {
-    const first = renderList([A_EN]);
-    await first.user.click(
-      await screen.findByRole("button", { name: "Grid view" }),
-    );
-    expect(showDiffSwitch()).toBeChecked();
-
-    await first.user.click(showDiffSwitch());
-
-    expect(showDiffSwitch()).not.toBeChecked();
-    expect(localStorage.getItem(TEST_RUN_SHOW_DIFF_KEY)).toBe("false");
-    first.unmount();
-
-    const second = renderList([A_EN]);
-    await second.user.click(
-      await screen.findByRole("button", { name: "Grid view" }),
-    );
-    expect(showDiffSwitch()).not.toBeChecked();
-  });
-
-  it("shares the switch in the toolbar with the one in the View menu", async () => {
-    const { user } = renderList([A_EN]);
-    await user.click(await screen.findByRole("button", { name: "Grid view" }));
-
-    await openViewMenu(user);
-    await user.click(
-      await screen.findByRole("menuitemcheckbox", {
-        name: /Show diff in grid/,
-      }),
-    );
-    await user.keyboard("{Escape}");
-
-    await waitFor(() => expect(showDiffSwitch()).not.toBeChecked());
-  });
-
-  it("leaves d alone while a menu is open", async () => {
-    const { user } = renderList([A_EN]);
-    await user.click(await screen.findByRole("button", { name: "Grid view" }));
-    await openViewMenu(user);
-    await screen.findByRole("menuitemradio", { name: "Compact" });
-
-    fireEvent.keyDown(screen.getByRole("menuitemradio", { name: "Compact" }), {
-      key: "d",
-      code: "KeyD",
-    });
-
-    expect(showDiffSwitch()).toBeChecked();
-  });
-
-  it("leaves d alone while a confirmation is open", async () => {
-    vi.spyOn(testRunService, "removeBulk").mockResolvedValue(NO_FAILURES);
-    const { user } = renderList([A_EN]);
-    await user.click(await screen.findByRole("button", { name: "Grid view" }));
-    await user.click(
-      await screen.findByRole("checkbox", { name: "Select Screen A" }),
-    );
-    await user.click(actionButton("Delete…"));
-    await screen.findByRole("dialog");
-
-    fireEvent.keyDown(screen.getByRole("dialog"), { key: "d", code: "KeyD" });
-
-    expect(showDiffSwitch()).toBeChecked();
-  });
-
-  it("offers the toolbar switch only in the grid", async () => {
-    renderList([A_EN]);
-    await screen.findByText("Screen A");
-
-    expect(screen.queryByLabelText("Show diff")).not.toBeInTheDocument();
-  });
-
-  it("toggles the diff with d wherever the layout puts it, as Dvorak does", async () => {
-    const { user } = renderList([A_EN]);
-    await user.click(await screen.findByRole("button", { name: "Grid view" }));
-
-    fireEvent.keyDown(document.body, { key: "d", code: "KeyH" });
-
-    await waitFor(() => expect(showDiffSwitch()).not.toBeChecked());
+    await waitFor(() => expect(navigationOrder()).toBe("a-en,b-en,a-de"));
+    expect(screen.queryByRole("switch")).not.toBeInTheDocument();
   });
 });
 
@@ -561,40 +397,6 @@ describe("TestRunList and the details dialog", () => {
     await waitFor(() =>
       expect(screen.getByTestId("search")).toHaveTextContent(/testId=u2$/),
     );
-  });
-});
-
-describe("TestRunList density", () => {
-  const densityClass = () =>
-    document.querySelector(".MuiDataGrid-root")?.className ?? "";
-  const cardImageHeight = () =>
-    getComputedStyle(screen.getAllByRole("img")[0]).height;
-
-  it("applies to the table", async () => {
-    const { user } = renderList([A_EN]);
-    await waitFor(() => expect(densityClass()).toContain("densityStandard"));
-
-    await setDensity(user, "Compact");
-    await waitFor(() => expect(densityClass()).toContain("densityCompact"));
-
-    await setDensity(user, "Comfortable");
-    await waitFor(() => expect(densityClass()).toContain("densityComfortable"));
-  });
-
-  it("applies to the cards, and is kept when the view changes", async () => {
-    const { user } = renderList([A_EN]);
-    await user.click(await screen.findByRole("button", { name: "Grid view" }));
-    await screen.findByTestId("testRunCard");
-    expect(cardImageHeight()).toBe("160px");
-
-    await setDensity(user, "Compact");
-    expect(cardImageHeight()).toBe("110px");
-
-    await setDensity(user, "Comfortable");
-    expect(cardImageHeight()).toBe("240px");
-
-    await user.click(screen.getByRole("button", { name: "Table view" }));
-    await waitFor(() => expect(densityClass()).toContain("densityComfortable"));
   });
 });
 

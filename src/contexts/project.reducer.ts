@@ -10,16 +10,13 @@ export type ProjectAction =
   | { type: "delete"; payload: string }
   | { type: "update"; payload: Project }
   | { type: "favorites"; payload: string[] }
-  | { type: "favorite"; payload: { id: string; favorite: boolean } }
-  | { type: "recent"; payload: string[] };
+  | { type: "favorite"; payload: { id: string; favorite: boolean } };
 export type ProjectState = {
   selectedProjectId: string | null;
   projectEditState: ProjectDto;
   projectList: Project[];
   // the signed-in user's own, kept by the API
   favoriteProjectIds: string[];
-  // opened last first, kept in this browser
-  recentProjectIds: string[];
   loading: boolean;
   loadFailed: boolean;
 };
@@ -100,12 +97,6 @@ export function projectReducer(
           : others,
       };
     }
-
-    case "recent":
-      return {
-        ...state,
-        recentProjectIds: action.payload,
-      };
 
     case "setProjectEditState":
       return {

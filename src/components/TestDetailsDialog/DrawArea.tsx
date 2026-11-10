@@ -40,7 +40,6 @@ interface IDrawArea {
   imageState: [undefined | HTMLImageElement, ImageStateLoad];
   underlayImage?: HTMLImageElement;
   overlayOpacity?: number;
-  blendDifference?: boolean;
   tempIgnoreAreas: IgnoreArea[];
   ignoreAreas: IgnoreArea[];
   readOnly?: boolean;
@@ -62,7 +61,6 @@ export const DrawArea = ({
   imageState,
   underlayImage,
   overlayOpacity,
-  blendDifference,
   ignoreAreas,
   readOnly = false,
   tempIgnoreAreas,
@@ -200,13 +198,7 @@ export const DrawArea = ({
                 image={image}
                 // named so the overlay's own state is reachable from a test
                 name={underlayImage ? "overlaid" : undefined}
-                // the blend ignores the fade: a faded difference would wash out what matches
-                opacity={
-                  underlayImage && (blendDifference ? 1 : overlayOpacity)
-                }
-                globalCompositeOperation={
-                  blendDifference ? "difference" : undefined
-                }
+                opacity={underlayImage && overlayOpacity}
                 onMouseOver={() => {
                   document.body.style.cursor = isDrawMode
                     ? "crosshair"

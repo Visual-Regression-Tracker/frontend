@@ -22,7 +22,6 @@ const initial: State = {
   projectList: [],
   projectEditState: DEFAULT_PROJECT_EDIT_STATE,
   favoriteProjectIds: [],
-  recentProjectIds: [],
   loading: false,
   loadFailed: false,
 };
@@ -126,15 +125,6 @@ describe("projectReducer", () => {
     expect(added.favoriteProjectIds).toEqual(["p1"]);
     expect(twice.favoriteProjectIds).toEqual(["p1"]);
     expect(removed.favoriteProjectIds).toEqual([]);
-  });
-
-  it("recent replaces the recently opened project ids", () => {
-    const state = projectReducer(initial, {
-      type: "recent",
-      payload: ["p2", "p1"],
-    });
-
-    expect(state.recentProjectIds).toEqual(["p2", "p1"]);
   });
 
   it("setProjectEditState stores the project being edited", () => {
