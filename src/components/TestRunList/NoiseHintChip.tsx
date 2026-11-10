@@ -1,11 +1,7 @@
 import { Chip } from "@mui/material";
 import BlurOnIcon from "@mui/icons-material/BlurOn";
 import { isNoiseResult, noiseHintOf } from "../../_helpers/noiseHint.helper";
-import {
-  ANALYSING,
-  SHORT_LIMITATION,
-  stagesText,
-} from "../../_helpers/noiseText.helper";
+import { ANALYSING, LIMITATION } from "../../_helpers/noiseText.helper";
 import { hintColor } from "../../theme";
 import { Tooltip } from "../Tooltip";
 import type { NoiseAnalysisDto, TestRun } from "../../types";
@@ -18,7 +14,7 @@ const LABELS = {
 } as const;
 
 const tooltipFor = (analysis: NoiseAnalysisDto): string =>
-  `Rendering-noise check. ${stagesText(analysis)}. ${SHORT_LIMITATION}`;
+  `Rendering-noise check, score ${analysis.score.toFixed(2)}. ${LIMITATION}`;
 
 export const NoiseHintChip = ({
   run,

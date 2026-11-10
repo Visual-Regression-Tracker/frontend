@@ -1,10 +1,6 @@
 import type { ReactNode } from "react";
 import { FilterBar } from "../FilterBar";
 import { TagField } from "../../types";
-import {
-  NOISE_HINT_FILTERS,
-  NoiseHintFilter,
-} from "../../_helpers/noiseHint.helper";
 import { TAG_LABELS } from "../../_helpers/testRunTags.helper";
 import type { TagFilters } from "./useTestRunFilters";
 import { TEST_ID } from "../../constants/locators";
@@ -24,12 +20,10 @@ interface IProps {
   name: string;
   tagFilters: TagFilters;
   tagOptions: Record<TagField, string[]>;
-  noiseHints: NoiseHintFilter[];
   hasActiveFilters: boolean;
   actions?: ReactNode;
   onNameChange: (value: string) => void;
   onTagFilterChange: (field: TagField, values: string[]) => void;
-  onNoiseHintsChange?: (value: NoiseHintFilter[]) => void;
   onReset: () => void;
 }
 
@@ -37,12 +31,10 @@ const TestRunFilters = ({
   name,
   tagFilters,
   tagOptions,
-  noiseHints,
   hasActiveFilters,
   actions,
   onNameChange,
   onTagFilterChange,
-  onNoiseHintsChange,
   onReset,
 }: IProps) => (
   <FilterBar
@@ -62,20 +54,6 @@ const TestRunFilters = ({
         value: tagFilters[field],
         onChange: (values: string[]) => onTagFilterChange(field, values),
       })),
-      ...(onNoiseHintsChange
-        ? [
-            {
-              id: "noise",
-              label: "Noise",
-              options: [...NOISE_HINT_FILTERS],
-              value: noiseHints,
-              onChange: (values: string[]) =>
-                onNoiseHintsChange(
-                  NOISE_HINT_FILTERS.filter((hint) => values.includes(hint)),
-                ),
-            },
-          ]
-        : []),
     ]}
     onClear={onReset}
   />

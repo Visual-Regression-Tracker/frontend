@@ -44,14 +44,6 @@ export class TestDetailsDialog extends ImagePanes {
     exact: true,
   });
   diffMode = this.viewModes.getByRole("button", { name: "Diff", exact: true });
-  noiselessMode = this.viewModes.getByRole("button", {
-    name: "Diff without noise",
-  });
-  noiselessProgress = this.page.getByRole("progressbar", {
-    name: "Computing Diff without noise",
-  });
-  noiselessCaveat = this.page.getByTestId(TEST_ID.noiselessCaveat);
-  switchToDiff = this.page.getByRole("button", { name: "Switch to Diff" });
   fadeMode = this.viewModes.getByRole("button", { name: "Fade", exact: true });
   overlayOpacity = this.page.getByTestId(TEST_ID.overlayOpacity);
   fadeSlider = this.overlayOpacity.getByRole("slider");
@@ -87,8 +79,6 @@ export class TestDetailsDialog extends ImagePanes {
   noiseChip = this.page.getByTestId(TEST_ID.noiseHintPopoverChip);
   noisePanel = this.page.getByTestId(TEST_ID.noiseHintPanel);
   analyseRun = this.page.getByTestId(TEST_ID.analyseNoiseRunButton);
-  hintBlur = this.page.getByTestId(TEST_ID.hintAreasBlur);
-  hintDinov2 = this.page.getByTestId(TEST_ID.hintAreasDinov2);
 
   discardPrompt = this.page.getByText("You have not saved ignore areas");
 

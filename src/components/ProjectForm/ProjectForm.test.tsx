@@ -618,11 +618,11 @@ describe("ProjectForm", () => {
         .spyOn(dinov2Service, "getStatus")
         .mockResolvedValue({ configured, available });
 
-    it("shows the stages with their texts and the saved thresholds", async () => {
+    it("shows the stages with their texts and switches only", async () => {
       await renderForm(
         withNoiseConfig({
-          blur: { enabled: true, amplitudeThreshold: 60, solidShareMax: 0.02 },
-          dinov2: { enabled: false, distanceThreshold: 0.2 },
+          blur: { enabled: true },
+          dinov2: { enabled: false },
         }),
       );
 
@@ -639,7 +639,7 @@ describe("ProjectForm", () => {
       expect(
         screen.getByRole("switch", { name: "Stage 1 · Blur" }),
       ).toHaveAccessibleDescription(
-        "Blurred difference and change density. Cheap, runs on this server. Catches 92 of 120 bugs on our benchmark with the default thresholds, 0 false alarms",
+        "Blurred difference and change density. Cheap, runs on this server. Catches 92 of 120 bugs on our benchmark, 0 false alarms",
       );
       expect(screen.getByLabelText(BLUR_SWITCH)).toBeChecked();
       expect(
@@ -648,12 +648,9 @@ describe("ProjectForm", () => {
         "Asks the DINOv2 service about patches the blur calls noise. Catches faint icons and borders, 102 of 120 together",
       );
       expect(screen.getByLabelText(DINOV2_SWITCH)).not.toBeChecked();
-      expect(screen.getByLabelText(/^Amplitude threshold/)).toHaveValue(60);
-      expect(screen.getByLabelText(/^Solid share, max/)).toHaveValue(0.02);
-      expect(screen.getByLabelText(/^Distance threshold/)).toHaveValue(0.2);
       expect(
-        screen.getByText("Noise on our benchmark stays below 51"),
-      ).toBeVisible();
+        screen.queryByLabelText(/Amplitude|Distance|Solid share/),
+      ).toBeNull();
     });
 
     it.each([
@@ -668,9 +665,6 @@ describe("ProjectForm", () => {
 
       expect(screen.getByLabelText(BLUR_SWITCH)).not.toBeChecked();
       expect(screen.getByLabelText(DINOV2_SWITCH)).not.toBeChecked();
-      expect(screen.getByLabelText(/^Amplitude threshold/)).toHaveValue(80);
-      expect(screen.getByLabelText(/^Solid share, max/)).toHaveValue(0.01);
-      expect(screen.getByLabelText(/^Distance threshold/)).toHaveValue(0.15);
     });
 
     it("starts a new project with both switches off", async () => {
@@ -680,19 +674,20 @@ describe("ProjectForm", () => {
       expect(screen.getByLabelText(DINOV2_SWITCH)).not.toBeChecked();
     });
 
-    it("fills the keys a saved config lacks from the defaults", async () => {
+    it("drops the thresholds and other keys an older version saved", async () => {
       const { user } = await renderForm(
-        withNoiseConfig({ blur: { amplitudeThreshold: 60 } }),
+        withNoiseConfig({
+          blur: { enabled: true, amplitudeThreshold: 60, solidShareMax: 0.02 },
+          dinov2: { enabled: true, distanceThreshold: 0.2 },
+          future: 1,
+        }),
       );
-
-      expect(screen.getByLabelText(/^Amplitude threshold/)).toHaveValue(60);
-      expect(screen.getByLabelText(/^Solid share, max/)).toHaveValue(0.01);
 
       await user.click(screen.getByLabelText(BLUR_SWITCH));
 
-      expect(noiseConfig()).toEqual({
-        blur: { enabled: true, amplitudeThreshold: 60, solidShareMax: 0.01 },
-        dinov2: { enabled: false, distanceThreshold: 0.15 },
+      expect(JSON.parse(editState().noiseAnalysisConfig)).toEqual({
+        blur: { enabled: false },
+        dinov2: { enabled: true },
       });
     });
 
@@ -707,99 +702,24 @@ describe("ProjectForm", () => {
     it.each([
       [
         "blur.enabled",
-        () => screen.getByLabelText(BLUR_SWITCH),
-        undefined,
-        {
-          blur: { enabled: false, amplitudeThreshold: 80, solidShareMax: 0.01 },
-          dinov2: { enabled: true, distanceThreshold: 0.15 },
-        },
-      ],
-      [
-        "blur.amplitudeThreshold",
-        () => screen.getByLabelText(/^Amplitude threshold/),
-        "55",
-        {
-          blur: { enabled: true, amplitudeThreshold: 55, solidShareMax: 0.01 },
-          dinov2: { enabled: true, distanceThreshold: 0.15 },
-        },
-      ],
-      [
-        "blur.solidShareMax",
-        () => screen.getByLabelText(/^Solid share, max/),
-        "0.05",
-        {
-          blur: { enabled: true, amplitudeThreshold: 80, solidShareMax: 0.05 },
-          dinov2: { enabled: true, distanceThreshold: 0.15 },
-        },
+        BLUR_SWITCH,
+        { blur: { enabled: false }, dinov2: { enabled: true } },
       ],
       [
         "dinov2.enabled",
-        () => screen.getByLabelText(DINOV2_SWITCH),
-        undefined,
-        {
-          blur: { enabled: true, amplitudeThreshold: 80, solidShareMax: 0.01 },
-          dinov2: { enabled: false, distanceThreshold: 0.15 },
-        },
+        DINOV2_SWITCH,
+        { blur: { enabled: true }, dinov2: { enabled: false } },
       ],
-      [
-        "dinov2.distanceThreshold",
-        () => screen.getByLabelText(/^Distance threshold/),
-        "0.3",
-        {
-          blur: { enabled: true, amplitudeThreshold: 80, solidShareMax: 0.01 },
-          dinov2: { enabled: true, distanceThreshold: 0.3 },
-        },
-      ],
-    ])("changes only %s", async (_key, field, typed, expected) => {
+    ])("changes only %s", async (_key, label, expected) => {
       const { user } = await renderForm();
 
-      if (typed === undefined) {
-        await user.click(field());
-      } else {
-        await replaceNumber(user, field(), typed);
-      }
+      await user.click(screen.getByLabelText(label));
 
       expect(noiseConfig()).toEqual(expected);
     });
 
-    it("accepts thresholds between the steps of the arrows", async () => {
-      const onSubmit = submitSpy();
-      const { user } = await renderForm(PROJECT, onSubmit);
-      const amplitude = screen.getByLabelText(/^Amplitude threshold/);
-      const distance = screen.getByLabelText(/^Distance threshold/);
-
-      await replaceNumber(user, amplitude, "80.5");
-      await replaceNumber(user, distance, "0.125");
-      await user.click(screen.getByTestId("submitButton"));
-
-      expect(amplitude).toHaveAttribute("step", "any");
-      expect(distance).toHaveAttribute("step", "any");
-      await waitFor(() => expect(onSubmit).toHaveBeenCalledTimes(1));
-      expect(
-        JSON.parse(onSubmit.mock.calls[0][0].noiseAnalysisConfig),
-      ).toMatchObject({
-        blur: { amplitudeThreshold: 80.5 },
-        dinov2: { distanceThreshold: 0.125 },
-      });
-    });
-
-    it("keeps the saved keys that are not part of the form", async () => {
-      const { user } = await renderForm(
-        withNoiseConfig({ ...NOISE_ANALYSIS_ON, future: 1 }),
-      );
-
-      await user.click(screen.getByLabelText(BLUR_SWITCH));
-
-      expect(JSON.parse(editState().noiseAnalysisConfig)).toMatchObject({
-        future: 1,
-      });
-    });
-
     it("keeps the settings when the comparison library changes", async () => {
-      const config = {
-        blur: { enabled: false, amplitudeThreshold: 60, solidShareMax: 0.02 },
-        dinov2: { enabled: true, distanceThreshold: 0.2 },
-      };
+      const config = { blur: { enabled: false }, dinov2: { enabled: true } };
       const { user } = await renderForm(withNoiseConfig(config));
 
       await switchEngine(user, ImageComparison.odiff);
@@ -816,10 +736,7 @@ describe("ProjectForm", () => {
 
       await waitFor(() => expect(onSubmit).toHaveBeenCalledTimes(1));
       expect(onSubmit.mock.calls[0][0].noiseAnalysisConfig).toBe(
-        JSON.stringify({
-          blur: { enabled: true, amplitudeThreshold: 80, solidShareMax: 0.01 },
-          dinov2: { enabled: false, distanceThreshold: 0.15 },
-        }),
+        JSON.stringify({ blur: { enabled: true }, dinov2: { enabled: false } }),
       );
     });
 
@@ -835,9 +752,6 @@ describe("ProjectForm", () => {
         expect(screen.getByLabelText(DINOV2_SWITCH)).toBeDisabled();
         expect(screen.getByLabelText(DINOV2_SWITCH)).toBeChecked();
         expect(screen.getByText("Needs stage 1")).toBeVisible();
-        expect(screen.getByLabelText(/^Distance threshold/)).toBeDisabled();
-        expect(screen.getByLabelText(/^Amplitude threshold/)).toBeDisabled();
-        expect(screen.getByLabelText(/^Solid share, max/)).toBeDisabled();
         expect(screen.getByLabelText(BLUR_SWITCH)).toBeEnabled();
       });
 
@@ -872,9 +786,6 @@ describe("ProjectForm", () => {
       for (const field of [
         screen.getByLabelText(BLUR_SWITCH),
         screen.getByLabelText(DINOV2_SWITCH),
-        screen.getByLabelText(/^Amplitude threshold/),
-        screen.getByLabelText(/^Solid share, max/),
-        screen.getByLabelText(/^Distance threshold/),
       ]) {
         expect(field).toBeDisabled();
       }
@@ -922,18 +833,13 @@ describe("ProjectForm", () => {
     it("disables the DINOv2 stage when the server has no DINOv2 service", async () => {
       serverHas(false);
       await renderForm(
-        withNoiseConfig({
-          blur: { enabled: true, amplitudeThreshold: 60, solidShareMax: 0.02 },
-          dinov2: { enabled: true, distanceThreshold: 0.2 },
-        }),
+        withNoiseConfig({ blur: { enabled: true }, dinov2: { enabled: true } }),
       );
 
       await waitFor(() =>
         expect(screen.getByLabelText(DINOV2_SWITCH)).toBeDisabled(),
       );
-      expect(screen.getByLabelText(/^Distance threshold/)).toBeDisabled();
       expect(screen.getByLabelText(DINOV2_SWITCH)).toBeChecked();
-      expect(screen.getByLabelText(/^Distance threshold/)).toHaveValue(0.2);
     });
 
     it("warns when the service is set up but not answering", async () => {
@@ -953,25 +859,6 @@ describe("ProjectForm", () => {
 
       await waitFor(() => expect(dinov2Service.getStatus).toHaveBeenCalled());
       expect(screen.queryByText(/judged by the blur stage alone/)).toBeNull();
-    });
-
-    it.each([
-      ["Amplitude threshold", "0", "Enter greater than 0"],
-      ["Distance threshold", "0", "Enter greater than 0"],
-      ["Solid share, max", "2", "Enter less than or equal to 1"],
-    ])("does not save %s of %s", async (label, typed, message) => {
-      const onSubmit = submitSpy();
-      const { user } = await renderForm(PROJECT, onSubmit);
-
-      await replaceNumber(
-        user,
-        screen.getByLabelText(new RegExp(label)),
-        typed,
-      );
-      await user.click(screen.getByTestId("submitButton"));
-
-      expect(await screen.findByText(message)).toBeVisible();
-      expect(onSubmit).not.toHaveBeenCalled();
     });
   });
 

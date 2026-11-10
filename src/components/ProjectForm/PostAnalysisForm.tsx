@@ -1,12 +1,8 @@
-import { FormHelperText, Stack } from "@mui/material";
-import { type ChangeEvent } from "react";
+import { FormHelperText } from "@mui/material";
 import { useDinov2Status } from "../../_helpers/useDinov2Status";
-import { type Rule } from "../../_helpers/validation";
 import { Dinov2Status } from "../../types";
 import { ImageComparison } from "../../types/imageComparison";
 import { useProjectState } from "../../contexts";
-import { ValidatedTextField } from "../ValidatedForm";
-import { POSITIVE_RULES, UNIT_RANGE, UNIT_RANGE_RULES } from "./rules";
 import { SettingsSection, ToggleRow } from "./SettingsRow";
 import { useNoiseConfig } from "./useNoiseConfig";
 import { ELEMENT_ID } from "../../constants/locators";
@@ -31,60 +27,15 @@ const statusNote = (
   return undefined;
 };
 
-interface NumberFieldProps {
-  name: string;
-  label: string;
-  helperText?: string;
-  value: number | null;
-  step: number | "any";
-  rules: readonly Rule[];
-  min?: number;
-  max?: number;
-  disabled: boolean;
-  onChange: (value: number) => void;
-}
-
-const NumberField = ({
-  name,
-  label,
-  helperText,
-  value,
-  step,
-  rules,
-  min,
-  max,
-  disabled,
-  onChange,
-}: NumberFieldProps) => (
-  <ValidatedTextField
-    name={name}
-    rules={rules}
-    slotProps={{ htmlInput: { min, max, step } }}
-    size="small"
-    id={name}
-    label={label}
-    helperText={helperText}
-    type="number"
-    required
-    disabled={disabled}
-    sx={{ width: 150 }}
-    value={value ?? ""}
-    onChange={(event: ChangeEvent<HTMLInputElement>) =>
-      onChange(parseFloat(event.target.value))
-    }
-  />
-);
-
 export const PostAnalysisForm = () => {
   const { projectEditState: project } = useProjectState();
-  const [config, updateConfig] = useNoiseConfig();
+  const [config, setEnabled] = useNoiseConfig();
   const status = useDinov2Status();
   const note = statusNote(status);
 
   const sectionOff = project.imageComparison === ImageComparison.vlm;
   const stageOneOff = sectionOff || !config.blur.enabled;
   const noService = status?.configured === false;
-  const stageTwoOff = stageOneOff || !config.dinov2.enabled || noService;
 
   return (
     <SettingsSection
@@ -104,37 +55,12 @@ export const PostAnalysisForm = () => {
     >
       <ToggleRow
         title="Stage 1 · Blur"
-        description="Blurred difference and change density. Cheap, runs on this server. Catches 92 of 120 bugs on our benchmark with the default thresholds, 0 false alarms"
+        description="Blurred difference and change density. Cheap, runs on this server. Catches 92 of 120 bugs on our benchmark, 0 false alarms"
         name="blurEnabled"
         checked={config.blur.enabled}
         disabled={sectionOff}
-        onChange={(checked) => updateConfig("blur", "enabled", checked)}
-      >
-        <Stack direction="row" spacing={1.5} sx={{ alignItems: "flex-start" }}>
-          <NumberField
-            name="blurAmplitudeThreshold"
-            label="Amplitude threshold"
-            helperText="Noise on our benchmark stays below 51"
-            value={config.blur.amplitudeThreshold}
-            step="any"
-            rules={POSITIVE_RULES}
-            disabled={stageOneOff}
-            onChange={(value) =>
-              updateConfig("blur", "amplitudeThreshold", value)
-            }
-          />
-          <NumberField
-            name="blurSolidShareMax"
-            label="Solid share, max"
-            value={config.blur.solidShareMax}
-            step={0.001}
-            rules={UNIT_RANGE_RULES}
-            {...UNIT_RANGE}
-            disabled={stageOneOff}
-            onChange={(value) => updateConfig("blur", "solidShareMax", value)}
-          />
-        </Stack>
-      </ToggleRow>
+        onChange={(checked) => setEnabled("blur", checked)}
+      />
 
       <ToggleRow
         title="Stage 2 · DINOv2 second look"
@@ -158,20 +84,8 @@ export const PostAnalysisForm = () => {
         name="dinov2Enabled"
         checked={config.dinov2.enabled}
         disabled={stageOneOff || noService}
-        onChange={(checked) => updateConfig("dinov2", "enabled", checked)}
-      >
-        <NumberField
-          name="dinov2DistanceThreshold"
-          label="Distance threshold"
-          value={config.dinov2.distanceThreshold}
-          step="any"
-          rules={POSITIVE_RULES}
-          disabled={stageTwoOff}
-          onChange={(value) =>
-            updateConfig("dinov2", "distanceThreshold", value)
-          }
-        />
-      </ToggleRow>
+        onChange={(checked) => setEnabled("dinov2", checked)}
+      />
     </SettingsSection>
   );
 };

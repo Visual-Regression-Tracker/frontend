@@ -3,7 +3,6 @@ import { act, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { renderWithProviders } from "../../_test/render";
 import type { TagField } from "../../types";
-import type { NoiseHintFilter } from "../../_helpers/noiseHint.helper";
 import TestRunFilters from "./TestRunFilters";
 import type { TagFilters } from "./useTestRunFilters";
 
@@ -19,18 +18,13 @@ const Harness = ({
   onNameChange,
   initialName = "",
   onTagFilterChange = vi.fn(),
-  onNoiseHintsChange = vi.fn(),
-  offersNoiseHint = true,
 }: {
   onNameChange: (value: string) => void;
   initialName?: string;
   onTagFilterChange?: (field: TagField, values: string[]) => void;
-  onNoiseHintsChange?: (value: NoiseHintFilter[]) => void;
-  offersNoiseHint?: boolean;
 }) => {
   const [name, setName] = useState(initialName);
   const [tagFilters, setTagFilters] = useState(NO_FILTERS);
-  const [noiseHints, setNoiseHints] = useState<NoiseHintFilter[]>([]);
 
   return (
     <TestRunFilters
@@ -43,10 +37,8 @@ const Harness = ({
       }}
       name={name}
       tagFilters={tagFilters}
-      noiseHints={noiseHints}
       hasActiveFilters={
         name.length > 0 ||
-        noiseHints.length > 0 ||
         Object.values(tagFilters).some((values) => values.length > 0)
       }
       onNameChange={(value) => {
@@ -57,18 +49,9 @@ const Harness = ({
         onTagFilterChange(field, values);
         setTagFilters((prev) => ({ ...prev, [field]: values }));
       }}
-      onNoiseHintsChange={
-        offersNoiseHint
-          ? (value) => {
-              onNoiseHintsChange(value);
-              setNoiseHints(value);
-            }
-          : undefined
-      }
       onReset={() => {
         setName("");
         setTagFilters(NO_FILTERS);
-        setNoiseHints([]);
       }}
     />
   );
@@ -255,39 +238,5 @@ describe("TestRunFilters tag filters", () => {
 
     expect(screen.getByRole("button", { name: "OS" })).toBeInTheDocument();
     expect(clearButton()).toBeNull();
-  });
-});
-
-describe("TestRunFilters noise filter", () => {
-  const noiseChip = () => screen.queryByRole("button", { name: /^Noise/ });
-
-  it("offers the three hints and reports the chosen one", async () => {
-    const onNoiseHintsChange = vi.fn();
-    const { user } = renderWithProviders(
-      <Harness
-        onNameChange={vi.fn()}
-        onNoiseHintsChange={onNoiseHintsChange}
-      />,
-    );
-
-    await user.click(screen.getByRole("button", { name: /^Noise/ }));
-
-    expect(
-      screen.getAllByRole("menuitemcheckbox").map((item) => item.textContent),
-    ).toEqual(["Likely noise", "Likely change", "Not analysed"]);
-
-    await user.click(
-      screen.getByRole("menuitemcheckbox", { name: "Likely change" }),
-    );
-
-    expect(onNoiseHintsChange).toHaveBeenCalledWith(["Likely change"]);
-  });
-
-  it("is hidden without a handler for it", () => {
-    renderWithProviders(
-      <Harness onNameChange={vi.fn()} offersNoiseHint={false} />,
-    );
-
-    expect(noiseChip()).not.toBeInTheDocument();
   });
 });

@@ -17,20 +17,16 @@ import { TestStatus } from "../../types/testStatus";
 import { GO_TO_NEXT_KEY } from "../../constants";
 import {
   NOISE_ANALYSIS_CHANGE,
-  NOISE_ANALYSIS_NOISE,
   TEST_PROJECT,
   TEST_USER,
   testRunMock,
 } from "../../_test/test.data.helper";
-import { withRegions } from "../../_test/noiseRegions";
 import TestDetailsModal from "./TestDetailsModal";
-import { computeSolidMask } from "./solidMask.client";
 import useImage from "use-image";
 import { NO_FAILURES } from "../../_test/bulkResult";
 
 // Konva needs native canvas under Node; a stand-in lets tests draw and delete areas
 vi.mock("./DrawArea", () => import("../../_test/FakeDrawArea"));
-vi.mock("./solidMask.client", () => ({ computeSolidMask: vi.fn() }));
 vi.mock("use-image", async (importOriginal) => {
   const actual = await importOriginal<{ default: typeof useImage }>();
   return { default: vi.fn(actual.default) };
@@ -541,17 +537,10 @@ describe("TestDetailsModal", () => {
   });
 
   describe("rendering-noise hint", () => {
-    const BLUR_REGION = { x: 1, y: 2, width: 3, height: 4, weight: 0.9 };
-    const DINOV2_REGION = { x: 10, y: 20, width: 30, height: 40, weight: 0.7 };
-    const FULL = withRegions(
-      NOISE_ANALYSIS_CHANGE,
-      [BLUR_REGION],
-      [DINOV2_REGION],
-    );
     const analysed = (id = "analysed") => ({
       ...UNRESOLVED_RUN,
       id,
-      noiseAnalysis: FULL,
+      noiseAnalysis: NOISE_ANALYSIS_CHANGE,
     });
     const renderWithProject = async (
       testRun: TestRun,
@@ -564,13 +553,9 @@ describe("TestDetailsModal", () => {
       await screen.findByTestId("project-ready");
       return rendered;
     };
-    const hintAreas = (): unknown =>
-      JSON.parse(screen.getByTestId("hintAreas").textContent ?? "null");
     const openNoise = (
       user: Awaited<ReturnType<typeof renderWithProject>>["user"],
     ) => user.click(screen.getByTestId("noise-hint-popover-chip"));
-    const toggle = (stage: "blur" | "dinov2") =>
-      screen.getByTestId(`hint-areas-${stage}`);
 
     it("shows the chip, with the panel behind it, for an unresolved run", async () => {
       const { user } = await renderWithProject({ ...UNRESOLVED_RUN });
@@ -594,9 +579,7 @@ describe("TestDetailsModal", () => {
       expect(approveBulk).not.toHaveBeenCalled();
     });
 
-    it("shows no panel and fetches nothing for an approved run", async () => {
-      const getDetails = vi.spyOn(testRunService, "getDetails");
-
+    it("shows no panel for an approved run", async () => {
       await renderWithProject({
         ...UNRESOLVED_RUN,
         status: TestStatus.approved,
@@ -606,7 +589,6 @@ describe("TestDetailsModal", () => {
       expect(
         screen.queryByTestId("noise-hint-popover-chip"),
       ).not.toBeInTheDocument();
-      expect(getDetails).not.toHaveBeenCalled();
     });
 
     it.each([
@@ -617,9 +599,7 @@ describe("TestDetailsModal", () => {
           noiseAnalysisConfig: JSON.stringify({ blur: { enabled: false } }),
         },
       ],
-    ])("shows no panel, buttons or details fetch in %s", async (_, project) => {
-      const getDetails = vi.spyOn(testRunService, "getDetails");
-
+    ])("shows no panel in %s", async (_, project) => {
       await renderWithProject(
         {
           ...UNRESOLVED_RUN,
@@ -632,173 +612,11 @@ describe("TestDetailsModal", () => {
       expect(
         screen.queryByTestId("noise-hint-popover-chip"),
       ).not.toBeInTheDocument();
-      expect(hintAreas()).toEqual([]);
-      expect(getDetails).not.toHaveBeenCalled();
-    });
-
-    it("draws the regions of the toggled stage and removes them when toggled off", async () => {
-      const { user } = await renderWithProject(analysed());
-      expect(hintAreas()).toEqual([]);
-
-      await openNoise(user);
-      await user.click(toggle("blur"));
-      expect(hintAreas()).toEqual([BLUR_REGION]);
-
-      await user.click(toggle("dinov2"));
-      expect(hintAreas()).toEqual([DINOV2_REGION]);
-
-      await user.click(toggle("dinov2"));
-      expect(hintAreas()).toEqual([]);
-    });
-
-    it("loads the regions of a result that arrived without them", async () => {
-      const pending: { deliver?: (run: TestRun) => void } = {};
-      vi.spyOn(testRunService, "getDetails").mockReturnValue(
-        new Promise((resolve) => {
-          pending.deliver = resolve;
-        }),
-      );
-      const { user } = await renderWithProject({
-        ...UNRESOLVED_RUN,
-        id: "analysed",
-        noiseAnalysis: NOISE_ANALYSIS_CHANGE,
-      });
-      await openNoise(user);
-      expect(toggle("blur")).toBeDisabled();
-
-      pending.deliver?.(analysed());
-      await waitFor(() => expect(toggle("blur")).toBeEnabled());
-      await user.click(toggle("blur"));
-
-      expect(hintAreas()).toEqual([BLUR_REGION]);
-      expect(testRunService.getDetails).toHaveBeenCalledExactlyOnceWith(
-        "analysed",
-      );
-    });
-
-    it("clears the regions when another run is shown", async () => {
-      const { user, showTestRun } = await renderWithProject(analysed("first"));
-      await openNoise(user);
-      await user.click(toggle("blur"));
-      await user.keyboard("{Escape}");
-
-      showTestRun(analysed("second"));
-
-      expect(hintAreas()).toEqual([]);
-      await openNoise(user);
-      expect(toggle("blur")).toHaveAttribute("aria-pressed", "false");
-    });
-
-    it("leaves Approve and the go-to-next choice working with the regions shown", async () => {
-      vi.spyOn(testRunService, "approveBulk").mockResolvedValue(NO_FAILURES);
-      const { user } = await renderWithProject(analysed());
-      await openNoise(user);
-      await user.click(toggle("blur"));
-      await user.keyboard("{Escape}");
-
-      await user.click(approveButton());
-
-      await screen.findByText("Approved");
-      expect(testRunService.approveBulk).toHaveBeenCalledWith(
-        ["analysed"],
-        false,
-      );
     });
   });
 });
 
-describe("Diff without noise", () => {
-  const mode = (name: string) => screen.getByRole("button", { name });
-  const noiseless = () => mode("Diff without noise");
-  const READY = {
-    mask: new Uint8Array(1),
-    solidPixels: 3,
-    diff: new Blob(["png"]),
-  };
-  const PATCH = { x: 10, y: 20, width: 30, height: 40, weight: 0.7 };
-  const WEAK_PATCH = { ...PATCH, x: 50, weight: 0.1 };
-  const hintAreas = (): unknown =>
-    JSON.parse(screen.getByTestId("hintAreas").textContent ?? "null");
-
-  beforeEach(() => {
-    vi.stubGlobal("URL", {
-      ...URL,
-      createObjectURL: vi.fn(() => "blob:noiseless"),
-      revokeObjectURL: vi.fn(),
-    });
-    vi.mocked(computeSolidMask).mockResolvedValue(READY);
-  });
-  afterEach(() => vi.unstubAllGlobals());
-
-  it("is offered only when the run has a diff image", () => {
-    renderModal({ ...UNRESOLVED_RUN, diffName: null });
-
-    expect(
-      screen.queryByRole("button", { name: "Diff without noise" }),
-    ).toBeNull();
-  });
-
-  it("computes nothing until selected, then shows progress while computing", async () => {
-    vi.mocked(computeSolidMask).mockReturnValue(new Promise(() => {}));
-    const { user } = renderModal({
-      ...UNRESOLVED_RUN,
-      noiseAnalysis: NOISE_ANALYSIS_NOISE,
-    });
-    expect(computeSolidMask).not.toHaveBeenCalled();
-
-    await user.click(noiseless());
-
-    expect(noiseless()).toHaveAttribute("aria-pressed", "true");
-    expect(
-      screen.getByRole("progressbar", { name: "Computing Diff without noise" }),
-    ).toBeVisible();
-    expect(computeSolidMask).toHaveBeenCalledTimes(1);
-  });
-
-  it("is never selected on its own, even when the stages disagree", () => {
-    renderModal({
-      ...UNRESOLVED_RUN,
-      noiseAnalysis: withRegions(NOISE_ANALYSIS_CHANGE, [], [PATCH]),
-    });
-
-    expect(mode("Diff")).toHaveAttribute("aria-pressed", "true");
-    expect(noiseless()).toHaveAttribute("aria-pressed", "false");
-  });
-
-  it("warns when DINOv2 sees a change the blur stage hides, with its change patches drawn", async () => {
-    const { user } = renderModal({
-      ...UNRESOLVED_RUN,
-      noiseAnalysis: withRegions(
-        NOISE_ANALYSIS_CHANGE,
-        [],
-        [PATCH, WEAK_PATCH],
-      ),
-    });
-    expect(hintAreas()).toEqual([]);
-
-    await user.click(noiseless());
-
-    const caveat = await screen.findByTestId("noiseless-caveat");
-    expect(caveat).toHaveTextContent("DINOv2 sees a change this view hides.");
-    expect(caveat).toHaveTextContent(
-      "Blur: noise-like · DINOv2: likely change, 8 patches (1 strongest outlined)",
-    );
-    expect(hintAreas()).toEqual([PATCH]);
-  });
-
-  it("does not mention outlined patches while none are loaded", async () => {
-    const { user } = renderModal({
-      ...UNRESOLVED_RUN,
-      noiseAnalysis: NOISE_ANALYSIS_CHANGE,
-    });
-
-    await user.click(noiseless());
-
-    const caveat = await screen.findByTestId("noiseless-caveat");
-    expect(caveat).toHaveTextContent("DINOv2: likely change, 8 patches");
-    expect(caveat).not.toHaveTextContent("outlined");
-  });
-
+describe("image loading", () => {
   it("warns when the baseline image fails to load", () => {
     vi.mocked(useImage).mockImplementation((url) => [
       undefined,
@@ -808,108 +626,5 @@ describe("Diff without noise", () => {
     renderModal();
 
     expect(screen.getByText(/Could not load the baseline image/)).toBeVisible();
-  });
-
-  it("shows no image under the label while the view is computing", async () => {
-    vi.mocked(useImage).mockImplementation((url) => [
-      url ? document.createElement("img") : undefined,
-      url ? "loaded" : "loading",
-    ]);
-    vi.mocked(computeSolidMask).mockReturnValue(new Promise(() => {}));
-    const { user } = renderModal(UNRESOLVED_RUN);
-    expect(screen.getByTestId("imageStatus")).toHaveTextContent("loaded");
-
-    await user.click(noiseless());
-
-    expect(screen.getByTestId("imageStatus")).toHaveTextContent("loading");
-  });
-
-  it("draws only the change patches it counts, whichever hint areas are on", async () => {
-    vi.spyOn(projectsService, "getAll").mockResolvedValue([TEST_PROJECT]);
-    const { user } = renderModal(
-      {
-        ...UNRESOLVED_RUN,
-        noiseAnalysis: withRegions(
-          NOISE_ANALYSIS_CHANGE,
-          [],
-          [PATCH, WEAK_PATCH],
-        ),
-      },
-      undefined,
-      <SelectProject />,
-    );
-    await screen.findByTestId("project-ready");
-    await user.click(screen.getByTestId("noise-hint-popover-chip"));
-    await user.click(screen.getByTestId("hint-areas-dinov2"));
-    await user.keyboard("{Escape}");
-    expect(hintAreas()).toEqual([PATCH, WEAK_PATCH]);
-
-    await user.click(noiseless());
-
-    expect(hintAreas()).toEqual([PATCH]);
-    expect(await screen.findByTestId("noiseless-caveat")).toHaveTextContent(
-      "(1 strongest outlined)",
-    );
-  });
-
-  it("says faint changes may be hidden when DINOv2 did not check the run", async () => {
-    const { user } = renderModal({ ...UNRESOLVED_RUN, noiseAnalysis: null });
-
-    await user.click(noiseless());
-
-    expect(await screen.findByTestId("noiseless-caveat")).toHaveTextContent(
-      "Faint changes may be hidden.",
-    );
-  });
-
-  it("goes back to Diff from the banner and with D", async () => {
-    const { user } = renderModal({ ...UNRESOLVED_RUN, noiseAnalysis: null });
-
-    await user.click(noiseless());
-    await user.click(
-      await screen.findByRole("button", { name: "Switch to Diff" }),
-    );
-    expect(mode("Diff")).toHaveAttribute("aria-pressed", "true");
-
-    await user.click(noiseless());
-    await user.keyboard("d");
-    expect(mode("Diff")).toHaveAttribute("aria-pressed", "true");
-  });
-
-  it("is unavailable, with the reason, for semi-transparent images", async () => {
-    vi.mocked(computeSolidMask).mockResolvedValue({
-      unavailable: "transparent",
-    });
-    const { user } = renderModal(UNRESOLVED_RUN);
-
-    await user.click(noiseless());
-
-    expect(
-      await screen.findByText(
-        "Diff without noise: not available for images with semi-transparent pixels.",
-      ),
-    ).toBeVisible();
-    expect(noiseless()).toBeDisabled();
-    await user.hover(noiseless().parentElement as HTMLElement);
-    expect(
-      await screen.findByRole("tooltip", {
-        name: "Not available for images with semi-transparent pixels",
-      }),
-    ).toBeVisible();
-  });
-
-  it("shows why the view could not be computed", async () => {
-    vi.mocked(computeSolidMask).mockRejectedValue(
-      new Error("Cannot load /b.png: 404"),
-    );
-    const { user } = renderModal(UNRESOLVED_RUN);
-
-    await user.click(noiseless());
-
-    expect(
-      await screen.findByText(
-        "Cannot show Diff without noise: Cannot load /b.png: 404",
-      ),
-    ).toBeVisible();
   });
 });

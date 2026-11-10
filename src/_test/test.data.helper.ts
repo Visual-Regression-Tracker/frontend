@@ -225,20 +225,6 @@ export const NOISE_ANALYSIS_NOISE: NoiseAnalysisDto = {
   verdict: "noise",
   score: 0.39,
   reason: null,
-  config: {
-    blur: { amplitudeThreshold: 80, solidShareMax: 0.01 },
-    dinov2: { distanceThreshold: 0.15 },
-  },
-  blur: {
-    verdict: "noise",
-    score: 0.39,
-    signals: { amplitude: 31.4, solidShare: 0, density: 11 },
-  },
-  dinov2: {
-    verdict: "noise",
-    score: 0.39,
-    signals: { distance: 0.04, patches: 3 },
-  },
   computedAt: "2026-11-04T10:12:00Z",
 };
 
@@ -246,11 +232,6 @@ export const NOISE_ANALYSIS_CHANGE: NoiseAnalysisDto = {
   ...NOISE_ANALYSIS_NOISE,
   verdict: "change",
   score: 0.77,
-  dinov2: {
-    verdict: "change",
-    score: 0.77,
-    signals: { distance: 0.23, patches: 8 },
-  },
 };
 
 export const NOISE_ANALYSIS_PENDING: NoiseAnalysisPending = {

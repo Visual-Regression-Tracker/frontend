@@ -153,7 +153,7 @@ describe("TestRunCardView", () => {
   });
 
   it("offers sorting as a labelled group rather than table columns", () => {
-    renderCards(propsFor([A_EN], { noiseAvailable: false }));
+    renderCards(propsFor([A_EN]));
 
     const sortBy = screen.getByRole("group", { name: "Sort by" });
     expect(
@@ -215,16 +215,10 @@ describe("TestRunCardView", () => {
     });
   });
 
-  it("sorts by noise, changes first, from the header", async () => {
-    const props = propsFor([A_EN]);
-    const { user } = renderCards(props);
+  it("offers no noise sort", () => {
+    renderCards(propsFor([A_EN]));
 
-    await user.click(screen.getByTestId("gridSort-noise"));
-
-    expect(props.onSortChange).toHaveBeenCalledWith({
-      field: "noise",
-      direction: "desc",
-    });
+    expect(screen.queryByTestId("gridSort-noise")).not.toBeInTheDocument();
   });
 
   it("pages the cards and starts over on the first page when the page size changes", async () => {

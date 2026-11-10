@@ -10,7 +10,6 @@ import { Stage, Layer, Image } from "react-konva";
 import { IgnoreAreaShapes } from "./IgnoreAreaShapes";
 import { useIgnoreAreaDrawing } from "./useIgnoreAreaDrawing";
 import { IgnoreArea } from "../../types/ignoreArea";
-import type { NoiseRegion } from "../../types";
 import { Box, CircularProgress, Stack } from "@mui/material";
 import { NoImagePlaceholder } from "./NoImageAvailable";
 import Konva from "konva";
@@ -43,7 +42,6 @@ interface IDrawArea {
   overlayOpacity?: number;
   blendDifference?: boolean;
   tempIgnoreAreas: IgnoreArea[];
-  hintAreas?: NoiseRegion[];
   ignoreAreas: IgnoreArea[];
   readOnly?: boolean;
   setIgnoreAreas: (ignoreAreas: IgnoreArea[]) => void;
@@ -68,7 +66,6 @@ export const DrawArea = ({
   ignoreAreas,
   readOnly = false,
   tempIgnoreAreas,
-  hintAreas = [],
   setIgnoreAreas,
   selectedRectId,
   setSelectedRectId,
@@ -228,7 +225,6 @@ export const DrawArea = ({
               <IgnoreAreaShapes
                 ignoreAreas={ignoreAreas}
                 tempIgnoreAreas={tempIgnoreAreas}
-                hintAreas={hintAreas}
                 readOnly={readOnly}
                 selectedRectId={selectedRectId}
                 setSelectedRectId={setSelectedRectId}

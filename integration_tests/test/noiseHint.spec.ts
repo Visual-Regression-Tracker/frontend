@@ -19,16 +19,12 @@ import {
 } from "utils/mocks";
 import {
   ANALYSED_RUNS,
-  BLUR_REGIONS,
   CHANGE_CHECKOUT,
-  DINOV2_REGIONS,
   NOISE_CART,
   NOISE_LOGIN,
-  NOISE_PRICING,
   NOT_ANALYSED,
   PENDING_SEARCH,
   PROJECT_WITHOUT_NOISE,
-  withNoiseRegions,
 } from "utils/noiseRuns";
 import { postData } from "utils/postData";
 
@@ -50,21 +46,17 @@ test.beforeEach(async ({ page }) => {
 });
 
 test.describe("project without the noise check", () => {
-  test("hides the Noise column, the hint chips and the Noise filter", async ({
+  test("hides the Noise column and the hint chips", async ({
     openProjectPage,
     page,
   }) => {
     await mockGetProjects(page, [PROJECT_WITHOUT_NOISE]);
     await mockTestRunsWithDetails(page, build.id, ANALYSED_RUNS);
-    const { testRunList, testRunFilters } = await openProjectPage(
-      project.id,
-      build.id,
-    );
+    const { testRunList } = await openProjectPage(project.id, build.id);
 
     await expect(testRunList.rows).toHaveCount(ANALYSED_RUNS.length);
     await expect(testRunList.noiseColumnHeader).toHaveCount(0);
     await expect(testRunList.noiseChips).toHaveCount(0);
-    await expect(testRunFilters.noiseHint).toHaveCount(0);
   });
 });
 
@@ -186,65 +178,26 @@ test.describe("run list", () => {
     ).toBeVisible();
   });
 
-  test("filters the list to the likely noise", async ({
-    openProjectPage,
-    page,
-  }) => {
-    await mockTestRunsWithDetails(page, build.id, withUnanalysed);
-    const { testRunList, testRunFilters } = await openProjectPage(
-      project.id,
-      build.id,
-    );
-    await expect(testRunList.rows).toHaveCount(withUnanalysed.length);
-
-    await testRunFilters.selectNoiseHint("Likely noise");
-
-    await expect(testRunList.rows).toHaveCount(3);
-    await expect(testRunList.noiseChips).toHaveText([
-      "Likely noise",
-      "Likely noise",
-      "Likely noise",
-    ]);
-  });
-
-  test("offers three hints in the filter", async ({
-    openProjectPage,
-    page,
-  }) => {
-    await mockTestRunsWithDetails(page, build.id, withUnanalysed);
-    const { testRunFilters } = await openProjectPage(project.id, build.id);
-
-    await testRunFilters.noiseHint.click();
-
-    await expect(testRunFilters.chipOptions).toHaveText([
-      "Likely noise",
-      "Likely change",
-      "Not analysed",
-    ]);
-  });
-
   test("analyses only the runs the filter leaves", async ({
     openProjectPage,
     page,
   }) => {
     await mockTestRunsWithDetails(page, build.id, withUnanalysed);
-    await mockAnalyseNoise(page, { queued: 3, skipped: [] });
+    await mockAnalyseNoise(page, { queued: 1, skipped: [] });
     const { buildDetails, testRunFilters } = await openProjectPage(
       project.id,
       build.id,
     );
-    await testRunFilters.selectNoiseHint("Likely noise");
+    await testRunFilters.name.fill("Login");
     await buildDetails.openMenu();
-    await expect(buildDetails.analyseNoiseItem).toHaveText("Analyse noise (3)");
+    await expect(buildDetails.analyseNoiseItem).toHaveText("Analyse noise (1)");
 
     const [request] = await Promise.all([
       page.waitForRequest(analysesNoise),
       buildDetails.analyseNoiseItem.click(),
     ]);
 
-    expect(sentIds(request)).toEqual(
-      idsOf([NOISE_CART, NOISE_LOGIN, NOISE_PRICING]),
-    );
+    expect(sentIds(request)).toEqual([NOISE_LOGIN.id]);
   });
 });
 
@@ -301,57 +254,5 @@ test.describe("details dialog", () => {
 
     expect(postData<{ ids: string[] }>(request).ids).toEqual([NOT_ANALYSED.id]);
     await expect(details.noiseChip).toContainText("Analysing…");
-  });
-
-  test("shows both stages of the verdict", async ({
-    openProjectPage,
-    page,
-  }) => {
-    await mockTestRunsWithDetails(page, build.id, [NOISE_CART]);
-    await mockTestRun(page, withNoiseRegions(NOISE_CART));
-    const { details } = await openProjectPage(
-      project.id,
-      build.id,
-      NOISE_CART.id,
-    );
-
-    await details.noiseChip.click();
-
-    await expect(details.noisePanel).toContainText(
-      "Rendering-noise check: likely noise · score 0.39",
-    );
-    await expect(details.noisePanel).toContainText(
-      "Blur: likely noise (0.39) · DINOv2: likely noise (0.39)",
-    );
-  });
-
-  test("draws the areas of the chosen stage over the image", async ({
-    openProjectPage,
-    page,
-  }) => {
-    await mockTestRunsWithDetails(page, build.id, [NOISE_CART]);
-    await mockTestRun(page, withNoiseRegions(NOISE_CART));
-    const { details } = await openProjectPage(
-      project.id,
-      build.id,
-      NOISE_CART.id,
-    );
-    await expect(details.drawAreas).toHaveCount(2);
-    await details.noiseChip.click();
-    await expect(details.hintBlur).toBeEnabled();
-    await expect.poll(() => details.lockedRects()).toEqual([]);
-
-    await details.hintBlur.click();
-    await expect
-      .poll(() => details.lockedRects())
-      .toHaveLength(BLUR_REGIONS.length);
-
-    await details.hintDinov2.click();
-    await expect
-      .poll(() => details.lockedRects())
-      .toHaveLength(DINOV2_REGIONS.length);
-
-    await details.hintDinov2.click();
-    await expect.poll(() => details.lockedRects()).toEqual([]);
   });
 });

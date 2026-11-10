@@ -1,4 +1,4 @@
-export const SORT_FIELDS = ["status", "name", "tags", "noise"] as const;
+export const SORT_FIELDS = ["status", "name", "tags"] as const;
 
 // the grid sorts on its own: the table sorts by clicking its column headers
 export type TestRunSortField = (typeof SORT_FIELDS)[number];

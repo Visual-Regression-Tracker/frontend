@@ -6,7 +6,6 @@ import {
   TEST_UNRESOLVED,
 } from "~client/_test/test.data.helper";
 import { DEFAULT_NOISE_ANALYSIS_CONFIG } from "~client/constants/project";
-import { withRegions } from "~client/_test/noiseRegions";
 import type { TestRun } from "~client/types";
 
 export const PROJECT_WITHOUT_NOISE = {
@@ -69,20 +68,3 @@ export const ANALYSED_RUNS = [
   NOISE_PRICING,
   CHANGE_CHECKOUT,
 ];
-
-export const BLUR_REGIONS = [
-  { x: 200, y: 150, width: 300, height: 120, weight: 0.6 },
-  { x: 700, y: 400, width: 220, height: 90, weight: 0.4 },
-];
-export const DINOV2_REGIONS = [
-  { x: 640, y: 80, width: 160, height: 160, weight: 0.5 },
-];
-
-export const withNoiseRegions = (run: TestRun): TestRun => ({
-  ...run,
-  noiseAnalysis: withRegions(
-    NOISE_ANALYSIS_NOISE,
-    BLUR_REGIONS,
-    DINOV2_REGIONS,
-  ),
-});

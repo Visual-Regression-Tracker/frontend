@@ -18,21 +18,14 @@ export const useNoiseConfig = () => {
     [project.noiseAnalysisConfig],
   );
 
-  const updateConfig = <
-    S extends Stage,
-    K extends keyof NoiseAnalysisConfig[S],
-  >(
-    stage: S,
-    key: K,
-    value: NoiseAnalysisConfig[S][K],
-  ) => {
+  const setEnabled = (stage: Stage, enabled: boolean) => {
     const noiseAnalysisConfig = JSON.stringify({
       ...config,
-      [stage]: { ...config[stage], [key]: value },
+      [stage]: { enabled },
     });
 
     setProjectEditState(projectDispatch, { ...project, noiseAnalysisConfig });
   };
 
-  return [config, updateConfig] as const;
+  return [config, setEnabled] as const;
 };

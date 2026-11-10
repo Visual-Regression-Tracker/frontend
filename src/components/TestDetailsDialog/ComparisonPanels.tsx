@@ -2,7 +2,6 @@ import type { RefObject } from "react";
 import { Box, Button, Grid } from "@mui/material";
 import { OpenInNew } from "@mui/icons-material";
 import { routes } from "../../constants";
-import { NoiseRegion } from "../../types";
 import { TestRun } from "../../types/testRun";
 import { DrawArea, ImageStateLoad } from "./DrawArea";
 import ImageDetails, { ImageDetailsProps } from "./ImageDetails";
@@ -29,7 +28,6 @@ interface ComparisonPanelsProps {
   baseline: LoadedImage;
   checkpoint: LoadedImage;
   diff: LoadedImage;
-  hintAreas: NoiseRegion[];
   areasShown: boolean;
 }
 
@@ -43,11 +41,9 @@ export const ComparisonPanels = ({
   baseline: [baselineImage, baselineImageStatus],
   checkpoint,
   diff,
-  hintAreas,
   areasShown,
 }: ComparisonPanelsProps) => {
-  const showDiff =
-    (view.mode === "diff" || view.mode === "noiseless") && !!testRun.diffName;
+  const showDiff = view.mode === "diff" && !!testRun.diffName;
   const fading = view.mode === "fade";
   const [image, imageStatus] = showDiff ? diff : checkpoint;
   const visible = areas.editing || areasShown;
@@ -123,7 +119,6 @@ export const ComparisonPanels = ({
             readOnly={!areas.editing}
             ignoreAreas={visible ? areas.ignoreAreas : []}
             tempIgnoreAreas={visible ? areas.tempIgnoreAreas : []}
-            hintAreas={hintAreas}
             setIgnoreAreas={areas.changeIgnoreAreas}
             selectedRectId={areas.selectedRectId}
             deleteIgnoreArea={
