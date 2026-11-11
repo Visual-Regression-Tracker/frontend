@@ -12,26 +12,15 @@ import {
 } from "./project.context";
 
 const Consumer = () => {
-  const { favoriteProjectIds, recentProjectIds } = useProjectState();
-  const dispatch = useProjectDispatch();
+  const { favoriteProjectIds } = useProjectState();
 
-  return (
-    <>
-      <p data-testid="favorites">{favoriteProjectIds.join(",")}</p>
-      <p data-testid="recent">{recentProjectIds.join(",")}</p>
-      <button onClick={() => selectProject(dispatch, "p2")}>Open p2</button>
-    </>
-  );
+  return <p data-testid="favorites">{favoriteProjectIds.join(",")}</p>;
 };
-
-const RECENT_KEY = `recentProjects:${TEST_USER.id}`;
 
 describe("ProjectProvider", () => {
   beforeEach(() => {
     vi.spyOn(projectsService, "getAll").mockResolvedValue([]);
   });
-
-  afterEach(() => localStorage.clear());
 
   it("loads the user's favourites after login", async () => {
     vi.spyOn(projectsService, "getFavorites").mockResolvedValue(["p1", "p3"]);
@@ -59,29 +48,6 @@ describe("ProjectProvider", () => {
     renderWithProviders(<Consumer />);
 
     expect(getFavorites).not.toHaveBeenCalled();
-  });
-
-  it("reads the projects the user opened before", async () => {
-    vi.spyOn(projectsService, "getFavorites").mockResolvedValue([]);
-    localStorage.setItem(RECENT_KEY, JSON.stringify(["p4", "p1"]));
-
-    renderWithProviders(<Consumer />, { user: TEST_USER });
-
-    expect(await screen.findByTestId("recent")).toHaveTextContent("p4,p1");
-  });
-
-  it("remembers an opened project as the most recent one", async () => {
-    vi.spyOn(projectsService, "getFavorites").mockResolvedValue([]);
-    localStorage.setItem(RECENT_KEY, JSON.stringify(["p1"]));
-    const { user } = renderWithProviders(<Consumer />, { user: TEST_USER });
-
-    await user.click(screen.getByRole("button", { name: "Open p2" }));
-
-    expect(await screen.findByTestId("recent")).toHaveTextContent("p2,p1");
-    expect(JSON.parse(localStorage.getItem(RECENT_KEY) ?? "[]")).toEqual([
-      "p2",
-      "p1",
-    ]);
   });
 });
 

@@ -47,7 +47,6 @@ export class TestDetailsDialog extends ImagePanes {
   fadeMode = this.viewModes.getByRole("button", { name: "Fade", exact: true });
   overlayOpacity = this.page.getByTestId(TEST_ID.overlayOpacity);
   fadeSlider = this.overlayOpacity.getByRole("slider");
-  differenceBlend = this.page.getByTestId(TEST_ID.differenceToggle);
 
   commentsBtn = this.page.getByRole("button", {
     name: /^(add|edit) comment/i,

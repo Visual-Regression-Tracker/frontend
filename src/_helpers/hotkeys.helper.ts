@@ -36,7 +36,7 @@ export const isOutsideReviewDialog = (target: EventTarget | null): boolean => {
 };
 
 // useKey matches the typed character too, so hotkeys follow the keyboard layout
-export const hotkeyMatching: Options = { useKey: true };
+const hotkeyMatching: Options = { useKey: true };
 
 // The library skips every form field, the diff switch included; only fields being typed into are left out
 export const hotkeyOptions: Options = {

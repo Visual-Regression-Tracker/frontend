@@ -1,8 +1,7 @@
-import { useCallback, useEffect, useMemo } from "react";
-import { Box, Chip, Typography } from "@mui/material";
+import { useCallback, useMemo } from "react";
+import { Box, Typography } from "@mui/material";
 import {
   DataGrid,
-  useGridApiRef,
   GridColDef,
   GridPaginationModel,
   GridRenderCellParams,
@@ -16,13 +15,9 @@ import { StatusChip } from "../StatusChip";
 import { NoiseHintChip } from "./NoiseHintChip";
 import { TagLine } from "../TagLine";
 import { CommentIndicator } from "../CommentIndicator";
-import { PAGE_SIZE_OPTIONS, TestRunDensity } from "./TestRunListControls";
-import {
-  groupStatusSummary,
-  TestRunGroup,
-} from "../../_helpers/testRunGroup.helper";
-import { TagField, TestRun } from "../../types";
-import { TEST_ID } from "../../constants/locators";
+import { PAGE_SIZE_OPTIONS } from "./TestRunListControls";
+import { TAG_FIELDS } from "../../_helpers/testRunTags.helper";
+import { TestRun } from "../../types";
 
 const HIDDEN_COLUMNS = { id: false };
 
@@ -59,11 +54,7 @@ const NOISE_COLUMN: GridColDef<TestRun> = {
   ),
 };
 
-const buildColumns = (
-  runsFor: (id: string) => TestRun[],
-  tagFieldsFor: (runCount: number) => TagField[],
-  noiseAvailable: boolean,
-): GridColDef<TestRun>[] => [
+const buildColumns = (noiseAvailable: boolean): GridColDef<TestRun>[] => [
   {
     field: "id",
     filterable: false,
@@ -75,24 +66,17 @@ const buildColumns = (
     display: "flex",
     flex: 1,
     filterable: false,
-    renderCell: (params: GridRenderCellParams<TestRun>) => {
-      const count = runsFor(params.row.id).length;
-
-      return (
-        <Box sx={NAME_CELL_SX}>
-          <Typography variant="body2" noWrap title={params.row.name}>
-            {params.row.name}
-          </Typography>
-          {count > 1 && (
-            <Chip size="small" label={count} data-testid={TEST_ID.groupCount} />
-          )}
-          <CommentIndicator
-            text={params.row.comment}
-            tabIndex={params.tabIndex}
-          />
-        </Box>
-      );
-    },
+    renderCell: (params: GridRenderCellParams<TestRun>) => (
+      <Box sx={NAME_CELL_SX}>
+        <Typography variant="body2" noWrap title={params.row.name}>
+          {params.row.name}
+        </Typography>
+        <CommentIndicator
+          text={params.row.comment}
+          tabIndex={params.tabIndex}
+        />
+      </Box>
+    ),
   },
   {
     field: "tags",
@@ -103,10 +87,7 @@ const buildColumns = (
     renderCell: (params: GridRenderCellParams<TestRun>) => (
       <TagLine
         tags={Object.fromEntries(
-          tagFieldsFor(runsFor(params.row.id).length).map((field) => [
-            field,
-            params.row[field],
-          ]),
+          TAG_FIELDS.map((field) => [field, params.row[field]]),
         )}
       />
     ),
@@ -118,14 +99,8 @@ const buildColumns = (
     flex: 0.3,
     minWidth: STATUS_COLUMN_MIN_WIDTH,
     filterable: false,
-    // the chip shows the representative only, so the title gives the whole group
     renderCell: (params: GridRenderCellParams<TestRun>) => (
-      <Box
-        component="span"
-        title={groupStatusSummary(runsFor(params.row.id)) || undefined}
-      >
-        <StatusChip status={params.row.status?.toString()} />
-      </Box>
+      <StatusChip status={params.row.status?.toString()} />
     ),
   },
   ...(noiseAvailable ? [NOISE_COLUMN] : []),
@@ -142,9 +117,7 @@ const buildColumns = (
 ];
 
 export const TestRunTable = ({
-  groups,
-  grouped,
-  tagFieldsFor,
+  rows,
   noiseAvailable,
   selectedIds,
   onSelectionChange,
@@ -153,12 +126,9 @@ export const TestRunTable = ({
   onPaginationModelChange,
   sortModel,
   onSortModelChange,
-  density,
   onOpen,
 }: {
-  groups: TestRunGroup[];
-  grouped: boolean;
-  tagFieldsFor: (runCount: number) => TagField[];
+  rows: TestRun[];
   noiseAvailable: boolean;
   selectedIds: string[];
   onSelectionChange: (ids: string[]) => void;
@@ -167,67 +137,25 @@ export const TestRunTable = ({
   onPaginationModelChange: (model: GridPaginationModel) => void;
   sortModel: GridSortModel;
   onSortModelChange: (model: GridSortModel) => void;
-  density: TestRunDensity;
   onOpen: (id: string) => void;
 }) => {
-  const apiRef = useGridApiRef();
-
-  const rows = useMemo(
-    () => groups.map((group) => group.representative),
-    [groups],
-  );
-  const runsByRepresentative = useMemo(
-    () => new Map(groups.map((group) => [group.representative.id, group.runs])),
-    [groups],
-  );
-  const runsFor = useCallback(
-    (id: string): TestRun[] => runsByRepresentative.get(id) ?? [],
-    [runsByRepresentative],
-  );
-  const selectedIdSet = useMemo(() => new Set(selectedIds), [selectedIds]);
-
-  // the grid reads its density prop once, so later changes go through the api
-  useEffect(() => {
-    apiRef.current?.setDensity?.(density);
-  }, [apiRef, density]);
-
-  const columns = useMemo(
-    () => buildColumns(runsFor, tagFieldsFor, noiseAvailable),
-    [runsFor, tagFieldsFor, noiseAvailable],
-  );
-
-  const tableSelectionModel = useMemo(
-    () =>
-      grouped
-        ? groups
-            .filter((group) =>
-              group.runs.every((run) => selectedIdSet.has(run.id)),
-            )
-            .map((group) => group.representative.id)
-        : selectedIds,
-    [grouped, groups, selectedIds, selectedIdSet],
-  );
+  const columns = useMemo(() => buildColumns(noiseAvailable), [noiseAvailable]);
 
   // a stable object, so the grid does not re-sync on every render
   const rowSelectionModel = useMemo<GridRowSelectionModel>(
-    () => ({ type: "include", ids: new Set(tableSelectionModel) }),
-    [tableSelectionModel],
+    () => ({ type: "include", ids: new Set(selectedIds) }),
+    [selectedIds],
   );
 
   const onRowSelectionModelChange = useCallback(
-    (model: GridRowSelectionModel) => {
+    (model: GridRowSelectionModel) =>
       // the header box selects everything as an exclude list
-      const ticked =
+      onSelectionChange(
         model.type === "include"
           ? [...model.ids].map(String)
-          : rows.map((row) => row.id).filter((id) => !model.ids.has(id));
-      onSelectionChange(
-        grouped
-          ? ticked.flatMap((id) => runsFor(id).map((run) => run.id))
-          : ticked,
-      );
-    },
-    [rows, grouped, runsFor, onSelectionChange],
+          : rows.map((row) => row.id).filter((id) => !model.ids.has(id)),
+      ),
+    [rows, onSelectionChange],
   );
 
   const onRowClick = useCallback(
@@ -237,7 +165,6 @@ export const TestRunTable = ({
 
   return (
     <DataGrid
-      apiRef={apiRef}
       rows={rows}
       columns={columns}
       columnVisibilityModel={HIDDEN_COLUMNS}
@@ -247,7 +174,6 @@ export const TestRunTable = ({
       pagination
       hideFooterSelectedRowCount
       loading={loading}
-      density={density}
       rowSelectionModel={rowSelectionModel}
       onRowSelectionModelChange={onRowSelectionModelChange}
       checkboxSelection

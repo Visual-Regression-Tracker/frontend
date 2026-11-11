@@ -5,7 +5,6 @@ import {
   CardActionArea,
   CardContent,
   Checkbox,
-  Chip,
   Stack,
   Typography,
 } from "@mui/material";
@@ -13,14 +12,10 @@ import { CommentIndicator } from "../CommentIndicator";
 import { StatusChip } from "../StatusChip";
 import { NoiseHintChip } from "./NoiseHintChip";
 import noImage from "../../static/no-image.png";
-import { CARD_SIZE_BY_DENSITY, TestRunDensity } from "./TestRunListControls";
-import {
-  groupStatusSummary,
-  TestRunGroup,
-} from "../../_helpers/testRunGroup.helper";
 import { thumbnailFor } from "../../_helpers/testRunImage.helper";
+import { TAG_FIELDS } from "../../_helpers/testRunTags.helper";
 import type { TagFilters } from "./useTestRunFilters";
-import { TagField } from "../../types";
+import { TagField, TestRun } from "../../types";
 import { TEST_ID } from "../../constants/locators";
 import { imageOverlay } from "../../theme/tokens";
 
@@ -63,26 +58,23 @@ const CARD_TAGS = {
   ...clipToLines(2),
 };
 
+const CARD_WIDTH = 220;
+const CARD_IMAGE_HEIGHT = 160;
+
 export const TestRunGrid = ({
-  groups,
+  runs,
   selectedIdSet,
-  density,
-  showDiff,
   activeTags,
-  tagFieldsFor,
   noiseAvailable,
-  onToggleGroup,
+  onToggleOne,
   onToggleTag,
   onOpen,
 }: {
-  groups: TestRunGroup[];
+  runs: TestRun[];
   selectedIdSet: Set<string>;
-  density: TestRunDensity;
-  showDiff: boolean;
   activeTags: TagFilters;
-  tagFieldsFor: (runCount: number) => TagField[];
   noiseAvailable: boolean;
-  onToggleGroup: (ids: string[]) => void;
+  onToggleOne: (id: string) => void;
   onToggleTag: (field: TagField, tag: string) => void;
   onOpen: (id: string) => void;
 }) => (
@@ -90,28 +82,26 @@ export const TestRunGrid = ({
     data-testid={TEST_ID.testRunGrid}
     sx={{
       display: "grid",
-      gridTemplateColumns: `repeat(auto-fill, minmax(${CARD_SIZE_BY_DENSITY[density].width}px, 1fr))`,
+      gridTemplateColumns: `repeat(auto-fill, minmax(${CARD_WIDTH}px, 1fr))`,
       gap: 1,
       padding: 2,
     }}
   >
-    {groups.map(({ key, runs, representative }) => {
-      const ids = runs.map((run) => run.id);
-      const selectedCount = ids.filter((id) => selectedIdSet.has(id)).length;
-      const tags = tagFieldsFor(runs.length).flatMap((field) => {
-        const value = representative[field];
+    {runs.map((run) => {
+      const tags = TAG_FIELDS.flatMap((field) => {
+        const value = run[field];
         return typeof value === "string" && value ? [{ field, value }] : [];
       });
 
       return (
-        <Card key={key} variant="outlined" data-testid={TEST_ID.testRunCard}>
+        <Card key={run.id} variant="outlined" data-testid={TEST_ID.testRunCard}>
           {/* outside the action area, so a tick does not open the dialog */}
           <Box sx={{ position: "relative" }}>
-            <CardActionArea onClick={() => onOpen(representative.id)}>
+            <CardActionArea onClick={() => onOpen(run.id)}>
               <Box
                 component="img"
-                src={thumbnailFor(representative, showDiff)}
-                alt={representative.name}
+                src={thumbnailFor(run, true)}
+                alt={run.name}
                 loading="lazy"
                 decoding="async"
                 onError={(event: SyntheticEvent<HTMLImageElement>) => {
@@ -120,7 +110,7 @@ export const TestRunGrid = ({
                 sx={{
                   display: "block",
                   width: "100%",
-                  height: CARD_SIZE_BY_DENSITY[density].imageHeight,
+                  height: CARD_IMAGE_HEIGHT,
                   objectFit: "contain",
                   objectPosition: "top",
                   backgroundColor: "grey.100",
@@ -129,9 +119,8 @@ export const TestRunGrid = ({
             </CardActionArea>
             <Checkbox
               size="small"
-              checked={selectedCount === ids.length}
-              indeterminate={selectedCount > 0 && selectedCount < ids.length}
-              onChange={() => onToggleGroup(ids)}
+              checked={selectedIdSet.has(run.id)}
+              onChange={() => onToggleOne(run.id)}
               sx={{
                 position: "absolute",
                 top: 2,
@@ -141,23 +130,9 @@ export const TestRunGrid = ({
                 "&:hover": { backgroundColor: imageOverlay.controlHover },
               }}
               slotProps={{
-                input: { "aria-label": `Select ${representative.name}` },
+                input: { "aria-label": `Select ${run.name}` },
               }}
             />
-            {runs.length > 1 && (
-              <Chip
-                size="small"
-                label={runs.length}
-                data-testid={TEST_ID.groupCount}
-                sx={{
-                  position: "absolute",
-                  top: 4,
-                  right: 4,
-                  backgroundColor: imageOverlay.badge,
-                  color: "common.white",
-                }}
-              />
-            )}
           </Box>
           <CardContent
             // body centres text globally, hence the explicit left
@@ -174,23 +149,17 @@ export const TestRunGrid = ({
           >
             <Typography
               variant="body2"
-              title={representative.name}
+              title={run.name}
               data-testid={TEST_ID.cardName}
               sx={CARD_NAME}
             >
-              {representative.name}
+              {run.name}
             </Typography>
-            {/* the chip shows the representative only; the title gives the group's status */}
             <Stack direction="row" spacing={0.75} sx={{ alignItems: "center" }}>
-              <Box
-                component="span"
-                title={groupStatusSummary(runs) || undefined}
-              >
-                <StatusChip status={representative.status} />
-              </Box>
-              <CommentIndicator text={representative.comment} />
+              <StatusChip status={run.status} />
+              <CommentIndicator text={run.comment} />
             </Stack>
-            {noiseAvailable && <NoiseHintChip run={representative} />}
+            {noiseAvailable && <NoiseHintChip run={run} />}
             {/* buttons so the keyboard reaches them */}
             <Typography
               variant="caption"

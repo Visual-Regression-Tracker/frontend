@@ -1,5 +1,5 @@
 import { expect, Page } from "@playwright/test";
-import { AUTH_USER, test as base } from "fixtures";
+import { test as base } from "fixtures";
 import {
   AddProjectPage,
   LoginPage,
@@ -84,7 +84,6 @@ const LISTED_PROJECTS = [
   { ...project, id: "storybook-id", name: "Storybook", mainBranchName: "main" },
 ];
 const FAVORITE_ID = "storybook-id";
-const RECENT_ID = "checkout-id";
 
 type KonvaWindow = {
   Konva?: {
@@ -142,28 +141,6 @@ const showWholeContent = async (content: BasePage) => {
     })
     .toBe(0);
   await content.scrollMainToTop();
-};
-
-const VARIATION_EN: TestRun = {
-  ...TEST_UNRESOLVED,
-  id: "variation-en",
-  name: "Screen A",
-  customTags: "en_US",
-  diffPercent: 1,
-};
-const VARIATION_DE: TestRun = {
-  ...TEST_UNRESOLVED,
-  id: "variation-de",
-  name: "Screen A",
-  customTags: "de_DE",
-  diffPercent: 2,
-};
-const LONE_SCREEN: TestRun = {
-  ...TEST_UNRESOLVED,
-  id: "lone",
-  name: "Screen B",
-  customTags: "en_US",
-  diffPercent: 3,
 };
 
 const REVIEWED: TestRun = { ...TEST_UNRESOLVED, customTags: "en" };
@@ -298,21 +275,17 @@ const VIEWS: [name: string, body: Body][] = [
   ],
 
   [
-    "project list with favourites and recently opened",
+    "project list with favourites",
     async ({ page, authUser, shot }) => {
       void authUser;
       await mockGetProjects(page, LISTED_PROJECTS);
       await mockGetFavoriteProjects(page, [FAVORITE_ID]);
-      await page.addInitScript(
-        ([key, id]) => localStorage.setItem(key, JSON.stringify([id])),
-        [`recentProjects:${AUTH_USER.id}`, RECENT_ID],
-      );
       await page.goto("/projects");
       const projectListPage = new ProjectListPage(page);
 
       await expect(projectListPage.projects).toHaveCount(4);
       await expect(projectListPage.section("Favourites")).toBeVisible();
-      await expect(projectListPage.section("Recently opened")).toBeVisible();
+      await expect(projectListPage.section("Other projects")).toBeVisible();
       await shot("project-list-favourites", { fullPage: true });
     },
   ],
@@ -470,23 +443,6 @@ const VIEWS: [name: string, body: Body][] = [
 
       await expect(projectPage.testRunList.cards).toHaveCount(4);
       await shot("project-page-grid");
-    },
-  ],
-
-  [
-    "project page with variations grouped",
-    async ({ openProjectPage, page, shot }) => {
-      const runs = [VARIATION_EN, VARIATION_DE, LONE_SCREEN];
-      await mockGetTestRuns(page, build.id, runs);
-      for (const run of runs) {
-        await mockTestRun(page, run);
-      }
-      const projectPage = await openProjectPage(project.id, build.id);
-      await projectPage.testRunList.gridViewToggle.click();
-      await projectPage.testRunList.groupBy("variation");
-
-      await expect(projectPage.testRunList.cards).toHaveCount(2);
-      await shot("project-page-grouped");
     },
   ],
 
@@ -1003,30 +959,6 @@ const VIEWS: [name: string, body: Body][] = [
 
       await expect(projectPage.testRunFilters.clearFilters).toBeVisible();
       await shot("project-page-tag-filter");
-    },
-  ],
-
-  [
-    "project page with the View menu open",
-    async ({ openProjectPage, shot }) => {
-      const projectPage = await openProjectPage(project.id, build.id);
-      await expect(projectPage.testRunList.rows).toHaveCount(4);
-
-      await projectPage.testRunList.viewMenuButton.click();
-
-      await expect(projectPage.testRunList.menu).toBeVisible();
-      await shot("project-page-view-menu");
-    },
-  ],
-
-  [
-    "project page as a grid with the diff switch",
-    async ({ openProjectPage, shot }) => {
-      const projectPage = await openProjectPage(project.id, build.id);
-      await projectPage.testRunList.gridViewToggle.click();
-
-      await expect(projectPage.testRunList.diffToggle).toBeVisible();
-      await shot("project-page-grid-toolbar");
     },
   ],
 

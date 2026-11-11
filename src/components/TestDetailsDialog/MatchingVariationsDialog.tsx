@@ -1,4 +1,4 @@
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
   Dialog,
   DialogTitle,
@@ -22,7 +22,6 @@ import {
   Toolbar,
 } from "./MatchingVariationCard";
 import { useMatchingVariations } from "./useMatchingVariations";
-import { useVariationHotkeys } from "./useVariationHotkeys";
 import { findNextUnresolved, forgetActed, rememberActed } from "./actedRuns";
 import { Tooltip } from "../Tooltip";
 import { undoSnackbarOptions } from "../UndoSnackbarAction";
@@ -37,6 +36,8 @@ import {
   partialFailureText,
   pluralize,
 } from "../../_helpers/format.helper";
+
+const SWALLOWED_KEYS = new Set(["ArrowLeft", "ArrowRight", "a", "x", "d"]);
 
 const variationCount = (count: number): string =>
   `${count} ${pluralize(count, "variation")}`;
@@ -77,25 +78,35 @@ export const MatchingVariationsDialog = ({
     skippedSelection,
   } = useMatchingVariations({ testRun, submitting, enqueueSnackbar });
 
+  const last = allShown.length - 1;
   const step = useCallback(
     (delta: number) =>
-      setPreview((prev) => {
-        if (!prev) return prev;
-        const index = Math.min(
-          allShown.length - 1,
-          Math.max(0, prev.index + delta),
-        );
-        return { index, showDiff: prev.showDiff };
-      }),
-    [allShown.length],
+      setPreview(
+        (prev) =>
+          prev && {
+            ...prev,
+            index: Math.min(last, Math.max(0, prev.index + delta)),
+          },
+      ),
+    [last],
   );
 
-  useVariationHotkeys({
-    preview,
-    step,
-    setPreviewDiff,
-    toggleShowDiff: () => setShowDiff((value) => !value),
-  });
+  useEffect(() => {
+    const onKey = (event: KeyboardEvent) => {
+      const key = event.key.length === 1 ? event.key.toLowerCase() : event.key;
+      if (!SWALLOWED_KEYS.has(key)) return;
+      // the page behind would act on these keys (arrows, a/x) and change the reviewed run
+      event.preventDefault();
+      event.stopPropagation();
+      if (key === "d") {
+        if (preview) setPreview({ ...preview, showDiff: !preview.showDiff });
+        else setShowDiff((value) => !value);
+      } else if (preview && key === "ArrowLeft") step(-1);
+      else if (preview && key === "ArrowRight") step(1);
+    };
+    window.addEventListener("keydown", onKey, true);
+    return () => window.removeEventListener("keydown", onKey, true);
+  }, [preview, step]);
 
   const verb = mode === "approve" ? "Approve" : "Reject";
 

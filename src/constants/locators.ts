@@ -9,9 +9,7 @@ export const LOCATOR_PROJECT_PAGE_TEST_RUN_LIST = "test-run-list";
 export const TEST_ID = {
   drawArea: "drawArea",
   overlayOpacity: "overlayOpacity",
-  differenceToggle: "differenceToggle",
   imageSize: "image-size",
-  groupCount: "groupCount",
   submit: "submit",
   password: "password",
   email: "email",
@@ -23,20 +21,15 @@ export const TEST_ID = {
   apiKey: "apiKey",
   zoomLevel: "zoom-level",
   vlmAnalysis: "vlm-analysis",
-  viewMenuShowDiff: "viewMenuShowDiff",
-  viewMenuButton: "viewMenuButton",
   testRunNameFilter: "testRunNameFilter",
   testRunGrid: "testRunGrid",
   testRunCard: "testRunCard",
   submitButton: "submitButton",
-  showDiffToggle: "showDiffToggle",
   role: "role",
   noiseHintPopoverChip: "noise-hint-popover-chip",
   noiseHintPanel: "noise-hint-panel",
   newCiBuildId: "newCiBuildId",
   loginBtn: "loginBtn",
-  groupByVariation: "groupByVariation",
-  groupByNone: "groupByNone",
   gridViewToggle: "gridViewToggle",
   tableViewToggle: "tableViewToggle",
   gridSelectionCount: "gridSelectionCount",
@@ -79,4 +72,3 @@ export const ELEMENT_ID = {
 
 export const filterChipId = (id: string) => `filter-chip-${id}`;
 export const gridSortTestId = (field: string) => `gridSort-${field}`;
-export const densityTestId = (density: string) => `${density}Density`;

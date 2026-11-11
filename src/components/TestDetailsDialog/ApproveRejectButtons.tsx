@@ -18,7 +18,7 @@ import { MatchingVariationsMode } from "./MatchingVariationsDialog";
 import {
   isSibling,
   resolveGroupByAxis,
-} from "../../_helpers/testRunGroup.helper";
+} from "../../_helpers/testRunSibling.helper";
 
 const actionButtonSx = {
   marginLeft: "4px",

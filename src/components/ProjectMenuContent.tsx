@@ -29,8 +29,7 @@ export const ProjectMenuContent = ({
   currentId: string;
   onSelect: (project: Project) => void;
 }) => {
-  const { projectList, favoriteProjectIds, recentProjectIds } =
-    useProjectState();
+  const { projectList, favoriteProjectIds } = useProjectState();
   const [query, setQuery] = useState("");
   const listRef = useRef<HTMLUListElement>(null);
   const searchRef = useRef<HTMLInputElement>(null);
@@ -43,7 +42,6 @@ export const ProjectMenuContent = ({
     const { sections, titled } = projectSections(
       projectList,
       favoriteProjectIds,
-      recentProjectIds,
     );
     return {
       groups: sections
@@ -56,7 +54,7 @@ export const ProjectMenuContent = ({
         .filter(({ projects }) => projects.length > 0),
       showTitles: titled,
     };
-  }, [projectList, favoriteProjectIds, recentProjectIds, query]);
+  }, [projectList, favoriteProjectIds, query]);
 
   const handleSearchKey = (event: KeyboardEvent) => {
     if (event.key === "Enter" && groups[0]) {

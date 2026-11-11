@@ -370,20 +370,6 @@ test("shows Projects and the project in the breadcrumb, with the project tabs", 
   );
 });
 
-const openDialogWithoutDiff = async (
-  openProjectPage: OpenProjectPage,
-  page: Page,
-) => {
-  const noDiff = { ...TEST_UNRESOLVED, diffName: null };
-  await mockGetTestRuns(page, TEST_BUILD_FAILED.id, [noDiff]);
-  await mockTestRun(page, noDiff);
-  const projectPage = await openProjectPage(project.id, TEST_BUILD_FAILED.id);
-  await projectPage.testRunList.getRow(noDiff.id).click();
-  await expect(projectPage.details.drawAreas).toHaveCount(2);
-
-  return projectPage;
-};
-
 const openDialogWithNextUnderReview = async (
   openProjectPage: OpenProjectPage,
   page: Page,
@@ -438,33 +424,6 @@ test("takes the pane off the diff when Fade is chosen", async ({
   expect(await details.overlaidOpacity()).toBe(0.5);
 });
 
-test("blends the two as a difference, diff image or not", async ({
-  openProjectPage,
-  page,
-}) => {
-  const { details } = await openDialogWithoutDiff(openProjectPage, page);
-  await details.fadeMode.click();
-
-  await details.differenceBlend.click();
-
-  expect(await details.overlaidBlend()).toBe("difference");
-});
-
-test("blends at full strength, whatever the fade says", async ({
-  openProjectPage,
-  page,
-}) => {
-  const { details } = await openDialogWithoutDiff(openProjectPage, page);
-  await details.fadeMode.click();
-  await details.fadeSlider.press("Home");
-
-  await details.differenceBlend.click();
-
-  // a difference blend washes out when faded, so the fade is off here
-  expect(await details.overlaidOpacity()).toBe(1);
-  await expect(details.fadeSlider).toBeDisabled();
-});
-
 test("forgets the fade on the next screenshot", async ({
   openProjectPage,
   page,
@@ -485,30 +444,8 @@ test("forgets the fade on the next screenshot", async ({
   await expect(details.fadeSlider).toHaveAttribute("aria-valuenow", "0.5");
 });
 
-test("forgets the blend on the next screenshot", async ({
-  openProjectPage,
-  page,
-}) => {
-  const { details } = await openDialogWithNextUnderReview(
-    openProjectPage,
-    page,
-  );
-  await details.fadeMode.click();
-  await details.differenceBlend.click();
-  await expect(details.differenceBlend).toHaveAttribute("aria-pressed", "true");
-
-  await details.goToNextByKeyboard();
-
-  await expect(details.diffMode).toHaveAttribute("aria-pressed", "true");
-  await details.fadeMode.click();
-  await expect(details.differenceBlend).toHaveAttribute(
-    "aria-pressed",
-    "false",
-  );
-});
-
 for (const settled of [TEST_RUN_OK, TEST_RUN_NEW]) {
-  test(`hides the fade and the blend on a ${settled.status} screenshot`, async ({
+  test(`hides the fade on a ${settled.status} screenshot`, async ({
     openProjectPage,
   }) => {
     const projectPage = await openProjectPage(project.id, TEST_BUILD_FAILED.id);
@@ -518,7 +455,6 @@ for (const settled of [TEST_RUN_OK, TEST_RUN_NEW]) {
     await expect(details.firstPane).toBeVisible();
 
     await expect(details.overlayOpacity).toHaveCount(0);
-    await expect(details.differenceBlend).toHaveCount(0);
     await expect(details.fadeMode).toHaveCount(0);
   });
 }
@@ -535,7 +471,6 @@ test("keeps the fade on an approved screenshot carrying a diff", async ({
   await expect(details.diffMode).toBeVisible();
   await details.fadeMode.click();
   await expect(details.overlayOpacity).toBeVisible();
-  await expect(details.differenceBlend).toBeVisible();
 });
 
 test("keeps the fade reachable in a narrow window", async ({
@@ -563,14 +498,4 @@ test("renders the fade", async ({ openProjectPage, page }) => {
   }
 
   await expect(page).toHaveScreenshot("project-page-test-run-overlay.png");
-});
-
-test("renders the difference blend", async ({ openProjectPage, page }) => {
-  const { details } = await openDialogWithoutDiff(openProjectPage, page);
-  await details.fadeMode.click();
-
-  await details.differenceBlend.click();
-  await page.mouse.move(0, 0);
-
-  await expect(page).toHaveScreenshot("project-page-test-run-difference.png");
 });

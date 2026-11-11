@@ -23,12 +23,8 @@ const ProjectSelect = ({
   variant?: "standard" | "outlined";
   flush?: boolean;
 }) => {
-  const {
-    projectList,
-    selectedProjectId,
-    favoriteProjectIds,
-    recentProjectIds,
-  } = useProjectState();
+  const { projectList, selectedProjectId, favoriteProjectIds } =
+    useProjectState();
   const projectDispatch = useProjectDispatch();
 
   useEffect(() => {
@@ -41,7 +37,6 @@ const ProjectSelect = ({
     const { sections, titled } = projectSections(
       projectList,
       favoriteProjectIds,
-      recentProjectIds,
     );
     const groupOf = new Map<string, string>(
       titled
@@ -53,7 +48,7 @@ const ProjectSelect = ({
     const options = sections.flatMap(({ projects }) => projects);
 
     return { options, groupOf };
-  }, [projectList, favoriteProjectIds, recentProjectIds]);
+  }, [projectList, favoriteProjectIds]);
 
   const selected = useSelectedProject();
 

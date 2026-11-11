@@ -19,10 +19,6 @@ import { useSnackbar } from "notistack";
 import { useUserState } from "./user.context";
 import { DEFAULT_PROJECT_EDIT_STATE } from "../constants";
 import { noiseAnalysisAvailable } from "../_helpers/noiseHint.helper";
-import {
-  readRecentProjectIds,
-  rememberRecentProject,
-} from "../_helpers/projectList.helper";
 
 type Dispatch = (action: ProjectAction) => void;
 type ProjectProviderProps = {
@@ -179,7 +175,6 @@ function ProjectProvider({ children }: Readonly<ProjectProviderProps>) {
     projectList: [],
     projectEditState: DEFAULT_PROJECT_EDIT_STATE,
     favoriteProjectIds: [],
-    recentProjectIds: [],
     // a signed-in user's list is on its way from the first render
     loading: loggedIn,
     loadFailed: false,
@@ -204,11 +199,9 @@ function ProjectProvider({ children }: Readonly<ProjectProviderProps>) {
   useEffect(() => {
     if (!userId) {
       dispatch({ type: "favorites", payload: [] });
-      dispatch({ type: "recent", payload: [] });
       return;
     }
     const guard = staleGuard();
-    dispatch({ type: "recent", payload: readRecentProjectIds(userId) });
     projectsService
       .getFavorites()
       .then((ids) => {
@@ -223,16 +216,6 @@ function ProjectProvider({ children }: Readonly<ProjectProviderProps>) {
       });
     return guard.cancel;
   }, [userId]);
-
-  // a project counts as opened once it is selected, whichever page did it
-  useEffect(() => {
-    if (userId && state.selectedProjectId) {
-      dispatch({
-        type: "recent",
-        payload: rememberRecentProject(userId, state.selectedProjectId),
-      });
-    }
-  }, [userId, state.selectedProjectId]);
 
   return (
     <ProjectStateContext.Provider value={state}>
