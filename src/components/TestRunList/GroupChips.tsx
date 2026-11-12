@@ -24,7 +24,11 @@ export const GroupCountChip = ({
 
 // the chip shows the representative only, so the title gives the whole group
 export const GroupStatusChip = ({ group }: { group: TestRunGroup }) => (
-  <Box component="span" title={groupStatusSummary(group.runs) || undefined}>
+  <Box
+    component="span"
+    title={groupStatusSummary(group.runs) || undefined}
+    sx={{ display: "inline-flex" }}
+  >
     <StatusChip status={group.representative.status} />
   </Box>
 );
