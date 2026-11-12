@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { run } from "../_helpers/testRun.fixture";
@@ -40,6 +41,28 @@ describe("BuildStatusCounters", () => {
     await userEvent.click(screen.getByRole("button", { name: "Failed 0" }));
 
     expect(onStatusesChange).toHaveBeenCalledWith([]);
+  });
+
+  it("moves focus to All when a picked status at zero is turned off", async () => {
+    const Counters = () => {
+      const [statuses, setStatuses] = useState([TestStatus.failed]);
+      return (
+        <BuildStatusCounters
+          testRuns={[run({ id: "a", status: TestStatus.ok })]}
+          statuses={statuses}
+          onStatusesChange={setStatuses}
+        />
+      );
+    };
+    render(<Counters />);
+
+    screen.getByRole("button", { name: "Failed 0" }).focus();
+    await userEvent.keyboard("{Enter}");
+
+    expect(
+      screen.queryByRole("button", { name: /^Failed/ }),
+    ).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "All 1" })).toHaveFocus();
   });
 
   it("always shows All, even with no runs", () => {

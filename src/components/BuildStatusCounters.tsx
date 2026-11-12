@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useMemo, useRef } from "react";
 import { Chip, Stack } from "@mui/material";
 import { type TestRun, TestStatus } from "../types";
 import { statusColor } from "../theme";
@@ -26,6 +26,8 @@ export const BuildStatusCounters = ({
     return result;
   }, [testRuns]);
 
+  const allChip = useRef<HTMLDivElement>(null);
+
   const toggle = (status: TestStatus) =>
     onStatusesChange(
       statuses.includes(status)
@@ -41,6 +43,7 @@ export const BuildStatusCounters = ({
       sx={{ flexWrap: "wrap", gap: 0.5 }}
     >
       <Chip
+        ref={allChip}
         size="small"
         clickable
         aria-pressed={statuses.length === 0}
@@ -64,7 +67,13 @@ export const BuildStatusCounters = ({
             variant={active ? "filled" : "outlined"}
             color={statusColor(status)}
             label={`${statusLabel(status)} ${count}`}
-            onClick={() => toggle(status)}
+            onClick={() => {
+              // turning it off removes this chip, so keep focus in the row
+              if (count === 0) {
+                allChip.current?.focus();
+              }
+              toggle(status);
+            }}
           />
         );
       })}
