@@ -167,6 +167,7 @@ describe("TestRunList grouping", () => {
   it("clears the selection when grouping is switched, so no unticked row stays selected", async () => {
     const { user } = renderList([A_EN, A_DE, B_EN]);
     await waitFor(() => expect(dataRows()).toHaveLength(3));
+    expect(within(dataRows()[0]).getByText("Screen A")).toBeInTheDocument();
     await user.click(
       within(dataRows()[0]).getByRole("checkbox", { name: /select row/i }),
     );
