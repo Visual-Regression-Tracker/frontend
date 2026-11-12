@@ -113,6 +113,27 @@ describe("useTestRunFilters", () => {
     expect(result.current.tagOptions.customTags).toEqual(["de", "en"]);
   });
 
+  it("leaves the runs for the status counts unfiltered by status", () => {
+    const { result } = renderFilters();
+
+    act(() => {
+      result.current.onNameChange("home");
+      result.current.onTagFilterChange("customTags", ["de"]);
+      result.current.onStatusesChange([TestStatus.ok]);
+    });
+
+    expect(result.current.filteredRows).toEqual([]);
+    expect(ids(result.current.statusFacetRuns)).toEqual(["home-de"]);
+  });
+
+  it("counts statuses over every run while no name or tag is set", () => {
+    const { result } = renderFilters();
+
+    act(() => result.current.onStatusesChange([TestStatus.ok]));
+
+    expect(result.current.statusFacetRuns).toEqual(RUNS);
+  });
+
   it("keeps a picked tag on offer though no run left matches it", () => {
     const { result } = renderFilters();
 

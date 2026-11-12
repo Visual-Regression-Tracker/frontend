@@ -8,6 +8,7 @@ export class TestRunFilters extends PageObject {
   chipOptions = this.page.getByRole("menuitemcheckbox");
   clearFilters = this.page.getByRole("button", { name: "Clear filters" });
   statusFilter = this.page.getByRole("group", { name: "Filter by status" });
+  statusChips = this.statusFilter.getByRole("button");
 
   chip(id: FilterChip) {
     return this.page.locator(`#${filterChipId(id)}`);

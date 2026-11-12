@@ -22,6 +22,7 @@ import {
 import { ImageComparison } from "../types/imageComparison";
 import { TestRun, TestStatus } from "../types";
 import BuildDetails from "./BuildDetails";
+import { useSharedTestRunFilters } from "./TestRunList/TestRunFiltersContext";
 
 const SelectProject = () => {
   const dispatch = useProjectDispatch();
@@ -122,13 +123,60 @@ describe("BuildDetails status counters", () => {
     run({ id: "c", status: TestStatus.approved }),
   ];
 
-  it("counts the runs per status and leaves the empty ones inactive", async () => {
+  it("counts the runs per status and hides the empty ones", async () => {
     await renderDetails(runs);
 
     expect(counter(/^All 3$/)).toBeEnabled();
     expect(counter(/^Unresolved 2$/)).toBeEnabled();
     expect(counter(/^Approved 1$/)).toBeEnabled();
-    expect(counter(/^Failed 0$/)).toHaveAttribute("aria-disabled", "true");
+    expect(
+      screen.queryByRole("button", { name: /^Failed/ }),
+    ).not.toBeInTheDocument();
+  });
+
+  it("counts only the runs the name and tag filters leave", async () => {
+    const SetFilters = () => {
+      const { onNameChange, onTagFilterChange } = useSharedTestRunFilters();
+      return (
+        <button
+          onClick={() => {
+            onNameChange("screen");
+            onTagFilterChange("os", ["iOS"]);
+          }}
+        >
+          Set filters
+        </button>
+      );
+    };
+    const { user } = await renderDetails(
+      [
+        run({
+          id: "a",
+          name: "Screen 1",
+          os: "iOS",
+          status: TestStatus.unresolved,
+        }),
+        run({ id: "b", name: "Screen 2", os: "iOS", status: TestStatus.ok }),
+        run({
+          id: "c",
+          name: "Screen 3",
+          os: "Android",
+          status: TestStatus.ok,
+        }),
+        run({ id: "d", name: "Login", os: "iOS", status: TestStatus.approved }),
+      ],
+      {},
+      <SetFilters />,
+    );
+
+    await user.click(screen.getByRole("button", { name: "Set filters" }));
+
+    expect(counter(/^All 2$/)).toBeVisible();
+    expect(counter(/^Unresolved 1$/)).toBeVisible();
+    expect(counter(/^Passed 1$/)).toBeVisible();
+    expect(
+      screen.queryByRole("button", { name: /^Approved/ }),
+    ).not.toBeInTheDocument();
   });
 
   it("filters by several statuses and lets All clear them", async () => {

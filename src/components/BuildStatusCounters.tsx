@@ -52,12 +52,14 @@ export const BuildStatusCounters = ({
       {ALL_STATUSES.map((status) => {
         const count = counts.get(status) ?? 0;
         const active = statuses.includes(status);
+        if (count === 0 && !active) {
+          return null;
+        }
         return (
           <Chip
             key={status}
             size="small"
             clickable
-            disabled={count === 0 && !active}
             aria-pressed={active}
             variant={active ? "filled" : "outlined"}
             color={statusColor(status)}

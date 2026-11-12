@@ -216,7 +216,7 @@ test.describe("build details", () => {
       build.id,
     );
     await expect(testRunList.rows).toHaveCount(ANALYSED_RUNS.length + 2);
-    await expect(buildDetails.statusCounter("Failed")).toBeDisabled();
+    await expect(buildDetails.statusCounter("Failed")).toBeHidden();
 
     await buildDetails.statusCounter("Unresolved").click();
     await expect(testRunList.rows).toHaveCount(ANALYSED_RUNS.length);
