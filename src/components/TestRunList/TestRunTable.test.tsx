@@ -1,7 +1,8 @@
 import type { ComponentProps } from "react";
 import { fireEvent, screen, waitFor, within } from "@testing-library/react";
 import { renderWithProviders } from "../../_test/render";
-import { A_EN, B_EN } from "../../_test/testRunListFixture";
+import { A_DE, A_EN, B_EN, groupsFor } from "../../_test/testRunListFixture";
+import { dataRows, rowOf, tickRow } from "../../_test/renderTestRunList";
 import { NOISE_ANALYSIS_NOISE } from "../../_test/test.data.helper";
 import { run } from "../../_helpers/testRun.fixture";
 import { TestRun } from "../../types";
@@ -10,9 +11,15 @@ import { TestRunTable } from "./TestRunTable";
 
 type Props = ComponentProps<typeof TestRunTable>;
 
-const propsFor = (runs: TestRun[], overrides: Partial<Props> = {}): Props => {
+const propsFor = (
+  runs: TestRun[],
+  {
+    grouped = false,
+    ...overrides
+  }: Partial<Props> & { grouped?: boolean } = {},
+): Props => {
   return {
-    rows: runs,
+    groups: groupsFor(runs, grouped),
     noiseAvailable: true,
     selectedIds: [],
     onSelectionChange: vi.fn(),
@@ -28,12 +35,6 @@ const propsFor = (runs: TestRun[], overrides: Partial<Props> = {}): Props => {
 
 const renderTable = (props: Props) =>
   renderWithProviders(<TestRunTable {...props} />);
-
-const dataRows = () => screen.getAllByRole("row").slice(1);
-const rowOf = (name: string) =>
-  screen.getByText(name).closest<HTMLElement>('[role="row"]') as HTMLElement;
-const tickRow = (name: string) =>
-  within(rowOf(name)).getByRole("checkbox", { name: /select row/i });
 
 describe("TestRunTable", () => {
   it("says so, as the card view does, when the filters leave no run", async () => {
@@ -66,6 +67,7 @@ describe("TestRunTable", () => {
     const row = rowOf("Screen A");
     expect(within(row).getByText("en")).toBeInTheDocument();
     expect(within(row).getByText("Unresolved")).toBeInTheDocument();
+    expect(screen.queryByTestId("groupCount")).not.toBeInTheDocument();
   });
 
   it("shows the diff percent of a run", async () => {
@@ -119,6 +121,19 @@ describe("TestRunTable", () => {
     ).not.toBeInTheDocument();
   });
 
+  it("shows a group as one row with its run count, status mix and the tags it shares", async () => {
+    renderTable(propsFor([A_EN, A_DE, B_EN], { grouped: true }));
+
+    await waitFor(() => expect(dataRows()).toHaveLength(2));
+    const row = rowOf("Screen A");
+    expect(within(row).getByTestId("groupCount")).toHaveTextContent("2");
+    expect(
+      within(row).getByTitle("1 unresolved · 1 approved"),
+    ).toBeInTheDocument();
+    expect(within(row).queryByText("en")).not.toBeInTheDocument();
+    expect(within(rowOf("Screen B")).getByText("en")).toBeInTheDocument();
+  });
+
   it("opens the run of a clicked row", async () => {
     const props = propsFor([A_EN, B_EN]);
     const { user } = renderTable(props);
@@ -138,8 +153,29 @@ describe("TestRunTable", () => {
     expect(props.onSelectionChange).toHaveBeenCalledWith(["a-en"]);
   });
 
-  it("ticks the rows of the selected runs", async () => {
-    renderTable(propsFor([A_EN, B_EN], { selectedIds: ["a-en"] }));
+  it("reports every run of a group whose row is ticked", async () => {
+    const props = propsFor([A_EN, A_DE, B_EN], { grouped: true });
+    const { user } = renderTable(props);
+    await waitFor(() => expect(dataRows()).toHaveLength(2));
+
+    await user.click(tickRow("Screen A"));
+
+    expect(props.onSelectionChange).toHaveBeenCalledWith(["a-en", "a-de"]);
+  });
+
+  it("ticks a group's row only once every run of it is ticked", async () => {
+    const runs = [A_EN, A_DE, B_EN];
+    const { rerender } = renderTable(
+      propsFor(runs, { grouped: true, selectedIds: ["a-en"] }),
+    );
+    await waitFor(() => expect(dataRows()).toHaveLength(2));
+    expect(tickRow("Screen A")).not.toBeChecked();
+
+    rerender(
+      <TestRunTable
+        {...propsFor(runs, { grouped: true, selectedIds: ["a-en", "a-de"] })}
+      />,
+    );
 
     await waitFor(() => expect(tickRow("Screen A")).toBeChecked());
     expect(tickRow("Screen B")).not.toBeChecked();

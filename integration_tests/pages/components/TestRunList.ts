@@ -18,6 +18,8 @@ export class TestRunList extends Table {
   cardTags = this.page.getByTestId(TEST_ID.cardTags);
   // locators, not texts: assertions retry while the list re-renders
   cardNames = this.cards.getByTestId(TEST_ID.cardName);
+  groupVariationsToggle = this.page.getByTestId(TEST_ID.groupVariationsToggle);
+  groupCounts = this.page.getByTestId(TEST_ID.groupCount);
 
   // scoped: the build list pagination and selection bar carry the same labels
   pane = this.page.locator(`#${LOCATOR_PROJECT_PAGE_TEST_RUN_LIST}`);
@@ -73,6 +75,26 @@ export class TestRunList extends Table {
   });
   firstCardImage = this.cards.first().locator("img");
   gridSortName = this.page.getByTestId(gridSortTestId("name"));
+
+  groupCount(scope: Locator) {
+    return scope.getByTestId(TEST_ID.groupCount);
+  }
+
+  cardGroupCount(name: string) {
+    return this.groupCount(this.getCard(name));
+  }
+
+  rowGroupCount(rowId: string) {
+    return this.groupCount(this.getRow(rowId));
+  }
+
+  cardStatus(name: string, status: string) {
+    return this.getCard(name).getByText(status, { exact: true });
+  }
+
+  cardBreakdown(name: string, title: string) {
+    return this.getCard(name).locator(`[title="${title}"]`);
+  }
 
   tableHeaderColour() {
     return colourOf(

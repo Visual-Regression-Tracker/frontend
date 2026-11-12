@@ -88,6 +88,7 @@ export const imageSurface = {
 export const imageOverlay = {
   control: "rgba(255, 255, 255, 0.85)",
   controlHover: "rgba(255, 255, 255, 0.95)",
+  badge: "rgba(0, 0, 0, 0.6)",
 } as const;
 
 export const radius = 10;

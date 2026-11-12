@@ -1,5 +1,5 @@
 import type { GridSortModel } from "@mui/x-data-grid";
-import { TestRun } from "../types";
+import { TagField, TestRun } from "../types";
 import { SORT_FIELDS, TestRunSort } from "../types/testRunSort";
 import { byAttention } from "./testRunStatus.helper";
 import { TAG_FIELDS, tagsOf } from "./testRunTags.helper";
@@ -10,12 +10,15 @@ const byName = (a: TestRun, b: TestRun): number => a.name.localeCompare(b.name);
 const bySettled = (a: TestRun, b: TestRun): number => -byAttention(a, b);
 
 // flip only the chosen field: negating the tie-break too would reverse names
-export const comparatorFor = (sort: TestRunSort) => {
+export const comparatorFor = (
+  sort: TestRunSort,
+  tagFieldsOf: (run: TestRun) => TagField[] = () => TAG_FIELDS,
+) => {
   const tagKeys = new Map<TestRun, string>();
   const tagKey = (run: TestRun): string => {
     let key = tagKeys.get(run);
     if (key === undefined) {
-      key = tagsOf(run, TAG_FIELDS);
+      key = tagsOf(run, tagFieldsOf(run));
       tagKeys.set(run, key);
     }
     return key;

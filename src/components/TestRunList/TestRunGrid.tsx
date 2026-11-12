@@ -9,13 +9,13 @@ import {
   Typography,
 } from "@mui/material";
 import { CommentIndicator } from "../CommentIndicator";
-import { StatusChip } from "../StatusChip";
 import { NoiseHintChip } from "./NoiseHintChip";
 import noImage from "../../static/no-image.png";
+import type { TestRunGroup } from "../../_helpers/testRunGroup.helper";
+import { GroupCountChip, GroupStatusChip } from "./GroupChips";
 import { thumbnailFor } from "../../_helpers/testRunImage.helper";
-import { TAG_FIELDS } from "../../_helpers/testRunTags.helper";
 import type { TagFilters } from "./useTestRunFilters";
-import { TagField, TestRun } from "../../types";
+import { TagField } from "../../types";
 import { TEST_ID } from "../../constants/locators";
 import { imageOverlay } from "../../theme/tokens";
 
@@ -62,19 +62,19 @@ const CARD_WIDTH = 220;
 const CARD_IMAGE_HEIGHT = 160;
 
 export const TestRunGrid = ({
-  runs,
+  groups,
   selectedIdSet,
   activeTags,
   noiseAvailable,
-  onToggleOne,
+  onToggleGroup,
   onToggleTag,
   onOpen,
 }: {
-  runs: TestRun[];
+  groups: TestRunGroup[];
   selectedIdSet: Set<string>;
   activeTags: TagFilters;
   noiseAvailable: boolean;
-  onToggleOne: (id: string) => void;
+  onToggleGroup: (ids: string[]) => void;
   onToggleTag: (field: TagField, tag: string) => void;
   onOpen: (id: string) => void;
 }) => (
@@ -87,21 +87,24 @@ export const TestRunGrid = ({
       padding: 2,
     }}
   >
-    {runs.map((run) => {
-      const tags = TAG_FIELDS.flatMap((field) => {
-        const value = run[field];
+    {groups.map((group) => {
+      const { key, runs, representative } = group;
+      const ids = runs.map((run) => run.id);
+      const selectedCount = ids.filter((id) => selectedIdSet.has(id)).length;
+      const tags = group.tagFields.flatMap((field) => {
+        const value = representative[field];
         return typeof value === "string" && value ? [{ field, value }] : [];
       });
 
       return (
-        <Card key={run.id} variant="outlined" data-testid={TEST_ID.testRunCard}>
+        <Card key={key} variant="outlined" data-testid={TEST_ID.testRunCard}>
           {/* outside the action area, so a tick does not open the dialog */}
           <Box sx={{ position: "relative" }}>
-            <CardActionArea onClick={() => onOpen(run.id)}>
+            <CardActionArea onClick={() => onOpen(representative.id)}>
               <Box
                 component="img"
-                src={thumbnailFor(run, true)}
-                alt={run.name}
+                src={thumbnailFor(representative, true)}
+                alt={representative.name}
                 loading="lazy"
                 decoding="async"
                 onError={(event: SyntheticEvent<HTMLImageElement>) => {
@@ -119,8 +122,9 @@ export const TestRunGrid = ({
             </CardActionArea>
             <Checkbox
               size="small"
-              checked={selectedIdSet.has(run.id)}
-              onChange={() => onToggleOne(run.id)}
+              checked={selectedCount === ids.length}
+              indeterminate={selectedCount > 0 && selectedCount < ids.length}
+              onChange={() => onToggleGroup(ids)}
               sx={{
                 position: "absolute",
                 top: 2,
@@ -130,7 +134,17 @@ export const TestRunGrid = ({
                 "&:hover": { backgroundColor: imageOverlay.controlHover },
               }}
               slotProps={{
-                input: { "aria-label": `Select ${run.name}` },
+                input: { "aria-label": `Select ${representative.name}` },
+              }}
+            />
+            <GroupCountChip
+              group={group}
+              sx={{
+                position: "absolute",
+                top: 4,
+                right: 4,
+                backgroundColor: imageOverlay.badge,
+                color: "common.white",
               }}
             />
           </Box>
@@ -149,17 +163,17 @@ export const TestRunGrid = ({
           >
             <Typography
               variant="body2"
-              title={run.name}
+              title={representative.name}
               data-testid={TEST_ID.cardName}
               sx={CARD_NAME}
             >
-              {run.name}
+              {representative.name}
             </Typography>
             <Stack direction="row" spacing={0.75} sx={{ alignItems: "center" }}>
-              <StatusChip status={run.status} />
-              <CommentIndicator text={run.comment} />
+              <GroupStatusChip group={group} />
+              <CommentIndicator text={representative.comment} />
             </Stack>
-            {noiseAvailable && <NoiseHintChip run={run} />}
+            {noiseAvailable && <NoiseHintChip run={representative} />}
             {/* buttons so the keyboard reaches them */}
             <Typography
               variant="caption"

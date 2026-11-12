@@ -144,7 +144,7 @@ export const ProjectForm = () => {
         <FieldRow
           id="bulkApproveGroupBySelect"
           title="Variation axis"
-          description="Which test-variation axis differs within a group. Screens that match on everything except this axis are reviewed together in Approve variations, e.g. customTags for per-locale screenshots."
+          description="Which test-variation axis differs within a group. Screens that match on everything except this axis are collapsed by Group variations in the run list and reviewed together in Approve variations, e.g. customTags for per-locale screenshots."
         >
           <Select
             id="bulkApproveGroupBySelect"
