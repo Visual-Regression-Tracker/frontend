@@ -29,18 +29,22 @@ export const resolveGroupByAxis = (value?: string): GroupByAxis =>
     ? (value as GroupByAxis)
     : "customTags";
 
-const fixedAxes = (groupBy: GroupByAxis): GroupByAxis[] =>
-  GROUP_BY_AXES.filter((axis) => axis !== groupBy);
+// the status is not part of the key, so approving doesn't regroup the list
+const groupKey = (run: TestRun, groupBy: GroupByAxis): string =>
+  JSON.stringify([
+    run.name,
+    run.branchName,
+    ...GROUP_BY_AXES.filter((axis) => axis !== groupBy).map(
+      (axis) => run[axis] ?? null,
+    ),
+  ]);
 
 /** Blind to status on purpose: the details dialog applies its own status rules. */
 export const isSibling = (
   a: TestRun,
   b: TestRun,
   groupBy: GroupByAxis,
-): boolean =>
-  a.name === b.name &&
-  a.branchName === b.branchName &&
-  fixedAxes(groupBy).every((axis) => a[axis] === b[axis]);
+): boolean => groupKey(a, groupBy) === groupKey(b, groupBy);
 
 export const groupStatusSummary = (runs: TestRun[]): string => {
   const counts = new Map<TestStatus, number>();
@@ -62,16 +66,10 @@ export const groupTestRuns = (
   runs: TestRun[],
   groupBy: GroupByAxis,
 ): TestRunGroup[] => {
-  const axes = fixedAxes(groupBy);
   const byKey = new Map<string, TestRun[]>();
 
   runs.forEach((run) => {
-    // the status is not part of the key, so approving doesn't regroup the list
-    const key = JSON.stringify([
-      run.name,
-      run.branchName,
-      ...axes.map((axis) => run[axis] ?? null),
-    ]);
+    const key = groupKey(run, groupBy);
     const bucket = byKey.get(key);
     if (bucket) {
       bucket.push(run);

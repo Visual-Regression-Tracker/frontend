@@ -41,4 +41,16 @@ describe("useTestRunSelection", () => {
     rerender({ buildId: "build-b" });
     expect(result.current.selectedIds).toEqual([]);
   });
+
+  it("clears the ticks when grouping is switched", () => {
+    const { result, rerender } = renderHook(
+      ({ grouped }) => useTestRunSelection("build-a", grouped),
+      { initialProps: { grouped: false } },
+    );
+    act(() => result.current.setSelectedIds(["a"]));
+
+    rerender({ grouped: true });
+
+    expect(result.current.selectedIds).toEqual([]);
+  });
 });

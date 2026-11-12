@@ -7,14 +7,16 @@ type StatusChipVariant = "outlined" | "dot" | "filled";
 interface IProps {
   status: string | undefined;
   variant?: StatusChipVariant;
+  title?: string;
 }
 
-export const StatusChip = ({ status, variant = "outlined" }: IProps) => {
+export const StatusChip = ({ status, variant = "outlined", title }: IProps) => {
   const color = statusColor(status);
   if (variant === "dot") {
     return (
       <Box
         component="span"
+        title={title}
         sx={{
           display: "inline-flex",
           alignItems: "center",
@@ -42,6 +44,7 @@ export const StatusChip = ({ status, variant = "outlined" }: IProps) => {
       color={color}
       label={statusLabel(status)}
       size="small"
+      title={title}
     />
   );
 };

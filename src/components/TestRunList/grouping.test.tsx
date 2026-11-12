@@ -167,11 +167,8 @@ describe("TestRunList grouping", () => {
   it("clears the selection when grouping is switched, so no unticked row stays selected", async () => {
     const { user } = renderList([A_EN, A_DE, B_EN]);
     await waitFor(() => expect(dataRows()).toHaveLength(3));
-    const firstScreenA = screen
-      .getAllByText("Screen A")[0]
-      .closest<HTMLElement>('[role="row"]') as HTMLElement;
     await user.click(
-      within(firstScreenA).getByRole("checkbox", { name: /select row/i }),
+      within(dataRows()[0]).getByRole("checkbox", { name: /select row/i }),
     );
     expect(screen.getByText("1 selected")).toBeVisible();
 

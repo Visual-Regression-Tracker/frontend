@@ -54,10 +54,10 @@ const TestRunList = () => {
   const selectedProject = useSelectedProject();
   const noiseHintAvailable = useNoiseAnalysisAvailable();
   const { filteredRows, toggleTag, ...filters } = useSharedTestRunFilters();
-  const { selectedIds, setSelectedIds, toggleAll, toggleGroup } =
-    useTestRunSelection(selectedBuild?.id);
   const [view, setView] = useState<TestRunView>("table");
   const [groupVariations, setGroupVariations] = useState(false);
+  const { selectedIds, setSelectedIds, toggleAll, toggleGroup } =
+    useTestRunSelection(selectedBuild?.id, groupVariations);
   const [gridSort, setGridSort] = useState<TestRunSort>(DEFAULT_SORT);
 
   const activeSort = useMemo(
@@ -172,11 +172,7 @@ const TestRunList = () => {
                 view={view}
                 onViewChange={setView}
                 grouped={groupVariations}
-                onGroupedChange={(grouped) => {
-                  // a partly ticked group would look unticked yet stay selected
-                  setSelectedIds([]);
-                  setGroupVariations(grouped);
-                }}
+                onGroupedChange={setGroupVariations}
                 groupByAxis={groupByAxis}
               />
             }
