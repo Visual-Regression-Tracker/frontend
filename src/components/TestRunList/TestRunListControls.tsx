@@ -1,11 +1,16 @@
 import { type ReactNode } from "react";
 import {
+  FormControlLabel,
+  Switch,
   ToggleButton,
   ToggleButtonGroup,
   Tooltip as MuiTooltip,
   TooltipProps,
+  Typography,
 } from "@mui/material";
 import { ViewList, ViewModule } from "@mui/icons-material";
+import { Tooltip } from "../Tooltip";
+import { GroupByAxis } from "../../_helpers/testRunGroup.helper";
 import { TEST_ID } from "../../constants/locators";
 
 export type TestRunView = "table" | "grid";
@@ -46,29 +51,56 @@ const IconToggle = ({
 export const TestRunListControls = ({
   view,
   onViewChange,
+  grouped,
+  onGroupedChange,
+  groupByAxis,
 }: {
   view: TestRunView;
   onViewChange: (view: TestRunView) => void;
+  grouped: boolean;
+  onGroupedChange: (grouped: boolean) => void;
+  groupByAxis: GroupByAxis;
 }) => (
-  <ToggleButtonGroup
-    exclusive
-    size="small"
-    value={view}
-    onChange={(_event, next: TestRunView | null) => next && onViewChange(next)}
-  >
-    <IconToggle
-      value="table"
-      title="Table"
-      ariaLabel="Table view"
-      testId={TEST_ID.tableViewToggle}
-      icon={<ViewList fontSize="small" />}
-    />
-    <IconToggle
-      value="grid"
-      title="Grid"
-      ariaLabel="Grid view"
-      testId={TEST_ID.gridViewToggle}
-      icon={<ViewModule fontSize="small" />}
-    />
-  </ToggleButtonGroup>
+  <>
+    <Tooltip
+      describeChild
+      title={`One ${view === "grid" ? "card" : "row"} per screen, its ${groupByAxis} variations behind it. The axis is set in Settings.`}
+    >
+      <FormControlLabel
+        control={
+          <Switch
+            size="small"
+            checked={grouped}
+            onChange={(event) => onGroupedChange(event.target.checked)}
+            data-testid={TEST_ID.groupVariationsToggle}
+          />
+        }
+        label={<Typography variant="body2">Group variations</Typography>}
+        sx={{ marginLeft: 0, marginRight: 0.5 }}
+      />
+    </Tooltip>
+    <ToggleButtonGroup
+      exclusive
+      size="small"
+      value={view}
+      onChange={(_event, next: TestRunView | null) =>
+        next && onViewChange(next)
+      }
+    >
+      <IconToggle
+        value="table"
+        title="Table"
+        ariaLabel="Table view"
+        testId={TEST_ID.tableViewToggle}
+        icon={<ViewList fontSize="small" />}
+      />
+      <IconToggle
+        value="grid"
+        title="Grid"
+        ariaLabel="Grid view"
+        testId={TEST_ID.gridViewToggle}
+        icon={<ViewModule fontSize="small" />}
+      />
+    </ToggleButtonGroup>
+  </>
 );

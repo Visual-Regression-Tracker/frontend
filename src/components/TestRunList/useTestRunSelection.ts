@@ -20,15 +20,18 @@ export const useTestRunSelection = (buildId: string | undefined) => {
     setSelectedIds([]);
   }
 
-  const toggleOne = useCallback(
-    (id: string) =>
-      setSelectedIds((prev) =>
-        prev.includes(id)
-          ? prev.filter((other) => other !== id)
-          : [...prev, id],
-      ),
+  const toggleGroup = useCallback(
+    (ids: string[]) =>
+      setSelectedIds((prev) => {
+        const previous = new Set(prev);
+        if (ids.every((id) => previous.has(id))) {
+          const dropped = new Set(ids);
+          return prev.filter((id) => !dropped.has(id));
+        }
+        return Array.from(new Set([...prev, ...ids]));
+      }),
     [],
   );
 
-  return { selectedIds, setSelectedIds, toggleAll, toggleOne };
+  return { selectedIds, setSelectedIds, toggleAll, toggleGroup };
 };

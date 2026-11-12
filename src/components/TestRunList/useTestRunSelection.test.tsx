@@ -15,15 +15,15 @@ describe("useTestRunSelection", () => {
     expect(result.current.selectedIds).toEqual([]);
   });
 
-  it("ticks one run and unticks it again, leaving the others", () => {
+  it("adds a partly ticked group whole and drops a fully ticked one", () => {
     const { result } = renderHook(() => useTestRunSelection("build-a"));
-    act(() => result.current.setSelectedIds(["other"]));
+    act(() => result.current.setSelectedIds(["other", "a1"]));
 
-    act(() => result.current.toggleOne("a"));
+    act(() => result.current.toggleGroup(["a1", "a2"]));
 
-    expect(result.current.selectedIds).toEqual(["other", "a"]);
+    expect(result.current.selectedIds).toEqual(["other", "a1", "a2"]);
 
-    act(() => result.current.toggleOne("a"));
+    act(() => result.current.toggleGroup(["a1", "a2"]));
 
     expect(result.current.selectedIds).toEqual(["other"]);
   });

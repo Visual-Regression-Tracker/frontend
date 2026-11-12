@@ -1,18 +1,10 @@
-import { useEffect, type ReactNode } from "react";
 import { act, screen, waitFor, within } from "@testing-library/react";
 import { useNavigate } from "react-router-dom";
 import { renderWithProviders } from "../../_test/render";
 import { run } from "../../_helpers/testRun.fixture";
-import {
-  selectProject,
-  updateTestRun,
-  useProjectDispatch,
-  useProjectState,
-  useTestRunDispatch,
-  useTestRunState,
-} from "../../contexts";
+import { updateTestRun, useTestRunDispatch } from "../../contexts";
 import { buildsService, projectsService, testRunService } from "../../services";
-import { Build, TestRun, TestStatus } from "../../types";
+import { TestRun, TestStatus } from "../../types";
 import { ImageComparison } from "../../types/imageComparison";
 import {
   NOISE_ANALYSIS_CHANGE,
@@ -25,6 +17,17 @@ import TestRunList from "./index";
 import { useSharedTestRunFilters } from "./TestRunFiltersContext";
 import { NO_FAILURES } from "../../_test/bulkResult";
 import { CurrentSearch } from "../../_test/location";
+import {
+  build,
+  dataRows,
+  NavigationOrder,
+  navigationOrder,
+  renderList,
+  rowOf,
+  SelectProject,
+  tickRow,
+  type User,
+} from "../../_test/renderTestRunList";
 import { detailsFrom } from "../../_test/detailsFrom";
 
 // Konva needs the native canvas package, which jsdom has not got
@@ -32,8 +35,6 @@ vi.mock(
   "../TestDetailsDialog/DrawArea",
   () => import("../../_test/FakeDrawArea"),
 );
-
-const build = (id: string) => ({ id, ciBuildId: `ci-${id}` }) as Build;
 
 const RUNS_BY_BUILD = {
   "build-a": [run({ id: "a1", buildId: "build-a", name: "Screen A" })],
@@ -140,36 +141,6 @@ describe("TestRunList", () => {
   });
 });
 
-type User = ReturnType<typeof renderWithProviders>["user"];
-
-const renderList = (
-  runs: TestRun[],
-  extra: ReactNode = null,
-  user: typeof TEST_USER | null = null,
-) => {
-  vi.spyOn(buildsService, "getDetails").mockImplementation((id) =>
-    Promise.resolve(build(id)),
-  );
-  vi.spyOn(testRunService, "getList").mockResolvedValue(runs);
-
-  return renderWithProviders(
-    <>
-      {extra}
-      <TestRunList />
-    </>,
-    { route: "/?buildId=build-a", user },
-  );
-};
-
-const NavigationOrder = () => {
-  const { filteredSortedTestRunIds } = useTestRunState();
-  return (
-    <output data-testid="navigationOrder">
-      {(filteredSortedTestRunIds ?? []).join(",")}
-    </output>
-  );
-};
-
 const ApproveButtons = ({ runs }: { runs: TestRun[] }) => {
   const dispatch = useTestRunDispatch();
   return (
@@ -211,26 +182,18 @@ const StatusFilterButtons = () => {
   );
 };
 
-const navigationOrder = () => screen.getByTestId("navigationOrder").textContent;
-const dataRows = () => screen.getAllByRole("row").slice(1);
-const rowOf = (name: string) =>
-  screen.getByText(name).closest<HTMLElement>('[role="row"]') as HTMLElement;
-const tickRow = (name: string) =>
-  // the box's label flips to "Unselect row" once it is ticked
-  within(rowOf(name)).getByRole("checkbox", { name: /select row/i });
-
 const A_EN = run({ id: "a-en", name: "Screen A", customTags: "en" });
 const A_DE = run({ id: "a-de", name: "Screen A", customTags: "de" });
 const B_EN = run({ id: "b-en", name: "Screen B", customTags: "en" });
 
 describe("TestRunList selection and order", () => {
-  it("lists every variation on its own row, with no view menu", async () => {
+  it("lists every variation on its own row, with grouping off", async () => {
     renderList([A_EN, A_DE, B_EN]);
 
     await waitFor(() => expect(dataRows()).toHaveLength(3));
     expect(
-      screen.queryByRole("button", { name: "View" }),
-    ).not.toBeInTheDocument();
+      screen.getByRole("switch", { name: "Group variations" }),
+    ).not.toBeChecked();
   });
 
   it("deletes the runs ticked in the table", async () => {
@@ -341,7 +304,6 @@ describe("TestRunList selection and order", () => {
     await user.click(await screen.findByRole("button", { name: "Grid view" }));
 
     await waitFor(() => expect(navigationOrder()).toBe("a-en,b-en,a-de"));
-    expect(screen.queryByRole("switch")).not.toBeInTheDocument();
   });
 });
 
@@ -554,15 +516,6 @@ describe("TestRunList status filter", () => {
     expect(filterChip("unresolved")).toBeInTheDocument();
   });
 });
-
-const SelectProject = () => {
-  const dispatch = useProjectDispatch();
-  const { projectList, selectedProjectId } = useProjectState();
-  useEffect(() => selectProject(dispatch, TEST_PROJECT.id), [dispatch]);
-  return projectList.length > 0 && selectedProjectId === TEST_PROJECT.id ? (
-    <div data-testid="project-ready" />
-  ) : null;
-};
 
 describe("TestRunList noise hint", () => {
   const renderWith = async (project: Partial<typeof TEST_PROJECT>) => {

@@ -7,7 +7,8 @@ import {
 } from "@mui/material";
 import type { GridPaginationModel } from "@mui/x-data-grid";
 import { pluralize } from "../../_helpers/format.helper";
-import { TagField, TestRun } from "../../types";
+import { TestRunGroup } from "../../_helpers/testRunGroup.helper";
+import { TagField } from "../../types";
 import type { TestRunSort } from "../../types/testRunSort";
 import { NoMatchState } from "../GridEmptyState";
 import { TestRunGrid } from "./TestRunGrid";
@@ -17,7 +18,7 @@ import type { TagFilters } from "./useTestRunFilters";
 import { TEST_ID } from "../../constants/locators";
 
 export const TestRunCardView = ({
-  runs,
+  groups,
   selectedIds,
   loading,
   sort,
@@ -27,11 +28,11 @@ export const TestRunCardView = ({
   activeTags,
   noiseAvailable,
   onToggleAll,
-  onToggleOne,
+  onToggleGroup,
   onToggleTag,
   onOpen,
 }: {
-  runs: TestRun[];
+  groups: TestRunGroup[];
   selectedIds: string[];
   loading: boolean;
   sort: TestRunSort;
@@ -41,21 +42,35 @@ export const TestRunCardView = ({
   activeTags: TagFilters;
   noiseAvailable: boolean;
   onToggleAll: (ids: string[]) => void;
-  onToggleOne: (id: string) => void;
+  onToggleGroup: (ids: string[]) => void;
   onToggleTag: (field: TagField, tag: string) => void;
   onOpen: (id: string) => void;
 }) => {
   const selectedIdSet = useMemo(() => new Set(selectedIds), [selectedIds]);
-  const runIds = useMemo(() => runs.map((run) => run.id), [runs]);
-  const selectedCount = runIds.filter((id) => selectedIdSet.has(id)).length;
+  const runIds = useMemo(
+    () => groups.flatMap((group) => group.runs.map((run) => run.id)),
+    [groups],
+  );
+  const selectedRunCount = useMemo(
+    () => runIds.filter((id) => selectedIdSet.has(id)).length,
+    [runIds, selectedIdSet],
+  );
 
-  // clamped, not corrected in state: filtering changes the page count under it
+  const selectedCardCount = useMemo(
+    () =>
+      groups.filter((group) =>
+        group.runs.some((run) => selectedIdSet.has(run.id)),
+      ).length,
+    [groups, selectedIdSet],
+  );
+
+  // clamped, not corrected in state: grouping changes the page count under it
   const pageCount = Math.max(
     1,
-    Math.ceil(runs.length / paginationModel.pageSize),
+    Math.ceil(groups.length / paginationModel.pageSize),
   );
   const page = Math.min(paginationModel.page, pageCount - 1);
-  const pagedRuns = runs.slice(
+  const pagedGroups = groups.slice(
     page * paginationModel.pageSize,
     (page + 1) * paginationModel.pageSize,
   );
@@ -76,24 +91,24 @@ export const TestRunCardView = ({
       <TestRunGridToolbar
         sort={sort}
         onSortChange={onSortChange}
-        selectedCount={selectedCount}
+        selectedCount={selectedRunCount}
         totalCount={runIds.length}
         onToggleAll={() => onToggleAll(runIds)}
       />
       {loading && <LinearProgress />}
       <Box sx={{ flex: 1, overflow: "auto" }}>
-        {runs.length === 0 ? (
+        {groups.length === 0 ? (
           <NoMatchState
             title="No test runs match the filters"
             testId="testRunGridEmpty"
           />
         ) : (
           <TestRunGrid
-            runs={pagedRuns}
+            groups={pagedGroups}
             selectedIdSet={selectedIdSet}
             activeTags={activeTags}
             noiseAvailable={noiseAvailable}
-            onToggleOne={onToggleOne}
+            onToggleGroup={onToggleGroup}
             onToggleTag={onToggleTag}
             onOpen={onOpen}
           />
@@ -107,19 +122,19 @@ export const TestRunCardView = ({
           borderColor: "divider",
         }}
       >
-        {selectedCount > 0 && (
+        {selectedCardCount > 0 && (
           <Typography
             variant="body2"
             data-testid={TEST_ID.gridSelectionCount}
             sx={{ marginLeft: 2 }}
           >
-            {`${selectedCount} ${pluralize(selectedCount, "card")} selected`}
+            {`${selectedCardCount} ${pluralize(selectedCardCount, "card")} selected`}
           </Typography>
         )}
         <Box sx={{ marginLeft: "auto" }}>
           <TablePagination
             component="div"
-            count={runs.length}
+            count={groups.length}
             page={page}
             rowsPerPage={paginationModel.pageSize}
             rowsPerPageOptions={PAGE_SIZE_OPTIONS}

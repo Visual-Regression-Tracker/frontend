@@ -6,6 +6,7 @@ import {
   useTestRunDispatch,
   useBuildState,
   useNoiseAnalysisAvailable,
+  useSelectedProject,
 } from "../../contexts";
 import { useSnackbar } from "notistack";
 import { GridSortModel } from "@mui/x-data-grid";
@@ -20,10 +21,16 @@ import { TestRunTable } from "./TestRunTable";
 import { useSharedTestRunFilters } from "./TestRunFiltersContext";
 import { useTestRunSelection } from "./useTestRunSelection";
 import type { TestRunSort } from "../../types/testRunSort";
-import { comparatorFor, sortOfModel } from "../../_helpers/testRunSort.helper";
+import { sortOfModel } from "../../_helpers/testRunSort.helper";
 import { testRunService } from "../../services";
 import { useNavigate } from "react-router-dom";
 import { buildTestRunLocation } from "../../_helpers/route.helpers";
+import {
+  groupTestRuns,
+  resolveGroupByAxis,
+  singleRunGroups,
+  sortGroups,
+} from "../../_helpers/testRunGroup.helper";
 
 const DEFAULT_SORT_MODEL: GridSortModel = [
   { field: DEFAULT_SORT.field, sort: DEFAULT_SORT.direction },
@@ -44,11 +51,13 @@ const TestRunList = () => {
 
   const [sortModel, setSortModel] = useState<GridSortModel>(DEFAULT_SORT_MODEL);
 
+  const selectedProject = useSelectedProject();
   const noiseHintAvailable = useNoiseAnalysisAvailable();
   const { filteredRows, toggleTag, ...filters } = useSharedTestRunFilters();
-  const { selectedIds, setSelectedIds, toggleAll, toggleOne } =
+  const { selectedIds, setSelectedIds, toggleAll, toggleGroup } =
     useTestRunSelection(selectedBuild?.id);
   const [view, setView] = useState<TestRunView>("table");
+  const [groupVariations, setGroupVariations] = useState(false);
   const [gridSort, setGridSort] = useState<TestRunSort>(DEFAULT_SORT);
 
   const activeSort = useMemo(
@@ -56,9 +65,22 @@ const TestRunList = () => {
     [view, gridSort, sortModel],
   );
 
+  const groupByAxis = resolveGroupByAxis(selectedProject?.bulkApproveGroupBy);
+
+  const groups = useMemo(
+    () =>
+      sortGroups(
+        groupVariations
+          ? groupTestRuns(filteredRows, groupByAxis)
+          : singleRunGroups(filteredRows),
+        activeSort,
+      ),
+    [groupVariations, filteredRows, groupByAxis, activeSort],
+  );
+
   const sortedRows = useMemo(
-    () => [...filteredRows].sort(comparatorFor(activeSort)),
-    [filteredRows, activeSort],
+    () => groups.flatMap((group) => group.runs),
+    [groups],
   );
 
   const { name, statuses, tagFilters } = filters;
@@ -111,7 +133,7 @@ const TestRunList = () => {
     return guard.cancel;
   }, [testRunDispatch, enqueueSnackbar, selectedBuild?.id]);
 
-  // the arrow order: the rows on screen, frozen while open
+  // the arrow order: the rows on screen with groups expanded, frozen while open
   const navigationIds = useMemo(
     () => sortedRows.map((run) => run.id),
     [sortedRows],
@@ -145,7 +167,15 @@ const TestRunList = () => {
         <Box sx={{ paddingX: 2, paddingTop: 1, paddingBottom: 1 }}>
           <TestRunFilters
             {...filters}
-            actions={<TestRunListControls view={view} onViewChange={setView} />}
+            actions={
+              <TestRunListControls
+                view={view}
+                onViewChange={setView}
+                grouped={groupVariations}
+                onGroupedChange={setGroupVariations}
+                groupByAxis={groupByAxis}
+              />
+            }
           />
         </Box>
         <BulkOperation
@@ -158,7 +188,7 @@ const TestRunList = () => {
         <Box sx={{ flex: 1, minHeight: 0 }}>
           {view === "table" ? (
             <TestRunTable
-              rows={sortedRows}
+              groups={groups}
               noiseAvailable={noiseHintAvailable}
               selectedIds={selectedIds}
               onSelectionChange={setSelectedIds}
@@ -171,7 +201,7 @@ const TestRunList = () => {
             />
           ) : (
             <TestRunCardView
-              runs={sortedRows}
+              groups={groups}
               selectedIds={selectedIds}
               loading={loading}
               sort={gridSort}
@@ -181,7 +211,7 @@ const TestRunList = () => {
               activeTags={tagFilters}
               noiseAvailable={noiseHintAvailable}
               onToggleAll={toggleAll}
-              onToggleOne={toggleOne}
+              onToggleGroup={toggleGroup}
               onToggleTag={toggleTag}
               onOpen={openRun}
             />

@@ -11,12 +11,12 @@ import {
   GridSortModel,
 } from "@mui/x-data-grid";
 import { gridEmptyState } from "../GridEmptyState";
-import { StatusChip } from "../StatusChip";
 import { NoiseHintChip } from "./NoiseHintChip";
 import { TagLine } from "../TagLine";
 import { CommentIndicator } from "../CommentIndicator";
 import { PAGE_SIZE_OPTIONS } from "./TestRunListControls";
-import { TAG_FIELDS } from "../../_helpers/testRunTags.helper";
+import { GroupCountChip, GroupStatusChip } from "./GroupChips";
+import type { TestRunGroup } from "../../_helpers/testRunGroup.helper";
 import { TestRun } from "../../types";
 
 const HIDDEN_COLUMNS = { id: false };
@@ -41,7 +41,9 @@ const NOISE_COLUMN_MIN_WIDTH = 136;
 // the rows always follow some sort, so the header cannot offer "unsorted"
 const SORTING_ORDER: GridSortDirection[] = ["asc", "desc"];
 
-const NOISE_COLUMN: GridColDef<TestRun> = {
+type GroupRow = TestRun & { group: TestRunGroup };
+
+const NOISE_COLUMN: GridColDef<GroupRow> = {
   field: "noise",
   headerName: "Noise",
   display: "flex",
@@ -49,12 +51,12 @@ const NOISE_COLUMN: GridColDef<TestRun> = {
   minWidth: NOISE_COLUMN_MIN_WIDTH,
   filterable: false,
   sortable: false,
-  renderCell: (params: GridRenderCellParams<TestRun>) => (
+  renderCell: (params: GridRenderCellParams<GroupRow>) => (
     <NoiseHintChip run={params.row} />
   ),
 };
 
-const buildColumns = (noiseAvailable: boolean): GridColDef<TestRun>[] => [
+const buildColumns = (noiseAvailable: boolean): GridColDef<GroupRow>[] => [
   {
     field: "id",
     filterable: false,
@@ -66,11 +68,12 @@ const buildColumns = (noiseAvailable: boolean): GridColDef<TestRun>[] => [
     display: "flex",
     flex: 1,
     filterable: false,
-    renderCell: (params: GridRenderCellParams<TestRun>) => (
+    renderCell: (params: GridRenderCellParams<GroupRow>) => (
       <Box sx={NAME_CELL_SX}>
         <Typography variant="body2" noWrap title={params.row.name}>
           {params.row.name}
         </Typography>
+        <GroupCountChip group={params.row.group} />
         <CommentIndicator
           text={params.row.comment}
           tabIndex={params.tabIndex}
@@ -84,10 +87,10 @@ const buildColumns = (noiseAvailable: boolean): GridColDef<TestRun>[] => [
     display: "flex",
     flex: 1,
     filterable: false,
-    renderCell: (params: GridRenderCellParams<TestRun>) => (
+    renderCell: (params: GridRenderCellParams<GroupRow>) => (
       <TagLine
         tags={Object.fromEntries(
-          TAG_FIELDS.map((field) => [field, params.row[field]]),
+          params.row.group.tagFields.map((field) => [field, params.row[field]]),
         )}
       />
     ),
@@ -99,8 +102,8 @@ const buildColumns = (noiseAvailable: boolean): GridColDef<TestRun>[] => [
     flex: 0.3,
     minWidth: STATUS_COLUMN_MIN_WIDTH,
     filterable: false,
-    renderCell: (params: GridRenderCellParams<TestRun>) => (
-      <StatusChip status={params.row.status?.toString()} />
+    renderCell: (params: GridRenderCellParams<GroupRow>) => (
+      <GroupStatusChip group={params.row.group} />
     ),
   },
   ...(noiseAvailable ? [NOISE_COLUMN] : []),
@@ -117,7 +120,7 @@ const buildColumns = (noiseAvailable: boolean): GridColDef<TestRun>[] => [
 ];
 
 export const TestRunTable = ({
-  rows,
+  groups,
   noiseAvailable,
   selectedIds,
   onSelectionChange,
@@ -128,7 +131,7 @@ export const TestRunTable = ({
   onSortModelChange,
   onOpen,
 }: {
-  rows: TestRun[];
+  groups: TestRunGroup[];
   noiseAvailable: boolean;
   selectedIds: string[];
   onSelectionChange: (ids: string[]) => void;
@@ -139,27 +142,42 @@ export const TestRunTable = ({
   onSortModelChange: (model: GridSortModel) => void;
   onOpen: (id: string) => void;
 }) => {
+  const rows = useMemo<GroupRow[]>(
+    () => groups.map((group) => ({ ...group.representative, group })),
+    [groups],
+  );
   const columns = useMemo(() => buildColumns(noiseAvailable), [noiseAvailable]);
+
+  const tableSelectionModel = useMemo(() => {
+    const selectedIdSet = new Set(selectedIds);
+    return groups
+      .filter((group) => group.runs.every((run) => selectedIdSet.has(run.id)))
+      .map((group) => group.representative.id);
+  }, [groups, selectedIds]);
 
   // a stable object, so the grid does not re-sync on every render
   const rowSelectionModel = useMemo<GridRowSelectionModel>(
-    () => ({ type: "include", ids: new Set(selectedIds) }),
-    [selectedIds],
+    () => ({ type: "include", ids: new Set(tableSelectionModel) }),
+    [tableSelectionModel],
   );
 
   const onRowSelectionModelChange = useCallback(
-    (model: GridRowSelectionModel) =>
+    (model: GridRowSelectionModel) => {
       // the header box selects everything as an exclude list
-      onSelectionChange(
+      const ticked =
         model.type === "include"
           ? [...model.ids].map(String)
-          : rows.map((row) => row.id).filter((id) => !model.ids.has(id)),
-      ),
+          : rows.map((row) => row.id).filter((id) => !model.ids.has(id));
+      const byId = new Map(rows.map((row) => [row.id, row.group]));
+      onSelectionChange(
+        ticked.flatMap((id) => byId.get(id)?.runs.map((run) => run.id) ?? []),
+      );
+    },
     [rows, onSelectionChange],
   );
 
   const onRowClick = useCallback(
-    (param: GridRowParams<TestRun>) => onOpen(String(param.row.id)),
+    (param: GridRowParams<GroupRow>) => onOpen(String(param.row.id)),
     [onOpen],
   );
 

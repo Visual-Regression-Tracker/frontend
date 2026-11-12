@@ -135,8 +135,10 @@ test("keeps the view controls on the filter row at 1280px", async ({
 
   const nameBox = await testRunFilters.name.boundingBox();
   const viewBox = await testRunList.gridViewToggle.boundingBox();
+  const groupBox = await testRunList.groupVariationsToggle.boundingBox();
   const centre = (box: { y: number; height: number } | null) =>
     (box?.y ?? 0) + (box?.height ?? 0) / 2;
 
   expect(Math.abs(centre(viewBox) - centre(nameBox))).toBeLessThan(20);
+  expect(Math.abs(centre(groupBox) - centre(nameBox))).toBeLessThan(20);
 });

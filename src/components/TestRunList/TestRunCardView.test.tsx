@@ -2,7 +2,7 @@ import { type ComponentProps, useState } from "react";
 import { screen, within } from "@testing-library/react";
 import type { GridPaginationModel } from "@mui/x-data-grid";
 import { renderWithProviders } from "../../_test/render";
-import { A_DE, A_EN, B_EN } from "../../_test/testRunListFixture";
+import { A_DE, A_EN, B_EN, groupsFor } from "../../_test/testRunListFixture";
 import { run } from "../../_helpers/testRun.fixture";
 import { NOISE_ANALYSIS_CHANGE } from "../../_test/test.data.helper";
 import { TestRun } from "../../types";
@@ -11,9 +11,15 @@ import { TestRunCardView } from "./TestRunCardView";
 
 type Props = ComponentProps<typeof TestRunCardView>;
 
-const propsFor = (runs: TestRun[], overrides: Partial<Props> = {}): Props => {
+const propsFor = (
+  runs: TestRun[],
+  {
+    grouped = false,
+    ...overrides
+  }: Partial<Props> & { grouped?: boolean } = {},
+): Props => {
   return {
-    runs,
+    groups: groupsFor(runs, grouped),
     selectedIds: [],
     loading: false,
     sort: DEFAULT_SORT,
@@ -29,7 +35,7 @@ const propsFor = (runs: TestRun[], overrides: Partial<Props> = {}): Props => {
     },
     noiseAvailable: true,
     onToggleAll: vi.fn(),
-    onToggleOne: vi.fn(),
+    onToggleGroup: vi.fn(),
     onToggleTag: vi.fn(),
     onOpen: vi.fn(),
     ...overrides,
@@ -70,6 +76,14 @@ describe("TestRunCardView", () => {
     renderCards(propsFor([A_EN, A_DE, B_EN]));
 
     expect(cardNames()).toEqual(["Screen A", "Screen A", "Screen B"]);
+    expect(screen.queryByTestId("groupCount")).not.toBeInTheDocument();
+  });
+
+  it("shows a card per group", () => {
+    renderCards(propsFor([A_EN, A_DE, B_EN], { grouped: true }));
+
+    expect(cardNames()).toEqual(["Screen A", "Screen B"]);
+    expect(screen.getByTestId("groupCount")).toHaveTextContent("2");
   });
 
   it("leaves the noise hint off the cards when the analysis is not available", () => {
@@ -122,9 +136,12 @@ describe("TestRunCardView", () => {
     expect(screen.getByRole("progressbar")).toBeInTheDocument();
   });
 
-  it("counts the ticked cards", () => {
+  it("counts the cards with a ticked run", () => {
     renderCards(
-      propsFor([A_EN, A_DE, B_EN], { selectedIds: ["a-de", "b-en"] }),
+      propsFor([A_EN, A_DE, B_EN], {
+        grouped: true,
+        selectedIds: ["a-de", "b-en"],
+      }),
     );
 
     expect(screen.getByTestId("gridSelectionCount")).toHaveTextContent(
@@ -178,13 +195,13 @@ describe("TestRunCardView", () => {
   });
 
   it("passes a tick on a card and a click on its image through", async () => {
-    const props = propsFor([A_EN, B_EN]);
+    const props = propsFor([A_EN, A_DE], { grouped: true });
     const { user } = renderCards(props);
 
     await user.click(screen.getByRole("checkbox", { name: "Select Screen A" }));
     await user.click(thumbnail());
 
-    expect(props.onToggleOne).toHaveBeenCalledWith("a-en");
+    expect(props.onToggleGroup).toHaveBeenCalledWith(["a-en", "a-de"]);
     expect(props.onOpen).toHaveBeenCalledWith("a-en");
   });
 

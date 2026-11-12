@@ -1,5 +1,5 @@
 import { expect, Page } from "@playwright/test";
-import { test as base } from "fixtures";
+import { type OpenProjectPage, test as base } from "fixtures";
 import {
   AddProjectPage,
   LoginPage,
@@ -141,6 +141,46 @@ const showWholeContent = async (content: BasePage) => {
     })
     .toBe(0);
   await content.scrollMainToTop();
+};
+
+const GROUPED_RUNS: TestRun[] = [
+  {
+    ...TEST_UNRESOLVED,
+    id: "a-en",
+    name: "Screen A",
+    customTags: "en_US",
+    diffPercent: 1,
+  },
+  {
+    ...TEST_UNRESOLVED,
+    id: "a-de",
+    name: "Screen A",
+    customTags: "de_DE",
+    diffPercent: 2,
+    status: TestStatus.approved,
+  },
+  {
+    ...TEST_UNRESOLVED,
+    id: "b-en",
+    name: "Screen B",
+    customTags: "en_US",
+    diffPercent: 3,
+  },
+];
+
+const openGrouped = async (
+  openProjectPage: OpenProjectPage,
+  page: Page,
+  view: "table" | "grid",
+) => {
+  await mockGetTestRuns(page, build.id, GROUPED_RUNS);
+  const projectPage = await openProjectPage(project.id, build.id);
+  if (view === "grid") {
+    await projectPage.testRunList.gridViewToggle.click();
+  }
+  await projectPage.testRunList.groupVariationsToggle.click();
+  await expect(projectPage.testRunList.groupCounts).toHaveText("2");
+  return projectPage;
 };
 
 const REVIEWED: TestRun = { ...TEST_UNRESOLVED, customTags: "en" };
@@ -443,6 +483,22 @@ const VIEWS: [name: string, body: Body][] = [
 
       await expect(projectPage.testRunList.cards).toHaveCount(4);
       await shot("project-page-grid");
+    },
+  ],
+
+  [
+    "project page with variations grouped",
+    async ({ openProjectPage, page, shot }) => {
+      await openGrouped(openProjectPage, page, "table");
+      await shot("project-page-grouped");
+    },
+  ],
+
+  [
+    "project page as a grid with variations grouped",
+    async ({ openProjectPage, page, shot }) => {
+      await openGrouped(openProjectPage, page, "grid");
+      await shot("project-page-grid-grouped");
     },
   ],
 
