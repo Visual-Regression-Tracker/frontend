@@ -34,7 +34,7 @@ const BuildDetails = () => {
   const { selectedBuild } = useBuildState();
   const buildDispatch = useBuildDispatch();
   const { testRuns } = useTestRunState();
-  const { filteredRows, statuses, onStatusesChange } =
+  const { filteredRows, statusFacetRuns, statuses, onStatusesChange } =
     useSharedTestRunFilters();
   const available = useNoiseAnalysisAvailable();
   const { enqueueSnackbar } = useSnackbar();
@@ -108,7 +108,7 @@ const BuildDetails = () => {
         )}
       </Typography>
       <BuildStatusCounters
-        testRuns={testRuns}
+        testRuns={statusFacetRuns}
         statuses={statuses}
         onStatusesChange={onStatusesChange}
       />

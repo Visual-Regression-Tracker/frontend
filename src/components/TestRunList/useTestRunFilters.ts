@@ -57,15 +57,18 @@ export const useTestRunFilters = (testRuns: TestRun[]) => {
 
   const query = name.trim().toLowerCase();
 
-  const filteredRows = useMemo(
+  const statusFacetRuns = useMemo(
     () =>
       testRuns.filter(
         (run) =>
-          matchesNameQuery(run, query) &&
-          matchesStatuses(run, statuses) &&
-          matchesTagFilters(run, tagFilters),
+          matchesNameQuery(run, query) && matchesTagFilters(run, tagFilters),
       ),
-    [testRuns, query, statuses, tagFilters],
+    [testRuns, query, tagFilters],
+  );
+
+  const filteredRows = useMemo(
+    () => statusFacetRuns.filter((run) => matchesStatuses(run, statuses)),
+    [statusFacetRuns, statuses],
   );
 
   const tagOptions = useMemo(() => {
@@ -135,6 +138,7 @@ export const useTestRunFilters = (testRuns: TestRun[]) => {
 
   return {
     filteredRows,
+    statusFacetRuns,
     hasActiveFilters,
     toggleTag,
     // shaped as TestRunFilters' props, so the list spreads them onto it

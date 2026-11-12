@@ -1078,6 +1078,24 @@ const VIEWS: [name: string, body: Body][] = [
   ],
 
   [
+    "project page with the status chips counting the name filter's runs",
+    async ({ openProjectPage, shot }) => {
+      const projectPage = await openProjectPage(project.id, build.id);
+      await expect(projectPage.testRunList.rows).toHaveCount(4);
+
+      await projectPage.testRunFilters.selectStatus("Passed");
+      await projectPage.testRunFilters.name.fill("name2");
+
+      await expect(projectPage.testRunFilters.statusChips).toHaveText([
+        "All 1",
+        "Approved 1",
+        "Passed 0",
+      ]);
+      await shot("project-page-status-chips-filtered");
+    },
+  ],
+
+  [
     "project page with no test runs matching the filters",
     async ({ openProjectPage, shot }) => {
       const projectPage = await openProjectPage(project.id, build.id);
