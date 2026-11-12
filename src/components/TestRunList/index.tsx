@@ -172,7 +172,11 @@ const TestRunList = () => {
                 view={view}
                 onViewChange={setView}
                 grouped={groupVariations}
-                onGroupedChange={setGroupVariations}
+                onGroupedChange={(grouped) => {
+                  // a partly ticked group would look unticked yet stay selected
+                  setSelectedIds([]);
+                  setGroupVariations(grouped);
+                }}
                 groupByAxis={groupByAxis}
               />
             }

@@ -70,7 +70,7 @@ export const groupTestRuns = (
     const key = JSON.stringify([
       run.name,
       run.branchName,
-      ...axes.map((axis) => run[axis] ?? ""),
+      ...axes.map((axis) => run[axis] ?? null),
     ]);
     const bucket = byKey.get(key);
     if (bucket) {

@@ -49,6 +49,20 @@ describe("groupTestRuns", () => {
     expect(groups).toHaveLength(2);
   });
 
+  it("keeps a run with no device apart from one with an empty device, as isSibling does", () => {
+    const missing = run({
+      id: "missing",
+      customTags: "en_US",
+      device: null as unknown as string,
+    });
+    const empty = run({ id: "empty", customTags: "de_DE", device: "" });
+
+    const groups = groupTestRuns([missing, empty], "customTags");
+
+    expect(isSibling(missing, empty, "customTags")).toBe(false);
+    expect(groups).toHaveLength(2);
+  });
+
   it("keeps runs apart when the name or the branch differs", () => {
     const groups = groupTestRuns(
       [

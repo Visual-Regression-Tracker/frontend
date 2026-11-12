@@ -163,4 +163,22 @@ describe("TestRunList grouping", () => {
     await waitFor(() => expect(rowNames()).toEqual(["Screen A", "Screen B"]));
     expect(navigationOrder()?.split(",").at(-1)).toBe("b-en");
   });
+
+  it("clears the selection when grouping is switched, so no unticked row stays selected", async () => {
+    const { user } = renderList([A_EN, A_DE, B_EN]);
+    await waitFor(() => expect(dataRows()).toHaveLength(3));
+    const firstScreenA = screen
+      .getAllByText("Screen A")[0]
+      .closest<HTMLElement>('[role="row"]') as HTMLElement;
+    await user.click(
+      within(firstScreenA).getByRole("checkbox", { name: /select row/i }),
+    );
+    expect(screen.getByText("1 selected")).toBeVisible();
+
+    await groupVariations(user);
+
+    await waitFor(() => expect(dataRows()).toHaveLength(2));
+    expect(screen.queryByText("1 selected")).not.toBeInTheDocument();
+    expect(tickRow("Screen A")).not.toBeChecked();
+  });
 });
