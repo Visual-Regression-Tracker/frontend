@@ -18,6 +18,7 @@ import { styled } from "@mui/material/styles";
 import { Tooltip } from "../Tooltip";
 import { staticService } from "../../services";
 import { imageFor } from "../../_helpers/testRunImage.helper";
+import { splitTags } from "../../_helpers/testRunTags.helper";
 import { TestRun } from "../../types";
 import { imageSurface } from "../../theme/tokens";
 
@@ -122,7 +123,7 @@ export const VariationLightbox = ({
               Device: {run.device || "—"}
             </Typography>
             <Typography variant="caption">
-              Custom Tags: {run.customTags || "—"}
+              Custom Tags: {splitTags(run.customTags).join(" · ") || "—"}
             </Typography>
             <Typography variant="caption">
               Diff: {(run.diffPercent ?? 0).toFixed(2)}%

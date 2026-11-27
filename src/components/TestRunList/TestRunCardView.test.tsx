@@ -79,6 +79,22 @@ describe("TestRunCardView", () => {
     expect(screen.queryByTestId("groupCount")).not.toBeInTheDocument();
   });
 
+  it("shows each custom tag as its own button and filters by that one", async () => {
+    const onToggleTag = vi.fn();
+    const { user } = renderCards(
+      propsFor([run({ customTags: "Tag1,Tag2" })], { onToggleTag }),
+    );
+
+    const tags = screen.getAllByTestId("cardTag");
+    expect(tags.map((tag) => tag.textContent)).toEqual(
+      expect.arrayContaining(["Tag1", "Tag2"]),
+    );
+
+    await user.click(screen.getByRole("button", { name: "Tag2" }));
+
+    expect(onToggleTag).toHaveBeenCalledWith("customTags", "Tag2");
+  });
+
   it("shows a card per group", () => {
     renderCards(propsFor([A_EN, A_DE, B_EN], { grouped: true }));
 

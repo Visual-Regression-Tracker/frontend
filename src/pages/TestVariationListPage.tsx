@@ -9,6 +9,7 @@ import { PageToolbar } from "../components/PageToolbar";
 import { FilterBar } from "../components/FilterBar";
 import { useSnackbar } from "notistack";
 import { LOCATOR_TEST_VARIATION_FILTERS } from "../constants";
+import { tagItemsOf } from "../_helpers/testRunTags.helper";
 
 const PAGE_SIZE_OPTIONS = [12, 24, 48, 96];
 
@@ -35,11 +36,7 @@ const NOTHING_SELECTED: Selected = {
 
 const optionsOf = (items: TestVariation[], field: FilterField) =>
   Array.from(
-    new Set(
-      items
-        .map((item) => item[field])
-        .filter((value): value is string => !!value),
-    ),
+    new Set(items.flatMap((item) => tagItemsOf(item[field], field))),
   ).sort((a, b) => a.localeCompare(b));
 
 const TestVariationListPage = () => {
@@ -82,7 +79,9 @@ const TestVariationListPage = () => {
           FILTER_FIELDS.every(
             ({ field }) =>
               selected[field].length === 0 ||
-              selected[field].includes(t[field] ?? ""),
+              tagItemsOf(t[field], field).some((tag) =>
+                selected[field].includes(tag),
+              ),
           ),
       ),
     [query, selected, testVariations],
