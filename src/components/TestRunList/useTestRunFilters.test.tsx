@@ -81,6 +81,70 @@ describe("useTestRunFilters", () => {
     expect(ids(result.current.filteredRows)).toEqual(["login-en"]);
   });
 
+  it("offers each custom tag once, however the tags are combined", () => {
+    const { result } = renderFilters([
+      tagged({ id: "a", customTags: "Tag1,Tag2" }),
+      tagged({ id: "b", customTags: "Tag2, Tag1" }),
+      tagged({ id: "c", customTags: "Tag1" }),
+    ]);
+
+    expect(result.current.tagOptions.customTags).toEqual(["Tag1", "Tag2"]);
+  });
+
+  it("filters by one custom tag whatever else a run is tagged with", () => {
+    const { result } = renderFilters([
+      tagged({ id: "tag1", customTags: "Tag1" }),
+      tagged({ id: "both", customTags: "Tag1,Tag2" }),
+      tagged({ id: "both-reversed", customTags: "Tag2,Tag1" }),
+      tagged({ id: "tag3", customTags: "Tag3" }),
+    ]);
+
+    act(() => result.current.onTagFilterChange("customTags", ["Tag2"]));
+    expect(ids(result.current.filteredRows)).toEqual(["both", "both-reversed"]);
+
+    act(() => result.current.onTagFilterChange("customTags", ["Tag1"]));
+    expect(ids(result.current.filteredRows)).toEqual([
+      "tag1",
+      "both",
+      "both-reversed",
+    ]);
+  });
+
+  it("keeps runs with any of several picked custom tags", () => {
+    const { result } = renderFilters([
+      tagged({ id: "tag1", customTags: "Tag1" }),
+      tagged({ id: "tag2", customTags: "Tag2,Tag4" }),
+      tagged({ id: "tag3", customTags: "Tag3" }),
+    ]);
+
+    act(() => result.current.onTagFilterChange("customTags", ["Tag1", "Tag4"]));
+
+    expect(ids(result.current.filteredRows)).toEqual(["tag1", "tag2"]);
+  });
+
+  it("toggles a single custom tag from a card", () => {
+    const { result } = renderFilters([
+      tagged({ id: "both", customTags: "Tag1,Tag2" }),
+    ]);
+
+    act(() => result.current.toggleTag("customTags", "Tag2"));
+    expect(result.current.tagFilters.customTags).toEqual(["Tag2"]);
+
+    act(() => result.current.toggleTag("customTags", "Tag2"));
+    expect(result.current.tagFilters.customTags).toEqual([]);
+  });
+
+  it("drops a picked custom tag once no run carries it", () => {
+    const { result, rerender } = renderFilters([
+      tagged({ id: "both", customTags: "Tag1,Tag2" }),
+    ]);
+    act(() => result.current.onTagFilterChange("customTags", ["Tag1", "Tag2"]));
+
+    rerender({ testRuns: [tagged({ id: "tag1", customTags: "Tag1" })] });
+
+    expect(result.current.tagFilters.customTags).toEqual(["Tag1"]);
+  });
+
   it("filters a value only in the field it was picked for", () => {
     const onDevice = tagged({ id: "on-device", device: "chrome" });
     const inBrowser = tagged({ id: "in-browser", browser: "chrome" });

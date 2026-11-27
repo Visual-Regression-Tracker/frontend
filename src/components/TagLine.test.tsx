@@ -21,6 +21,15 @@ describe("TagLine", () => {
     );
   });
 
+  it("shows each custom tag on its own", () => {
+    const { container } = render(
+      <TagLine tags={{ os: "macOS", customTags: "Tag1, Tag2" }} />,
+    );
+
+    expect(container).toHaveTextContent("macOS · Tag1 · Tag2");
+    expect(screen.getByText("Tag2")).toBeInTheDocument();
+  });
+
   it("skips empty tags", () => {
     const { container } = render(
       <TagLine tags={{ os: "macOS", browser: "", device: undefined }} />,

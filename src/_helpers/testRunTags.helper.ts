@@ -8,10 +8,31 @@ export const TAG_FIELDS: TagField[] = [
   "customTags",
 ];
 
+// The backend keeps customTags whole as part of a variation's identity, so only the UI splits it.
+const CUSTOM_TAG_DELIMITER = ",";
+
+export const splitTags = (value: string | null | undefined): string[] =>
+  Array.from(
+    new Set(
+      (value ?? "")
+        .split(CUSTOM_TAG_DELIMITER)
+        .map((tag) => tag.trim())
+        .filter(Boolean),
+    ),
+  );
+
+export const tagItemsOf = (
+  value: string | null | undefined,
+  field: string,
+): string[] => {
+  if (field === "customTags") {
+    return splitTags(value);
+  }
+  return value ? [value] : [];
+};
+
 export const tagValuesOf = (run: TestRun, fields: TagField[]): string[] =>
-  fields
-    .map((field) => run[field])
-    .filter((value): value is string => typeof value === "string" && !!value);
+  fields.flatMap((field) => tagItemsOf(run[field], field));
 
 export const tagsOf = (run: TestRun, fields: TagField[]): string =>
   tagValuesOf(run, fields).join(" · ");

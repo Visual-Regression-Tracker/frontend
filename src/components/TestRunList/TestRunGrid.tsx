@@ -14,6 +14,7 @@ import noImage from "../../static/no-image.png";
 import type { TestRunGroup } from "../../_helpers/testRunGroup.helper";
 import { GroupCountChip, GroupStatusChip } from "./GroupChips";
 import { thumbnailFor } from "../../_helpers/testRunImage.helper";
+import { tagItemsOf } from "../../_helpers/testRunTags.helper";
 import type { TagFilters } from "./useTestRunFilters";
 import { TagField } from "../../types";
 import { TEST_ID } from "../../constants/locators";
@@ -91,10 +92,12 @@ export const TestRunGrid = ({
       const { key, runs, representative } = group;
       const ids = runs.map((run) => run.id);
       const selectedCount = ids.filter((id) => selectedIdSet.has(id)).length;
-      const tags = group.tagFields.flatMap((field) => {
-        const value = representative[field];
-        return typeof value === "string" && value ? [{ field, value }] : [];
-      });
+      const tags = group.tagFields.flatMap((field) =>
+        tagItemsOf(representative[field], field).map((value) => ({
+          field,
+          value,
+        })),
+      );
 
       return (
         <Card key={key} variant="outlined" data-testid={TEST_ID.testRunCard}>

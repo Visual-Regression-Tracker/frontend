@@ -1,6 +1,6 @@
 import { useCallback, useMemo, useState } from "react";
 import { TagField, TestRun, TestStatus } from "../../types";
-import { TAG_FIELDS } from "../../_helpers/testRunTags.helper";
+import { TAG_FIELDS, tagItemsOf } from "../../_helpers/testRunTags.helper";
 
 export type TagFilters = Record<TagField, string[]>;
 
@@ -21,7 +21,10 @@ const matchesStatuses = (run: TestRun, statuses: TestStatus[]): boolean =>
 const matchesTagFilters = (run: TestRun, tagFilters: TagFilters): boolean =>
   TAG_FIELDS.every((field) => {
     const picked = tagFilters[field];
-    return picked.length === 0 || picked.includes(String(run[field] ?? ""));
+    return (
+      picked.length === 0 ||
+      tagItemsOf(run[field], field).some((tag) => picked.includes(tag))
+    );
   });
 
 const hasTagFilters = (tagFilters: TagFilters): boolean =>
@@ -79,10 +82,9 @@ export const useTestRunFilters = (testRuns: TestRun[]) => {
     testRuns.forEach((run) => {
       if (matchesNameQuery(run, query) && matchesStatuses(run, statuses)) {
         TAG_FIELDS.forEach((field) => {
-          const value = run[field];
-          if (typeof value === "string" && value) {
-            present[field].add(value);
-          }
+          tagItemsOf(run[field], field).forEach((tag) =>
+            present[field].add(tag),
+          );
         });
       }
     });
@@ -106,10 +108,9 @@ export const useTestRunFilters = (testRuns: TestRun[]) => {
       const existingStatuses = new Set<TestStatus>();
       testRuns.forEach((run) => {
         TAG_FIELDS.forEach((field) => {
-          const value = run[field];
-          if (typeof value === "string" && value) {
-            existingTags[field].add(value);
-          }
+          tagItemsOf(run[field], field).forEach((tag) =>
+            existingTags[field].add(tag),
+          );
         });
         existingStatuses.add(run.status);
       });

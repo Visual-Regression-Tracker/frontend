@@ -158,6 +158,24 @@ describe("TestVariationListPage", () => {
       expect(shownNames()).toEqual(expected);
     });
 
+    test("by one custom tag of a variation that has several", async () => {
+      const both = variation("both", {
+        name: "both",
+        customTags: "smoke,Tag2",
+      });
+      const { user } = await renderPage([LOGIN, CHECKOUT, both]);
+
+      await pick(user, "customTags", "Tag2");
+
+      expect(await screen.findByText("1 of 3 baselines")).toBeInTheDocument();
+      expect(shownNames()).toEqual(["both"]);
+
+      await pick(user, "customTags", "Tag2");
+      await pick(user, "customTags", "smoke");
+
+      expect(shownNames()).toEqual(["login", "both"]);
+    });
+
     test("combined, a variation has to match all of them", async () => {
       const { user } = await renderPage(THREE);
 
