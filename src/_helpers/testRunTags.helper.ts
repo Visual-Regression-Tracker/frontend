@@ -8,9 +8,8 @@ export const TAG_FIELDS: TagField[] = [
   "customTags",
 ];
 
-// Custom tags arrive as one free-text string, so the UI splits it. The backend
-// keeps the string whole as part of a variation's identity and never parses it.
-export const CUSTOM_TAG_DELIMITER = ",";
+// The backend keeps customTags whole as part of a variation's identity, so only the UI splits it.
+const CUSTOM_TAG_DELIMITER = ",";
 
 export const splitTags = (value: string | null | undefined): string[] =>
   Array.from(
@@ -22,7 +21,6 @@ export const splitTags = (value: string | null | undefined): string[] =>
     ),
   );
 
-/** The separate tags a field holds: custom tags are split, any other field is one tag. */
 export const tagItemsOf = (
   value: string | null | undefined,
   field: string,
